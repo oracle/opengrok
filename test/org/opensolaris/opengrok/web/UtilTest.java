@@ -359,12 +359,19 @@ public class UtilTest {
         assertTrue(Util.linkify("smtp://example.com/OpenGrok/OpenGrok").equals("smtp://example.com/OpenGrok/OpenGrok"));
         assertTrue(Util.linkify("just some crazy text").equals("just some crazy text"));
 
-        // escaping tests
+        // escaping url
         assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
                 .contains("href=\"http://www.example.com/%22quotation%22/else\""));
         assertTrue(Util.linkify("https://example.com/><\"")
                 .contains("href=\"https://example.com/%3E%3C%22\""));
         assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
                 .contains("href=\"http://www.example.com?param=1&param2=2&param3=%22quoted%3E%22\""));
+        // escaping titles
+        assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
+                .matches(".*title=\".*?http://www\\.example\\.com/&quot;quotation&quot;/else.*\".*"));
+        assertTrue(Util.linkify("https://example.com/><\"")
+                .matches(".*title=\".*?https://example\\.com/&gt;&lt;&quot;.*\".*"));
+        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
+                .matches(".*title=\".*?http://www\\.example\\.com\\?param=1&amp;param2=2&amp;param3=&quot;quoted&gt;&quot;.*\".*"));
     }
 }

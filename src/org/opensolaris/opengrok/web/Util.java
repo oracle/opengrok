@@ -448,7 +448,7 @@ public final class Util {
                     sb.append("&#39;");
                     break;
                 case '"':
-                    sb.append("&#39;");
+                    sb.append("&quot;");
                     break; // \\\
                 case '&':
                     sb.append("&amp;");
@@ -1368,7 +1368,7 @@ public final class Util {
                 return String.format("<a href=\"%s\"%s title=\"Link to %s\">%s</a>",
                         constructed.toString(),
                         newTab ? " target=\"_blank\"" : "",
-                        Util.htmlize(url),
+                        Util.encode(url),
                         Util.htmlize(url)
                 );
             } catch (MalformedURLException | URISyntaxException ex) {
