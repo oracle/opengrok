@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
@@ -40,7 +41,7 @@ public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
 
     FortranAnalyzer(FortranAnalyzerFactory factory) {
         super(factory);
-        SymbolTokenizer=new FortranSymbolTokenizer(null);    
+        SymbolTokenizer=new FortranSymbolTokenizer(FileAnalyzer.dummyReader);    
     }
     
     @Override

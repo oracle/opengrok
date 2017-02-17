@@ -58,12 +58,9 @@ public abstract class JFlexTokenizer extends Tokenizer {
     //TODO can be removed once we figure out jflex generation of empty constructor
     protected JFlexTokenizer(Reader in) {
         super();
-        if (in==null) {
-            in=new StringReader("");
-        }
         setReader(in);
     }
-    
+            
     /**
      * Reinitialize the tokenizer with new reader.
      * @throws java.io.IOException in case of I/O error
@@ -71,10 +68,11 @@ public abstract class JFlexTokenizer extends Tokenizer {
     @Override
     public void reset() throws IOException {
         super.reset();
-        stack.clear();
+        stack.clear();        
         this.yyreset(input);
+        clearAttributes();
     }
-
+        
     @Override
     public final void close() throws IOException {
         super.close();

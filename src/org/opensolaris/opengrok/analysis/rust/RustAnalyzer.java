@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -47,7 +48,7 @@ public class RustAnalyzer extends AbstractSourceCodeAnalyzer {
      */
     protected RustAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        SymbolTokenizer=new RustSymbolTokenizer(null);    
+        SymbolTokenizer=new RustSymbolTokenizer(FileAnalyzer.dummyReader);    
     }    
 
     @Override
