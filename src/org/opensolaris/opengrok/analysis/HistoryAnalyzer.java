@@ -58,7 +58,7 @@ public final class HistoryAnalyzer extends Analyzer {
      */
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {        
-        final PlainFullTokenizer plainfull = new PlainFullTokenizer();
+        final PlainFullTokenizer plainfull = new PlainFullTokenizer(FileAnalyzer.dummyReader);
         //we are counting position increments, this might affect the queries later and need to be in sync, especially for highlighting of results
         return new TokenStreamComponents(plainfull, new StopFilter(plainfull, stopWords));
     }

@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -45,7 +46,7 @@ public class HaskellAnalyzer extends AbstractSourceCodeAnalyzer {
      */
     protected HaskellAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        SymbolTokenizer=new HaskellSymbolTokenizer(null);
+        SymbolTokenizer=new HaskellSymbolTokenizer(FileAnalyzer.dummyReader);
     }    
 
     @Override

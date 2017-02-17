@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.analysis.haskell;
+package org.opensolaris.opengrok.analysis.java;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -31,7 +31,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -41,23 +40,23 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
- * Tests the {@link HaskellSymbolTokenizer} class.
+ * Tests the {@link JavaSymbolTokenizer} class.
  *
- * @author Harry Pan
+ * @author Lubos Kosco
  */
-public class HaskellSymbolTokenizerTest {
+public class JavaSymbolTokenizerTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HaskellSymbolTokenizerTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaSymbolTokenizerTest.class);
 
     private final FileAnalyzer analyzer;
 
-    public HaskellSymbolTokenizerTest() {
-        this.analyzer = new HaskellAnalyzerFactory().getAnalyzer();
+    public JavaSymbolTokenizerTest() {
+        this.analyzer = new JavaAnalyzerFactory().getAnalyzer();
     }
 
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<>();
-        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.tokenStream("refs", r);
+        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.tokenStream("refs", r);        
         ts.setReader(r);        
         ts.yyreset(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
@@ -75,15 +74,20 @@ public class HaskellSymbolTokenizerTest {
     @Test
     public void sampleTest() throws UnsupportedEncodingException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/haskell/sample.hs");
+                "org/opensolaris/opengrok/analysis/java/Sample.jav");
         InputStreamReader r = new InputStreamReader(res, "UTF-8");
         String[] termsFor = getTermsFor(r);        
         assertArrayEquals(
                 new String[]{
-                    "qsort", // line 2
-                    "qsort", "x", "xs", "qsort", "x'", "x'", "xs", "x'", "x", "x", "qsort", "x'", "x'", "xs", "x'", "x", //line 3
-                    "x'y'", "f'", "g'h", "f'", "g'h" // line 6
+                    "org","opensolaris","opengrok","analysis","java","Sample",
+                    "String","MY_MEMBER","Sample","Method","arg","res","res",
+                    "arg","InnerClass","i","InnerClass","i","InnerMethod",
+                    "length","res","AbstractMethod","test","InnerClass",
+                    "String","InnerMethod","System","out","print","main",
+                    "String","args","num1","num2","num1","num2","num1",
+                    "System","out","println","ArithmeticException","e",
+                    "System","out","println","System","out","println"
                 },
                 termsFor);
-    }
+    }            
 }

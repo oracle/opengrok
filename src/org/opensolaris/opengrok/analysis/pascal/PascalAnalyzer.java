@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -44,7 +45,7 @@ public class PascalAnalyzer extends AbstractSourceCodeAnalyzer {
      */
     protected PascalAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        SymbolTokenizer=new PascalSymbolTokenizer(null);    
+        SymbolTokenizer=new PascalSymbolTokenizer(FileAnalyzer.dummyReader);    
     }       
 
     @Override

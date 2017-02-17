@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -44,7 +45,7 @@ public class PythonAnalyzer extends AbstractSourceCodeAnalyzer {
      */
     protected PythonAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        SymbolTokenizer=new PythonSymbolTokenizer(null);    
+        SymbolTokenizer=new PythonSymbolTokenizer(FileAnalyzer.dummyReader);    
     }
     
     @Override
