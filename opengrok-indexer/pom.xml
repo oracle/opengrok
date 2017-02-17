@@ -22,7 +22,7 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>opengrok-indexer</artifactId>
@@ -45,27 +45,29 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
                 <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/analysis/sql/</directory>
                 <includes>
-                  <include>*.dat</include>
+                    <include>*.dat</include>
                 </includes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/analysis/vb/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/analysis/vb/</directory>
                 <includes>
-                  <include>*.dat</include>
+                    <include>*.dat</include>
                 </includes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/index/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/index/</directory>
-                <excludes><exclude>*.java</exclude></excludes>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/history/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/history/</directory>
                 <excludes>
-                  <exclude>*.java</exclude>
-                  <exclude>*.html</exclude>
+                    <exclude>*.java</exclude>
+                    <exclude>*.html</exclude>
                 </excludes>
             </resource>
         </resources>
@@ -74,17 +76,30 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
             <testResource>
                 <targetPath>org/opensolaris/opengrok/history/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/history/</directory>
-                <excludes><exclude>*.java</exclude></excludes>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/php/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/php/</directory>
-                <excludes><exclude>*.java</exclude></excludes>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/haskell/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/haskell/</directory>
-                <excludes><exclude>*.java</exclude></excludes>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/java/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/java/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
             </testResource>
         </testResources>
 
@@ -131,7 +146,7 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
                     </execution>
                 </executions>
             </plugin>
-<!-- TODO add the same fix as is in build.xml to patch jflex generated files to stop increasing buffer beyond token size that lucene accepts
+            <!-- TODO add the same fix as is in build.xml to patch jflex generated files to stop increasing buffer beyond token size that lucene accepts
  https://github.com/OpenGrok/OpenGrok/issues/1170 make parsers stop producing tokens > 32766 chars
  at least for PlainFullTokenizer, PlainSymbolTokenizer, JavaScriptSymbolTokenizer, JavaSymbolTokenizer
  use below ?
@@ -221,10 +236,12 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
         </dependency>
-        <dependency>                                                                                                                                                                                     <groupId>org.apache.lucene</groupId>
+        <dependency>                                                                                                                                                                                     
+            <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
         </dependency>
-        <dependency>                                                                                                                                                                                     <groupId>org.apache.lucene</groupId>
+        <dependency>                                                                                                                                                                                     
+            <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-suggest</artifactId>
         </dependency>
         <dependency>
@@ -254,12 +271,12 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
             <artifactId>derby</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derbyclient</artifactId>
-            <scope>run</scope>
-        </dependency>
--->
+        <!--        <dependency>
+                    <groupId>org.apache.derby</groupId>
+                    <artifactId>derbyclient</artifactId>
+                    <scope>run</scope>
+                </dependency>
+        -->
 
     </dependencies>
 
