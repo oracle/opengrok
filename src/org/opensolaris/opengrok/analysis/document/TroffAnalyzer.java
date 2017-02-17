@@ -57,8 +57,9 @@ public class TroffAnalyzer extends TextAnalyzer {
     
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
-        TextField full=new TextField(QueryBuilder.FULL,getReader(src.getStream()));
-        full.setTokenStream(SymbolTokenizer); //this is to explicitely use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+        //this is to explicitely use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+        this.SymbolTokenizer.setReader(getReader(src.getStream()));
+        TextField full=new TextField(QueryBuilder.FULL,SymbolTokenizer);        
         doc.add(full);
 
         if (xrefOut != null) {
@@ -66,15 +67,6 @@ public class TroffAnalyzer extends TextAnalyzer {
                 writeXref(in, xrefOut);
             }
         }
-    }
-
-    //TODO delete below once we are sure that above setting of tokenstream will take precedence over FileAnalyzer ?
-    @Override
-    public TokenStreamComponents createComponents(String fieldName) {        
-        if ("full".equals(fieldName)) {
-            return new TokenStreamComponents(new TroffFullTokenizer(FileAnalyzer.dummyReader));
-        }
-        return super.createComponents(fieldName);
     }
 
     /**
