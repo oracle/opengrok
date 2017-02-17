@@ -1,0 +1,182 @@
+# This is the BitKeeper configuration for this package.
+# 
+# Please fill in the "description:" and "email:" fields, BK/Web needs those.
+# For the rest of the fields you may use the defaults.
+# 
+
+# 
+# Automatically populate missing components as needed to perform a safe
+# pull.  Unless you have very large components and slow networks this 
+# should be set to on.
+# 
+# Default: off
+# 
+auto_populate: off
+
+# 
+# Default is to enable the Binary Asset Manager.
+# If you want to use the older uuencoded binaries, set this to "no".
+# 
+BAM: on
+
+# 
+# BitKeeper supports the following check out modes (which defines what
+# permissions/state versioned files are in after a clone/delta/commit):
+# 
+#   edit		- check out files locked such that they are writable
+#   get		- check out files in read-only mode (can be higher
+#   		  performance in large repos; also supports keywords)
+#   last		- preserve the previous state of the file
+#   none		- do not check out any files
+# 
+# Most users are least surprised by checkout:edit, it is what they expect.
+# 
+# If this is a repository full of big binary files then checkout:none or
+# checkout:last is better, especially when combined with BAM.
+# 
+# Default: none
+# 
+checkout: edit
+
+# 
+# The clock skew field controls how recent a file has to be before
+# BitKeeper will not trust the timestamp database.  It defaults to
+# a week and that default was chosen to overcome clock drift problems
+# on network file systems.  If you know your clocks are 100% accurate
+# and your workflow is such that many of your files change all the 
+# time, then setting the clock skew down to a day or two (172800)
+# will improve performance.  For most people, the default is fine.
+# 
+# Default: on
+# 
+clock_skew: on
+
+# 
+# When cloning a product, limit the components cloned to the alias
+# specified.
+# 
+# Default: ALL
+# 
+clone_default: ALL
+
+# 
+# Name of the project, such as "BitKeeper source management system",
+# "Linux kernel" or "MySQL database system".  Used when listing 
+# repositories.
+# 
+# Default: empty
+# 
+# description: 
+
+# 
+# Email address of the person or alias that should get administrative 
+# questions about this project.  Currently only used by BK/Web.
+# 
+# Default: empty
+# 
+# email: 
+
+# 
+# When checking out text files in operating systems with different
+# conventions, which End-Of-Line marker to use. The options are:
+# 
+#   native  - Use \n on Unix systems and \r\n on Windows
+#   windows - Always use \r\n
+#   unix    - Always use \n
+# 
+# Default: native
+# 
+eoln: native
+
+# 
+# Controls whether BitKeeper will expands keywords embedded in new
+# files.  The values are 'sccs' or 'rcs', with an optional ', expand1'
+# (i.e., 'sccs, expand1' or 'rcs, expand1').
+# 
+# The 'expand1' says "expand only the first line found containing keywords"
+# and is supported because sometimes the keyword string is a legitimate 
+# part of the source and shouldn't be expanded.
+# 
+# Note that this is a property of the file at the time of creation. The
+# setting is persistent and can be changed using 'bk admin'.
+# 
+# Keywords are only expanded in 'checkout:get' mode.
+# 
+# Default: none
+# 
+keyword: none
+
+# 
+# Old BK computed checksums using a set based method and new bk
+# computes using a graph based system.  Checksum can look back
+# and see that they compute the same thing.  In some rare cases,
+# involving an exclude of a merge cset, the two sums might not match.
+# 
+# This option skips running the graph based checksum test on old or
+# all depending on how it is set.
+# 
+#   0 (or off)   - run graph verify test on all (the default)
+#   1 (or on)    - skip running the verify on all
+#   Other number - interpret as a time_t and only run verify on newer csets
+# 
+# Default: off
+# 
+no_graphverify: off
+
+# 
+# BitKeeper can automatically run multiple processes to take advantage
+# of the multi-core architectures of today. The parallel variable
+# can be set to 0 to prevent this, to a number greater than zero to use
+# that number of parallel processes, or to the value 'on' to let
+# BitKeeper determine what the best value is.
+# 
+# Default: on
+# 
+parallel: on
+
+# 
+# With partial_check set to on, repositories are checked no more than once
+# every check_frequency days.  This is a performance win for large
+# repositories.
+# 
+# Customers who have reason to believe that their data may be corrupted
+# by hardware or software problems (bad memory, bad disks, bugs in the
+# file system, etc.) should set this field to "off".
+# 
+# Default: on
+# 
+partial_check: on
+
+# 
+# If stats_after_pull is set to 'on', BitKeeper will print diffstat
+# output after a pull.
+# 
+# Default: off
+# 
+stats_after_pull: off
+
+# 
+# If sync is set to 'on', BitKeeper will call fsync() after writing
+# data to the filesystem.  On some Linux systems fsync() has significant
+# performance problems (google it).
+# 
+# Default: off
+# 
+sync: off
+
+# 
+# Where to look for triggers. Different paths are separated by the '|'
+# character. Besides path names (such as /etc/bktriggers), the following
+# special values are supported:
+# 
+#   $NONE		- Do not run any triggers
+#   $PRODUCT	- Run the triggers in the product's BitKeeper/triggers
+#   		  directory (ignored in a non-nested collection)
+#   $BK_DOTBK	- Run the triggers in the user's
+#   		  ~/.bk/BitKeeper/triggers directory.
+#   $BK_BIN	- Run the triggers in `bk bin`/BitKeeper/triggers	
+#   .		- Run the triggers in `bk root -S`/BitKeeper/triggers
+# 
+# Default: $PRODUCT|.
+# 
+triggers: $PRODUCT|.

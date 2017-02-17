@@ -23,6 +23,7 @@
 package org.opensolaris.opengrok.condition;
 
 import org.opensolaris.opengrok.history.BazaarRepository;
+import org.opensolaris.opengrok.history.BitKeeperRepository;
 import org.opensolaris.opengrok.history.CVSRepository;
 import org.opensolaris.opengrok.history.GitRepository;
 import org.opensolaris.opengrok.history.MercurialRepository;
@@ -61,6 +62,12 @@ public abstract class RepositoryInstalled implements RunCondition {
 
     private String forceSystemProperty() {
         return String.format("junit-force-%s", name);
+    }
+
+    public static class BitKeeperInstalled extends RepositoryInstalled {
+        public BitKeeperInstalled() {
+            super("bitkeeper", new BitKeeperRepository());
+        }
     }
 
     public static class MercurialInstalled extends RepositoryInstalled {

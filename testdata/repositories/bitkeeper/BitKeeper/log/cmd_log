@@ -1,0 +1,597 @@
+@zenyatta 1487079453.053370   0.035 bk-7.3.1ce:   uniq_server --startsock=43047
+@zenyatta 1487079453.079021   0.061 bk-7.3.1ce:   new -Pq BitKeeper/etc/ignore
+@zenyatta 1487079453.079473   0.061 bk-7.3.1ce:     obtain write lock (8059)
+@zenyatta 1487079453.080245   0.062 bk-7.3.1ce:     write unlock (8059)
+@zenyatta 1487079453.080386   0.062 bk-7.3.1ce:   new -Pq BitKeeper/etc/ignore = 0
+@zenyatta 1487079453.082377   0.064 bk-7.3.1ce:   new -Pq BitKeeper/etc/gone
+@zenyatta 1487079453.082949   0.064 bk-7.3.1ce:     obtain write lock (8060)
+@zenyatta 1487079453.083898   0.065 bk-7.3.1ce:     write unlock (8060)
+@zenyatta 1487079453.083988   0.065 bk-7.3.1ce:   new -Pq BitKeeper/etc/gone = 0
+@zenyatta 1487079453.085641   0.067 bk-7.3.1ce:   new -Pq BitKeeper/etc/collapsed
+@zenyatta 1487079453.086196   0.068 bk-7.3.1ce:     obtain write lock (8061)
+@zenyatta 1487079453.087673   0.069 bk-7.3.1ce:     write unlock (8061)
+@zenyatta 1487079453.087783   0.069 bk-7.3.1ce:   new -Pq BitKeeper/etc/collapsed = 0
+@zenyatta 1487079453.091000   0.073 bk-7.3.1ce:   commit -S "-qFyInitial repository create"
+@zenyatta 1487079453.091538   0.073 bk-7.3.1ce:     obtain write lock (8062)
+@zenyatta 1487079453.101340   0.083 bk-7.3.1ce:     gfiles -vpC
+@zenyatta 1487079453.102141   0.084 bk-7.3.1ce:     gfiles -vpC = 0
+@zenyatta 1487079453.108396   0.090 bk-7.3.1ce:     check -cM -
+@zenyatta 1487079453.135495   0.117 bk-7.3.1ce:       idcache -q
+@zenyatta 1487079453.137088   0.119 bk-7.3.1ce:       idcache -q = 0
+@zenyatta 1487079453.186002   0.168 bk-7.3.1ce:     check -cM - = 0
+@zenyatta 1487079453.188834   0.170 bk-7.3.1ce:     write unlock (8062)
+@zenyatta 1487079453.188935   0.170 bk-7.3.1ce:     downgrade write lock (8062)
+@zenyatta 1487079453.189052   0.171 bk-7.3.1ce:   commit -S "-qFyInitial repository create" = 0
+@zenyatta 1487079453.189085   0.171 bk-7.3.1ce:   read unlock (8062)
+@zenyatta 1487079453.189717   0.171 bk-7.3.1ce: init = 0
+@zenyatta 1487079458.273919   0.000 bk-7.3.1ce: gfiles -U -c -x --relpath=/home/genji/workspace/bkexample
+@zenyatta 1487079458.288788   0.015 bk-7.3.1ce: gfiles -U -c -x --relpath=/home/genji/workspace/bkexample = 0
+@zenyatta 1487079466.795309   0.000 bk-7.3.1ce: ignore .project
+@zenyatta 1487079466.905634   0.110 bk-7.3.1ce:   root .
+@zenyatta 1487079466.905721   0.110 bk-7.3.1ce:   root . = 0
+@zenyatta 1487079466.918125   0.123 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.config
+@zenyatta 1487079466.918221   0.123 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.config = 0
+@zenyatta 1487079466.919545   0.124 bk-7.3.1ce:   prs "-hd " -r+ BitKeeper/etc/SCCS/s.config
+@zenyatta 1487079466.919860   0.124 bk-7.3.1ce:   prs "-hd " -r+ BitKeeper/etc/SCCS/s.config = 0
+@zenyatta 1487079466.922096   0.127 bk-7.3.1ce:   root -R
+@zenyatta 1487079466.922157   0.127 bk-7.3.1ce:   root -R = 0
+@zenyatta 1487079466.936512   0.141 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore
+@zenyatta 1487079466.936612   0.141 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore = 0
+@zenyatta 1487079466.938336   0.143 bk-7.3.1ce:   edit -q BitKeeper/etc/ignore
+@zenyatta 1487079466.938857   0.143 bk-7.3.1ce:   edit -q BitKeeper/etc/ignore = 0
+@zenyatta 1487079466.953081   0.158 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore
+@zenyatta 1487079466.953174   0.158 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore = 0
+@zenyatta 1487079466.976510   0.181 bk-7.3.1ce:   delta -q "-yadded .project" BitKeeper/etc/ignore
+@zenyatta 1487079466.979812   0.184 bk-7.3.1ce:     obtain write lock (8079)
+@zenyatta 1487079466.982012   0.187 bk-7.3.1ce:     write unlock (8079)
+@zenyatta 1487079466.982117   0.187 bk-7.3.1ce:   delta -q "-yadded .project" BitKeeper/etc/ignore = 0
+@zenyatta 1487079466.984016   0.189 bk-7.3.1ce: ignore .project = 0
+@zenyatta 1487079469.947108   0.000 bk-7.3.1ce: ignore .cproject
+@zenyatta 1487079470.001868   0.054 bk-7.3.1ce:   root .
+@zenyatta 1487079470.001955   0.054 bk-7.3.1ce:   root . = 0
+@zenyatta 1487079470.017892   0.070 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.config
+@zenyatta 1487079470.018021   0.071 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.config = 0
+@zenyatta 1487079470.025589   0.078 bk-7.3.1ce:   prs "-hd " -r+ BitKeeper/etc/SCCS/s.config
+@zenyatta 1487079470.026381   0.079 bk-7.3.1ce:   prs "-hd " -r+ BitKeeper/etc/SCCS/s.config = 0
+@zenyatta 1487079470.050696   0.103 bk-7.3.1ce:   root -R
+@zenyatta 1487079470.050770   0.103 bk-7.3.1ce:   root -R = 0
+@zenyatta 1487079470.061107   0.114 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore
+@zenyatta 1487079470.061228   0.114 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore = 0
+@zenyatta 1487079470.063117   0.116 bk-7.3.1ce:   edit -q BitKeeper/etc/ignore
+@zenyatta 1487079470.063515   0.116 bk-7.3.1ce:   edit -q BitKeeper/etc/ignore = 1
+@zenyatta 1487079470.076367   0.129 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore
+@zenyatta 1487079470.076488   0.129 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore = 0
+@zenyatta 1487079470.093715   0.146 bk-7.3.1ce:   delta -q "-yadded .cproject" BitKeeper/etc/ignore
+@zenyatta 1487079470.094610   0.147 bk-7.3.1ce:     obtain write lock (8093)
+@zenyatta 1487079470.096045   0.149 bk-7.3.1ce:     write unlock (8093)
+@zenyatta 1487079470.096333   0.149 bk-7.3.1ce:   delta -q "-yadded .cproject" BitKeeper/etc/ignore = 0
+@zenyatta 1487079470.097112   0.150 bk-7.3.1ce: ignore .cproject = 0
+@zenyatta 1487079488.295635   0.000 bk-7.3.1ce: ignore ".settings -prune"
+@zenyatta 1487079488.350613   0.055 bk-7.3.1ce:   root .
+@zenyatta 1487079488.350697   0.055 bk-7.3.1ce:   root . = 0
+@zenyatta 1487079488.353668   0.058 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.config
+@zenyatta 1487079488.353780   0.058 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.config = 0
+@zenyatta 1487079488.361344   0.066 bk-7.3.1ce:   prs "-hd " -r+ BitKeeper/etc/SCCS/s.config
+@zenyatta 1487079488.361607   0.066 bk-7.3.1ce:   prs "-hd " -r+ BitKeeper/etc/SCCS/s.config = 0
+@zenyatta 1487079488.366842   0.071 bk-7.3.1ce:   root -R
+@zenyatta 1487079488.366913   0.071 bk-7.3.1ce:   root -R = 0
+@zenyatta 1487079488.369924   0.074 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore
+@zenyatta 1487079488.370030   0.075 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore = 0
+@zenyatta 1487079488.372623   0.077 bk-7.3.1ce:   edit -q BitKeeper/etc/ignore
+@zenyatta 1487079488.372878   0.077 bk-7.3.1ce:   edit -q BitKeeper/etc/ignore = 1
+@zenyatta 1487079488.401243   0.106 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore
+@zenyatta 1487079488.401391   0.106 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore = 0
+@zenyatta 1487079488.430142   0.135 bk-7.3.1ce:   delta -q "-yadded .settings -prune" BitKeeper/etc/ignore
+@zenyatta 1487079488.431145   0.136 bk-7.3.1ce:     obtain write lock (8106)
+@zenyatta 1487079488.432942   0.137 bk-7.3.1ce:     write unlock (8106)
+@zenyatta 1487079488.433042   0.138 bk-7.3.1ce:   delta -q "-yadded .settings -prune" BitKeeper/etc/ignore = 0
+@zenyatta 1487079488.433812   0.138 bk-7.3.1ce: ignore ".settings -prune" = 0
+@zenyatta 1487079511.785879   0.000 bk-7.3.1ce: ignore "build -prune"
+@zenyatta 1487079511.806598   0.021 bk-7.3.1ce:   root .
+@zenyatta 1487079511.806681   0.021 bk-7.3.1ce:   root . = 0
+@zenyatta 1487079511.828352   0.043 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.config
+@zenyatta 1487079511.828454   0.043 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.config = 0
+@zenyatta 1487079511.834642   0.049 bk-7.3.1ce:   prs "-hd " -r+ BitKeeper/etc/SCCS/s.config
+@zenyatta 1487079511.836167   0.051 bk-7.3.1ce:   prs "-hd " -r+ BitKeeper/etc/SCCS/s.config = 0
+@zenyatta 1487079511.847621   0.062 bk-7.3.1ce:   root -R
+@zenyatta 1487079511.847693   0.062 bk-7.3.1ce:   root -R = 0
+@zenyatta 1487079511.855897   0.070 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore
+@zenyatta 1487079511.856008   0.071 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore = 0
+@zenyatta 1487079511.857771   0.072 bk-7.3.1ce:   edit -q BitKeeper/etc/ignore
+@zenyatta 1487079511.858041   0.073 bk-7.3.1ce:   edit -q BitKeeper/etc/ignore = 1
+@zenyatta 1487079511.861335   0.076 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore
+@zenyatta 1487079511.861426   0.076 bk-7.3.1ce:   _test -f BitKeeper/etc/SCCS/s.ignore = 0
+@zenyatta 1487079511.880426   0.095 bk-7.3.1ce:   delta -q "-yadded build -prune" BitKeeper/etc/ignore
+@zenyatta 1487079511.881440   0.096 bk-7.3.1ce:     obtain write lock (8119)
+@zenyatta 1487079511.882244   0.097 bk-7.3.1ce:     write unlock (8119)
+@zenyatta 1487079511.882397   0.097 bk-7.3.1ce:   delta -q "-yadded build -prune" BitKeeper/etc/ignore = 0
+@zenyatta 1487079511.882923   0.097 bk-7.3.1ce: ignore "build -prune" = 0
+@zenyatta 1487079514.905645   0.000 bk-7.3.1ce: gfiles -U -c -x --relpath=/home/genji/workspace/bkexample
+@zenyatta 1487079514.906296   0.001 bk-7.3.1ce: gfiles -U -c -x --relpath=/home/genji/workspace/bkexample = 0
+@zenyatta 1487079542.306318   0.000 bk-7.3.1ce: citool
+@zenyatta 1487079542.470196   0.164 bk-7.3.1ce:   bin
+@zenyatta 1487079542.470347   0.164 bk-7.3.1ce:   bin = 0 mem=15.3M
+@zenyatta 1487079542.481886   0.175 bk-7.3.1ce:   dotbk .bkgui.d/ci.rc ci.rc
+@zenyatta 1487079542.481968   0.175 bk-7.3.1ce:   dotbk .bkgui.d/ci.rc ci.rc = 0 mem=15.3M
+@zenyatta 1487079542.489941   0.183 bk-7.3.1ce:   dotbk .bkgui config-gui
+@zenyatta 1487079542.490021   0.184 bk-7.3.1ce:   dotbk .bkgui config-gui = 0 mem=15.3M
+@zenyatta 1487079544.134197   1.828 bk-7.3.1ce:   sane
+@zenyatta 1487079544.136314   1.830 bk-7.3.1ce:   sane = 0 mem=17.1M
+@zenyatta 1487079544.157073   1.851 bk-7.3.1ce:   dotbk
+@zenyatta 1487079544.157148   1.851 bk-7.3.1ce:   dotbk = 0 mem=17.1M
+@zenyatta 1487079544.173933   1.867 bk-7.3.1ce:   root
+@zenyatta 1487079544.174011   1.868 bk-7.3.1ce:   root = 0 mem=17.1M
+@zenyatta 1487079544.194698   1.888 bk-7.3.1ce:   repotype
+@zenyatta 1487079544.194788   1.888 bk-7.3.1ce:   repotype = 0 mem=17.1M
+@zenyatta 1487079544.198348   1.892 bk-7.3.1ce:   lock -r -t --name=citool
+@zenyatta 1487079544.201429   1.895 bk-7.3.1ce:     lock -r -t --name=citool
+@zenyatta 1487079544.202098   1.896 bk-7.3.1ce:       obtain read lock (8139)
+@zenyatta 1487079544.202423   1.896 bk-7.3.1ce:   lock -r -t --name=citool = 0 mem=17.2M
+@zenyatta 1487079544.219318   1.913 bk-7.3.1ce:   nfiles --cache-only
+@zenyatta 1487079544.219442   1.913 bk-7.3.1ce:   nfiles --cache-only = 0 mem=17.2M
+@zenyatta 1487079544.234414   1.928 bk-7.3.1ce:   cat BitKeeper/templates/commit
+@zenyatta 1487079544.234625   1.928 bk-7.3.1ce:   cat BitKeeper/templates/commit = 1 mem=17.2M
+@zenyatta 1487079544.252316   1.946 bk-7.3.1ce:   sfiles --gui -vgcpA -x --relpath=/home/genji/workspace/bkexample
+@zenyatta 1487079544.253820   1.947 bk-7.3.1ce:   sfiles --gui -vgcpA -x --relpath=/home/genji/workspace/bkexample = 0 mem=17.2M
+@zenyatta 1487079544.310244   2.004 bk-7.3.1ce:   cfile print /home/genji/workspace/bkexample/ChangeSet
+@zenyatta 1487079544.310376   2.004 bk-7.3.1ce:   cfile print /home/genji/workspace/bkexample/ChangeSet = 2 mem=17.2M
+@zenyatta 1487079544.393730   2.087 bk-7.3.1ce:   cfile print /home/genji/workspace/bkexample/ChangeSet
+@zenyatta 1487079544.393816   2.087 bk-7.3.1ce:   cfile print /home/genji/workspace/bkexample/ChangeSet = 2 mem=17.2M
+@zenyatta 1487079544.433349   2.127 bk-7.3.1ce:   cfile dump --prefix=2
+@zenyatta 1487079544.448184   2.142 bk-7.3.1ce:   cfile print /home/genji/workspace/bkexample/ChangeSet
+@zenyatta 1487079544.448349   2.142 bk-7.3.1ce:   cfile print /home/genji/workspace/bkexample/ChangeSet = 2 mem=17.2M
+@zenyatta 1487079544.493219   2.187 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.5 /home/genji/workspace/bkexample/BitKeeper/etc/ignore
+@zenyatta 1487079544.494149   2.188 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.5 /home/genji/workspace/bkexample/BitKeeper/etc/ignore = 0 mem=17.3M
+@zenyatta 1487079544.517913   2.211 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.4 /home/genji/workspace/bkexample/BitKeeper/etc/ignore
+@zenyatta 1487079544.518196   2.212 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.4 /home/genji/workspace/bkexample/BitKeeper/etc/ignore = 0 mem=17.3M
+@zenyatta 1487079544.541898   2.235 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.3 /home/genji/workspace/bkexample/BitKeeper/etc/ignore
+@zenyatta 1487079544.542177   2.236 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.3 /home/genji/workspace/bkexample/BitKeeper/etc/ignore = 0 mem=17.3M
+@zenyatta 1487079544.593907   2.287 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.2 /home/genji/workspace/bkexample/BitKeeper/etc/ignore
+@zenyatta 1487079544.594197   2.288 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.2 /home/genji/workspace/bkexample/BitKeeper/etc/ignore = 0 mem=17.3M
+@zenyatta 1487079544.660883   2.354 bk-7.3.1ce:   cfile dump --prefix=2 = 0 mem=17.2M
+@zenyatta 1487079582.010352  39.704 bk-7.3.1ce:   cfile save /home/genji/workspace/bkexample/ChangeSet
+@zenyatta 1487079582.010563  39.704 bk-7.3.1ce:   cfile save /home/genji/workspace/bkexample/ChangeSet = 0 mem=17.1M
+@zenyatta 1487079582.020750  39.714 bk-7.3.1ce:   cfile dump --prefix=2
+@zenyatta 1487079582.023222  39.717 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.5 /home/genji/workspace/bkexample/BitKeeper/etc/ignore
+@zenyatta 1487079582.023309  39.717 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.5 /home/genji/workspace/bkexample/BitKeeper/etc/ignore = 0 mem=17.1M
+@zenyatta 1487079582.061128  39.755 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.4 /home/genji/workspace/bkexample/BitKeeper/etc/ignore
+@zenyatta 1487079582.061927  39.755 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.4 /home/genji/workspace/bkexample/BitKeeper/etc/ignore = 0 mem=17.2M
+@zenyatta 1487079582.068212  39.762 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.3 /home/genji/workspace/bkexample/BitKeeper/etc/ignore
+@zenyatta 1487079582.068301  39.762 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.3 /home/genji/workspace/bkexample/BitKeeper/etc/ignore = 0 mem=17.2M
+@zenyatta 1487079582.083835  39.777 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.2 /home/genji/workspace/bkexample/BitKeeper/etc/ignore
+@zenyatta 1487079582.084113  39.778 bk-7.3.1ce:   prs "-hd$each(:C:){(:C:)
+}" -r1.2 /home/genji/workspace/bkexample/BitKeeper/etc/ignore = 0 mem=17.2M
+@zenyatta 1487079582.103872  39.797 bk-7.3.1ce:   cfile dump --prefix=2 = 0 mem=17.1M
+@zenyatta 1487079583.261072  40.955 bk-7.3.1ce:   _kill 127.0.0.1:39195
+@zenyatta 1487079583.272057  40.966 bk-7.3.1ce:       read unlock (8139)
+@zenyatta 1487079583.276667  40.970 bk-7.3.1ce:   _kill 127.0.0.1:39195 = 0 mem=17.2M
+@zenyatta 1487079583.291595  40.985 bk-7.3.1ce:   lock -q
+@zenyatta 1487079583.291766  40.985 bk-7.3.1ce:   lock -q = 0 mem=17.1M
+@zenyatta 1487079583.305046  40.999 bk-7.3.1ce:   sfiles -pC /home/genji/workspace/bkexample/BitKeeper/etc/ignore
+@zenyatta 1487079583.305306  40.999 bk-7.3.1ce:   sfiles -pC /home/genji/workspace/bkexample/BitKeeper/etc/ignore = 0 mem=17.2M
+@zenyatta 1487079583.335486  41.029 bk-7.3.1ce:   commit -S -dq -l/tmp/bk_bk_cfiles_8129_1.tmp -Y/tmp/bk_bk_cicomment_8129_2.tmp
+@zenyatta 1487079583.338253  41.032 bk-7.3.1ce:     obtain write lock (8160)
+@zenyatta 1487079583.359964  41.053 bk-7.3.1ce:     check -cM -
+@zenyatta 1487079583.380600  41.074 bk-7.3.1ce:     check -cM - = 0
+@zenyatta 1487079583.381060  41.075 bk-7.3.1ce:     write unlock (8160)
+@zenyatta 1487079583.381157  41.075 bk-7.3.1ce:     downgrade write lock (8160)
+@zenyatta 1487079583.381318  41.075 bk-7.3.1ce:   commit -S -dq -l/tmp/bk_bk_cfiles_8129_1.tmp -Y/tmp/bk_bk_cicomment_8129_2.tmp = 0 mem=17.2M
+@zenyatta 1487079583.381355  41.075 bk-7.3.1ce:   read unlock (8160)
+@zenyatta 1487079583.449366  41.143 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/ChangeSet
+@zenyatta 1487079583.449498  41.143 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/ChangeSet = 0 mem=17.2M
+@zenyatta 1487079583.473685  41.167 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/BitKeeper/etc/ignore@1.5
+@zenyatta 1487079583.473818  41.167 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/BitKeeper/etc/ignore@1.5 = -1 mem=17.2M
+@zenyatta 1487079583.477105  41.171 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/BitKeeper/etc/ignore@1.4
+@zenyatta 1487079583.477209  41.171 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/BitKeeper/etc/ignore@1.4 = -1 mem=17.2M
+@zenyatta 1487079583.481664  41.175 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/BitKeeper/etc/ignore@1.3
+@zenyatta 1487079583.481779  41.175 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/BitKeeper/etc/ignore@1.3 = -1 mem=17.2M
+@zenyatta 1487079583.487697  41.181 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/BitKeeper/etc/ignore@1.2
+@zenyatta 1487079583.487825  41.181 bk-7.3.1ce:   cfile rm /home/genji/workspace/bkexample/BitKeeper/etc/ignore@1.2 = -1 mem=17.2M
+@zenyatta 1487079583.838661  41.532 bk-7.3.1ce: citool = 0
+@zenyatta 1487079620.601549   0.052 bk-7.3.1ce:         obtain read lock (8207)
+@zenyatta 1487079620.601585   0.052 bk-7.3.1ce:         "remote clone" -z0 -l
+@zenyatta 1487079620.617432   0.068 bk-7.3.1ce:         sfio --clone -oq -L -m --parents
+@zenyatta 1487079620.618619   0.069 bk-7.3.1ce:           _sfiles_clone -L -m2 -p
+@zenyatta 1487079620.619083   0.070 bk-7.3.1ce:           _sfiles_clone -L -m2 -p = 0
+@zenyatta 1487079620.620083   0.071 bk-7.3.1ce:         sfio --clone -oq -L -m --parents = 0
+@zenyatta 1487079620.624122   0.075 bk-7.3.1ce:       "remote clone" -z0 -l = 0 xfered=1621
+@zenyatta 1487079620.700739   0.151 bk-7.3.1ce:       read unlock (8207)
+@zenyatta 1487079620.832086   0.283 bk-7.3.1ce:           bk -q checked 58a3089fDoPzQxXoydiUyOyiEWQGfA
+@zenyatta 1487079620.836358   0.287 bk-7.3.1ce:           checked 58a3089fDoPzQxXoydiUyOyiEWQGfA
+@zenyatta 1487079620.836790   0.287 bk-7.3.1ce:           checked 58a3089fDoPzQxXoydiUyOyiEWQGfA = 0
+@zenyatta 1487079620.837321   0.288 bk-7.3.1ce:         bk -q checked 58a3089fDoPzQxXoydiUyOyiEWQGfA = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF
+@zenyatta 1487081018.054103   0.012 bk-7.3.1ce:           obtain read lock (8900)
+@zenyatta 1487081018.054200   0.012 bk-7.3.1ce:           synckeys -S
+@zenyatta 1487081018.116881   0.074 bk-7.3.1ce:         synckeys -S = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF keysin=290(4) keysout=0(0)
+@zenyatta 1487081018.123808   0.081 bk-7.3.1ce:         read unlock (8900)
+@zenyatta 1487081018.157509   0.115 bk-7.3.1ce:           obtain read lock (8903)
+@zenyatta 1487081018.157542   0.115 bk-7.3.1ce:           "remote changes part1" -K
+@zenyatta 1487081018.165719   0.123 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF keysin=290(4) keysout=0(0)
+@zenyatta 1487081018.166354   0.124 bk-7.3.1ce:           "remote changes part2"
+@zenyatta 1487081018.166891   0.124 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF
+@zenyatta 1487081018.166965   0.124 bk-7.3.1ce:         read unlock (8903)
+@zenyatta 1487081022.007188   0.029 bk-7.3.1ce:         obtain write lock (8906)
+@zenyatta 1487081022.007235   0.029 bk-7.3.1ce:         "remote push part1" -z0
+@zenyatta 1487081022.015743   0.037 bk-7.3.1ce:       "remote push part1" -z0 = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0 keysin=290(4) keysout=0(0)
+@zenyatta 1487081022.019885   0.041 bk-7.3.1ce:         "remote push part2" -z0
+@zenyatta 1487081022.025686   0.047 bk-7.3.1ce:         takepatch -c --progress
+@zenyatta 1487081022.037181   0.059 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@zenyatta 1487081022.042791   0.064 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@zenyatta 1487081022.042876   0.064 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@zenyatta 1487081022.125241   0.147 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed
+@zenyatta 1487081022.125598   0.147 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed = 0
+@zenyatta 1487081022.126310   0.148 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@zenyatta 1487081022.128341   0.150 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@zenyatta 1487081022.133385   0.155 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@zenyatta 1487081022.161534   0.183 bk-7.3.1ce:           gfiles RESYNC
+@zenyatta 1487081022.162160   0.184 bk-7.3.1ce:           gfiles RESYNC = 0
+@zenyatta 1487081022.163021   0.185 bk-7.3.1ce:         takepatch -c --progress = 0 psize=4803
+@zenyatta 1487081022.165517   0.187 bk-7.3.1ce:         sfiles
+@zenyatta 1487081022.165959   0.187 bk-7.3.1ce:         sfiles = 0
+@zenyatta 1487081022.191235   0.213 bk-7.3.1ce:         _find . -name "m.*"
+@zenyatta 1487081022.191359   0.213 bk-7.3.1ce:         _find . -name "m.*" = 0
+@zenyatta 1487081022.210430   0.232 bk-7.3.1ce:         gfiles -rpC
+@zenyatta 1487081022.210911   0.232 bk-7.3.1ce:         gfiles -rpC = 0
+@zenyatta 1487081022.233360   0.255 bk-7.3.1ce:         gfiles -c
+@zenyatta 1487081022.233810   0.255 bk-7.3.1ce:         gfiles -c = 0
+@zenyatta 1487081022.235867   0.257 bk-7.3.1ce:         _find . -name "[mr].*"
+@zenyatta 1487081022.236233   0.258 bk-7.3.1ce:         _find . -name "[mr].*" = 0
+@zenyatta 1487081022.280671   0.302 bk-7.3.1ce:         sfiles -r RESYNC
+@zenyatta 1487081022.281138   0.303 bk-7.3.1ce:         sfiles -r RESYNC = 0
+@zenyatta 1487081022.290657   0.312 bk-7.3.1ce:         sfio -omq
+@zenyatta 1487081022.290976   0.313 bk-7.3.1ce:         sfio -omq = 0
+@zenyatta 1487081022.306742   0.328 bk-7.3.1ce:         check -c -N5 -- -
+@zenyatta 1487081022.308477   0.330 bk-7.3.1ce:         check -c -N5 -- - = 0
+@zenyatta 1487081022.315430   0.337 bk-7.3.1ce:         check -ac -- -
+@zenyatta 1487081022.318710   0.340 bk-7.3.1ce:           gfiles
+@zenyatta 1487081022.319449   0.341 bk-7.3.1ce:           gfiles = 0
+@zenyatta 1487081022.332677   0.354 bk-7.3.1ce:         check -ac -- - = 0
+@zenyatta 1487081022.333145   0.355 bk-7.3.1ce:         write unlock (8906)
+@zenyatta 1487081022.333244   0.355 bk-7.3.1ce:         downgrade write lock (8906)
+@zenyatta 1487081022.333403   0.355 bk-7.3.1ce:       "remote push part2" -z0 = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=629
+@zenyatta 1487081022.333464   0.355 bk-7.3.1ce:       read unlock (8906)
+@zenyatta 1487081049.593562   0.005 bk-7.3.1ce:         obtain read lock (8943)
+@zenyatta 1487081049.593595   0.005 bk-7.3.1ce:         "remote clone" -z0 -l
+@zenyatta 1487081049.598342   0.010 bk-7.3.1ce:         sfio --clone -oq -L -m --parents
+@zenyatta 1487081049.602386   0.014 bk-7.3.1ce:           _sfiles_clone -L -m2 -p
+@zenyatta 1487081049.602852   0.014 bk-7.3.1ce:           _sfiles_clone -L -m2 -p = 0
+@zenyatta 1487081049.609475   0.021 bk-7.3.1ce:         sfio --clone -oq -L -m --parents = 0
+@zenyatta 1487081049.622538   0.034 bk-7.3.1ce:       "remote clone" -z0 -l = 0 xfered=1963
+@zenyatta 1487081049.696375   0.108 bk-7.3.1ce:       read unlock (8943)
+@zenyatta 1487081126.468689   0.077 bk-7.3.1ce:           obtain read lock (8970)
+@zenyatta 1487081126.468722   0.077 bk-7.3.1ce:           synckeys -S
+@zenyatta 1487081126.473183   0.082 bk-7.3.1ce:         synckeys -S = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=290(4) keysout=0(0)
+@zenyatta 1487081126.473332   0.082 bk-7.3.1ce:         read unlock (8970)
+@zenyatta 1487081126.482091   0.091 bk-7.3.1ce:           obtain read lock (8973)
+@zenyatta 1487081126.482119   0.091 bk-7.3.1ce:           "remote changes part1" -K
+@zenyatta 1487081126.483916   0.092 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=290(4) keysout=0(0)
+@zenyatta 1487081126.492406   0.101 bk-7.3.1ce:           "remote changes part2"
+@zenyatta 1487081126.492681   0.101 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@zenyatta 1487081126.492762   0.101 bk-7.3.1ce:         read unlock (8973)
+@zenyatta 1487081396.752225   0.060 bk-7.3.1ce:           obtain read lock (9049)
+@zenyatta 1487081396.752283   0.060 bk-7.3.1ce:           synckeys -S
+@zenyatta 1487081396.755530   0.063 bk-7.3.1ce:         synckeys -S = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF keysin=279(4) keysout=0(0)
+@zenyatta 1487081396.765000   0.073 bk-7.3.1ce:         read unlock (9049)
+@zenyatta 1487081396.793644   0.101 bk-7.3.1ce:           obtain read lock (9052)
+@zenyatta 1487081396.793673   0.101 bk-7.3.1ce:           "remote changes part1" -K
+@zenyatta 1487081396.795931   0.103 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF keysin=279(4) keysout=0(0)
+@zenyatta 1487081396.801924   0.109 bk-7.3.1ce:           "remote changes part2"
+@zenyatta 1487081396.802351   0.110 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF
+@zenyatta 1487081396.802426   0.110 bk-7.3.1ce:         read unlock (9052)
+@zenyatta 1487081399.265561   0.020 bk-7.3.1ce:         obtain write lock (9055)
+@zenyatta 1487081399.265599   0.020 bk-7.3.1ce:         "remote push part1" -z0
+@zenyatta 1487081399.291935   0.046 bk-7.3.1ce:       "remote push part1" -z0 = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0 keysin=279(4) keysout=0(0)
+@zenyatta 1487081399.305378   0.060 bk-7.3.1ce:         "remote push part2" -z0
+@zenyatta 1487081399.369608   0.124 bk-7.3.1ce:         takepatch -c --progress
+@zenyatta 1487081399.392470   0.147 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@zenyatta 1487081399.395370   0.150 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@zenyatta 1487081399.396560   0.151 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@zenyatta 1487081399.398395   0.153 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed
+@zenyatta 1487081399.398670   0.153 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed = 0
+@zenyatta 1487081399.400421   0.155 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@zenyatta 1487081399.404107   0.159 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@zenyatta 1487081399.404759   0.159 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@zenyatta 1487081399.419476   0.174 bk-7.3.1ce:           gfiles RESYNC
+@zenyatta 1487081399.421333   0.176 bk-7.3.1ce:           gfiles RESYNC = 0
+@zenyatta 1487081399.430307   0.185 bk-7.3.1ce:         takepatch -c --progress = 0 psize=1190
+@zenyatta 1487081399.432690   0.187 bk-7.3.1ce:         sfiles
+@zenyatta 1487081399.433130   0.188 bk-7.3.1ce:         sfiles = 0
+@zenyatta 1487081399.435224   0.190 bk-7.3.1ce:         _find . -name "m.*"
+@zenyatta 1487081399.435953   0.190 bk-7.3.1ce:         _find . -name "m.*" = 0
+@zenyatta 1487081399.445366   0.200 bk-7.3.1ce:         gfiles -rpC
+@zenyatta 1487081399.445821   0.200 bk-7.3.1ce:         gfiles -rpC = 0
+@zenyatta 1487081399.459080   0.214 bk-7.3.1ce:         gfiles -c
+@zenyatta 1487081399.459375   0.214 bk-7.3.1ce:         gfiles -c = 0
+@zenyatta 1487081399.479082   0.234 bk-7.3.1ce:         _find . -name "[mr].*"
+@zenyatta 1487081399.479375   0.234 bk-7.3.1ce:         _find . -name "[mr].*" = 0
+@zenyatta 1487081399.487291   0.242 bk-7.3.1ce:         sfiles -r RESYNC
+@zenyatta 1487081399.487832   0.242 bk-7.3.1ce:         sfiles -r RESYNC = 0
+@zenyatta 1487081399.498357   0.253 bk-7.3.1ce:         sfio -omq
+@zenyatta 1487081399.499076   0.254 bk-7.3.1ce:         sfio -omq = 0
+@zenyatta 1487081399.539375   0.294 bk-7.3.1ce:         check -c -N2 -- -
+@zenyatta 1487081399.541440   0.296 bk-7.3.1ce:         check -c -N2 -- - = 0
+@zenyatta 1487081399.551732   0.306 bk-7.3.1ce:         write unlock (9055)
+@zenyatta 1487081399.551827   0.306 bk-7.3.1ce:         downgrade write lock (9055)
+@zenyatta 1487081399.551959   0.306 bk-7.3.1ce:       "remote push part2" -z0 = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=1504
+@zenyatta 1487081399.552019   0.307 bk-7.3.1ce:       read unlock (9055)
+@reinhardt 1487081502.166479   0.041 bk-7.3.1ce:           obtain read lock (9122)
+@reinhardt 1487081502.166509   0.041 bk-7.3.1ce:           synckeys -S
+@reinhardt 1487081502.179363   0.054 bk-7.3.1ce:         synckeys -S = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=280(4) keysout=78(1)
+@reinhardt 1487081502.179558   0.054 bk-7.3.1ce:         read unlock (9122)
+@reinhardt 1487081502.183330   0.058 bk-7.3.1ce:           obtain read lock (9125)
+@reinhardt 1487081502.183362   0.058 bk-7.3.1ce:           "remote changes part1" -K
+@reinhardt 1487081502.201139   0.076 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=280(4) keysout=78(1)
+@reinhardt 1487081502.205342   0.080 bk-7.3.1ce:           "remote changes part2" -a -n -d.
+@reinhardt 1487081502.210883   0.085 bk-7.3.1ce:           changes -a -n -d. -
+@reinhardt 1487081502.211278   0.086 bk-7.3.1ce:           changes -a -n -d. - = 0
+@reinhardt 1487081502.212089   0.087 bk-7.3.1ce:           read unlock (9125)
+@reinhardt 1487081502.212154   0.087 bk-7.3.1ce:         "remote changes part2" -a -n -d. = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@reinhardt 1487081506.564747   0.019 bk-7.3.1ce:         obtain read lock (9129)
+@reinhardt 1487081506.564774   0.019 bk-7.3.1ce:         "remote pull part1"
+@reinhardt 1487081506.568970   0.023 bk-7.3.1ce:       "remote pull part1" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=0
+@reinhardt 1487081506.608294   0.063 bk-7.3.1ce:         "remote pull part2" -z0
+@reinhardt 1487081506.612326   0.067 bk-7.3.1ce:         makepatch --bk-merge -
+@reinhardt 1487081506.617467   0.072 bk-7.3.1ce:           _adler32
+@reinhardt 1487081506.624661   0.079 bk-7.3.1ce:           _adler32 = 0
+@reinhardt 1487081506.625638   0.080 bk-7.3.1ce:         makepatch --bk-merge - = 0
+@reinhardt 1487081506.626406   0.081 bk-7.3.1ce:       "remote pull part2" -z0 = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=1548
+@reinhardt 1487081506.718152   0.173 bk-7.3.1ce:       read unlock (9129)
+@reinhardt 1487081519.144941   0.014 bk-7.3.1ce:           obtain read lock (9159)
+@reinhardt 1487081519.144987   0.014 bk-7.3.1ce:           synckeys -S
+@reinhardt 1487081519.190774   0.060 bk-7.3.1ce:         synckeys -S = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=280(4) keysout=0(0)
+@reinhardt 1487081519.196720   0.066 bk-7.3.1ce:         read unlock (9159)
+@reinhardt 1487081519.215420   0.085 bk-7.3.1ce:           obtain read lock (9162)
+@reinhardt 1487081519.215447   0.085 bk-7.3.1ce:           "remote changes part1" -K
+@reinhardt 1487081519.276882   0.146 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=280(4) keysout=0(0)
+@reinhardt 1487081519.277292   0.147 bk-7.3.1ce:           "remote changes part2"
+@reinhardt 1487081519.277568   0.147 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@reinhardt 1487081519.277641   0.147 bk-7.3.1ce:         read unlock (9162)
+@reinhardt 1487081525.358979   0.005 bk-7.3.1ce:         obtain write lock (9165)
+@reinhardt 1487081525.359014   0.006 bk-7.3.1ce:         "remote push part1" -z0
+@reinhardt 1487081525.361668   0.008 bk-7.3.1ce:       "remote push part1" -z0 = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=0 keysin=280(4) keysout=0(0)
+@reinhardt 1487081525.371293   0.018 bk-7.3.1ce:         "remote push part2" -z0
+@reinhardt 1487081525.381952   0.028 bk-7.3.1ce:         takepatch -c --progress
+@reinhardt 1487081525.424939   0.071 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@reinhardt 1487081525.424939   0.071 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@reinhardt 1487081525.430674   0.077 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@reinhardt 1487081525.432679   0.079 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed
+@reinhardt 1487081525.432936   0.079 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed = 0
+@reinhardt 1487081525.450063   0.097 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@reinhardt 1487081525.455343   0.102 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@reinhardt 1487081525.455984   0.102 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@reinhardt 1487081525.458375   0.105 bk-7.3.1ce:           gfiles RESYNC
+@reinhardt 1487081525.458859   0.105 bk-7.3.1ce:           gfiles RESYNC = 0
+@reinhardt 1487081525.459795   0.106 bk-7.3.1ce:         takepatch -c --progress = 0 psize=2054
+@reinhardt 1487081525.461911   0.108 bk-7.3.1ce:         sfiles
+@reinhardt 1487081525.462418   0.109 bk-7.3.1ce:         sfiles = 0
+@reinhardt 1487081525.465681   0.112 bk-7.3.1ce:         _find . -name "m.*"
+@reinhardt 1487081525.466046   0.113 bk-7.3.1ce:         _find . -name "m.*" = 0
+@reinhardt 1487081525.475717   0.122 bk-7.3.1ce:         gfiles -rpC
+@reinhardt 1487081525.476235   0.123 bk-7.3.1ce:         gfiles -rpC = 0
+@reinhardt 1487081525.478169   0.125 bk-7.3.1ce:         gfiles -c
+@reinhardt 1487081525.479345   0.126 bk-7.3.1ce:         gfiles -c = 0
+@reinhardt 1487081525.481106   0.128 bk-7.3.1ce:         _find . -name "[mr].*"
+@reinhardt 1487081525.481370   0.128 bk-7.3.1ce:         _find . -name "[mr].*" = 0
+@reinhardt 1487081525.483331   0.130 bk-7.3.1ce:         sfiles -r RESYNC
+@reinhardt 1487081525.483767   0.130 bk-7.3.1ce:         sfiles -r RESYNC = 0
+@reinhardt 1487081525.486982   0.133 bk-7.3.1ce:         sfio -omq
+@reinhardt 1487081525.487376   0.134 bk-7.3.1ce:         sfio -omq = 0
+@reinhardt 1487081525.490493   0.137 bk-7.3.1ce:         check -c -N2 -- -
+@reinhardt 1487081525.492112   0.139 bk-7.3.1ce:         check -c -N2 -- - = 0
+@reinhardt 1487081525.507584   0.154 bk-7.3.1ce:         check -ac -- -
+@reinhardt 1487081525.516104   0.163 bk-7.3.1ce:           gfiles
+@reinhardt 1487081525.519955   0.166 bk-7.3.1ce:           gfiles = 0
+@reinhardt 1487081525.523588   0.170 bk-7.3.1ce:         check -ac -- - = 0
+@reinhardt 1487081525.535117   0.182 bk-7.3.1ce:         write unlock (9165)
+@reinhardt 1487081525.535277   0.182 bk-7.3.1ce:         downgrade write lock (9165)
+@reinhardt 1487081525.535407   0.182 bk-7.3.1ce:       "remote push part2" -z0 = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=1509
+@reinhardt 1487081525.535464   0.182 bk-7.3.1ce:       read unlock (9165)
+@zenyatta 1487082149.901739   0.012 bk-7.3.1ce:         obtain read lock (9590)
+@zenyatta 1487082149.901771   0.012 bk-7.3.1ce:         "remote pull part1"
+@zenyatta 1487082149.950902   0.061 bk-7.3.1ce:       "remote pull part1" = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0
+@zenyatta 1487082149.953654   0.064 bk-7.3.1ce:         "remote pull part2" -z0 -q
+@zenyatta 1487082149.963897   0.074 bk-7.3.1ce:         makepatch --bk-merge -
+@zenyatta 1487082149.969002   0.080 bk-7.3.1ce:           _adler32
+@zenyatta 1487082149.969425   0.080 bk-7.3.1ce:           _adler32 = 0
+@zenyatta 1487082149.981295   0.092 bk-7.3.1ce:         makepatch --bk-merge - = 0
+@zenyatta 1487082149.983873   0.094 bk-7.3.1ce:       "remote pull part2" -z0 -q = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=2411
+@zenyatta 1487082150.055229   0.166 bk-7.3.1ce:       read unlock (9590)
+@zenyatta 1487082566.034268   0.038 bk-7.3.1ce:         obtain write lock (9807)
+@zenyatta 1487082566.034428   0.038 bk-7.3.1ce:         "remote push part1" -z0 -q
+@zenyatta 1487082566.061478   0.065 bk-7.3.1ce:       "remote push part1" -z0 -q = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0 keysin=358(5) keysout=0(0)
+@zenyatta 1487082566.062536   0.066 bk-7.3.1ce:         "remote push part2" -z0 -q
+@zenyatta 1487082566.080937   0.084 bk-7.3.1ce:         takepatch -c -q
+@zenyatta 1487082566.085909   0.089 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@zenyatta 1487082566.088826   0.092 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@zenyatta 1487082566.090304   0.094 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@zenyatta 1487082566.093979   0.097 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed
+@zenyatta 1487082566.101079   0.105 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed = 0
+@zenyatta 1487082566.105740   0.109 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@zenyatta 1487082566.111710   0.115 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@zenyatta 1487082566.115727   0.119 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@zenyatta 1487082566.117181   0.121 bk-7.3.1ce:         takepatch -c -q = 0 psize=2934
+@zenyatta 1487082566.133281   0.137 bk-7.3.1ce:         sfiles
+@zenyatta 1487082566.133750   0.137 bk-7.3.1ce:         sfiles = 0
+@zenyatta 1487082566.155590   0.159 bk-7.3.1ce:         _find . -name "m.*"
+@zenyatta 1487082566.156615   0.160 bk-7.3.1ce:         _find . -name "m.*" = 0
+@zenyatta 1487082566.162344   0.166 bk-7.3.1ce:         gfiles -rpC
+@zenyatta 1487082566.162779   0.166 bk-7.3.1ce:         gfiles -rpC = 0
+@zenyatta 1487082566.165093   0.169 bk-7.3.1ce:         gfiles -c
+@zenyatta 1487082566.165299   0.169 bk-7.3.1ce:         gfiles -c = 0
+@zenyatta 1487082566.167195   0.171 bk-7.3.1ce:         _find . -name "[mr].*"
+@zenyatta 1487082566.167546   0.171 bk-7.3.1ce:         _find . -name "[mr].*" = 0
+@zenyatta 1487082566.169768   0.173 bk-7.3.1ce:         sfiles -r RESYNC
+@zenyatta 1487082566.170183   0.174 bk-7.3.1ce:         sfiles -r RESYNC = 0
+@zenyatta 1487082566.176905   0.180 bk-7.3.1ce:         sfio -omq
+@zenyatta 1487082566.177351   0.181 bk-7.3.1ce:         sfio -omq = 0
+@zenyatta 1487082566.208374   0.212 bk-7.3.1ce:         check -c -N4 -- -
+@zenyatta 1487082566.210572   0.214 bk-7.3.1ce:         check -c -N4 -- - = 0
+@zenyatta 1487082566.238982   0.242 bk-7.3.1ce:         check -ac -- -
+@zenyatta 1487082566.240307   0.244 bk-7.3.1ce:           gfiles
+@zenyatta 1487082566.240765   0.244 bk-7.3.1ce:           gfiles = 0
+@zenyatta 1487082566.246002   0.250 bk-7.3.1ce:         check -ac -- - = 0
+@zenyatta 1487082566.247473   0.251 bk-7.3.1ce:         write unlock (9807)
+@zenyatta 1487082566.247572   0.251 bk-7.3.1ce:         downgrade write lock (9807)
+@zenyatta 1487082566.247685   0.251 bk-7.3.1ce:       "remote push part2" -z0 -q = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=3510
+@zenyatta 1487082566.247946   0.251 bk-7.3.1ce:       read unlock (9807)
+@reinhardt 1487082614.487421   0.058 bk-7.3.1ce:           obtain read lock (9848)
+@reinhardt 1487082614.487463   0.058 bk-7.3.1ce:           synckeys -S
+@reinhardt 1487082614.507786   0.078 bk-7.3.1ce:         synckeys -S = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=359(5) keysout=156(2)
+@reinhardt 1487082614.507986   0.078 bk-7.3.1ce:         read unlock (9848)
+@reinhardt 1487082614.511433   0.082 bk-7.3.1ce:           obtain read lock (9851)
+@reinhardt 1487082614.511460   0.082 bk-7.3.1ce:           "remote changes part1" -K
+@reinhardt 1487082614.513148   0.084 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=359(5) keysout=156(2)
+@reinhardt 1487082614.544292   0.115 bk-7.3.1ce:           "remote changes part2" -a -n -d.
+@reinhardt 1487082614.547500   0.118 bk-7.3.1ce:           changes -a -n -d. -
+@reinhardt 1487082614.549351   0.120 bk-7.3.1ce:           changes -a -n -d. - = 0
+@reinhardt 1487082614.551743   0.122 bk-7.3.1ce:           read unlock (9851)
+@reinhardt 1487082614.551988   0.122 bk-7.3.1ce:         "remote changes part2" -a -n -d. = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@reinhardt 1487082627.462890   0.048 bk-7.3.1ce:         obtain read lock (9855)
+@reinhardt 1487082627.462922   0.048 bk-7.3.1ce:         "remote pull part1"
+@reinhardt 1487082627.475574   0.061 bk-7.3.1ce:       "remote pull part1" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=0
+@reinhardt 1487082627.479303   0.065 bk-7.3.1ce:         "remote pull part2" -z0 -q
+@reinhardt 1487082627.484168   0.070 bk-7.3.1ce:         makepatch --bk-merge -
+@reinhardt 1487082627.487345   0.073 bk-7.3.1ce:           _adler32
+@reinhardt 1487082627.487673   0.073 bk-7.3.1ce:           _adler32 = 0
+@reinhardt 1487082627.488237   0.074 bk-7.3.1ce:         makepatch --bk-merge - = 0
+@reinhardt 1487082627.488515   0.074 bk-7.3.1ce:       "remote pull part2" -z0 -q = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=3292
+@reinhardt 1487082627.595862   0.181 bk-7.3.1ce:       read unlock (9855)
+@reinhardt 1487083398.298927   0.021 bk-7.3.1ce:           obtain read lock (10147)
+@reinhardt 1487083398.298957   0.021 bk-7.3.1ce:           synckeys -S
+@reinhardt 1487083398.341074   0.064 bk-7.3.1ce:         synckeys -S = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=350(5) keysout=156(2)
+@reinhardt 1487083398.341404   0.064 bk-7.3.1ce:         read unlock (10147)
+@reinhardt 1487083398.363658   0.086 bk-7.3.1ce:           obtain read lock (10150)
+@reinhardt 1487083398.363686   0.086 bk-7.3.1ce:           "remote changes part1" -K
+@reinhardt 1487083398.374241   0.097 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=350(5) keysout=156(2)
+@reinhardt 1487083398.378978   0.101 bk-7.3.1ce:           "remote changes part2"
+@reinhardt 1487083398.379244   0.102 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@reinhardt 1487083398.379367   0.102 bk-7.3.1ce:         read unlock (10150)
+@reinhardt 1487083401.096913   0.036 bk-7.3.1ce:         obtain write lock (10153)
+@reinhardt 1487083401.096955   0.036 bk-7.3.1ce:         "remote push part1" -z0 -q
+@reinhardt 1487083401.103331   0.043 bk-7.3.1ce:       "remote push part1" -z0 -q = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=0 keysin=350(5) keysout=156(2)
+@reinhardt 1487083401.105796   0.045 bk-7.3.1ce:         "remote push part2" -z0 -q
+@reinhardt 1487083401.160651   0.100 bk-7.3.1ce:         takepatch -c -q
+@reinhardt 1487083401.167650   0.107 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@reinhardt 1487083401.170332   0.110 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@reinhardt 1487083401.227160   0.167 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge
+@reinhardt 1487083401.231349   0.171 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed
+@reinhardt 1487083401.231616   0.171 bk-7.3.1ce:             annotate -ar BitKeeper/etc/collapsed = 0
+@reinhardt 1487083401.232298   0.172 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@reinhardt 1487083401.233361   0.173 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@reinhardt 1487083401.234307   0.174 bk-7.3.1ce:           takepatch --Nway --fast --bkmerge = 0
+@reinhardt 1487083401.237494   0.177 bk-7.3.1ce:         takepatch -c -q = 0 psize=10245
+@reinhardt 1487083401.243203   0.183 bk-7.3.1ce:         sfiles
+@reinhardt 1487083401.244678   0.184 bk-7.3.1ce:         sfiles = 0
+@reinhardt 1487083401.249840   0.189 bk-7.3.1ce:         _find . -name "m.*"
+@reinhardt 1487083401.250310   0.190 bk-7.3.1ce:         _find . -name "m.*" = 0
+@reinhardt 1487083401.253601   0.193 bk-7.3.1ce:         gfiles -rpC
+@reinhardt 1487083401.254093   0.194 bk-7.3.1ce:         gfiles -rpC = 0
+@reinhardt 1487083401.256102   0.196 bk-7.3.1ce:         gfiles -c
+@reinhardt 1487083401.256300   0.196 bk-7.3.1ce:         gfiles -c = 0
+@reinhardt 1487083401.258200   0.198 bk-7.3.1ce:         _find . -name "[mr].*"
+@reinhardt 1487083401.259026   0.199 bk-7.3.1ce:         _find . -name "[mr].*" = 0
+@reinhardt 1487083401.260825   0.200 bk-7.3.1ce:         sfiles -r RESYNC
+@reinhardt 1487083401.261298   0.201 bk-7.3.1ce:         sfiles -r RESYNC = 0
+@reinhardt 1487083401.328711   0.268 bk-7.3.1ce:         sfio -omq
+@reinhardt 1487083401.329082   0.269 bk-7.3.1ce:         sfio -omq = 0
+@reinhardt 1487083401.351397   0.291 bk-7.3.1ce:         check -c -N5 -- -
+@reinhardt 1487083401.353847   0.293 bk-7.3.1ce:         check -c -N5 -- - = 0
+@reinhardt 1487083401.369200   0.309 bk-7.3.1ce:         check -ac -- -
+@reinhardt 1487083401.373632   0.313 bk-7.3.1ce:           gfiles
+@reinhardt 1487083401.374083   0.314 bk-7.3.1ce:           gfiles = 0
+@reinhardt 1487083401.384046   0.324 bk-7.3.1ce:         check -ac -- - = 0
+@reinhardt 1487083401.392677   0.332 bk-7.3.1ce:         write unlock (10153)
+@reinhardt 1487083401.392780   0.332 bk-7.3.1ce:         downgrade write lock (10153)
+@reinhardt 1487083401.392878   0.332 bk-7.3.1ce:       "remote push part2" -z0 -q = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=5286
+@reinhardt 1487083401.392964   0.332 bk-7.3.1ce:       read unlock (10153)
+@zenyatta 1487083449.307977   0.005 bk-7.3.1ce:         obtain read lock (10196)
+@zenyatta 1487083449.308007   0.006 bk-7.3.1ce:         "remote pull part1"
+@zenyatta 1487083449.334825   0.032 bk-7.3.1ce:       "remote pull part1" = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0
+@zenyatta 1487083449.354923   0.052 bk-7.3.1ce:         "remote pull part2" -z0 -q
+@zenyatta 1487083449.382965   0.080 bk-7.3.1ce:         makepatch --bk-merge -
+@zenyatta 1487083449.385648   0.083 bk-7.3.1ce:           _adler32
+@zenyatta 1487083449.385999   0.084 bk-7.3.1ce:           _adler32 = 0
+@zenyatta 1487083449.386426   0.084 bk-7.3.1ce:         makepatch --bk-merge - = 0
+@zenyatta 1487083449.388459   0.086 bk-7.3.1ce:       "remote pull part2" -z0 -q = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=10602
+@zenyatta 1487083449.474516   0.172 bk-7.3.1ce:       read unlock (10196)
+@zenyatta 1487089923.731980   0.000 bk-7.3.1ce: log
+@zenyatta 1487089923.751329   0.020 bk-7.3.1ce: log = 0
+@zenyatta 1487089939.334641   0.000 bk-7.3.1ce: get -p bkexlib.c 1.1
+@zenyatta 1487089939.334872   0.000 bk-7.3.1ce: get -p bkexlib.c 1.1 = 1
+@zenyatta 1487089954.655670   0.000 bk-7.3.1ce: get -p -r1.1 bkexlib.c
+@zenyatta 1487089954.655873   0.000 bk-7.3.1ce: get -p -r1.1 bkexlib.c = 1
+@zenyatta 1487089958.372147   0.000 bk-7.3.1ce: get -p -r1.1 bkexlib.cpp
+@zenyatta 1487089958.373234   0.001 bk-7.3.1ce: get -p -r1.1 bkexlib.cpp = 0
+@zenyatta 1487094457.234321   0.000 bk-7.3.1ce: log "-dD :DPN:\\t:REV:\\t:D_: :T: GMT:TZ:\\t:USER:(:RENAME:){\\t:DPN|PARENT:}\\n(:C:){C (:C:)\\n}" bkexbin.cpp
+@zenyatta 1487094457.234382   0.000 bk-7.3.1ce: log "-dD :DPN:\\t:REV:\\t:D_: :T: GMT:TZ:\\t:USER:(:RENAME:){\\t:DPN|PARENT:}\\n(:C:){C (:C:)\\n}" bkexbin.cpp = 0
+@zenyatta 1487094508.434904   0.000 bk-7.3.1ce: log "-dD :DPN:\\t:REV:\\t:D_: :T: GMT:TZ:\\t:USER:(:RENAME:){\\t:DPN|PARENT:}\\n(:C:){C (:C:)\\n}\\n" bkexbin.cpp
+@zenyatta 1487094508.435303   0.001 bk-7.3.1ce: log "-dD :DPN:\\t:REV:\\t:D_: :T: GMT:TZ:\\t:USER:(:RENAME:){\\t:DPN|PARENT:}\\n(:C:){C (:C:)\\n}\\n" bkexbin.cpp = 0
+@zenyatta 1487094614.643567   0.000 bk-7.3.1ce: log "-dD :DPN:\\t:REV:\\t:D_: :T: GMT:TZ:\\t:USER:$if(:RENAME:){\\t:DPN|PARENT:}\\n$each(:C:){C (:C:)\\n}" bkexbin.cpp
+@zenyatta 1487094614.643944   0.000 bk-7.3.1ce: log "-dD :DPN:\\t:REV:\\t:D_: :T: GMT:TZ:\\t:USER:$if(:RENAME:){\\t:DPN|PARENT:}\\n$each(:C:){C (:C:)\\n}" bkexbin.cpp = 0
+@zenyatta 1487158126.740517   0.000 bk-7.3.1ce: log bkexbin.cpp
+@zenyatta 1487158126.740925   0.000 bk-7.3.1ce: log bkexbin.cpp = 0
+@zenyatta 1487158133.401820   0.000 bk-7.3.1ce: help log
+@zenyatta 1487158133.403331   0.002 bk-7.3.1ce:   gethelp log /usr/local/bitkeeper
+@zenyatta 1487158133.422317   0.021 bk-7.3.1ce:   gethelp log /usr/local/bitkeeper = 0
+@zenyatta 1487158133.458898   0.057 bk-7.3.1ce: help log = 0
+@zenyatta 1487158212.665318   0.000 bk-7.3.1ce: log -r1.4.. bkexbin.cpp
+@zenyatta 1487158212.665731   0.000 bk-7.3.1ce: log -r1.4.. bkexbin.cpp = 0
+@zenyatta 1487158302.652328   0.000 bk-7.3.1ce: log -r1.2.1.2.. bkexbin.cpp
+@zenyatta 1487158302.652757   0.000 bk-7.3.1ce: log -r1.2.1.2.. bkexbin.cpp = 0
+@zenyatta 1487161233.168320   0.000 bk-7.3.1ce: log
+@zenyatta 1487161233.169001   0.001 bk-7.3.1ce: log = 0
+@zenyatta 1487161313.859759   0.015 bk-7.3.1ce: log -
+@zenyatta 1487161313.876404   0.032 bk-7.3.1ce:   gfiles -U --relpath=/home/genji/workspace/bkexample
+@zenyatta 1487161313.876937   0.032 bk-7.3.1ce:   gfiles -U --relpath=/home/genji/workspace/bkexample = 0
+@zenyatta 1487161313.878086   0.034 bk-7.3.1ce: log - = 0
+@zenyatta 1487161332.541898   0.000 bk-7.3.1ce: log -r1.2.. -
+@zenyatta 1487161332.543349   0.002 bk-7.3.1ce:   gfiles -U --relpath=/home/genji/workspace/bkexample
+@zenyatta 1487161332.543853   0.002 bk-7.3.1ce:   gfiles -U --relpath=/home/genji/workspace/bkexample = 0
+@zenyatta 1487161332.544727   0.003 bk-7.3.1ce: log -r1.2.. - = 0
+@zenyatta 1487168982.014671   0.000 bk-7.3.1ce: get -r1.1 bkexlib.cpp
+@zenyatta 1487168982.021480   0.007 bk-7.3.1ce: get -r1.1 bkexlib.cpp = 1
+@zenyatta 1487168987.597887   0.000 bk-7.3.1ce: get -r1.1 -p bkexlib.cpp
+@zenyatta 1487168987.598184   0.001 bk-7.3.1ce: get -r1.1 -p bkexlib.cpp = 0
+@zenyatta 1487169031.403914   0.000 bk-7.3.1ce: get -r1.2 -p bkexlib.cpp
+@zenyatta 1487169031.421517   0.018 bk-7.3.1ce: get -r1.2 -p bkexlib.cpp = 0
+@zenyatta 1487169051.413239   0.001 bk-7.3.1ce: get -r1.3 -p bkexlib.cpp
+@zenyatta 1487169051.413572   0.001 bk-7.3.1ce: get -r1.3 -p bkexlib.cpp = 0
+@zenyatta 1487169059.135911   0.000 bk-7.3.1ce: get -r1.4 -p bkexlib.cpp
+@zenyatta 1487169059.136226   0.001 bk-7.3.1ce: get -r1.4 -p bkexlib.cpp = 0
+@zenyatta 1487169070.307896   0.000 bk-7.3.1ce: get -p bkexlib.cpp
+@zenyatta 1487169070.324626   0.017 bk-7.3.1ce: get -p bkexlib.cpp = 0
+@zenyatta 1487169175.255706   0.000 bk-7.3.1ce: get -r1.1 -p bkexlib.cpp
+@zenyatta 1487169175.270886   0.015 bk-7.3.1ce: get -r1.1 -p bkexlib.cpp = 0
+@zenyatta 1487169185.633899   0.000 bk-7.3.1ce: get -r+ -p bkexlib.cpp
+@zenyatta 1487169185.634207   0.001 bk-7.3.1ce: get -r+ -p bkexlib.cpp = 0
+@zenyatta 1487169630.193324   0.000 bk-7.3.1ce: get -r1.1 -p bkexlib.cpp
+@zenyatta 1487169630.193634   0.000 bk-7.3.1ce: get -r1.1 -p bkexlib.cpp = 0
+@zenyatta 1487257934.197011   0.001 bk-7.3.1ce: parent
+@zenyatta 1487257934.197142   0.001 bk-7.3.1ce: parent = 1 exit=parent.c:208
+@zenyatta 1487259927.939631   0.000 bk-7.3.1ce: parent
+@zenyatta 1487259927.939740   0.000 bk-7.3.1ce: parent = 1 exit=parent.c:208
+@zenyatta 1487260033.074890   0.000 bk-7.3.1ce: parent
+@zenyatta 1487260033.075101   0.001 bk-7.3.1ce: parent = 1 exit=parent.c:208
+@zenyatta 1487263667.990499   0.000 bk-7.3.1ce: help topics
+@zenyatta 1487263667.993796   0.003 bk-7.3.1ce:   gethelp topics /usr/local/bitkeeper
+@zenyatta 1487263667.993993   0.003 bk-7.3.1ce:   gethelp topics /usr/local/bitkeeper = 0
+@zenyatta 1487263667.995253   0.005 bk-7.3.1ce: help topics = 0
+@zenyatta 1487263668.511717   0.000 bk-7.3.1ce: log bkexbin.cpp
+@zenyatta 1487263668.512603   0.001 bk-7.3.1ce: log bkexbin.cpp = 0
+@genji 1487264046.837410   0.000 bk-7.3.1ce: log
+@genji 1487264062.873138  16.036 bk-7.3.1ce: log = 0

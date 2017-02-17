@@ -42,6 +42,7 @@ public final class RepositoryFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryFactory.class);
 
     private static final Repository repositories[] = {
+        new BitKeeperRepository(),
         new MercurialRepository(),
         new AccuRevRepository(),
         new BazaarRepository(),
