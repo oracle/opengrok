@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2017, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -30,10 +30,19 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author Vladimir Kotal
  */
 public class ConfigMessage extends Message {
+
     @Override
-    public byte[] apply(RuntimeEnvironment env) throws IOException {
+    protected byte[] applyMessage(RuntimeEnvironment env) throws IOException {
         env.applyConfig(this, hasTag("reindex"));
 
         return null;
+    }
+
+    @Override
+    public void validate() throws Exception {
+        if (getText() == null) {
+            throw new Exception("The message must contain a text.");
+        }
+        super.validate();
     }
 }

@@ -1,7 +1,24 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+ /*
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -74,14 +91,14 @@ public class ExpirationNormalMessageTest {
      * thread.
      */
     @Test
-    public void testExpirationConcurrent() {
+    public void testExpirationConcurrent() throws Exception {
         for (int i = 0; i < 10; i++) {
             runConcurrentModification();
         }
     }
 
     @Test
-    public void testExpirationConcurrentTimer() {
+    public void testExpirationConcurrentTimer() throws Exception {
         env.startExpirationTimer();
         for (int i = 0; i < 10; i++) {
             runConcurrentModification();
@@ -94,6 +111,7 @@ public class ExpirationNormalMessageTest {
         NormalMessage m1 = new NormalMessage();
         m1.addTag("main")
                 .setExpiration(new Date(System.currentTimeMillis() + 500));
+        m1.setText("text");
         env.addMessage(m1);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
 
@@ -112,11 +130,13 @@ public class ExpirationNormalMessageTest {
         NormalMessage m1 = new NormalMessage();
         m1.addTag("main")
                 .setExpiration(new Date(System.currentTimeMillis() + 300));
+        m1.setText("text");
         env.addMessage(m1);
 
         NormalMessage m2 = new NormalMessage();
         m2.addTag("main")
                 .setExpiration(new Date(System.currentTimeMillis() + 600));
+        m2.setText("text");
         env.addMessage(m2);
 
         Assert.assertEquals(2, env.getMessagesInTheSystem());
@@ -142,11 +162,12 @@ public class ExpirationNormalMessageTest {
         Assert.assertEquals(0, env.getMessagesInTheSystem());
     }
 
-    protected void runConcurrentModification() {
+    protected void runConcurrentModification() throws Exception {
         long current = System.currentTimeMillis();
         for (int i = 0; i < 500; i++) {
             NormalMessage m = new NormalMessage();
             m.addTag("main");
+            m.setText("text");
             m.setExpiration(new Date(current + 50000));
             m.setCreated(new Date(current - 2000 - i));
             m.apply(env);

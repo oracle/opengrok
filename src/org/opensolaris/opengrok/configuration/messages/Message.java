@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.XmlEofOutputStream;
@@ -75,13 +74,38 @@ public abstract class Message implements Comparable<Message> {
     protected Date expiration = new Date(System.currentTimeMillis() + DEFAULT_EXPIRATION);
 
     /**
+     * Validate and apply the message to the current runtime environment.
+     *
+     * @param env the runtime environment
+     * @return possible output for this application, null if no output
+     * @throws java.lang.Exception
+     */
+    final public byte[] apply(RuntimeEnvironment env) throws Exception {
+        validate();
+        return applyMessage(env);
+    }
+
+    /**
      * Apply the message to the current runtime environment.
      *
      * @param env the runtime environment
      * @return possible output for this application, null if no output
      * @throws java.lang.Exception
      */
-    public abstract byte[] apply(RuntimeEnvironment env) throws Exception;
+    protected abstract byte[] applyMessage(RuntimeEnvironment env) throws Exception;
+
+    /**
+     * Validate the current message and throw an exception if the message is not
+     * valid. Further implementation can override this method to get the message
+     * into a state they would expect.
+     *
+     * @throws Exception
+     */
+    public void validate() throws Exception {
+        if (getCreated() == null) {
+            throw new Exception("The message must contain a creation date.");
+        }
+    }
 
     /**
      * Factory method for particular message types.
