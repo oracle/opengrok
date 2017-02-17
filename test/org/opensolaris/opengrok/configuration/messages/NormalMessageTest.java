@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -51,17 +51,36 @@ public class NormalMessageTest {
     }
 
     @Test
+    public void testValidate() {
+        Message m = new NormalMessage();
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setText("text");
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setCreated(null);
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setCreated(new Date());
+        m.setClassName(null);
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertEquals("info", m.getClassName());
+        m.setTags(new TreeSet<>());
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertTrue(m.hasTag(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG));
+    }
+
+    @Test
     public void testApplyNoTag() throws Exception {
         Message m = new NormalMessage();
-
+        m.setText("text");
         Assert.assertEquals(0, env.getMessagesInTheSystem());
         m.apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        // the main tag is added by default if no tag is present
+        Assert.assertEquals(1, env.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplySingle() throws Exception {
         Message m = new NormalMessage().addTag("main");
+        m.setText("text");
         Assert.assertEquals(0, env.getMessagesInTheSystem());
         m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
@@ -75,6 +94,7 @@ public class NormalMessageTest {
             m[i].addTag("main");
             m[i].addTag("project");
             m[i].addTag("pull");
+            m[i].setText("text");
             m[i].setCreated(new Date(System.currentTimeMillis() + i * 1000));
         }
 
@@ -107,6 +127,7 @@ public class NormalMessageTest {
 
         for (int i = 0; i < m.length; i++) {
             m[i].addTag("main");
+            m[i].setText("text");
             m[i].setCreated(d);
         }
 

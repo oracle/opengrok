@@ -18,10 +18,11 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
+import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,6 +42,20 @@ public class AbortMessageTest {
     @After
     public void tearDown() {
         env.removeAllMessages();
+    }
+
+    @Test
+    public void testValidate() {
+        Message m = new AbortMessage();
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setText("text");
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setClassName(null);
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertNull(m.getClassName());
+        m.setTags(new TreeSet<>());
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertTrue(m.hasTag(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG));
     }
 
     @Test
@@ -64,15 +79,20 @@ public class AbortMessageTest {
 
     @Test
     public void testApplyNoTagFull() throws Exception {
-        new NormalMessage().addTag("main").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         new AbortMessage().apply(env);
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
+        // the main tag is added by default if no tag is present
+        Assert.assertEquals(0, env.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplySingle() throws Exception {
-        new NormalMessage().addTag("main").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         new AbortMessage().addTag("main").apply(env);
         Assert.assertEquals(0, env.getMessagesInTheSystem());
@@ -80,7 +100,9 @@ public class AbortMessageTest {
 
     @Test
     public void testApplySingleWrongTag() throws Exception {
-        new NormalMessage().addTag("main").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         new AbortMessage().addTag("other").apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
@@ -90,15 +112,23 @@ public class AbortMessageTest {
     public void testApplyReverse() throws Exception {
         new AbortMessage().addTag("main").apply(env);
         Assert.assertEquals(0, env.getMessagesInTheSystem());
-        new NormalMessage().addTag("main").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplyMultiple() throws Exception {
-        new NormalMessage().addTag("main").apply(env);
-        new NormalMessage().addTag("project").apply(env);
-        new NormalMessage().addTag("pull").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
+        m = new NormalMessage().addTag("project");
+        m.setText("text");
+        m.apply(env);
+        m = new NormalMessage().addTag("pull");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(3, env.getMessagesInTheSystem());
 
         new AbortMessage().addTag("other").apply(env);

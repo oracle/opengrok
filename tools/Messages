@@ -63,7 +63,6 @@ Usage()
     echo "       - \"clean\"   the application cleans its current statistics"
     echo "                   and returns the empty statistics"
     echo "       - \"get\"     the application returns current statistics"
-    echo "       - otherwise the application returns current statistics"
     echo ""
     echo "  Optional environment variables:"
     echo "    OPENGROK_CONFIGURATION - location of your configuration"
@@ -357,10 +356,7 @@ done
 
 
 if [ $MESSAGE_TYPE != "config" ]; then
-    [ -z "$MESSAGE_TEXT" ] && echo "The text of the message must be specified" && Usage && exit 3
-    [ -z "$MESSAGE_EXPIRE" ] && echo "The expire must be set" && Usage && exit 5
-
-    if [ -z "$MESSAGE_EXPIRE_TIMESTAMP" ]
+    if [ ! -z "$MESSAGE_EXPIRE" -a -z "$MESSAGE_EXPIRE_TIMESTAMP" ]
     then
         MESSAGE_EXPIRE_TIMESTAMP=`"$DATE" --date="$MESSAGE_EXPIRE" +"%s"`
         if [ $? -ne 0 ]
@@ -370,8 +366,6 @@ if [ $MESSAGE_TYPE != "config" ]; then
             exit 5;
         fi
     fi
-
-    [ -z "${MESSAGE_TAGS[*]}" ] && MESSAGE_TAGS=(-g 'main')
 fi
 
 
