@@ -65,15 +65,17 @@ public final class WebappListener
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
+        
         String config = context.getInitParameter("CONFIGURATION");
+        File configFile = new File(config);
+               
         if (config == null) {
             LOGGER.severe("CONFIGURATION section missing in web.xml");
         } else {
             try {
-                env.readConfiguration(new File(config));
+                env.readConfiguration(configFile);
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "OpenGrok Configuration error. Failed to read config file: ", ex);
+                LOGGER.log(Level.WARNING, "OpenGrok Configuration error. Failed to read config file: {0}", ex.toString());
             }
         }
 
@@ -101,7 +103,7 @@ public final class WebappListener
         try {
             RuntimeEnvironment.getInstance().loadStatistics();
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
+            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex.toString());
         } catch (ParseException ex) {
             LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
         }

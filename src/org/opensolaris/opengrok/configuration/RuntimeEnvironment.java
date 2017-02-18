@@ -1484,7 +1484,10 @@ public final class RuntimeEnvironment {
      * @throws ParseException
      */
     public void loadStatistics() throws IOException, ParseException {
-        loadStatistics(new File(getConfiguration().getStatisticsFilePath()));
+        String statisticsFilePath = getConfiguration().getStatisticsFilePath();
+        if(statisticsFilePath != null){
+            loadStatistics(new File(statisticsFilePath));
+        }
     }
 
     /**
