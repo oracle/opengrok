@@ -136,6 +136,8 @@ Currently supported message types:
         - "get"     the application returns current statistics
 4) ConfigMessage (config)
     This message sends a configuration to the webapp. Requires file as argument.
+5) RefreshMesssage (refresh)
+    Sent at the end of partial reindex to trigger refresh of SearcherManagers.
 
 4. OpenGrok install
 -----------------

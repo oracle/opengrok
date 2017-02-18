@@ -63,6 +63,8 @@ Usage()
     echo "       - \"clean\"   the application cleans its current statistics"
     echo "                   and returns the empty statistics"
     echo "       - \"get\"     the application returns current statistics"
+    echo "    refresh:"
+    echo "     - refresh SearcherManagers of projects given by <tags>"
     echo ""
     echo "  Optional environment variables:"
     echo "    OPENGROK_CONFIGURATION - location of your configuration"
