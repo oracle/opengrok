@@ -101,7 +101,10 @@ public final class WebappListener
         }
 
         try {
-            RuntimeEnvironment.getInstance().loadStatistics();
+            RuntimeEnvironment runtimeEnvironment = RuntimeEnvironment.getInstance();
+            if (runtimeEnvironment.getConfiguration().getDataRoot() != null) {
+                runtimeEnvironment.loadStatistics();
+            }
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex.toString());
         } catch (ParseException ex) {
