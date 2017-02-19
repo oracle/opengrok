@@ -371,9 +371,19 @@ public final class RuntimeEnvironment {
      * @throws FileNotFoundException If the file is not relative to source root
      * @return Path relative to source root
      */
-    public String getPathRelativeToSourceRoot(File file, int stripCount) throws IOException {
+    public String getPathRelativeToSourceRoot(File file, int stripCount) throws IOException, FileNotFoundException {
+        
+        if(file == null || !file.exists()){
+            throw new FileNotFoundException("File not found to get relative path to source root");
+        }
+        
         String canonicalPath = file.getCanonicalPath();
         String sourceRoot = getSourceRootPath();
+        
+        if(sourceRoot == null){
+            throw new FileNotFoundException("Source Root Not Found");
+        }
+        
         if (canonicalPath.startsWith(sourceRoot)) {
             return canonicalPath.substring(sourceRoot.length() + stripCount);
         }
