@@ -98,6 +98,7 @@ public class ConfigMessageTest {
 
         // Get the config.
         m.setTags(new TreeSet<>());
+        m.setText(null);
         m.addTag("getconf");
         byte[] out = m.apply(env);
         String newconfStr = new String(out);

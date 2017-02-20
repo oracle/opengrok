@@ -50,7 +50,7 @@ public class ConfigMessage extends Message {
             }
         } else if (hasTag("getconf")) {
             if (getText() !=  null) {
-                throw new Exception("The setconf message should not contain a text.");
+                throw new Exception("The getconf message should not contain a text.");
             }
             if (getTags().size() != 1) {
                 throw new Exception("The getconf message should be the only tag.");
