@@ -53,6 +53,7 @@ public class PlainAnalyzer extends TextAnalyzer {
 
     /**
      * Creates a new instance of PlainAnalyzer
+     * @param factory name of factory
      */
     protected PlainAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
