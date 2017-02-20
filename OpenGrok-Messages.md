@@ -50,6 +50,10 @@ Currently supported message types:
 
     This message sends a configuration to the webapp. Requires file as argument.
 
+5. `RefreshMesssage` (refresh)
+
+    Sent at the end of partial reindex to trigger refresh of SearcherManagers.
+
 ## Tags
 
 Every message can have set of tags which give the closer specification to the message. Their meaning is specific for the particular message type.
