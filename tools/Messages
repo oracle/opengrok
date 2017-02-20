@@ -49,7 +49,12 @@ Usage()
     echo ""
     echo "  Message types:"
     echo "    config:"
-    echo "     - send configuration to the webapp. Requires file as argument."
+    echo "     - set or get configuration"
+    echo "     - query is formed in the message <text>:"
+    echo "       - \"setconf\"  send configuration to webapp."
+    echo "                      Requires input file as argument."
+    echo "       - \"getconf\"  retrieves configuration from webapp."
+    echo "                      Prints the configuration in XML to stdout."
     echo "    normal:"
     echo "     - assign a <text> to the main page or a project"
     echo "     - can be more precise with <tags> (for specific project)"
@@ -208,7 +213,6 @@ SetupInstanceConfiguration()
     JAVA_OPTS="${JAVA_OPTS:--Xmx32m}"
     MAIN_CLASS="org.opensolaris.opengrok.configuration.messages.Messages"
 
-
     REMOTE_SERVER="localhost"
     REMOTE_PORT_NUM=2424
     MESSAGE_TYPE="normal"
@@ -330,8 +334,11 @@ do
         ;;
         *)
 	    if [ $MESSAGE_TYPE == "config" ]; then
-		MESSAGE_FILE="$@"
-		MESSAGE_TAGS=(-g 'load')
+		MESSAGE_TAGS=(-g "$1")
+		if [[ $1 == "setconf" ]]; then
+			shift
+			MESSAGE_FILE="$@"
+		fi
 	    else
                 if [ $# -ne 1 ]
                 then

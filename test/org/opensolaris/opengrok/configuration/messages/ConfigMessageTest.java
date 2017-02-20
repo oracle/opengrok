@@ -55,30 +55,52 @@ public class ConfigMessageTest {
     public void testValidate() {
         Message m = new ConfigMessage();
         Assert.assertFalse(MessageTest.assertValid(m));
-        m.setText("text");
+        m.addTag("getconf");
         Assert.assertTrue(MessageTest.assertValid(m));
+        m.setText("text");
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setText(null);
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setTags(new TreeSet<>());
+        m.addTag("setconf");
+        m.setText("text");
         m.setClassName(null);
         Assert.assertTrue(MessageTest.assertValid(m));
         Assert.assertNull(m.getClassName());
         m.setTags(new TreeSet<>());
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setTags(new TreeSet<>());
+        m.addTag("foo");
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setTags(new TreeSet<>());
+        m.addTag("getconf");
+        m.addTag("setconf");
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setTags(new TreeSet<>());
+        m.addTag("reindex");
+        m.addTag("setconf");
         Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertEquals(new TreeSet<>(), m.getTags());
     }
 
     @Test
-    public void testApplyBasicConfig() throws Exception {
+    public void testApplySetAndGetBasicConfig() throws Exception {
         Message m = new ConfigMessage();
         Configuration config = new Configuration();
         String srcRoot = "/foo";
         config.setSourceRoot(srcRoot);
 
-        m.addTag("config");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        XMLEncoder e = new XMLEncoder(baos);
-        e.writeObject(config);
-        e.close();
-        m.setText(baos.toString());
+        // Set the config.
+        m.addTag("setconf");
+        String configStr = config.getXMLRepresentationAsString();
+        m.setText(configStr);
         m.apply(env);
         Assert.assertEquals(env.getSourceRootPath(), srcRoot);
+
+        // Get the config.
+        m.setTags(new TreeSet<>());
+        m.addTag("getconf");
+        byte[] out = m.apply(env);
+        String newconfStr = new String(out);
+        Assert.assertEquals(configStr, newconfStr);
     }
 }
