@@ -25,7 +25,6 @@ package org.opensolaris.opengrok.analysis.document;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import org.apache.lucene.analysis.Analyzer.TokenStreamComponents;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.Definitions;

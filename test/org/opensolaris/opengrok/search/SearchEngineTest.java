@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.search;
@@ -62,7 +62,7 @@ public class SearchEngineTest {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(false);
-            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null, new ArrayList<String>(), false);
+            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -195,7 +195,7 @@ public class SearchEngineTest {
         instance.results(0, noHits, hits);
         for (Hit hit : hits) {
             assertEquals("main.c", hit.getFilename());
-            if (hit.getLine().indexOf("arguments") == -1) {
+            if (!hit.getLine().contains("arguments")) {
                fail("got an incorrect match: " + hit.getLine());
             }
         }
@@ -210,7 +210,7 @@ public class SearchEngineTest {
         instance.results(0, noHits, hits);
         for (Hit hit : hits) {
             assertEquals("main.c", hit.getFilename());
-            if (hit.getLine().indexOf("main") == -1) {
+            if (!hit.getLine().contains("main")) {
                fail("got an incorrect match: " + hit.getLine());
             }
         }
