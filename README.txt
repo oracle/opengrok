@@ -138,6 +138,8 @@ Currently supported message types:
     This message retrieves or sends a configuration to the webapp,
     depending on tag. "setconf" tag sends config to webapp and requires
     file as argument.
+5) RefreshMesssage (refresh)
+    Sent at the end of partial reindex to trigger refresh of SearcherManagers.
 
 4. OpenGrok install
 -----------------
