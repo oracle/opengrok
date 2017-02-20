@@ -434,48 +434,67 @@ public final class Util {
 
     /**
      * Converts different html special characters into their encodings used in
-     * html. Currently used only for tooltips of annotation revision number view
+     * html.
      *
      * @param s input text
      * @return encoded text for use in &lt;a title=""&gt; tag
      */
     public static String encode(String s) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '\'':
-                    sb.append("&#39;");
-                    break;
-                case '"':
-                    sb.append("&quot;");
-                    break; // \\\
-                case '&':
-                    sb.append("&amp;");
-                    break;
-                case '>':
-                    sb.append("&gt;");
-                    break;
-                case '<':
-                    sb.append("&lt;");
-                    break;
-                case ' ':
-                    sb.append("&nbsp;");
-                    break;
-                case '\t':
-                    sb.append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                    break;
-                case '\n':
-                    sb.append("&lt;br/&gt;");
-                    break;
-                case '\r':
-                    break;
-                default:
-                    sb.append(c);
-                    break;
-            }
+        StringBuilder sb = new StringBuilder((int) Math.max(10, s.length() * 1.5));
+        try {
+            encode(s, sb);
+        } catch (IOException ex) {
+            // IOException cannot happen when the destination is a
+            // StringBuilder. Wrap in an AssertionError so that callers
+            // don't have to check for an IOException that should never
+            // happen.
+            throw new AssertionError("StringBuilder threw IOException", ex);
         }
         return sb.toString();
+    }
+
+    /**
+     * Converts different html special characters into their encodings used in
+     * html.
+     *
+     * @param s input text
+     * @param dest appendable destination for appending the encoded characters
+     * @throws java.io.IOException
+     */
+    public static void encode(String s, Appendable dest) throws IOException {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&' || c == '\'') {
+                // special html characters
+                dest.append("&#").append("" + (int) c).append(";");
+            } else if (c == ' ') {
+                // non breaking space
+                dest.append("&nbsp;");
+            } else if (c == '\t') {
+                dest.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+            } else if (c == '\n') {
+                // <br/>
+                dest.append("&lt;br/&gt;");
+            } else {
+                dest.append(c);
+            }
+        }
+    }
+
+    /**
+     * Encode URL
+     *
+     * @param url string URL
+     * @return the encoded URL
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    public static String encodeURL(String url) throws URISyntaxException, MalformedURLException {
+        URL old = new URL(url);
+        URI constructed = new URI(old.getProtocol(), old.getUserInfo(),
+                old.getHost(), old.getPort(),
+                old.getPath(), old.getQuery(), old.getRef());
+        return constructed.toString();
     }
 
     /**
@@ -1360,13 +1379,8 @@ public final class Util {
     public static String linkify(String url, boolean newTab) {
         if (isHttpUri(url)) {
             try {
-                URL old = new URL(url);
-                URI constructed = new URI(old.getProtocol(), old.getUserInfo(),
-                        old.getHost(), old.getPort(),
-                        old.getPath(), old.getQuery(), old.getRef());
-
                 return String.format("<a href=\"%s\"%s title=\"Link to %s\">%s</a>",
-                        constructed.toString(),
+                        Util.encodeURL(url),
                         newTab ? " target=\"_blank\"" : "",
                         Util.encode(url),
                         Util.htmlize(url)
