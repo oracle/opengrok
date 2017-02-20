@@ -695,25 +695,25 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set the project that is specified to be the default project to use. The
-     * default project is the project you will search (from the web application)
-     * if the page request didn't contain the cookie..
+     * Set the projects that are specified to be the default projects to use.
+     * The default projects are the projects you will search (from the web
+     * application) if the page request didn't contain the cookie..
      *
      * @param defaultProject The default project to use
      */
-    public void setDefaultProject(Project defaultProject) {
-        threadConfig.get().setDefaultProject(defaultProject);
+    public void setDefaultProjects(Set<Project> defaultProject) {
+        threadConfig.get().setDefaultProjects(defaultProject);
     }
 
     /**
-     * Get the project that is specified to be the default project to use. The
-     * default project is the project you will search (from the web application)
-     * if the page request didn't contain the cookie..
+     * Get the projects that are specified to be the default projects to use.
+     * The default projects are the projects you will search (from the web
+     * application) if the page request didn't contain the cookie..
      *
-     * @return the default project (may be null if not specified)
+     * @return the default projects (may be null if not specified)
      */
-    public Project getDefaultProject() {
-        return threadConfig.get().getDefaultProject();
+    public Set<Project> getDefaultProjects() {
+        return threadConfig.get().getDefaultProjects();
     }
 
     /**

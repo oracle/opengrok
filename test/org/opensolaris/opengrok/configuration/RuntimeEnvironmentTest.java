@@ -133,7 +133,7 @@ public class RuntimeEnvironmentTest {
         assertFalse(instance.hasProjects());
         assertNotNull(instance.getProjects());
         assertEquals(0, instance.getProjects().size());
-        assertNull(instance.getDefaultProject());
+        assertNull(instance.getDefaultProjects());
 
         File file = new File("/opengrok_automatic_test/foo/bar");
         instance.setSourceRoot("/opengrok_automatic_test/foo");

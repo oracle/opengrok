@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.junit.After;
@@ -74,8 +75,8 @@ public class SearchHelperTest {
     private void reindex() throws Exception {
         System.out.println("Generating index by using the class methods");
 
-        Indexer.getInstance().prepareIndexer(env, true, true, "/c", null,
-            false, false, false, null, null, new ArrayList<>(), false);
+        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
+                false, false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, 1, null, null);
     }
 

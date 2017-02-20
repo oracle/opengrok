@@ -25,7 +25,9 @@ package org.opensolaris.opengrok.search;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,6 +37,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
+
 import static org.junit.Assert.*;
 
 /**
@@ -62,7 +65,7 @@ public class SearchEngineTest {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(false);
-            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null, new ArrayList<>(), false);
+            Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null, false, false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
