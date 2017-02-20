@@ -33,16 +33,36 @@ public class ConfigMessage extends Message {
 
     @Override
     protected byte[] applyMessage(RuntimeEnvironment env) throws IOException {
-        env.applyConfig(this, hasTag("reindex"));
+        if (hasTag("getconf")) {
+            return env.getConfiguration().getXMLRepresentationAsString().getBytes();
+        } else if (hasTag("setconf")) {
+            env.applyConfig(this, hasTag("reindex"));
+        }
 
         return null;
     }
 
     @Override
     public void validate() throws Exception {
-        if (getText() == null) {
-            throw new Exception("The message must contain a text.");
+        if (hasTag("setconf")) {
+            if (getText() == null) {
+                throw new Exception("The setconf message must contain a text.");
+            }
+        } else if (hasTag("getconf")) {
+            if (getText() !=  null) {
+                throw new Exception("The getconf message should not contain a text.");
+            }
+            if (getTags().size() != 1) {
+                throw new Exception("The getconf message should be the only tag.");
+            }
+        } else {
+            throw new Exception("The message tag must be either setconf or getconf");
         }
+
+        if (hasTag("setconf") && hasTag("getconf")) {
+            throw new Exception("The message tag must be either setconf or getconf");
+        }
+
         super.validate();
     }
 }

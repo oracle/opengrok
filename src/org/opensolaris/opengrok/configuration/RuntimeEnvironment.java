@@ -1158,6 +1158,7 @@ public final class RuntimeEnvironment {
      */
     public void writeConfiguration(String host, int port) throws IOException {
         Message m = Message.createMessage("config");
+        m.addTag("setconf");
         m.addTag("reindex");
         m.setText(configuration.getXMLRepresentationAsString());
         try {
