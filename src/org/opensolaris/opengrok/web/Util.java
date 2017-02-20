@@ -47,6 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -1275,48 +1276,66 @@ public final class Util {
     public static String createSlider(int offset, int limit, int size, HttpServletRequest request) {
         String slider = "";
         if (limit < size) {
-            StringBuilder buf = new StringBuilder(4096);
-            int labelStart = 1;
-            int sstart = offset - limit * (offset / limit % 10 + 1);
-            if (sstart < 0) {
-                sstart = 0;
-                labelStart = 1;
-            } else {
-                labelStart = sstart / limit + 1;
-            }
-            int label = labelStart;
-            int labelEnd = label + 11;
-            for (int i = sstart; i < size && label <= labelEnd; i += limit) {
-                if (i <= offset && offset < i + limit) {
-                    buf.append("<span class=\"sel\">").append(label).append("</span>");
-                } else {
-                    buf.append("<a class=\"more\" href=\"?");
-                    // append request parameters
-                    if (request != null && request.getQueryString() != null) {
-                        String query = request.getQueryString();
-                        query = query.replaceFirst("(\\?|&amp;|&|)n=\\d+", "");
-                        query = query.replaceFirst("(\\?|&amp;|&|)start=\\d+", "");
-                        query = query.replaceFirst("^(\\?|&amp;|&)", "");
-                        if (!query.isEmpty()) {
-                            buf.append(query);
-                            buf.append("&amp;");
-                        }
-                    }
-                    buf.append("n=").append(limit)
-                            .append("&amp;start=").append(i);
-                    buf.append("\">");
-                    if (label == labelStart && label != 1) {
-                        buf.append("&lt;&lt");
-                    } else if (label == labelEnd && i < size) {
-                        buf.append("&gt;&gt;");
+            final StringBuilder buf = new StringBuilder(4096);
+            int lastPage = (int) Math.ceil((double) size / limit);
+            // startingResult is the number of a first result on the current page
+            int startingResult = offset - limit * (offset / limit % 10 + 1);
+            int myFirstPage = startingResult < 0 ? 1 : startingResult / limit + 1;
+            int myLastPage = Math.min(lastPage, myFirstPage + 10 + (myFirstPage == 1 ? 0 : 1));
+
+            // function taking the page number and appending the desired content into the final buffer
+            Function<Integer, Void> generatePageLink = new Function<Integer, Void>() {
+                @Override
+                public Void apply(Integer page) {
+                    int myOffset = Math.max(0, (page - 1) * limit);
+                    if (myOffset <= offset && offset < myOffset + limit) {
+                        // do not generate anchor for current page
+                        buf.append("<span class=\"sel\">").append(page).append("</span>");
                     } else {
-                        buf.append(label);
+                        buf.append("<a class=\"more\" href=\"?");
+                        // append request parameters
+                        if (request != null && request.getQueryString() != null) {
+                            String query = request.getQueryString();
+                            query = query.replaceFirst("(\\?|&amp;|&|)n=\\d+", "");
+                            query = query.replaceFirst("(\\?|&amp;|&|)start=\\d+", "");
+                            query = query.replaceFirst("^(\\?|&amp;|&)", "");
+                            if (!query.isEmpty()) {
+                                buf.append(query);
+                                buf.append("&amp;");
+                            }
+                        }
+                        buf.append("n=").append(limit);
+                        if (myOffset != 0) {
+                            buf.append("&amp;start=").append(myOffset);
+                        }
+                        buf.append("\">");
+                        // add << or >> if this link would lead to another section
+                        if (page == myFirstPage && page != 1) {
+                            buf.append("&lt;&lt");
+                        } else if (page == myLastPage && myOffset + limit < size) {
+                            buf.append("&gt;&gt;");
+                        } else {
+                            buf.append(page);
+                        }
+                        buf.append("</a>");
                     }
-                    buf.append("</a>");
+                    return null;
                 }
-                label++;
+            };
+
+            // slider composition
+            if (myFirstPage != 1) {
+                generatePageLink.apply(1);
+                buf.append("<span>...</span>");
             }
-            slider = buf.toString();
+            for (int page = myFirstPage; page <= myLastPage; page++) {
+                generatePageLink.apply(page);
+            }
+            if (myLastPage != lastPage) {
+                buf.append("<span>...</span>");
+                generatePageLink.apply(lastPage);
+            }
+            return buf.toString();
         }
         return slider;
     }
