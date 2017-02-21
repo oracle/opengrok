@@ -246,7 +246,7 @@ document.domReady.push(function() {domReadyHistory();});
                     if (entry.isActive()) {
                         String rp = uriEncodedName;
             %>
-            <td><a href="<%= context + Prefix.HIST_L + rp %>#<%= rev %>"
+            <td><a href="<%= request.getRequestURL().append('?').append(request.getQueryString()) %>#<%= rev %>"
                 title="link to revision line">#</a>
                 <a href="<%= context + Prefix.XREF_P + rp + "?r=" + Util.URIEncode(rev) %>"><%=
                     rev %></a></td>
