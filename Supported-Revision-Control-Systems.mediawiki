@@ -115,6 +115,14 @@ OpenGrok supports a lot of different source code repositories. Since not all rep
 |Y
 |n/i
 |N
+|-
+|Accurev
+|Y
+|Y
+|Y
+|Y
+|N
+|N
 |}
 
 === Legend ===
