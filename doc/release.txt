@@ -19,7 +19,6 @@ jars/dirs for tests
 
    ant clean
    ant # defaults to jar currently
-   ant package
 
 2) check all tests, tests code coverage:
    junit, pmd, findbugs, checkstyle, emma, jdepend
@@ -34,7 +33,7 @@ The release is OK, once above is fullfilled to our satisfaction.
 
 3) produce proper distributions
 
-Check them before upload, always try to build on Solaris, since gnu tar might
+Check them before upload, always try to build on Solaris, since GNU tar might
 create a non-standard compliant .tgz version and tag from step 0) will be used
 to produce the archive
 
@@ -68,9 +67,14 @@ number (0.12))
 
 4) Create the release and upload the files via GitHub API:
 
-   ./tools/dorelease.py -d -u <github_login> \
-       -D "some release description" \
-       -t <tag> dist/*.p5p dist/*.pkg dist/*.tar.gz
+   First, make sure these environment variables are set:
 
-   Note: for pre-releases use the -P option
+      GITHUB_USER (your Github user name)
+      GITHUB_PASSWORD (your Github password)
+      https_proxy (set to host:port of proxy if behind HTTP proxy)
+      OPENGROK_PRERELEASE (set to non-empty if creating release candidate)
+
+   Next:
+
+      ant release
 

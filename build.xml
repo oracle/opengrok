@@ -95,6 +95,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
+    <property name="tardest" value="${distname}-${version}.tar.gz"/>
 
     <property name="findbugs.home" value="${user.home}/.ant/lib/findbugs"/>
     <property name="checkstyle.home" value="${user.home}/.ant/lib/checkstyle"/>
@@ -507,7 +508,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <target name="dist" depends="jar">
-        <tar destfile="${dist.dir}/${distname}-${version}.tar.gz"
+        <tar destfile="${dist.dir}/${tardest}"
              compression="gzip">
             <tarfileset dir="." prefix="${distname}-${version}/doc">
                 <include name="README.txt"/>
@@ -950,6 +951,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <property name="codebase"       value="org/opensolaris/opengrok"/>
     <property name="codebase.dot"   value="org.opensolaris.opengrok"/>
     <property name="web.src.dir" location="web" />
+    <property name="tools.dir" location="tools" />
 
     <patternset id="libs">
         <include name="*.jar" />
@@ -1042,6 +1044,19 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
                includeantruntime="false">
             <compilerarg value="-Xlint:deprecation,unchecked" compiler="javac${javac.source}"/>
         </javac>
+    </target>
+
+    <target name="release" depends="dist,package">
+        <exec os="SunOS" executable="${tools.dir}/dorelease.py" failonerror="true">
+	    <arg value="-d"/>
+	    <arg value="-D new"/>
+	    <arg value="-t ${version}"/>
+	    <!-- The directory of the files should really be ${dist.dir} however it does not work. -->
+	    <arg file="dist/${tardest}"/>
+	    <!-- These 2 files should really be conditional to avoid the whole target to be SunOS dependent. -->
+	    <arg file="dist/OSOLopengrok-${version}.pkg"/>
+	    <arg file="dist/${distname}-${version}.p5p"/>
+        </exec>
     </target>
 
     <target name="all" depends="clean,jar,compile.jsp,test,javadoc,pmd,findbugs-xml,checkstyle" />
