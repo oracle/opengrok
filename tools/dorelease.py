@@ -107,15 +107,16 @@ def get_args():
         description='Create release using Github API.')
     parser.add_argument("-d", "--debug", help="turn on debugging",
 	    action="store_true")
+    parser.add_argument("-n", "--dryrun", help="perform dry run",
+	    action="store_true")
     parser.add_argument("-u", "--user", nargs=1, metavar='user',
-        required=True,
-        help="GitHub user. Specify password with GITHUB_PASSWORD env var.")
+        help="GitHub user. Specify user with GITHUB_USER and password with GITHUB_PASSWORD env var.")
     parser.add_argument("-D", "--description", nargs=1,
         metavar='description', required=True,
         help="Description text for the release")
     parser.add_argument("-P", "--prerelease",
         default = False, action="store_true",
-        help="Is this a pre-release ?")
+        help="Is this a pre-release ? (also can use OPENGROK_PRERELEASE env var)")
     parser.add_argument("-t", "--tag", nargs=1, metavar='tag',
         required=True, help="New release tag")
     parser.add_argument("-p", "--proxy", nargs=1,
@@ -185,6 +186,16 @@ def upload_file(filepath, upload_url, headers, timeout, proxy=None):
 def main():
     arguments = get_args()
 
+    user = None
+    if not arguments.user:
+        try:
+            user = os.environ["GITHUB_USER"]
+        except:
+            print "Need -u or specify user with GITHUB_USER env var"
+            sys.exit(1)
+    else:
+        user = arguments.user[0]
+
     if arguments.debug:
         logging.basicConfig(
             level=logging.DEBUG,
@@ -195,10 +206,9 @@ def main():
 
     # There is exactly 1 item in the list.
     # TODO: there should be better way how to achieve this.
-    user = arguments.user[0]
     description = arguments.description[0]
-    tag = arguments.tag[0]
-    logger.debug("using tag {}".format(tag))
+    tag = arguments.tag[0].strip()
+    logger.debug("using tag '{}'".format(tag))
 
     proxy = None
     if arguments.proxy:
@@ -214,6 +224,7 @@ def main():
     # First check that the files indeed exist and are readable.
     # TODO: can probably do it from parser using action
     for file in arguments.files:
+        logger.debug("checking file {}".format(file))
         if not os.path.isfile(file) or not os.access(file, os.R_OK):
 	    print "file '" + file + "' does not exist or is not readable"
             sys.exit(1)
@@ -234,16 +245,31 @@ def main():
     headers = {}
     headers['Authorization'] = _get_auth(user, password)
 
+    prerelease = False
+    if arguments.prerelease:
+        prerelease = True
+    else:
+        try:
+            if os.environ["OPENGROK_PRERELEASE"]:
+                prerelease = True
+        except:
+            prerelease = False
+
     # Create new release and get the upload URL.
-    rel_dict = get_release_dict(tag, description, arguments.prerelease)
+    rel_dict = get_release_dict(tag, description, prerelease)
     payload = json.dumps(rel_dict)
     if (arguments.debug):
         pprint(rel_dict)
         pprint(payload)
     upload_url = None
+
+    if arguments.dryrun:
+        print "Dry run in effect, exiting"
+        sys.exit(0)
+
     try:
         _url = "https://api.github.com"
-        url = '%s%s' % (_url, "/repos/vladak/foo/releases")
+        url = '%s%s' % (_url, "/repos/OpenGrok/OpenGrok/releases")
         release_json = post_request(url,
             arguments.timeout, payload, headers, proxy)
         upload_url = release_json["upload_url"]
