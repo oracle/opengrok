@@ -1048,7 +1048,10 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <target name="release" depends="dist,package">
         <exec os="SunOS" executable="${tools.dir}/dorelease.py" failonerror="true">
-	    <arg value="-d"/>
+	    <!--
+	        For some reason, long options can only be used with '=',
+		so use short options for better readability.
+	    -->
 	    <arg value="-D new"/>
 	    <arg value="-r OpenGrok/OpenGrok"/>
 	    <arg value="-t ${version}"/>
