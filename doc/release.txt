@@ -78,3 +78,7 @@ number (0.12))
 
       ant release
 
+   Now go to https://github.com/OpenGrok/OpenGrok/releases and edit the text
+   of the release, e.g. adding list of issues fixed, whether complete reindex
+   is necessary etc.
+
