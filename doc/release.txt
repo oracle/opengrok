@@ -72,7 +72,7 @@ number (0.12))
       GITHUB_USER (your Github user name)
       GITHUB_PASSWORD (your Github password)
       https_proxy (set to host:port of proxy if behind HTTP proxy)
-      OPENGROK_PRERELEASE (set to non-empty if creating release candidate)
+      DO_PRERELEASE (set to non-empty if creating release candidate)
 
    Next:
 
