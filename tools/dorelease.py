@@ -152,6 +152,7 @@ def post_request(url, timeout, data, headers=[], proxy=None):
     else:
         opener = build_opener(HTTPSHandler)
 
+    logger.debug("sending request to URL {}".format(url))
     request = Request(url, data=data)
     # XXX toxic
     # request.get_method = "POST"
@@ -169,7 +170,7 @@ def post_request(url, timeout, data, headers=[], proxy=None):
     except HTTPError as e:
         print e.code
         # XXX print string representatin of the code
-        raise MyError("got HTTP error: %s" % e.code)
+        raise MyError("got HTTP error: {} ({})".format(e.code, e.reason))
 
 def upload_file(filepath, upload_url, headers, timeout, proxy=None):
     '''Upload file to given Github upload URL
@@ -212,7 +213,7 @@ def main():
     description = arguments.description[0]
     tag = arguments.tag[0].strip()
     logger.debug("using tag '{}'".format(tag))
-    repo = arguments.repository[0]
+    repo = arguments.repository[0].strip()
 
     proxy = None
     if arguments.proxy:
