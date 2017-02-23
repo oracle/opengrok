@@ -24,7 +24,7 @@
 #
 
 '''
-Create OpenGrok release using Github v3 API
+Create release using Github v3 API
 
 This is supposed to be no-nonsense one-purpose script that:
   - is standalone, i.e. runs without any non-Python-core modules
@@ -107,7 +107,8 @@ def get_args():
         description='Create release using Github API.')
     parser.add_argument("-d", "--debug", help="turn on debugging",
 	    action="store_true")
-    parser.add_argument("-n", "--dryrun", help="perform dry run",
+    parser.add_argument("-n", "--dryrun",
+        help="perform dry run (also can use DO_DRYRUN env var)",
 	    action="store_true")
     parser.add_argument("-u", "--user", nargs=1, metavar='user',
         help="GitHub user. Specify user with GITHUB_USER and password with GITHUB_PASSWORD env var.")
@@ -116,9 +117,11 @@ def get_args():
         help="Description text for the release")
     parser.add_argument("-P", "--prerelease",
         default = False, action="store_true",
-        help="Is this a pre-release ? (also can use OPENGROK_PRERELEASE env var)")
+        help="Is this a pre-release ? (also can use DO_PRERELEASE env var)")
     parser.add_argument("-t", "--tag", nargs=1, metavar='tag',
         required=True, help="New release tag")
+    parser.add_argument("-r", "--repository", nargs=1, metavar='repo',
+        required=True, help="Repository path (user/repo)")
     parser.add_argument("-p", "--proxy", nargs=1,
         metavar='host:port',
         help="Proxy host and port (host:port)")
@@ -209,6 +212,7 @@ def main():
     description = arguments.description[0]
     tag = arguments.tag[0].strip()
     logger.debug("using tag '{}'".format(tag))
+    repo = arguments.repository[0]
 
     proxy = None
     if arguments.proxy:
@@ -250,7 +254,7 @@ def main():
         prerelease = True
     else:
         try:
-            if os.environ["OPENGROK_PRERELEASE"]:
+            if os.environ["DO_PRERELEASE"]:
                 prerelease = True
         except:
             prerelease = False
@@ -263,13 +267,23 @@ def main():
         pprint(payload)
     upload_url = None
 
+    dryrun = False
     if arguments.dryrun:
+        dryrun = True
+    else:
+        try:
+            os.environ["DO_DRYRUN"]
+            dryrun = True
+        except:
+            dryrun = False
+    if dryrun:
         print "Dry run in effect, exiting"
         sys.exit(0)
 
     try:
         _url = "https://api.github.com"
-        url = '%s%s' % (_url, "/repos/OpenGrok/OpenGrok/releases")
+        _path = '%s%s%s' % ("/repos/", repo, "/releases")
+        url = '%s%s' % (_url, _path)
         release_json = post_request(url,
             arguments.timeout, payload, headers, proxy)
         upload_url = release_json["upload_url"]
