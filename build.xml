@@ -1050,10 +1050,18 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <exec os="SunOS" executable="${tools.dir}/dorelease.py" failonerror="true">
 	    <arg value="-d"/>
 	    <arg value="-D new"/>
+	    <arg value="-r OpenGrok/OpenGrok"/>
 	    <arg value="-t ${version}"/>
-	    <!-- The directory of the files should really be ${dist.dir} however it does not work. -->
+	    <!--
+	         The directory of the files should really be ${dist.dir}
+	         however it does not work.
+            -->
 	    <arg file="dist/${tardest}"/>
-	    <!-- These 2 files should really be conditional to avoid the whole target to be SunOS dependent. -->
+	    <!--
+	         These 2 files should really be conditional
+	         to avoid the whole target to be SunOS dependent
+		 however 'arg' does not allow 'if'.
+	    -->
 	    <arg file="dist/OSOLopengrok-${version}.pkg"/>
 	    <arg file="dist/${distname}-${version}.p5p"/>
         </exec>
