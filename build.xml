@@ -1053,6 +1053,11 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 		so use short options for better readability.
 	    -->
 	    <arg value="-D new"/>
+	    <!--
+                Some day we might get the repository information from the origin
+		as reported by 'git remote' command. This will enable forked
+		projects to create their releases easily.
+	    -->
 	    <arg value="-r OpenGrok/OpenGrok"/>
 	    <arg value="-t ${version}"/>
 	    <!--
