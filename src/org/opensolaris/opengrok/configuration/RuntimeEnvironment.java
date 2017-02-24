@@ -374,9 +374,15 @@ public final class RuntimeEnvironment {
     public String getPathRelativeToSourceRoot(File file, int stripCount) throws IOException {
         String canonicalPath = file.getCanonicalPath();
         String sourceRoot = getSourceRootPath();
+        
+        if(sourceRoot == null){
+            throw new FileNotFoundException("Source Root Not Found");
+        }
+        
         if (canonicalPath.startsWith(sourceRoot)) {
             return canonicalPath.substring(sourceRoot.length() + stripCount);
         }
+        
         for (String allowedSymlink : getAllowedSymlinks()) {
             String allowedTarget = new File(allowedSymlink).getCanonicalPath();
             if (canonicalPath.startsWith(allowedTarget)) {
@@ -1504,7 +1510,11 @@ public final class RuntimeEnvironment {
      * @throws ParseException
      */
     public void loadStatistics() throws IOException, ParseException {
-        loadStatistics(new File(getConfiguration().getStatisticsFilePath()));
+        String statisticsFilePath = getConfiguration().getStatisticsFilePath();
+        if(statisticsFilePath == null) {
+            throw new IOException("Statistics File path not found");
+        }
+        loadStatistics(new File(statisticsFilePath));
     }
 
     /**

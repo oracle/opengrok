@@ -21,6 +21,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 --%><%@page import="
 java.util.EnumSet,
+java.util.Date,
 
 org.opensolaris.opengrok.web.PageConfig,
 org.opensolaris.opengrok.web.Prefix"
@@ -35,12 +36,15 @@ org.opensolaris.opengrok.web.Prefix"
 /* ---------------------- foot.jspf start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
-
+    Date dateForLastIndexRun = cfg.getEnv().getDateForLastIndexRun();
+    
         %>
     <div id="footer">
 <p><a href="http://opengrok.github.com/OpenGrok/"
  title="Served by OpenGrok"><span id="fti"></span></a></p>
-<p>Indexes created <%= cfg.getEnv().getDateForLastIndexRun() %></p>
+<% if(dateForLastIndexRun != null) { %>
+<p>Indexes created <%= dateForLastIndexRun %></p>
+<%}%>
     <%= cfg.getEnv().getConfiguration().getFooterIncludeFileContent() %>
     <%
     if (needAddDiv.contains(cfg.getPrefix())) {

@@ -786,7 +786,9 @@ public final class Configuration {
     public Date getDateForLastIndexRun() {
         if (lastModified == null) {
             File timestamp = new File(getDataRoot(), "timestamp");
-            lastModified = new Date(timestamp.lastModified());
+            if(timestamp.exists()){
+                lastModified = new Date(timestamp.lastModified());
+            }
         }
         return lastModified;
     }
