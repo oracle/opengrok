@@ -19,7 +19,6 @@ jars/dirs for tests
 
    ant clean
    ant # defaults to jar currently
-   ant package
 
 2) check all tests, tests code coverage:
    junit, pmd, findbugs, checkstyle, emma, jdepend
@@ -32,14 +31,9 @@ usually it's overall coverage above 80%)
 
 The release is OK, once above is fullfilled to our satisfaction.
 
-3) tag the build used for release so we can get back to it:
+3) produce proper distributions
 
-   git tag 0.XYZ
-   git push origin --tags
-
-4) produce proper distributions
-
-Check them before upload, always try to build on Solaris, since gnu tar might
+Check them before upload, always try to build on Solaris, since GNU tar might
 create a non-standard compliant .tgz version and tag from step 0) will be used
 to produce the archive
 
@@ -71,25 +65,20 @@ number (0.12))
 0.12.0.<k>    ~       0.12.0.1.<k>
 ...
 
-5) Upload them using https://github.com/OpenGrok/OpenGrok/releases
+4) Create the release and upload the files via GitHub API:
 
-   Note that the files has to be stored in a ZIP file for github to accept
-   them so use incantation like follows:
+   First, make sure these environment variables are set:
 
-     cd dist/
-     ls -1 *.p5p *.pkg *.tar.gz | while read file; do
-       echo $file | zip -0 -@ $file.zip;
-     done
+      GITHUB_USER (your Github user name)
+      GITHUB_PASSWORD (your Github password)
+      https_proxy (set to host:port of proxy if behind HTTP proxy)
+      DO_PRERELEASE (set to non-empty if creating release candidate)
 
-   Uploading from behing a proxy does not work so it is recommended to use
-   direct internet connection.
+   Next:
 
-   Also generate cryptographic digests for all the binaries,
-   e.g. using openssl:
+      ant release
 
-     openssl dgst -sha256 <file1> <file2> ..
+   Now go to https://github.com/OpenGrok/OpenGrok/releases and edit the text
+   of the release, e.g. adding list of issues fixed, whether complete reindex
+   is necessary etc.
 
-   and paste them next to the uploaded files.
-
-   Note that the files with packages have to be gzipped otherwise github
-   upload does not allow them.
