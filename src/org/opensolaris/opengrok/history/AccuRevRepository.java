@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -232,8 +233,17 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    public void update() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void update() throws IOException {      
+        File directory = new File(getDirectoryName());
+        List<String> cmd = new ArrayList<>();
+        
+        cmd.add(RepoCommand);
+        cmd.add("update");
+
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
+        }
     }
 
     @Override
