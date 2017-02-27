@@ -30,8 +30,10 @@ import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
@@ -51,16 +53,18 @@ public class GitRepositoryTest {
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
-    GitRepository instance;
-    private TestRepository repository;
+    static private TestRepository repository = new TestRepository();
+    private GitRepository instance;
 
-    /**
-     * Set up a test repository. Should be called by the tests that need it. The
-     * test repository will be destroyed automatically when the test finishes.
-     */
-    private void setUpTestRepository() throws IOException {
-        repository = new TestRepository();
-        repository.create(getClass().getResourceAsStream("repositories.zip"));
+    @BeforeClass
+    public static void setUpClass() throws IOException {
+        repository.create(GitRepositoryTest.class.getResourceAsStream("repositories.zip"));
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        repository.destroy();
+        repository = null;
     }
 
     @Before
@@ -70,10 +74,6 @@ public class GitRepositoryTest {
 
     @After
     public void tearDown() {
-        if (repository != null) {
-            repository.destroy();
-            repository = null;
-        }
         instance = null;
     }
 
@@ -175,7 +175,6 @@ public class GitRepositoryTest {
             {"moved2/renamed2.c", "ce4c98ec", "renamed.c"},
             {"moved2/renamed2.c", "bb74b7e8", "renamed.c"}
         };
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
@@ -203,7 +202,6 @@ public class GitRepositoryTest {
             {"moved/renamed2.c", null}
 
         };
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
@@ -333,7 +331,6 @@ public class GitRepositoryTest {
     }
 
     private void runRenamedTest(String fname, String cset, String content) throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
@@ -354,7 +351,6 @@ public class GitRepositoryTest {
 
     @Test
     public void testRenamedHistory() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
@@ -385,7 +381,6 @@ public class GitRepositoryTest {
 
     @Test
     public void testRenamedSingleHistory() throws Exception {
-        setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
