@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -74,6 +74,7 @@ public class Ctags {
     public void close() throws IOException {
         IOUtils.close(ctagsIn);
         if (ctags != null) {
+            LOGGER.log(Level.FINE, "Destroying ctags command");
             ctags.destroy();
         }
     }
@@ -240,12 +241,15 @@ public class Ctags {
         boolean ctagsRunning = false;
         if (ctags != null) {
             try {
-                ctags.exitValue();
+                int exitValue = ctags.exitValue();
+                // If it is possible to retrieve exit value without exception
+                // this means the ctags process is dead so we must restart it.
                 ctagsRunning = false;
-                // ctags is dead! we must restart!!!
+                LOGGER.log(Level.WARNING, "Ctags process exited with exit value {0}",
+                    exitValue);
             } catch (IllegalThreadStateException exp) {
                 ctagsRunning = true;
-                // ctags is still running :)
+                // The ctags process is still running.
             }
         }
 
