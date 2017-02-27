@@ -414,7 +414,7 @@ public final class RuntimeEnvironment {
      */
     public List<String> getProjectDescriptions() {
         return threadConfig.get().getProjects().stream().
-            map(Project::getDescription).collect(Collectors.toList());
+            map(Project::getName).collect(Collectors.toList());
     }
 
     /**

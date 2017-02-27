@@ -218,7 +218,7 @@ public abstract class JFlexXref {
     protected void appendProject() throws IOException {
         if (project != null) {
             out.write("&amp;project=");
-            out.write(project.getDescription());
+            out.write(project.getName());
         }
     }
 
@@ -232,7 +232,7 @@ public abstract class JFlexXref {
 
     protected String getProjectPostfix(boolean encoded) {
         String amp = encoded ? "&amp;" : "&";
-        return project == null ? "" : (amp + "project=" + project.getDescription());
+        return project == null ? "" : (amp + "project=" + project.getName());
     }
 
     protected void startScope() {

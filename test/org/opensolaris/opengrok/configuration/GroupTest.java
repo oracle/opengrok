@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -91,7 +91,7 @@ public class GroupTest {
 
         g.setName("Random name");
         g.setPattern("abcd");
-        t.setDescription("abcd");
+        t.setName("abcd");
 
         assertTrue(g.getName().equals("Random name"));
         assertTrue(g.getPattern().equals("abcd"));
@@ -99,7 +99,7 @@ public class GroupTest {
         // basic matching
         assertTrue("Should match pattern", g.match(t));
 
-        t.setDescription("abcde");
+        t.setName("abcde");
 
         assertFalse("Shouldn't match, pattern is shorter", g.match(t));
 
@@ -115,12 +115,12 @@ public class GroupTest {
 
         assertFalse("Shouldn't match pattern", g.match(t));
 
-        t.setDescription("ab");
+        t.setName("ab");
         g.setPattern("ab|cd");
 
         assertTrue("Should match pattern", g.match(t));
 
-        t.setDescription("cd");
+        t.setName("cd");
 
         assertTrue("Should match pattern", g.match(t));
     }
@@ -141,25 +141,25 @@ public class GroupTest {
         g1.getSubgroups().add(g3);
 
         Project t = new Project();
-        t.setDescription("abcd");
+        t.setName("abcd");
 
         assertFalse(g2.match(t));
         assertFalse(g3.match(t));
         assertTrue(g1.match(t));
 
-        t.setDescription("xyz");
+        t.setName("xyz");
 
         assertFalse(g1.match(t));
         assertFalse(g2.match(t));
         assertTrue(g3.match(t));
 
-        t.setDescription("efgh");
+        t.setName("efgh");
 
         assertFalse(g1.match(t));
         assertTrue(g2.match(t));
         assertFalse(g3.match(t));
 
-        t.setDescription("xyz");
+        t.setName("xyz");
         g1.setSubgroups(new TreeSet<Group>());
         g1.getSubgroups().add(g2);
         g2.getSubgroups().add(g3);
@@ -181,7 +181,7 @@ public class GroupTest {
         random1.getSubgroups().add(random2);
 
         Project abcd = new Project();
-        abcd.setDescription("abcd");
+        abcd.setName("abcd");
 
         assertFalse(random2.match(abcd));
         assertTrue(random1.match(abcd));
@@ -192,7 +192,7 @@ public class GroupTest {
         assertTrue(random1.getProjects().iterator().next() == abcd);
 
         Project efgh = new Project();
-        efgh.setDescription("efgh");
+        efgh.setName("efgh");
 
         assertTrue(random2.match(efgh));
         assertFalse(random1.match(efgh));

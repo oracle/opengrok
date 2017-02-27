@@ -1078,7 +1078,7 @@ public final class Util {
         }
         List<String> tags = new ArrayList<>();
         tags.addAll(Arrays.asList(additionalTags));
-        tags.add(project.getDescription());
+        tags.add(project.getName());
         project.getGroups().stream().forEach((Group t) -> {
             tags.add(t.getName());
         });

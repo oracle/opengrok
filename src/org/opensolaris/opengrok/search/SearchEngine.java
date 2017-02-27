@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
@@ -31,12 +31,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -212,7 +208,7 @@ public class SearchEngine {
     private void searchMultiDatabase(List<Project> root, boolean paging) throws IOException {
         SortedSet<String> projects = new TreeSet<>();
         for (Project p : root) {
-            projects.add(p.getDescription());
+            projects.add(p.getName());
         }
         // We use MultiReader even for single project. This should
         // not matter given that MultiReader is just a cheap wrapper

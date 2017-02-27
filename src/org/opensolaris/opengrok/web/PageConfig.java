@@ -824,12 +824,12 @@ public final class PageConfig {
             return set;
         }
         if (projects.size() == 1 && authFramework.isAllowed(req, projects.get(0))) {
-            set.add(projects.get(0).getDescription());
+            set.add(projects.get(0).getName());
             return set;
         }
         List<String> vals = getParamVals(paramName);
         for (String s : vals) {
-            Project x = Project.getByDescription(s);
+            Project x = Project.getByName(s);
             if (x != null && authFramework.isAllowed(req, x)) {
                 set.add(s);
             }
@@ -837,7 +837,7 @@ public final class PageConfig {
         if (set.isEmpty()) {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
-                Project x = Project.getByDescription(s);
+                Project x = Project.getByName(s);
                 if (x != null && authFramework.isAllowed(req, x)) {
                     set.add(s);
                 }
@@ -846,7 +846,7 @@ public final class PageConfig {
         if (set.isEmpty()) {
             Project defaultProject = env.getDefaultProject();
             if (defaultProject != null && authFramework.isAllowed(req, defaultProject)) {
-                set.add(defaultProject.getDescription());
+                set.add(defaultProject.getName());
             }
         }
         return set;

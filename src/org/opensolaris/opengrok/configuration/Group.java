@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  * @author Krystof Tulinger
  * @version $Revision$
  */
-public class Group implements Comparable<Group> {
+public class Group implements Comparable<Group>, Nameable {
 
     private String name;
     private String pattern = "";
@@ -120,10 +120,12 @@ public class Group implements Comparable<Group> {
         this.parent = parent;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -151,7 +153,7 @@ public class Group implements Comparable<Group> {
      * @return true if project's description matches the group pattern
      */
     public boolean match(Project p) {
-        return Pattern.matches("(" + this.pattern + ")", p.getDescription());
+        return Pattern.matches("(" + this.pattern + ")", p.getName());
     }
 
     @Override

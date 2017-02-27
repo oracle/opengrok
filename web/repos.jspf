@@ -144,7 +144,7 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                     <%
                     for ( Project project : pHelper.getRepositories(group)) {
                         List<RepositoryInfo> repos = pHelper.getRepositoryInfo(project);
-                        String projDesc = project.getDescription();
+                        String projDesc = project.getName();
                         Integer cnt = 0;
                         Collections.sort(repos, comparatorRepo);
                         %>
@@ -274,7 +274,7 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                         <%
                         for (Project proj : repositories) {
                             List<RepositoryInfo> repos = pHelper.getRepositoryInfo(proj);
-                            String projDesc = proj.getDescription();
+                            String projDesc = proj.getName();
                             Integer cnt = 0;
                             Collections.sort(repos, comparatorRepo);
                             for (RepositoryInfo ri : repos) {

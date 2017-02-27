@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.configuration;
@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import junit.framework.AssertionFailedError;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class ProjectTest {
@@ -92,11 +93,11 @@ public class ProjectTest {
         // Create 2 projects, one being prefix of the other.
         Project foo = new Project();
         foo.setPath("/foo");
-        foo.setDescription("Project foo");
+        foo.setName("Project foo");
 
         Project bar = new Project();
         bar.setPath("/foo-bar");
-        bar.setDescription("Project foo-bar");
+        bar.setName("Project foo-bar");
 
         // Make the runtime environment aware of these two projects.
         List<Project> projects = new ArrayList<>();
@@ -131,11 +132,11 @@ public class ProjectTest {
         // Create 2 projects.
         Project foo = new Project();
         foo.setPath("/foo");
-        foo.setDescription("foo");
+        foo.setName("foo");
 
         Project bar = new Project();
         bar.setPath("/bar");
-        bar.setDescription("bar");
+        bar.setName("bar");
 
         // Make the runtime environment aware of these two projects.
         List<Project> projects = new ArrayList<>();

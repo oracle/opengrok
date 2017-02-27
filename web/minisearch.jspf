@@ -103,7 +103,7 @@ org.opensolaris.opengrok.web.Util"%><%
     </ul><%
     if (proj != null) {
     %>
-    <input type="hidden" name="project" value="<%=proj.getDescription()%>" /><%
+    <input type="hidden" name="project" value="<%=proj.getName()%>" /><%
     }
 %>
     <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />

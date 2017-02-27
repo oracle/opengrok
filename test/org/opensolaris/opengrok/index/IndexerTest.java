@@ -18,14 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileReader;
@@ -33,7 +28,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -50,6 +44,11 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -115,14 +114,14 @@ public class IndexerTest {
         // some properties that we can verify after the rescan.
         Project p1 = new Project();
         p1.setPath("/java");
-        p1.setDescription("Project 1");
+        p1.setName("Project 1");
         p1.setTabSize(3);
 
         // Generate one project that will not be found in source.zip, and that
         // should not be in the list of projects after the rescan.
         Project p2 = new Project();
         p2.setPath("/this_path_does_not_exist");
-        p2.setDescription("Project 2");
+        p2.setName("Project 2");
 
         // Make the runtime environment aware of these two projects.
         List<Project> projects = new ArrayList<>();
@@ -167,7 +166,7 @@ public class IndexerTest {
         // The properties of p1 should be preserved
         assertEquals("project path", p1.getPath(), newP1.getPath());
         assertEquals("project description",
-                p1.getDescription(), newP1.getDescription());
+                p1.getName(), newP1.getName());
         assertEquals("project tabsize", p1.getTabSize(), newP1.getTabSize());
     }
 

@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
 
@@ -132,13 +132,13 @@ public class AuthorizationFrameworkTest {
 
     private Project createAllowedProject() {
         Project p = new Project();
-        p.setDescription("allowed" + "_" + "project" + Math.random());
+        p.setName("allowed" + "_" + "project" + Math.random());
         return p;
     }
 
     private Project createUnallowedProject() {
         Project p = new Project();
-        p.setDescription("not_allowed" + "_" + "project" + Math.random());
+        p.setName("not_allowed" + "_" + "project" + Math.random());
         return p;
     }
 
@@ -162,7 +162,7 @@ public class AuthorizationFrameworkTest {
         return new TestPlugin() {
             @Override
             public boolean isAllowed(HttpServletRequest request, Project project) {
-                return project.getDescription().startsWith("allowed");
+                return project.getName().startsWith("allowed");
             }
 
             @Override
@@ -176,7 +176,7 @@ public class AuthorizationFrameworkTest {
         return new TestPlugin() {
             @Override
             public boolean isAllowed(HttpServletRequest request, Project project) {
-                return project.getDescription().startsWith("not_allowed");
+                return project.getName().startsWith("not_allowed");
             }
 
             @Override

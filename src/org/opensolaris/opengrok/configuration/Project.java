@@ -18,8 +18,8 @@
  */
 
  /*
-  * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
-  */
+  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.configuration;
 
 import java.io.File;
@@ -32,32 +32,35 @@ import java.util.TreeSet;
 /**
  * Placeholder for the information that builds up a project
  */
-public class Project implements Comparable<Project> {
+public class Project implements Comparable<Project>, Nameable {
 
     private String path;
-    // this variable is very important, since it's used as the project identifier
-    // all over xrefs and webapp
-    // jel: and yes - awefully misleading. It should be called 'name'!
-    private String description;
+
+    /**
+     * This variable is very important, since it's used as the project
+     * identifier all over xrefs and webapp.
+     */
+    private String name;
 
     /**
      * Size of tabs in this project. Used for displaying the xrefs correctly in
      * projects with non-standard tab size.
      */
     private int tabSize;
-    
+
     /**
      * Set of groups which match this project.
      */
     private Set<Group> groups = new TreeSet<>();
 
     /**
-     * Get a textual description of this project
+     * Get a textual name of this project
      *
-     * @return a textual description of the project
+     * @return a textual name of the project
      */
-    public String getDescription() {
-        return description;
+    @Override
+    public String getName() {
+        return name;
     }
 
     /**
@@ -89,13 +92,14 @@ public class Project implements Comparable<Project> {
     }
 
     /**
-     * Set a textual description of this project, prefferably don't use " , " in
-     * the name, since it's used as delimiter for more projects
+     * Set a textual name of this project, prefferably don't use " , " in the
+     * name, since it's used as delimiter for more projects
      *
-     * @param description a textual description of the project
+     * @param name a textual name of the project
      */
-    public void setDescription(String description) {
-        this.description = description;
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -173,9 +177,9 @@ public class Project implements Comparable<Project> {
                 // path. It has to be an exact match, or the project's path
                 // must be immediately followed by a separator. "/foo" is
                 // a prefix for "/foo" and "/foo/bar", but not for "/foof".
-                if (lpath.startsWith(pp) &&
-                        (pp.length() == lpath.length() ||
-                         lpath.charAt(pp.length()) == '/')) {
+                if (lpath.startsWith(pp)
+                        && (pp.length() == lpath.length()
+                        || lpath.charAt(pp.length()) == '/')) {
                     return p;
                 }
             }
@@ -204,18 +208,18 @@ public class Project implements Comparable<Project> {
     }
 
     /**
-     * Returns project object by its description, used in webapp to figure out
-     * which project is to be searched
+     * Returns project object by its name, used in webapp to figure out which
+     * project is to be searched
      *
-     * @param desc description of the project
-     * @return project that fits the description
+     * @param name name of the project
+     * @return project that fits the name
      */
-    public static Project getByDescription(String desc) {
+    public static Project getByName(String name) {
         Project ret = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project proj : env.getProjects()) {
-                if (desc.indexOf(proj.getDescription()) == 0) {
+                if (name.indexOf(proj.getName()) == 0) {
                     ret = proj;
                 }
             }
@@ -225,13 +229,13 @@ public class Project implements Comparable<Project> {
 
     @Override
     public int compareTo(Project p2) {
-        return getDescription().toUpperCase(Locale.getDefault()).compareTo(p2.getDescription().toUpperCase(Locale.getDefault()));
+        return getName().toUpperCase(Locale.getDefault()).compareTo(p2.getName().toUpperCase(Locale.getDefault()));
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 41 * hash + (this.description == null ? 0 : this.description.toUpperCase(Locale.getDefault()).hashCode());
+        hash = 41 * hash + (this.name == null ? 0 : this.name.toUpperCase(Locale.getDefault()).hashCode());
         return hash;
     }
 
@@ -247,8 +251,8 @@ public class Project implements Comparable<Project> {
             return false;
         }
         final Project other = (Project) obj;
-        return !(this.description != other.description
-                && (this.description == null
-                || !this.description.toUpperCase(Locale.getDefault()).equals(other.description.toUpperCase(Locale.getDefault()))));
+        return !(this.name != other.name
+                && (this.name == null
+                || !this.name.toUpperCase(Locale.getDefault()).equals(other.name.toUpperCase(Locale.getDefault()))));
     }
 }

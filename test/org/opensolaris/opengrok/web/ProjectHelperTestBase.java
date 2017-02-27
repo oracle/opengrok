@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -71,7 +71,7 @@ public class ProjectHelperTestBase {
 
         for (int i = 0; i < cnt; i++) {
             RepositoryInfo info = new RepoRepository();
-            info.setParent(p.getDescription() + "_" + i);
+            info.setParent(p.getName() + "_" + i);
             info.setDirectoryName(p.getPath());
             rps.add(info);
             List<RepositoryInfo> infos = map.get(p);
@@ -95,7 +95,7 @@ public class ProjectHelperTestBase {
             Map<Project, List<RepositoryInfo>> map) {
 
         Project p = new Project();
-        p.setDescription((allowed ? "allowed_" : "")
+        p.setName((allowed ? "allowed_" : "")
                 + (grouped ? "grouped_" : "ungrouped_")
                 + (repository ? "repository" : "project")
                 + "_" + index + "_" + number);
@@ -117,17 +117,17 @@ public class ProjectHelperTestBase {
             g.setName((allowed ? "allowed_" : "") + "group_" + i);
             String pattern = "";
 
-            pattern += createProject(i, 1, true, false, false, rps, prjs, map).getDescription() + "|";
-            pattern += createProject(i, 2, true, false, false, rps, prjs, map).getDescription() + "|";
+            pattern += createProject(i, 1, true, false, false, rps, prjs, map).getName() + "|";
+            pattern += createProject(i, 2, true, false, false, rps, prjs, map).getName() + "|";
 
-            pattern += createProject(i, 1, true, true, false, rps, prjs, map).getDescription() + "|";
-            pattern += createProject(i, 2, true, true, false, rps, prjs, map).getDescription() + "|";
+            pattern += createProject(i, 1, true, true, false, rps, prjs, map).getName() + "|";
+            pattern += createProject(i, 2, true, true, false, rps, prjs, map).getName() + "|";
 
-            pattern += createRepository(i, 1, 1, true, false, rps, prjs, map).getDescription() + "|";
-            pattern += createRepository(i, 2, 1, true, false, rps, prjs, map).getDescription() + "|";
+            pattern += createRepository(i, 1, 1, true, false, rps, prjs, map).getName() + "|";
+            pattern += createRepository(i, 2, 1, true, false, rps, prjs, map).getName() + "|";
 
-            pattern += createRepository(i, 1, 1, true, true, rps, prjs, map).getDescription() + "|";
-            pattern += createRepository(i, 2, 1, true, true, rps, prjs, map).getDescription();
+            pattern += createRepository(i, 1, 1, true, true, rps, prjs, map).getName() + "|";
+            pattern += createRepository(i, 2, 1, true, true, rps, prjs, map).getName();
 
             g.setPattern(pattern);
             grps.add(g);
@@ -294,7 +294,7 @@ public class ProjectHelperTestBase {
         IAuthorizationPlugin plugin = new TestPlugin() {
             @Override
             public boolean isAllowed(HttpServletRequest request, Project project) {
-                return project.getDescription().startsWith("allowed");
+                return project.getName().startsWith("allowed");
             }
 
             @Override

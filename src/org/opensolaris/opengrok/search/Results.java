@@ -176,7 +176,7 @@ public final class Results {
                             RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG
                     )).size() > 0) {
                 out.write(" <a ");
-                out.write("href=\"" + xrefPrefix + "/" + p.getDescription() + "\">");
+                out.write("href=\"" + xrefPrefix + "/" + p.getName() + "\">");
                 out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
                 out.write("</a>");
             }

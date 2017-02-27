@@ -27,7 +27,6 @@ package org.opensolaris.opengrok.index;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.InetAddress;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -764,7 +763,7 @@ public final class Indexer {
                     // Found a new directory with no matching project, so
                     // create a new project with default properties.
                     Project p = new Project();
-                    p.setDescription(name);
+                    p.setName(name);
                     p.setPath(path);
                     p.setTabSize(env.getConfiguration().getTabSize());
                     projects.add(p);
@@ -775,8 +774,8 @@ public final class Indexer {
             Collections.sort(projects, new Comparator<Project>() {
                 @Override
                 public int compare(Project p1, Project p2) {
-                    String s1 = p1.getDescription();
-                    String s2 = p2.getDescription();
+                    String s1 = p1.getName();
+                    String s2 = p2.getName();
 
                     int ret;
                     if (s1 == null) {
