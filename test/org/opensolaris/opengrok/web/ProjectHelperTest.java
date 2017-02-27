@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -77,7 +77,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
 
         // project
         Project p = new Project();
-        p.setDescription("some random name not in any group");
+        p.setName("some random name not in any group");
 
         // group
         Group g = new Group();
@@ -85,10 +85,10 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
 
         // repository
         Project repo = new Project();
-        repo.setDescription("some random name not in any other group");
+        repo.setName("some random name not in any other group");
 
         RepositoryInfo info = new RepoRepository();
-        info.setParent(repo.getDescription());
+        info.setParent(repo.getName());
         info.setDirectoryName(null);
 
         List<RepositoryInfo> infos = getRepositoriesMap().get(repo);
@@ -131,7 +131,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
     @Test
     public void testUnAllowedGetRepositoryInfo() {
         Project p = new Project();
-        p.setDescription("repository_2_1");
+        p.setName("repository_2_1");
         List<RepositoryInfo> result = helper.getRepositoryInfo(p);
         Assert.assertEquals("this project is not allowed", 0, result.size());
     }
@@ -142,7 +142,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
     @Test
     public void testAllowedGetRepositoryInfo() {
         Project p = new Project();
-        p.setDescription("allowed_grouped_repository_0_1");
+        p.setName("allowed_grouped_repository_0_1");
         List<RepositoryInfo> result = helper.getRepositoryInfo(p);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals("allowed_grouped_repository_0_1_" + 0, result.get(0).getParent());
@@ -168,7 +168,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Project> result = helper.getProjects();
         Assert.assertEquals(2, result.size());
         for (Project p : result) {
-            Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+            Assert.assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 
@@ -180,7 +180,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Project> result = helper.getRepositories();
         Assert.assertEquals(2, result.size());
         for (Project p : result) {
-            Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+            Assert.assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 
@@ -194,7 +194,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
                 Set<Project> result = helper.getProjects(g);
                 Assert.assertEquals(2, result.size());
                 for (Project p : result) {
-                    Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+                    Assert.assertTrue(p.getName().startsWith("allowed_"));
                 }
             }
 
@@ -225,7 +225,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
                 Set<Project> result = helper.getRepositories(g);
                 Assert.assertEquals(2, result.size());
                 for (Project p : result) {
-                    Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+                    Assert.assertTrue(p.getName().startsWith("allowed_"));
                 }
             }
 
@@ -254,7 +254,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Project> result = helper.getGroupedProjects();
         Assert.assertEquals(4, result.size());
         for (Project p : result) {
-            Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+            Assert.assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 
@@ -266,7 +266,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Project> result = helper.getGroupedRepositories();
         Assert.assertEquals(4, result.size());
         for (Project p : result) {
-            Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+            Assert.assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 
@@ -278,7 +278,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Project> result = helper.getUngroupedProjects();
         Assert.assertEquals(2, result.size());
         for (Project p : result) {
-            Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+            Assert.assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 
@@ -290,7 +290,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Project> result = helper.getUngroupedRepositories();
         Assert.assertEquals(2, result.size());
         for (Project p : result) {
-            Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+            Assert.assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 
@@ -302,7 +302,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Project> result = helper.getAllGrouped();
         Assert.assertEquals(8, result.size());
         for (Project p : result) {
-            Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+            Assert.assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 
@@ -316,7 +316,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
                 Set<Project> result = helper.getAllGrouped(g);
                 Assert.assertEquals(4, result.size());
                 for (Project p : result) {
-                    Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+                    Assert.assertTrue(p.getName().startsWith("allowed_"));
                 }
             }
 
@@ -341,7 +341,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Project> result = helper.getAllUngrouped();
         Assert.assertEquals(4, result.size());
         for (Project p : result) {
-            Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+            Assert.assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 
@@ -353,7 +353,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Project> result = helper.getAllProjects();
         Assert.assertEquals(12, result.size());
         for (Project p : result) {
-            Assert.assertTrue(p.getDescription().startsWith("allowed_"));
+            Assert.assertTrue(p.getName().startsWith("allowed_"));
         }
     }
 }

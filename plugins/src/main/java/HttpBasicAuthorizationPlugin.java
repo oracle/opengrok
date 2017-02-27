@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 import java.util.Arrays;
 import java.util.Map;
@@ -89,17 +89,17 @@ public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
         if ((g = Group.getByName(group)) != null) {
             // group discovery
             for (Project p : g.getRepositories()) {
-                userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
+                userProjects.get(request.getUserPrincipal().getName()).add(p.getName());
             }
             for (Project p : g.getProjects()) {
-                userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
+                userProjects.get(request.getUserPrincipal().getName()).add(p.getName());
             }
             for (Group grp : g.getDescendants()) {
                 for (Project p : grp.getRepositories()) {
-                    userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
+                    userProjects.get(request.getUserPrincipal().getName()).add(p.getName());
                 }
                 for (Project p : grp.getProjects()) {
-                    userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
+                    userProjects.get(request.getUserPrincipal().getName()).add(p.getName());
                 }
                 descendants.add(grp.getName());
             }
@@ -119,7 +119,7 @@ public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
 
         init(request);
 
-        return userProjects.get(request.getUserPrincipal().getName()).contains(project.getDescription());
+        return userProjects.get(request.getUserPrincipal().getName()).contains(project.getName());
     }
 
     @Override

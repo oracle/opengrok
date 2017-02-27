@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
 
@@ -153,7 +153,7 @@ public class AuthorizationPluginClassLoaderTest {
         Group g = new Group();
         g.setName("group1");
         Project p = new Project();
-        p.setDescription(("project1"));
+        p.setName(("project1"));
 
         Assert.assertFalse(
                 plugin.isAllowed(new DummyHttpServletRequest(), g)
@@ -175,7 +175,7 @@ public class AuthorizationPluginClassLoaderTest {
         Group g = new Group();
         g.setName("group1");
         Project p = new Project();
-        p.setDescription(("project1"));
+        p.setName(("project1"));
 
         Assert.assertTrue(
                 plugin.isAllowed(new DummyHttpServletRequest(), g)

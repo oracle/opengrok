@@ -66,8 +66,8 @@ org.opensolaris.opengrok.web.Util"
     QueryBuilder queryParams = cfg.getQueryBuilder();
     if (projects.size() != 0) {
         for (Project p : projects) {
-            String name = p.getDescription();
-            String esc = Util.formQuoteEscape(p.getDescription());
+            String name = p.getName();
+            String esc = Util.formQuoteEscape(p.getName());
             pMap.put(name, esc);
         }
 %>
@@ -188,14 +188,14 @@ org.opensolaris.opengrok.web.Util"
                 // TODO below "selected" has no effect if one refreshes the page
                 // with F5
 
-                %><option value="<%= p.getDescription() %>"<%
-                    if (pRequested.contains(p.getDescription())) {
+                %><option value="<%= p.getName() %>"<%
+                    if (pRequested.contains(p.getName())) {
                         %> selected="selected"<%
                     }
                     if (!(messages = Util.messagesToJson(p)).isEmpty()) {
                     %> data-messages='<%= messages %>' <%
                         }
-                    %>><%= Util.formQuoteEscape(p.getDescription()) %></option><%
+                    %>><%= Util.formQuoteEscape(p.getName()) %></option><%
                 }
                 %></optgroup><%
             }
@@ -205,14 +205,14 @@ org.opensolaris.opengrok.web.Util"
             %><optgroup label="Other"><%
         }
         for ( Project p : ph.getAllUngrouped()) {
-        %><option value="<%= p.getDescription() %>"<%
-            if (pRequested.contains(p.getDescription())) {
+        %><option value="<%= p.getName() %>"<%
+            if (pRequested.contains(p.getName())) {
                 %> selected="selected"<%
             }
             if (!(messages = Util.messagesToJson(p)).isEmpty()) {
                 %> data-messages='<%= messages %>' <%
             }
-            %>><%= Util.formQuoteEscape(p.getDescription()) %></option><%
+            %>><%= Util.formQuoteEscape(p.getName()) %></option><%
         }
         if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
             %></optgroup><%

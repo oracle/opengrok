@@ -89,12 +89,12 @@ document.pageReady.push(function() { pageReadyList();});
         String cookieValue = cfg.getRequestedProjectsAsString();
         if (activeProject != null) {
             Set<String>  projects = cfg.getRequestedProjects();
-            if (!projects.contains(activeProject.getDescription())) {
-                projects.add(activeProject.getDescription());
+            if (!projects.contains(activeProject.getName())) {
+                projects.add(activeProject.getName());
                 // update cookie
                 cookieValue = cookieValue.length() == 0
-                    ? activeProject.getDescription()
-                    : activeProject.getDescription() + ',' + cookieValue;
+                    ? activeProject.getName()
+                    : activeProject.getName() + ',' + cookieValue;
                 Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, "utf-8"));
                 // TODO hmmm, projects.jspf doesn't set a path
                 cookie.setPath(request.getContextPath() + '/');

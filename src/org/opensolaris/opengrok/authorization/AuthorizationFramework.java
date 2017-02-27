@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
 
@@ -81,7 +81,7 @@ public final class AuthorizationFramework {
         return checkAll(
                 request,
                 "plugin_framework_project_cache",
-                project.getDescription(),
+                project.getName(),
                 new Predicate<IAuthorizationPlugin>() {
             @Override
             public boolean test(IAuthorizationPlugin plugin) {

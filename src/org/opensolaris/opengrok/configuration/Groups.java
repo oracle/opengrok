@@ -258,7 +258,7 @@ public final class Groups {
      */
     private static void matchGroups(PrintStream out, Set<Group> groups, String match) {
         Project p = new Project();
-        p.setDescription(match);
+        p.setName(match);
 
         List<Group> matched = new ArrayList<>();
         linearTraverseGroups(groups, new Walker() {

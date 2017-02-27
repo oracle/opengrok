@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -429,7 +429,7 @@ public final class ProjectHelper {
      * @return true if it is favourite
      */
     public boolean isFavourite(Project project) {
-        return cfg.getCookieVals(OPEN_GROK_PROJECT).contains(project.getDescription());
+        return cfg.getCookieVals(OPEN_GROK_PROJECT).contains(project.getName());
     }
 
     /**
