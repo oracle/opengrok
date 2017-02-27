@@ -8,7 +8,8 @@
 #   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
 #                                   - containing the opengrok.jar
 #   - OPENGROK_JAR                Directly specify the opengrok.jar file
-#                                 switch), default is DATA_ROOT/etc/ctags.config
+#                                 switch), default is
+#                                 $OPENGROK_DISTRIBUTION_BASE/opengrok.jar
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase view
@@ -115,7 +116,6 @@ Info()
         echo "\tOPENGROK_STANDARD_ENV = "${OPENGROK_STANDARD_ENV}
         echo "\tOPENGROK_DISTRIBUTION_BASE = "${OPENGROK_DISTRIBUTION_BASE}
         echo "\tREAD_XML_CONFIGURATION = "${READ_XML_CONFIGURATION}
-        echo "\tOPENGROK_JAR = "${OPENGROK_JAR}
         echo ""
         echo "Files used"
         echo "\tINPUT_FILE = "${INPUT_FILE:-empty configuration}
@@ -505,7 +505,7 @@ SetupInstanceConfiguration()
     JAVA_CLASSPATH="${JAVA_CLASSPATH}:${OPENGROK_JAR}"
     JAVA_OPTS="${JAVA_OPTS:--Xmx2048m}"
     MAIN_CLASS="org.opensolaris.opengrok.configuration.Groups"
-	
+
     unset NAME
     unset PATTERN
     unset PARENT
