@@ -245,8 +245,13 @@ document.domReady.push(function() {domReadyHistory();});
                 } else {
                     if (entry.isActive()) {
                         String rp = uriEncodedName;
+                        StringBuffer urlBuffer = request.getRequestURL();
+                        if (request.getQueryString() != null) {
+                            urlBuffer.append('?').append(request.getQueryString());
+                        }
+                        urlBuffer.append('#').append(rev);
             %>
-            <td><a href="<%= context + Prefix.HIST_L + rp %>#<%= rev %>"
+            <td><a href="<%= urlBuffer %>"
                 title="link to revision line">#</a>
                 <a href="<%= context + Prefix.XREF_P + rp + "?r=" + Util.URIEncode(rev) %>"><%=
                     rev %></a></td>
