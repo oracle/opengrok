@@ -355,10 +355,10 @@ public final class HistoryGuru {
             try {
                 repository = RepositoryFactory.getRepository(file);
             } catch (InstantiationException ie) {
-                LOGGER.log(Level.WARNING, "Could not create repoitory for '"
+                LOGGER.log(Level.WARNING, "Could not create repository for '"
                         + file + "', could not instantiate the repository.", ie);
             } catch (IllegalAccessException iae) {
-                LOGGER.log(Level.WARNING, "Could not create repoitory for '"
+                LOGGER.log(Level.WARNING, "Could not create repository for '"
                         + file + "', missing access rights.", iae);
             }
             if (repository == null) {
