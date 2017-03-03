@@ -9,6 +9,11 @@ before_install:
  - sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs
 before_script:
  - hg --version
+ - git --version
+ - svn --version
+ - cvs --version
+ - mtn --version
+ - bzr version
 
 env:
   global:
