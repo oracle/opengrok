@@ -17,10 +17,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2017 Hitachi Limited. All rights reserved.
- */
-
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
@@ -39,7 +35,7 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * BitKeeperTagParser handles parsing the output of `bk tags` into a set of tag entries.
  *
- * @author James Service <james.service@hds.com>
+ * @author James Service <jas2701@googlemail.com>
  */
 public class BitKeeperTagParser implements Executor.StreamHandler {
 

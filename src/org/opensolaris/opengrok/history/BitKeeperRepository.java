@@ -17,10 +17,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2017 Hitachi Limited. All rights reserved.
- */
-
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
@@ -41,7 +37,7 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * Access to a BitKeeper repository.
  *
- * @author James Service <james.service@hds.com>
+ * @author James Service <jas2701@googlemail.com>
  */
 public class BitKeeperRepository extends Repository {
 

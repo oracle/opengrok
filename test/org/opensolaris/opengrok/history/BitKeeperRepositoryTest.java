@@ -17,14 +17,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
- */
-
-/*
- * Copyright (c) 2016 Hitachi Limited. All rights reserved.
- */
-
 package org.opensolaris.opengrok.history;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -55,6 +47,8 @@ import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  * Tests for BitKeeperRepository.
+ *
+ * @author James Service <jas2701@googlemail.com>
  */
 @ConditionalRun(condition = RepositoryInstalled.BitKeeperInstalled.class)
 public class BitKeeperRepositoryTest {

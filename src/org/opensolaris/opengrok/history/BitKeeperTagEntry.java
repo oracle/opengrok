@@ -17,10 +17,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2017 Hitachi Limited. All rights reserved.
- */
-
 package org.opensolaris.opengrok.history;
 
 import java.util.Date;
@@ -28,7 +24,7 @@ import java.util.Date;
 /**
  * BitKeeper specific tag class with ability to compare itself with generic HistoryEntry.
  *
- * @author James Service
+ * @author James Service <jas2701@googlemail.com>
  */
 public class BitKeeperTagEntry extends TagEntry {
 
