@@ -433,13 +433,18 @@ public final class Util {
     }
 
     /**
-     * Converts different html special characters into their encodings used in
+     * Converts different HTML special characters into their encodings used in
      * html.
      *
      * @param s input text
      * @return encoded text for use in &lt;a title=""&gt; tag
      */
     public static String encode(String s) {
+        /**
+         * Make sure that the buffer is long enough to contain the whole string
+         * with the expanded special characters. We use 1.5*length as a
+         * heuristic.
+         */
         StringBuilder sb = new StringBuilder((int) Math.max(10, s.length() * 1.5));
         try {
             encode(s, sb);
@@ -454,7 +459,7 @@ public final class Util {
     }
 
     /**
-     * Converts different html special characters into their encodings used in
+     * Converts different HTML special characters into their encodings used in
      * html.
      *
      * @param s input text
@@ -484,16 +489,16 @@ public final class Util {
     /**
      * Encode URL
      *
-     * @param url string URL
+     * @param urlStr string URL
      * @return the encoded URL
      * @throws URISyntaxException
      * @throws MalformedURLException
      */
-    public static String encodeURL(String url) throws URISyntaxException, MalformedURLException {
-        URL old = new URL(url);
-        URI constructed = new URI(old.getProtocol(), old.getUserInfo(),
-                old.getHost(), old.getPort(),
-                old.getPath(), old.getQuery(), old.getRef());
+    public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
+        URL url = new URL(urlStr);
+        URI constructed = new URI(url.getProtocol(), url.getUserInfo(),
+                url.getHost(), url.getPort(),
+                url.getPath(), url.getQuery(), url.getRef());
         return constructed.toString();
     }
 

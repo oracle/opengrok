@@ -262,7 +262,9 @@ public class UtilTest {
         String[][] tests = new String[][]{
             {"Test <code>title</code>", "Test&nbsp;&#60;code&#62;title&#60;/code&#62;"},
             {"ahoj", "ahoj"},
-            {"<>|&\"'", "&#60;&#62;|&#38;&#34;&#39;"}
+            {"<>|&\"'", "&#60;&#62;|&#38;&#34;&#39;"},
+            {"tab\ttab", "tab&nbsp;&nbsp;&nbsp;&nbsp;tab"},
+            {"multi\nline\t\nstring", "multi&lt;br/&gt;line&nbsp;&nbsp;&nbsp;&nbsp;&lt;br/&gt;string"}
         };
 
         for (String[] test : tests) {
@@ -383,10 +385,10 @@ public class UtilTest {
                 .contains("href=\"" + Util.encodeURL("http://www.example.com?param=1&param2=2&param3=\"quoted>\"") + "\""));
         // escaping titles
         assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
-                .matches(".*title=\".*?" + Util.encode("http://www.example.com/\"quotation\"/else") + ".*\".*"));
+                .contains("title=\"Link to " + Util.encode("http://www.example.com/\"quotation\"/else") + "\""));
         assertTrue(Util.linkify("https://example.com/><\"")
-                .matches(".*title=\".*?" + Util.encode("https://example.com/><\"") + ".*\".*"));
+                .contains("title=\"Link to " + Util.encode("https://example.com/><\"") + "\""));
         assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
-                .matches(".*title=\".*?" + Util.encode("http://www.example.com\\?param=1&param2=2&param3=\"quoted>\"") + ".*\".*"));
+                .contains("title=\"Link to " + Util.encode("http://www.example.com?param=1&param2=2&param3=\"quoted>\"") + "\""));
     }
 }
