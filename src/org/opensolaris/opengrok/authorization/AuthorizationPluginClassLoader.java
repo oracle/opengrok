@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
 
@@ -49,6 +49,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     private final static String[] classWhitelist = new String[]{
         "org.opensolaris.opengrok.configuration.Group",
         "org.opensolaris.opengrok.configuration.Project",
+        "org.opensolaris.opengrok.configuration.RuntimeEnvironment",
         "org.opensolaris.opengrok.authorization.IAuthorizationPlugin",
         "org.opensolaris.opengrok.util.*",
         "org.opensolaris.opengrok.logger.*",
@@ -173,16 +174,16 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     /**
      * Loads the class with given name.
      *
-     * Package blacklist:
+     * Order of lookup:
+     * <ol>
+     * <li>already loaded classes </li>
+     * <li>parent class loader</li>
+     * <li>loading from .class files</li>
+     * <li>loading from .jar files</li>
+     * </ol>
      *
-     * @see #packageBlacklist Classes whitelist:
-     * @see #classWhitelist
-     *
-     * Order of lookup: 
-     * 1) already loaded classes 
-     * 2) parent class loader 
-     * 3) loading from .class files 
-     * 4) loading from .jar files
+     * Package blacklist: {@link #packageBlacklist}.<br />
+     * Classes whitelist: {@link #classWhitelist}.
      *
      * @param name class name
      * @return loaded class or null
@@ -197,17 +198,16 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     /**
      * Loads the class with given name.
      *
-     * Package blacklist:
+     * Order of lookup:
+     * <ol>
+     * <li>already loaded classes </li>
+     * <li>parent class loader</li>
+     * <li>loading from .class files</li>
+     * <li>loading from .jar files</li>
+     * </ol>
      *
-
-     * @see #packageBlacklist Classes whitelist:
-     * @see #classWhitelist
-     *
-     * Order of lookup: 
-     * 1) already loaded classes 
-     * 2) parent class loader 
-     * 3) loading from .class files 
-     * 4) loading from .jar files
+     * Package blacklist: {@link #packageBlacklist}.<br />
+     * Classes whitelist: {@link #classWhitelist}.
      *
      * @param name class name
      * @param resolveIt if the class should be resolved

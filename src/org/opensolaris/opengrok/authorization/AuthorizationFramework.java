@@ -148,8 +148,8 @@ public final class AuthorizationFramework {
      *
      * This and couple of following methods are declared as synchronized because
      * <ol>
-     *  <li>plugins can be reloaded at anytime</li>
-     *  <li>requests are pretty asynchronous</li>
+     * <li>plugins can be reloaded at anytime</li>
+     * <li>requests are pretty asynchronous</li>
      * </ol>
      *
      * So this tries to ensure that there will be no
