@@ -118,7 +118,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
                 byte[] bytes = loadBytes(in);
 
                 Class c = defineClass(classname, bytes, 0, bytes.length);
-                LOGGER.log(Level.INFO, "Class \"{0}\" found in file \"{1}\"",
+                LOGGER.log(Level.FINEST, "Class \"{0}\" found in file \"{1}\"",
                         new Object[]{
                             classname,
                             f.getAbsolutePath()

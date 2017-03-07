@@ -79,6 +79,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.opensolaris.opengrok.authorization.AuthorizationCheck;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -736,6 +737,14 @@ public final class RuntimeEnvironment {
 
     public void setAuthorizationWatchdog(boolean authorizationWatchdogEnabled) {
         threadConfig.get().setAuthorizationWatchdogEnabled(authorizationWatchdogEnabled);
+    }
+
+    public List<AuthorizationCheck> getPluginConfiguration() {
+        return threadConfig.get().getPluginConfiguration();
+    }
+
+    public void setPluginConfiguration(List<AuthorizationCheck> pluginConfiguration) {
+        threadConfig.get().setPluginConfiguration(pluginConfiguration);
     }
 
     /**
@@ -1584,6 +1593,7 @@ public final class RuntimeEnvironment {
             // Force timestamp to update itself upon new config arrival.
             config.refreshDateForLastIndexRun();
         }
+
         AuthorizationFramework.getInstance().setPluginDirectory(config.getPluginDirectory());
         AuthorizationFramework.getInstance().reload();
     }
