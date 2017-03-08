@@ -29,14 +29,7 @@ include file="projects.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
     cfg.setTitle("Search");
-    String sourceRootPath = cfg.getSourceRootPath();
-    if(sourceRootPath == null || sourceRootPath.isEmpty()){
-    throw new java.io.FileNotFoundException("Configuration File Not Found");
-    }
-    File sourceRootPathFile = RuntimeEnvironment.getInstance().getSourceRootFile();
-    if(sourceRootPathFile.exists() && !sourceRootPathFile.canRead()){
-    throw new java.io.IOException("Can not read configuration file");
-    }
+    cfg.checkSourceRootExistence();
 }
 %><%@
 

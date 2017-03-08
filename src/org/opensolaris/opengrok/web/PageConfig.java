@@ -1402,4 +1402,20 @@ public final class PageConfig {
 
         return Util.htmlize(title);
     }
+    
+    public void checkSourceRootExistence() throws IOException {        
+        if (sourceRootPath == null || sourceRootPath.isEmpty()) {
+            throw new java.io.FileNotFoundException("Configuration File Not Found, Can not determine source root path");
+        }
+        
+        File sourceRootPathFile = RuntimeEnvironment.getInstance().getSourceRootFile();
+        if (sourceRootPathFile.exists() && !sourceRootPathFile.canRead()) {
+            throw new java.io.IOException("Can not read configuration file");
+        }
+        
+        if(!sourceRootPathFile.exists()){
+            throw new java.io.FileNotFoundException("Source root path does not exist : " + sourceRootPathFile.getAbsolutePath());
+        }
+    }
+    
 }
