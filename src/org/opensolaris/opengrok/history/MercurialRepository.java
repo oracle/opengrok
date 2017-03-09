@@ -90,8 +90,6 @@ public class MercurialRepository extends Repository {
      */
     private static final String FILE_TEMPLATE = TEMPLATE_STUB
             + END_OF_ENTRY + "\\n";
-    private static final String FILE_TEMPLATE_LIST = TEMPLATE_STUB
-            + FILE_LIST + END_OF_ENTRY + "\\n";
 
     /**
      * Template for formatting hg log output for directories.
@@ -189,8 +187,7 @@ public class MercurialRepository extends Repository {
         if (file.isDirectory()) {
             cmd.add(env.isHandleHistoryOfRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
         } else {
-            /* JDBC requires complete list of files. */
-            cmd.add(env.storeHistoryCacheInDB() ? FILE_TEMPLATE_LIST : FILE_TEMPLATE);
+            cmd.add(FILE_TEMPLATE);
         }
         if (!filename.isEmpty()) {
             cmd.add(filename);

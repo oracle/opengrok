@@ -73,10 +73,6 @@ public final class Indexer {
     private static final String UIONLY = "uionly";
 
     private static final Indexer index = new Indexer();
-    private static final String DERBY_EMBEDDED_DRIVER
-            = "org.apache.derby.jdbc.EmbeddedDriver";
-    private static final String DERBY_CLIENT_DRIVER
-            = "org.apache.derby.jdbc.ClientDriver";
 
     public static Indexer getInstance() {
         return index;
@@ -157,9 +153,6 @@ public final class Indexer {
                     cfg = new Configuration();
                 }
 
-                String databaseDriver = cfg.getDatabaseDriver();
-                String databaseURL = cfg.getDatabaseUrl();
-
                 // Now we can handle all the other options..
                 getopt.reset();
                 while ((cmd = getopt.getOpt()) != -1) {
@@ -235,9 +228,6 @@ public final class Indexer {
                         case 'c':
                             cfg.setCtags(getopt.getOptarg());
                             break;
-                        case 'D':
-                            cfg.setHistoryCacheInDB(true);
-                            break;
                         case 'd': {
                             File dataRoot = new File(getopt.getOptarg());
                             if (!dataRoot.exists() && !dataRoot.mkdirs()) {
@@ -268,20 +258,6 @@ public final class Indexer {
                             break;
                         case 'i':
                             cfg.getIgnoredNames().add(getopt.getOptarg());
-                            break;
-                        case 'j':
-                            databaseDriver = getopt.getOptarg();
-                            // Should be a full class name, but we also accept
-                            // the shorthands "client" and "embedded". Expand
-                            // the shorthands here.
-                            switch (databaseDriver) {
-                                case "client":
-                                    databaseDriver = DERBY_CLIENT_DRIVER;
-                                    break;
-                                case "embedded":
-                                    databaseDriver = DERBY_EMBEDDED_DRIVER;
-                                    break;
-                            }
                             break;
                         case 'K':
                             listRepos = true;
@@ -425,9 +401,6 @@ public final class Indexer {
                         case 'U':
                             configHost = getopt.getOptarg();
                             break;
-                        case 'u':
-                            databaseURL = getopt.getOptarg();
-                            break;
                         case 'V':
                             System.out.println(Info.getFullVersion());
                             System.exit(0);
@@ -515,30 +488,6 @@ public final class Indexer {
                     }
                 }
 
-                if (cfg.isHistoryCacheInDB()) {
-                    // The default database driver is Derby's client driver.
-                    if (databaseDriver == null) {
-                        databaseDriver = DERBY_CLIENT_DRIVER;
-                    }
-
-                    // The default URL depends on the database driver.
-                    if (databaseURL == null) {
-                        StringBuilder defaultURL = new StringBuilder();
-                        defaultURL.append("jdbc:derby:");
-                        if (databaseDriver.equals(DERBY_EMBEDDED_DRIVER)) {
-                            defaultURL.append(cfg.getDataRoot())
-                                    .append(File.separator);
-                        } else {
-                            defaultURL.append("//localhost/");
-                        }
-                        defaultURL.append("cachedb;create=true");
-                        databaseURL = defaultURL.toString();
-                    }
-                }
-
-                cfg.setDatabaseDriver(databaseDriver);
-                cfg.setDatabaseUrl(databaseURL);
-
                 // automatically allow symlinks that are directly in source root
                 String file = cfg.getSourceRoot();
                 if (file != null) {
@@ -600,13 +549,6 @@ public final class Indexer {
                 if (!subFilesList.isEmpty() && subFiles.isEmpty()) {
                     System.err.println("None of the paths were added, exiting");
                     System.exit(1);
-                }
-
-                // Issue a warning when JDBC is used with renamed file handling.
-                // This causes heavy slowdown when used with JavaDB (issue #774).
-                if (env.isHandleHistoryOfRenamedFiles() && cfg.isHistoryCacheInDB()) {
-                    System.out.println("History stored in DB and renamed file "
-                            + "handling is on - possible performance degradation");
                 }
 
                 // Get history first.

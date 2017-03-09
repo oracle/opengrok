@@ -77,10 +77,6 @@ public final class Configuration {
      * before its result is cached.
      */
     private int historyCacheTime;
-    /**
-     * Should the history cache be stored in a database?
-     */
-    private boolean historyCacheInDB;
 
     private int messageLimit;
     private String pluginDirectory;
@@ -283,7 +279,6 @@ public final class Configuration {
         //defaults for an opengrok instance configuration
         setHistoryCache(true);
         setHistoryCacheTime(30);
-        setHistoryCacheInDB(false);
         setProjects(new ArrayList<>());
         setGroups(new TreeSet<>());
         setRepositories(new ArrayList<>());
@@ -463,29 +458,6 @@ public final class Configuration {
 
     public void setHandleHistoryOfRenamedFiles(boolean enable) {
         this.handleHistoryOfRenamedFiles = enable;
-    }
-
-    /**
-     * Should the history cache be stored in a database? If yes,
-     * {@code JDBCHistoryCache} will be used to cache the history; otherwise,
-     * {@code FileHistoryCache} is used.
-     *
-     * @return whether the history cache should be stored in a database
-     */
-    public boolean isHistoryCacheInDB() {
-        return historyCacheInDB;
-    }
-
-    /**
-     * Set whether the history cache should be stored in a database, and
-     * {@code JDBCHistoryCache} should be used instead of {@code
-     * FileHistoryCache}.
-     *
-     * @param historyCacheInDB whether the history cached should be stored in a
-     * database
-     */
-    public void setHistoryCacheInDB(boolean historyCacheInDB) {
-        this.historyCacheInDB = historyCacheInDB;
     }
 
     public List<Project> getProjects() {
@@ -919,22 +891,6 @@ public final class Configuration {
             }
         }
         return dtagsEftar;
-    }
-
-    public String getDatabaseDriver() {
-        return databaseDriver;
-    }
-
-    public void setDatabaseDriver(String databaseDriver) {
-        this.databaseDriver = databaseDriver;
-    }
-
-    public String getDatabaseUrl() {
-        return databaseUrl;
-    }
-
-    public void setDatabaseUrl(String databaseUrl) {
-        this.databaseUrl = databaseUrl;
     }
 
     public String getCTagsExtraOptionsFile() {

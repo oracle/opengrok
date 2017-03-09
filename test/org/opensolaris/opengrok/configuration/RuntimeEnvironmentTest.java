@@ -228,14 +228,6 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testStoreHistoryCacheInDB() {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        assertFalse(env.storeHistoryCacheInDB());
-        env.setStoreHistoryCacheInDB(true);
-        assertTrue(env.storeHistoryCacheInDB());
-    }
-
-    @Test
     public void testGenerateHtml() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertTrue(instance.isGenerateHtml());
