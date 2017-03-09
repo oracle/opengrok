@@ -27,6 +27,7 @@ import org.opensolaris.opengrok.history.CVSRepository;
 import org.opensolaris.opengrok.history.GitRepository;
 import org.opensolaris.opengrok.history.MercurialRepository;
 import org.opensolaris.opengrok.history.PerforceRepository;
+import org.opensolaris.opengrok.history.RCSRepository;
 import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.history.SubversionRepository;
 
@@ -75,6 +76,12 @@ public abstract class RepositoryInstalled implements RunCondition {
         }
     }
 
+    public static class RCSInstalled extends RepositoryInstalled {
+        public RCSInstalled() {
+            super("rcs", new RCSRepository());
+        }
+    }
+    
     public static class BazaarInstalled extends RepositoryInstalled {
         public BazaarInstalled() {
             super("bazaar", new BazaarRepository());

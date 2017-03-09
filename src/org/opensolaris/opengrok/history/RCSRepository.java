@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
@@ -127,7 +128,23 @@ public class RCSRepository extends Repository {
     @Override
     boolean isRepositoryFor(File file) {
         File rcsDir = new File(file, "RCS");
-        return rcsDir.isDirectory();
+        if (!rcsDir.isDirectory()) {
+            return false;
+        }
+
+        // If there is at least one entry with the ',v' suffix,
+        // consider this a RCS repository.
+        String[] list = rcsDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                // Technically we should check whether the entry is a file
+                // however this would incur additional I/O. The pattern
+                // should be enough.
+                return name.matches(".*,v");
+            }
+        });
+
+        return (list.length > 0);
     }
 
     /**
