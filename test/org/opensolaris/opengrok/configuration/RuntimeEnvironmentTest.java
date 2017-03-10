@@ -659,4 +659,26 @@ public class RuntimeEnvironmentTest {
             Assert.assertEquals(env.getStatistics().toJson().toJSONString(), out.toString());
         }
     }
+
+    @Test(expected = IOException.class)
+    public void testSaveNullStatistics() throws IOException, ParseException {
+        RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
+        RuntimeEnvironment.getInstance().saveStatistics();
+    }
+
+    @Test(expected = IOException.class)
+    public void testSaveNullStatisticsFile() throws IOException, ParseException {
+        RuntimeEnvironment.getInstance().saveStatistics((File) null);
+    }
+
+    @Test(expected = IOException.class)
+    public void testLoadNullStatistics() throws IOException, ParseException {
+        RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
+        RuntimeEnvironment.getInstance().loadStatistics();
+    }
+
+    @Test(expected = IOException.class)
+    public void testLoadNullStatisticsFile() throws IOException, ParseException {
+        RuntimeEnvironment.getInstance().loadStatistics((File) null);
+    }
 }
