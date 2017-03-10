@@ -1443,6 +1443,9 @@ public final class RuntimeEnvironment {
      * @throws IOException
      */
     public void saveStatistics() throws IOException {
+        if (getConfiguration().getStatisticsFilePath() == null) {
+            throw new FileNotFoundException("Statistics file is not set (null)");
+        }
         saveStatistics(new File(getConfiguration().getStatisticsFilePath()));
     }
 
@@ -1453,6 +1456,9 @@ public final class RuntimeEnvironment {
      * @throws IOException
      */
     public void saveStatistics(File out) throws IOException {
+        if (out == null) {
+            throw new FileNotFoundException("Statistics file is not set (null)");
+        }
         try (FileOutputStream ofstream = new FileOutputStream(out)) {
             saveStatistics(ofstream);
         }
@@ -1470,14 +1476,13 @@ public final class RuntimeEnvironment {
 
     /**
      * Load statistics from JSON file specified in configuration.
-     *     
+     *
      * @throws IOException
      * @throws ParseException
      */
     public void loadStatistics() throws IOException, ParseException {
-        String statisticsFilePath = getConfiguration().getStatisticsFilePath();
-        if(statisticsFilePath == null) {
-            throw new IOException("Statistics File path not found");
+        if (getConfiguration().getStatisticsFilePath() == null) {
+            throw new FileNotFoundException("Statistics file is not set (null)");
         }
         loadStatistics(new File(getConfiguration().getStatisticsFilePath()));
     }
@@ -1490,6 +1495,9 @@ public final class RuntimeEnvironment {
      * @throws ParseException
      */
     public void loadStatistics(File in) throws IOException, ParseException {
+        if (in == null) {
+            throw new FileNotFoundException("Statistics file is not set (null)");
+        }
         try (FileInputStream ifstream = new FileInputStream(in)) {
             loadStatistics(ifstream);
         }
