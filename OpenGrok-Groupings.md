@@ -138,7 +138,7 @@ for the webapp.
 There is no other way to persistently provide the group configuration than using
 `READ_XML_CONFIGURATION` variable for each run of the indexer. If you run the indexer 
 without the read only configuration, your groups will vanish from the `configuration.xml`.
-For more information see #1065.
+For more information see [#1065](https://github.com/OpenGrok/OpenGrok/issues/1065).
 
 
 ## Display
