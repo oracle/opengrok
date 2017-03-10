@@ -502,9 +502,9 @@ public class RuntimeEnvironmentTest {
         Assert.assertFalse(instance.canAcceptMessage(m1));
         m1.setExpiration(new Date(System.currentTimeMillis() - 1));
         Assert.assertFalse(instance.canAcceptMessage(m1));
-        m1.setExpiration(new Date(System.currentTimeMillis() - 0));
+        m1.setExpiration(new Date(System.currentTimeMillis() + 50));
         Assert.assertTrue(instance.canAcceptMessage(m1));
-        m1.setExpiration(new Date(System.currentTimeMillis() + 1));
+        m1.setExpiration(new Date(System.currentTimeMillis() + 100));
         Assert.assertTrue(instance.canAcceptMessage(m1));
 
         m1.setExpiration(new Date(System.currentTimeMillis() + 5000));
