@@ -14,25 +14,6 @@
     <param-value>localhost:2424</param-value>
   </context-param>
 
-  <context-param>
-      <description>
-          Directory with authorization plugins.
-          Default value is dataRoot/../plugins
-            (can be /var/opengrok/plugins if dataRoot is /var/opengrok/data).
-      </description>
-      <param-name>authorizationPluginDirectory</param-name>
-      <param-value>/var/opengrok/plugins</param-value>
-  </context-param>
-
-  <context-param>
-      <description>
-          Enable watching the plugin directory for changes in real time.
-          Suitable for development.
-      </description>
-      <param-name>enableAuthorizationWatchDog</param-name>
-      <param-value>false</param-value>
-  </context-param>
-
   <listener>
    <listener-class>org.opensolaris.opengrok.web.WebappListener</listener-class>
   </listener>

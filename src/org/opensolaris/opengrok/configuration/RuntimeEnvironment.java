@@ -730,6 +730,14 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getPluginDirectory();
     }
 
+    public boolean isAuthorizationWatchdog() {
+        return threadConfig.get().isAuthorizationWatchdog();
+    }
+
+    public void setAuthorizationWatchdog(boolean authorizationWatchdog) {
+        threadConfig.get().setAuthorizationWatchdog(authorizationWatchdog);
+    }
+
     /**
      * Is the verbosity flag turned on?
      *
@@ -1560,6 +1568,8 @@ public final class RuntimeEnvironment {
             // Force timestamp to update itself upon new config arrival.
             config.refreshDateForLastIndexRun();
         }
+        AuthorizationFramework.getInstance().setDirectory(config.getPluginDirectory());
+        AuthorizationFramework.getInstance().reload();
     }
 
     /**

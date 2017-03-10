@@ -53,7 +53,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 public final class AuthorizationFramework {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFramework.class);
-    private final File directory;
+    private File directory;
     private AuthorizationPluginClassLoader loader;
 
     private volatile static AuthorizationFramework instance = new AuthorizationFramework();
@@ -68,6 +68,31 @@ public final class AuthorizationFramework {
      */
     public static AuthorizationFramework getInstance() {
         return instance;
+    }
+
+    /**
+     * Get the plugin directory.
+     */
+    public synchronized File getDirectory() {
+        return directory;
+    }
+
+    /**
+     * Set the plugin directory.
+     *
+     * @param directory the directory
+     */
+    public synchronized void setDirectory(File directory) {
+        this.directory = directory;
+    }
+
+    /**
+     * Set the plugin directory.
+     *
+     * @param directory the directory path
+     */
+    public void setDirectory(String directory) {
+        setDirectory(directory != null ? new File(directory) : null);
     }
 
     /**
@@ -113,13 +138,8 @@ public final class AuthorizationFramework {
     private AuthorizationFramework() {
         String path = RuntimeEnvironment.getInstance()
                 .getPluginDirectory();
-        File directory = path == null ? null : new File(path);
-        if (path == null || directory == null || !directory.isDirectory() || !directory.canRead()) {
-            LOGGER.log(Level.INFO, "plugin directory not found or not readable: {0}. "
-                    + "The AuthorizationFramework will just pass requests through.", path);
-        }
         plugins = new ArrayList<>();
-        this.directory = directory;
+        this.directory = path == null ? null : new File(path);
         reload();
     }
 
@@ -127,8 +147,10 @@ public final class AuthorizationFramework {
      * Get available plugins.
      *
      * This and couple of following methods are declared as synchronized because
-     * 1) plugins can be reloaded at anytime 
-     * 2) requests are pretty asynchronous
+     * <ol>
+     *  <li>plugins can be reloaded at anytime</li>
+     *  <li>requests are pretty asynchronous</li>
+     * </ol>
      *
      * So this tries to ensure that there will be no
      * ConcurrentModificationException or other similar exceptions.
@@ -236,7 +258,7 @@ public final class AuthorizationFramework {
             SecurityException,
             InstantiationException,
             IllegalAccessException {
-        
+
         Class c = loader.loadClass(classname);
         // check for implemented interfaces
         Class[] intf = c.getInterfaces();
@@ -275,12 +297,14 @@ public final class AuthorizationFramework {
      * Old instances of plugins are removed and new list of plugins is
      * constructed. Unload and load event is fired on each plugin.
      *
-     * @see IAuthorizationPlugin#load() 
-     * @see IAuthorizationPlugin#unload() 
+     * @see IAuthorizationPlugin#load()
+     * @see IAuthorizationPlugin#unload()
      */
     @SuppressWarnings("unchecked")
     public synchronized void reload() {
         if (directory == null || !directory.isDirectory() || !directory.canRead()) {
+            LOGGER.log(Level.INFO, "plugin directory not found or not readable: {0}. "
+                    + "All requests allowed.", directory);
             return;
         }
         LOGGER.log(Level.INFO, "Plugins are being reloaded from " + directory.getAbsolutePath());
@@ -292,7 +316,7 @@ public final class AuthorizationFramework {
                 return new AuthorizationPluginClassLoader(directory);
             }
         });
-        
+
         removeAll();
         plugins = new ArrayList<>();
 
@@ -322,7 +346,7 @@ public final class AuthorizationFramework {
                 LOGGER.log(Level.INFO, "Could not manipulate with file because of: ", ex);
             }
         }
-        
+
         for (IAuthorizationPlugin plugin : getPlugins()) {
             try {
                 plugin.load();

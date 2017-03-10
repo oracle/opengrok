@@ -41,8 +41,6 @@ import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
-import static org.opensolaris.opengrok.configuration.Configuration.PLUGIN_DIRECTORY_DEFAULT;
-
 /**
  * Initialize webapp context
  *
@@ -98,22 +96,18 @@ public final class WebappListener
             }
         }
 
-        String pluginDirectory = context.getInitParameter(AUTHORIZATION_PLUGIN_DIRECTORY);
-        if (pluginDirectory != null) {
-            env.getConfiguration().setPluginDirectory(pluginDirectory);
-            AuthorizationFramework.getInstance(); // start + load
-        } else {
-            if (env.getDataRootPath() == null) {
-                env.getConfiguration().setPluginDirectory(PLUGIN_DIRECTORY_DEFAULT);
-            } else {
-                env.getConfiguration().setPluginDirectory(env.getDataRootPath() + "/../" + PLUGIN_DIRECTORY_DEFAULT);
-            }
-            LOGGER.log(Level.INFO, AUTHORIZATION_PLUGIN_DIRECTORY + " is not set in web.xml. Default location will be used.");
+        try {
+            RuntimeEnvironment.getInstance().loadStatistics();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
+        } catch (ParseException ex) {
+            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
         }
 
-        String watchDog = context.getInitParameter(ENABLE_AUTHORIZATION_WATCH_DOG);
-        if (pluginDirectory != null && watchDog != null && Boolean.parseBoolean(watchDog)) {
-            RuntimeEnvironment.getInstance().startWatchDogService(new File(pluginDirectory));
+        AuthorizationFramework.getInstance(); // start + load
+
+        if (env.getConfiguration().getPluginDirectory() != null && env.isAuthorizationWatchdog()) {
+            RuntimeEnvironment.getInstance().startWatchDogService(new File(env.getConfiguration().getPluginDirectory()));
         }
 
         RuntimeEnvironment.getInstance().startIndexReopenThread();
