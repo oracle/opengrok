@@ -155,12 +155,13 @@ public class StatsMessageTest {
     public void testInvalidReload() {
         Message m = new StatsMessage();
         m.setText("reload");
-        env.getConfiguration().setStatisticsFilePath(null);
+        env.getConfiguration().setStatisticsFilePath("/file/that/doesnot/exists");
 
         try {
             m.apply(env);
             Assert.fail("Should throw an exception");
         } catch (Exception ex) {
+            
         }
     }
 }
