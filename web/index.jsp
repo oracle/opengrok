@@ -29,6 +29,10 @@ include file="projects.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
     cfg.setTitle("Search");
+    String sourceRootPath = cfg.getSourceRootPath();
+    if(sourceRootPath == null || sourceRootPath.isEmpty()){
+        throw new java.io.FileNotFoundException("Configuration File Not Found");
+    }
 }
 %><%@
 
