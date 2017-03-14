@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.LinkedList;
 import java.util.TreeSet;
+import java.util.regex.PatternSyntaxException;
 import junit.framework.AssertionFailedError;
 import org.junit.Test;
 
@@ -81,6 +82,33 @@ public class GroupTest {
             // Can only chain one of the exceptions. Take the first one.
             afe.initCause(exceptions.getFirst());
             throw afe;
+        }
+    }
+
+    @Test
+    public void invalidPatternTest() {
+        testPattern("*dangling asterisk", false);
+        testPattern(".*(", false);
+        testPattern("+", false);
+        testPattern("[a-z?.*", false);
+        testPattern("()", true);
+        testPattern("[a-z?(.*)]", true);
+        testPattern("[a-z?.*]", true);
+        testPattern("valid pattern", true);
+        testPattern(".*(.*.*)?\\*.*", true);
+    }
+
+    private void testPattern(String pattern, boolean valid) {
+        try {
+            Group g = new Group();
+            g.setPattern(pattern);
+            if (!valid) {
+                fail("Pattern \"" + pattern + "\" is invalid regex pattern, exception expected.");
+            }
+        } catch (PatternSyntaxException ex) {
+            if (valid) {
+                fail("Pattern \"" + pattern + "\" is valid regex pattern, exception thrown.");
+            }
         }
     }
 
