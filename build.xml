@@ -392,7 +392,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <target name="-update-manifest-classpath">
         <manifest file="${manifest.file}" mode="update">
             <attribute name="Class-Path"
-                       value="${opengrok.lib.files} lib/derbyclient.jar lib/derby.jar"/>
+                       value="${opengrok.lib.files}"/>
         </manifest>
     </target>
 

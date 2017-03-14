@@ -80,11 +80,8 @@ public final class HistoryGuru {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         scanningDepth = env.getScanningDepth();
         if (env.useHistoryCache()) {
-            if (env.storeHistoryCacheInDB()) {
-                cache = new JDBCHistoryCache();
-            } else {
-                cache = new FileHistoryCache();
-            }
+            cache = new FileHistoryCache();
+
             try {
                 cache.initialize();
             } catch (HistoryException he) {
@@ -625,12 +622,7 @@ public final class HistoryGuru {
         List<Repository> repos = getReposFromString(repositories);
         HistoryCache cache = historyCache;
         if (cache == null) {
-            if (RuntimeEnvironment.getInstance().storeHistoryCacheInDB()) {
-                cache = new JDBCHistoryCache();
-                cache.initialize();
-            } else {
-                cache = new FileHistoryCache();
-            }
+            cache = new FileHistoryCache();
         }
         for (Repository r : repos) {
             try {

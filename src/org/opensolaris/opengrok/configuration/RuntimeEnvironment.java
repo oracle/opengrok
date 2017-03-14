@@ -619,24 +619,6 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Should the history cache be stored in a database instead of in XML files?
-     *
-     * @return {@code true} if the cache should be stored in a database
-     */
-    public boolean storeHistoryCacheInDB() {
-        return threadConfig.get().isHistoryCacheInDB();
-    }
-
-    /**
-     * Set whether the history cache should be stored in a database.
-     *
-     * @param store {@code true} if the cache should be stored in a database
-     */
-    public void setStoreHistoryCacheInDB(boolean store) {
-        threadConfig.get().setHistoryCacheInDB(store);
-    }
-
-    /**
      * Should we generate HTML or not during the indexing phase
      *
      * @return true if HTML should be generated during the indexing phase
@@ -1015,22 +997,6 @@ public final class RuntimeEnvironment {
 
     public Date getDateForLastIndexRun() {
         return threadConfig.get().getDateForLastIndexRun();
-    }
-
-    public String getDatabaseDriver() {
-        return threadConfig.get().getDatabaseDriver();
-    }
-
-    public void setDatabaseDriver(String databaseDriver) {
-        threadConfig.get().setDatabaseDriver(databaseDriver);
-    }
-
-    public String getDatabaseUrl() {
-        return threadConfig.get().getDatabaseUrl();
-    }
-
-    public void setDatabaseUrl(String databaseUrl) {
-        threadConfig.get().setDatabaseUrl(databaseUrl);
     }
 
     public String getCTagsExtraOptionsFile() {
