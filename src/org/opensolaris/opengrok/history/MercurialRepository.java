@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -141,7 +142,8 @@ public class MercurialRepository extends Repository {
      *
      * @param file The file or directory to retrieve history for
      * @param sinceRevision the oldest changeset to return from the executor, or
-     *                  {@code null} if all changesets should be returned
+     *                  {@code null} if all changesets should be returned.
+     *                  For files this does not apply and full history is returned.
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(File file, String sinceRevision)
@@ -159,28 +161,35 @@ public class MercurialRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("log");
 
-        // For plain files we would like to follow the complete history
-        // (this is necessary for getting the original name in given revision
-        // when handling renamed files)
-        if (!file.isDirectory()) {
-            cmd.add("-f");
-        }
-
-        // If this is non-default branch we would like to get the changesets
-        // on that branch and also any changesets from the parent branch(es).
-        if (sinceRevision != null) {
-            cmd.add("-r");
-            String[] parts = sinceRevision.split(":");
-            if (parts.length == 2) {
-                cmd.add("reverse(" + parts[0] + "::'" + getBranch() + "')");
+        if (file.isDirectory()) {
+            // If this is non-default branch we would like to get the changesets
+            // on that branch and also follow any changesets from the parent branch.
+            if (sinceRevision != null) {
+                cmd.add("-r");
+                String[] parts = sinceRevision.split(":");
+                if (parts.length == 2) {
+                    cmd.add("reverse(" + parts[0] + "::'" + getBranch() + "')");
+                } else {
+                    throw new HistoryException(
+                            "Don't know how to parse changeset identifier: "
+                            + sinceRevision);
+                }
             } else {
-                throw new HistoryException(
-                        "Don't know how to parse changeset identifier: "
-                        + sinceRevision);
+                cmd.add("-r");
+                cmd.add("reverse(0::'" + getBranch() + "')");
             }
         } else {
-            cmd.add("-r");
-            cmd.add("reverse(0::'" + getBranch() + "')");
+            // For plain files we would like to follow the complete history
+            // (this is necessary for getting the original name in given revision
+            // when handling renamed files)
+            // It is not needed to filter on a branch as 'hg log' will follow
+            // the active branch.
+            // Due to behavior of recent Mercurial versions, it is not possible
+            // to filter the changesets of a file based on revision.
+            // For files this does not matter since if getHistory() is called
+            // for a file, the file has to be renamed so we want its complete history.
+            cmd.add("--follow");
+            cmd.add(filename);
         }
 
         cmd.add("--template");
@@ -188,9 +197,6 @@ public class MercurialRepository extends Repository {
             cmd.add(env.isHandleHistoryOfRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
         } else {
             cmd.add(FILE_TEMPLATE);
-        }
-        if (!filename.isEmpty()) {
-            cmd.add(filename);
         }
 
         return new Executor(cmd, new File(directoryName), sinceRevision != null);
@@ -261,7 +267,7 @@ public class MercurialRepository extends Repository {
     }
 
     /**
-     * Get the name of file in given revision
+     * Get the name of file in given revision.
      *
      * @param fullpath file path
      * @param full_rev_to_find revision number (in the form of
@@ -286,20 +292,20 @@ public class MercurialRepository extends Repository {
         /*
          * Get the list of file renames for given file to the specified
          * revision. We need to get them from the newest to the oldest
-         * (hence the reverse()) so that we can follow the renames down
-         * to the revision we are after.
+         * so that we can follow the renames down to the revision we are after.
          */
         argv.add(ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK));
         argv.add("log");
-        argv.add("-f");
+        argv.add("--follow");
         /*
-         * hg log -f -r behavior has changed since Mercurial 3.4 so filtering
-         * the changesets of a file no longer works with -f.
+         * hg log --follow -r behavior has changed since Mercurial 3.4
+         * so filtering the changesets of a file no longer works with --follow.
          * This is tracked by https://bz.mercurial-scm.org/show_bug.cgi?id=4959
          * Once this is fixed and Mercurial versions with the fix are prevalent,
          * we can revert to the old behavior.
          */
         // argv.add("-r");
+        // Use reverse() to get the changesets from newest to oldest. 
         // argv.add("reverse(" + rev_to_find + ":)");
         argv.add("--template");
         argv.add("{rev}:{file_copies}\\n");
@@ -573,9 +579,17 @@ public class MercurialRepository extends Repository {
     History getHistory(File file, String sinceRevision)
             throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        // Note that the filtering of revisions based on sinceRevision is done
+        // in the history log executor by passing appropriate options to
+        // the 'hg' executable.
+        // This is done only for directories since if getHistory() is used
+        // for file, the file is renamed and its complete history is fetched
+        // so no sinceRevision filter is needed.
+        // See findOriginalName() code for more details.
         History result = new MercurialHistoryParser(this).parse(file,
                 sinceRevision);
-        // Assign tags to changesets they represent
+        
+        // Assign tags to changesets they represent.
         // We don't need to check if this repository supports tags,
         // because we know it :-)
         if (env.isTagsEnabled()) {
