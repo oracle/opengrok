@@ -206,6 +206,10 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="(zzFinalHighSurrogate = 1;)(\r?\n)"
                                replace="\1\2          if (numRead == 1) { return true; }\2"/>               
+                <!-- also revert 0 character check that got in with 1.6.1 : https://github.com/jflex-de/jflex/blob/master/jflex/examples/zero-reader/README.md -->
+                <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
+                               match="[ \t]*/\* not supposed to occur according to specification of java\.io\.Reader \*/\s+if \(numRead == 0.*?\}[ \t]*\r?\n"
+                               replace="" flags="s" />
             </sequential>
         </macrodef>
         
@@ -251,13 +255,13 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaXref"/>
         
-        <!-- just those 3 below will not increase buffer size beyond lucene token limits -->        
+        <!-- just those 4 below will not increase buffer size beyond lucene token limits -->        
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainSymbolTokenizer"/>
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/javascript" name="JavaScriptSymbolTokenizer"/>
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>
         
-        <!-- old analysers that will produce tokens > 32766 chars -->
+        <!-- old analysers that will produce tokens > 32766 chars, since they have the buffer increase code in -->
         <!-- 
         <run-jflex dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/plain" name="PlainSymbolTokenizer"/>

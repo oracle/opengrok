@@ -31,7 +31,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 super(in);
 %init}
 %unicode
-%buffer 1048576
+%buffer 32766
 %type boolean
 %eofval{
 this.finalOffset=zzEndRead;
