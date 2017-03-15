@@ -29,6 +29,7 @@ include file="projects.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
     cfg.setTitle("Search");
+    cfg.checkSourceRootExistence();
 }
 %><%@
 
