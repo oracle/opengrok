@@ -144,7 +144,8 @@ public class MercurialRepository extends Repository {
      *
      * @param file The file or directory to retrieve history for
      * @param sinceRevision the oldest changeset to return from the executor, or
-     *                  {@code null} if all changesets should be returned
+     *                  {@code null} if all changesets should be returned.
+     *                  For files this does not apply and full history is returned.
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(File file, String sinceRevision)
