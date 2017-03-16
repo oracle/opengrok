@@ -25,6 +25,8 @@ package org.opensolaris.opengrok.web;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.Locale;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.AfterClass;
@@ -256,6 +258,21 @@ public class UtilTest {
     }
 
     @Test
+    public void testEncode() {
+        String[][] tests = new String[][]{
+            {"Test <code>title</code>", "Test&nbsp;&#60;code&#62;title&#60;/code&#62;"},
+            {"ahoj", "ahoj"},
+            {"<>|&\"'", "&#60;&#62;|&#38;&#34;&#39;"},
+            {"tab\ttab", "tab&nbsp;&nbsp;&nbsp;&nbsp;tab"},
+            {"multi\nline\t\nstring", "multi&lt;br/&gt;line&nbsp;&nbsp;&nbsp;&nbsp;&lt;br/&gt;string"}
+        };
+
+        for (String[] test : tests) {
+            assertEquals(test[1], Util.encode(test[0]));
+        }
+    }
+
+    @Test
     public void dumpConfiguration() throws Exception {
         StringBuilder out = new StringBuilder();
         Util.dumpConfiguration(out);
@@ -332,7 +349,7 @@ public class UtilTest {
     }
 
     @Test
-    public void testLinkify() {
+    public void testLinkify() throws URISyntaxException, MalformedURLException {
         assertTrue(Util.linkify("http://www.example.com")
                 .matches("<a.*?href=\"http://www\\.example\\.com\".*?>.*?</a>"));
         assertTrue(Util.linkify("https://example.com")
@@ -359,12 +376,19 @@ public class UtilTest {
         assertTrue(Util.linkify("smtp://example.com/OpenGrok/OpenGrok").equals("smtp://example.com/OpenGrok/OpenGrok"));
         assertTrue(Util.linkify("just some crazy text").equals("just some crazy text"));
 
-        // escaping tests
+        // escaping url
         assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
-                .contains("href=\"http://www.example.com/%22quotation%22/else\""));
+                .contains("href=\"" + Util.encodeURL("http://www.example.com/\"quotation\"/else") + "\""));
         assertTrue(Util.linkify("https://example.com/><\"")
-                .contains("href=\"https://example.com/%3E%3C%22\""));
+                .contains("href=\"" + Util.encodeURL("https://example.com/><\"") + "\""));
         assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
-                .contains("href=\"http://www.example.com?param=1&param2=2&param3=%22quoted%3E%22\""));
+                .contains("href=\"" + Util.encodeURL("http://www.example.com?param=1&param2=2&param3=\"quoted>\"") + "\""));
+        // escaping titles
+        assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
+                .contains("title=\"Link to " + Util.encode("http://www.example.com/\"quotation\"/else") + "\""));
+        assertTrue(Util.linkify("https://example.com/><\"")
+                .contains("title=\"Link to " + Util.encode("https://example.com/><\"") + "\""));
+        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
+                .contains("title=\"Link to " + Util.encode("http://www.example.com?param=1&param2=2&param3=\"quoted>\"") + "\""));
     }
 }

@@ -65,12 +65,6 @@
 #                                 (old already indexed files won't be refreshed)
 #   - OPENGROK_WPREFIX            Disable wildcard prefix search query
 #                                 support (*)
-#   - OPENGROK_DERBY              if set, then indexer tries to use derby as
-#                                 historycache (see derby command of this
-#                                 script)
-#   - OPENGROK_DERBY_URL          Use specific URL to JavaDB, e.g.
-#                                 "jdbc:derby://localhost:1528/cachedb;create=true"
-#                                 (default port is 1527)
 #   - OPENGROK_TAG                Enable parsing of revision tags into the History
 #                                 view
 #   - READ_XML_CONFIGURATION      file with read only configuration
@@ -350,21 +344,6 @@ ${P4:+-Dorg.opensolaris.opengrok.history.Perforce=$P4} \
 ${MTN:+-Dorg.opensolaris.opengrok.history.Monotone=$MTN} \
 ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
 "
-
-    # OPTIONAL: Store The History Cache in Java DB (derby),
-    #           instead of file system (in gzipped xml files).
-    #
-    # Requirements:
-    #   - derbyclient.jar      - See README.txt for more details
-    #   - Running Derby Server - Defaults to localhost:1527
-    #
-    if [ -n "${OPENGROK_DERBY}" ]
-    then
-        DERBY_OPTIONS="-D"
-	if [ -n "${OPENGROK_DERBY_URL}" ]; then
-		DERBY_OPTIONS="${DERBY_OPTIONS} -u ${OPENGROK_DERBY_URL}"
-	fi
-    fi
 
     # OPTIONAL: Show revision tags in History view.
     #		Turn this off if you want to increase indexing performance a bit
@@ -754,27 +733,6 @@ ValidateConfiguration()
         QUIET=""
         VERBOSE="-v"
     fi
-
-    if [ -n "${OPENGROK_DERBY}" ]
-    then
-        if [ "`uname -s`" = "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
-	then
-	    if [ -d "/var/tomcat8" -a \
-	        ! -r "/var/tomcat8/webapps/source/WEB-INF/lib/derbyclient.jar" ];
-	    then
-	        FatalError "JavaDB on but no derbyclient.jar under" \
-		    "/var/tomcat8/webapps/source/WEB-INF/lib"
-	    fi
-	    if [ ! -r "/usr/opengrok/lib/derbyclient.jar" ]; then
-	        FatalError "JavaDB on but no derbyclient.jar under" \
-		    "/usr/opengrok/lib"
-	    fi
-	else
-            Warning "CHECK: derbyclient.jar needs to be in where the rest of " \
-	        "opengrok used jars are and in unpacked source.war in " \
-		"WEB-INF/lib !"
-	fi
-    fi
 }
 
 CreateRuntimeRequirements()
@@ -825,17 +783,6 @@ CreateRuntimeRequirements()
             fi
         fi
     fi
-
-    if [ -n "${OPENGROK_DERBY}" ]
-    then
-        if [ ! -d "${OPENGROK_INSTANCE_BASE}/derby" ]
-        then
-            Warning "OpenGrok generated derby path " \
-	        "${OPENGROK_INSTANCE_BASE}/derby doesn't exist"
-            Progress "  Attempting to create generated derby directory ... "
-            ${DO} mkdir -p ${OPENGROK_INSTANCE_BASE}/derby
-        fi
-    fi
 }
 
 MinimalInvocation()
@@ -852,7 +799,6 @@ CommonInvocation()
 {
     MinimalInvocation							\
         ${IGNORE_PATTERNS}                    				\
-        ${DERBY_OPTIONS}						\
         ${HISTORY_TAGS}							\
         ${GENERATE_HISTORY}           					\
         ${SCAN_DEPTH}                                           	\

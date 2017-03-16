@@ -1,0 +1,22 @@
+# HG changeset patch
+# User Vladimir Kotal <Vladimir.Kotal@oracle.com>
+# Date 1489160275 -3600
+#      Fri Mar 10 16:37:55 2017 +0100
+# Branch mybranch
+# Node ID 709c7a27f9faf0f71762c813d896efbe2a791b4b
+# Parent  c4518ca0c841c910575d098cbb4b947bfbe8b9a8
+novels are so last century. Let's write a blog !
+
+diff --git a/novel.txt b/blog.txt
+rename from novel.txt
+rename to blog.txt
+--- a/novel.txt
++++ b/blog.txt
+@@ -1,6 +1,4 @@
+-This will be a novel based on the previous novel.
+-
+-Chapter 1.
++This will be a blog !
+ 
+ Let's write some words. It began like this:
+ 

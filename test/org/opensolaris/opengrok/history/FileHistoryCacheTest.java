@@ -41,6 +41,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.opensolaris.opengrok.history.MercurialRepositoryTest.runHgCommand;
 
 /**
  * Test file based history cache with special focus on incremental reindex.
@@ -340,15 +341,26 @@ public class FileHistoryCacheTest {
                 cache.get(reposRoot, repo, true).getHistoryEntries(), true);
     }
 
-    /*
-     * Test what happens when incremental reindex brings in changesets where
-     * a file is renamed.
+    /**
+     * Check how incremental reindex behaves when indexing changesets that
+     * rename+change file.
+     * 
+     * The scenario goes as follows:
+     * - create repo
+     * - perform full reindex
+     * - add changesets which renamed and modify a file
+     * - perform incremental reindex
+     * - change+rename the file again
+     * - incremental reindex
+     *
+     * @throws Exception
      */
     @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
     @Test
-    public void testRenamedFile() throws Exception {
+    public void testRenameFileThenDoIncrementalReindex() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         Repository repo = RepositoryFactory.getRepository(reposRoot);
+        History updatedHistory;
 
         // The test expects support for renamed files.
         RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
@@ -357,17 +369,22 @@ public class FileHistoryCacheTest {
 
         cache.store(historyToStore, repo);
 
-        // import changesets which rename one of the files
+        // Import changesets which rename one of the files in the repository.
         MercurialRepositoryTest.runHgCommand("import",
-                reposRoot, getClass().getResource("hg-export-renamed.txt").getPath());
+            reposRoot, getClass().getResource("hg-export-renamed.txt").getPath());
 
-        // reindex
+        // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
 
-        // Check changesets for the renames and changes.
-        File main2 = new File(reposRoot.toString() + File.separatorChar + "main2.c");
-        History updatedHistory = cache.get(main2, repo, false);
+        // Verify size of complete history for the directory.
+        updatedHistory = cache.get(reposRoot, repo, true);
+        assertEquals(14, updatedHistory.getHistoryEntries().size());
 
+        // Check changesets for the renames and changes of single file.
+        File main2File = new File(reposRoot.toString() + File.separatorChar + "main2.c");
+        updatedHistory = cache.get(main2File, repo, false);
+
+        // Changesets e0-e3 were brought in by the import done above.
         HistoryEntry e0 = new HistoryEntry(
                 "13:e55a793086da",
                 new Date(1245447973L / 60 * 60 * 1000), // whole minutes only
@@ -408,12 +425,146 @@ public class FileHistoryCacheTest {
         entriesConstruct.add(e4);
         entriesConstruct.add(e5);
         histConstruct.setHistoryEntries(entriesConstruct);
+        assertEquals(6, updatedHistory.getHistoryEntries().size());
+        assertSameEntries(histConstruct.getHistoryEntries(),
+            updatedHistory.getHistoryEntries(), false);
+
+        // Add some changes and rename the file again.
+        MercurialRepositoryTest.runHgCommand("import",
+            reposRoot, getClass().getResource("hg-export-renamed-again.txt").getPath());
+
+        // Perform incremental reindex.
+        repo.createCache(cache, cache.getLatestCachedRevision(repo));
+
+        HistoryEntry e6 = new HistoryEntry(
+                "14:55c41cd4b348",
+                new Date(1489505558L / 60 * 60 * 1000), // whole minutes only
+                "Vladimir Kotal <Vladimir.Kotal@oracle.com>", null, "rename + cstyle",
+                true);
+        entriesConstruct = new LinkedList<>();
+        entriesConstruct.add(e6);
+        entriesConstruct.add(e0);
+        entriesConstruct.add(e1);
+        entriesConstruct.add(e2);
+        entriesConstruct.add(e3);
+        entriesConstruct.add(e4);
+        entriesConstruct.add(e5);
+        histConstruct.setHistoryEntries(entriesConstruct);
+
+        // Check changesets for the renames and changes of single file.
+        File main3File = new File(reposRoot.toString() + File.separatorChar + "main3.c");
+        updatedHistory = cache.get(main3File, repo, false);
+        assertEquals(7, updatedHistory.getHistoryEntries().size());
+        assertSameEntries(histConstruct.getHistoryEntries(),
+            updatedHistory.getHistoryEntries(), false);
+    }
+
+    /**
+     * Make sure generating incremental history index in branched repository
+     * with renamed file produces correct history for the renamed file
+     * (i.e. there should not be history entries from the default branch made
+     * there after the branch was created).
+     *
+     * @throws Exception
+     */
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @Test
+    public void testRenamedFilePlusChangesBranched() throws Exception {
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        History updatedHistory;
+
+        // The test expects support for renamed files.
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
+
+        // Branch the repo and add one changeset.
+        runHgCommand("unbundle",
+            reposRoot, getClass().getResource("hg-branch.bundle").getPath());
+
+        // Import changesets which rename one of the files in the default branch.
+        runHgCommand("import",
+            reposRoot, getClass().getResource("hg-export-renamed.txt").getPath());
+
+        // Switch to the newly created branch.
+        runHgCommand("update", reposRoot, "mybranch");
+
+        // Generate history index.
+        Repository repo = RepositoryFactory.getRepository(reposRoot);
+        History historyToStore = repo.getHistory(reposRoot);
+        cache.store(historyToStore, repo);
+
+        /* quick sanity check */
+        updatedHistory = cache.get(reposRoot, repo, true);
+        assertEquals(11, updatedHistory.getHistoryEntries().size());
+
+        // Import changesets which rename the file in the new branch.
+        runHgCommand("import",
+            reposRoot, getClass().getResource("hg-export-renamed-branched.txt").getPath());
+
+        // Perform incremental reindex.
+        repo.createCache(cache, cache.getLatestCachedRevision(repo));
+
+        /* overall history check */
+        updatedHistory = cache.get(reposRoot, repo, false);
+        assertEquals(12, updatedHistory.getHistoryEntries().size());
+        
+        // Check complete list of history entries for the renamed file.
+        File testFile = new File(reposRoot.toString() + File.separatorChar + "blog.txt");
+        updatedHistory = cache.get(testFile, repo, false);
+
+        HistoryEntry e0 = new HistoryEntry(
+                "15:709c7a27f9fa",
+                new Date(1489160275L / 60 * 60 * 1000), // whole minutes only
+                "Vladimir Kotal <Vladimir.Kotal@oracle.com>", null, "novels are so last century. Let's write a blog !",
+                true);
+        HistoryEntry e1 = new HistoryEntry(
+                "10:c4518ca0c841",
+                new Date(1415483555L / 60 * 60 * 1000), // whole minutes only
+                "Vladimir Kotal <Vladimir.Kotal@oracle.com>", null, "branched",
+                true);
+        HistoryEntry e2 = new HistoryEntry(
+                "8:6a8c423f5624",
+                new Date(1362586899L / 60 * 60 * 1000), // whole minutes only
+                "Vladimir Kotal <vlada@devnull.cz>", null, "first words of the novel",
+                true);
+        HistoryEntry e3 = new HistoryEntry(
+                "7:db1394c05268",
+                new Date(1362586862L / 60 * 60 * 1000), // whole minutes only
+                "Vladimir Kotal <vlada@devnull.cz>", null, "book sounds too boring, let's do a novel !",
+                true);
+        HistoryEntry e4 = new HistoryEntry(
+                "6:e386b51ddbcc",
+                new Date(1362586839L / 60 * 60 * 1000), // whole minutes only
+                "Vladimir Kotal <vlada@devnull.cz>", null, "stub of chapter 1",
+                true);
+        HistoryEntry e5 = new HistoryEntry(
+                "5:8706402863c6",
+                new Date(1362586805L / 60 * 60 * 1000), // whole minutes only
+                "Vladimir Kotal <vlada@devnull.cz>", null, "I decided to actually start writing a book based on the first plaintext file.",
+                true);
+        HistoryEntry e6 = new HistoryEntry(
+                "4:e494d67af12f",
+                new Date(1362586747L / 60 * 60 * 1000), // whole minutes only
+                "Vladimir Kotal <vlada@devnull.cz>", null, "first change",
+                true);
+        HistoryEntry e7 = new HistoryEntry(
+                "3:2058725c1470",
+                new Date(1362586483L / 60 * 60 * 1000), // whole minutes only
+                "Vladimir Kotal <vlada@devnull.cz>", null, "initial checking of text files",
+                true);
+
+        History histConstruct = new History();
+        LinkedList<HistoryEntry> entriesConstruct = new LinkedList<>();
+        entriesConstruct.add(e0);
+        entriesConstruct.add(e1);
+        entriesConstruct.add(e2);
+        entriesConstruct.add(e3);
+        entriesConstruct.add(e4);
+        entriesConstruct.add(e5);
+        entriesConstruct.add(e6);
+        entriesConstruct.add(e7);
+        histConstruct.setHistoryEntries(entriesConstruct);
         assertSameEntries(histConstruct.getHistoryEntries(),
                 updatedHistory.getHistoryEntries(), false);
-
-        // Verify size of complete history for the directory.
-        updatedHistory = cache.get(reposRoot, repo, true);
-        assertEquals(14, updatedHistory.getHistoryEntries().size());
     }
 
     private void checkNoHistoryFetchRepo(String reponame, String filename,

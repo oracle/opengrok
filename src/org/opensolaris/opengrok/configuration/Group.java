@@ -26,9 +26,12 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
- * Placeholder for the information about subgroups of projects and repositories
+ * Placeholder for the information about subgroups of projects and repositories.
+ *
+ * Supports natural ordering based on case insensitive group names.
  *
  * @author Krystof Tulinger
  * @version $Revision$
@@ -36,7 +39,26 @@ import java.util.regex.Pattern;
 public class Group implements Comparable<Group>, Nameable {
 
     private String name;
+    /**
+     * Group regexp pattern.
+     *
+     * No project matches the empty pattern of "" however this group can still
+     * be used as a superior group for other groups (without duplicating the
+     * projects).
+     */
     private String pattern = "";
+    /**
+     * Compiled group pattern.
+     *
+     * We set up the empty compiled pattern by default to "()" to reduce code
+     * complexity when performing a match for a group without a pattern.
+     *
+     * This pattern is updated whenever the string pattern {@link #pattern} is
+     * updated.
+     *
+     * @see #setPattern(String)
+     */
+    private Pattern compiledPattern = Pattern.compile("()");
     private Group parent;
     private int flag;
 
@@ -99,8 +121,8 @@ public class Group implements Comparable<Group>, Nameable {
         subgroups.add(g);
         descendants.add(g);
     }
-    
-    public Set<Group> getParents () {
+
+    public Set<Group> getParents() {
         if (parents == null) {
             parents = new TreeSet<>();
             Group tmp = parent;
@@ -134,7 +156,14 @@ public class Group implements Comparable<Group>, Nameable {
         return pattern;
     }
 
-    public void setPattern(String pattern) {
+    /**
+     * Set the group pattern.
+     *
+     * @param pattern the regexp pattern for this group
+     * @throws PatternSyntaxException when the pattern is invalid
+     */
+    public void setPattern(String pattern) throws PatternSyntaxException {
+        this.compiledPattern = Pattern.compile("(" + pattern + ")");
         this.pattern = pattern;
     }
 
@@ -153,7 +182,7 @@ public class Group implements Comparable<Group>, Nameable {
      * @return true if project's description matches the group pattern
      */
     public boolean match(Project p) {
-        return Pattern.matches("(" + this.pattern + ")", p.getName());
+        return compiledPattern.matcher(p.getName()).matches();
     }
 
     @Override

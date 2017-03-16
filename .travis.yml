@@ -1,3 +1,5 @@
+dist: trusty
+sudo: required
 language: java
 jdk:
   - oraclejdk8
@@ -8,6 +10,15 @@ before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs
  - sudo ./scripts/install-bitkeeper.sh
+
+before_script:
+ - bk --version
+ - hg --version
+ - git --version
+ - svn --version
+ - cvs --version
+ - mtn --version
+ - bzr version
 
 env:
   global:

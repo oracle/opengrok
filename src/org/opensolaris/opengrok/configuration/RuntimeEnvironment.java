@@ -374,6 +374,11 @@ public final class RuntimeEnvironment {
     public String getPathRelativeToSourceRoot(File file, int stripCount) throws IOException {
         String canonicalPath = file.getCanonicalPath();
         String sourceRoot = getSourceRootPath();
+        
+        if(sourceRoot == null){
+            throw new FileNotFoundException("Source Root Not Found");
+        }
+        
         if (canonicalPath.startsWith(sourceRoot)) {
             return canonicalPath.substring(sourceRoot.length() + stripCount);
         }
@@ -616,24 +621,6 @@ public final class RuntimeEnvironment {
      */
     public void setUseHistoryCache(boolean useHistoryCache) {
         threadConfig.get().setHistoryCache(useHistoryCache);
-    }
-
-    /**
-     * Should the history cache be stored in a database instead of in XML files?
-     *
-     * @return {@code true} if the cache should be stored in a database
-     */
-    public boolean storeHistoryCacheInDB() {
-        return threadConfig.get().isHistoryCacheInDB();
-    }
-
-    /**
-     * Set whether the history cache should be stored in a database.
-     *
-     * @param store {@code true} if the cache should be stored in a database
-     */
-    public void setStoreHistoryCacheInDB(boolean store) {
-        threadConfig.get().setHistoryCacheInDB(store);
     }
 
     /**
@@ -1015,22 +1002,6 @@ public final class RuntimeEnvironment {
 
     public Date getDateForLastIndexRun() {
         return threadConfig.get().getDateForLastIndexRun();
-    }
-
-    public String getDatabaseDriver() {
-        return threadConfig.get().getDatabaseDriver();
-    }
-
-    public void setDatabaseDriver(String databaseDriver) {
-        threadConfig.get().setDatabaseDriver(databaseDriver);
-    }
-
-    public String getDatabaseUrl() {
-        return threadConfig.get().getDatabaseUrl();
-    }
-
-    public void setDatabaseUrl(String databaseUrl) {
-        threadConfig.get().setDatabaseUrl(databaseUrl);
     }
 
     public String getCTagsExtraOptionsFile() {
@@ -1504,6 +1475,10 @@ public final class RuntimeEnvironment {
      * @throws ParseException
      */
     public void loadStatistics() throws IOException, ParseException {
+        String statisticsFilePath = getConfiguration().getStatisticsFilePath();
+        if(statisticsFilePath == null) {
+            throw new IOException("Statistics File path not found");
+        }
         loadStatistics(new File(getConfiguration().getStatisticsFilePath()));
     }
 

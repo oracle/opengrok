@@ -47,6 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -433,49 +434,73 @@ public final class Util {
     }
 
     /**
-     * Converts different html special characters into their encodings used in
-     * html. Currently used only for tooltips of annotation revision number view
+     * Converts different HTML special characters into their encodings used in
+     * html.
      *
      * @param s input text
      * @return encoded text for use in &lt;a title=""&gt; tag
      */
     public static String encode(String s) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '\'':
-                    sb.append("&#39;");
-                    break;
-                case '"':
-                    sb.append("&#39;");
-                    break; // \\\
-                case '&':
-                    sb.append("&amp;");
-                    break;
-                case '>':
-                    sb.append("&gt;");
-                    break;
-                case '<':
-                    sb.append("&lt;");
-                    break;
-                case ' ':
-                    sb.append("&nbsp;");
-                    break;
-                case '\t':
-                    sb.append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                    break;
-                case '\n':
-                    sb.append("&lt;br/&gt;");
-                    break;
-                case '\r':
-                    break;
-                default:
-                    sb.append(c);
-                    break;
-            }
+        /**
+         * Make sure that the buffer is long enough to contain the whole string
+         * with the expanded special characters. We use 1.5*length as a
+         * heuristic.
+         */
+        StringBuilder sb = new StringBuilder((int) Math.max(10, s.length() * 1.5));
+        try {
+            encode(s, sb);
+        } catch (IOException ex) {
+            // IOException cannot happen when the destination is a
+            // StringBuilder. Wrap in an AssertionError so that callers
+            // don't have to check for an IOException that should never
+            // happen.
+            throw new AssertionError("StringBuilder threw IOException", ex);
         }
         return sb.toString();
+    }
+
+    /**
+     * Converts different HTML special characters into their encodings used in
+     * html.
+     *
+     * @param s input text
+     * @param dest appendable destination for appending the encoded characters
+     * @throws java.io.IOException
+     */
+    public static void encode(String s, Appendable dest) throws IOException {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&' || c == '\'') {
+                // special html characters
+                dest.append("&#").append("" + (int) c).append(";");
+            } else if (c == ' ') {
+                // non breaking space
+                dest.append("&nbsp;");
+            } else if (c == '\t') {
+                dest.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+            } else if (c == '\n') {
+                // <br/>
+                dest.append("&lt;br/&gt;");
+            } else {
+                dest.append(c);
+            }
+        }
+    }
+
+    /**
+     * Encode URL
+     *
+     * @param urlStr string URL
+     * @return the encoded URL
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
+        URL url = new URL(urlStr);
+        URI constructed = new URI(url.getProtocol(), url.getUserInfo(),
+                url.getHost(), url.getPort(),
+                url.getPath(), url.getQuery(), url.getRef());
+        return constructed.toString();
     }
 
     /**
@@ -1275,48 +1300,66 @@ public final class Util {
     public static String createSlider(int offset, int limit, int size, HttpServletRequest request) {
         String slider = "";
         if (limit < size) {
-            StringBuilder buf = new StringBuilder(4096);
-            int labelStart = 1;
-            int sstart = offset - limit * (offset / limit % 10 + 1);
-            if (sstart < 0) {
-                sstart = 0;
-                labelStart = 1;
-            } else {
-                labelStart = sstart / limit + 1;
-            }
-            int label = labelStart;
-            int labelEnd = label + 11;
-            for (int i = sstart; i < size && label <= labelEnd; i += limit) {
-                if (i <= offset && offset < i + limit) {
-                    buf.append("<span class=\"sel\">").append(label).append("</span>");
-                } else {
-                    buf.append("<a class=\"more\" href=\"?");
-                    // append request parameters
-                    if (request != null && request.getQueryString() != null) {
-                        String query = request.getQueryString();
-                        query = query.replaceFirst("(\\?|&amp;|&|)n=\\d+", "");
-                        query = query.replaceFirst("(\\?|&amp;|&|)start=\\d+", "");
-                        query = query.replaceFirst("^(\\?|&amp;|&)", "");
-                        if (!query.isEmpty()) {
-                            buf.append(query);
-                            buf.append("&amp;");
-                        }
-                    }
-                    buf.append("n=").append(limit)
-                            .append("&amp;start=").append(i);
-                    buf.append("\">");
-                    if (label == labelStart && label != 1) {
-                        buf.append("&lt;&lt");
-                    } else if (label == labelEnd && i < size) {
-                        buf.append("&gt;&gt;");
+            final StringBuilder buf = new StringBuilder(4096);
+            int lastPage = (int) Math.ceil((double) size / limit);
+            // startingResult is the number of a first result on the current page
+            int startingResult = offset - limit * (offset / limit % 10 + 1);
+            int myFirstPage = startingResult < 0 ? 1 : startingResult / limit + 1;
+            int myLastPage = Math.min(lastPage, myFirstPage + 10 + (myFirstPage == 1 ? 0 : 1));
+
+            // function taking the page number and appending the desired content into the final buffer
+            Function<Integer, Void> generatePageLink = new Function<Integer, Void>() {
+                @Override
+                public Void apply(Integer page) {
+                    int myOffset = Math.max(0, (page - 1) * limit);
+                    if (myOffset <= offset && offset < myOffset + limit) {
+                        // do not generate anchor for current page
+                        buf.append("<span class=\"sel\">").append(page).append("</span>");
                     } else {
-                        buf.append(label);
+                        buf.append("<a class=\"more\" href=\"?");
+                        // append request parameters
+                        if (request != null && request.getQueryString() != null) {
+                            String query = request.getQueryString();
+                            query = query.replaceFirst("(\\?|&amp;|&|)n=\\d+", "");
+                            query = query.replaceFirst("(\\?|&amp;|&|)start=\\d+", "");
+                            query = query.replaceFirst("^(\\?|&amp;|&)", "");
+                            if (!query.isEmpty()) {
+                                buf.append(query);
+                                buf.append("&amp;");
+                            }
+                        }
+                        buf.append("n=").append(limit);
+                        if (myOffset != 0) {
+                            buf.append("&amp;start=").append(myOffset);
+                        }
+                        buf.append("\">");
+                        // add << or >> if this link would lead to another section
+                        if (page == myFirstPage && page != 1) {
+                            buf.append("&lt;&lt");
+                        } else if (page == myLastPage && myOffset + limit < size) {
+                            buf.append("&gt;&gt;");
+                        } else {
+                            buf.append(page);
+                        }
+                        buf.append("</a>");
                     }
-                    buf.append("</a>");
+                    return null;
                 }
-                label++;
+            };
+
+            // slider composition
+            if (myFirstPage != 1) {
+                generatePageLink.apply(1);
+                buf.append("<span>...</span>");
             }
-            slider = buf.toString();
+            for (int page = myFirstPage; page <= myLastPage; page++) {
+                generatePageLink.apply(page);
+            }
+            if (myLastPage != lastPage) {
+                buf.append("<span>...</span>");
+                generatePageLink.apply(lastPage);
+            }
+            return buf.toString();
         }
         return slider;
     }
@@ -1360,15 +1403,10 @@ public final class Util {
     public static String linkify(String url, boolean newTab) {
         if (isHttpUri(url)) {
             try {
-                URL old = new URL(url);
-                URI constructed = new URI(old.getProtocol(), old.getUserInfo(),
-                        old.getHost(), old.getPort(),
-                        old.getPath(), old.getQuery(), old.getRef());
-
                 return String.format("<a href=\"%s\"%s title=\"Link to %s\">%s</a>",
-                        constructed.toString(),
+                        Util.encodeURL(url),
                         newTab ? " target=\"_blank\"" : "",
-                        Util.htmlize(url),
+                        Util.encode(url),
                         Util.htmlize(url)
                 );
             } catch (MalformedURLException | URISyntaxException ex) {

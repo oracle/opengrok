@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -117,7 +117,7 @@ public class MercurialRepositoryTest {
 
     /**
      * Test that subset of changesets can be extracted based on penultimate
-     * revision number.
+     * revision number. This works for directories only.
      *
      * @throws Exception
      */
@@ -213,7 +213,7 @@ public class MercurialRepositoryTest {
     }
 
     /**
-     * Test that it is possible to get contents of last revision of a text file.
+     * Test that contents of last revision of a text file match expected content.
      *
      * @throws java.lang.Exception
      */
@@ -245,6 +245,11 @@ public class MercurialRepositoryTest {
         assertEquals(exp_str, str);
     }
 
+    /**
+     * Test that it is possible to get contents of multiple revisions of a file.
+     * 
+     * @throws java.lang.Exception
+     */
     @Test
     public void testgetHistoryGetForAll() throws Exception {
         setUpTestRepository();
