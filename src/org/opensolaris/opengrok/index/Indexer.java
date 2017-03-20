@@ -869,12 +869,13 @@ public final class Indexer {
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String host, int port) {
-        LOGGER.log(Level.INFO, "Sending configuration to: {0}", host);
+        LOGGER.log(Level.INFO, "Sending configuration to: {0}:{1}", new Object[]{host, Integer.toString(port)});
         try {
             env.writeConfiguration(host, port);
         } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Failed to send configuration to "
-                    + host + " (is web application server running with opengrok deployed?)", ex);
+            LOGGER.log(Level.SEVERE, String.format(
+                    "Failed to send configuration to %s:%d "
+                    + "(is web application server running with opengrok deployed?)", host, port), ex);
         }
         LOGGER.info("Configuration update routine done, check log output for errors.");
     }
