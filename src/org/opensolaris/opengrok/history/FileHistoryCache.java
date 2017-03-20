@@ -267,11 +267,12 @@ class FileHistoryCache implements HistoryCache {
      * @param cacheFile file to where the history object will be stored
      * @param histNew history object with new history entries
      * @param repo repository to where pre pre-image of the cacheFile belong
-     * @return merged history
+     * @return merged history (can be null if merge failed for some reason)
      * @throws HistoryException
      */
-    private History mergeOldAndNewHistory(File cacheFile, History histNew, Repository repo) throws HistoryException {
-        // Incremental update of the history for this file.
+    private History mergeOldAndNewHistory(File cacheFile, History histNew, Repository repo)
+            throws HistoryException {
+
         History histOld;
         History history = null;
 
@@ -314,7 +315,8 @@ class FileHistoryCache implements HistoryCache {
      * @param history history object to store
      * @param file file to store the history object into
      * @param repo repository for the file
-     * @param mergeHistory whether to merge the history with existing or store the histNew as is
+     * @param mergeHistory whether to merge the history with existing or
+     *                     store the histNew as is
      * @throws HistoryException
      */
     private void storeFile(History histNew, File file, Repository repo,
@@ -333,7 +335,13 @@ class FileHistoryCache implements HistoryCache {
             history = mergeOldAndNewHistory(cacheFile, histNew, repo);
         }
 
-        writeHistoryToFile(dir, history, cacheFile);
+        // If the merge failed, null history will be returned.
+        // In such case store at least new history as a best effort.
+        if (history != null) {
+            writeHistoryToFile(dir, history, cacheFile);
+        } else {
+            writeHistoryToFile(dir, histNew, cacheFile);
+        }
     }
 
     private void finishStore(Repository repository, String latestRev) {
