@@ -67,7 +67,7 @@ public class CVSRepository extends RCSRepository {
             = Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
 
     public CVSRepository() {
-        working = Boolean.FALSE;
+        working = null;
         setType("CVS");
         datePatterns = new String[]{
             "yyyy-MM-dd hh:mm:ss"
