@@ -67,6 +67,17 @@ public class CVSRepository extends RCSRepository {
             = Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
 
     public CVSRepository() {
+        /**
+         * This variable is set in the anchestor to TRUE which has a side effect
+         * that this repository is always marked as working even though it does
+         * not have the binary available on the system.
+         *
+         * Setting this to null does restores the default behavior (as java
+         * default for reference is null) for this repository - detecting the
+         * binary and act upon that.
+         *
+         * @see #isWorking
+         */
         working = null;
         setType("CVS");
         datePatterns = new String[]{
