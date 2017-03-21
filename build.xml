@@ -185,6 +185,10 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             </sequential>
         </macrodef>
         
+        
+        <!--
+        DON'T forget to SYNC below with opengrok-indexer/pom.xml !!!
+        -->
         <macrodef name="run-jflex-and-disable-buffer-expansion">
             <attribute name="name"/>    
             <attribute name="dir"/>
@@ -198,7 +202,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
                                match="private static final int ZZ_BUFFERSIZE ="
                                replace="private int ZZ_BUFFERSIZE ="/>
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
-                               match="int requested = zzBuffer.length - zzEndRead;"
+                               match="int requested = zzBuffer\.length - zzEndRead;"
                                replace="int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;"/>
              <!--   <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="(zzFinalHighSurrogate = 1;)(\r?\n)"
