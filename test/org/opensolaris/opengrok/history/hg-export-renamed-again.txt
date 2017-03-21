@@ -1,0 +1,32 @@
+# HG changeset patch
+# User Vladimir Kotal <Vladimir.Kotal@oracle.com>
+# Date 1489505558 -3600
+#      Tue Mar 14 16:32:38 2017 +0100
+# Node ID 55c41cd4b3482a96d0f343abff50d9cb4b9048f6
+# Parent  e55a793086da74a1095f92bac968e3683a233c3a
+rename + cstyle
+
+diff --git a/main2.c b/main3.c
+rename from main2.c
+rename to main3.c
+--- a/main2.c
++++ b/main3.c
+@@ -1,12 +1,13 @@
+ #include "header.h"
+ 
+-int main(int argc, char **argv) {
+-
+-   (void)printf("Program %s executed with the following arguments:\n", argv[0]);
++int
++main(int argc, char **argv)
++{
++   (void) printf("Program %s executed with the following arguments:\n", argv[0]);
+    for (int i = 1; i < argc; ++i) {
+-      (void)printf("[%s] ", argv[i]);
++      (void) printf("[%s] ", argv[i]);
+    }
+-   (void)printf("\n");
++   (void) printf("\n");
+ 
+    return argc == 1 ? EXIT_SUCCESS : EXIT_FAILURE;
+ }
