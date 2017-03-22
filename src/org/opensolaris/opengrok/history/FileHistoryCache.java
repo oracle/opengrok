@@ -303,7 +303,8 @@ class FileHistoryCache implements HistoryCache {
                 }
             }
         } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Cannot open history cache file " + cacheFile.getPath());
+            LOGGER.log(Level.SEVERE,
+                String.format("Cannot open history cache file %s", cacheFile.getPath()), ex);
         }
 
         return history;
