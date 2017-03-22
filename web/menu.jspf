@@ -80,7 +80,80 @@ org.opensolaris.opengrok.web.Util"
 %>
 <form action="<%= request.getContextPath() %>/search" id="sbox">
 <div id="qtbl">
-<table>
+    <table>
+    <%
+    if (projects.size() != 0) {
+    %>
+    <tbody id="ptbl">
+    <tr>
+    <td>
+    <label for="project">Project(s)</label>
+    </td>
+    <td>
+    <select tabindex="8" class="q" id="project"
+        name="project" multiple="multiple" size="<%=
+        Math.min(15, projectsSize) %>"><%
+        SortedSet<String> pRequested = cfg.getRequestedProjects();
+        for ( Group group : ph.getGroups() ) {
+            Set<Project> groupProjects = ph.getAllGrouped(group);
+            if ( groupProjects.size() > 0) {
+                %><optgroup label="<%= group.getName() %>"><%
+                for (Project p : groupProjects) {
+                // TODO below "selected" has no effect if one refreshes the page
+                // with F5
+
+                %><option value="<%= p.getName() %>"<%
+                    if (pRequested.contains(p.getName())) {
+                        %> selected="selected"<%
+                    }
+                    if (!(messages = Util.messagesToJson(p)).isEmpty()) {
+                    %> data-messages='<%= messages %>' <%
+                        }
+                    %>><%= Util.formQuoteEscape(p.getName()) %></option><%
+                }
+                %></optgroup><%
+            }
+        }
+  
+        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
+            %><optgroup label="Other"><%
+        }
+        for ( Project p : ph.getAllUngrouped()) {
+        %><option value="<%= p.getName() %>"<%
+            if (pRequested.contains(p.getName())) {
+                %> selected="selected"<%
+            }
+            if (!(messages = Util.messagesToJson(p)).isEmpty()) {
+                %> data-messages='<%= messages %>' <%
+            }
+            %>><%= Util.formQuoteEscape(p.getName()) %></option><%
+        }
+        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
+            %></optgroup><%
+        }
+    %></select>
+    </td>
+    </tr>
+    <tr>
+    <td colspan="2" >
+    <button tabindex="6" type="button"
+        onclick="javascript: selectAllProjects(); return false;"
+        >select all</button>
+    &nbsp;
+    <button tabindex="7" type="button"
+        onclick="javascript: invertAllProjects(); return false;"
+        >invert selection</button>
+    &nbsp;
+    <button tabindex="8" type="button"
+        onclick="javascript: deselectAllProjects(); return false;"
+        >clear</button>
+    </td>
+    </tr>
+    </tbody>
+    <%
+    }
+    %>
+    <tbody>
     <tr>
         <td><label for="s1" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
         <td><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
@@ -124,39 +197,7 @@ org.opensolaris.opengrok.web.Util"
             </select>
         </td>
     </tr>
-<%-- TODO  Bug 11749
-<%
-    if (projects.size() != 0) {
-        String imgDir = cfg.getCssDir() + "/img/";
-    %>
-    <tr>
-        <td>Project(s)</td>
-        <td>
-            <table class="combo_table" id="combotable">
-                <tbody>
-                    <tr>
-                        <td class="combo_td1"><div class="combo_div4"
-                            style="background: transparent url(<%=
-                                imgDir %>transparent_pixel.gif)
-                                repeat scroll 0% 0%;"><input
-                                class="combo_input1 combo_input" id="project"
-                                name="project" size="25"
-                                value="<%= cfg.getRequestedProjectsAsString()
-                                %>"/></div>
-                        </td>
-                        <td valign="top" align="left" class="combo_td2"
-                            id="combotable_button"><a
-                            onclick='javascript: $("#project").click();
-                            $("#project").click();'/><img style="display: none;"
-                            alt="" src="<%= imgDir %>button2.png"/>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></td>
-    </tr><%
-    }
-%>
---%>
+    </tbody>
 </table>
 <div id="form-controls">
     <input tabindex="9" class="submit btn" type="submit" value="Search"/>
@@ -164,65 +205,7 @@ org.opensolaris.opengrok.web.Util"
            type="button" value="Clear"/>
     <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
 </div>
-</div><%
-    if (projects.size() != 0) {
-%>
-<div id="ptbl">
-    <p><label for="project">In Project(s)</label> 
-        <button tabindex="6" type="button"
-        onclick="javascript: selectAllProjects(); return false;"
-        >select all</button>&nbsp;<button tabindex="7" type="button"
-        onclick="javascript: invertAllProjects(); return false;"
-        >invert selection</button>&nbsp;<button tabindex="8" type="button"
-        onclick="javascript: deselectAllProjects(); return false;"
-        >clear</button></p>
-    <select tabindex="8" class="q" id="project"
-        name="project" multiple="multiple" size="<%=
-        Math.min(15, projectsSize) %>"><%
-        SortedSet<String> pRequested = cfg.getRequestedProjects();
-        for ( Group group : ph.getGroups() ) {
-            Set<Project> groupProjects = ph.getAllGrouped(group);
-            if ( groupProjects.size() > 0) {
-                %><optgroup label="<%= group.getName() %>"><%
-                for (Project p : groupProjects) {
-                // TODO below "selected" has no effect if one refreshes the page
-                // with F5
-
-                %><option value="<%= p.getName() %>"<%
-                    if (pRequested.contains(p.getName())) {
-                        %> selected="selected"<%
-                    }
-                    if (!(messages = Util.messagesToJson(p)).isEmpty()) {
-                    %> data-messages='<%= messages %>' <%
-                        }
-                    %>><%= Util.formQuoteEscape(p.getName()) %></option><%
-                }
-                %></optgroup><%
-            }
-        }
-  
-        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
-            %><optgroup label="Other"><%
-        }
-        for ( Project p : ph.getAllUngrouped()) {
-        %><option value="<%= p.getName() %>"<%
-            if (pRequested.contains(p.getName())) {
-                %> selected="selected"<%
-            }
-            if (!(messages = Util.messagesToJson(p)).isEmpty()) {
-                %> data-messages='<%= messages %>' <%
-            }
-            %>><%= Util.formQuoteEscape(p.getName()) %></option><%
-        }
-        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
-            %></optgroup><%
-        }
-
-
-    %></select>
-</div><%
-    }
-    %>
+</div>
 <div id="ltbl">
     <!-- filled with javascript -->
 </div>
