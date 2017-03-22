@@ -29,7 +29,9 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -371,5 +373,58 @@ public class IndexerTest {
         } else {
             System.out.println("Skipping test for bug 11896. Could not find a mkfifo in path.");
         }
+    }
+
+    /**
+     * Should include the existing project.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDefaultProjectsSingleProject() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
+                false, false, false, null, null, new ArrayList<>(), false);
+        assertEquals(1, env.getDefaultProjects().size());
+        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+                env.getDefaultProjects().stream().map((Project p) -> '/' + p.getName()).collect(Collectors.toSet()));
+    }
+
+    /**
+     * Should discard the non existing project.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDefaultProjectsNonExistent() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                new TreeSet<>(Arrays.asList(new String[]{"/lisp", "/pascal", "/perl", "/data", "/no-project-x32ds1"})),
+                null, false, false, false, null, null, new ArrayList<>(), false);
+        assertEquals(4, env.getDefaultProjects().size());
+        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"/lisp", "/pascal", "/perl", "/data"})),
+                env.getDefaultProjects().stream().map((Project p) -> '/' + p.getName()).collect(Collectors.toSet()));
+    }
+
+    /**
+     * Should include all projects in the source root.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDefaultProjectsAll() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                new TreeSet<>(Arrays.asList(new String[]{"/c", "/data", "__all__", "/no-project-x32ds1"})),
+                null, false, false, false, null, null, new ArrayList<>(), false);
+        Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
+        assertEquals(projects.size(), env.getDefaultProjects().size());
+        assertEquals(projects, env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
     }
 }
