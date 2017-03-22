@@ -82,7 +82,7 @@ public class RepositoryInfo implements Serializable {
 
     /**
      * Returns true if this repository is usable in this context (for SCM
-     * systems that use external binaries, the binary must be availabe etc)
+     * systems that use external binaries, the binary must be available etc)
      *
      * @return true if the HistoryGuru may use the repository
      */

@@ -35,7 +35,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class JavaScriptSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
-%buffer 1048576
+%buffer 32766
 %init{
 super(in);
 %init}

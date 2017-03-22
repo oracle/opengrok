@@ -562,7 +562,7 @@ class FileHistoryCache implements HistoryCache {
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
                 // retrieving the history takes too long, cache it!
-                storeFile(history, file, repository);
+                storeFile(history, file, repository, false);
             }
         }
 

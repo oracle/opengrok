@@ -91,7 +91,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
     -->
 
-    <property name="version" value="0.13-rc10"/>
+    <property name="version" value="1.0-rc10"/>
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
@@ -185,6 +185,10 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             </sequential>
         </macrodef>
         
+        
+        <!--
+        DON'T forget to SYNC below with opengrok-indexer/pom.xml !!!
+        -->
         <macrodef name="run-jflex-and-disable-buffer-expansion">
             <attribute name="name"/>    
             <attribute name="dir"/>
@@ -198,7 +202,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
                                match="private static final int ZZ_BUFFERSIZE ="
                                replace="private int ZZ_BUFFERSIZE ="/>
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
-                               match="int requested = zzBuffer.length - zzEndRead;"
+                               match="int requested = zzBuffer\.length - zzEndRead;"
                                replace="int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;"/>
              <!--   <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="(zzFinalHighSurrogate = 1;)(\r?\n)"
@@ -206,6 +210,10 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="(zzFinalHighSurrogate = 1;)(\r?\n)"
                                replace="\1\2          if (numRead == 1) { return true; }\2"/>               
+                <!-- also revert 0 character check that got in with 1.6.1 : https://github.com/jflex-de/jflex/blob/master/jflex/examples/zero-reader/README.md -->
+                <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
+                               match="[ \t]*/\* not supposed to occur according to specification of java\.io\.Reader \*/\s+if \(numRead == 0.*?\}[ \t]*\r?\n"
+                               replace="" flags="s" />
             </sequential>
         </macrodef>
         
@@ -251,13 +259,13 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaXref"/>
         
-        <!-- just those 3 below will not increase buffer size beyond lucene token limits -->        
+        <!-- just those 4 below will not increase buffer size beyond lucene token limits -->        
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainSymbolTokenizer"/>
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/javascript" name="JavaScriptSymbolTokenizer"/>
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>
         
-        <!-- old analysers that will produce tokens > 32766 chars -->
+        <!-- old analysers that will produce tokens > 32766 chars, since they have the buffer increase code in -->
         <!-- 
         <run-jflex dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/plain" name="PlainSymbolTokenizer"/>

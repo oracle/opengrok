@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -117,7 +119,7 @@ public final class Indexer {
             String configHost = null;
             boolean addProjects = false;
             boolean refreshHistory = false;
-            String defaultProject = null;
+            Set<String> defaultProjects = new TreeSet<>();
             boolean listFiles = false;
             boolean listRepos = false;
             boolean createDict = false;
@@ -327,7 +329,7 @@ public final class Indexer {
                             addProjects = true;
                             break;
                         case 'p':
-                            defaultProject = getopt.getOptarg();
+                            defaultProjects.add(getopt.getOptarg());
                             break;
                         case 'Q':
                             if (getopt.getOptarg().equalsIgnoreCase(ON)) {
@@ -553,7 +555,7 @@ public final class Indexer {
 
                 // Get history first.
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
-                        defaultProject, configFilename, refreshHistory,
+                        defaultProjects, configFilename, refreshHistory,
                         listFiles, createDict, subFiles, repositories,
                         zapCache, listRepos);
                 if (listRepos || !zapCache.isEmpty()) {
@@ -602,7 +604,7 @@ public final class Indexer {
     public void prepareIndexer(RuntimeEnvironment env,
             boolean searchRepositories,
             boolean addProjects,
-            String defaultProject,
+            Set<String> defaultProjects,
             String configFilename,
             boolean refreshHistory,
             boolean listFiles,
@@ -730,12 +732,22 @@ public final class Indexer {
             });
         }
 
-        if (defaultProject != null) {
-            for (Project p : env.getProjects()) {
-                if (p.getPath().equals(defaultProject)) {
-                    env.setDefaultProject(p);
+        if (defaultProjects != null && !defaultProjects.isEmpty()) {
+            Set<Project> projects = new TreeSet<>();
+            for (String projectPath : defaultProjects) {
+                if (projectPath.equals("__all__")) {
+                    projects.addAll(env.getProjects());
                     break;
                 }
+                for (Project p : env.getProjects()) {
+                    if (p.getPath().equals(projectPath)) {
+                        projects.add(p);
+                        break;
+                    }
+                }
+            }
+            if (!projects.isEmpty()) {
+                env.setDefaultProjects(projects);
             }
         }
 
@@ -869,12 +881,13 @@ public final class Indexer {
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String host, int port) {
-        LOGGER.log(Level.INFO, "Sending configuration to: {0}", host);
+        LOGGER.log(Level.INFO, "Sending configuration to: {0}:{1}", new Object[]{host, Integer.toString(port)});
         try {
             env.writeConfiguration(host, port);
         } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Failed to send configuration to "
-                    + host + " (is web application server running with opengrok deployed?)", ex);
+            LOGGER.log(Level.SEVERE, String.format(
+                    "Failed to send configuration to %s:%d "
+                    + "(is web application server running with opengrok deployed?)", host, port), ex);
         }
         LOGGER.info("Configuration update routine done, check log output for errors.");
     }

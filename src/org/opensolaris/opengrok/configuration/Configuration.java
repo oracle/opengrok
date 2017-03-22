@@ -88,11 +88,11 @@ public final class Configuration {
     private String urlPrefix;
     private boolean generateHtml;
     /**
-     * Default project will be used, when no project is selected and no project
+     * Default projects will be used, when no project is selected and no project
      * is in cookie, so basically only the first time you open the first page,
      * or when you clear your web cookies
      */
-    private Project defaultProject;
+    private Set<Project> defaultProjects;
     /**
      * Default size of memory to be used for flushing of Lucene docs per thread.
      * Lucene 4.x uses 16MB and 8 threads, so below is a nice tunable.
@@ -555,12 +555,12 @@ public final class Configuration {
         return generateHtml;
     }
 
-    public void setDefaultProject(Project defaultProject) {
-        this.defaultProject = defaultProject;
+    public void setDefaultProjects(Set<Project> defaultProjects) {
+        this.defaultProjects = defaultProjects;
     }
 
-    public Project getDefaultProject() {
-        return defaultProject;
+    public Set<Project> getDefaultProjects() {
+        return defaultProjects;
     }
 
     public double getRamBufferSize() {

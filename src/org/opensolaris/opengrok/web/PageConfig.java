@@ -844,9 +844,13 @@ public final class PageConfig {
             }
         }
         if (set.isEmpty()) {
-            Project defaultProject = env.getDefaultProject();
-            if (defaultProject != null && authFramework.isAllowed(req, defaultProject)) {
-                set.add(defaultProject.getName());
+            Set<Project> defaultProjects = env.getDefaultProjects();
+            if (defaultProjects != null) {
+                for (Project project : defaultProjects) {
+                    if (authFramework.isAllowed(req, project)) {
+                        set.add(project.getName());
+                    }
+                }
             }
         }
         return set;

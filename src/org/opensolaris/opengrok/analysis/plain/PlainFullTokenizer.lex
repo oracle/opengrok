@@ -30,7 +30,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class PlainFullTokenizer
 %extends JFlexTokenizer
 %unicode
-%buffer 1048576
+%buffer 32766
 %init{
 super(in);
 %init}

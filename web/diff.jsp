@@ -50,28 +50,24 @@ private String getAnnotateRevision(DiffData data) {
     }
     return "";
 }
-%><%@
-
-include file="mast.jsp"
-
-%><script src="<%=request.getContextPath()%>/js/diff-0.0.1.js" type="text/javascript"></script><%
-/* ---------------------- diff.jsp start --------------------- */
+%>
+<%
 {
+    /**
+     * This block must be the first block before any other output in the
+     * response.
+     *
+     * If there is already any output written into the response and we
+     * use the same response and reset the content and the headers then we have
+     * a collision with the response streams and the "getOutputStream() has
+     * already been called" exception occurs.
+     */
     PageConfig cfg = PageConfig.get(request);
     DiffData data = cfg.getDiffData();
-
-    if (data.errorMsg != null)  {
-
-%>
-<div class="src">
-    <h3 class="error">Error:</h3>
-    <p><%= data.errorMsg %></p>
-</div><%
-
-    } else if (data.type == DiffType.TEXT
+    request.setAttribute("diff.jsp-data", data);
+    if (data.type == DiffType.TEXT
             && request.getParameter("action") != null
             && request.getParameter("action").equals("download")) {
-        response.resetBuffer(); // reset buffer to clean it from the header html
         try (OutputStream o = response.getOutputStream()) {
             for (int i = 0; i < data.revision.size(); i++) {
                 Delta d = data.revision.getDelta(i);
@@ -86,7 +82,30 @@ include file="mast.jsp"
                     }
                 }
             }
+            o.flush();
+            o.close();
+            return;
         }
+    }
+}
+%><%@
+
+include file="mast.jsp"
+
+%><script src="<%=request.getContextPath()%>/js/diff-0.0.1.js" type="text/javascript"></script><%
+/* ---------------------- diff.jsp start --------------------- */
+{
+    PageConfig cfg = PageConfig.get(request);
+    DiffData data = (DiffData) request.getAttribute("diff.jsp-data");
+
+    // the data is never null as the getDiffData always return valid object
+    if (data.errorMsg != null)  {
+
+%>
+<div class="src">
+    <h3 class="error">Error:</h3>
+    <p><%= data.errorMsg %></p>
+</div><%
     } else if (data.genre == Genre.IMAGE) {
 
         String link = request.getContextPath() + Prefix.DOWNLOAD_P

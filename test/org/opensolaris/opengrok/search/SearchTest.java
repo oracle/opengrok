@@ -18,19 +18,16 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
-
+import java.util.Arrays;
+import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -40,6 +37,10 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.index.IndexerTest;
 import org.opensolaris.opengrok.util.TestRepository;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Basic testing of the Search class, i.e. the command line utility.
@@ -67,7 +68,7 @@ public class SearchTest {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(false);
-            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null,
+            Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
                     false, false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
@@ -274,4 +275,26 @@ public class SearchTest {
         assertTrue(array.toString().contains("Makefile: [...]"));
         System.setOut(out);
     }
+    
+    /**
+     * Test of long line indexing/splitting for plain symbol tokenizer.
+     */
+    @Test
+    public void testJavascriptLongLine() {
+        if (skip) {
+            return;
+        }
+        
+        Search instance = new Search();
+        
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "\"beforelongline\"","-p", "\"testlong.js\""}));
+        assertTrue(instance.search());
+        assertEquals(1, instance.results.size());
+        
+        //if fix for #1170 works, below should be also in index
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "\"afterlongline\"","-p", "\"testlong.js\""}));
+        assertTrue(instance.search());
+        assertEquals(1, instance.results.size());
+    }
+    
 }
