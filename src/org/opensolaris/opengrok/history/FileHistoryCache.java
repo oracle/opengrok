@@ -345,6 +345,11 @@ class FileHistoryCache implements HistoryCache {
         }
     }
 
+    private void storeFile(History histNew, File file, Repository repo)
+            throws HistoryException {
+        storeFile(histNew, file, repo, false);
+    }
+
     private void finishStore(Repository repository, String latestRev) {
         storeLatestCachedRevision(repository, latestRev);
         LOGGER.log(Level.FINE,
@@ -557,9 +562,10 @@ class FileHistoryCache implements HistoryCache {
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
                 // retrieving the history takes too long, cache it!
-                storeFile(history, file, repository, false);
+                storeFile(history, file, repository);
             }
         }
+
         return history;
     }
 
