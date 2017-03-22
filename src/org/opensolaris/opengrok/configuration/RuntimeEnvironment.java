@@ -731,11 +731,11 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isAuthorizationWatchdog() {
-        return threadConfig.get().isAuthorizationWatchdog();
+        return threadConfig.get().isAuthorizationWatchdogEnabled();
     }
 
-    public void setAuthorizationWatchdog(boolean authorizationWatchdog) {
-        threadConfig.get().setAuthorizationWatchdog(authorizationWatchdog);
+    public void setAuthorizationWatchdog(boolean authorizationWatchdogEnabled) {
+        threadConfig.get().setAuthorizationWatchdogEnabled(authorizationWatchdogEnabled);
     }
 
     /**
@@ -1568,7 +1568,7 @@ public final class RuntimeEnvironment {
             // Force timestamp to update itself upon new config arrival.
             config.refreshDateForLastIndexRun();
         }
-        AuthorizationFramework.getInstance().setDirectory(config.getPluginDirectory());
+        AuthorizationFramework.getInstance().setPluginDirectory(config.getPluginDirectory());
         AuthorizationFramework.getInstance().reload();
     }
 
@@ -1685,10 +1685,11 @@ public final class RuntimeEnvironment {
 
     /**
      * Starts a watch dog service for a directory. It automatically reloads the
-     * AuthorizationFramework if there was a change.
+     * AuthorizationFramework if there was a change in <b>real-time</b>.
+     * Suitable for plugin development.
      *
-     * You can control start of this service by context-parameter in web.xml
-     * param-name: enableAuthorizationWatchDog
+     * You can control start of this service by a configuration parameter
+     * {@link Configuration#authorizationWatchdogEnabled}
      *
      * @param directory root directory for plugins
      */

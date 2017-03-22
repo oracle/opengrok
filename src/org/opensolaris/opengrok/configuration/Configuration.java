@@ -89,7 +89,7 @@ public final class Configuration {
      * Enable watching the plugin directory for changes in real time. Suitable
      * for development.
      */
-    private boolean authorizationWatchdog;
+    private boolean authorizationWatchdogEnabled;
     private List<Project> projects;
     private Set<Group> groups;
     private String sourceRoot;
@@ -333,7 +333,7 @@ public final class Configuration {
         setRevisionMessageCollapseThreshold(200);
         setGroupsCollapseThreshold(4);
         setPluginDirectory(null);
-        setAuthorizationWatchdog(false);
+        setAuthorizationWatchdogEnabled(false);
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setIndexRefreshPeriod(3600);
         setMessageLimit(500);
@@ -385,12 +385,12 @@ public final class Configuration {
         this.pluginDirectory = pluginDirectory;
     }
 
-    public boolean isAuthorizationWatchdog() {
-        return authorizationWatchdog;
+    public boolean isAuthorizationWatchdogEnabled() {
+        return authorizationWatchdogEnabled;
     }
 
-    public void setAuthorizationWatchdog(boolean authorizationWatchdog) {
-        this.authorizationWatchdog = authorizationWatchdog;
+    public void setAuthorizationWatchdogEnabled(boolean authorizationWatchdogEnabled) {
+        this.authorizationWatchdogEnabled = authorizationWatchdogEnabled;
     }
 
     public void setCmds(Map<String, String> cmds) {
