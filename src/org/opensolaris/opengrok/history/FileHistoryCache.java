@@ -129,7 +129,7 @@ class FileHistoryCache implements HistoryCache {
 
         File file = new File(root, filename);
         if (!file.isDirectory()) {
-            storeFile(hist, file, repository);
+            storeFile(hist, file, repository, !renamed);
         }
     }
 
@@ -262,26 +262,20 @@ class FileHistoryCache implements HistoryCache {
     }
 
     /**
-     * Store history object (encoded as XML and compressed with gzip) in a file.
+     * Read history from cacheFile and merge it with histNew, return merged history.
      *
-     * @param history history object to store
-     * @param file file to store the history object into
-     * @param repo repository for the file
+     * @param cacheFile file to where the history object will be stored
+     * @param histNew history object with new history entries
+     * @param repo repository to where pre pre-image of the cacheFile belong
+     * @return merged history (can be null if merge failed for some reason)
      * @throws HistoryException
      */
-    private void storeFile(History histNew, File file, Repository repo) throws HistoryException {
+    private History mergeOldAndNewHistory(File cacheFile, History histNew, Repository repo)
+            throws HistoryException {
 
-        File cacheFile = getCachedFile(file);
-        History history = histNew;
-
-        File dir = cacheFile.getParentFile();
-        if (!dir.isDirectory() && !dir.mkdirs()) {
-            throw new HistoryException(
-                    "Unable to create cache directory '" + dir + "'.");
-        }
-
-        // Incremental update of the history for this file.
         History histOld;
+        History history = null;
+
         try {
             histOld = readCache(cacheFile);
             // Merge old history with the new history.
@@ -309,12 +303,46 @@ class FileHistoryCache implements HistoryCache {
                 }
             }
         } catch (IOException ex) {
-            // Ideally we would want to catch the case when incremental update
-            // is done but the cached file is not there however we do not have
-            // the data to do it here.
+            LOGGER.log(Level.SEVERE,
+                String.format("Cannot open history cache file %s", cacheFile.getPath()), ex);
         }
 
-        writeHistoryToFile(dir, history, cacheFile);
+        return history;
+    }
+
+    /**
+     * Store history object (encoded as XML and compressed with gzip) in a file.
+     *
+     * @param history history object to store
+     * @param file file to store the history object into
+     * @param repo repository for the file
+     * @param mergeHistory whether to merge the history with existing or
+     *                     store the histNew as is
+     * @throws HistoryException
+     */
+    private void storeFile(History histNew, File file, Repository repo,
+            boolean mergeHistory) throws HistoryException {
+
+        File cacheFile = getCachedFile(file);
+        History history = histNew;
+
+        File dir = cacheFile.getParentFile();
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            throw new HistoryException(
+                    "Unable to create cache directory '" + dir + "'.");
+        }
+
+        if (mergeHistory && cacheFile.exists()) {
+            history = mergeOldAndNewHistory(cacheFile, histNew, repo);
+        }
+
+        // If the merge failed, null history will be returned.
+        // In such case store at least new history as a best effort.
+        if (history != null) {
+            writeHistoryToFile(dir, history, cacheFile);
+        } else {
+            writeHistoryToFile(dir, histNew, cacheFile);
+        }
     }
 
     private void finishStore(Repository repository, String latestRev) {
@@ -529,7 +557,7 @@ class FileHistoryCache implements HistoryCache {
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
                 // retrieving the history takes too long, cache it!
-                storeFile(history, file, repository);
+                storeFile(history, file, repository, false);
             }
         }
         return history;
