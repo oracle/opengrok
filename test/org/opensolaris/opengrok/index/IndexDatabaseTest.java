@@ -18,24 +18,25 @@
  */
 
 /*
- * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.util.ArrayList;
-
+import java.util.Arrays;
+import java.util.TreeSet;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for the {@code IndexDatabase} class.
@@ -61,7 +62,7 @@ public class IndexDatabaseTest {
 
         Indexer indexer = Indexer.getInstance();
         indexer.prepareIndexer(
-                env, true, true, "/c", null,
+                env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
                 false, false, false, null, null, new ArrayList<String>(), false);
         indexer.doIndexerExecution(true, 1, null, null);
     }
