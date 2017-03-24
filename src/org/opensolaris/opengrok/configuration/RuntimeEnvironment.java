@@ -1534,6 +1534,16 @@ public final class RuntimeEnvironment {
         }
     }
 
+    /**
+     * Return the current plugin version tracked by the authorization framework.
+     *
+     * @return the version
+     * @see AuthorizationFramework#getPluginVersion()
+     */
+    public int getPluginVersion() {
+        return AuthorizationFramework.getInstance().getPluginVersion();
+    }
+
     private ServerSocket configServerSocket;
 
     /**

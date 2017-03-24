@@ -72,6 +72,20 @@ public final class AuthorizationFramework {
     List<AuthorizationPluginWrapper> plugins;
 
     /**
+     * Keeping track of the number of reloads in this framework. This can be
+     * used by the plugins to invalidate the session and force reload the
+     * authorization values.
+     *
+     * Starting at 0 and increases with every reload.
+     *
+     * The plugin should call RuntimeEnvironment.getPluginVersion() to get this
+     * number.
+     *
+     * @see RuntimeEnvironment#getPluginVersion()
+     */
+    private int pluginVersion = 0;
+
+    /**
      * Plugin directory is set through RuntimeEnvironment.
      *
      * @return an instance of AuthorizationFramework
@@ -483,6 +497,9 @@ public final class AuthorizationFramework {
         // clean all plugins
         removeAll();
 
+        // increase the current plugin version tracked by the framework
+        increasePluginVersion();
+
         // add spaces with configured plugins - leaving null just to obtain the correct order of execution
         for (AuthorizationCheck check : RuntimeEnvironment.getInstance().getPluginConfiguration()) {
             plugins.add(new AuthorizationPluginWrapper(check, null));
@@ -494,6 +511,39 @@ public final class AuthorizationFramework {
                 IOUtils.listFiles(pluginDirectory, ".jar"));
 
         loadAllPlugins();
+    }
+
+    /**
+     * Returns the current plugins version in this framework. This can be used
+     * by the plugins to invalidate the session and force reload the
+     * authorization values.
+     *
+     * This number changes with every plugin reload.
+     *
+     * The plugin should call RuntimeEnvironment.getPluginVersion() to get this
+     * number and act upon if it needs to renew the session.
+     *
+     * @return the current version number
+     * @see RuntimeEnvironment#getPluginVersion()
+     */
+    public int getPluginVersion() {
+        return pluginVersion;
+    }
+
+    /**
+     * Changes the plugin version to the next version.
+     */
+    public void increasePluginVersion() {
+        this.pluginVersion++;
+    }
+
+    /**
+     * Sets the plugin version to an arbitrary number.
+     *
+     * @param pluginVersion the number
+     */
+    public void setPluginVersion(int pluginVersion) {
+        this.pluginVersion = pluginVersion;
     }
 
     /**
