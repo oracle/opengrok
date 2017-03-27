@@ -21,12 +21,13 @@ env:
   global:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
    #   via the "travis encrypt" command using the project repo's public key
-   - secure: "ogP3pxEB4eaXqaS87udCs0g2LFnDfSE1fgCXKu4OJdH8foUN3hnmzlEt+gCYFC6xHGpS5JqMp/vxMoCA7usSqkeqZVdiXIBZbx57Pkq7TNqkfo5zCNSBCbttc3NTP47Rgh75PFox8ZDSMoymkgZzfHVfnK2WDtnH4bMc5fjGNos="
+   - secure: "O_cda5pWDBAP-O3_0nG5RQ"
 
 addons:
   coverity_scan:
     project:
       name: "OpenGrok/OpenGrok"
       description: "Build submitted via Travis CI"
+     branch_pattern: coverity_scan 
       #    build_command_prepend: "mvn clean"
     build_command:   "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile"

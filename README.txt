@@ -50,7 +50,7 @@ Offical page of the project is on:
         http://ant.apache.org/
       - JFlex
         http://www.jflex.de/
-      - Netbeans (optional, at least 8.0, will need Ant 1.9.4)
+      - Netbeans (optional, at least 8.2, will need Ant 1.9.4)
         http://netbeans.org/
 
 3. Usage
@@ -709,13 +709,13 @@ downloaded, and create a symbolic link to it from ~/.ant/lib/checkstyle,
 e.g. like this:
 
    $ cd ~/.ant/lib
-   $ unzip ~/Desktop/checkstyle-6.8.zip
-   $ ln -s checkstyle-6.8 checkstyle
+   $ unzip ~/Desktop/checkstyle-7.6.zip
+   $ ln -s checkstyle-7.6 checkstyle
 
 You also have to create symbolic links to the jar files:
 
    $ cd checkstyle
-   $ ln -s checkstyle-6.8-all.jar checkstyle-all.jar
+   $ ln -s checkstyle-7.6-all.jar checkstyle-all.jar
 
 To run checkstyle on the source code, just run ant checkstyle:
 
@@ -734,13 +734,13 @@ checkstyle under the lib directory):
 ---------------------
 
 To check the quality of the OpenGrok code you can also use PMD
-from http://pmd.sourceforge.net/.
+from https://pmd.github.io/ .
 
 How to install:
 
   $ cd ~/.ant/lib
-  $ unzip ~/Desktop/pmd-bin-5.2.3.zip
-  $ ln -s pmd-5.2.3/ pmd
+  $ unzip ~/Desktop/pmd-bin-5.5.4.zip
+  $ ln -s pmd-5.5.4/ pmd
 
 To run PMD on the source code, just run ant pmd:
 
@@ -771,15 +771,15 @@ Which will result in:
 -----------------
 
 To see dependencies in the source code, you can use JDepend from
-http://clarkware.com/software/JDepend.html.
+https://github.com/clarkware/jdepend .
 
 How to install:
 
   $ cd ~/.ant/lib
-  $ unzip ~/Desktop/jdepend-2.9.zip
-  $ ln -s jdepend-2.9/ jdepend
+  $ unzip ~/Desktop/jdepend-2.9.1.zip
+  $ ln -s jdepend-2.9.1/ jdepend
   $ cd jdepend/lib
-  $ ln -s jdepend-2.9.jar jdepend.jar
+  $ ln -s jdepend-2.9.1.jar jdepend.jar
 
 How to analyze:
 
@@ -902,7 +902,7 @@ The same tuning to Apache can be done with the LimitRequestLine directive:
   LimitRequestLine 65536
   LimitRequestFieldSize 65536
 
-9.4 Open File hard and soft limits
+9.4 Open File and processes hard and soft limits
 -----------------------------------
 
 The initial index creation process is resource intensive and often the error
@@ -911,6 +911,10 @@ avoid this increase the ulimit value to a higher number.
 
 It is noted that the hard and soft limit for open files of 10240 works for mid
 sized repositores and so the recommendation is to start with 10240.
+
+If you get a similar error, but for threads:
+"java.lang.OutOfMemoryError: unable to create new native thread "
+it might be due to strict security limits and you need to increase the limits.
 
 9.5 Multi-project search speed tip
 -----------------------------------

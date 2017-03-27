@@ -214,7 +214,7 @@ PKG pkgsend add file doc/ctags.config mode=0444 owner=root group=sys path=/usr/o
 
 
 # install libs
-LV=6.4.2
+LV=6.5.0
 for file in ant.jar \
     bcel-6.0.jar \
     lucene-analyzers-common-${LV}.jar \
