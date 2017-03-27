@@ -22,7 +22,7 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="
+--%><%@page errorPage="error.jsp" import="
 java.io.FileReader,
 java.util.logging.Level,
 java.util.logging.Logger,
@@ -31,6 +31,12 @@ org.apache.lucene.search.Query,
 org.opensolaris.opengrok.search.QueryBuilder,
 org.opensolaris.opengrok.search.context.Context,
 org.opensolaris.opengrok.logger.LoggerFactory"
+%>
+<%
+{
+    PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
+}
 %><%@include
 
 file="mast.jsp"

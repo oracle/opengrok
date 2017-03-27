@@ -28,6 +28,11 @@ org.opensolaris.opengrok.search.Results,
 org.opensolaris.opengrok.web.SearchHelper,
 org.opensolaris.opengrok.web.SortOrder,
 org.opensolaris.opengrok.web.Suggestion"
+%><%
+{
+    PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
+}
 %><%@
 
 include file="projects.jspf"

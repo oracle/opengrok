@@ -27,6 +27,7 @@ org.opensolaris.opengrok.search.SearchEngine"
 /* ---------------------- help.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
     cfg.setTitle("OpenGrok Help");
 }
 %><%@

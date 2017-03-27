@@ -54,7 +54,7 @@ include file="menu.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
     String configError = "";
-    if (cfg.getSourceRootPath().isEmpty()) {
+    if (cfg.getSourceRootPath() == null || cfg.getSourceRootPath().isEmpty()) {
         configError = "CONFIGURATION parameter has not been configured in "
             + "web.xml! Please configure your webapp.";
     } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
