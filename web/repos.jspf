@@ -46,6 +46,14 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 <%@page import="org.opensolaris.opengrok.web.PageConfig"%>
 <%
 {
+    /**
+     * This file depends on the javascript file repos.js which must be
+     * included after all other scripts. Currently it is included in
+     * index.jsp.
+     *
+     * Without this file the group and project listing will not work.
+     */
+
     PageConfig cfg = PageConfig.get(request);
     JSONArray messages;
 
