@@ -72,8 +72,7 @@ org.opensolaris.opengrok.web.Util"
         }
 %>
 <script type="text/javascript">/* <![CDATA[ */
-    document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P
-    %>';document.domReady.push(function() { domReadyMenu(); });
+    document.domReady.push(function() { domReadyMenu(); });
 /* ]]> */
 </script><%
     }

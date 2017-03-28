@@ -69,10 +69,10 @@ include file="httpheader.jspf"
 %>
 <body>
 <script type="text/javascript">/* <![CDATA[ */
-    document.rev = getParameter("r");
+    document.rev = function() { return getParameter("r"); };
     document.annotate = <%= PageConfig.get(request).annotate() %>;
-    document.domReady.push(domReadyMast);
-    document.pageReady.push(pageReadyMast);
+    document.domReady.push(function() { domReadyMast(); });
+    document.pageReady.push(function() { pageReadyMast(); });
 /* ]]> */</script>
 <div id="page">
     <div id="whole_header">

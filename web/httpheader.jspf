@@ -77,15 +77,11 @@ if (cfg.getPrefix().equals(Prefix.HIST_L)) {
     title="OpenGrok Search for current project(s)" />
 <script type="text/javascript">/* <![CDATA[ */
     window.contextPath = '<%= ctxPath %>';
+    document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P %>';
+    document.pageReady = [];
+    document.domReady = [];
 /* ]]> */
 </script>
-<script type="text/javascript" src="<%=ctxPath%>/js/jquery-3.2.0.min.js"></script>
-<script type="text/javascript" src="<%=ctxPath%>/js/jquery-ui-1.12.0-custom.min.js"></script>
-<script type="text/javascript" src="<%=ctxPath%>/js/jquery.tablesorter-2.26.6.min.js"></script>
-<script type="text/javascript" src="<%=ctxPath%>/js/tablesorter.parsers-0.0.1.js"></script>
-<script type="text/javascript" src="<%=ctxPath%>/js/searchable-option-list-2.0.3.min.js"></script>
-<%--<script type="text/javascript" src="<%=ctxPath%>/js/jquery.autocomplete-1.1.pack.js"></script> --%>
-<script type="text/javascript" src="<%=ctxPath%>/js/utils-0.0.6.js"></script>
 <title><%=cfg.getTitle()%></title><%
     out.write(cfg.getHeaderData());
 %>

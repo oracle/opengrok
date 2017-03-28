@@ -66,3 +66,4 @@ include file="repos.jspf"
 include file="foot.jspf"
 
 %>
+<script src="<%=request.getContextPath()%>/js/repos-0.0.1.js" type="text/javascript"></script>

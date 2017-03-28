@@ -1155,7 +1155,12 @@
                 },
                 updatePosition: function ($w) {
                     var a = {}
-                    a.top = $.scopesWindow.is(':visible') ? $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20 : this.getTopOffset() + 10;
+                    a.top = this.getTopOffset() + 10;
+                    if ($.scopesWindow &&
+                            $.scopesWindow.initialized &&
+                            $.scopesWindow.is(':visible')) {
+                        a.top = $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20;
+                    }
                     a.height = Math.min(parseFloat($w.css('max-height')) || 480, $(browserWindow).outerHeight() - a.top - ($w.outerHeight(true) - $w.height()) - 20);
 
                     if (a.height == $w.height() && a.top == this.getTopOffset())
@@ -1334,7 +1339,17 @@ function init_markdown_converter() {
     });
 }
 
+window.onload = function () {
+    for (var i in document.pageReady) {
+        document.pageReady[i]();
+    }
+};
+
 $(document).ready(function () {
+    for (var i in this.domReady) {
+        document.domReady[i]();
+    }
+
     /**
      * Initialize scope scroll event to display scope information correctly when
      * the element comes into the viewport.
@@ -1423,21 +1438,6 @@ $(document).ready(function () {
      * Display last modified date in search results on hover over the filename
      */
     $('a.result-annotate').tooltip()
-});
-
-document.pageReady = [];
-document.domReady = [];
-
-window.onload = function() {
-    for(var i in document.pageReady) {
-        document.pageReady[i]();
-    }
-}
-
-$(document).ready(function() {
-    for(var i in this.domReady) {
-        document.domReady[i]();
-    }
 });
 
 /**
@@ -1603,8 +1603,8 @@ function domReadyHistory() {
 
 function get_annotations() {
     var link = window.location.pathname + "?a=true";
-    if (document.rev) {
-        link += "&r=" + encodeURIComponent(document.rev);
+    if (document.rev && document.rev()) {
+        link += "&r=" + encodeURIComponent(document.rev());
     }
     if (window.location.hash) {
         // If a line is highlighted when "annotate" is clicked, we want to
