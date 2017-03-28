@@ -366,6 +366,7 @@ public final class Indexer {
                                 System.err.println("           \"-r dirbased\" will allow retrieval during history index "
                                         + "only for repositories which allow getting history for directories");
                                 System.err.println("           \"-r uionly\" will support remote SCM for UI only");
+                                System.exit(1);
                             }
                             break;
                         case 'S':
