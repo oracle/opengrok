@@ -55,13 +55,7 @@ include file="menu.jspf"
 {
     PageConfig cfg = PageConfig.get(request);
     String configError = "";
-    if (cfg.getSourceRootPath().isEmpty()) {
-        configError = "CONFIGURATION parameter has not been configured in "
-            + "web.xml! Please configure your webapp.";
-    } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
-        configError = "The source root specified in your configuration does "
-            + "not point to a valid directory! Please configure your webapp.";
-    } else if (!cfg.hasHistory()) {
+    if (!cfg.hasHistory()) {
         configError = "Resource lacks history info. Was remote SCM side up when indexing occurred? "
             + "Cleanup history cache dir(or just the .gz for the file or db record) and rerun indexer making sure remote side will respond during indexing.";
    }

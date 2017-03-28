@@ -1407,19 +1407,19 @@ public final class PageConfig {
         return Util.htmlize(title);
     }
     
-    public void checkSourceRootExistence() throws IOException {        
-        if (sourceRootPath == null || sourceRootPath.isEmpty()) {
-            throw new java.io.FileNotFoundException("Configuration File Not Found, Can not determine source root path");
+    public void checkSourceRootExistence() throws IOException {
+        if (getSourceRootPath() == null || getSourceRootPath().isEmpty()) {
+            throw new FileNotFoundException("Unable to determine source root path. Missing configuration?");
         }
-        
         File sourceRootPathFile = RuntimeEnvironment.getInstance().getSourceRootFile();
-        if (sourceRootPathFile.exists() && !sourceRootPathFile.canRead()) {
-            throw new java.io.IOException("Can not read configuration file");
+        if (!sourceRootPathFile.exists()) {
+            throw new FileNotFoundException(String.format("Source root path \"%s\" does not exist", sourceRootPathFile.getAbsolutePath()));
         }
-        
-        if(!sourceRootPathFile.exists()){
-            throw new java.io.FileNotFoundException("Source root path does not exist : " + sourceRootPathFile.getAbsolutePath());
+        if (!sourceRootPathFile.isDirectory()) {
+            throw new FileNotFoundException(String.format("Source root path \"%s\" is not a directory", sourceRootPathFile.getAbsolutePath()));
+        }
+        if (!sourceRootPathFile.canRead()) {
+            throw new IOException(String.format("Source root path \"%s\" is not readable", sourceRootPathFile.getAbsolutePath()));
         }
     }
-    
 }
