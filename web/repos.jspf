@@ -44,7 +44,6 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 <%@page import="org.opensolaris.opengrok.configuration.Group"%>
 <%@page import="java.util.List"%>
 <%@page import="org.opensolaris.opengrok.web.PageConfig"%>
-<script src="<%=request.getContextPath()%>/js/repos-0.0.1.js" type="text/javascript"></script>
 <%
 {
     PageConfig cfg = PageConfig.get(request);

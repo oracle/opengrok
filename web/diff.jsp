@@ -45,8 +45,8 @@ private String getAnnotateRevision(DiffData data) {
     if (data.type == DiffType.OLD || data.type == DiffType.NEW) {
         String rev = data.rev[data.type == DiffType.NEW ? 1 : 0];
         return "<script type=\"text/javascript\">/* <![CDATA[ */ "
-            + "document.rev = " + Util.htmlize(Util.jsStringLiteral(rev))
-            + "; /* ]]> */</script>";
+            + "document.rev = function() { return " + Util.htmlize(Util.jsStringLiteral(rev))
+            + "; } /* ]]> */</script>";
     }
     return "";
 }
@@ -92,7 +92,7 @@ private String getAnnotateRevision(DiffData data) {
 
 include file="mast.jsp"
 
-%><script src="<%=request.getContextPath()%>/js/diff-0.0.1.js" type="text/javascript"></script><%
+%><%
 /* ---------------------- diff.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
@@ -533,3 +533,4 @@ include file="mast.jsp"
 include file="foot.jspf"
 
 %>
+<script src="<%=request.getContextPath()%>/js/diff-0.0.1.js" type="text/javascript"></script>

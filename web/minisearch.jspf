@@ -61,7 +61,7 @@ org.opensolaris.opengrok.web.Util"%><%
                            window.location = '<%= context + Prefix.XREF_P + cfg.getUriEncodedPath() %>'
                            // taken from get_annotations() from utils.js
                            + '?a=true'
-                           + (document.rev ? '&amp;r=' + encodeURIComponent(document.rev) : '')
+                           + (document.rev && document.rev() ? '&amp;r=' + encodeURIComponent(document.rev())) : '')
                            + (window.location.hash ? '&amp;h=' + window.location.hash.substring(1, window.location.hash.length) : '');
                            return false;">
                 <span class="annotate"></span>
