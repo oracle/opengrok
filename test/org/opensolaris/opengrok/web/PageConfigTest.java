@@ -18,10 +18,14 @@
  */
 
 /*
- * Copyright (c) 2011, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
@@ -31,6 +35,7 @@ import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.util.TestRepository;
@@ -188,6 +193,7 @@ public class PageConfigTest {
         }
     }
 
+
     @Test
     @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
     public void testGetAnnotation() {
@@ -238,6 +244,113 @@ public class PageConfigTest {
 
             PageConfig.cleanup(req);
         }
+    }
+
+    /**
+     * Test the case when the source root is null
+     *
+     * @throws IOException
+     */
+    @Test(expected = FileNotFoundException.class)
+    public void testCheckSourceRootExistence1() throws IOException {
+        HttpServletRequest req = new DummyHttpServletRequest();
+        PageConfig cfg = PageConfig.get(req);
+        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        System.out.println(path);
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(null);
+        try {
+            cfg.checkSourceRootExistence();
+        } finally {
+            RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+            PageConfig.cleanup(req);
+        }
+    }
+
+    /**
+     * Test the case when source root is empty
+     *
+     * @throws IOException
+     */
+    @Test(expected = FileNotFoundException.class)
+    public void testCheckSourceRootExistence2() throws IOException {
+        HttpServletRequest req = new DummyHttpServletRequest();
+        PageConfig cfg = PageConfig.get(req);
+        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot("");
+        try {
+            cfg.checkSourceRootExistence();
+        } finally {
+            RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+            PageConfig.cleanup(req);
+        }
+    }
+
+    /**
+     * Test the case when source root does not exist
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testCheckSourceRootExistence3() throws IOException {
+        HttpServletRequest req = new DummyHttpServletRequest();
+        PageConfig cfg = PageConfig.get(req);
+        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        File temp = File.createTempFile("opengrok", "-test-file.tmp");
+        Files.delete(temp.toPath());
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
+        try {
+            cfg.checkSourceRootExistence();
+            fail("This should throw an exception when the file does not exist");
+        } catch (IOException ex) {
+        }
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+        PageConfig.cleanup(req);
+    }
+
+    /**
+     * Test the case when source root can not be read
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testCheckSourceRootExistence4() throws IOException {
+        HttpServletRequest req = new DummyHttpServletRequest();
+        PageConfig cfg = PageConfig.get(req);
+        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        File temp = File.createTempFile("opengrok", "-test-file.tmp");
+        Files.delete(temp.toPath());
+        Files.createDirectories(temp.toPath());
+        temp.setReadable(false);
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
+        try {
+            cfg.checkSourceRootExistence();
+            fail("This should throw an exception when the file is not readable");
+        } catch (IOException ex) {
+        }
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+
+        PageConfig.cleanup(req);
+        temp.deleteOnExit();
+    }
+
+    /**
+     * Test a successful check
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testCheckSourceRootExistence5() throws IOException {
+        HttpServletRequest req = new DummyHttpServletRequest();
+        PageConfig cfg = PageConfig.get(req);
+        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        File temp = File.createTempFile("opengrok", "-test-file.tmp");
+        temp.delete();
+        temp.mkdirs();
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
+        cfg.checkSourceRootExistence();
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+        temp.deleteOnExit();
+        PageConfig.cleanup(req);
     }
 
     /**
