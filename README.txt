@@ -317,15 +317,15 @@ Thus, the overall approach would be:
 
      This will produce configuration.xml, optionally by combining the
      discovered projects with read-only configuration (as specified
-     with READ_XML_CONFIGURATION). This step has to be performed only once
-     - during the initial OpenGrok setup.
+     with OPENGROK_READ_XML_CONFIGURATION). This step has to be performed
+     only once - during the initial OpenGrok setup.
 
   2. mirror and index all projects in parallel
 
      This is done by running indexpart command of the OpenGrok script and
      specifying the configuration.xml written in previous step as
-     READ_XML_CONFIGURATION. The configuration will help the indexer to
-     discover source/data root and project to source path mapping.
+     OPENGROK_READ_XML_CONFIGURATION. The configuration will help the indexer
+     to discover source/data root and project to source path mapping.
 
   3. perform complete reindex (like in step 1)
 
@@ -348,7 +348,7 @@ logging.properties file can be easily done in a script.
 The command used in step 2 can look like this:
 
   OPENGROK_LOGGER_CONFIG_PATH=/var/opengrok/myproj.logging \
-     READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
+     OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
      OpenGrok indexpart /myproj
 
 The last argument is path relative to SRC_ROOT.

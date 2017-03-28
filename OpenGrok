@@ -67,7 +67,7 @@
 #                                 support (*)
 #   - OPENGROK_TAG                Enable parsing of revision tags into the History
 #                                 view
-#   - READ_XML_CONFIGURATION      file with read only configuration
+#   - OPENGROK_READ_XML_CONFIGURATION file with read only configuration
 #                                 - temporary workaround for bug # 327
 #   - OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 16" - set RAM buffer size for flushing,
 #                                 default is 16MB per thread, you might try to
@@ -192,7 +192,7 @@ DefaultInstanceConfiguration()
     XML_CONFIGURATION="${OPENGROK_INSTANCE_BASE}/etc/configuration.xml"
 
     # OPTIONAL: read only XML config, if it exists, it will be read
-    READ_XML_CONFIGURATION="${READ_XML_CONFIGURATION:-}"
+    READ_XML_CONFIGURATION="${OPENGROK_READ_XML_CONFIGURATION:-}"
 
     if [ -f "${READ_XML_CONFIGURATION}" ] ; then
         READ_XML_CONF="-R ${READ_XML_CONFIGURATION}"
