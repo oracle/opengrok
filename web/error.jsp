@@ -54,7 +54,7 @@ include file="pageheader.jspf"
 
 %>
         </div>
-        <div id="Masthead"></div>
+        <div id="Masthead">Error</div>
         <div id="sbar"><%@
 
 include file="menu.jspf"

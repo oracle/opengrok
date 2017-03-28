@@ -43,7 +43,7 @@ include file="httpheader.jspf"
 include file="pageheader.jspf"
 
         %></div>
-        <div id="Masthead"></div>
+        <div id="Masthead">Error: file not found</div>
         <div id="sbar"><%@
 
 include file="menu.jspf"
