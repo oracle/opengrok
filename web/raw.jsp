@@ -22,7 +22,7 @@ Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="
+--%><%@page errorPage="error.jsp" import="
 java.io.File,
 java.io.FileInputStream,
 java.io.FileNotFoundException,
@@ -37,6 +37,8 @@ org.opensolaris.opengrok.web.Prefix"
 /* ---------------------- raw.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
+
     String redir = cfg.canProcess();
     if (redir == null || redir.length() > 0) {
         if (redir != null) {

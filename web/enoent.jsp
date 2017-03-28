@@ -19,13 +19,14 @@ CDDL HEADER END
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page session="false" isErrorPage="true" import="
+--%><%@page session="false" errorPage="error.jsp" isErrorPage="true" import="
 org.opensolaris.opengrok.web.Prefix,
 org.opensolaris.opengrok.configuration.RuntimeEnvironment"
  %><%
 /* ---------------------- enoent.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
     cfg.setTitle("File not found");
 
     String context = request.getContextPath();

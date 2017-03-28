@@ -25,6 +25,11 @@ Portions Copyright 2011 Jens Elkner.
 --%><%@page session="false" errorPage="error.jsp" import="
 org.opensolaris.opengrok.configuration.RuntimeEnvironment,
 org.opensolaris.opengrok.web.Util"
+%><%
+{
+    PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
+}
 %><%@
 
 include file="projects.jspf"

@@ -38,6 +38,8 @@ org.opensolaris.opengrok.web.PageConfig"
 /* ---------------------- rss.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
+
     String redir = cfg.canProcess();
     if (redir == null || redir.length() > 0) {
         if (redir != null) {

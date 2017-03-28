@@ -25,7 +25,7 @@ Portions Copyright 2011 Jens Elkner.
 --%><%@page import="org.opensolaris.opengrok.web.Util"%>
 <%@page import="org.opensolaris.opengrok.history.HistoryGuru"%>
 <%@page import="java.io.File"%>
-<%@page import="
+<%@page errorPage="error.jsp" import="
 java.text.Format,
 java.text.SimpleDateFormat,
 java.util.Date,
@@ -40,6 +40,8 @@ org.opensolaris.opengrok.configuration.RuntimeEnvironment"
 <%/* ---------------------- history.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
+
+    cfg.checkSourceRootExistence();
 
     // Need to set the title before inlcuding httpheader.jspf
     cfg.setTitle(cfg.getHistoryTitle());

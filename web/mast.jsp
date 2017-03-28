@@ -52,6 +52,7 @@ org.opensolaris.opengrok.web.Util"%><%
         }
         return;
     }
+
     // jel: hmmm - questionable for dynamic content
     long flast = cfg.getLastModified();
     if (request.getDateHeader("If-Modified-Since") >= flast) {

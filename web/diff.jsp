@@ -21,7 +21,7 @@ CDDL HEADER END
 Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
---%><%@page import="
+--%><%@page errorPage="error.jsp" import="
 java.io.ByteArrayInputStream,
 java.io.OutputStream,
 java.io.BufferedReader,
@@ -53,6 +53,8 @@ private String getAnnotateRevision(DiffData data) {
 %>
 <%
 {
+    PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
     /**
      * This block must be the first block before any other output in the
      * response.
@@ -62,7 +64,6 @@ private String getAnnotateRevision(DiffData data) {
      * a collision with the response streams and the "getOutputStream() has
      * already been called" exception occurs.
      */
-    PageConfig cfg = PageConfig.get(request);
     DiffData data = cfg.getDiffData();
     request.setAttribute("diff.jsp-data", data);
     if (data.type == DiffType.TEXT

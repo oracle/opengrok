@@ -23,7 +23,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%>
-<%@page import="
+<%@page errorPage="error.jsp" import="
 java.io.BufferedInputStream,
 java.io.BufferedReader,
 java.io.FileInputStream,
@@ -52,7 +52,10 @@ org.opensolaris.opengrok.web.DirectoryListing"
     if (request.getCharacterEncoding() == null) {
         request.setCharacterEncoding("UTF-8");
     }
+
     PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
+
     Annotation annotation = cfg.getAnnotation();
     if (annotation != null) {
         int r = annotation.getWidestRevision();
