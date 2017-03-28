@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -98,14 +98,6 @@ public final class WebappListener
             }
         }
 
-        try {
-            RuntimeEnvironment.getInstance().loadStatistics();
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
-        } catch (ParseException ex) {
-            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
-        }
-
         String pluginDirectory = context.getInitParameter(AUTHORIZATION_PLUGIN_DIRECTORY);
         if (pluginDirectory != null) {
             env.getConfiguration().setPluginDirectory(pluginDirectory);
@@ -126,6 +118,14 @@ public final class WebappListener
 
         RuntimeEnvironment.getInstance().startIndexReopenThread();
         RuntimeEnvironment.getInstance().startExpirationTimer();
+
+        try {
+            RuntimeEnvironment.getInstance().loadStatistics();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
+        } catch (ParseException ex) {
+            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
+        }
     }
 
     /**
@@ -133,16 +133,15 @@ public final class WebappListener
      */
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
+        RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
+        RuntimeEnvironment.getInstance().stopWatchDogService();
+        RuntimeEnvironment.getInstance().stopIndexReopenThread();
+        RuntimeEnvironment.getInstance().stopExpirationTimer();
         try {
             RuntimeEnvironment.getInstance().saveStatistics();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
         }
-        RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
-        RuntimeEnvironment.getInstance().stopWatchDogService();
-        RuntimeEnvironment.getInstance().stopIndexReopenThread();
-        RuntimeEnvironment.getInstance().stopExpirationTimer();
-
     }
 
     /**

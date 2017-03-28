@@ -502,9 +502,9 @@ public class RuntimeEnvironmentTest {
         Assert.assertFalse(instance.canAcceptMessage(m1));
         m1.setExpiration(new Date(System.currentTimeMillis() - 1));
         Assert.assertFalse(instance.canAcceptMessage(m1));
-        m1.setExpiration(new Date(System.currentTimeMillis() - 0));
+        m1.setExpiration(new Date(System.currentTimeMillis() + 50));
         Assert.assertTrue(instance.canAcceptMessage(m1));
-        m1.setExpiration(new Date(System.currentTimeMillis() + 1));
+        m1.setExpiration(new Date(System.currentTimeMillis() + 100));
         Assert.assertTrue(instance.canAcceptMessage(m1));
 
         m1.setExpiration(new Date(System.currentTimeMillis() + 5000));
@@ -658,5 +658,27 @@ public class RuntimeEnvironmentTest {
             Assert.assertNotEquals("{}", out.toString());
             Assert.assertEquals(env.getStatistics().toJson().toJSONString(), out.toString());
         }
+    }
+
+    @Test(expected = IOException.class)
+    public void testSaveNullStatistics() throws IOException, ParseException {
+        RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
+        RuntimeEnvironment.getInstance().saveStatistics();
+    }
+
+    @Test(expected = IOException.class)
+    public void testSaveNullStatisticsFile() throws IOException, ParseException {
+        RuntimeEnvironment.getInstance().saveStatistics((File) null);
+    }
+
+    @Test(expected = IOException.class)
+    public void testLoadNullStatistics() throws IOException, ParseException {
+        RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
+        RuntimeEnvironment.getInstance().loadStatistics();
+    }
+
+    @Test(expected = IOException.class)
+    public void testLoadNullStatisticsFile() throws IOException, ParseException {
+        RuntimeEnvironment.getInstance().loadStatistics((File) null);
     }
 }

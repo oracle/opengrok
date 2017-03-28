@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -94,28 +94,6 @@ public class StatisticsTest {
         }
     }
 
-    /*
-    @Test
-    public void testAddRequest_HttpServletRequest() {
-        System.out.println("addRequest");
-        HttpServletRequest req = null;
-        Statistics instance = new Statistics();
-        instance.addRequest(req);
-        // TODO review the generated test code and remove the default call to fail.
-        Assert.fail("The test case is a prototype.");
-    }
-
-    @Test
-    public void testAddRequest_HttpServletRequest_String() {
-        System.out.println("addRequest");
-        HttpServletRequest req = null;
-        String category = "";
-        Statistics instance = new Statistics();
-        instance.addRequest(req, category);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-     */
     @Test
     public void testAddRequestTimeCategory() {
         String[] testCategories = new String[]{
