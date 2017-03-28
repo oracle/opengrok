@@ -111,13 +111,13 @@ Configuration for this structure could look like this:
 
 
 Configuration is provided in the read only configuration (-R parameter for the opengrok.jar or
-READ_XML_CONFIGURATION variable in the OpenGrok script). This configuration is merged with the
+OPENGROK_READ_XML_CONFIGURATION variable in the OpenGrok script). This configuration is merged with the
 instance configuration in /var/opengrok/etc/configuration.xml (default) so the groups are available
 for the webapp.
 
-NOTE: 
+NOTE:
 There is no other way to persistently provide the group configuration than using
-READ_XML_CONFIGURATION variable for each run of the indexer. If you run the indexer 
+OPENGROK_READ_XML_CONFIGURATION variable for each run of the indexer. If you run the indexer
 without the read only configuration, your groups will vanish from the configuration.xml.
 
 
@@ -130,7 +130,7 @@ Listing
 -------
 
 Groups are displayed in accordion on the main page, accordion can be expanded to see all subgroups and repositories
-in that group. It is neccessary to mention that in the accordion there are only repositories, i. e. projects with 
+in that group. It is neccessary to mention that in the accordion there are only repositories, i. e. projects with
 repository information.
 
 If no group matches the project the special section 'Other' is maintained with all such projects and repositories.
@@ -138,7 +138,7 @@ If no group matches the project the special section 'Other' is maintained with a
 Select Box
 ----------
 
-Using <optgroup> in select box displays all groups with their projects and repositories in the select box. 
+Using <optgroup> in select box displays all groups with their projects and repositories in the select box.
 Special section 'Other' is also included for non-matched projects. Double click on the project leads to its xref
 as usual (not working in IE) and double click in group name selects all projects in that group.
 

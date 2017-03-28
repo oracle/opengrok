@@ -13,7 +13,7 @@
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase view
-#   - READ_XML_CONFIGURATION      file with read only configuration
+#   - OPENGROK_READ_XML_CONFIGURATION file with read only configuration
 #                                   - determining the configuration
 
 PROGNAME=`basename $0`
@@ -31,7 +31,7 @@ Usage()
     echo "       ${PROGNAME} match <project name>"
     echo ""
     echo "  The script searches for the configuration in"
-    echo "    READ_XML_CONFIGURATION files or"
+    echo "    OPENGROK_READ_XML_CONFIGURATION files or"
     echo "    you can use the -i option."
     echo "  When no such file exists it uses an empty configuration."
     echo ""
@@ -115,7 +115,7 @@ Info()
         echo "\tOPENGROK_CONFIGURATION = "${OPENGROK_CONFIGURATION}
         echo "\tOPENGROK_STANDARD_ENV = "${OPENGROK_STANDARD_ENV}
         echo "\tOPENGROK_DISTRIBUTION_BASE = "${OPENGROK_DISTRIBUTION_BASE}
-        echo "\tREAD_XML_CONFIGURATION = "${READ_XML_CONFIGURATION}
+        echo "\tOPENGROK_READ_XML_CONFIGURATION = "${OPENGROK_READ_XML_CONFIGURATION}
         echo ""
         echo "Files used"
         echo "\tINPUT_FILE = "${INPUT_FILE:-empty configuration}
@@ -513,9 +513,9 @@ SetupInstanceConfiguration()
     unset MATCH
     unset LIST
 
-    if [ -n "$READ_XML_CONFIGURATION" ] && [ -f "$READ_XML_CONFIGURATION" ]
+    if [ -n "$OPENGROK_READ_XML_CONFIGURATION" ] && [ -f "$OPENGROK_READ_XML_CONFIGURATION" ]
     then
-            INPUT_FILE="$READ_XML_CONFIGURATION"
+            INPUT_FILE="$OPENGROK_READ_XML_CONFIGURATION"
     fi
 }
 
