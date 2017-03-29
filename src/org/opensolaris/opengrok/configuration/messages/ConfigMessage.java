@@ -121,6 +121,10 @@ public class ConfigMessage extends Message {
 
             if (setter.getParameterCount() != 1) {
                 // not a setter
+                /**
+                 * Actually should not happen as it is not considered as a
+                 * writer method so an exception would be thrown earlier.
+                 */
                 throw new IOException(
                         String.format("The setter \"%s\" for the name \"%s\" does not take exactly 1 parameter.",
                                 setter.getName(), field));
