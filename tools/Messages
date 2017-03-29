@@ -55,6 +55,13 @@ Usage()
     echo "                      Requires input file as argument."
     echo "       - \"getconf\"  retrieves configuration from webapp."
     echo "                      Prints the configuration in XML to stdout."
+    echo "       - \"set\"      sets the particular configuration option (only primitive types)"
+    echo "                    in the webapp."
+    echo "                      Examples:"
+    echo "                          histPerPage = 10"
+    echo "                          authorizationWatchdogEnabled = true"
+    echo "                      Returns text describing the action."
+    echo "                      The change is NOT persistent when reindex or redeploy!"
     echo "    normal:"
     echo "     - assign a <text> to the main page or a project"
     echo "     - can be more precise with <tags> (for specific project)"
@@ -335,12 +342,11 @@ do
             echo "Uknown option \"$opt\"" && Usage && exit 5
         ;;
         *)
-	    if [ $MESSAGE_TYPE == "config" ]; then
-		MESSAGE_TAGS=(-g "$1")
-		if [[ $1 == "setconf" ]]; then
-			shift
-			MESSAGE_FILE="$@"
-		fi
+	    if [ "$MESSAGE_TYPE" = "config" -a "$1" = "setconf" ]
+            then
+                MESSAGE_TAGS+=(-g "setconf")
+                shift
+                MESSAGE_FILE="$@"
 	    else
                 if [ $# -ne 1 ]
                 then
