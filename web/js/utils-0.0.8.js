@@ -592,12 +592,26 @@
                 };
 
                 /**
+                 * Display or hide the window.
+                 *
+                 * We override this method from jquery to manually
+                 * trigger the hide() and show() methods
+                 * which may be used in the descendants.
+                 *
+                 * @returns self
+                 */
+                $window.toggle = function() {
+                    var action = this.is(':visible') ? this.hide : this.show;
+                    return action.apply(this, arguments);
+                }
+
+                /**
                  * Toggle and move the window to the current mouse position
                  *
                  * @returns self
                  */
                 $window.toggleAndMove = function () {
-                    return this.toggle().move();
+                    return $window.toggle().move();
                 }
 
                 /**
@@ -1047,12 +1061,19 @@
                 load: function ($window) {
                     $window.hide().css('top', parseFloat($("#content").css('top').replace('px', '')) + 10 + 'px')
 
-                    // override the hide and show to throw an event
+                    // override the hide and show to throw an event and run
+                    // scope_on_scroll() for update
                     $.each(['hide', 'show'], function () {
                         var event = this
                         var old = $window[event];
                         $window[event] = function () {
-                            return old.call($window).trigger(event);
+                            var $toReturn = old.call($window).trigger(event);
+                            if (!scope_on_scroll || typeof scope_on_scroll !== 'function') {
+                                console.debug("[scopesWindow]: The scope_on_scroll() is not a function at this point.");
+                                return $toReturn;
+                            }
+                            scope_on_scroll();
+                            return $toReturn;
                         }
                     });
                     
@@ -1125,6 +1146,15 @@
                         }
                     }
 
+                    // override and show to throw an event and update position
+                    $.each(['show'], function () {
+                        var event = this
+                        var old = $window[event];
+                        $window[event] = function () {
+                            return that.updatePosition(old.call($window).trigger(event))
+                        }
+                    });
+
                     $(browserWindow).resize(function () {
                         that.updatePosition($window)
                     })
@@ -1154,6 +1184,16 @@
                     return parseFloat($("#content").css('top'))
                 },
                 updatePosition: function ($w) {
+                    if (!$w.is(':visible')) {
+                        /**
+                         * If the window is not visible then this
+                         * function is expensive as
+                         * <a href="http://api.jquery.com/outerheight/">documented</a>
+                         * under additional notes.
+                         */
+                        return $w;
+                    }
+
                     var a = {}
                     a.top = this.getTopOffset() + 10;
                     if ($.scopesWindow &&
@@ -1634,6 +1674,7 @@ function pageReadyList() {
     }
     $('#navigate').click(function () {
         $.navigateWindow.toggle()
+        return false;
     })
 }
 
@@ -1799,6 +1840,9 @@ var scope_timeout = null;
  * scope element to show the name of the function and a link to its definition.
  */
 function scope_on_scroll() {
+    if($.scopesWindow && $.scopesWindow.initialized && !$.scopesWindow.is(':visible')) {
+        return;
+    }
     if (scope_timeout !== null) {
         clearTimeout(scope_timeout)
         scope_timeout = null
