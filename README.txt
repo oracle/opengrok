@@ -137,7 +137,7 @@ Currently supported message types:
 4) ConfigMessage (config)
     This message retrieves or sends a configuration to the webapp,
     depending on tag. "setconf" tag sends config to webapp and requires
-    file as argument.
+    file as argument. "set" tag sets particular configuration option in the webapp.
 5) RefreshMesssage (refresh)
     Sent at the end of partial reindex to trigger refresh of SearcherManagers.
 

@@ -1529,12 +1529,14 @@ public final class RuntimeEnvironment {
     private Thread configurationListenerThread;
 
     /**
-     * Set configuration from a message. The message could have come from
-     * the Indexer (in which case some extra work is needed) or is it just
-     * a request to set new configuration in place.
+     * Set configuration from a message. The message could have come from the
+     * Indexer (in which case some extra work is needed) or is it just a request
+     * to set new configuration in place.
      *
      * @param m message containing the configuration
      * @param reindex is the message result of reindex
+     * @see #applyConfig(org.opensolaris.opengrok.configuration.Configuration,
+     * boolean) applyConfig(config, reindex)
      */
     public void applyConfig(Message m, boolean reindex) {
         Configuration config;
@@ -1544,6 +1546,20 @@ public final class RuntimeEnvironment {
             LOGGER.log(Level.WARNING, "Configuration decoding failed" + ex);
             return;
         }
+
+        applyConfig(config, reindex);
+    }
+
+    /**
+     * Set configuration from the incoming parameter. The configuration could
+     * have come from the Indexer (in which case some extra work is needed) or
+     * is it just a request to set new configuration in place.
+     *
+     * @param config the incoming configuration
+     * @param reindex is the message result of reindex
+     *
+     */
+    public void applyConfig(Configuration config, boolean reindex) {
 
         setConfiguration(config);
         LOGGER.log(Level.INFO, "Configuration updated: {0}",
