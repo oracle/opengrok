@@ -243,6 +243,9 @@ public final class Indexer {
                             cfg.setDataRoot(dataRoot.getCanonicalPath());
                             break;
                         }
+                        case 'D':
+                            cfg.setHandleHistoryOfRenamedFiles(false);
+                            break;
                         case 'e':
                             cfg.setGenerateHtml(false);
                             break;

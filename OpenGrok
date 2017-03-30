@@ -42,6 +42,14 @@
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
+#   - OPENGROK_DISABLE_RENAMED_FILES_HISTORY Disable getting full history of
+#                                 renamed files for SCMs that support it (Git,
+#                                 Mercurial).
+#                                 The default is handle the history which makes
+#                                 indexing slower, especially in the presence of
+#                                 lots of renamed files in the repository.
+#                                 Set it to non-empty value to disable the
+#                                 renamed files history handling.
 #   - OPENGROK_GENERATE_HISTORY   Influence history cache generation
 #                                 Following values are recognized:
 #                                   on		- enabled (default)
@@ -87,6 +95,7 @@
 #
 # Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 #
+
 #
 # Print usage to stdout and exit.
 #
@@ -272,6 +281,11 @@ DefaultInstanceConfiguration()
     if [ "$OPENGROK_GENERATE_HISTORY" != "off" ]
     then
         GENERATE_HISTORY="${GENERATE_HISTORY} -H"
+    fi
+
+    if [ -n "$OPENGROK_DISABLE_RENAMED_FILES_HISTORY" ]
+    then
+        DISABLE_RENAMED_FILES_HISTORY="-D"
     fi
 
     # OPTIONAL: override depth of scanning for repositories
@@ -800,6 +814,7 @@ CommonInvocation()
         ${IGNORE_PATTERNS}                    				\
         ${HISTORY_TAGS}							\
         ${GENERATE_HISTORY}           					\
+	${DISABLE_RENAMED_FILES_HISTORY}				\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               	\
