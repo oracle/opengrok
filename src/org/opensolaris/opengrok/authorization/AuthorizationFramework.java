@@ -367,6 +367,13 @@ public final class AuthorizationFramework {
         }
     }
 
+    /**
+     * Wrapper around the class loading. Report all exceptions into the log.
+     *
+     * @param classname full name of the class
+     *
+     * @see #loadClass(String)
+     */
     private void handleLoadClass(String classname) {
         try {
             loadClass(classname);
@@ -383,6 +390,24 @@ public final class AuthorizationFramework {
         }
     }
 
+    /**
+     * Load a class into JVM with custom class loader. Call a non-parametric
+     * constructor to create a new instance of that class.
+     *
+     * <p>
+     * The classes implementing the {@link IAuthorizationPlugin} interface are
+     * automatically added among the discovered plugins.
+     * </p>
+     *
+     * @param classname the full name of the class to load
+     *
+     * @throws ClassNotFoundException when the class can not be found
+     * @throws SecurityException when it is prohibited to load such class
+     * @throws InstantiationException when it is impossible to create a new
+     * instance of that class
+     * @throws IllegalAccessException when the constructor of the class is not
+     * accessible
+     */
     private void loadClass(String classname) throws ClassNotFoundException,
             SecurityException,
             InstantiationException,
@@ -409,6 +434,19 @@ public final class AuthorizationFramework {
         }
     }
 
+    /**
+     * Traverse list of files which possibly contain a java class and then
+     * traverse a list of jar files to load all classes which are contained
+     * within them. Each class is loaded with {@link #handleLoadClass(String)}
+     * which delegates the loading to the custom class loader
+     * {@link #loadClass(String)}.
+     *
+     * @param classfiles list of files which possibly contain a java class
+     * @param jarfiles list of jar files containing java classes
+     *
+     * @see #handleLoadClass(String)
+     * @see #loadClass(String)
+     */
     private void loadClasses(List<File> classfiles, List<File> jarfiles) {
         for (File file : classfiles) {
             String classname = getClassName(file);
