@@ -31,8 +31,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -233,6 +237,38 @@ public class SearchEngine {
 
     public String getQuery() {
         return query.toString();
+    }
+
+    /**
+     * Execute a search aware of current request, limited to specific project names.
+     *
+     * This filters out all projects which are not allowed for the current request.
+     *
+     * Before calling this function,
+     * you must set the appropriate search criteria with the set-functions. Note
+     * that this search will return the first cachePages of hitsPerPage, for
+     * more you need to call more.
+     *
+     * Call to search() must be eventually followed by call to destroy()
+     * so that IndexSearcher objects are properly freed.
+     *
+     * @return The number of hits
+     * @see ProjectHelper#getAllProjects()
+     */
+    public int search(HttpServletRequest req, String... projectNames) {
+        ProjectHelper pHelper = PageConfig.get(req).getProjectHelper();
+        Set<Project> projects = pHelper.getAllProjects();
+        List<Project> filteredProjects = new ArrayList<Project>();
+        for(Project project: projects) {
+            for (String name : projectNames) {
+                if(project.getName().equalsIgnoreCase(name)) {
+                    filteredProjects.add(project);
+                }
+            }
+        }
+        return search(
+                filteredProjects,
+                new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR));
     }
 
     /**

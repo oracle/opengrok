@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2014, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2017 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -47,6 +47,7 @@ public class JSONSearchServlet extends HttpServlet {
     private static final String PARAM_PATH = "path";
     private static final String PARAM_HIST = "hist";
     private static final String PARAM_MAXRESULTS = "maxresults";
+    private static final String PARAM_PROJECT = "project";
     private static final String ATTRIBUTE_DIRECTORY = "directory";
     private static final String ATTRIBUTE_FILENAME = "filename";
     private static final String ATTRIBUTE_LINENO = "lineno";
@@ -70,6 +71,7 @@ public class JSONSearchServlet extends HttpServlet {
         String symbol = req.getParameter(PARAM_SYMBOL);
         String path = req.getParameter(PARAM_PATH);
         String hist = req.getParameter(PARAM_HIST);
+        String projects[] = req.getParameterValues(PARAM_PROJECT);
 
         if (freetext != null) {
             freetext = URLDecoder.decode(freetext);
@@ -112,7 +114,12 @@ public class JSONSearchServlet extends HttpServlet {
 
         try {
             long start = System.currentTimeMillis();
-            int numResults = engine.search(req);
+            int numResults;
+            if(projects == null || projects.length == 0) {
+                numResults = engine.search(req);
+            } else {
+                numResults = engine.search(req, projects);
+            }
             int maxResults = MAX_RESULTS;
             String maxResultsParam = req.getParameter(PARAM_MAXRESULTS);
             if (maxResultsParam != null) {
@@ -146,7 +153,7 @@ public class JSONSearchServlet extends HttpServlet {
             result.put(ATTRIBUTE_RESULTS, resultsArray);
 
 
-
+            resp.setContentType("application/json");
             resp.getWriter().write(result.toString());
         } finally {
             engine.destroy();
