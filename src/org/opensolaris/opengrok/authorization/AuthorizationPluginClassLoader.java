@@ -46,7 +46,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     private final Map<String, Class> cache = new HashMap<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationPluginClassLoader.class);
-    private final static String[] classWhitelist = new String[]{
+    private final static String[] CLASS_WHITELIST = new String[]{
         "org.opensolaris.opengrok.configuration.Group",
         "org.opensolaris.opengrok.configuration.Project",
         "org.opensolaris.opengrok.configuration.RuntimeEnvironment",
@@ -55,7 +55,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
         "org.opensolaris.opengrok.logger.*",
     };
 
-    private final static String[] packageBlacklist = new String[]{
+    private final static String[] PACKAGE_BLACKLIST = new String[]{
         "java",
         "javax",
         "org.w3c",
@@ -139,8 +139,8 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     }
 
     private boolean checkWhiteList(String name) {
-        for (int i = 0; i < classWhitelist.length; i++) {
-            String pattern = classWhitelist[i];
+        for (int i = 0; i < CLASS_WHITELIST.length; i++) {
+            String pattern = CLASS_WHITELIST[i];
             pattern = pattern.replaceAll("\\.", "\\\\.");
             pattern = pattern.replaceAll("\\*", ".*");
             if (name.matches(pattern)) {
@@ -155,18 +155,18 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
                 && !checkWhiteList(name)) {
             throw new SecurityException("Tried to load a blacklisted class \"" + name + "\"\n"
                     + "Allowed classes from opengrok package are only: "
-                    + Arrays.toString(classWhitelist));
+                    + Arrays.toString(CLASS_WHITELIST));
         }
     }
 
     private void checkPackage(String name) throws SecurityException {
-        for (int i = 0; i < packageBlacklist.length; i++) {
-            if (name.startsWith(packageBlacklist[i] + ".")) {
+        for (int i = 0; i < PACKAGE_BLACKLIST.length; i++) {
+            if (name.startsWith(PACKAGE_BLACKLIST[i] + ".")) {
                 throw new SecurityException("Tried to load a class \"" + name
                         + "\" to a blacklisted package "
-                        + "\"" + packageBlacklist[i] + "\"\n"
+                        + "\"" + PACKAGE_BLACKLIST[i] + "\"\n"
                         + "Disabled packages are: "
-                        + Arrays.toString(packageBlacklist));
+                        + Arrays.toString(PACKAGE_BLACKLIST));
             }
         }
     }
@@ -182,8 +182,8 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * <li>loading from .jar files</li>
      * </ol>
      *
-     * Package blacklist: {@link #packageBlacklist}.<br />
-     * Classes whitelist: {@link #classWhitelist}.
+     * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br />
+     * Classes whitelist: {@link #CLASS_WHITELIST}.
      *
      * @param name class name
      * @return loaded class or null
@@ -206,8 +206,8 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * <li>loading from .jar files</li>
      * </ol>
      *
-     * Package blacklist: {@link #packageBlacklist}.<br />
-     * Classes whitelist: {@link #classWhitelist}.
+     * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br />
+     * Classes whitelist: {@link #CLASS_WHITELIST}.
      *
      * @param name class name
      * @param resolveIt if the class should be resolved
