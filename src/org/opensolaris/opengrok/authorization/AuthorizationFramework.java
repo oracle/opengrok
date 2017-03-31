@@ -321,6 +321,7 @@ public final class AuthorizationFramework {
         try {
             plugin.load();
             plugin.setWorking();
+
         } catch (Throwable ex) {
             LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClassname() + "\" has failed while loading with exception:", ex);
             plugin.setFailed();
@@ -341,6 +342,12 @@ public final class AuthorizationFramework {
                 plugin.setFailed();
             }
             loadPlugin(plugin);
+            LOGGER.log(Level.INFO, "[{0}] Plugin \"{1}\" {2} and is {3}.",
+                    new Object[]{
+                        plugin.getRole().toString().toUpperCase(),
+                        plugin.getClassname(),
+                        plugin.hasPlugin() ? "loaded" : "not found",
+                        plugin.isWorking() ? "working" : "failed"});
         }
     }
 
