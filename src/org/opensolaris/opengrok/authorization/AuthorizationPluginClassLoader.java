@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
 
@@ -46,15 +46,16 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     private final Map<String, Class> cache = new HashMap<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationPluginClassLoader.class);
-    private final static String[] classWhitelist = new String[]{
+    private final static String[] CLASS_WHITELIST = new String[]{
         "org.opensolaris.opengrok.configuration.Group",
         "org.opensolaris.opengrok.configuration.Project",
+        "org.opensolaris.opengrok.configuration.RuntimeEnvironment",
         "org.opensolaris.opengrok.authorization.IAuthorizationPlugin",
         "org.opensolaris.opengrok.util.*",
         "org.opensolaris.opengrok.logger.*",
     };
 
-    private final static String[] packageBlacklist = new String[]{
+    private final static String[] PACKAGE_BLACKLIST = new String[]{
         "java",
         "javax",
         "org.w3c",
@@ -117,7 +118,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
                 byte[] bytes = loadBytes(in);
 
                 Class c = defineClass(classname, bytes, 0, bytes.length);
-                LOGGER.log(Level.INFO, "Class \"{0}\" found in file \"{1}\"",
+                LOGGER.log(Level.FINEST, "Class \"{0}\" found in file \"{1}\"",
                         new Object[]{
                             classname,
                             f.getAbsolutePath()
@@ -138,8 +139,8 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     }
 
     private boolean checkWhiteList(String name) {
-        for (int i = 0; i < classWhitelist.length; i++) {
-            String pattern = classWhitelist[i];
+        for (int i = 0; i < CLASS_WHITELIST.length; i++) {
+            String pattern = CLASS_WHITELIST[i];
             pattern = pattern.replaceAll("\\.", "\\\\.");
             pattern = pattern.replaceAll("\\*", ".*");
             if (name.matches(pattern)) {
@@ -154,18 +155,18 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
                 && !checkWhiteList(name)) {
             throw new SecurityException("Tried to load a blacklisted class \"" + name + "\"\n"
                     + "Allowed classes from opengrok package are only: "
-                    + Arrays.toString(classWhitelist));
+                    + Arrays.toString(CLASS_WHITELIST));
         }
     }
 
     private void checkPackage(String name) throws SecurityException {
-        for (int i = 0; i < packageBlacklist.length; i++) {
-            if (name.startsWith(packageBlacklist[i] + ".")) {
+        for (int i = 0; i < PACKAGE_BLACKLIST.length; i++) {
+            if (name.startsWith(PACKAGE_BLACKLIST[i] + ".")) {
                 throw new SecurityException("Tried to load a class \"" + name
                         + "\" to a blacklisted package "
-                        + "\"" + packageBlacklist[i] + "\"\n"
+                        + "\"" + PACKAGE_BLACKLIST[i] + "\"\n"
                         + "Disabled packages are: "
-                        + Arrays.toString(packageBlacklist));
+                        + Arrays.toString(PACKAGE_BLACKLIST));
             }
         }
     }
@@ -173,16 +174,16 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     /**
      * Loads the class with given name.
      *
-     * Package blacklist:
+     * Order of lookup:
+     * <ol>
+     * <li>already loaded classes </li>
+     * <li>parent class loader</li>
+     * <li>loading from .class files</li>
+     * <li>loading from .jar files</li>
+     * </ol>
      *
-     * @see #packageBlacklist Classes whitelist:
-     * @see #classWhitelist
-     *
-     * Order of lookup: 
-     * 1) already loaded classes 
-     * 2) parent class loader 
-     * 3) loading from .class files 
-     * 4) loading from .jar files
+     * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br />
+     * Classes whitelist: {@link #CLASS_WHITELIST}.
      *
      * @param name class name
      * @return loaded class or null
@@ -197,17 +198,16 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     /**
      * Loads the class with given name.
      *
-     * Package blacklist:
+     * Order of lookup:
+     * <ol>
+     * <li>already loaded classes </li>
+     * <li>parent class loader</li>
+     * <li>loading from .class files</li>
+     * <li>loading from .jar files</li>
+     * </ol>
      *
-
-     * @see #packageBlacklist Classes whitelist:
-     * @see #classWhitelist
-     *
-     * Order of lookup: 
-     * 1) already loaded classes 
-     * 2) parent class loader 
-     * 3) loading from .class files 
-     * 4) loading from .jar files
+     * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br />
+     * Classes whitelist: {@link #CLASS_WHITELIST}.
      *
      * @param name class name
      * @param resolveIt if the class should be resolved

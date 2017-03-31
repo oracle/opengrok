@@ -44,6 +44,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
+import org.opensolaris.opengrok.authorization.AuthorizationCheck;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.configuration.messages.NormalMessage;
 import org.opensolaris.opengrok.history.RepositoryInfo;
@@ -409,6 +410,91 @@ public class RuntimeEnvironmentTest {
             fail("makeXmlStringsAsConfiguration should throw exception");
         } catch (Throwable t) {
         }
+    }
+
+    @Test
+    public void testAuthorizationRoleDecode() throws IOException {
+        String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
+                + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_65\">\n"
+                + " <object class=\"org.opensolaris.opengrok.configuration.Configuration\">\n"
+                + "	<void property=\"pluginConfiguration\">\n"
+                + "		<void method=\"add\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>sufficient</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"classname\">\n"
+                + "					<string>Plugin</string>\n"
+                + "				</void>\n"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "		<void method=\"add\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>required</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"classname\">\n"
+                + "					<string>OtherPlugin</string>\n"
+                + "				</void>\n"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "		<void method=\"add\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>REQUISITE</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"classname\">\n"
+                + "					<string>AnotherPlugin</string>\n"
+                + "				</void>\n"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "		<void method=\"add\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>reQuIrEd</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"classname\">\n"
+                + "					<string>DifferentPlugin</string>\n"
+                + "				</void>\n"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "	</void>\n"
+                + " </object>\n"
+                + "</java>";
+        Configuration conf = Configuration.makeXMLStringAsConfiguration(confString);
+        assertNotNull(conf.getPluginConfiguration());
+        List<AuthorizationCheck> pluginConfiguration = conf.getPluginConfiguration();
+        assertEquals(4, pluginConfiguration.size());
+        assertEquals(AuthorizationCheck.AuthControlFlag.SUFFICIENT, pluginConfiguration.get(0).getRole());
+        assertEquals("Plugin", pluginConfiguration.get(0).getClassname());
+        assertEquals(AuthorizationCheck.AuthControlFlag.REQUIRED, pluginConfiguration.get(1).getRole());
+        assertEquals("OtherPlugin", pluginConfiguration.get(1).getClassname());
+        assertEquals(AuthorizationCheck.AuthControlFlag.REQUISITE, pluginConfiguration.get(2).getRole());
+        assertEquals("AnotherPlugin", pluginConfiguration.get(2).getClassname());
+        assertEquals(AuthorizationCheck.AuthControlFlag.REQUIRED, pluginConfiguration.get(3).getRole());
+        assertEquals("DifferentPlugin", pluginConfiguration.get(3).getClassname());
+    }
+
+    @Test(expected = IOException.class)
+    public void testAuthorizationRoleDecodeInvalid() throws IOException {
+        String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
+                + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_65\">\n"
+                + " <object class=\"org.opensolaris.opengrok.configuration.Configuration\">\n"
+                + "	<void property=\"pluginConfiguration\">\n"
+                + "		<void method=\"add\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>norole</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"classname\">\n"
+                + "					<string>Plugin</string>\n"
+                + "				</void>\n"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "	</void>\n"
+                + " </object>\n"
+                + "</java>";
+        Configuration.makeXMLStringAsConfiguration(confString);
     }
 
     @Test

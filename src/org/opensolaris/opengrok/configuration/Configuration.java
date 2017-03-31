@@ -50,6 +50,7 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.authorization.AuthorizationCheck;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -90,6 +91,7 @@ public final class Configuration {
      * for development.
      */
     private boolean authorizationWatchdogEnabled;
+    private List<AuthorizationCheck> pluginConfiguration;
     private List<Project> projects;
     private Set<Group> groups;
     private String sourceRoot;
@@ -334,6 +336,7 @@ public final class Configuration {
         setGroupsCollapseThreshold(4);
         setPluginDirectory(null);
         setAuthorizationWatchdogEnabled(false);
+        setPluginConfiguration(new ArrayList<>());
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setIndexRefreshPeriod(3600);
         setMessageLimit(500);
@@ -391,6 +394,14 @@ public final class Configuration {
 
     public void setAuthorizationWatchdogEnabled(boolean authorizationWatchdogEnabled) {
         this.authorizationWatchdogEnabled = authorizationWatchdogEnabled;
+    }
+
+    public List<AuthorizationCheck> getPluginConfiguration() {
+        return pluginConfiguration;
+    }
+
+    public void setPluginConfiguration(List<AuthorizationCheck> pluginConfiguration) {
+        this.pluginConfiguration = pluginConfiguration;
     }
 
     public void setCmds(Map<String, String> cmds) {
@@ -777,7 +788,7 @@ public final class Configuration {
     public Date getDateForLastIndexRun() {
         if (lastModified == null) {
             File timestamp = new File(getDataRoot(), "timestamp");
-            if(timestamp.exists()){
+            if (timestamp.exists()) {
                 lastModified = new Date(timestamp.lastModified());
             }
         }
