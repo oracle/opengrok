@@ -1,8 +1,39 @@
-2017 release 0.13
+April 2017 release 0.13
 -------------------------------------------------
 
-TBD
+Major features/changes:
 
+  - JDK8 + tomcat8 tested, JDK6/7 unsupported!
+  - Lucene 6.5.0
+  - IndexSearcher objects reuse for better search performance
+  - Universal ctags support(we actually prefer universal ctags these days)
+  - new project picker (jquery based)
+  - UI cleanup
+  - main homepage generated listing of projects/groups
+  - JDBC history cache EOL
+  - App tray EOL
+  - Intelligence window for faster navigation from source (see help!)
+  - scopes support (displays current function info in separate window)
+  - tablesorter for directory view (allows to sort on name/length/date)
+  - coloring changesets in Annotate view according to their date
+  - grouping of projects
+  - messaging to the webapp
+  - simple REST API
+  - authorization plugins (e.g. per project authorization)
+  - ignored files/directories improvements
+  - regexp searches now show line numbers in results
+  - analyzers stability and performance improvements
+  - Erlang, Clojure, Pascal, Lua, GO lang, Rust, Haskell languages now supported, Scala, PHP improved
+  - perforce, git, hg, accurev support improved
+  - handling of history for renamed files in Git (displays complete history for such files)
+    - slows down indexing, use OPENGROK_DISABLE_RENAMED_FILES_HISTORY env var to
+      disable when using the OpenGrok script
+  - better partial indexing support
+  - webapp statistics (using Messages)
+  - bcel, jquery updated
+  - support for Resin webserver
+  - renamed the READ_XML_CONFIGURATION env var to OPENGROK_READ_XML_CONFIGURATION
+  - Bitkeeper support
 
 May 2014 update 0.12.1
 -------------------------------------------------
@@ -43,7 +74,7 @@ Features:
  better developer support, added automated travis builds for pull request + sonar
 
 Bug fixes(newest first):
- 
+
  take (jdbc) queries from the bug, fixes  #774
  simplify lucene version in mvn build file
  Missing ../ in path when displaying xml xref fixes #806
@@ -206,7 +237,7 @@ Bug fixes(newest first):
  fix clean button
  avoid eftar file test and exception on every page access
  avoid unecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occures
- 
+
 
 March 2012 update 0.11.1
 -------------------------------------------------
@@ -232,7 +263,7 @@ This is a major update. It is advised that you cleanup your old DATA_ROOT
 application should be replaced, since the new indexes are not compatible with
 the old web application. Note that this doesn't apply to upgrades from the 0.11
 release candidate, since the format of the xrefs didn't change between the
-release candidate and the release. 
+release candidate and the release.
 
 New features
 
