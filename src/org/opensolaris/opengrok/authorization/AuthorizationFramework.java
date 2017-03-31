@@ -37,7 +37,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.opensolaris.opengrok.authorization.AuthorizationCheck.AuthorizationRole;
+import org.opensolaris.opengrok.authorization.AuthorizationCheck.AuthControlFlag;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
@@ -238,7 +238,7 @@ public final class AuthorizationFramework {
      * @param plugin the authorization plugin
      */
     protected synchronized void addPlugin(IAuthorizationPlugin plugin) {
-        addPlugin(plugin, AuthorizationRole.REQUIRED);
+        addPlugin(plugin, AuthControlFlag.REQUIRED);
     }
 
     /**
@@ -260,7 +260,7 @@ public final class AuthorizationFramework {
      * @param plugin the authorization plugin
      * @param role the role for the new plugins
      */
-    public synchronized void addPlugin(IAuthorizationPlugin plugin, AuthorizationRole role) {
+    public synchronized void addPlugin(IAuthorizationPlugin plugin, AuthControlFlag role) {
         AuthorizationPluginWrapper wrapper;
         if ((wrapper = findPlugin(getClassName(plugin))) != null) {
             if (wrapper.hasPlugin()) {

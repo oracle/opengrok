@@ -23,7 +23,7 @@
 package org.opensolaris.opengrok.authorization;
 
 import javax.servlet.http.HttpServletRequest;
-import org.opensolaris.opengrok.authorization.AuthorizationCheck.AuthorizationRole;
+import org.opensolaris.opengrok.authorization.AuthorizationCheck.AuthControlFlag;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
@@ -45,7 +45,7 @@ public final class AuthorizationPluginWrapper {
         this.plugin = plugin;
     }
 
-    public AuthorizationPluginWrapper(AuthorizationRole role, String classname, IAuthorizationPlugin plugin) {
+    public AuthorizationPluginWrapper(AuthControlFlag role, String classname, IAuthorizationPlugin plugin) {
         this(new AuthorizationCheck(role, classname), plugin);
     }
 
@@ -100,7 +100,7 @@ public final class AuthorizationPluginWrapper {
      * @return true if is required; false otherwise
      */
     public boolean isRequired() {
-        return check.getRole().equals(AuthorizationRole.REQUIRED);
+        return check.getRole().equals(AuthControlFlag.REQUIRED);
     }
 
     /**
@@ -109,7 +109,7 @@ public final class AuthorizationPluginWrapper {
      * @return true if is sufficient; false otherwise
      */
     public boolean isSufficient() {
-        return check.getRole().equals(AuthorizationRole.SUFFICIENT);
+        return check.getRole().equals(AuthControlFlag.SUFFICIENT);
     }
 
     /**
@@ -118,7 +118,7 @@ public final class AuthorizationPluginWrapper {
      * @return true if is requisite; false otherwise
      */
     public boolean isRequisite() {
-        return check.getRole().equals(AuthorizationRole.REQUISITE);
+        return check.getRole().equals(AuthControlFlag.REQUISITE);
     }
 
     /**
@@ -209,7 +209,7 @@ public final class AuthorizationPluginWrapper {
      *
      * @return the value of role
      */
-    public AuthorizationRole getRole() {
+    public AuthControlFlag getRole() {
         return check.getRole();
     }
 }

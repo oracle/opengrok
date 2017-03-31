@@ -27,7 +27,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.authorization.AuthorizationCheck.AuthorizationRole;
+import org.opensolaris.opengrok.authorization.AuthorizationCheck.AuthControlFlag;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -53,8 +53,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugins() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
 
         // sufficient is ok
         Assert.assertTrue(instance.isAllowed(createRequest(), createUnallowedProject()));
@@ -67,8 +67,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugins1() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
 
         // sufficient fails and required is ok
         Assert.assertTrue(instance.isAllowed(createRequest(), createUnallowedProject()));
@@ -81,8 +81,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin2() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
+        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
 
         // all are sufficient - success
         Assert.assertTrue(instance.isAllowed(createRequest(), createUnallowedProject()));
@@ -94,8 +94,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin3() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
+        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
 
         // required fails
         Assert.assertFalse(instance.isAllowed(createRequest(), createAllowedProject()));
@@ -108,8 +108,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin4() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
 
         // same instance is not added twice in the plugins so
         // there is only one plugin set as sufficient thus everything is true
@@ -122,8 +122,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin5() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
 
         // same instance is not added twice in the plugins so
         // there is only one plugin set as required
@@ -137,8 +137,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin6() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.REQUISITE);
-        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.REQUISITE);
+        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
 
         // requisite is ok and the other plugin is sufficient
         Assert.assertTrue(instance.isAllowed(createRequest(), createAllowedProject()));
@@ -151,8 +151,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin7() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.REQUISITE);
-        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.REQUISITE);
+        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
 
         // requisite is ok however required fails
         Assert.assertFalse(instance.isAllowed(createRequest(), createAllowedProject()));
@@ -164,8 +164,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin8() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthorizationRole.REQUISITE);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createNotAllowedPrefixPlugin(), AuthControlFlag.REQUISITE);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
 
         // requisite fails
         Assert.assertFalse(instance.isAllowed(createRequest(), createAllowedProject()));
@@ -178,8 +178,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugins9() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createLoadFailingPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createLoadFailingPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
         instance.loadAllPlugins();
 
         // sufficient fails and required fails as well
@@ -193,8 +193,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin10() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createLoadFailingPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
+        instance.addPlugin(createLoadFailingPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
         instance.loadAllPlugins();
 
         // all are sufficient - success
@@ -207,8 +207,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin11() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createLoadFailingPlugin(), AuthorizationRole.REQUIRED);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
+        instance.addPlugin(createLoadFailingPlugin(), AuthControlFlag.REQUIRED);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
         instance.loadAllPlugins();
 
         // required load fails
@@ -221,8 +221,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin12() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createLoadFailingPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createLoadFailingPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createLoadFailingPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createLoadFailingPlugin(), AuthControlFlag.REQUIRED);
         instance.loadAllPlugins();
 
         // same instance is not added twice in the plugins
@@ -236,8 +236,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin13() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createLoadFailingPlugin(), AuthorizationRole.REQUIRED);
-        instance.addPlugin(createLoadFailingPlugin(), AuthorizationRole.SUFFICIENT);
+        instance.addPlugin(createLoadFailingPlugin(), AuthControlFlag.REQUIRED);
+        instance.addPlugin(createLoadFailingPlugin(), AuthControlFlag.SUFFICIENT);
         instance.loadAllPlugins();
 
         // same instance is not added twice in the plugins
@@ -252,8 +252,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugins14() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createTestFailingPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createTestFailingPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.REQUIRED);
         instance.loadAllPlugins();
 
         // sufficient is ok
@@ -268,8 +268,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin15() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createTestFailingPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
+        instance.addPlugin(createTestFailingPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
         instance.loadAllPlugins();
 
         // all are sufficient - success
@@ -282,8 +282,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin16() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createTestFailingPlugin(), AuthorizationRole.REQUIRED);
-        instance.addPlugin(createAllowedPrefixPlugin(), AuthorizationRole.SUFFICIENT);
+        instance.addPlugin(createTestFailingPlugin(), AuthControlFlag.REQUIRED);
+        instance.addPlugin(createAllowedPrefixPlugin(), AuthControlFlag.SUFFICIENT);
         instance.loadAllPlugins();
 
         // required test fails (exception when group is not allowed)
@@ -296,8 +296,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin17() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createTestFailingPlugin(), AuthorizationRole.SUFFICIENT);
-        instance.addPlugin(createTestFailingPlugin(), AuthorizationRole.REQUIRED);
+        instance.addPlugin(createTestFailingPlugin(), AuthControlFlag.SUFFICIENT);
+        instance.addPlugin(createTestFailingPlugin(), AuthControlFlag.REQUIRED);
         instance.loadAllPlugins();
 
         // same instance is not added twice in the plugins and the plugin stays sufficient
@@ -311,8 +311,8 @@ public class AuthorizationFrameworkTest {
     @Test
     public void testRolePlugin18() {
         AuthorizationFramework instance = getInstance();
-        instance.addPlugin(createTestFailingPlugin(), AuthorizationRole.REQUIRED);
-        instance.addPlugin(createTestFailingPlugin(), AuthorizationRole.SUFFICIENT);
+        instance.addPlugin(createTestFailingPlugin(), AuthControlFlag.REQUIRED);
+        instance.addPlugin(createTestFailingPlugin(), AuthControlFlag.SUFFICIENT);
         instance.loadAllPlugins();
 
         // same instance is not added twice in the plugins and this instance allows all projects

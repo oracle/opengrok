@@ -465,13 +465,13 @@ public class RuntimeEnvironmentTest {
         assertNotNull(conf.getPluginConfiguration());
         List<AuthorizationCheck> pluginConfiguration = conf.getPluginConfiguration();
         assertEquals(4, pluginConfiguration.size());
-        assertEquals(AuthorizationCheck.AuthorizationRole.SUFFICIENT, pluginConfiguration.get(0).getRole());
+        assertEquals(AuthorizationCheck.AuthControlFlag.SUFFICIENT, pluginConfiguration.get(0).getRole());
         assertEquals("Plugin", pluginConfiguration.get(0).getClassname());
-        assertEquals(AuthorizationCheck.AuthorizationRole.REQUIRED, pluginConfiguration.get(1).getRole());
+        assertEquals(AuthorizationCheck.AuthControlFlag.REQUIRED, pluginConfiguration.get(1).getRole());
         assertEquals("OtherPlugin", pluginConfiguration.get(1).getClassname());
-        assertEquals(AuthorizationCheck.AuthorizationRole.REQUISITE, pluginConfiguration.get(2).getRole());
+        assertEquals(AuthorizationCheck.AuthControlFlag.REQUISITE, pluginConfiguration.get(2).getRole());
         assertEquals("AnotherPlugin", pluginConfiguration.get(2).getClassname());
-        assertEquals(AuthorizationCheck.AuthorizationRole.REQUIRED, pluginConfiguration.get(3).getRole());
+        assertEquals(AuthorizationCheck.AuthControlFlag.REQUIRED, pluginConfiguration.get(3).getRole());
         assertEquals("DifferentPlugin", pluginConfiguration.get(3).getClassname());
     }
 

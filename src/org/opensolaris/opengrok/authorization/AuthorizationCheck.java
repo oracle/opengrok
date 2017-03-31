@@ -37,7 +37,7 @@ public class AuthorizationCheck implements Serializable {
     /**
      * Enum for avaliable authorization roles.
      */
-    public enum AuthorizationRole {
+    public enum AuthControlFlag {
         /**
          * Failure of such a plugin will ultimately lead to the authorization
          * framework returning failure but only after the remaining plugins have
@@ -64,7 +64,7 @@ public class AuthorizationCheck implements Serializable {
 
         private final String role;
 
-        private AuthorizationRole(String role) {
+        private AuthControlFlag(String role) {
             this.role = role;
         }
 
@@ -73,17 +73,17 @@ public class AuthorizationCheck implements Serializable {
             return this.role;
         }
 
-        public static AuthorizationRole get(String role) {
+        public static AuthControlFlag get(String role) {
             try {
-                return AuthorizationRole.valueOf(role.toUpperCase());
+                return AuthControlFlag.valueOf(role.toUpperCase());
             } catch (IllegalArgumentException ex) {
                 // role does not exist -> add some more info about which roles do exist
                 throw new IllegalArgumentException(
                         String.format("No authorization role \"%s\", available roles are [%s]. %s",
                                 role,
-                                Arrays.asList(AuthorizationRole.values())
+                                Arrays.asList(AuthControlFlag.values())
                                         .stream()
-                                        .map(AuthorizationRole::toString)
+                                        .map(AuthControlFlag::toString)
                                         .collect(Collectors.joining(", ")),
                                 ex.getLocalizedMessage()), ex);
             }
@@ -93,7 +93,7 @@ public class AuthorizationCheck implements Serializable {
     /**
      * One of "required", "requisite", "sufficient".
      */
-    private AuthorizationRole role;
+    private AuthControlFlag role;
 
     /**
      * Canonical name of a java class.
@@ -103,7 +103,7 @@ public class AuthorizationCheck implements Serializable {
     public AuthorizationCheck() {
     }
 
-    public AuthorizationCheck(AuthorizationRole role, String classname) {
+    public AuthorizationCheck(AuthControlFlag role, String classname) {
         this.role = role;
         this.classname = classname;
     }
@@ -131,7 +131,7 @@ public class AuthorizationCheck implements Serializable {
      *
      * @return the value of role
      */
-    public AuthorizationRole getRole() {
+    public AuthControlFlag getRole() {
         return role;
     }
 
@@ -140,7 +140,7 @@ public class AuthorizationCheck implements Serializable {
      *
      * @param role new value of role
      */
-    public void setRole(AuthorizationRole role) {
+    public void setRole(AuthControlFlag role) {
         this.role = role;
     }
 
@@ -150,6 +150,6 @@ public class AuthorizationCheck implements Serializable {
      * @param role new value of role
      */
     public void setRole(String role) {
-        this.role = AuthorizationRole.get(role);
+        this.role = AuthControlFlag.get(role);
     }
 }
