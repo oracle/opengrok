@@ -134,9 +134,8 @@ else
 	exit 1
 fi
 
-# TODO: Handle symlinks correctly (especially in ${0})
-SCRIPT_DIRECTORY=`dirname "${0}"`
-SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd`
+SCRIPT_FILE=`readlink -f "${0}"`
+SCRIPT_DIRECTORY=`dirname "${SCRIPT_FILE}"`
 
 #
 # Default Instance Configuration
@@ -334,6 +333,7 @@ DefaultInstanceConfiguration()
     JAVA_OPTS="${JAVA_OPTS:--Xmx2048m}"
     
     # OPTIONAL: Full Path to History Utilities
+    BK="`Which bk`"
     HG="`Which hg`"
     CVS="`Which cvs`"
     SVN="`Which svn`"
@@ -347,6 +347,7 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Override Built-in Properties
     # Assumption: We should not set properties to the empty string
     PROPERTIES="\
+${BK:+-Dorg.opensolaris.opengrok.history.BitKeeper=$BK} \
 ${HG:+-Dorg.opensolaris.opengrok.history.Mercurial=$HG} \
 ${CVS:+-Dorg.opensolaris.opengrok.history.cvs=$CVS} \
 ${SVN:+-Dorg.opensolaris.opengrok.history.Subversion=$SVN} \
