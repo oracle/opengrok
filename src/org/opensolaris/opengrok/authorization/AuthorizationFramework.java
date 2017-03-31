@@ -53,7 +53,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 public final class AuthorizationFramework {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFramework.class);
-    private final File directory;
+    private File pluginDirectory;
     private AuthorizationPluginClassLoader loader;
 
     private volatile static AuthorizationFramework instance = new AuthorizationFramework();
@@ -68,6 +68,31 @@ public final class AuthorizationFramework {
      */
     public static AuthorizationFramework getInstance() {
         return instance;
+    }
+
+    /**
+     * Get the plugin directory.
+     */
+    public synchronized File getPluginDirectory() {
+        return pluginDirectory;
+    }
+
+    /**
+     * Set the plugin directory.
+     *
+     * @param pluginDirectory the directory
+     */
+    public synchronized void setPluginDirectory(File pluginDirectory) {
+        this.pluginDirectory = pluginDirectory;
+    }
+
+    /**
+     * Set the plugin directory.
+     *
+     * @param directory the directory path
+     */
+    public void setPluginDirectory(String directory) {
+        AuthorizationFramework.this.setPluginDirectory(directory != null ? new File(directory) : null);
     }
 
     /**
@@ -113,13 +138,8 @@ public final class AuthorizationFramework {
     private AuthorizationFramework() {
         String path = RuntimeEnvironment.getInstance()
                 .getPluginDirectory();
-        File directory = path == null ? null : new File(path);
-        if (path == null || directory == null || !directory.isDirectory() || !directory.canRead()) {
-            LOGGER.log(Level.INFO, "plugin directory not found or not readable: {0}. "
-                    + "The AuthorizationFramework will just pass requests through.", path);
-        }
         plugins = new ArrayList<>();
-        this.directory = directory;
+        setPluginDirectory(path);
         reload();
     }
 
@@ -127,8 +147,10 @@ public final class AuthorizationFramework {
      * Get available plugins.
      *
      * This and couple of following methods are declared as synchronized because
-     * 1) plugins can be reloaded at anytime 
-     * 2) requests are pretty asynchronous
+     * <ol>
+     *  <li>plugins can be reloaded at anytime</li>
+     *  <li>requests are pretty asynchronous</li>
+     * </ol>
      *
      * So this tries to ensure that there will be no
      * ConcurrentModificationException or other similar exceptions.
@@ -179,7 +201,7 @@ public final class AuthorizationFramework {
      * @return list of file with suffix
      */
     private List<File> listFiles(String suffix) {
-        File[] files = directory.listFiles(new FilenameFilter() {
+        File[] files = pluginDirectory.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(suffix);
@@ -196,7 +218,7 @@ public final class AuthorizationFramework {
      * @return recursively traversed list of files with given suffix
      */
     private List<File> listFilesRec(String suffix) {
-        return listFilesClassesRec(directory, suffix);
+        return listFilesClassesRec(pluginDirectory, suffix);
     }
 
     private List<File> listFilesClassesRec(File start, String suffix) {
@@ -236,7 +258,7 @@ public final class AuthorizationFramework {
             SecurityException,
             InstantiationException,
             IllegalAccessException {
-        
+
         Class c = loader.loadClass(classname);
         // check for implemented interfaces
         Class[] intf = c.getInterfaces();
@@ -256,7 +278,7 @@ public final class AuthorizationFramework {
     }
 
     private String getClassName(File f) {
-        String classname = f.getAbsolutePath().substring(directory.getAbsolutePath().length() + 1, f.getAbsolutePath().length());
+        String classname = f.getAbsolutePath().substring(pluginDirectory.getAbsolutePath().length() + 1, f.getAbsolutePath().length());
         classname = classname.replace(File.separatorChar, '.'); // convert to package name
         classname = classname.substring(0, classname.lastIndexOf('.')); // strip .class
         return classname;
@@ -275,24 +297,27 @@ public final class AuthorizationFramework {
      * Old instances of plugins are removed and new list of plugins is
      * constructed. Unload and load event is fired on each plugin.
      *
-     * @see IAuthorizationPlugin#load() 
-     * @see IAuthorizationPlugin#unload() 
+     * @see IAuthorizationPlugin#load()
+     * @see IAuthorizationPlugin#unload()
      */
     @SuppressWarnings("unchecked")
     public synchronized void reload() {
-        if (directory == null || !directory.isDirectory() || !directory.canRead()) {
+        if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {
+            LOGGER.log(Level.WARNING, "plugin directory not found or not readable: {0}. "
+                    + "All requests allowed.", pluginDirectory);
             return;
         }
-        LOGGER.log(Level.INFO, "Plugins are being reloaded from " + directory.getAbsolutePath());
+        LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
         removeAll();
         // trashing out the old instance of the loaded enables us
         // to reaload the plugins at runtime
         loader = (AuthorizationPluginClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
+            @Override
             public Object run() {
-                return new AuthorizationPluginClassLoader(directory);
+                return new AuthorizationPluginClassLoader(pluginDirectory);
             }
         });
-        
+
         removeAll();
         plugins = new ArrayList<>();
 
@@ -322,7 +347,7 @@ public final class AuthorizationFramework {
                 LOGGER.log(Level.INFO, "Could not manipulate with file because of: ", ex);
             }
         }
-        
+
         for (IAuthorizationPlugin plugin : getPlugins()) {
             try {
                 plugin.load();

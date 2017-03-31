@@ -79,7 +79,17 @@ public final class Configuration {
     private int historyCacheTime;
 
     private int messageLimit;
+    /**
+     * Directory with authorization plugins. Default value is
+     * dataRoot/../plugins (can be /var/opengrok/plugins if dataRoot is
+     * /var/opengrok/data).
+     */
     private String pluginDirectory;
+    /**
+     * Enable watching the plugin directory for changes in real time. Suitable
+     * for development.
+     */
+    private boolean authorizationWatchdogEnabled;
     private List<Project> projects;
     private Set<Group> groups;
     private String sourceRoot;
@@ -323,6 +333,7 @@ public final class Configuration {
         setRevisionMessageCollapseThreshold(200);
         setGroupsCollapseThreshold(4);
         setPluginDirectory(null);
+        setAuthorizationWatchdogEnabled(false);
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setIndexRefreshPeriod(3600);
         setMessageLimit(500);
@@ -372,6 +383,14 @@ public final class Configuration {
 
     public void setPluginDirectory(String pluginDirectory) {
         this.pluginDirectory = pluginDirectory;
+    }
+
+    public boolean isAuthorizationWatchdogEnabled() {
+        return authorizationWatchdogEnabled;
+    }
+
+    public void setAuthorizationWatchdogEnabled(boolean authorizationWatchdogEnabled) {
+        this.authorizationWatchdogEnabled = authorizationWatchdogEnabled;
     }
 
     public void setCmds(Map<String, String> cmds) {
