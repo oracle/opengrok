@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
@@ -28,6 +28,9 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -39,6 +42,7 @@ import static org.junit.Assert.*;
  * Test of the methods in <code>org.opensolaris.opengrok.web.Util</code>.
  */
 public class UtilTest {
+
     private static Locale savedLocale;
 
     @BeforeClass
@@ -58,12 +62,11 @@ public class UtilTest {
     @Test
     public void htmlize() throws IOException {
         String[][] input_output = {
-            {"This is a test", "This is a test" },
+            {"This is a test", "This is a test"},
             {"Newline\nshould become <br/>",
-                      "Newline<br/>should become &lt;br/&gt;" },
-            {"Open & Grok", "Open &amp; Grok" },
-            {"&amp;&lt;&gt;", "&amp;amp;&amp;lt;&amp;gt;" },
-        };
+                "Newline<br/>should become &lt;br/&gt;"},
+            {"Open & Grok", "Open &amp; Grok"},
+            {"&amp;&lt;&gt;", "&amp;amp;&amp;lt;&amp;gt;"},};
         for (String[] in_out : input_output) {
             // 1 arg
             assertEquals(in_out[1], Util.htmlize(in_out[0]));
@@ -80,8 +83,8 @@ public class UtilTest {
 
         assertEquals("", Util.breadcrumbPath("/root/", ""));
 
-        assertEquals("<a href=\"/root/x\">x</a>", 
-            Util.breadcrumbPath("/root/", "x"));
+        assertEquals("<a href=\"/root/x\">x</a>",
+                Util.breadcrumbPath("/root/", "x"));
         assertEquals("<a href=\"/root/xx\">xx</a>",
                 Util.breadcrumbPath("/root/", "xx"));
 
@@ -93,9 +96,9 @@ public class UtilTest {
         assertEquals("<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b/\">b</a>/",
                 Util.breadcrumbPath("/r/", "a/b/"));
         // should work the same way with a '.' as file separator
-        assertEquals("<a href=\"/r/java/\">java</a>." +
-                "<a href=\"/r/java/lang/\">lang</a>." +
-                "<a href=\"/r/java/lang/String\">String</a>",
+        assertEquals("<a href=\"/r/java/\">java</a>."
+                + "<a href=\"/r/java/lang/\">lang</a>."
+                + "<a href=\"/r/java/lang/String\">String</a>",
                 Util.breadcrumbPath("/r/", "java.lang.String", '.'));
         // suffix added to the link?
         assertEquals("<a href=\"/root/xx&project=y\">xx</a>",
@@ -106,9 +109,9 @@ public class UtilTest {
         assertEquals("/<a href=\"/root//xx&project=y\">xx</a>",
                 Util.breadcrumbPath("/root/", "../xx", '/', "&project=y", true));
         // relative pathes are resolved wrt. / , so path resolves to /a/c/d 
-        assertEquals("/<a href=\"/r//a/\">a</a>/" +
-                "<a href=\"/r//a/c/\">c</a>/" +
-                "<a href=\"/r//a/c/d\">d</a>",
+        assertEquals("/<a href=\"/r//a/\">a</a>/"
+                + "<a href=\"/r//a/c/\">c</a>/"
+                + "<a href=\"/r//a/c/d\">d</a>",
                 Util.breadcrumbPath("/r/", "../a/b/../c//d", '/', "", true));
     }
 
@@ -123,7 +126,7 @@ public class UtilTest {
         assertEquals("<b>1.4 MiB</b>", Util.readableSize(1474560));
         assertEquals("<b>3.5 GiB</b>", Util.readableSize(3758489600L));
         assertEquals("<b>8,589,934,592 GiB</b>",
-            Util.readableSize(Long.MAX_VALUE));
+                Util.readableSize(Long.MAX_VALUE));
     }
 
     @Test
@@ -132,18 +135,18 @@ public class UtilTest {
         // hmmm - where do meaningful tests start?
         Util.readableLine(42, out, null, null, null, null);
         assertEquals("\n<a class=\"l\" name=\"42\" href=\"#42\">42</a>",
-                     out.toString());
+                out.toString());
 
         out.getBuffer().setLength(0); // clear buffer
         Util.readableLine(110, out, null, null, null, null);
         assertEquals("\n<a class=\"hl\" name=\"110\" href=\"#110\">110</a>",
-                     out.toString());
+                out.toString());
     }
 
     @Test
     public void path2uid() {
         assertEquals("\u0000etc\u0000passwd\u0000date",
-                     Util.path2uid("/etc/passwd", "date"));
+                Util.path2uid("/etc/passwd", "date"));
     }
 
     @Test
@@ -170,11 +173,11 @@ public class UtilTest {
         assertEquals("a%2Bb", Util.URIEncodePath("a+b"));
         assertEquals("a%20b", Util.URIEncodePath("a b"));
         assertEquals("/a//x/yz/%23%23/%20/%20%3F",
-                     Util.URIEncodePath("/a//x/yz/##/ / ?"));
+                Util.URIEncodePath("/a//x/yz/##/ / ?"));
         assertEquals("foo%3A%3Abar%3A%3Atest.js",
-                     Util.URIEncodePath("foo::bar::test.js"));
+                Util.URIEncodePath("foo::bar::test.js"));
         assertEquals("bl%C3%A5b%C3%A6rsyltet%C3%B8y",
-                     Util.URIEncodePath("bl\u00E5b\u00E6rsyltet\u00F8y"));
+                Util.URIEncodePath("bl\u00E5b\u00E6rsyltet\u00F8y"));
     }
 
     @Test
@@ -191,14 +194,12 @@ public class UtilTest {
             {
                 "if (a < b && foo < bar && c > d)",
                 "if (a < b && foo > bar && c > d)",
-
                 "if (a &lt; b &amp;&amp; foo <span class=\"d\">&lt;</span> bar &amp;&amp; c &gt; d)",
                 "if (a &lt; b &amp;&amp; foo <span class=\"a\">&gt;</span> bar &amp;&amp; c &gt; d)"
             },
             {
                 "foo << 1",
                 "foo >> 1",
-
                 "foo <span class=\"d\">&lt;&lt;</span> 1",
                 "foo <span class=\"a\">&gt;&gt;</span> 1"
             },
@@ -209,7 +210,6 @@ public class UtilTest {
                 "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
                 + "cur, ps_id, ret_url, exp_url, d_req_time, d_req_mil, "
                 + "h_resp_time, h_resp_mil) \"",
-
                 "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
                 + "cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, "
                 + "h_resp_mil) \"",
@@ -217,10 +217,9 @@ public class UtilTest {
                 + "cur, ps_id, ret_url, <span class=\"a\">exp_url, "
                 + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) \""
             },
-            {   
+            {
                 "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
                 "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
-
                 "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
                 "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span "
                 + "class=\"a\">, ?</span>)\", values);"
@@ -228,32 +227,29 @@ public class UtilTest {
             {
                 "char    *config_list = NULL;",
                 "char    **config_list = NULL;",
-
                 "char    *config_list = NULL;",
                 "char    *<span class=\"a\">*</span>config_list = NULL;"
             },
             {
                 "char    **config_list = NULL;",
                 "char    *config_list = NULL;",
-
                 "char    *<span class=\"d\">*</span>config_list = NULL;",
                 "char    *config_list = NULL;"
             },
             {
                 "* An error occured or there is non-numeric stuff at the end",
                 "* An error occurred or there is non-numeric stuff at the end",
-
                 "* An error occured or there is non-numeric stuff at the end",
                 "* An error occur<span class=\"a\">r</span>ed or there is "
                 + "non-numeric stuff at the end"
             }
         };
-        for (int i=0; i < tests.length; i++) {
-            String[] strings=Util.diffline(
-                new StringBuilder(tests[i][0]),
-                new StringBuilder(tests[i][1]));
-            assertEquals(""+ i + "," + 0, tests[i][2], strings[0]);
-            assertEquals(""+ i + "," + 1, tests[i][3], strings[1]);
+        for (int i = 0; i < tests.length; i++) {
+            String[] strings = Util.diffline(
+                    new StringBuilder(tests[i][0]),
+                    new StringBuilder(tests[i][1]));
+            assertEquals("" + i + "," + 0, tests[i][2], strings[0]);
+            assertEquals("" + i + "," + 1, tests[i][3], strings[1]);
         }
     }
 
@@ -290,7 +286,7 @@ public class UtilTest {
     @Test
     public void jsStringLiteral() {
         assertEquals("\"abc\\n\\r\\\"\\\\\"",
-                     Util.jsStringLiteral("abc\n\r\"\\"));
+                Util.jsStringLiteral("abc\n\r\"\\"));
     }
 
     @Test
@@ -390,5 +386,78 @@ public class UtilTest {
                 .contains("title=\"Link to " + Util.encode("https://example.com/><\"") + "\""));
         assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
                 .contains("title=\"Link to " + Util.encode("http://www.example.com?param=1&param2=2&param3=\"quoted>\"") + "\""));
+    }
+
+    @Test
+    public void testBuildLink() throws URISyntaxException, MalformedURLException {
+        assertEquals("<a href=\"http://www.example.com\">link</a>", Util.buildLink("link", "http://www.example.com"));
+        assertEquals("<a href=\"http://www.example.com?url=xasw&beta=gama\">link</a>", Util.buildLink("link", "http://www.example.com?url=xasw&beta=gama"));
+
+        String link = Util.buildLink("link", "http://www.example.com", true);
+        assertTrue(link.contains("href=\"http://www.example.com\""));
+        assertTrue(link.contains("target=\"_blank\""));
+
+        link = Util.buildLink("link", "http://www.example.com?url=xasw&beta=gama", true);
+        assertTrue(link.contains("href=\"http://www.example.com?url=xasw&beta=gama\""));
+        assertTrue(link.contains("target=\"_blank\""));
+
+        Map<String, String> attrs = new TreeMap<>();
+        attrs.put("href", "https://www.example.com/abcd/acbd");
+        attrs.put("title", "Some important title");
+        attrs.put("data-id", "123456");
+
+        link = Util.buildLink("link", attrs);
+        assertTrue(link.contains("href=\"https://www.example.com/abcd/acbd\""));
+        assertTrue(link.contains("title=\"Some important title\""));
+        assertTrue(link.contains("data-id=\"123456\""));
+    }
+
+    @Test(expected = MalformedURLException.class)
+    public void testBuildLinkInvalidUrl1() throws URISyntaxException, MalformedURLException {
+        Util.buildLink("link", "www.example.com"); // invalid protocol
+    }
+
+    @Test(expected = URISyntaxException.class)
+    public void testBuildLinkInvalidUrl2() throws URISyntaxException, MalformedURLException {
+        Util.buildLink("link", "http://www.exa\"mp\"le.com"); // invalid authority
+    }
+
+    @Test
+    public void testLinkifyPattern() {
+        String text
+                = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
+                + "sed do eiusmod tempor incididunt as per 12345698 ut labore et dolore magna "
+                + "aliqua. bug3333fff Ut enim ad minim veniam, quis nostrud exercitation "
+                + "ullamco laboris nisi ut aliquip ex ea introduced in 9791216541 commodo consequat. "
+                + "Duis aute irure dolor in reprehenderit in voluptate velit "
+                + "esse cillum dolore eu fixes 132469187 fugiat nulla pariatur. Excepteur sint "
+                + "occaecat bug6478abc cupidatat non proident, sunt in culpa qui officia "
+                + "deserunt mollit anim id est laborum.";
+        String expected
+                = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
+                + "sed do eiusmod tempor incididunt as per "
+                + "<a href=\"http://www.example.com?bug=12345698\" target=\"_blank\">12345698</a> ut labore et dolore magna "
+                + "aliqua. bug3333fff Ut enim ad minim veniam, quis nostrud exercitation "
+                + "ullamco laboris nisi ut aliquip ex ea introduced in "
+                + "<a href=\"http://www.example.com?bug=9791216541\" target=\"_blank\">9791216541</a> commodo consequat. "
+                + "Duis aute irure dolor in reprehenderit in voluptate velit "
+                + "esse cillum dolore eu fixes "
+                + "<a href=\"http://www.example.com?bug=132469187\" target=\"_blank\">132469187</a> fugiat nulla pariatur. Excepteur sint "
+                + "occaecat bug6478abc cupidatat non proident, sunt in culpa qui officia "
+                + "deserunt mollit anim id est laborum.";
+        String expected2
+                = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
+                + "sed do eiusmod tempor incididunt as per 12345698 ut labore et dolore magna "
+                + "aliqua. "
+                + "<a href=\"http://www.other-example.com?bug=3333\" target=\"_blank\">bug3333fff</a> Ut enim ad minim veniam, quis nostrud exercitation "
+                + "ullamco laboris nisi ut aliquip ex ea introduced in 9791216541 commodo consequat. "
+                + "Duis aute irure dolor in reprehenderit in voluptate velit "
+                + "esse cillum dolore eu fixes 132469187 fugiat nulla pariatur. Excepteur sint "
+                + "occaecat "
+                + "<a href=\"http://www.other-example.com?bug=6478\" target=\"_blank\">bug6478abc</a> cupidatat non proident, sunt in culpa qui officia "
+                + "deserunt mollit anim id est laborum.";
+
+        assertEquals(expected, Util.linkifyPattern(text, Pattern.compile("\\b([0-9]{8,})\\b"), "$1", "http://www.example.com?bug=$1"));
+        assertEquals(expected2, Util.linkifyPattern(text, Pattern.compile("\\b(bug([0-9]{4})\\w{3})\\b"), "$1", "http://www.other-example.com?bug=$2"));
     }
 }

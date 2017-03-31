@@ -46,7 +46,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -522,7 +525,7 @@ public final class Util {
     {    
         readableLine(num, out, annotation, userPageLink, userPageSuffix, project, false);
     }
-    
+
     public static void readableLine(int num, Writer out, Annotation annotation,
             String userPageLink, String userPageSuffix, String project, boolean skipNewline)
             throws IOException
@@ -951,7 +954,7 @@ public final class Util {
         }
         return false;
     }
-    
+
     /**
      * Print list of messages into output
      *
@@ -1383,10 +1386,12 @@ public final class Util {
     /**
      * Build a html link to the given http url. If the url is not an http uri
      * then it is returned as it was received. This has the same effect as
-     * invoking <code>buildLink(url, true)</code>.
+     * invoking <code>linkify(url, true)</code>.
      *
-     * @param url
-     * @return
+     * @param url the text to be linkified
+     * @return the linkified string
+     *
+     * @see #linkify(java.lang.String, boolean)
      */
     public static String linkify(String url) {
         return linkify(url, true);
@@ -1403,16 +1408,112 @@ public final class Util {
     public static String linkify(String url, boolean newTab) {
         if (isHttpUri(url)) {
             try {
-                return String.format("<a href=\"%s\"%s title=\"Link to %s\">%s</a>",
-                        Util.encodeURL(url),
-                        newTab ? " target=\"_blank\"" : "",
-                        Util.encode(url),
-                        Util.htmlize(url)
-                );
-            } catch (MalformedURLException | URISyntaxException ex) {
+                Map<String, String> attrs = new TreeMap<>();
+                attrs.put("href", url);
+                attrs.put("title", String.format("Link to %s", Util.encode(url)));
+                if (newTab) {
+                    attrs.put("target", "_blank");
+                }
+                return buildLink(url, attrs);
+            } catch (URISyntaxException | MalformedURLException ex) {
                 return url;
             }
         }
         return url;
+    }
+
+    /**
+     * Build an anchor with given name and a pack of attributes. Automatically
+     * escapes href attributes and automatically escapes the name into HTML
+     * entities.
+     *
+     * @param name displayed name of the anchor
+     * @param attrs map of attributes for the html element
+     * @return string containing the result
+     *
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    public static String buildLink(String name, Map<String, String> attrs)
+            throws URISyntaxException, MalformedURLException {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("<a");
+        for (Entry<String, String> attr : attrs.entrySet()) {
+            buffer.append(" ");
+            buffer.append(attr.getKey());
+            buffer.append("=\"");
+            String value = attr.getValue();
+            if (attr.getKey().equals("href")) {
+                value = Util.encodeURL(value);
+            }
+            buffer.append(value);
+            buffer.append("\"");
+        }
+        buffer.append(">");
+        buffer.append(Util.htmlize(name));
+        buffer.append("</a>");
+        return buffer.toString();
+    }
+
+    /**
+     * Build an anchor with given name and a pack of attributes. Automatically
+     * escapes href attributes and automatically escapes the name into HTML
+     * entities.
+     *
+     * @param name displayed name of the anchor
+     * @param url anchor's url
+     * @return string containing the result
+     *
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    public static String buildLink(String name, String url)
+            throws URISyntaxException, MalformedURLException {
+        Map<String, String> attrs = new TreeMap<>();
+        attrs.put("href", url);
+        return buildLink(name, attrs);
+    }
+
+    /**
+     * Build an anchor with given name and a pack of attributes. Automatically
+     * escapes href attributes and automatically escapes the name into HTML
+     * entities.
+     *
+     * @param name displayed name of the anchor
+     * @param url anchor's url
+     * @param newTab a flag if the link should be opend in a new tab
+     * @return string containing the result
+     *
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    public static String buildLink(String name, String url, boolean newTab)
+            throws URISyntaxException, MalformedURLException {
+        Map<String, String> attrs = new TreeMap<>();
+        attrs.put("href", url);
+        if (newTab) {
+            attrs.put("target", "_blank");
+        }
+        return buildLink(name, attrs);
+    }
+
+    /**
+     * Replace all occurrences of pattern in the incoming text with the link
+     * named name pointing to an url. It is possible to use the regexp pattern
+     * groups in name and url when they are specified in the pattern.
+     *
+     * @param text text to replace all patterns
+     * @param pattern the pattern to match
+     * @param name link display name
+     * @param url link url
+     * @return the text with replaced links
+     */
+    public static String linkifyPattern(String text, Pattern pattern, String name, String url) {
+        try {
+            String buildLink = buildLink(name, url, true);
+            return pattern.matcher(text).replaceAll(buildLink);
+        } catch (URISyntaxException | MalformedURLException ex) {
+            return text;
+        }
     }
 }

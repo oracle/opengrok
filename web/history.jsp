@@ -324,12 +324,10 @@ document.domReady.push(function() {domReadyHistory();});
                 String cout = Util.htmlize(entry.getMessage());
 
                 if (bugPage != null && bugPage.length() > 0) {
-                    cout = bugPattern.matcher(cout).replaceAll("<a href=\""
-                        + bugPage + "$1\">$1</a>");
+                    cout = Util.linkifyPattern(cout, bugPattern, "$1", bugPage + "$1");
                 }
                 if (reviewPage != null && reviewPage.length() > 0) {
-                    cout = reviewPattern.matcher(cout).replaceAll("<a href=\""
-                        + reviewPage + "$1\">$1</a>");
+                    cout = Util.linkifyPattern(cout, reviewPattern, "$1", reviewPage + "$1");
                 }
                 
                 boolean showSummary = false;
@@ -338,6 +336,12 @@ document.domReady.push(function() {domReadyHistory();});
                     showSummary = true;
                     coutSummary = coutSummary.substring(0, summaryLength - 1);
                     coutSummary = Util.htmlize(coutSummary);
+                    if (bugPage != null && bugPage.length() > 0) {
+                        coutSummary = Util.linkifyPattern(coutSummary, bugPattern, "$1", bugPage + "$1");
+                    }
+                    if (reviewPage != null && reviewPage.length() > 0) {
+                        coutSummary = Util.linkifyPattern(coutSummary, reviewPattern, "$1", reviewPage + "$1");
+                    }
                 }
 
                 if (showSummary) {
