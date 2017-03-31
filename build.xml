@@ -108,6 +108,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
     <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
     <property name="test.hg" value="${test.repositories}/mercurial"/>
+    <property name="test.bk" value="${test.repositories}/bitkeeper"/>
     <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
@@ -760,29 +761,41 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <target depends="create_repos, create_plugins" name="-post-compile-test-single">
     </target>
-    
+
     <target depends="check_plugins_jar" name="create_plugins" if="plugins_missing">
-        <copy 
-            file="${test.plugins_jar}" 
+        <copy
+            file="${test.plugins_jar}"
             tofile="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/plugins.jar" />
     </target>
 
     <target depends="check_repositories_zip" name="create_repos" if="repos_missing">
         <antcall target="-create-svn-repository"/>
         <antcall target="-create-razor-repository"/>
+
         <!-- Change root in CVS test repository -->
         <!-- Strange indentation in line two levels below to get newline correctly -->
         <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${basedir}/${test.cvs.root}/
         </concat>
+
         <!-- Generate ZIP files used for unit testing git/.git are renamed -->
         <copy todir="${test.git}/.git">
             <fileset dir="${test.git}/git"/>
         </copy>
+
         <!-- Generate ZIP files used for unit testing mercurial/.hg and mercurial/.hgignore are renamed -->
         <copy todir="${test.hg}/.hg">
             <fileset dir="${test.hg}/hg"/>
         </copy>
         <copy file="${test.hg}/hgignore" tofile="${test.hg}/.hgignore"/>
+
+        <!-- Generate ZIP files used for unit testing bitkeeper/.bk are renamed -->
+        <copy todir="${test.bk}/.bk">
+	    <!--
+	         The bk directory contains SCCS subdirectory which we want to
+	         include so disable default excludes.
+	    -->
+            <fileset dir="${test.bk}/bk" defaultexcludes="no"/>
+        </copy>
 
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
              basedir="${test.sources}"
@@ -790,7 +803,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
              defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
              basedir="${test.repositories}"
-             excludes="mercurial/hg/**, mercurial/hgignore, git/git/**"
+             excludes="mercurial/hg/**, mercurial/hgignore, git/git/**, bitkeeper/bk/**"
              update="false"
              defaultexcludes="no"/>
 
@@ -883,6 +896,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <!-- clean up generated test repositories -->
     <target name="-delete-generated-repository-files">
+        <delete dir="${test.bk}/.bk"/>
         <delete dir="${test.hg}/.hg"/>
         <delete file="${test.hg}/.hgignore"/>
         <delete dir="${test.git}/.git"/>
