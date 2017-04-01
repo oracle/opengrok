@@ -46,15 +46,15 @@ Currently supported message types:
 
     This message is designed to retrieve some information from the web application.
     The purpose of the message is specified in the text field as one of:
-       - "reload"  the application reloads the statistics file and returns the loaded statistics
-       - "clean"   the application cleans its current statistics and returns the empty statistics
-       - "get"     the application returns current statistics
+     - "reload"  the application reloads the statistics file and returns the loaded statistics
+     - "clean"   the application cleans its current statistics and returns the empty statistics
+     - "get"     the application returns current statistics
 4. `ConfigMessage` (config)
 
      This message retrieves or sends a configuration to the webapp,
-     depending on tag. "setconf" tag sends config to webapp and requires
-     file as argument. "set" tag sets a particular property in the webapp,
-     see `--help` for more details.
+     depending on tag. 
+      - "setconf" tag sends config to webapp and requires a file as argument. 
+      - "set" tag sets a particular property in the webapp, see `--help` for more details.
 5. `RefreshMesssage` (refresh)
 
     Sent at the end of partial reindex to trigger refresh of SearcherManagers.
