@@ -82,3 +82,5 @@ number (0.12))
    of the release, e.g. adding list of issues fixed, whether complete reindex
    is necessary etc.
 
+5) Send announcement to opengrok-users@yahoogroups.com
+
