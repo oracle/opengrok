@@ -50,7 +50,8 @@ Currently supported message types:
 
      This message retrieves or sends a configuration to the webapp,
      depending on tag. "setconf" tag sends config to webapp and requires
-     file as argument.
+     file as argument. "set" tag sets a particular property in the webapp,
+     see `--help` for more details.
 5. `RefreshMesssage` (refresh)
 
     Sent at the end of partial reindex to trigger refresh of SearcherManagers.
@@ -75,7 +76,7 @@ The script has documented usage.
 ```
 $ tools/Messages --help
 
-Usage: Messages [options] <text>
+Usage: Messages [options] [text]
 
 [OPTIONS]:
   -c|--class                    css class to apply for the message (default info)
@@ -96,7 +97,19 @@ Usage: Messages [options] <text>
 
   Message types:
     config:
-     - send configuration to the webapp. Requires file as argument.
+     - set or get configuration
+     - query is formed in the message <text>:
+       - "setconf"  send configuration to webapp.
+                      Requires input file as argument.
+       - "getconf"  retrieves configuration from webapp.
+                      Prints the configuration in XML to stdout.
+       - "set"      sets the particular configuration option (only primitive types)
+                    in the webapp.
+                      Examples:
+                          histPerPage = 10
+                          authorizationWatchdogEnabled = true
+                      Returns text describing the action.
+                      The change is NOT persistent when you reindex or redeploy!
     normal:
      - assign a <text> to the main page or a project
      - can be more precise with <tags> (for specific project)
@@ -110,10 +123,12 @@ Usage: Messages [options] <text>
        - "clean"   the application cleans its current statistics
                    and returns the empty statistics
        - "get"     the application returns current statistics
+    refresh:
+     - refresh SearcherManagers of projects given by <tags>
 
   Optional environment variables:
     OPENGROK_CONFIGURATION - location of your configuration
-      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf tools/Messages ... 
+      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf /home/ktulinge/workspace/OpenGrok/tools/Messages ... 
 
     See the code for more information on configuration options / variables
 
