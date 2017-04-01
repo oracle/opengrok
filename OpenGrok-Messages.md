@@ -16,7 +16,7 @@
 
 # Using OpenGrok messages
 
-This is a howto to introduce a new feature in OpenGrok which allows you to display custom messages in the OpenGrok web interface.
+This is a howto to introduce a new feature in OpenGrok which allows you to use custom messages in OpenGrok.
 
 # Messages
 
@@ -25,6 +25,9 @@ usually listens for the main configuration file. These are used in the web
 application and displayed to the users. One can easily notify users about some
 important events, for example that the reindex is being in progress and that
 the searched information can be inconsistent.
+
+While there are visible messages in the user interface, you can send a couple of other messages
+regarding configuration and web application statistics. All types are listed below.
 
 ## Types
 
