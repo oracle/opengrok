@@ -150,7 +150,7 @@ $ tools/Messages -c "warning" -e "+30 min" --type abort "Hello" # send abort mes
 $ tools/Messages -n stats get # get actual statistics as JSON
 $ tools/Messages -n stats reload # reload the statistics file
 $ tools/Messages -n stats clean # cleans all the statistics
-$ tools/Messages -n config /var/opengrok/etc/groups.xml
+$ tools/Messages -n config setconf /var/opengrok/etc/groups.xml # replaces the web application configuration
 ```
 
 The script is also packaged into the target archive and the usage is similar
