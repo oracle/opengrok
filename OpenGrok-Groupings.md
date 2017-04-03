@@ -130,15 +130,15 @@ Configuration for this structure could look like this:
 ```
 
 Configuration is provided in the read only configuration (`-R` parameter for the opengrok.jar or
-`READ_XML_CONFIGURATION` variable in the OpenGrok script). This configuration is merged with the
+`OPENGROK_READ_XML_CONFIGURATION` variable in the OpenGrok script). This configuration is merged with the
 instance configuration in `/var/opengrok/etc/configuration.xml` (default) so the groups are available
 for the webapp.
 
 **NOTE:**
 There is no other way to persistently provide the group configuration than using
-`READ_XML_CONFIGURATION` variable for each run of the indexer. If you run the indexer 
+`OPENGROK_READ_XML_CONFIGURATION` variable for each run of the indexer. If you run the indexer 
 without the read only configuration, your groups will vanish from the `configuration.xml`.
-For more information see [#1065](https://github.com/OpenGrok/OpenGrok/issues/1065).
+For more information see [#1065](https://github.com/OpenGrok/OpenGrok/issues/1065). More about this process how the get the persistent group configuration is in the [Advanced Configuration](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Advanced-Configuration)
 
 
 ## Display
@@ -202,7 +202,7 @@ Usage: Groups <add|delete|match|list|empty|help> [--help] [--verbose] [-d]
        Groups match <project name>
 
   The script searches for the configuration in
-    READ_XML_CONFIGURATION files or
+    OPENGROK_READ_XML_CONFIGURATION files or
     you can use the -i option.
   When no such file exists it uses an empty configuration.
 
