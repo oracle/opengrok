@@ -113,7 +113,7 @@ $ tools/Groups empty
 </java>
 ```
 
-Save this content into `/var/opengrok/etc/read-only.xml` and use the steps above to add the read only configuration to the indexer run.
+Save this content into `/var/opengrok/etc/read-only.xml` and use the [steps above](#read-only-configuration) to add the read only configuration to the indexer run.
 
 ## Generating group structure
 
