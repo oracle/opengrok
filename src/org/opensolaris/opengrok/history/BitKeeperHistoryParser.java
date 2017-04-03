@@ -37,7 +37,7 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * BitKeeperHistoryParser handles parsing the output of `bk log` into a history object.
  *
- * @author James Service <jas2701@googlemail.com>
+ * @author James Service  {@literal <jas2701@googlemail.com>}
  */
 class BitKeeperHistoryParser implements Executor.StreamHandler {
 

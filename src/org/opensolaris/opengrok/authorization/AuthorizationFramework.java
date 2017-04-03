@@ -123,14 +123,14 @@ public final class AuthorizationFramework {
 
     /**
      * Checks if the request should have an access to project. See
-     * {@link #checkAll(HttpServletRequest, String, String, Predicate)} for more
+     * {@link #checkAll(HttpServletRequest, String, Nameable, Predicate)} for more
      * information about invocation order.
      *
      * @param request request object
      * @param project project object
      * @return true if yes
      *
-     * @see #checkAll(HttpServletRequest, String, String, Predicate)
+     * @see #checkAll(HttpServletRequest, String, Nameable, Predicate)
      */
     public boolean isAllowed(HttpServletRequest request, Project project) {
         return checkAll(
@@ -147,14 +147,14 @@ public final class AuthorizationFramework {
 
     /**
      * Checks if the request should have an access to group. See
-     * {@link #checkAll(HttpServletRequest, String, String, Predicate)} for more
+     * {@link #checkAll(HttpServletRequest, String, Nameable, Predicate)} for more
      * information about invocation order.
      *
      * @param request request object
      * @param group group object
      * @return true if yes
      *
-     * @see #checkAll(HttpServletRequest, String, String, Predicate)
+     * @see #checkAll(HttpServletRequest, String, Nameable, Predicate)
      */
     public boolean isAllowed(HttpServletRequest request, Group group) {
         return checkAll(
@@ -233,7 +233,7 @@ public final class AuthorizationFramework {
 
     /**
      * Add a plugin into the plugin array. This has the same effect as invoking
-     * {@link #addPlugin(IAuthorizationPlugin, REQUIRED)}.
+     * {@link #addPlugin(IAuthorizationPlugin)}.
      *
      * @param plugin the authorization plugin
      */
@@ -500,7 +500,7 @@ public final class AuthorizationFramework {
      * Old instances of plugins are removed and new list of plugins is
      * constructed. Unload and load event is fired on each plugin.
      *
-     * This function has the same effect as calling reload(new ArrayList<>()).
+     * This function has the same effect as calling {@code reload(new ArrayList<>())}.
      *
      * @see IAuthorizationPlugin#load()
      * @see IAuthorizationPlugin#unload()

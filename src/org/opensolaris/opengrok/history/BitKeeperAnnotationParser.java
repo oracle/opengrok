@@ -32,7 +32,7 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * BitKeeperAnnotationParser handles parsing the output of `bk annotate` into an annotation object.
  *
- * @author James Service <jas2701@googlemail.com>
+ * @author James Service  {@literal <jas2701@googlemail.com>}
  */
 public class BitKeeperAnnotationParser implements Executor.StreamHandler {
 

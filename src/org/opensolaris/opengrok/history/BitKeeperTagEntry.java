@@ -24,7 +24,7 @@ import java.util.Date;
 /**
  * BitKeeper specific tag class with ability to compare itself with generic HistoryEntry.
  *
- * @author James Service <jas2701@googlemail.com>
+ * @author James Service  {@literal <jas2701@googlemail.com>}
  */
 public class BitKeeperTagEntry extends TagEntry {
 

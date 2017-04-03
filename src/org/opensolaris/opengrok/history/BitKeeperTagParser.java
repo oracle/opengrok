@@ -35,7 +35,7 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * BitKeeperTagParser handles parsing the output of `bk tags` into a set of tag entries.
  *
- * @author James Service <jas2701@googlemail.com>
+ * @author James Service  {@literal <jas2701@googlemail.com>}
  */
 public class BitKeeperTagParser implements Executor.StreamHandler {
 

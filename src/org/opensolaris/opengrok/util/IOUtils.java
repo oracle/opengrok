@@ -101,8 +101,7 @@ public final class IOUtils {
     /**
      * List files in the directory recursively.
      *
-     * @param root starting directory
-     * @param suffix suffix for the files
+     * @param root starting directory     
      * @return recursively traversed list of files with given suffix
      */
     public static List<File> listFilesRec(File root) {

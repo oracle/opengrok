@@ -37,7 +37,7 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * Access to a BitKeeper repository.
  *
- * @author James Service <jas2701@googlemail.com>
+ * @author James Service  {@literal <jas2701@googlemail.com>}
  */
 public class BitKeeperRepository extends Repository {
 
