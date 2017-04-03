@@ -367,6 +367,7 @@ In order to use the authorization feature really comfortably it is recommended t
 We are going to use a [tool](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Groupings#tools) called `Groups` to create these.
 ```
 $ export OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml # [described here]()
+$ ./tools/Groups empty > "$OPENGROK_READ_XML_CONFIGURATION"
 $ ./tools/Groups add admins  "test-project-1|test-project-2|test-project-3|test-project-4" -u
 $ ./tools/Groups add users   "test-project-5|test-project-6|test-project-7|test-project-8" -u
 $ ./tools/Groups add plugins "test-project-9|test-project-10" -p users -u
@@ -391,6 +392,8 @@ $ ./tools/Groups add admins "test-project-1|test-project-2|test-project-3|test-p
 ```
 
 This command generates a configuration with one group "admins" and saves that into "`$OPENGROK_READ_XML_CONFIGURATION`" file.
+
+More about this process is described in the [Advanced Configuration](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Advanced-Configuration)
 
 ## Index
 
@@ -502,4 +505,4 @@ Possible solutions are:
   2. compile the .java files with `javac` manually and then package it into .jar manually (command above)
   3. compile the .java files with `javac` manually and use this directory structure (without packaging)
 
-This shoul
+This should solve the problem. If it does not then try to change the code.
