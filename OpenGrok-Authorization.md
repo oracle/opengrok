@@ -1,42 +1,3 @@
-
-***
-
-**This page will be updated for the new release**
-
-***
-
-# Table of contents
-
-<!-- toc -->
-
-- [Using OpenGrok authorization](#using-opengrok-authorization)
-  * [Compatibility](#compatibility)
-  * [Configuration](#configuration)
-  * [Plugins](#plugins)
-    + [Example](#example)
-    + [Implementation](#implementation)
-    + [Restrictions](#restrictions)
-    + [Set up](#set-up)
-    + [Running](#running)
-- [HTTP Basic Tutorial](#http-basic-tutorial)
-  * [Setting up Tomcat](#setting-up-tomcat)
-    + [Tomcat users](#tomcat-users)
-    + [Application deployment descriptor](#application-deployment-descriptor)
-  * [Setting up the repositories](#setting-up-the-repositories)
-  * [Setting up the groupings](#setting-up-the-groupings)
-    + [`READ_XML_CONFIGURATION`](#read_xml_configuration)
-  * [Index](#index)
-  * [The plugin](#the-plugin)
-    + [Permission policy](#permission-policy)
-    + [Group discovery](#group-discovery)
-    + [Authorization check](#authorization-check)
-  * [Running](#running-1)
-  * [Complete code](#complete-code)
-- [Troubleshooting](#troubleshooting)
-  * [Using IDE](#using-ide)
-
-<!-- tocstop -->
-
 # Using OpenGrok authorization
 
 This howto provides information about opengrok authorization with authorization framework.
@@ -54,46 +15,34 @@ You can configure:
 
 1. Plugin directory
 
-   In web.xml for the webapp, there is a context parameter dedicated to this.
-	```xml
-	<context-param>
-	    <param-name>authorizationPluginDirectory</param-name>
-	    <param-value>/var/opengrok/plugins</param-value>
-	    <description>
-		 Directory with authorization plugins.
-		 Default value is `OPENGROK_DATA_ROOT`/plugins
-	    </description>
-	</context-param>
-	```
-   By default it points to `OPENGROK_DATA_ROOT`/plugins. The `OPENGROK_DATA_ROOT` is the dataRoot directory set in the main `configuration.xml`. If no plugin is available/the directory does not exist then the framework allows every request.
+   The configuration has been moved from `web.xml` to the usual OpenGrok configuration xml file. The way you provide new plugin directory is by creating a new xml configuration "read-only configuration" file which gets merged with the configuration made by the indexer.
+
+   There in the file provide a new variable named `pluginDirectory` with a `String` parameter with absolute path to the directory with plugins.
+
+   By default the directory points to `OPENGROK_DATA_ROOT`/plugins. The `OPENGROK_DATA_ROOT` is the `dataRoot` directory set in the main `configuration.xml`. If no plugin is available/the directory does not exist then the framework allows every request.
 
    Opengrok authorization expects plugin classes in that directory, it loads those classes in
    memory as plugins and then perform the authorization for each request.
 
 2. Watchdog service
 
-   For easier development there is another context parameter in `web.xml`.
-	```xml
-	<context-param>
-	    <param-name>enableAuthorizationWatchDog</param-name>
-	    <param-value>false</param-value>
-	    <description>
-		Enable watching the plugin directory for changes in real time.
-		Suitable for development.
-	    </description>
-	</context-param>
-	```
+   Similar for the watchdog service there is a dedicated option in the configuration which you can set as described above. The name of it is `authorizationWatchdogEnabled` and the value is a `boolean` type. 
+
    This service watches for changes (even recursive) in the plugin directory
    and if such change was done (modifing, deleting); it reloads the plugins.
    All old plugins in memory are discarded and only the plugins contained in
-   plugin directory are loaded.
+   plugin directory are loaded. This is done in real time
 
    **NOTE: Modification of every file in plugin directory is propagated as an event. This means that modifying bunch**
    **of files in the plugin directory leads to several reload events**
    
    By default the value is `false`.
 
-3. Provide a plugin
+3. Authorization stack
+
+   Discussed under advanced configuration. 
+
+4. Provide a plugin
 
    You can provide your own plugin by putting the compiled plugin class (.class or in .jar) into plugin directory.
 
@@ -106,20 +55,20 @@ You can configure:
 
 Example of a [SampleAuthorizationPlugin.java](https://github.com/OpenGrok/OpenGrok/tree/master/plugins) is included in plugins directory in the root of the git repository.
 
-
 ### Implementation
 
-Each plugin must implement the IAuthorizationPlugin interface which contains four methods:
+Each plugin must implement the `IAuthorizationPlugin` interface which contains four methods:
 
 1. `void load ( void );`
 
    This method is called whenever the framework loads the plugin into memory
    - watchdog service enabled and change was made (forced reload)
    - deploy of the webapp
+   - configuration change (change of the plugin directory, ...)
 
 2. `void unload ( void );`
 
-    This method is called whenever the framework destroyes the plugin
+    This method is called whenever the framework destroys the plugin
     - watchdog service enabled and change was made (forced reload)
       (the order is first unload the old instance then load the new one)
     - undeploy of the webapp
@@ -133,12 +82,16 @@ Each plugin must implement the IAuthorizationPlugin interface which contains fou
 
    This analogically gives the same decision for the group.
 
-All those methods are also described in the [code](https://github.com/OpenGrok/OpenGrok/blob/master/src/org/opensolaris/opengrok/authorization/IAuthorizationPlugin.java).
+All those methods are also described in the [code](https://github.com/OpenGrok/OpenGrok/blob/2850968932c2933b8ebb1f9808991cda0be846ed/src/org/opensolaris/opengrok/authorization/IAuthorizationPlugin.java).
 
 Each is expected to implement some sort of a cache for the decisions when the underlying read operations for the user rights is expensive.
 
 `HttpServletRequest` object is the current request with all of its features
 like: session, attributes, `getUser()`, `getPrincipal()`
+
+### Sessions
+
+If you decide that your plugin uses some sort of sessions then you might want to reload the session as well when the authorization framework reloads your plugin. The framework tracks a number of reloads which is available for you as [RuntimeEnvironment.getInstance().getPluginVersion()](https://github.com/OpenGrok/OpenGrok/blob/2850968932c2933b8ebb1f9808991cda0be846ed/src/org/opensolaris/opengrok/configuration/RuntimeEnvironment.java#L1537-L1545) and you can check this number and invalidate your session if your version (tracked perhaps in your session) is different than this.
 
 ### Restrictions
 
@@ -148,6 +101,7 @@ Custom classloader restricts the plugin to load only this classes from org.opens
 private final static String[] classWhitelist = new String[]{
     "org.opensolaris.opengrok.configuration.Group",
     "org.opensolaris.opengrok.configuration.Project",
+    "org.opensolaris.opengrok.configuration.RuntimeEnvironment",
     "org.opensolaris.opengrok.authorization.IAuthorizationPlugin",
     "org.opensolaris.opengrok.util.*",
     "org.opensolaris.opengrok.logger.*",
@@ -173,7 +127,7 @@ Also JVM can forbid you to extend some packages which are not meant to be extend
 
 The plugin class must be compiled to the .class file (and the it can be packaged into .jar file). The frameworks supports both .class and .jar files. For compiling you have to provide opengrok.jar and the servlet api (`HttpServletRequest`) in the classpath
 
-Example (for the SampleAuthorizaionPlugin which is included):
+Example (for the `SampleAuthorizaionPlugin` which is included in the repository):
 `$ javac -classpath dist/opengrok.jar -d . plugins/SampleAuthorizationPlugin.java`
 
 Then you can just drop the compiled .class file into plugin directory and deploy the webapp.
@@ -211,6 +165,82 @@ The framework consists of three parts
 Every 403 error is logged. But information about the user is missing
 because the decision is made by plugins and the filter does not know
 how to interpret the request to get the user from it.
+
+# Advanced configuration
+
+The new 1.0 release contain a new feature about how to configure the plugin invocation in more details.
+
+## A stack of plugins
+
+The plugins form a linear structure of a list (called stack). The order of invocation of the plugins methods `isAllowed` is determined by their position in the stack. Moreover you can configure a different flag for each of your plugins which is respected when performing the authorization.
+
+There are three flags:
+
+1. **REQUIRED** Failure of such a plugin will ultimately lead to the authorization framework returning failure but only after the remaining plugins have been invoked.
+
+2. **REQUISITE** Like required, however, in the case that such a plugin returns a failure, control is directly returned to the application. The return value is that associated with the first required or requisite plugin to fail.
+
+3. **SUFFICIENT** If such a plugin succeeds and no prior required plugin has failed the authorization framework returns success to the application immediately without calling any further plugins in the stack. A failure of a sufficient plugin is ignored and processing of the plugin list continues unaffected.
+
+These are inspired by the [PAM Authorization framework](https://docs.oracle.com/cd/E23823_01/html/816-4557/pam-1.html) and the definition is taken directly from the man pages of the PAM configuration. However OpenGrok does not implement all PAM flags.
+
+### Backwards compatibility
+
+You can use the authorization framework without providing such an advanced configuration because all loaded plugins which do not occur in this advanced configuration are appended to the list with **REQUIRED** flag. However, as of the nature of the class discovery this means that the order of invocation of these plugins is rather random.
+
+## Example
+
+This is an example entry for the "read-only configuration". This defines three plugins, each of them has a different role and so affect the stack processing in different way. Use the class name to specify the targeted plugin and one of the flags as the authorization role. This stack is then for every request processed from the top to the bottom (as it is a list) evaluating the flags with the particular plugin decisions.
+
+```xml
+<void property="pluginConfiguration">
+  <void method="add">
+    <object class="org.opensolaris.opengrok.authorization.AuthorizationCheck">
+      <void property="role">
+        <string>requisite</string>
+      </void>
+      <void property="classname">
+        <string>some.my..package.RequisitePlugin</string>
+      </void>
+    </object>
+  </void> 
+  <void method="add">
+    <object class="org.opensolaris.opengrok.authorization.AuthorizationCheck">
+      <void property="role">
+        <string>sufficient</string>
+      </void>
+      <void property="classname">
+        <string>Plugin</string>
+      </void>
+    </object>
+  </void>
+  <void method="add">
+    <object class="org.opensolaris.opengrok.authorization.AuthorizationCheck">
+      <void property="role">
+        <string>required</string>
+      </void>
+      <void property="classname">
+        <string>ExamplePlugin</string>
+      </void>
+    </object>
+  </void>   
+</void>
+```
+
+A typical use of this configuration would be:
+
+**RequisitePlugin**
+  1. Determine a user identity in the requisite plugin and store it in the request
+  2. Return true or false if such action was successfull
+
+**Plugin**
+  1. Use the user identity determined in the requisite plugin which is stored in the request
+  2. Perform an authorization check which can lead to immediately return from the stack with a success value
+  3. If the check is negative, the stack continues to the third plugin
+
+**ExamplePlugin**
+  1. Use the user identity determined in the requisite plugin which is stored in the request
+  2. Filter the rest of which was not enabled by the previous `Plugin` implementation
 
 # HTTP Basic Tutorial
 This is an example using HTTP Basic authorization. 
@@ -278,17 +308,9 @@ Now we have to tell the application that it should use HTTP Basic authentication
 </login-config>
 ```
 
-Being in the `web.xml` we would recommend you to turn on the [watchdog service](#configuration) which is suitable for developing plugins, setting this parameter to `true`.
-```xml
-<context-param>
-  <param-name>enableAuthorizationWatchDog</param-name>
-  <param-value>false</param-value>
-  <description>
-      Enable watching the plugin directory for changes in real time.
-      Suitable for development.
-  </description>
-</context-param>
-```
+## Watch dog service
+
+We would strongly recommend you to turn on the [watchdog service](#configuration) which is suitable for developing plugins, setting the parameter value to `true` via the "read-only configuration".
 
 This forces the application to reload all plugins in the plugin directory when a modification of any file inside it occurs.
 
@@ -306,7 +328,7 @@ In order to use the authorization feature really comfortably it is recommended t
 
 We are going to use a [tool](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Groupings#tools) called `Groups` to create these.
 ```
-$ export READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml # [described here]()
+$ export OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml # [described here]()
 $ ./tools/Groups add admins  "test-project-1|test-project-2|test-project-3|test-project-4" -u
 $ ./tools/Groups add users   "test-project-5|test-project-6|test-project-7|test-project-8" -u
 $ ./tools/Groups add plugins "test-project-9|test-project-10" -p users -u
@@ -321,21 +343,21 @@ users ~ "test-project-5|test-project-6|test-project-7|test-project-8"
     plugins ~ "test-project-9|test-project-10"
 ```
 
-### `READ_XML_CONFIGURATION`
+### `OPENGROK_READ_XML_CONFIGURATION`
 
 This variable contains a path to an xml file which eventually gets merged with the main configuration (usually `/var/opengrok/configuration.xml`) before index/reindex. If you have not used this before you can generate a new one with this (for example):
 
 ```
-$ export READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml
-$ ./tools/Groups add admins "test-project-1|test-project-2|test-project-3|test-project-4" > "$READ_XML_CONFIGURATION"
+$ export OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml
+$ ./tools/Groups add admins "test-project-1|test-project-2|test-project-3|test-project-4" > "$OPENGROK_READ_XML_CONFIGURATION"
 ```
 
-This command generates a configuration with one group "admins" and saves that into "`$READ_XML_CONFIGURATION`" file.
+This command generates a configuration with one group "admins" and saves that into "`$OPENGROK_READ_XML_CONFIGURATION`" file.
 
 ## Index
 
-Now run the index as usual. Do not forget to use the `READ_XML_CONFIGURATION` variable used in previous step as that will pass the groups into the main configuration file.
-**This is the only option how to preserve groups on reindex - use a `READ_XML_CONFIGURATION` variable!**
+Now run the index as usual. Do not forget to use the `OPENGROK_READ_XML_CONFIGURATION` variable used in previous step as that will pass the groups into the main configuration file.
+**This is the only option how to preserve groups on reindex - use a `OPENGROK_READ_XML_CONFIGURATION` variable!**
 
 ## The plugin
 Now comes the main part - the plugin itself.
