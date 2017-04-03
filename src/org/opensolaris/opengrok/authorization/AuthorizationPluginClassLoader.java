@@ -182,7 +182,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * <li>loading from .jar files</li>
      * </ol>
      *
-     * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br />
+     * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br>
      * Classes whitelist: {@link #CLASS_WHITELIST}.
      *
      * @param name class name
@@ -206,7 +206,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * <li>loading from .jar files</li>
      * </ol>
      *
-     * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br />
+     * Package blacklist: {@link #PACKAGE_BLACKLIST}.<br>
      * Classes whitelist: {@link #CLASS_WHITELIST}.
      *
      * @param name class name
