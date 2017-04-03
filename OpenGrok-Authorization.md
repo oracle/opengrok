@@ -1,3 +1,41 @@
+# Table of contents
+
+<!-- toc -->
+
+- [Using OpenGrok authorization](#using-opengrok-authorization)
+  * [Compatibility](#compatibility)
+  * [Configuration](#configuration)
+  * [Plugins](#plugins)
+    + [Example](#example)
+    + [Implementation](#implementation)
+    + [Sessions](#sessions)
+    + [Restrictions](#restrictions)
+    + [Set up](#set-up)
+    + [Running](#running)
+  * [Advanced configuration](#advanced-configuration)
+    + [A stack of plugins](#a-stack-of-plugins)
+      - [Backwards compatibility](#backwards-compatibility)
+    + [Example](#example-1)
+- [HTTP Basic Tutorial](#http-basic-tutorial)
+  * [Setting up Tomcat](#setting-up-tomcat)
+    + [Tomcat users](#tomcat-users)
+    + [Application deployment descriptor](#application-deployment-descriptor)
+  * [Watch dog service](#watch-dog-service)
+  * [Setting up the repositories](#setting-up-the-repositories)
+  * [Setting up the groupings](#setting-up-the-groupings)
+    + [`OPENGROK_READ_XML_CONFIGURATION`](#opengrok_read_xml_configuration)
+  * [Index](#index)
+  * [The plugin](#the-plugin)
+    + [Permission policy](#permission-policy)
+    + [Group discovery](#group-discovery)
+    + [Authorization check](#authorization-check)
+  * [Running](#running-1)
+  * [Complete code](#complete-code)
+- [Troubleshooting](#troubleshooting)
+  * [Using IDE](#using-ide)
+
+<!-- tocstop -->
+
 # Using OpenGrok authorization
 
 This howto provides information about opengrok authorization with authorization framework.
@@ -166,11 +204,11 @@ Every 403 error is logged. But information about the user is missing
 because the decision is made by plugins and the filter does not know
 how to interpret the request to get the user from it.
 
-# Advanced configuration
+## Advanced configuration
 
 The new 1.0 release contain a new feature about how to configure the plugin invocation in more details.
 
-## A stack of plugins
+### A stack of plugins
 
 The plugins form a linear structure of a list (called stack). The order of invocation of the plugins methods `isAllowed` is determined by their position in the stack. Moreover you can configure a different flag for each of your plugins which is respected when performing the authorization.
 
@@ -184,11 +222,11 @@ There are three flags:
 
 These are inspired by the [PAM Authorization framework](https://docs.oracle.com/cd/E23823_01/html/816-4557/pam-1.html) and the definition is taken directly from the man pages of the PAM configuration. However OpenGrok does not implement all PAM flags.
 
-### Backwards compatibility
+#### Backwards compatibility
 
 You can use the authorization framework without providing such an advanced configuration because all loaded plugins which do not occur in this advanced configuration are appended to the list with **REQUIRED** flag. However, as of the nature of the class discovery this means that the order of invocation of these plugins is rather random.
 
-## Example
+### Example
 
 This is an example entry for the "read-only configuration". This defines three plugins, each of them has a different role and so affect the stack processing in different way. Use the class name to specify the targeted plugin and one of the flags as the authorization role. This stack is then for every request processed from the top to the bottom (as it is a list) evaluating the flags with the particular plugin decisions.
 
@@ -401,6 +439,7 @@ The plugin framework which works above our plugin has no idea how specific our p
 
 This is the most important part - if you have found a group for the user then add all of its projects, repositories, subgroups and their underlying objects.
 ```java
+
 if ((g = Group.getByName(group)) != null) {
     // group discovery
     for (Project p : g.getRepositories()) {
@@ -463,4 +502,4 @@ Possible solutions are:
   2. compile the .java files with `javac` manually and then package it into .jar manually (command above)
   3. compile the .java files with `javac` manually and use this directory structure (without packaging)
 
-This should solve the problem. If it does not then try to change the code.
+This shoul
