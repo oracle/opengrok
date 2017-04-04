@@ -366,7 +366,7 @@ In order to use the authorization feature really comfortably it is recommended t
 
 We are going to use a [tool](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Groupings#tools) called `Groups` to create these.
 ```
-$ export OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml # [described here]()
+$ export OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml
 $ ./tools/Groups empty > "$OPENGROK_READ_XML_CONFIGURATION"
 $ ./tools/Groups add admins  "test-project-1|test-project-2|test-project-3|test-project-4" -u
 $ ./tools/Groups add users   "test-project-5|test-project-6|test-project-7|test-project-8" -u
