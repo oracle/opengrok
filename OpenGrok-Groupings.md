@@ -12,7 +12,8 @@
     + [Method summary](#method-summary)
     + [Property summary](#property-summary)
   * [Tools](#tools)
-    + [Usage:](#usage)
+    + [Usage](#usage)
+    + [Example](#example)
   * [Other sample configuration](#other-sample-configuration)
 
 <!-- tocstop -->
@@ -193,7 +194,7 @@ There is a tool in tools directory ([Groups](https://github.com/OpenGrok/OpenGro
 
 The script has documented usage and all subcommands have their own usage.
 
-### Usage:
+### Usage
 ```
 
 Usage: Groups <add|delete|match|list|empty|help> [--help] [--verbose] [-d]
@@ -212,6 +213,27 @@ Usage: Groups <add|delete|match|list|empty|help> [--help] [--verbose] [-d]
 
     See the code for more information on configuration options / variables
 
+```
+
+### Example
+
+This example is taken from the authorization tutorial - [setting up the groups](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Authorization#setting-up-the-groupings)
+
+```
+$ export OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml # [described here]()
+$ ./tools/Groups empty > "$OPENGROK_READ_XML_CONFIGURATION"
+$ ./tools/Groups add admins  "test-project-1|test-project-2|test-project-3|test-project-4" -u
+$ ./tools/Groups add users   "test-project-5|test-project-6|test-project-7|test-project-8" -u
+$ ./tools/Groups add plugins "test-project-9|test-project-10" -p users -u
+```
+
+The group names correspond to the roles defined in `tomcat-users.xml` earlier.
+The final group structure should look like this now:
+```
+$ ./tools/Groups list
+admins ~ "test-project-1|test-project-2|test-project-3|test-project-4"
+users ~ "test-project-5|test-project-6|test-project-7|test-project-8"
+    plugins ~ "test-project-9|test-project-10"
 ```
 
 **The script has also an option to update the configuration IN PLACE. That should be used carefully because it can lead to loss of your data.**
