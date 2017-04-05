@@ -39,6 +39,7 @@ import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
 
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.history.RepositoryFactory;
 
 /**
  * Do basic testing of the SearchEngine
@@ -60,6 +61,7 @@ public class SearchEngineTest {
         env.setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
+        RepositoryFactory.setIgnored();
 
         if (env.validateExuberantCtags()) {
             env.setSourceRoot(repository.getSourceRoot());

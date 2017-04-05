@@ -50,6 +50,8 @@ public class RCSRepository extends Repository {
     public RCSRepository() {
         working = Boolean.TRUE;
         type = "RCS";
+
+        ignoredDirs.add("RCS");
     }
 
     @Override

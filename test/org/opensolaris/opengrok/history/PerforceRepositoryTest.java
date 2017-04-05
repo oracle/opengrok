@@ -63,6 +63,7 @@ public class PerforceRepositoryTest {
             return;
         }
         files = new ArrayList<>();
+        RepositoryFactory.setIgnored();
         FileUtilities.getAllFiles(root, files, false);
     }
 

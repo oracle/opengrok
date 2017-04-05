@@ -54,6 +54,8 @@ public class RepoRepository extends Repository {
     public RepoRepository() {
         type = "repo";
         setWorking(Boolean.TRUE);
+
+        ignoredDirs.add(".repo");
     }
 
     @Override

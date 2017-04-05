@@ -96,6 +96,8 @@ public class GitRepository extends Repository {
             "EE, d MMM yyyy HH:mm:ss Z",
             "d MMM yyyy HH:mm:ss Z"
         };
+
+        ignoredDirs.add(".git");
     }
 
     /**

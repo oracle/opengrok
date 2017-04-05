@@ -83,6 +83,10 @@ public class CVSRepository extends RCSRepository {
         datePatterns = new String[]{
             "yyyy-MM-dd hh:mm:ss"
         };
+
+        ignoredFiles.add(".cvsignore");
+        ignoredDirs.add("CVS");
+        ignoredDirs.add("CVSROOT");
     }
 
     @Override

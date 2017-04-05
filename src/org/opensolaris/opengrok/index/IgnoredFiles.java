@@ -27,7 +27,7 @@ import java.io.File;
 /**
  * This class maintains a list of file names (like "cscope.out"), SRC_ROOT
  * relative file paths (like "usr/src/uts" or "usr/src/Makefile"), and glob
- * patterns (like .make.*) which opengrok should ignore.
+ * patterns (like .make.*) which should be ignored.
  *
  * @author Chandan
  */
@@ -40,10 +40,6 @@ public final class IgnoredFiles extends Filter {
         "cscope.po.in",
         "cscope.files",
         "cscope.out",
-        ".cvsignore", // CVS
-        ".repo",
-        ".hgtags",  // Mercurial
-        ".p4config", // Perforce
         "*~",
         ".make.*",
         ".del-*",

@@ -83,7 +83,6 @@ public class FileUtilities {
         out.flush();
     }
 
-
     public static void getAllFiles(File root, List<File> files, boolean directories) {
         assertNotNull(files);
         if (directories) {

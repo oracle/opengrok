@@ -59,6 +59,7 @@ public class HistoryGuruTest {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
                 "repositories.zip"));
+        RepositoryFactory.setIgnored();
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
                 files, true);
         RuntimeEnvironment.getInstance().setVerbose(true);

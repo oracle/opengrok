@@ -471,9 +471,11 @@ public final class Indexer {
                     }
                 }
 
+                // Complete the configuration of repository types.
                 List<Class<? extends Repository>> repositoryClasses
                         = RepositoryFactory.getRepositoryClasses();
                 for (Class<? extends Repository> clazz : repositoryClasses) {
+                    // Set external repository binaries from System properties.
                     try {
                         Field f = clazz.getDeclaredField("CMD_PROPERTY_KEY");
                         Object key = f.get(null);
@@ -486,7 +488,7 @@ public final class Indexer {
                     }
                 }
 
-                //logging starts here
+                // Logging starts here.
                 if (cfg.isVerbose()) {
                     String fn = LoggerUtil.getFileHandlerPattern();
                     if (fn != null) {
@@ -525,6 +527,11 @@ public final class Indexer {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 env.setConfiguration(cfg, subFilesList);
 
+                // Let repository types to add items to ignoredNames.
+                // This changes env so is called after the setConfiguration()
+                // call above.
+                RepositoryFactory.setIgnored();
+
                 /*
                  * Add paths to directories under source root. If projects
                  * are enabled the path should correspond to a project because
@@ -534,10 +541,12 @@ public final class Indexer {
                  * For the check we need to have 'env' already set.
                  */
                 for (String path : subFilesList) {
-                    String srcPath=env.getSourceRootPath();
-                    if (srcPath==null) { System.err.println("Error getting source root from environment. Exiting.");
-                    System.exit(1);
-                      }
+                    String srcPath = env.getSourceRootPath();
+                    if (srcPath == null) {
+                        System.err.println("Error getting source root from environment. Exiting.");
+                        System.exit(1);
+                    }
+
                     path = path.substring(srcPath.length());
                     if (env.hasProjects()) {
                         // The paths need to correspond to a project.
