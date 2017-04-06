@@ -173,8 +173,8 @@ public final class RepositoryFactory {
 
     /**
      * Go through all repository types and add items to lists of ignored
-     * files/directories. This way repositories can set the files/directories
-     * they want to ignore themselves.
+     * files/directories. This way per-repository ignored entries are set
+     * inside repository classes rather than globally in IgnoredFiles/Dirs.
      * Should be called after {@code setConfiguration()}.
      */
     public static void setIgnored() {
