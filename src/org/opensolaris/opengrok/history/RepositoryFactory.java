@@ -175,6 +175,7 @@ public final class RepositoryFactory {
      * Go through all repository types and add items to lists of ignored
      * files/directories. This way repositories can set the files/directories
      * they want to ignore themselves.
+     * Should be called after {@code setConfiguration()}.
      */
     public static void setIgnored() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
