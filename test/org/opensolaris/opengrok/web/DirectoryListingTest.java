@@ -121,9 +121,10 @@ public class DirectoryListingTest {
     public void setUp() throws Exception {
         directory = FileUtilities.createTemporaryDirectory("directory");
 
-        entries = new FileEntry[2];
+        entries = new FileEntry[3];
         entries[0] = new FileEntry("foo.c", "foo.c", 0, 1);
         entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0);
+        entries[2] = new FileEntry(".hg", ".hg", 0, 1);
 
         for (FileEntry entry : entries) {
             entry.create();
