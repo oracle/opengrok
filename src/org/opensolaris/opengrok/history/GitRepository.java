@@ -488,6 +488,11 @@ public class GitRepository extends Repository {
     }
 
     @Override
+    boolean supportsSubRepositories() {
+        return true;
+    }
+
+    @Override
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
