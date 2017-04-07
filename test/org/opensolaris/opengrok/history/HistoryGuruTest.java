@@ -50,17 +50,16 @@ public class HistoryGuruTest {
 
     private static TestRepository repository = new TestRepository();
     private static final List<File> files = new ArrayList<>();
-    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     public HistoryGuruTest() {
     }
 
     @BeforeClass
-    public void setUpClass() throws Exception {
+    public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
                 "repositories.zip"));
-        RepositoryFactory.setIgnored(env);
+        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
                 files, true);
         RuntimeEnvironment.getInstance().setVerbose(true);

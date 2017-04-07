@@ -53,19 +53,18 @@ public class PerforceRepositoryTest {
     private static boolean skip;
     private static List<File> files;
     private static final File root = new File("/export/opengrok_p4_test");
-    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     public PerforceRepositoryTest() {
     }
 
     @BeforeClass
-    public void setUpClass() throws Exception {
+    public static void setUpClass() throws Exception {
         if (!root.exists()) {
             skip=true;
             return;
         }
         files = new ArrayList<>();
-        RepositoryFactory.setIgnored(env);
+        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
         FileUtilities.getAllFiles(root, files, false);
     }
 

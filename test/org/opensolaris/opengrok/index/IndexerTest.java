@@ -61,17 +61,16 @@ import static org.junit.Assert.assertTrue;
 public class IndexerTest {
 
     TestRepository repository;
-    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
     public IndexerTest() {
     }
 
     @BeforeClass
-    public void setUpClass() throws Exception {
+    public static void setUpClass() throws Exception {
         assertTrue("No point in running indexer tests without valid ctags",
-                env.validateExuberantCtags());
-        RepositoryFactory.setIgnored(env);
+                RuntimeEnvironment.getInstance().validateExuberantCtags());
+        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
     }
 
     @AfterClass
