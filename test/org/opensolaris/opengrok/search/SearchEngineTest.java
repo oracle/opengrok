@@ -61,7 +61,7 @@ public class SearchEngineTest {
         env.setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
-        RepositoryFactory.setIgnored();
+        RepositoryFactory.setIgnored(env);
 
         if (env.validateExuberantCtags()) {
             env.setSourceRoot(repository.getSourceRoot());

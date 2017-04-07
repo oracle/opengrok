@@ -59,13 +59,13 @@ public class IgnoredNamesTest {
     private static TestRepository repository;
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/index/source.zip"));
 
         // Populate ignored lists with repository specific entries.
-        RepositoryFactory.setIgnored();
+        RepositoryFactory.setIgnored(env);
     }
 
     /**

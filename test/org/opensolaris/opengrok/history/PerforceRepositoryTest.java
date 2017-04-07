@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Do basic testing of the Perforce support
@@ -52,18 +53,19 @@ public class PerforceRepositoryTest {
     private static boolean skip;
     private static List<File> files;
     private static final File root = new File("/export/opengrok_p4_test");
+    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     public PerforceRepositoryTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public void setUpClass() throws Exception {
         if (!root.exists()) {
             skip=true;
             return;
         }
         files = new ArrayList<>();
-        RepositoryFactory.setIgnored();
+        RepositoryFactory.setIgnored(env);
         FileUtilities.getAllFiles(root, files, false);
     }
 
