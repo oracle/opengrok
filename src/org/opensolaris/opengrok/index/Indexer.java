@@ -530,7 +530,7 @@ public final class Indexer {
                 // Let repository types to add items to ignoredNames.
                 // This changes env so is called after the setConfiguration()
                 // call above.
-                RepositoryFactory.setIgnored();
+                RepositoryFactory.setIgnored(env);
 
                 /*
                  * Add paths to directories under source root. If projects

@@ -378,10 +378,16 @@ public abstract class Repository extends RepositoryInfo {
      */
     abstract String determineBranch() throws IOException;
 
+    /**
+     * Get list of ignored files for this repository.
+     */
     public List<String> getIgnoredFiles() {
         return ignoredFiles;
     }
 
+    /**
+     * Get list of ignored directories for this repository.
+     */
     public List<String> getIgnoredDirs() {
         return ignoredDirs;
     }
