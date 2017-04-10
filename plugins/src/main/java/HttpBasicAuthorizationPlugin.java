@@ -60,7 +60,7 @@ public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
     }
 
     @Override
-    public void load() {
+    public void load(Map<String, Object> parameters) {
     }
 
     @Override

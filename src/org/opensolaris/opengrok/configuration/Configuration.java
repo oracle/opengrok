@@ -52,7 +52,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.opensolaris.opengrok.authorization.AuthorizationCheck;
+import org.opensolaris.opengrok.authorization.AuthControlFlag;
+import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -114,7 +115,7 @@ public final class Configuration {
      * for development.
      */
     private boolean authorizationWatchdogEnabled;
-    private List<AuthorizationCheck> pluginConfiguration;
+    private AuthorizationStack pluginStack;
     private List<Project> projects;
     private Set<Group> groups;
     private String sourceRoot;
@@ -370,8 +371,8 @@ public final class Configuration {
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMessageLimit(500);
         setOptimizeDatabase(true);
-        setPluginConfiguration(new ArrayList<>());
         setPluginDirectory(null);
+        setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
         setPrintProgress(false);
         setProjects(new ArrayList<>());
         setQuickContextScan(true);
@@ -457,12 +458,12 @@ public final class Configuration {
         this.authorizationWatchdogEnabled = authorizationWatchdogEnabled;
     }
 
-    public List<AuthorizationCheck> getPluginConfiguration() {
-        return pluginConfiguration;
+    public AuthorizationStack getPluginStack() {
+        return pluginStack;
     }
 
-    public void setPluginConfiguration(List<AuthorizationCheck> pluginConfiguration) {
-        this.pluginConfiguration = pluginConfiguration;
+    public void setPluginStack(AuthorizationStack pluginStack) {
+        this.pluginStack = pluginStack;
     }
 
     public void setCmds(Map<String, String> cmds) {

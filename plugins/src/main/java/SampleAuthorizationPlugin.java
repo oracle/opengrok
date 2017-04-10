@@ -17,29 +17,30 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
+
 /**
  * Sample authorization plugin.
- * 
+ *
  * Always just bypass all authorization requests.
  */
 public class SampleAuthorizationPlugin implements IAuthorizationPlugin {
 
     @Override
-    public void load() {
+    public void load(Map<String, Object> parameters) {
     }
 
     @Override
     public void unload() {
     }
 
-    
     @Override
     public boolean isAllowed(HttpServletRequest request, Project project) {
         return true;
@@ -50,4 +51,3 @@ public class SampleAuthorizationPlugin implements IAuthorizationPlugin {
         return true;
     }
 }
-

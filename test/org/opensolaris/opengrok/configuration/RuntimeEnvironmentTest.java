@@ -45,7 +45,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
-import org.opensolaris.opengrok.authorization.AuthorizationCheck;
+import org.opensolaris.opengrok.authorization.AuthorizationPlugin;
+import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.configuration.messages.NormalMessage;
 import org.opensolaris.opengrok.history.RepositoryInfo;
@@ -478,45 +479,45 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testAuthorizationRoleDecode() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
-                + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_65\">\n"
+                + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
                 + " <object class=\"org.opensolaris.opengrok.configuration.Configuration\">\n"
-                + "	<void property=\"pluginConfiguration\">\n"
+                + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"role\">\n"
                 + "					<string>sufficient</string>\n"
                 + "				</void>\n"
-                + "				<void property=\"classname\">\n"
+                + "				<void property=\"name\">\n"
                 + "					<string>Plugin</string>\n"
                 + "				</void>\n"
                 + "			</object>\n"
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"role\">\n"
                 + "					<string>required</string>\n"
                 + "				</void>\n"
-                + "				<void property=\"classname\">\n"
+                + "				<void property=\"name\">\n"
                 + "					<string>OtherPlugin</string>\n"
                 + "				</void>\n"
                 + "			</object>\n"
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"role\">\n"
                 + "					<string>REQUISITE</string>\n"
                 + "				</void>\n"
-                + "				<void property=\"classname\">\n"
+                + "				<void property=\"name\">\n"
                 + "					<string>AnotherPlugin</string>\n"
                 + "				</void>\n"
                 + "			</object>\n"
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"role\">\n"
                 + "					<string>reQuIrEd</string>\n"
                 + "				</void>\n"
-                + "				<void property=\"classname\">\n"
+                + "				<void property=\"name\">\n"
                 + "					<string>DifferentPlugin</string>\n"
                 + "				</void>\n"
                 + "			</object>\n"
@@ -525,31 +526,259 @@ public class RuntimeEnvironmentTest {
                 + " </object>\n"
                 + "</java>";
         Configuration conf = Configuration.makeXMLStringAsConfiguration(confString);
-        assertNotNull(conf.getPluginConfiguration());
-        List<AuthorizationCheck> pluginConfiguration = conf.getPluginConfiguration();
-        assertEquals(4, pluginConfiguration.size());
-        assertEquals(AuthorizationCheck.AuthControlFlag.SUFFICIENT, pluginConfiguration.get(0).getRole());
-        assertEquals("Plugin", pluginConfiguration.get(0).getClassname());
-        assertEquals(AuthorizationCheck.AuthControlFlag.REQUIRED, pluginConfiguration.get(1).getRole());
-        assertEquals("OtherPlugin", pluginConfiguration.get(1).getClassname());
-        assertEquals(AuthorizationCheck.AuthControlFlag.REQUISITE, pluginConfiguration.get(2).getRole());
-        assertEquals("AnotherPlugin", pluginConfiguration.get(2).getClassname());
-        assertEquals(AuthorizationCheck.AuthControlFlag.REQUIRED, pluginConfiguration.get(3).getRole());
-        assertEquals("DifferentPlugin", pluginConfiguration.get(3).getClassname());
+        assertNotNull(conf.getPluginStack());
+        AuthorizationStack pluginConfiguration = conf.getPluginStack();
+        assertEquals(4, pluginConfiguration.getStack().size());
+        assertTrue(pluginConfiguration.getStack().get(0).getRole().isSufficient());
+        assertEquals("Plugin", pluginConfiguration.getStack().get(0).getName());
+        assertTrue(pluginConfiguration.getStack().get(1).getRole().isRequired());
+        assertEquals("OtherPlugin", pluginConfiguration.getStack().get(1).getName());
+        assertTrue(pluginConfiguration.getStack().get(2).getRole().isRequisite());
+        assertEquals("AnotherPlugin", pluginConfiguration.getStack().get(2).getName());
+        assertTrue(pluginConfiguration.getStack().get(3).getRole().isRequired());
+        assertEquals("DifferentPlugin", pluginConfiguration.getStack().get(3).getName());
     }
 
+    @Test
+    public void testAuthorizationStackDecode() throws IOException {
+        String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
+                + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
+                + " <object class=\"org.opensolaris.opengrok.configuration.Configuration\">\n"
+                + "	<void property=\"pluginStack\">\n"
+                + "		<void method=\"add\">\n"
+                + "			<object id=\"first_plugin\" class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>sufficient</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"name\">\n"
+                + "					<string>Plugin</string>\n"
+                + "				</void>\n"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "		<void method=\"add\">\n"
+                + "			<object id=\"first_stack\" class=\"org.opensolaris.opengrok.authorization.AuthorizationStack\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>required</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"name\">\n"
+                + "					<string>basic stack</string>\n"
+                + "				</void>\n"
+                + "                             <void property=\"stack\">"
+                + "                                 <void method=\"add\">"
+                + "	                 		<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "	                 			<void property=\"role\">\n"
+                + "	                 				<string>required</string>\n"
+                + "	                 			</void>\n"
+                + "	                 			<void property=\"name\">\n"
+                + "	                 				<string>NestedPlugin</string>\n"
+                + "	                 			</void>\n"
+                + "		                 	</object>\n"
+                + "                                 </void>"
+                + "                                 <void method=\"add\">"
+                + "	                 		<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "	                 			<void property=\"role\">\n"
+                + "	                 				<string>requisite</string>\n"
+                + "	                 			</void>\n"
+                + "	                 			<void property=\"name\">\n"
+                + "	                 				<string>NestedPlugin</string>\n"
+                + "	                 			</void>\n"
+                + "                                             <void property=\"setup\">"
+                + "                                                 <void method=\"put\">"
+                + "                                                     <string>key</string>"
+                + "                                                     <string>value</string>"
+                + "                                                 </void>"
+                + "                                                 <void method=\"put\">"
+                + "                                                     <string>plugin</string>"
+                + "                                                     <object idref=\"first_plugin\" />"
+                + "                                                 </void>"
+                + "                                             </void>"
+                + "		                 	</object>\n"
+                + "                                 </void>"
+                + "                             </void>"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "		<void method=\"add\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>requisite</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"name\">\n"
+                + "					<string>Requisite</string>\n"
+                + "				</void>\n"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "		<void method=\"add\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationStack\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>required</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"name\">\n"
+                + "					<string>advanced stack</string>\n"
+                + "				</void>\n"
+                + "                             <void property=\"stack\">"
+                + "                                 <void method=\"add\">"
+                + "	                 		<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "	                 			<void property=\"role\">\n"
+                + "	                 				<string>required</string>\n"
+                + "	                 			</void>\n"
+                + "	                 			<void property=\"name\">\n"
+                + "	                 				<string>NestedPlugin</string>\n"
+                + "	                 			</void>\n"
+                + "		                 	</object>\n"
+                + "                                 </void>"
+                + "                                 <void method=\"add\">"
+                + "	                 		<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "	                 			<void property=\"role\">\n"
+                + "	                 				<string>requisite</string>\n"
+                + "	                 			</void>\n"
+                + "	                 			<void property=\"name\">\n"
+                + "	                 				<string>NestedPlugin</string>\n"
+                + "	                 			</void>\n"
+                + "                                             <void property=\"setup\">"
+                + "                                                 <void method=\"put\">"
+                + "                                                     <string>key</string>"
+                + "                                                     <string>other value</string>"
+                + "                                                 </void>"
+                + "                                                 <void method=\"put\">"
+                + "                                                     <string>plugin</string>"
+                + "                                                     <object idref=\"first_plugin\" />"
+                + "                                                 </void>"
+                + "                                             </void>"
+                + "		                 	</object>\n"
+                + "                                 </void>"
+                + "                             </void>"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "		<void method=\"add\">\n"
+                + "			<object idref=\"first_stack\" />"
+                + "		</void>\n"
+                + "	</void>\n"
+                + " </object>\n"
+                + "</java>";
+
+        Configuration conf = Configuration.makeXMLStringAsConfiguration(confString);
+        assertNotNull(conf.getPluginStack());
+        AuthorizationStack pluginConfiguration = conf.getPluginStack();
+        assertEquals(5, pluginConfiguration.getStack().size());
+
+        // single plugins
+        assertTrue(pluginConfiguration.getStack().get(0).getRole().isSufficient());
+        assertEquals("Plugin", pluginConfiguration.getStack().get(0).getName());
+        assertTrue(pluginConfiguration.getStack().get(2).getRole().isRequisite());
+        assertEquals("Requisite", pluginConfiguration.getStack().get(2).getName());
+
+        /**
+         * Third element is a stack which defines two nested plugins.
+         */
+        assertTrue(pluginConfiguration.getStack().get(1) instanceof AuthorizationStack);
+        AuthorizationStack stack = (AuthorizationStack) pluginConfiguration.getStack().get(1);
+        assertTrue(stack.getRole().isRequired());
+        assertEquals("basic stack", stack.getName());
+
+        assertEquals(2, stack.getStack().size());
+        assertTrue(stack.getStack().get(0) instanceof AuthorizationPlugin);
+        assertEquals("NestedPlugin", stack.getStack().get(0).getName());
+        assertTrue(stack.getStack().get(0).isRequired());
+        assertTrue(stack.getStack().get(1) instanceof AuthorizationPlugin);
+        assertEquals("NestedPlugin", stack.getStack().get(1).getName());
+        assertTrue(stack.getStack().get(1).isRequisite());
+        AuthorizationPlugin plugin = (AuthorizationPlugin) stack.getStack().get(1);
+        assertTrue(plugin.getSetup().containsKey("key"));
+        assertEquals("value", plugin.getSetup().get("key"));
+        assertTrue(plugin.getSetup().containsKey("plugin"));
+        assertTrue(plugin.getSetup().get("plugin") instanceof AuthorizationPlugin);
+        assertEquals(pluginConfiguration.getStack().get(0), plugin.getSetup().get("plugin"));
+
+        /**
+         * Fourth element is a stack slightly changed from the previous stack.
+         * Only the setup for the particular plugin is changed.
+         */
+        assertTrue(pluginConfiguration.getStack().get(3) instanceof AuthorizationStack);
+        stack = (AuthorizationStack) pluginConfiguration.getStack().get(3);
+        assertTrue(stack.getRole().isRequired());
+        assertEquals("advanced stack", stack.getName());
+
+        assertEquals(2, stack.getStack().size());
+        assertTrue(stack.getStack().get(0) instanceof AuthorizationPlugin);
+        assertEquals("NestedPlugin", stack.getStack().get(0).getName());
+        assertTrue(stack.getStack().get(0).isRequired());
+        assertTrue(stack.getStack().get(1) instanceof AuthorizationPlugin);
+        assertEquals("NestedPlugin", stack.getStack().get(1).getName());
+        assertTrue(stack.getStack().get(1).isRequisite());
+        plugin = (AuthorizationPlugin) stack.getStack().get(1);
+        assertTrue(plugin.getSetup().containsKey("key"));
+        assertEquals("other value", plugin.getSetup().get("key"));
+        assertTrue(plugin.getSetup().containsKey("plugin"));
+        assertTrue(plugin.getSetup().get("plugin") instanceof AuthorizationPlugin);
+        assertEquals(pluginConfiguration.getStack().get(0), plugin.getSetup().get("plugin"));
+
+        /**
+         * Fifth element is a direct copy of the first stack.
+         */
+        assertTrue(pluginConfiguration.getStack().get(4) instanceof AuthorizationStack);
+        stack = (AuthorizationStack) pluginConfiguration.getStack().get(4);
+        assertTrue(stack.getRole().isRequired());
+        assertEquals("basic stack", stack.getName());
+
+        assertEquals(2, stack.getStack().size());
+        assertTrue(stack.getStack().get(0) instanceof AuthorizationPlugin);
+        assertEquals("NestedPlugin", stack.getStack().get(0).getName());
+        assertTrue(stack.getStack().get(0).isRequired());
+        assertTrue(stack.getStack().get(1) instanceof AuthorizationPlugin);
+        assertEquals("NestedPlugin", stack.getStack().get(1).getName());
+        assertTrue(stack.getStack().get(1).isRequisite());
+        plugin = (AuthorizationPlugin) stack.getStack().get(1);
+        assertTrue(plugin.getSetup().containsKey("key"));
+        assertEquals("value", plugin.getSetup().get("key"));
+        assertTrue(plugin.getSetup().containsKey("plugin"));
+        assertTrue(plugin.getSetup().get("plugin") instanceof AuthorizationPlugin);
+        assertEquals(pluginConfiguration.getStack().get(0), plugin.getSetup().get("plugin"));
+    }
+
+    /**
+     * Testing invalid role property.
+     *
+     * @throws IOException
+     */
     @Test(expected = IOException.class)
     public void testAuthorizationRoleDecodeInvalid() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
-                + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_65\">\n"
+                + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
                 + " <object class=\"org.opensolaris.opengrok.configuration.Configuration\">\n"
-                + "	<void property=\"pluginConfiguration\">\n"
+                + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationCheck\">\n"
+                + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"role\">\n"
                 + "					<string>norole</string>\n"
                 + "				</void>\n"
-                + "				<void property=\"classname\">\n"
+                + "				<void property=\"name\">\n"
+                + "					<string>Plugin</string>\n"
+                + "				</void>\n"
+                + "			</object>\n"
+                + "		</void>\n"
+                + "	</void>\n"
+                + " </object>\n"
+                + "</java>";
+        Configuration.makeXMLStringAsConfiguration(confString);
+    }
+
+    /**
+     * Testing invalid class names for authorization checks.
+     *
+     * @throws IOException
+     */
+    @Test(expected = IOException.class)
+    public void testAuthorizationDecodeInvalid() throws IOException {
+        String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
+                + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
+                + " <object class=\"org.opensolaris.opengrok.configuration.Configuration\">\n"
+                + "	<void property=\"pluginStack\">\n"
+                + "		<void method=\"add\">\n"
+                + "			<object class=\"org.opensolaris.bad.package.authorization.NoCheck\">\n"
+                + "				<void property=\"role\">\n"
+                + "					<string>sufficient</string>\n"
+                + "				</void>\n"
+                + "				<void property=\"name\">\n"
                 + "					<string>Plugin</string>\n"
                 + "				</void>\n"
                 + "			</object>\n"
