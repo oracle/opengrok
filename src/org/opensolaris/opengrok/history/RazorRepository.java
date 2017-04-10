@@ -144,12 +144,16 @@ public class RazorRepository extends Repository {
     // The base directory of that Razor Group (.razor symlink destination)
     private String razorGroupBaseDirectoryPath;
 
+    private static String RAZOR_DIR = ".razor";
+
     public RazorRepository() {
         type = "Razor";
         working = Boolean.TRUE;
         datePatterns = new String[]{
             "yyyy/MM/dd,hh:mm:ss"
         };
+
+        ignoredDirs.add(RAZOR_DIR);
     }
 
     @Override
@@ -159,7 +163,7 @@ public class RazorRepository extends Repository {
         opengrokSourceRootDirectoryPath
                 = opengrokBaseDirectory.getParentFile().getAbsolutePath();
         razorGroupBaseDirectoryPath
-                = new File(directoryName, ".razor").getAbsolutePath();
+                = new File(directoryName, RAZOR_DIR).getAbsolutePath();
     }
 
     public String getOpengrokSourceRootDirectoryPath() {

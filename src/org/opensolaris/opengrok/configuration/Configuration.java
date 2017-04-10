@@ -142,7 +142,7 @@ public final class Configuration {
     private Set<String> allowedSymlinks;
     private boolean obfuscatingEMailAddresses;
     private boolean chattyStatusPage;
-    private final Map<String, String> cmds;
+    private final Map<String, String> cmds;  // repository type -> command
     private int tabSize;
     private int command_timeout; // in seconds
     private int indexRefreshPeriod; // in seconds

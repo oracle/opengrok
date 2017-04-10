@@ -64,6 +64,8 @@ public class SCCSRepository extends Repository {
         datePatterns = new String[]{
             "yy/MM/dd"
         };
+
+        ignoredDirs.add("SCCS");
     }
 
     @Override

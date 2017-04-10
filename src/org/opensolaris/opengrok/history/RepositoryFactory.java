@@ -170,4 +170,22 @@ public final class RepositoryFactory {
     public static Repository getRepository(RepositoryInfo info) throws InstantiationException, IllegalAccessException {
         return getRepository(new File(info.getDirectoryName()));
     }
+
+    /**
+     * Go through all repository types and add items to lists of ignored
+     * files/directories. This way per-repository ignored entries are set
+     * inside repository classes rather than globally in IgnoredFiles/Dirs.
+     * Should be called after {@code setConfiguration()}.
+     */
+    public static void setIgnored(RuntimeEnvironment env) {
+        for (Repository repo : repositories) {
+            for (String file : repo.getIgnoredFiles()) {
+                env.getIgnoredNames().add("f:" + file);
+            }
+
+            for (String dir : repo.getIgnoredDirs()) {
+                env.getIgnoredNames().add("d:" + dir);
+            }
+        }
+    }
 }

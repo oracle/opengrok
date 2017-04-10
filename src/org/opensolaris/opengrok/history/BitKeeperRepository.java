@@ -89,6 +89,8 @@ public class BitKeeperRepository extends Repository {
     public BitKeeperRepository() {
         type = "BitKeeper";
         datePatterns = new String[] { "yyyy-MM-dd HH:mm:ss z" };
+
+        ignoredDirs.add(".bk");
     }
 
     /**

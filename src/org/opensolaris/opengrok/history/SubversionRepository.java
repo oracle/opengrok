@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -81,6 +81,8 @@ public class SubversionRepository extends Repository {
             "yyyy-MM-dd'T'HH:mm:ss.'Z'",
             "yyyy-MM-dd'T'HH:mm:ss'Z'"
         };
+
+        ignoredDirs.add(".svn");
     }
 
     private String getValue(Node node) {

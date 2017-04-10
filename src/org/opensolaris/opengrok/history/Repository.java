@@ -58,6 +58,10 @@ public abstract class Repository extends RepositoryInfo {
      */
     protected String RepoCommand;
 
+    protected final List<String> ignoredFiles;
+
+    protected final List<String> ignoredDirs;
+
     /**
      * List of &lt;revision, tags&gt; pairs for repositories which display tags
      * only for files changed by the tagged commit.
@@ -82,6 +86,12 @@ public abstract class Repository extends RepositoryInfo {
      * @throws HistoryException on error accessing the history
      */
     abstract History getHistory(File file) throws HistoryException;
+
+    public Repository() {
+        super();
+        ignoredFiles = new ArrayList<String>();
+        ignoredDirs = new ArrayList<String>();
+    }
 
     /**
      * <p>
@@ -367,6 +377,20 @@ public abstract class Repository extends RepositoryInfo {
      * Determine branch of this repository.
      */
     abstract String determineBranch() throws IOException;
+
+    /**
+     * Get list of ignored files for this repository.
+     */
+    public List<String> getIgnoredFiles() {
+        return ignoredFiles;
+    }
+
+    /**
+     * Get list of ignored directories for this repository.
+     */
+    public List<String> getIgnoredDirs() {
+        return ignoredDirs;
+    }
 
     /**
      * Determine and return the current version of the repository.

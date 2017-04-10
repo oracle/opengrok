@@ -65,6 +65,8 @@ public class BazaarRepository extends Repository {
         datePatterns = new String[]{
             "EEE yyyy-MM-dd hh:mm:ss ZZZZ"
         };
+
+        ignoredDirs.add(".bzr");
     }
 
     /**

@@ -45,6 +45,8 @@ import junit.framework.AssertionFailedError;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.c.CAnalyzerFactoryTest;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -53,7 +55,7 @@ import org.opensolaris.opengrok.util.TestRepository;
  * @author Trond Norbye
  */
 public class IgnoredNamesTest {
-
+    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private static TestRepository repository;
 
     @BeforeClass
@@ -61,6 +63,23 @@ public class IgnoredNamesTest {
         repository = new TestRepository();
         repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/index/source.zip"));
+
+        // Populate ignored lists with repository specific entries.
+        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
+    }
+
+    /**
+     * Check that RepositoryFactory added repository specific entries to
+     * IgnoredNames.
+     */
+    @Test
+    public void testIgnoredSpecialPatterns() {
+        IgnoredNames instance = env.getIgnoredNames();
+
+        /* Test handling of special directories. */
+        assertTrue(instance.ignore("usr/src/.git"));
+        assertFalse(instance.ignore("usr/src/.git/foo"));
+        assertFalse(instance.ignore("usr/src/foo.git"));
     }
 
     @Test
@@ -82,11 +101,6 @@ public class IgnoredNamesTest {
         assertFalse(instance.ignore("usr/src/bar/obj/foo.ksh"));
         assertFalse(instance.ignore("usr/src/foo/bar/usr.lib/main.c"));
         assertFalse(instance.ignore("usr/src/foo/bar/usr.lib"));
-
-        /* Test handling of special directories. */
-        assertTrue(instance.ignore("usr/src/.git"));
-        assertFalse(instance.ignore("usr/src/.git/foo"));
-        assertFalse(instance.ignore("usr/src/foo.git"));
 
         /* cumulative test */
         names = new ArrayList<>();

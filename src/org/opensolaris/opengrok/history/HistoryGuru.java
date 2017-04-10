@@ -294,9 +294,9 @@ public final class HistoryGuru {
      */
     public boolean hasAnnotation(File file) {
         if (!file.isDirectory()) {
-            Repository repos = getRepository(file);
-            if (repos != null && repos.isWorking()) {
-                return repos.fileHasAnnotation(file);
+            Repository repo = getRepository(file);
+            if (repo != null && repo.isWorking()) {
+                return repo.fileHasAnnotation(file);
             }
         }
 

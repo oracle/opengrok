@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Do basic testing of the Perforce support
@@ -63,6 +64,7 @@ public class PerforceRepositoryTest {
             return;
         }
         files = new ArrayList<>();
+        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
         FileUtilities.getAllFiles(root, files, false);
     }
 

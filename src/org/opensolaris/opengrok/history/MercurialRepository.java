@@ -116,6 +116,9 @@ public class MercurialRepository extends Repository {
         datePatterns = new String[]{
             "yyyy-MM-dd hh:mm ZZZZ"
         };
+
+        ignoredFiles.add(".hgtags");
+        ignoredDirs.add(".hg");
     }
 
     /**

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -63,6 +63,8 @@ public class PerforceRepository extends Repository {
 
     public PerforceRepository() {
         type = "Perforce";
+
+        ignoredFiles.add(".p4config");
     }
 
     @Override

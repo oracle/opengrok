@@ -1238,7 +1238,7 @@ public final class RuntimeEnvironment {
             }
         }
     }
-    
+
     /**
      * Sets the configuration and performs necessary actions.
      *
@@ -1248,16 +1248,7 @@ public final class RuntimeEnvironment {
      * @param configuration what configuration to use
      */
     public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-        register();
-        try {
-            generateProjectRepositoriesMap();
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
-        }
-        populateGroups(getGroups(), getProjects());
-        HistoryGuru.getInstance().invalidateRepositories(
-                configuration.getRepositories());
+        setConfiguration(configuration, null);
     }
 
     public void setConfiguration(Configuration configuration, List<String> subFileList) {
@@ -1269,8 +1260,13 @@ public final class RuntimeEnvironment {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
         populateGroups(getGroups(), getProjects());
-        HistoryGuru.getInstance().invalidateRepositories(
+        if (subFileList != null) {
+            HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories(), subFileList);
+        } else {
+            HistoryGuru.getInstance().invalidateRepositories(
+                configuration.getRepositories());
+        }
     }
 
     public Configuration getConfiguration() {

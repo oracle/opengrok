@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -59,6 +59,7 @@ public class HistoryGuruTest {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
                 "repositories.zip"));
+        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
                 files, true);
         RuntimeEnvironment.getInstance().setVerbose(true);

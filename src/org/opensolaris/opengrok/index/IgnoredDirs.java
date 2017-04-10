@@ -33,18 +33,8 @@ import java.io.File;
  */
 public final class IgnoredDirs extends Filter {
     private static final String[] defaultPatternsDirs = {
-        "SCCS",
-        "CVS",
-        "CVSROOT",
-        "RCS",
         "Codemgr_wsdata", // Teamware
         "deleted_files",  // Teamware
-        ".svn",
-        ".repo",
-        ".git",
-        ".hg",
-        ".razor",
-        ".bzr",
     };
 
     public IgnoredDirs() {
