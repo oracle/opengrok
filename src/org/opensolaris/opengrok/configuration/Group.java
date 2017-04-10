@@ -134,6 +134,42 @@ public class Group implements Comparable<Group>, Nameable {
         return parents;
     }
 
+    /**
+     * Collect all related groups to this group. A related group is
+     * <ul>
+     * <li>any anchestor</li>
+     * <li>any subgroup</li>
+     * <ul>
+     *
+     * @return all collected related groups to this group
+     */
+    public Set<Group> getRelatedGroups() {
+        Set<Group> groupsTmp = new TreeSet<>();
+        groupsTmp.addAll(getDescendants());
+        groupsTmp.addAll(getParents());
+        return groupsTmp;
+    }
+
+    /**
+     * Collect all group's projects and repositories included in this group and
+     * in any subgroup.
+     *
+     * @return all collected projects and repositories
+     */
+    public Set<Project> getAllProjects() {
+        Set<Project> projectsTmp = new TreeSet<>();
+        for (Project p : getRepositories()) {
+            projectsTmp.add(p);
+        }
+        for (Project p : getProjects()) {
+            projectsTmp.add(p);
+        }
+        for (Group grp : getDescendants()) {
+            projectsTmp.addAll(grp.getAllProjects());
+        }
+        return projectsTmp;
+    }
+
     public Group getParent() {
         return parent;
     }
