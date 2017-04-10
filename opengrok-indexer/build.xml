@@ -196,7 +196,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <!-- clean up generated test repositories -->
     <target name="-delete-generated-repository-files">
-      <delete dir="${test.hg}/.bk"/>
+      <delete dir="${test.bk}/.bk"/>
       <delete dir="${test.hg}/.hg"/>
       <delete file="${test.hg}/.hgignore"/>
       <delete dir="${test.git}/.git"/>
