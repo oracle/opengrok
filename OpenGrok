@@ -18,7 +18,7 @@
 # Supported Environment Variables for configuring the default setup:
 #   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
 #   - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
-#   - EXUBERANT_CTAGS             Full Path to Exuberant CTags
+#   - OPENGROK_CTAGS              Full path to Exuberant or Universal CTags binary
 #   - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
 #                                 options for CTags program (for its --options
 #                                 switch), default is DATA_ROOT/etc/ctags.config
@@ -226,8 +226,8 @@ DefaultInstanceConfiguration()
     #            files in the "dist" directory after the build is completed)
     OPENGROK_DIST_WAR="${OPENGROK_DISTRIBUTION_BASE}/source.war"
 
-    # REQUIRED: Exuberant CTags (http://ctags.sf.net)
-    EXUBERANT_CTAGS="${EXUBERANT_CTAGS:-`FindExuberantCTags`}"
+    # REQUIRED: Exuberant or Universal CTags
+    OPENGROK_CTAGS="${OPENGROK_CTAGS:-`FindCtags`}"
 
     # OPTIONAL: supply extra command line options to CTags program
     if [ -n "${OPENGROK_CTAGS_OPTIONS_FILE}" ]; then
@@ -462,7 +462,7 @@ LocateBinary() {
     return 1
 }
 
-FindExuberantCTags()
+FindCtags()
 {
     #
     # Search for Exuberant ctags intelligently, skipping
@@ -475,7 +475,7 @@ FindExuberantCTags()
 		if [ -x "$path/$program" ]; then
 			binary="$path/$program"
 
-			# Verify that this really is Exuberant Ctags.
+			# Verify that this tool is or is based on Exuberant Ctags.
 			$binary --version 2>&1 | grep "Exuberant Ctags" > /dev/null
 			if [ $? -eq 0 ]; then
 				found=1
@@ -488,7 +488,7 @@ FindExuberantCTags()
 	fi
     done
     if [ $found -ne 1 ]; then
-        Error "Unable to determine Exuberant CTags command name" \
+        Error "Unable to determine Exuberant/Universal CTags command name" \
             "for ${OS_NAME} ${OS_VERSION}"
         return
     fi
@@ -731,9 +731,9 @@ LoadInstanceConfiguration()
 
 ValidateConfiguration()
 {
-    if [ ! -x "${EXUBERANT_CTAGS}" ]
+    if [ ! -x "${OPENGROK_CTAGS}" ]
     then
-        FatalError "Missing Dependent Application - Exuberant CTags"
+        FatalError "Missing Dependent Application - Exuberant/Universal CTags"
     fi
 
     if [ ! -d "${SRC_ROOT}" ]
@@ -818,7 +818,7 @@ CommonInvocation()
 	${DISABLE_RENAMED_FILES_HISTORY}				\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
-        ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               	\
+        ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
         ${READ_XML_CONF}                                        	\
