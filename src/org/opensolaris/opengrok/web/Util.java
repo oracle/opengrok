@@ -1513,7 +1513,48 @@ public final class Util {
             String buildLink = buildLink(name, url, true);
             return pattern.matcher(text).replaceAll(buildLink);
         } catch (URISyntaxException | MalformedURLException ex) {
+            LOGGER.log(Level.INFO, "The given url '{0}' is not valid", url);
             return text;
+        }
+    }
+
+    /**
+     * Try to complete the given url part into full url with server name, port,
+     * scheme, ...
+     * <dl>
+     * <dt>for request http://localhost:8080/source/xref/xxx and part
+     * /cgi-bin/user=</dt>
+     * <dd>http://localhost:8080/cgi-bin/user=</dd>
+     * <dt>for request http://localhost:8080/source/xref/xxx and part
+     * cgi-bin/user=</dt>
+     * <dd>http://localhost:8080/source/xref/xxx/cgi-bin/user=</dd>
+     * <dt>for request http://localhost:8080/source/xref/xxx and part
+     * http://users.com/user=</dt>
+     * <dd>http://users.com/user=</dd>
+     * </dl>
+     *
+     * @param url the given url part, may be already full url
+     * @param req the request containing the information about the server
+     * @return the converted url or the input parameter if there was an error
+     */
+    public static String completeUrl(String url, HttpServletRequest req) {
+        try {
+            if (!isHttpUri(url)) {
+                if (url.startsWith("/")) {
+                    return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), url, null, null).toString();
+                }
+                StringBuffer prepUrl = req.getRequestURL();
+                if (!url.isEmpty()) {
+                    prepUrl.append('/').append(url);
+                }
+                return new URI(prepUrl.toString()).toString();
+            }
+            return url;
+        } catch (URISyntaxException ex) {
+            LOGGER.log(Level.INFO,
+                    String.format("Unable to convert given url part '%s' to complete url", url),
+                    ex);
+            return url;
         }
     }
 }
