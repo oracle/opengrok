@@ -316,6 +316,9 @@ public final class Configuration {
         setUsingLuceneLocking(false);
         setCompressXref(true);
         setIndexVersionedFilesOnly(false);
+        // Set to empty string so we can append it to the URL
+        // unconditionally later.
+        setUserPageSuffix("");
         setTagsEnabled(false);
         setHitsPerPage(25);
         setCachePages(5);
