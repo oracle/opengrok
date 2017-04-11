@@ -182,7 +182,11 @@ public class ConfigMessage extends Message {
                 | IllegalArgumentException ex) {
             throw new IOException(
                     String.format("Unsupported operation with the configuration for name \"%s\" - %s.",
-                            field, ex.getLocalizedMessage()), ex);
+                            field,
+                            ex.getCause() == null
+                            ? ex.getLocalizedMessage()
+                            : ex.getCause().getLocalizedMessage()),
+                    ex);
         }
     }
 
