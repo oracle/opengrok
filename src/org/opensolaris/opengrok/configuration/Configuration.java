@@ -743,9 +743,13 @@ public final class Configuration {
      * Set the bug pattern to a new value
      *
      * @param bugPattern the new pattern
-     * @throws PatternSyntaxException when the pattern is not a valid regexp
+     * @throws PatternSyntaxException when the pattern is not a valid regexp or
+     * does not contain at least one capture group
      */
     public void setBugPattern(String bugPattern) throws PatternSyntaxException {
+        if (!bugPattern.matches(".*\\([^\\)]*\\).*")) {
+            throw new PatternSyntaxException("The pattern must contain at least one group.", bugPattern, 0);
+        }
         this.bugPattern = Pattern.compile(bugPattern).toString();
     }
 
@@ -769,9 +773,13 @@ public final class Configuration {
      * Set the review pattern to a new value
      *
      * @param reviewPattern the new pattern
-     * @throws PatternSyntaxException when the pattern is not a valid regexp
+     * @throws PatternSyntaxException when the pattern is not a valid regexp or
+     * does not contain at least one capture group
      */
     public void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
+        if (!reviewPattern.matches(".*\\([^\\)]*\\).*")) {
+            throw new PatternSyntaxException("The pattern must contain at least one group.", reviewPattern, 0);
+        }
         this.reviewPattern = Pattern.compile(reviewPattern).toString();
     }
 
