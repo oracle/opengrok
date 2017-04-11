@@ -50,6 +50,8 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.opensolaris.opengrok.authorization.AuthorizationCheck;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
@@ -240,7 +242,17 @@ public final class Configuration {
         return scanningDepth;
     }
 
-    public void setScanningDepth(int scanningDepth) {
+    /**
+     * Set the scanning depth to a new value
+     *
+     * @param scanningDepth the new value
+     * @throws IllegalArgumentException when the scanningDepth is negative
+     */
+    public void setScanningDepth(int scanningDepth) throws IllegalArgumentException {
+        if (scanningDepth < 0) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid value for scanningDepth \"%d\"", scanningDepth));
+        }
         this.scanningDepth = scanningDepth;
     }
 
@@ -248,7 +260,17 @@ public final class Configuration {
         return command_timeout;
     }
 
-    public void setCommandTimeout(int timeout) {
+    /**
+     * Set the command timeout to a new value
+     *
+     * @param timeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setCommandTimeout(int timeout) throws IllegalArgumentException {
+        if (timeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid value for command_timeout \"%d\"", timeout));
+        }
         this.command_timeout = timeout;
     }
 
@@ -280,7 +302,17 @@ public final class Configuration {
         return groupsCollapseThreshold;
     }
 
-    public void setGroupsCollapseThreshold(int groupsCollapseThreshold) {
+    /**
+     * Set the groups collapse threshold to a new value
+     *
+     * @param groupsCollapseThreshold the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setGroupsCollapseThreshold(int groupsCollapseThreshold) throws IllegalArgumentException {
+        if (groupsCollapseThreshold < 0) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid value for groupsCollapseThreshold \"%d\"", groupsCollapseThreshold));
+        }
         this.groupsCollapseThreshold = groupsCollapseThreshold;
     }
 
@@ -375,8 +407,13 @@ public final class Configuration {
      * @see RuntimeEnvironment#getMessagesInTheSystem()
      *
      * @param limit the limit
+     * @throws IllegalArgumentException when the limit is negative
      */
-    public void setMessageLimit(int limit) {
+    public void setMessageLimit(int limit) throws IllegalArgumentException {
+        if (limit < 0) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid value for message limit \"%d\"", limit));
+        }
         this.messageLimit = limit;
     }
 
@@ -421,7 +458,17 @@ public final class Configuration {
         return cachePages;
     }
 
-    public void setCachePages(int cachePages) {
+    /**
+     * Set the cache pages to a new value
+     *
+     * @param cachePages the new value
+     * @throws IllegalArgumentException when the cachePages is negative
+     */
+    public void setCachePages(int cachePages) throws IllegalArgumentException {
+        if (cachePages < 0) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid value for cachePages \"%d\"", cachePages));
+        }
         this.cachePages = cachePages;
     }
 
@@ -429,7 +476,17 @@ public final class Configuration {
         return hitsPerPage;
     }
 
-    public void setHitsPerPage(int hitsPerPage) {
+    /**
+     * Set the hits per page to a new value
+     *
+     * @param hitsPerPage the new value
+     * @throws IllegalArgumentException when the hitsPerPage is negative
+     */
+    public void setHitsPerPage(int hitsPerPage) throws IllegalArgumentException {
+        if (hitsPerPage < 0) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid value for histPerPage \"%d\"", hitsPerPage));
+        }
         this.hitsPerPage = hitsPerPage;
     }
 
@@ -682,8 +739,14 @@ public final class Configuration {
         return bugPage;
     }
 
-    public void setBugPattern(String bugPattern) {
-        this.bugPattern = bugPattern;
+    /**
+     * Set the bug pattern to a new value
+     *
+     * @param bugPattern the new pattern
+     * @throws PatternSyntaxException when the pattern is not a valid regexp
+     */
+    public void setBugPattern(String bugPattern) throws PatternSyntaxException {
+        this.bugPattern = Pattern.compile(bugPattern).toString();
     }
 
     public String getBugPattern() {
@@ -702,8 +765,14 @@ public final class Configuration {
         return reviewPattern;
     }
 
-    public void setReviewPattern(String reviewPattern) {
-        this.reviewPattern = reviewPattern;
+    /**
+     * Set the review pattern to a new value
+     *
+     * @param reviewPattern the new pattern
+     * @throws PatternSyntaxException when the pattern is not a valid regexp
+     */
+    public void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
+        this.reviewPattern = Pattern.compile(reviewPattern).toString();
     }
 
     public String getWebappLAF() {
