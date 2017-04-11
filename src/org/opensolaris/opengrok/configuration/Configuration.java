@@ -289,61 +289,61 @@ public final class Configuration {
      */
     public Configuration() {
         //defaults for an opengrok instance configuration
-        setHistoryCache(true);
-        setHistoryCacheTime(30);
-        setProjects(new ArrayList<>());
-        setGroups(new TreeSet<>());
-        setRepositories(new ArrayList<>());
-        setUrlPrefix("/source/s?");
-        //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
-        setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
-        //below can cause an outofmemory error, since it is defaulting to NO LIMIT
-        setRamBufferSize(defaultRamBufferSize); //MB
-        setVerbose(false);
-        setPrintProgress(false);
-        setGenerateHtml(true);
-        setQuickContextScan(true);
-        setIgnoredNames(new IgnoredNames());
-        setIncludedNames(new Filter());
-        setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
+        cmds = new HashMap<>();
+        setAllowedSymlinks(new HashSet<>());
+        setAuthorizationWatchdogEnabled(false);
         setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
+        setCachePages(5);
+        setCommandTimeout(600); // 10 minutes
+        setCompressXref(true);
+        setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
+        setCurrentIndexedCollapseThreshold(27);
+        setDataRoot(null);
+        setFetchHistoryWhenNotInCache(true);
+        setFoldingEnabled(true);
+        setGenerateHtml(true);
+        setGroups(new TreeSet<>());
+        setGroupsCollapseThreshold(4);
+        setHandleHistoryOfRenamedFiles(true);
+        setHistoryCache(true);
+        setHistoryCacheTime(30);
+        setHitsPerPage(25);
+        setIgnoredNames(new IgnoredNames());
+        setIncludedNames(new Filter());
+        setIndexRefreshPeriod(3600);
+        setIndexVersionedFilesOnly(false);
+        setLastEditedDisplayMode(true);
+        setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
+        setMessageLimit(500);
+        setOptimizeDatabase(true);
+        setPluginConfiguration(new ArrayList<>());
+        setPluginDirectory(null);
+        setPrintProgress(false);
+        setProjects(new ArrayList<>());
+        setQuickContextScan(true);
+        //below can cause an outofmemory error, since it is defaulting to NO LIMIT
+        setRamBufferSize(defaultRamBufferSize); //MB
+        setRemoteScmSupported(RemoteSCM.OFF);
+        setRepositories(new ArrayList<>());
         setReviewPage("http://arc.myserver.org/caselog/PSARC/");
         setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
-        setWebappLAF("default");
-        setRemoteScmSupported(RemoteSCM.OFF);
-        setOptimizeDatabase(true);
-        setUsingLuceneLocking(false);
-        setCompressXref(true);
-        setIndexVersionedFilesOnly(false);
+        setRevisionMessageCollapseThreshold(200);
+        setScanningDepth(defaultScanningDepth); // default depth of scanning for repositories
+        setScopesEnabled(true);
+        setSourceRoot(null);
+        setStatisticsFilePath(null);
+        //setTabSize(4);
+        setTagsEnabled(false);
+        setUrlPrefix("/source/s?");
+        //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
+        setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
         // Set to empty string so we can append it to the URL
         // unconditionally later.
         setUserPageSuffix("");
-        setTagsEnabled(false);
-        setHitsPerPage(25);
-        setCachePages(5);
-        setScanningDepth(defaultScanningDepth); // default depth of scanning for repositories
-        setAllowedSymlinks(new HashSet<>());
-        //setTabSize(4);
-        cmds = new HashMap<>();
-        setSourceRoot(null);
-        setDataRoot(null);
-        setStatisticsFilePath(null);
-        setCommandTimeout(600); // 10 minutes
-        setScopesEnabled(true);
-        setFoldingEnabled(true);
-        setFetchHistoryWhenNotInCache(true);
-        setHandleHistoryOfRenamedFiles(true);
-        setLastEditedDisplayMode(true);
-        setRevisionMessageCollapseThreshold(200);
-        setGroupsCollapseThreshold(4);
-        setPluginDirectory(null);
-        setAuthorizationWatchdogEnabled(false);
-        setPluginConfiguration(new ArrayList<>());
-        setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
-        setIndexRefreshPeriod(3600);
-        setMessageLimit(500);
-        setCurrentIndexedCollapseThreshold(27);
+        setUsingLuceneLocking(false);
+        setVerbose(false);
+        setWebappLAF("default");
     }
 
     public String getRepoCmd(String clazzName) {
@@ -547,10 +547,10 @@ public final class Configuration {
      * @param dataRoot
      */
     public void setDataRoot(String dataRoot) {
-        if (getPluginDirectory() == null) {
+        if (dataRoot != null && getPluginDirectory() == null) {
             setPluginDirectory(dataRoot + "/../" + PLUGIN_DIRECTORY_DEFAULT);
         }
-        if (getStatisticsFilePath() == null) {
+        if (dataRoot != null && getStatisticsFilePath() == null) {
             setStatisticsFilePath(dataRoot + "/" + STATISTICS_FILE_DEFAULT);
         }
         this.dataRoot = dataRoot;
