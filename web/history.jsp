@@ -141,23 +141,13 @@ include file="minisearch.jspf"
         boolean striked = false;
         String userPage = env.getUserPage();
         String userPageSuffix = env.getUserPageSuffix();
-        if (userPageSuffix == null) {
-            // Set to empty string so we can append it to the URL
-            // unconditionally later.
-            userPageSuffix = "";
-        }
         String bugPage = env.getBugPage();
         String bugRegex = env.getBugPattern();
-        if (bugRegex == null || bugRegex.equals("")) {
-            bugRegex = "\\b([12456789][0-9]{6})\\b";
-        }
         Pattern bugPattern = Pattern.compile(bugRegex);
         String reviewPage = env.getReviewPage();
         String reviewRegex = env.getReviewPattern();
-        if(reviewRegex == null || reviewRegex.equals("")) {
-            reviewRegex = "\\b(\\d{4}/\\d{3})\\b";
-        }
         Pattern reviewPattern = Pattern.compile(reviewRegex);
+
         Format df = new SimpleDateFormat("dd-MMM-yyyy");
 
         int revision2 = cfg.getIntParam("r2", -1) < 0 ? 0 : cfg.getIntParam("r2", -1);
