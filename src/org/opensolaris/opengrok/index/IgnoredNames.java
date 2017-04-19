@@ -83,7 +83,7 @@ public class IgnoredNames implements Serializable {
     }
 
     /**
-     * Should the file be ignored or not?
+     * Should the file name be ignored or not ?
      *
      * @param name the name of the file to check
      * @return true if this pathname should be ignored, false otherwise
