@@ -83,6 +83,21 @@ public class IgnoredNamesTest {
     }
 
     @Test
+    public void testAbsolutePathCheckWithPattern() {
+        IgnoredNames instance = new IgnoredNames();
+        String currentDir = new File("").getAbsolutePath();
+        String currentDirName = currentDir.substring(currentDir.lastIndexOf('/') + 1);
+
+        // Absolute path should not be matched against filenames.
+        instance.add("*" + currentDirName + "*");
+        assertFalse(instance.ignore("foo"));
+
+        // Filename matching should still work.
+        instance.add("*foo*");
+        assertTrue(instance.ignore("foo"));
+    }
+
+    @Test
     public void testIgnoredPatterns() {
         IgnoredNames instance = new IgnoredNames();
 
