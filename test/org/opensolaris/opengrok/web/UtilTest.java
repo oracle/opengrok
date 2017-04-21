@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -459,5 +460,51 @@ public class UtilTest {
 
         assertEquals(expected, Util.linkifyPattern(text, Pattern.compile("\\b([0-9]{8,})\\b"), "$1", "http://www.example.com?bug=$1"));
         assertEquals(expected2, Util.linkifyPattern(text, Pattern.compile("\\b(bug([0-9]{4})\\w{3})\\b"), "$1", "http://www.other-example.com?bug=$2"));
+    }
+
+    @Test
+    public void testCompleteUrl() {
+        HttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public int getServerPort() {
+                return 8080;
+            }
+
+            @Override
+            public String getServerName() {
+                return "www.example.com";
+            }
+
+            @Override
+            public String getScheme() {
+                return "http";
+            }
+
+            @Override
+            public StringBuffer getRequestURL() {
+                return new StringBuffer(getScheme() + "://" + getServerName() + ':' + getServerPort() + "/source/location/undefined");
+            }
+        };
+
+        /**
+         * Absolute including hostname.
+         */
+        assertEquals("http://opengrok.com/user=", Util.completeUrl("http://opengrok.com/user=", req));
+        assertEquals("http://opengrok.cz.grok.com/user=", Util.completeUrl("http://opengrok.cz.grok.com/user=", req));
+        assertEquals("http://opengrok.com/user=123&id=", Util.completeUrl("http://opengrok.com/user=123&id=", req));
+
+        /**
+         * Absolute/relative without the hostname.
+         */
+        assertEquals("http://www.example.com:8080/cgi-bin/user=", Util.completeUrl("/cgi-bin/user=", req));
+        assertEquals("http://www.example.com:8080/cgi-bin/user=123&id=", Util.completeUrl("/cgi-bin/user=123&id=", req));
+        assertEquals("http://www.example.com:8080/source/location/undefined/cgi-bin/user=", Util.completeUrl("cgi-bin/user=", req));
+        assertEquals("http://www.example.com:8080/source/location/undefined/cgi-bin/user=123&id=", Util.completeUrl("cgi-bin/user=123&id=", req));
+
+        assertEquals("http://www.example.com:8080/source/location/undefined", Util.completeUrl("", req));
+        /**
+         * Escaping should work.
+         */
+        assertEquals("http://www.example.com:8080/cgi-%22bin/user=123&id=", Util.completeUrl("/cgi-\"bin/user=123&id=", req));
     }
 }

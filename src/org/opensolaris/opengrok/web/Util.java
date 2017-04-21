@@ -1296,8 +1296,8 @@ public final class Util {
      * @param offset start of the current page
      * @param limit max number of items per page
      * @param size number of total hits to paginate
-     * @param request request containing url parameters which should be appended
-     * to the page url
+     * @param request request containing URL parameters which should be appended
+     * to the page URL
      * @return string containing slider html
      */
     public static String createSlider(int offset, int limit, int size, HttpServletRequest request) {
@@ -1368,10 +1368,10 @@ public final class Util {
     }
 
     /**
-     * Check if the string is a http url.
+     * Check if the string is a http URL.
      *
      * @param string the string to check
-     * @return true if it is http url, false otherwise
+     * @return true if it is http URL, false otherwise
      */
     public static boolean isHttpUri(String string) {
         URL url;
@@ -1384,7 +1384,7 @@ public final class Util {
     }
 
     /**
-     * Build a html link to the given http url. If the url is not an http uri
+     * Build a html link to the given http url. If the URL is not an http URL
      * then it is returned as it was received. This has the same effect as
      * invoking <code>linkify(url, true)</code>.
      *
@@ -1398,10 +1398,10 @@ public final class Util {
     }
 
     /**
-     * Build a html link to the given http url. If the url is not an http uri
+     * Build a html link to the given http URL. If the URL is not an http URL
      * then it is returned as it was received.
      *
-     * @param url the http url
+     * @param url the http URL
      * @param newTab if the link should open in a new tab
      * @return html containing the link &lt;a&gt;...&lt;/a&gt;
      */
@@ -1461,7 +1461,7 @@ public final class Util {
      * entities.
      *
      * @param name displayed name of the anchor
-     * @param url anchor's url
+     * @param url anchor's URL
      * @return string containing the result
      *
      * @throws URISyntaxException
@@ -1480,7 +1480,7 @@ public final class Util {
      * entities.
      *
      * @param name displayed name of the anchor
-     * @param url anchor's url
+     * @param url anchor's URL
      * @param newTab a flag if the link should be opend in a new tab
      * @return string containing the result
      *
@@ -1499,13 +1499,13 @@ public final class Util {
 
     /**
      * Replace all occurrences of pattern in the incoming text with the link
-     * named name pointing to an url. It is possible to use the regexp pattern
-     * groups in name and url when they are specified in the pattern.
+     * named name pointing to an URL. It is possible to use the regexp pattern
+     * groups in name and URL when they are specified in the pattern.
      *
      * @param text text to replace all patterns
      * @param pattern the pattern to match
      * @param name link display name
-     * @param url link url
+     * @param url link URL
      * @return the text with replaced links
      */
     public static String linkifyPattern(String text, Pattern pattern, String name, String url) {
@@ -1513,7 +1513,48 @@ public final class Util {
             String buildLink = buildLink(name, url, true);
             return pattern.matcher(text).replaceAll(buildLink);
         } catch (URISyntaxException | MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, "The given URL '{0}' is not valid", url);
             return text;
+        }
+    }
+
+    /**
+     * Try to complete the given URL part into full URL with server name, port,
+     * scheme, ...
+     * <dl>
+     * <dt>for request http://localhost:8080/source/xref/xxx and part
+     * /cgi-bin/user=</dt>
+     * <dd>http://localhost:8080/cgi-bin/user=</dd>
+     * <dt>for request http://localhost:8080/source/xref/xxx and part
+     * cgi-bin/user=</dt>
+     * <dd>http://localhost:8080/source/xref/xxx/cgi-bin/user=</dd>
+     * <dt>for request http://localhost:8080/source/xref/xxx and part
+     * http://users.com/user=</dt>
+     * <dd>http://users.com/user=</dd>
+     * </dl>
+     *
+     * @param url the given URL part, may be already full URL
+     * @param req the request containing the information about the server
+     * @return the converted URL or the input parameter if there was an error
+     */
+    public static String completeUrl(String url, HttpServletRequest req) {
+        try {
+            if (!isHttpUri(url)) {
+                if (url.startsWith("/")) {
+                    return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), url, null, null).toString();
+                }
+                StringBuffer prepUrl = req.getRequestURL();
+                if (!url.isEmpty()) {
+                    prepUrl.append('/').append(url);
+                }
+                return new URI(prepUrl.toString()).toString();
+            }
+            return url;
+        } catch (URISyntaxException ex) {
+            LOGGER.log(Level.INFO,
+                    String.format("Unable to convert given URL part '%s' to complete URL", url),
+                    ex);
+            return url;
         }
     }
 }
