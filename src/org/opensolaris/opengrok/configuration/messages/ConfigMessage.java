@@ -104,6 +104,7 @@ public class ConfigMessage extends Message {
      * @param config the configuration object
      * @param field name of the field which will be changed
      * @param value desired value
+     *
      * @throws IOException if any error occurs (no suitable method, bad
      * conversion, ...)
      */
@@ -131,59 +132,106 @@ public class ConfigMessage extends Message {
             }
 
             Class c = setter.getParameterTypes()[0];
+            String paramClass = c.getName();
 
-            String name = c.getName();
             /**
              * Java primitive types as per
              * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">java
              * datatypes</a>.
              */
-            if (c.getName().equals("boolean") || c.getName().equals(Boolean.class.getName())) {
+            if (paramClass.equals("boolean") || paramClass.equals(Boolean.class.getName())) {
+                if (!isBoolean(value)) {
+                    throw new IOException(String.format("Unsupported type conversion from String to a boolean for name \"%s\" -"
+                            + " got \"%s\" - allowed values are [false, off, 0, true, on, 1].",
+                            field, value));
+                }
                 Boolean v = Boolean.valueOf(value);
                 if (!v) {
                     /**
                      * The Boolean.valueOf() returns true only for "true" case
-                     * insensitive. These are convenient shortcuts for "on", "1"
+                     * insensitive so now we have either the false values or
+                     * "on" or "1". These are convenient shortcuts for "on", "1"
                      * to be interpreted as booleans.
                      */
                     v = v || value.equalsIgnoreCase("on");
                     v = v || value.equals("1");
                 }
                 setter.invoke(config, v);
-            } else if (c.getName().equals("short") || c.getName().equals(Short.class.getName())) {
+            } else if (paramClass.equals("short") || paramClass.equals(Short.class.getName())) {
                 setter.invoke(config, Short.valueOf(value));
-            } else if (c.getName().equals("int") || c.getName().equals(Integer.class.getName())) {
+            } else if (paramClass.equals("int") || paramClass.equals(Integer.class.getName())) {
                 setter.invoke(config, Integer.valueOf(value));
-            } else if (c.getName().equals("long") || c.getName().equals(Long.class.getName())) {
+            } else if (paramClass.equals("long") || paramClass.equals(Long.class.getName())) {
                 setter.invoke(config, Long.valueOf(value));
-            } else if (c.getName().equals("float") || c.getName().equals(Float.class.getName())) {
+            } else if (paramClass.equals("float") || paramClass.equals(Float.class.getName())) {
                 setter.invoke(config, Float.valueOf(value));
-            } else if (c.getName().equals("double") || c.getName().equals(Double.class.getName())) {
+            } else if (paramClass.equals("double") || paramClass.equals(Double.class.getName())) {
                 setter.invoke(config, Double.valueOf(value));
-            } else if (c.getName().equals("byte") || c.getName().equals(Byte.class.getName())) {
+            } else if (paramClass.equals("byte") || paramClass.equals(Byte.class.getName())) {
                 setter.invoke(config, Byte.valueOf(value));
-            } else if (c.getName().equals("char") || c.getName().equals(Character.class.getName())) {
+            } else if (paramClass.equals("char") || paramClass.equals(Character.class.getName())) {
                 setter.invoke(config, value.charAt(0));
-            } else if (c.getName().equals(String.class.getName())) {
+            } else if (paramClass.equals(String.class.getName())) {
                 setter.invoke(config, value);
             } else {
                 // error uknown type
                 throw new IOException(
                         String.format("Unsupported type conversion for the name \"%s\". Expecting \"%s\".",
-                                field, c.getName()));
+                                field, paramClass));
             }
         } catch (NumberFormatException ex) {
             throw new IOException(
-                    String.format("Unsupported type conversion from String to Integer for name \"%s\" - %s.",
+                    String.format("Unsupported type conversion from String to a number for name \"%s\" - %s.",
+                            field, ex.getLocalizedMessage()), ex);
+        } catch (IndexOutOfBoundsException ex) {
+            throw new IOException(
+                    String.format("The string is not long enough to extract 1 character for name \"%s\" - %s.",
                             field, ex.getLocalizedMessage()), ex);
         } catch (IntrospectionException
                 | IllegalAccessException
-                | InvocationTargetException
-                | IllegalArgumentException ex) {
+                | IllegalArgumentException
+                /**
+                 * This the case when the invocation failed because the invoked
+                 * method failed with an exception. All exceptions are
+                 * propagated through this exception.
+                 */
+                | InvocationTargetException ex) {
             throw new IOException(
                     String.format("Unsupported operation with the configuration for name \"%s\" - %s.",
-                            field, ex.getLocalizedMessage()), ex);
+                            field,
+                            ex.getCause() == null
+                            ? ex.getLocalizedMessage()
+                            : ex.getCause().getLocalizedMessage()),
+                    ex);
         }
+    }
+
+    /**
+     * Validate the string if it contains a boolean value.
+     *
+     * <p>
+     * Boolean values are (case insensitive):
+     * <ul>
+     * <li>false</li>
+     * <li>off</li>
+     * <li>0</li>
+     * <li>true</li>
+     * <li>on</li>
+     * <li>1</li>
+     * </ul>
+     * </p>
+     *
+     * @param value the string value
+     * @return if the value is boolean or not
+     */
+    private boolean isBoolean(String value) {
+        return "false".equalsIgnoreCase(value)
+                || "off".equalsIgnoreCase(value)
+                || "0".equalsIgnoreCase(value)
+                || "true".equalsIgnoreCase(value)
+                || "on".equalsIgnoreCase(value)
+                || "1".equalsIgnoreCase(value);
+
     }
 
     /**

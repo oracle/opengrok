@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.PatternSyntaxException;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.json.simple.parser.ParseException;
 import org.junit.After;
@@ -316,10 +317,41 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testBugPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String page = "\\b([12456789][0-9]{6})\\b";
-        assertEquals(page, instance.getBugPattern());
-        instance.setBugPattern(page.substring(5));
-        assertEquals(page.substring(5), instance.getBugPattern());
+        String[] tests = new String[]{
+            "\\b([12456789][0-9]{6})\\b",
+            "\\b(#\\d+)\\b",
+            "(BUG123)",
+            "\\sbug=(\\d+[a-t])*(\\W*)"
+        };
+        for (String test : tests) {
+            try {
+                instance.setBugPattern(test);
+                assertEquals(test, instance.getBugPattern());
+            } catch (PatternSyntaxException ex) {
+                fail("The pattern '" + test + "' should not throw an exception");
+
+            }
+        }
+    }
+
+    @Test
+    public void testInvalidBugPattern() {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        String[] tests = new String[]{
+            "\\b([",
+            "\\b({,6})\\b",
+            "\\b6)\\b",
+            "*buggy",
+            "BUG123", // does not contain a group
+            "\\b[a-z]+\\b" // does not contain a group
+        };
+        for (String test : tests) {
+            try {
+                instance.setBugPattern(test);
+                fail("The pattern '" + test + "' should throw an exception");
+            } catch (PatternSyntaxException ex) {
+            }
+        }
     }
 
     @Test
@@ -334,10 +366,41 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testReviewPattern() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String page = "\\b(\\d{4}/\\d{3})\\b";
-        assertEquals(page, instance.getReviewPattern());
-        instance.setReviewPattern(page.substring(5));
-        assertEquals(page.substring(5), instance.getReviewPattern());
+        String[] tests = new String[]{
+            "\\b(\\d{4}/\\d{3})\\b",
+            "\\b(#PSARC\\d+)\\b",
+            "(REVIEW 123)",
+            "\\sreview=(\\d+[a-t])*(\\W*)"
+        };
+        for (String test : tests) {
+            try {
+                instance.setBugPattern(test);
+                assertEquals(test, instance.getBugPattern());
+            } catch (PatternSyntaxException ex) {
+                fail("The pattern '" + test + "' should not throw an exception");
+
+            }
+        }
+    }
+
+    @Test
+    public void testInvalidReviewPattern() {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        String[] tests = new String[]{
+            "\\b([",
+            "\\b({,6})\\b",
+            "\\b6)\\b",
+            "*reviewy",
+            "REVIEW 123", // does not contain a group
+            "\\b[a-z]+\\b" // does not contain a group
+        };
+        for (String test : tests) {
+            try {
+                instance.setBugPattern(test);
+                fail("The pattern '" + test + "' should throw an exception");
+            } catch (PatternSyntaxException ex) {
+            }
+        }
     }
 
     @Test

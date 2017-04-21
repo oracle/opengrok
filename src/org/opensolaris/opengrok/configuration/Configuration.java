@@ -50,6 +50,8 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.opensolaris.opengrok.authorization.AuthorizationCheck;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
@@ -67,6 +69,27 @@ public final class Configuration {
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
     public static final String PLUGIN_DIRECTORY_DEFAULT = "plugins";
     public static final String STATISTICS_FILE_DEFAULT = "statistics.json";
+
+    /**
+     * A check if a pattern contains at least one pair of parentheses meaning
+     * that there is at least one capture group. This group must not be empty.
+     */
+    private static final String PATTERN_SINGLE_GROUP = ".*\\([^\\)]+\\).*";
+    /**
+     * Error string for invalid patterns without a single group. This is passed
+     * as a first argument to the constructor of PatternSyntaxException and in
+     * the output it is followed by the invalid pattern.
+     *
+     * @see PatternSyntaxException
+     * @see #PATTERN_SINGLE_GROUP
+     */
+    private static final String PATTERN_MUST_CONTAIN_GROUP = "The pattern must contain at least one non-empty group -";
+    /**
+     * Error string for negative numbers (could be int, double, long, ...).
+     * First argument is the name of the property, second argument is the actual
+     * value.
+     */
+    private static final String NEGATIVE_NUMBER_ERROR = "Invalid value for \"%s\" - \"%s\". Expected value greater or equal than 0";
 
     private String ctags;
     /**
@@ -240,7 +263,17 @@ public final class Configuration {
         return scanningDepth;
     }
 
-    public void setScanningDepth(int scanningDepth) {
+    /**
+     * Set the scanning depth to a new value
+     *
+     * @param scanningDepth the new value
+     * @throws IllegalArgumentException when the scanningDepth is negative
+     */
+    public void setScanningDepth(int scanningDepth) throws IllegalArgumentException {
+        if (scanningDepth < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "scanningDepth", scanningDepth));
+        }
         this.scanningDepth = scanningDepth;
     }
 
@@ -248,8 +281,18 @@ public final class Configuration {
         return command_timeout;
     }
 
-    public void setCommandTimeout(int timeout) {
-        this.command_timeout = timeout;
+    /**
+     * Set the command timeout to a new value
+     *
+     * @param command_timeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setCommandTimeout(int command_timeout) throws IllegalArgumentException {
+        if (command_timeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "command_timeout", command_timeout));
+        }
+        this.command_timeout = command_timeout;
     }
 
     public int getIndexRefreshPeriod() {
@@ -280,7 +323,17 @@ public final class Configuration {
         return groupsCollapseThreshold;
     }
 
-    public void setGroupsCollapseThreshold(int groupsCollapseThreshold) {
+    /**
+     * Set the groups collapse threshold to a new value
+     *
+     * @param groupsCollapseThreshold the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setGroupsCollapseThreshold(int groupsCollapseThreshold) throws IllegalArgumentException {
+        if (groupsCollapseThreshold < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "groupsCollapseThreshold", groupsCollapseThreshold));
+        }
         this.groupsCollapseThreshold = groupsCollapseThreshold;
     }
 
@@ -377,10 +430,15 @@ public final class Configuration {
     /**
      * @see RuntimeEnvironment#getMessagesInTheSystem()
      *
-     * @param limit the limit
+     * @param messageLimit the limit
+     * @throws IllegalArgumentException when the limit is negative
      */
-    public void setMessageLimit(int limit) {
-        this.messageLimit = limit;
+    public void setMessageLimit(int messageLimit) throws IllegalArgumentException {
+        if (messageLimit < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "messageLimit", messageLimit));
+        }
+        this.messageLimit = messageLimit;
     }
 
     public String getPluginDirectory() {
@@ -424,7 +482,17 @@ public final class Configuration {
         return cachePages;
     }
 
-    public void setCachePages(int cachePages) {
+    /**
+     * Set the cache pages to a new value
+     *
+     * @param cachePages the new value
+     * @throws IllegalArgumentException when the cachePages is negative
+     */
+    public void setCachePages(int cachePages) throws IllegalArgumentException {
+        if (cachePages < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "cachePages", cachePages));
+        }
         this.cachePages = cachePages;
     }
 
@@ -432,7 +500,17 @@ public final class Configuration {
         return hitsPerPage;
     }
 
-    public void setHitsPerPage(int hitsPerPage) {
+    /**
+     * Set the hits per page to a new value
+     *
+     * @param hitsPerPage the new value
+     * @throws IllegalArgumentException when the hitsPerPage is negative
+     */
+    public void setHitsPerPage(int hitsPerPage) throws IllegalArgumentException {
+        if (hitsPerPage < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "hitsPerPage", hitsPerPage));
+        }
         this.hitsPerPage = hitsPerPage;
     }
 
@@ -685,8 +763,19 @@ public final class Configuration {
         return bugPage;
     }
 
-    public void setBugPattern(String bugPattern) {
-        this.bugPattern = bugPattern;
+    /**
+     * Set the bug pattern to a new value
+     *
+     * @param bugPattern the new pattern
+     * @throws PatternSyntaxException when the pattern is not a valid regexp or
+     * does not contain at least one capture group and the group does not
+     * contain a single character
+     */
+    public void setBugPattern(String bugPattern) throws PatternSyntaxException {
+        if (!bugPattern.matches(PATTERN_SINGLE_GROUP)) {
+            throw new PatternSyntaxException(PATTERN_MUST_CONTAIN_GROUP, bugPattern, 0);
+        }
+        this.bugPattern = Pattern.compile(bugPattern).toString();
     }
 
     public String getBugPattern() {
@@ -705,8 +794,19 @@ public final class Configuration {
         return reviewPattern;
     }
 
-    public void setReviewPattern(String reviewPattern) {
-        this.reviewPattern = reviewPattern;
+    /**
+     * Set the review pattern to a new value
+     *
+     * @param reviewPattern the new pattern
+     * @throws PatternSyntaxException when the pattern is not a valid regexp or
+     * does not contain at least one capture group and the group does not
+     * contain a single character
+     */
+    public void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
+        if (!reviewPattern.matches(PATTERN_SINGLE_GROUP)) {
+            throw new PatternSyntaxException(PATTERN_MUST_CONTAIN_GROUP, reviewPattern, 0);
+        }
+        this.reviewPattern = Pattern.compile(reviewPattern).toString();
     }
 
     public String getWebappLAF() {
