@@ -215,16 +215,15 @@ public class Project implements Comparable<Project>, Nameable {
      * @return project that fits the name
      */
     public static Project getByName(String name) {
-        Project ret = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project proj : env.getProjects()) {
-                if (name.indexOf(proj.getName()) == 0) {
-                    ret = proj;
+                if (name.equals(proj.getName())) {
+                    return (proj);
                 }
             }
         }
-        return ret;
+        return null;
     }
 
     @Override
