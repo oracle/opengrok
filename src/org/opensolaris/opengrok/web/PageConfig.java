@@ -119,6 +119,10 @@ public final class PageConfig {
     private QueryBuilder queryBuilder;
     private File dataRoot;
     private StringBuilder headLines;
+    /**
+     * Page java scripts.
+     */
+    private final Scripts scripts = new Scripts();
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
     private HttpServletRequest req;
@@ -1182,6 +1186,45 @@ public final class PageConfig {
             uriEncodedPath = Util.URIEncodePath(getPath());
         }
         return uriEncodedPath;
+    }
+
+    /**
+     * Add a new file script to the page by the name.
+     *
+     * @param name name of the script to search for
+     * @return this
+     *
+     * @see Scripts#addScript(java.lang.String, java.lang.String)
+     */
+    public PageConfig addScript(String name) {
+        this.scripts.addScript(this.req.getContextPath(), name);
+        return this;
+    }
+
+    /**
+     * Add a new file script to the page.
+     *
+     * @param path web path to the file
+     * @param priority script priority (scripts are sorted based on the
+     * priority)
+     * @return this
+     *
+     * @see Scripts.FileScript#FileScript(java.lang.String, int)
+     */
+    public PageConfig addScript(String path, int priority) {
+        this.scripts.addScript(new Scripts.FileScript(path, priority));
+        return this;
+    }
+
+    /**
+     * Return the page scripts.
+     *
+     * @return the scripts
+     *
+     * @see Scripts
+     */
+    public Scripts getScripts() {
+        return this.scripts;
     }
 
     /**
