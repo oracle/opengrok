@@ -209,12 +209,28 @@ public class ConfigMessageTest {
         Assert.assertEquals(false, env.isChattyStatusPage());
         env.setChattyStatusPage(true);
 
+        env.setChattyStatusPage(false);
+    }
+
+    @Test(expected = IOException.class)
+    public void testApplySetOptionInvalidBoolean1() throws Exception {
+        Message m = new ConfigMessage();
+        m.addTag("set");
+
         m.setText("chattyStatusPage = 1000"); // only 1 is accepted as true
         env.setChattyStatusPage(true);
         Assert.assertEquals(true, env.isChattyStatusPage());
         m.apply(env);
         Assert.assertEquals(false, env.isChattyStatusPage());
         env.setChattyStatusPage(true);
+
+        env.setChattyStatusPage(false);
+    }
+
+    @Test(expected = IOException.class)
+    public void testApplySetOptionInvalidBoolean2() throws Exception {
+        Message m = new ConfigMessage();
+        m.addTag("set");
 
         m.setText("chattyStatusPage = anything"); // fallback to false
         env.setChattyStatusPage(true);
