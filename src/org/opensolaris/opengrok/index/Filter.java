@@ -139,6 +139,11 @@ public class Filter implements Serializable {
         return false;
     }
 
+    /**
+     * Does the file object match any of the filenames, patterns or paths ?
+     * @param file file object to check
+     * @return true if this file matches, false otherwise
+     */
     public boolean match(File file) {
         return match(file, true);
     }
