@@ -246,23 +246,23 @@ public final class AuthorizationFramework {
      *
      * <h3>New plugin</h3>
      * If there is no entry in configuration for this class, the plugin is
-     * appended to the end of the plugin stack with role <code>role</code>
+     * appended to the end of the plugin stack with flag <code>flag</code>
      *
      * <p>
      * <b>The plugin's load method is NOT invoked at this point</b></p>
      *
      * This has the same effect as invoking addPlugin(new
-     * AuthorizationEntity(role, getClassName(plugin), plugin).
+     * AuthorizationEntity(flag, getClassName(plugin), plugin).
      *
      * @param plugin the authorization plugin
-     * @param role the role for the new plugin
+     * @param flag the flag for the new plugin
      */
-    public synchronized void addPlugin(IAuthorizationPlugin plugin, AuthControlFlag role) {
+    public synchronized void addPlugin(IAuthorizationPlugin plugin, AuthControlFlag flag) {
         if (stack != null) {
             LOGGER.log(Level.INFO, "Plugin class \"{0}\" was not found in configuration."
-                    + " Appending the plugin at the end of the list with role \"{1}\"",
-                    new Object[]{getClassName(plugin), role});
-            addPlugin(new AuthorizationPlugin(role, getClassName(plugin), plugin));
+                    + " Appending the plugin at the end of the list with flag \"{1}\"",
+                    new Object[]{getClassName(plugin), flag});
+            addPlugin(new AuthorizationPlugin(flag, getClassName(plugin), plugin));
         }
     }
 

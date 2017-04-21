@@ -46,16 +46,16 @@ public class AuthorizationPlugin extends AuthorizationStack {
     public AuthorizationPlugin() {
     }
 
-    public AuthorizationPlugin(AuthControlFlag role, IAuthorizationPlugin plugin) {
-        this(role, plugin.getClass().getCanonicalName() == null ? plugin.getClass().getName() : plugin.getClass().getCanonicalName(), plugin);
+    public AuthorizationPlugin(AuthControlFlag flag, IAuthorizationPlugin plugin) {
+        this(flag, plugin.getClass().getCanonicalName() == null ? plugin.getClass().getName() : plugin.getClass().getCanonicalName(), plugin);
     }
 
-    public AuthorizationPlugin(AuthControlFlag role, String name) {
-        this(role, name, null);
+    public AuthorizationPlugin(AuthControlFlag flag, String name) {
+        this(flag, name, null);
     }
 
-    public AuthorizationPlugin(AuthControlFlag role, String name, IAuthorizationPlugin plugin) {
-        super(role, name);
+    public AuthorizationPlugin(AuthControlFlag flag, String name, IAuthorizationPlugin plugin) {
+        super(flag, name);
         this.plugin = plugin;
     }
 
@@ -99,7 +99,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
 
         LOGGER.log(Level.INFO, "[{0}] Plugin \"{1}\" {2} and is {3}.",
                 new Object[]{
-                    getRole().toString().toUpperCase(),
+                    getFlag().toString().toUpperCase(),
                     getName(),
                     hasPlugin() ? "found" : "not found",
                     isWorking() ? "working" : "failed"});

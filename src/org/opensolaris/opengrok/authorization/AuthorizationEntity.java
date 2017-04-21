@@ -38,7 +38,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
     /**
      * One of "required", "requisite", "sufficient".
      */
-    protected AuthControlFlag role;
+    protected AuthControlFlag flag;
     protected String name;
     protected Map<String, Object> setup = new TreeMap<>();
 
@@ -82,30 +82,30 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
     abstract public boolean setPlugin(IAuthorizationPlugin plugin);
 
     /**
-     * Get the value of role
+     * Get the value of flag
      *
-     * @return the value of role
+     * @return the value of flag
      */
-    public AuthControlFlag getRole() {
-        return role;
+    public AuthControlFlag getFlag() {
+        return flag;
     }
 
     /**
-     * Set the value of role
+     * Set the value of flag
      *
-     * @param role new value of role
+     * @param flag new value of flag
      */
-    public void setRole(AuthControlFlag role) {
-        this.role = role;
+    public void setFlag(AuthControlFlag flag) {
+        this.flag = flag;
     }
 
     /**
-     * Set the value of role
+     * Set the value of flag
      *
-     * @param role new value of role
+     * @param flag new value of flag
      */
-    public void setRole(String role) {
-        this.role = AuthControlFlag.get(role);
+    public void setFlag(String flag) {
+        this.flag = AuthControlFlag.get(flag);
     }
 
     /**
@@ -191,7 +191,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
      * @return true if is required; false otherwise
      */
     public boolean isRequired() {
-        return getRole().isRequired();
+        return getFlag().isRequired();
     }
 
     /**
@@ -200,7 +200,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
      * @return true if is sufficient; false otherwise
      */
     public boolean isSufficient() {
-        return getRole().isSufficient();
+        return getFlag().isSufficient();
     }
 
     /**
@@ -209,6 +209,6 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
      * @return true if is requisite; false otherwise
      */
     public boolean isRequisite() {
-        return getRole().isRequisite();
+        return getFlag().isRequisite();
     }
 }

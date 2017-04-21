@@ -45,8 +45,8 @@ public class AuthorizationStack extends AuthorizationEntity {
     public AuthorizationStack() {
     }
 
-    public AuthorizationStack(AuthControlFlag role, String name) {
-        this.role = role;
+    public AuthorizationStack(AuthControlFlag flag, String name) {
+        this.flag = flag;
         this.name = name;
     }
 
@@ -107,15 +107,15 @@ public class AuthorizationStack extends AuthorizationEntity {
 
         LOGGER.log(Level.INFO, "[{0}] Stack \"{1}\" is loading.",
                 new Object[]{
-                    getRole().toString().toUpperCase(),
+                    getFlag().toString().toUpperCase(),
                     getName()});
 
         setWorking();
 
         int cnt = 0;
-        for (AuthorizationEntity plugin : getStack()) {
-            plugin.load(s);
-            if (plugin.isWorking()) {
+        for (AuthorizationEntity authEntity : getStack()) {
+            authEntity.load(s);
+            if (authEntity.isWorking()) {
                 cnt++;
             }
         }
@@ -126,7 +126,7 @@ public class AuthorizationStack extends AuthorizationEntity {
 
         LOGGER.log(Level.INFO, "[{0}] Stack \"{1}\" is {2}.",
                 new Object[]{
-                    getRole().toString().toUpperCase(),
+                    getFlag().toString().toUpperCase(),
                     getName(),
                     isWorking() ? "working" : "failed"});
     }
@@ -159,27 +159,27 @@ public class AuthorizationStack extends AuthorizationEntity {
 
         LOGGER.log(Level.FINEST, "Authorization for \"{0}\"",
                 new Object[]{entity.getName()});
-        for (AuthorizationEntity plugin : getStack()) {
+        for (AuthorizationEntity authEntity : getStack()) {
             // run the plugin's test method
             try {
                 LOGGER.log(Level.FINEST, "Plugin \"{0}\" [{1}] testing a name \"{2}\"",
-                        new Object[]{plugin.getName(), plugin.getRole(), entity.getName()});
+                        new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName()});
 
-                boolean pluginDecision = plugin.isAllowed(entity, predicate);
+                boolean pluginDecision = authEntity.isAllowed(entity, predicate);
 
                 LOGGER.log(Level.FINEST, "Plugin \"{0}\" [{1}] testing a name \"{2}\" => {3}",
-                        new Object[]{plugin.getName(), plugin.getRole(), entity.getName(),
+                        new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName(),
                             pluginDecision ? "true" : "false"});
 
-                if (!pluginDecision && plugin.isRequired()) {
+                if (!pluginDecision && authEntity.isRequired()) {
                     // required sets a failure but still invokes all other plugins
                     overallDecision = false;
                     continue;
-                } else if (!pluginDecision && plugin.isRequisite()) {
+                } else if (!pluginDecision && authEntity.isRequisite()) {
                     // requisite sets a failure and immediately returns the failure
                     overallDecision = false;
                     break;
-                } else if (overallDecision && pluginDecision && plugin.isSufficient()) {
+                } else if (overallDecision && pluginDecision && authEntity.isSufficient()) {
                     // sufficient immediately returns the success
                     overallDecision = true;
                     break;
@@ -187,20 +187,20 @@ public class AuthorizationStack extends AuthorizationEntity {
             } catch (Throwable ex) {
                 LOGGER.log(Level.WARNING,
                         String.format("Plugin \"%s\" has failed the testing of \"%s\" with an exception.",
-                                plugin.getName(),
+                                authEntity.getName(),
                                 entity.getName()),
                         ex);
 
                 LOGGER.log(Level.FINEST, "Plugin \"{0}\" [{1}] testing a name \"{2}\" => {3}",
-                        new Object[]{plugin.getName(), plugin.getRole(), entity.getName(),
+                        new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName(),
                             "false (failed)"});
 
                 // set the return value to false for this faulty plugin
-                if (!plugin.isSufficient()) {
+                if (!authEntity.isSufficient()) {
                     overallDecision = false;
                 }
                 // requisite plugin may immediately return the failure
-                if (plugin.isRequisite()) {
+                if (authEntity.isRequisite()) {
                     break;
                 }
             }

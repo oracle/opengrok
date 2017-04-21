@@ -477,14 +477,14 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testAuthorizationRoleDecode() throws IOException {
+    public void testAuthorizationFlagDecode() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
                 + " <object class=\"org.opensolaris.opengrok.configuration.Configuration\">\n"
                 + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
                 + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "				<void property=\"role\">\n"
+                + "				<void property=\"flag\">\n"
                 + "					<string>sufficient</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"
@@ -494,7 +494,7 @@ public class RuntimeEnvironmentTest {
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
                 + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "				<void property=\"role\">\n"
+                + "				<void property=\"flag\">\n"
                 + "					<string>required</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"
@@ -504,7 +504,7 @@ public class RuntimeEnvironmentTest {
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
                 + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "				<void property=\"role\">\n"
+                + "				<void property=\"flag\">\n"
                 + "					<string>REQUISITE</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"
@@ -514,7 +514,7 @@ public class RuntimeEnvironmentTest {
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
                 + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "				<void property=\"role\">\n"
+                + "				<void property=\"flag\">\n"
                 + "					<string>reQuIrEd</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"
@@ -529,13 +529,13 @@ public class RuntimeEnvironmentTest {
         assertNotNull(conf.getPluginStack());
         AuthorizationStack pluginConfiguration = conf.getPluginStack();
         assertEquals(4, pluginConfiguration.getStack().size());
-        assertTrue(pluginConfiguration.getStack().get(0).getRole().isSufficient());
+        assertTrue(pluginConfiguration.getStack().get(0).getFlag().isSufficient());
         assertEquals("Plugin", pluginConfiguration.getStack().get(0).getName());
-        assertTrue(pluginConfiguration.getStack().get(1).getRole().isRequired());
+        assertTrue(pluginConfiguration.getStack().get(1).getFlag().isRequired());
         assertEquals("OtherPlugin", pluginConfiguration.getStack().get(1).getName());
-        assertTrue(pluginConfiguration.getStack().get(2).getRole().isRequisite());
+        assertTrue(pluginConfiguration.getStack().get(2).getFlag().isRequisite());
         assertEquals("AnotherPlugin", pluginConfiguration.getStack().get(2).getName());
-        assertTrue(pluginConfiguration.getStack().get(3).getRole().isRequired());
+        assertTrue(pluginConfiguration.getStack().get(3).getFlag().isRequired());
         assertEquals("DifferentPlugin", pluginConfiguration.getStack().get(3).getName());
     }
 
@@ -547,7 +547,7 @@ public class RuntimeEnvironmentTest {
                 + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
                 + "			<object id=\"first_plugin\" class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "				<void property=\"role\">\n"
+                + "				<void property=\"flag\">\n"
                 + "					<string>sufficient</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"
@@ -557,7 +557,7 @@ public class RuntimeEnvironmentTest {
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
                 + "			<object id=\"first_stack\" class=\"org.opensolaris.opengrok.authorization.AuthorizationStack\">\n"
-                + "				<void property=\"role\">\n"
+                + "				<void property=\"flag\">\n"
                 + "					<string>required</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"
@@ -566,7 +566,7 @@ public class RuntimeEnvironmentTest {
                 + "                             <void property=\"stack\">"
                 + "                                 <void method=\"add\">"
                 + "	                 		<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "	                 			<void property=\"role\">\n"
+                + "	                 			<void property=\"flag\">\n"
                 + "	                 				<string>required</string>\n"
                 + "	                 			</void>\n"
                 + "	                 			<void property=\"name\">\n"
@@ -576,7 +576,7 @@ public class RuntimeEnvironmentTest {
                 + "                                 </void>"
                 + "                                 <void method=\"add\">"
                 + "	                 		<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "	                 			<void property=\"role\">\n"
+                + "	                 			<void property=\"flag\">\n"
                 + "	                 				<string>requisite</string>\n"
                 + "	                 			</void>\n"
                 + "	                 			<void property=\"name\">\n"
@@ -599,7 +599,7 @@ public class RuntimeEnvironmentTest {
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
                 + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "				<void property=\"role\">\n"
+                + "				<void property=\"flag\">\n"
                 + "					<string>requisite</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"
@@ -609,7 +609,7 @@ public class RuntimeEnvironmentTest {
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
                 + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationStack\">\n"
-                + "				<void property=\"role\">\n"
+                + "				<void property=\"flag\">\n"
                 + "					<string>required</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"
@@ -618,7 +618,7 @@ public class RuntimeEnvironmentTest {
                 + "                             <void property=\"stack\">"
                 + "                                 <void method=\"add\">"
                 + "	                 		<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "	                 			<void property=\"role\">\n"
+                + "	                 			<void property=\"flag\">\n"
                 + "	                 				<string>required</string>\n"
                 + "	                 			</void>\n"
                 + "	                 			<void property=\"name\">\n"
@@ -628,7 +628,7 @@ public class RuntimeEnvironmentTest {
                 + "                                 </void>"
                 + "                                 <void method=\"add\">"
                 + "	                 		<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "	                 			<void property=\"role\">\n"
+                + "	                 			<void property=\"flag\">\n"
                 + "	                 				<string>requisite</string>\n"
                 + "	                 			</void>\n"
                 + "	                 			<void property=\"name\">\n"
@@ -662,9 +662,9 @@ public class RuntimeEnvironmentTest {
         assertEquals(5, pluginConfiguration.getStack().size());
 
         // single plugins
-        assertTrue(pluginConfiguration.getStack().get(0).getRole().isSufficient());
+        assertTrue(pluginConfiguration.getStack().get(0).getFlag().isSufficient());
         assertEquals("Plugin", pluginConfiguration.getStack().get(0).getName());
-        assertTrue(pluginConfiguration.getStack().get(2).getRole().isRequisite());
+        assertTrue(pluginConfiguration.getStack().get(2).getFlag().isRequisite());
         assertEquals("Requisite", pluginConfiguration.getStack().get(2).getName());
 
         /**
@@ -672,7 +672,7 @@ public class RuntimeEnvironmentTest {
          */
         assertTrue(pluginConfiguration.getStack().get(1) instanceof AuthorizationStack);
         AuthorizationStack stack = (AuthorizationStack) pluginConfiguration.getStack().get(1);
-        assertTrue(stack.getRole().isRequired());
+        assertTrue(stack.getFlag().isRequired());
         assertEquals("basic stack", stack.getName());
 
         assertEquals(2, stack.getStack().size());
@@ -695,7 +695,7 @@ public class RuntimeEnvironmentTest {
          */
         assertTrue(pluginConfiguration.getStack().get(3) instanceof AuthorizationStack);
         stack = (AuthorizationStack) pluginConfiguration.getStack().get(3);
-        assertTrue(stack.getRole().isRequired());
+        assertTrue(stack.getFlag().isRequired());
         assertEquals("advanced stack", stack.getName());
 
         assertEquals(2, stack.getStack().size());
@@ -717,7 +717,7 @@ public class RuntimeEnvironmentTest {
          */
         assertTrue(pluginConfiguration.getStack().get(4) instanceof AuthorizationStack);
         stack = (AuthorizationStack) pluginConfiguration.getStack().get(4);
-        assertTrue(stack.getRole().isRequired());
+        assertTrue(stack.getFlag().isRequired());
         assertEquals("basic stack", stack.getName());
 
         assertEquals(2, stack.getStack().size());
@@ -736,20 +736,20 @@ public class RuntimeEnvironmentTest {
     }
 
     /**
-     * Testing invalid role property.
+     * Testing invalid flag property.
      *
      * @throws IOException
      */
     @Test(expected = IOException.class)
-    public void testAuthorizationRoleDecodeInvalid() throws IOException {
+    public void testAuthorizationFlagDecodeInvalid() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
                 + " <object class=\"org.opensolaris.opengrok.configuration.Configuration\">\n"
                 + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
                 + "			<object class=\"org.opensolaris.opengrok.authorization.AuthorizationPlugin\">\n"
-                + "				<void property=\"role\">\n"
-                + "					<string>norole</string>\n"
+                + "				<void property=\"flag\">\n"
+                + "					<string>noflag</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"
                 + "					<string>Plugin</string>\n"
@@ -775,7 +775,7 @@ public class RuntimeEnvironmentTest {
                 + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
                 + "			<object class=\"org.opensolaris.bad.package.authorization.NoCheck\">\n"
-                + "				<void property=\"role\">\n"
+                + "				<void property=\"flag\">\n"
                 + "					<string>sufficient</string>\n"
                 + "				</void>\n"
                 + "				<void property=\"name\">\n"

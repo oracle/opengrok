@@ -54,15 +54,15 @@ public enum AuthControlFlag {
      */
     SUFFICIENT("sufficient");
 
-    private final String role;
+    private final String flag;
 
-    private AuthControlFlag(String role) {
-        this.role = role;
+    private AuthControlFlag(String flag) {
+        this.flag = flag;
     }
 
     @Override
     public String toString() {
-        return this.role;
+        return this.flag;
     }
 
     public boolean isRequired() {
@@ -77,14 +77,14 @@ public enum AuthControlFlag {
         return SUFFICIENT.equals(this);
     }
 
-    public static AuthControlFlag get(String role) {
+    public static AuthControlFlag get(String flag) {
         try {
-            return AuthControlFlag.valueOf(role.toUpperCase());
+            return AuthControlFlag.valueOf(flag.toUpperCase());
         } catch (IllegalArgumentException ex) {
             // role does not exist -> add some more info about which roles do exist
             throw new IllegalArgumentException(
-                    String.format("No authorization role \"%s\", available roles are [%s]. %s",
-                            role,
+                    String.format("No authorization flag \"%s\", available flags are [%s]. %s",
+                            flag,
                             Arrays.asList(AuthControlFlag.values())
                                     .stream()
                                     .map(AuthControlFlag::toString)

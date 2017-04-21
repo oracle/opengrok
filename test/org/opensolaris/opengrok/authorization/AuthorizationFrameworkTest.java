@@ -72,7 +72,7 @@ public class AuthorizationFrameworkTest {
             }, //
             // -------------------------------------------------------------- //
             //
-            // Test authorization roles for plugins. Both plugins do not fail
+            // Test authorization flags for plugins. Both plugins do not fail
             // during the operation.
             //
             // -------------------------------------------------------------- //
@@ -205,7 +205,7 @@ public class AuthorizationFrameworkTest {
             }, //
             // -------------------------------------------------------------- //
             //
-            // Test authorization roles for plugins. One of the plugin fails
+            // Test authorization flags for plugins. One of the plugin fails
             // during the load operation and is marked as failed for all of the
             // operation (returning false always).
             //
@@ -278,7 +278,7 @@ public class AuthorizationFrameworkTest {
             }, //
             // -------------------------------------------------------------- //
             //
-            // Test authorization roles for plugins. One of the plugin fails
+            // Test authorization flags for plugins. One of the plugin fails
             // during the test operation and the result of that decision for
             // this particular plugin is false.
             //
@@ -354,7 +354,7 @@ public class AuthorizationFrameworkTest {
             }, //
             // -------------------------------------------------------------- //
             //
-            // Test authorization roles for plugins in multiple stacks.
+            // Test authorization flags for plugins in multiple stacks.
             //
             // -------------------------------------------------------------- //
             {
@@ -472,7 +472,7 @@ public class AuthorizationFrameworkTest {
             }, //
             // -------------------------------------------------------------- //
             //
-            // Test authorization roles for plugins in multiple stacks. Some of
+            // Test authorization flags for plugins in multiple stacks. Some of
             // the plugins fail during the load operation and is marked as
             // failed for all of the operation (returning false always).
             //
@@ -560,7 +560,7 @@ public class AuthorizationFrameworkTest {
             }, //
             // -------------------------------------------------------------- //
             //
-            // Test authorization roles for plugins. Some of the plugins fail
+            // Test authorization flags for plugins. Some of the plugins fail
             // during the test operation and the result of that decision for
             // this particular plugin is false.
             //
@@ -832,7 +832,7 @@ public class AuthorizationFrameworkTest {
 
         @Override
         public String toString() {
-            return stack.getRole().toString().toUpperCase() + "[" + printStack(stack) + "] " + "-> {\n"
+            return stack.getFlag().toString().toUpperCase() + "[" + printStack(stack) + "] " + "-> {\n"
                     + setup.stream().map((t) -> t.toString()).collect(Collectors.joining(",\n")) + "\n"
                     + "}";
         }
@@ -843,7 +843,7 @@ public class AuthorizationFrameworkTest {
                 if (entity instanceof AuthorizationPlugin) {
                     x += ((AuthorizationPlugin) entity).getPlugin().toString() + ", ";
                 } else {
-                    x += entity.getRole().toString().toUpperCase() + "[" + printStack((AuthorizationStack) entity) + "], ";
+                    x += entity.getFlag().toString().toUpperCase() + "[" + printStack((AuthorizationStack) entity) + "], ";
                 }
             }
             return x.replaceAll(", $", "");
