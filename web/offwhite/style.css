@@ -347,6 +347,17 @@ label {
     height: 100%;
 }
 
+/** file type selection container (next to the file type select box) */
+
+#type-select-container .sol-selected-display-item,
+#type-select-container .sol-results-count,
+#type-select-container .sol-selected-display-item-text{
+    margin-bottom: 0;
+    margin-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 #form-controls {
     white-space: nowrap;
     /* 11ex = width(#qtbl td:first-child) + margin-left(body) */

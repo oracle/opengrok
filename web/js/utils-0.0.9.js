@@ -1286,6 +1286,23 @@ function init_searchable_option_list() {
                         .css('top', Math.floor(posY))
                         .css('left', Math.floor(this.$container.offset().left))
                         .css('width', selectionContainerWidth);
+            },
+            onRendered: function () {
+                /**
+                 * Has to be here because otherwise the offset()
+                 * takes the original long &lt;select&gt; box and the max-height
+                 * does not work then.
+                 */
+                $('#type').searchableOptionList({
+                    texts: {
+                        searchplaceholder: 'Click here to restrict the file type'
+                    },
+                    maxHeight: $('#type').offset().top + 'px',
+                    /**
+                     * Defined in menu.jsp just next to the original &lt;select&gt;
+                     */
+                    resultsContainer: $("#type-select-container"),
+                });
             }
         }
     };
