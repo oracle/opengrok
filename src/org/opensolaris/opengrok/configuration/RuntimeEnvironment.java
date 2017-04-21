@@ -1979,11 +1979,11 @@ public final class RuntimeEnvironment {
                 searcherList.add(searcher);
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE,
-                    "cannot get IndexReader for project" + proj, ex);
+                    "cannot get IndexReader for project " + proj, ex);
                 return null;
             } catch (NullPointerException ex) {
                 LOGGER.log(Level.SEVERE,
-                    "cannot get IndexReader for project" + proj, ex);
+                    "cannot get IndexReader for project " + proj, ex);
                 return null;
             }
         }
