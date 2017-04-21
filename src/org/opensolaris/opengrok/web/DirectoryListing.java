@@ -110,19 +110,19 @@ public class DirectoryListing {
     }
 
     /**
-     * Write a htmlized listing of the given directory to the given destination.
+     * Write a HTML-ized listing of the given directory to the given destination.
      *
      * @param contextPath path used for link prefixes
      * @param dir the directory to list
      * @param out write destination
      * @param path virtual path of the directory (usually the path name of
-     *  <var>dir</var> with the opengrok source directory stripped off).
+     *  <var>dir</var> with the source root directory stripped off).
      * @param files basenames of potential children of the directory to list.
      *  Gets filtered by {@link IgnoredNames}.
      * @return a possible empty list of README files included in the written
      *  listing.
      * @throws org.opensolaris.opengrok.history.HistoryException when we cannot
-     * get result from scm
+     * get result from SCM
      *
      * @throws java.io.IOException when any I/O problem
      * @throws NullPointerException if a parameter except <var>files</var>
@@ -154,11 +154,12 @@ public class DirectoryListing {
             out.write("<th><tt>Description</tt></th>\n");
         }
         out.write("</tr>\n</thead>\n<tbody>\n");
-        IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        IgnoredNames ignoredNames = env.getIgnoredNames();
 
         Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
 
-        // print the '..' entry even for empty directories
+        // Print the '..' entry even for empty directories.
         if (path.length() != 0) {
             out.write("<tr><td><p class=\"'r'\"/></td><td>");
             out.write("<b><a href=\"..\">..</a></b></td><td></td>");
@@ -170,18 +171,18 @@ public class DirectoryListing {
                 HistoryGuru.getInstance().getLastModifiedTimes(dir);
 
         if (files != null) {
-            for (String file : files) {
-                if (ignoredNames.ignore(file)) {
+            for (String filename : files) {
+                if (ignoredNames.ignore(env.getSourceRootPath() + path + filename)) {
                     continue;
                 }
-                File child = new File(dir, file);
+                File child = new File(dir, filename);
                 if (ignoredNames.ignore(child)) {
                     continue;
                 }
-                if (file.startsWith("README") || file.endsWith("README")
-                    || file.startsWith("readme"))
+                if (filename.startsWith("README") || filename.endsWith("README")
+                    || filename.startsWith("readme"))
                 {
-                    readMes.add(file);
+                    readMes.add(filename);
                 }
                 boolean isDir = child.isDirectory();
                 out.write("<tr><td>");
@@ -204,16 +205,16 @@ public class DirectoryListing {
                     }
                     out.write("</b></a>/");
                 } else {
-                    out.write(Util.URIEncodePath(file));
+                    out.write(Util.URIEncodePath(filename));
                     out.write("\">");
-                    out.write(file);
+                    out.write(filename);
                     out.write("</a>");
                 }
                 out.write("</td>");
-                Util.writeHAD(out, contextPath, path + file, isDir);
-                printDateSize(out, child, modTimes.get(file), dateFormatter);
+                Util.writeHAD(out, contextPath, path + filename, isDir);
+                printDateSize(out, child, modTimes.get(filename), dateFormatter);
                 if (offset > 0) {
-                    String briefDesc = desc.getChildTag(parentFNode, file);
+                    String briefDesc = desc.getChildTag(parentFNode, filename);
                     if (briefDesc == null) {
                         out.write("<td/>");
                     } else {

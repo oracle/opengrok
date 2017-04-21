@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.index;
@@ -102,16 +102,17 @@ public class Filter implements Serializable {
     /**
      * Does the file match any of the filenames, patterns or paths ?
      * @param file the file to check
+     * @param checkAbsolute perform match of absolute path ?
      * @return true if this file matches, false otherwise
      */
-    public boolean match(File file) {
+    public boolean match(File file, boolean checkAbsolute) {
         String fileName = file.getName(); // basename
         String absolute = file.getAbsolutePath();
 
         if (filenames.contains(fileName)) {
             return true;
         }
-        
+
         for (Pattern p : patterns) {
             // Try to match the basename first.
             Matcher m = p.matcher(fileName);
@@ -119,7 +120,7 @@ public class Filter implements Serializable {
                 return true;
             }
             // Try the full path next.
-            if (p.pattern().contains("/")) {
+            if (checkAbsolute && p.pattern().contains("/")) {
                 m = p.matcher(absolute);
                 if (m.matches()) {
                     return true;
@@ -127,13 +128,24 @@ public class Filter implements Serializable {
             }
         }
 
-        for (String s : paths) {
-            if (absolute.endsWith(s)) {
-                return true;
+        if (checkAbsolute) {
+            for (String path : paths) {
+                if (absolute.endsWith(path)) {
+                    return true;
+                }
             }
         }
 
         return false;
+    }
+
+    /**
+     * Does the file object match any of the filenames, patterns or paths ?
+     * @param file file object to check
+     * @return true if this file matches, false otherwise
+     */
+    public boolean match(File file) {
+        return match(file, true);
     }
 
     /**
@@ -142,7 +154,11 @@ public class Filter implements Serializable {
      * @return true if this pathname matches, false otherwise
      */
     public boolean match(String name) {
-        return match(new File(name));
+        /**
+         * Creating File object out of relative path would mean the path would be
+         * checked against current working directory which is usually undesired.
+         */
+        return match(new File(name), name.startsWith("/"));
     }
 
     /**
