@@ -30,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import junit.framework.AssertionFailedError;
@@ -56,7 +57,7 @@ public class ProjectTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XMLEncoder enc = new XMLEncoder(out);
         enc.setExceptionListener(listener);
-        Project p1 = new Project();
+        Project p1 = new Project("foo");
         enc.writeObject(p1);
         enc.close();
 
@@ -91,31 +92,17 @@ public class ProjectTest {
     @Test
     public void testGetProject() {
         // Create 2 projects, one being prefix of the other.
-        Project foo = new Project();
-        foo.setPath("/foo");
-        foo.setName("Project foo");
-
-        Project bar = new Project();
-        bar.setPath("/foo-bar");
-        bar.setName("Project foo-bar");
+        Project foo = new Project("Project foo", "/foo");
+        Project bar = new Project("Project foo-bar", "/foo-bar");
 
         // Make the runtime environment aware of these two projects.
-        List<Project> projects = new ArrayList<>();
-        projects.add(foo);
-        projects.add(bar);
+        HashMap<String,Project> projects = new HashMap<>();
+        projects.put("foo", foo);
+        projects.put("bar", bar);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setProjects(projects);
 
         // The matching of project name to project should be exact.
-        assertEquals(foo, Project.getProject("/foo"));
-        assertEquals(bar, Project.getProject("/foo-bar"));
-        assertEquals(foo, Project.getProject("/foo/blah.c"));
-        assertEquals(bar, Project.getProject("/foo-bar/ha.c"));
-        assertNull(Project.getProject("/foof"));
-        assertNull(Project.getProject("/foof/ha.c"));
-
-        // Make sure that the matching is not dependent on list ordering.
-        Collections.reverse(projects);
         assertEquals(foo, Project.getProject("/foo"));
         assertEquals(bar, Project.getProject("/foo-bar"));
         assertEquals(foo, Project.getProject("/foo/blah.c"));
@@ -130,18 +117,13 @@ public class ProjectTest {
     @Test
     public void testGetProjectDescriptions() {
         // Create 2 projects.
-        Project foo = new Project();
-        foo.setPath("/foo");
-        foo.setName("foo");
-
-        Project bar = new Project();
-        bar.setPath("/bar");
-        bar.setName("bar");
+        Project foo = new Project("foo", "/foo");
+        Project bar = new Project("bar", "/bar");
 
         // Make the runtime environment aware of these two projects.
-        List<Project> projects = new ArrayList<>();
-        projects.add(foo);
-        projects.add(bar);
+        HashMap<String,Project> projects = new HashMap<>();
+        projects.put("foo", foo);
+        projects.put("bar", bar);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setProjects(projects);
 

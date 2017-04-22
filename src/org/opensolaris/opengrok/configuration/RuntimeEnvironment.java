@@ -395,21 +395,29 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Do we have projects?
+     * Do we have any projects ?
      *
      * @return true if we have projects
      */
     public boolean hasProjects() {
-        List<Project> proj = getProjects();
-        return (proj != null && !proj.isEmpty());
+        return (getProjects().size() > 0);
     }
 
     /**
-     * Get all of the projects
+     * Get list of projects.
      *
-     * @return a list containing all of the projects (may be null)
+     * @return a list containing all of the projects
      */
-    public List<Project> getProjects() {
+    public List<Project> getProjectList() {
+        return new ArrayList<Project>(threadConfig.get().getProjects().values());
+    }
+
+    /**
+     * Get project map.
+     *
+     * @return a Map with all of the projects
+     */
+    public Map<String,Project> getProjects() {
         return threadConfig.get().getProjects();
     }
 
@@ -419,17 +427,19 @@ public final class RuntimeEnvironment {
      * @return a list containing descriptions of all projects.
      */
     public List<String> getProjectDescriptions() {
-        return threadConfig.get().getProjects().stream().
+        return getProjectList().stream().
             map(Project::getName).collect(Collectors.toList());
     }
 
     /**
      * Set the list of the projects
      *
-     * @param projects the list of projects to use
+     * @param projects the map of projects to use
      */
-    public void setProjects(List<Project> projects) {
-        populateGroups(getGroups(), projects);
+    public void setProjects(Map<String,Project> projects) {
+        if (projects != null) {
+            populateGroups(getGroups(), new TreeSet<Project>(projects.values()));
+        }
         threadConfig.get().setProjects(projects);
     }
 
@@ -457,7 +467,7 @@ public final class RuntimeEnvironment {
      * @param groups the set of groups to use
      */
     public void setGroups(Set<Group> groups) {
-        populateGroups(groups, getProjects());
+        populateGroups(groups, new TreeSet<Project>(getProjects().values()));
         threadConfig.get().setGroups(groups);
     }
 
@@ -1213,7 +1223,7 @@ public final class RuntimeEnvironment {
     /**
      * Classifies projects and puts them in their groups.
      */
-    private void populateGroups(Set<Group> groups, List<Project> projects) {
+    private void populateGroups(Set<Group> groups, Set<Project> projects) {
         if (projects == null || groups == null) {
             return;
         }
@@ -1259,7 +1269,7 @@ public final class RuntimeEnvironment {
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
-        populateGroups(getGroups(), getProjects());
+        populateGroups(getGroups(), new TreeSet<Project>(getProjects().values()));
         if (subFileList != null) {
             HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories(), subFileList);

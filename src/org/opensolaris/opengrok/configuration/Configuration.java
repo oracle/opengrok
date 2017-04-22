@@ -116,7 +116,7 @@ public final class Configuration {
      */
     private boolean authorizationWatchdogEnabled;
     private AuthorizationStack pluginStack;
-    private List<Project> projects;
+    private Map<String,Project> projects; // project name -> Project
     private Set<Group> groups;
     private String sourceRoot;
     private String dataRoot;
@@ -125,8 +125,8 @@ public final class Configuration {
     private boolean generateHtml;
     /**
      * Default projects will be used, when no project is selected and no project
-     * is in cookie, so basically only the first time you open the first page,
-     * or when you clear your web cookies
+     * is in cookie, so basically only the first time a page is opened,
+     * or when web cookies are cleared.
      */
     private Set<Project> defaultProjects;
     /**
@@ -374,7 +374,7 @@ public final class Configuration {
         setPluginDirectory(null);
         setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
         setPrintProgress(false);
-        setProjects(new ArrayList<>());
+        setProjects(new HashMap<>());
         setQuickContextScan(true);
         //below can cause an outofmemory error, since it is defaulting to NO LIMIT
         setRamBufferSize(defaultRamBufferSize); //MB
@@ -572,11 +572,11 @@ public final class Configuration {
         this.handleHistoryOfRenamedFiles = enable;
     }
 
-    public List<Project> getProjects() {
+    public Map<String,Project> getProjects() {
         return projects;
     }
 
-    public void setProjects(List<Project> projects) {
+    public void setProjects(Map<String,Project> projects) {
         this.projects = projects;
     }
 

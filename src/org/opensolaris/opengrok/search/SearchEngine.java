@@ -214,6 +214,7 @@ public class SearchEngine {
         for (Project p : root) {
             projects.add(p.getName());
         }
+
         // We use MultiReader even for single project. This should
         // not matter given that MultiReader is just a cheap wrapper
         // around set of IndexReader objects.
@@ -261,7 +262,7 @@ public class SearchEngine {
         List<Project> filteredProjects = new ArrayList<Project>();
         for(Project project: projects) {
             for (String name : projectNames) {
-                if(project.getName().equalsIgnoreCase(name)) {
+                if (project.getName().equalsIgnoreCase(name)) {
                     filteredProjects.add(project);
                 }
             }
@@ -310,7 +311,7 @@ public class SearchEngine {
     public int search() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         return search(
-                env.hasProjects() ? env.getProjects() : new ArrayList<Project>(),
+                env.hasProjects() ? env.getProjectList() : new ArrayList<Project>(),
                 new File(env.getDataRootFile(), IndexDatabase.INDEX_DIR));
     }
 

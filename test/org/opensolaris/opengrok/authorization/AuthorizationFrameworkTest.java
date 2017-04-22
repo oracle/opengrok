@@ -690,14 +690,12 @@ public class AuthorizationFrameworkTest {
     }
 
     static private Project createAllowedProject() {
-        Project p = new Project();
-        p.setName("allowed" + "_" + "project_" + random.nextInt());
+        Project p = new Project("allowed" + "_" + "project" + Math.random());
         return p;
     }
 
     static private Project createUnallowedProject() {
-        Project p = new Project();
-        p.setName("not_allowed" + "_" + "project_" + random.nextInt());
+        Project p = new Project("not_allowed" + "_" + "project" + Math.random());
         return p;
     }
 

@@ -28,7 +28,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -117,21 +119,17 @@ public class IndexerTest {
     public void testRescanProjects() throws Exception {
         // Generate one project that will be found in source.zip, and set
         // some properties that we can verify after the rescan.
-        Project p1 = new Project();
-        p1.setPath("/java");
-        p1.setName("Project 1");
+        Project p1 = new Project("java", "/java");
         p1.setTabSize(3);
 
         // Generate one project that will not be found in source.zip, and that
         // should not be in the list of projects after the rescan.
-        Project p2 = new Project();
-        p2.setPath("/this_path_does_not_exist");
-        p2.setName("Project 2");
+        Project p2 = new Project("Project 2", "/this_path_does_not_exist");
 
         // Make the runtime environment aware of these two projects.
-        List<Project> projects = new ArrayList<>();
-        projects.add(p1);
-        projects.add(p2);
+        Map<String,Project> projects = new HashMap<>();
+        projects.put(p1.getName(), p1);
+        projects.put("nonexistent", p2);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();        
         env.setProjects(projects);
 
@@ -151,7 +149,7 @@ public class IndexerTest {
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
 
-        List<Project> newProjects = env.getProjects();
+        List<Project> newProjects = env.getProjectList();
 
         // p2 should not be in the project list anymore
         for (Project p : newProjects) {
@@ -170,7 +168,7 @@ public class IndexerTest {
 
         // The properties of p1 should be preserved
         assertEquals("project path", p1.getPath(), newP1.getPath());
-        assertEquals("project description",
+        assertEquals("project name",
                 p1.getName(), newP1.getName());
         assertEquals("project tabsize", p1.getTabSize(), newP1.getTabSize());
     }
@@ -244,7 +242,7 @@ public class IndexerTest {
         }
 
         if (r != null && r.isWorking() && env.validateExuberantCtags()) {
-            Project project = new Project();
+            Project project = new Project("rfe2575");
             project.setPath("/rfe2575");
             IndexDatabase idb = new IndexDatabase(project);
             assertNotNull(idb);
@@ -294,7 +292,7 @@ public class IndexerTest {
         env.setDataRoot(repository.getDataRoot());
 
         if (env.validateExuberantCtags()) {
-            Project project = new Project();
+            Project project = new Project("bug3430");
             project.setPath("/bug3430");
             IndexDatabase idb = new IndexDatabase(project);
             assertNotNull(idb);
@@ -315,9 +313,8 @@ public class IndexerTest {
         env.setDataRoot(repository.getDataRoot());
 
         if (env.validateExuberantCtags()) {
-            Project project = new Project();
-            String ppath="bug3430";
-            project.setPath("/"+ppath);            
+            String ppath = "/bug3430";
+            Project project = new Project("bug3430", ppath);
             IndexDatabase idb = new IndexDatabase(project);
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
@@ -359,7 +356,7 @@ public class IndexerTest {
             executor.exec(true);
 
             if (env.validateExuberantCtags()) {
-                Project project = new Project();
+                Project project = new Project("testBug11896");
                 project.setPath("/testBug11896");
                 IndexDatabase idb = new IndexDatabase(project);
                 assertNotNull(idb);

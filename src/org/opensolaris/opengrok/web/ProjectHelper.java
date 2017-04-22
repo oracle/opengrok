@@ -123,7 +123,7 @@ public final class ProjectHelper {
      */
     private void populateGroups() {
         groups.addAll(cfg.getEnv().getGroups());
-        for (Project project : cfg.getEnv().getProjects()) {
+        for (Project project : cfg.getEnv().getProjectList()) {
             // filterProjects only groups which match project's description
             Set<Group> copy = new TreeSet<>(groups);
             copy.removeIf(new Predicate<Group>() {

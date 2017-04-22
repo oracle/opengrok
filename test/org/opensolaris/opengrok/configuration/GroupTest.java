@@ -115,14 +115,13 @@ public class GroupTest {
     @Test
     public void basicTest() {
         Group g = new Group();
-        Project t = new Project();
-
         g.setName("Random name");
         g.setPattern("abcd");
-        t.setName("abcd");
 
         assertTrue(g.getName().equals("Random name"));
         assertTrue(g.getPattern().equals("abcd"));
+
+        Project t = new Project("abcd");
 
         // basic matching
         assertTrue("Should match pattern", g.match(t));
@@ -168,8 +167,7 @@ public class GroupTest {
         g1.getSubgroups().add(g2);
         g1.getSubgroups().add(g3);
 
-        Project t = new Project();
-        t.setName("abcd");
+        Project t = new Project("abcd");
 
         assertFalse(g2.match(t));
         assertFalse(g3.match(t));
@@ -208,8 +206,7 @@ public class GroupTest {
 
         random1.getSubgroups().add(random2);
 
-        Project abcd = new Project();
-        abcd.setName("abcd");
+        Project abcd = new Project("abcd");
 
         assertFalse(random2.match(abcd));
         assertTrue(random1.match(abcd));
@@ -219,8 +216,7 @@ public class GroupTest {
         assertTrue(random1.getProjects().size() == 1);
         assertTrue(random1.getProjects().iterator().next() == abcd);
 
-        Project efgh = new Project();
-        efgh.setName("efgh");
+        Project efgh = new Project("efgh");
 
         assertTrue(random2.match(efgh));
         assertFalse(random1.match(efgh));

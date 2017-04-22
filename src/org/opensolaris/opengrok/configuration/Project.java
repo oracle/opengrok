@@ -53,6 +53,19 @@ public class Project implements Comparable<Project>, Nameable {
      */
     private Set<Group> groups = new TreeSet<>();
 
+    // This empty constructor is needed for serialization.
+    public Project () {
+    }
+
+    public Project (String name) {
+        this.name = name;
+    }
+
+    public Project (String name, String path) {
+        this.name = name;
+        this.path = path;
+    }
+
     /**
      * Get a textual name of this project
      *
@@ -94,6 +107,9 @@ public class Project implements Comparable<Project>, Nameable {
     /**
      * Set a textual name of this project, prefferably don't use " , " in the
      * name, since it's used as delimiter for more projects
+     *
+     * XXX we should not allow setting project name after it has been constructed
+     * because it is probably part of HashMap.
      *
      * @param name a textual name of the project
      */
@@ -171,7 +187,7 @@ public class Project implements Comparable<Project>, Nameable {
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             final String lpath = path.replace(File.separatorChar, '/');
-            for (Project p : env.getProjects()) {
+            for (Project p : env.getProjectList()) {
                 String pp = p.getPath();
                 // Check if the project's path is a prefix of the given
                 // path. It has to be an exact match, or the project's path
@@ -217,10 +233,9 @@ public class Project implements Comparable<Project>, Nameable {
     public static Project getByName(String name) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            for (Project proj : env.getProjects()) {
-                if (name.equals(proj.getName())) {
+            Project proj;
+            if ((proj = env.getProjects().get(name)) != null) {
                     return (proj);
-                }
             }
         }
         return null;

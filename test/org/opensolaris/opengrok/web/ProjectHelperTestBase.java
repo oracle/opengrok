@@ -24,6 +24,7 @@ package org.opensolaris.opengrok.web;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +51,7 @@ public class ProjectHelperTestBase {
     protected static String pluginDirectory;
     protected static AuthorizationStack stack;
     protected static Set<Group> groups;
-    protected static List<Project> projects;
+    protected static Map<String,Project> projects;
     protected static List<RepositoryInfo> repositories;
     protected static RuntimeEnvironment env;
     protected static Map<Project, List<RepositoryInfo>> repositories_map;
@@ -66,7 +67,7 @@ public class ProjectHelperTestBase {
             boolean grouped,
             boolean allowed,
             List<RepositoryInfo> rps,
-            List<Project> prjs,
+            Map<String,Project> prjs,
             Map<Project, List<RepositoryInfo>> map) {
 
         Project p = createProject(index, number, grouped, allowed, true, rps, prjs, map);
@@ -93,15 +94,15 @@ public class ProjectHelperTestBase {
             boolean allowed,
             boolean repository,
             List<RepositoryInfo> rps,
-            List<Project> prjs,
+            Map<String,Project> prjs,
             Map<Project, List<RepositoryInfo>> map) {
 
-        Project p = new Project();
-        p.setName((allowed ? "allowed_" : "")
+        Project p = new Project(
+                (allowed ? "allowed_" : "")
                 + (grouped ? "grouped_" : "ungrouped_")
                 + (repository ? "repository" : "project")
                 + "_" + index + "_" + number);
-        prjs.add(p);
+        prjs.put(p.getName(), p);
         return p;
     }
 
@@ -111,7 +112,7 @@ public class ProjectHelperTestBase {
             boolean allowed,
             List<RepositoryInfo> rps,
             Map<Project, List<RepositoryInfo>> map,
-            List<Project> prjs,
+            Map<String,Project> prjs,
             List<Group> grps) {
 
         for (int i = start; i < start + cnt; i++) {
@@ -214,7 +215,7 @@ public class ProjectHelperTestBase {
         env.setPluginDirectory(null);
 
         List<Group> grps = new ArrayList<>();
-        List<Project> prjs = new ArrayList<>();
+        Map<String,Project> prjs = new HashMap<>();
         List<RepositoryInfo> rps = new ArrayList<>();
         Map<Project, List<RepositoryInfo>> map = new TreeMap<>();
 

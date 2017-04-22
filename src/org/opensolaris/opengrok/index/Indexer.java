@@ -696,13 +696,13 @@ public final class Indexer {
 
         if (addProjects) {
             File files[] = env.getSourceRootFile().listFiles();
-            List<Project> projects = env.getProjects();
+            Map<String,Project> projects = env.getProjects();
 
             // Keep a copy of the old project list so that we can preserve
             // the customization of existing projects.
             Map<String, Project> oldProjects = new HashMap<>();
-            for (Project p : projects) {
-                oldProjects.put(p.getPath(), p);
+            for (Project p : projects.values()) {
+                oldProjects.put(p.getName(), p);
             }
 
             projects.clear();
@@ -711,48 +711,29 @@ public final class Indexer {
             for (File file : files) {
                 String name = file.getName();
                 String path = "/" + name;
-                if (oldProjects.containsKey(path)) {
+                if (oldProjects.containsKey(name)) {
                     // This is an existing object. Reuse the old project,
                     // possibly with customizations, instead of creating a
                     // new with default values.
-                    projects.add(oldProjects.get(path));
+                    projects.put(name, oldProjects.get(name));
                 } else if (!name.startsWith(".") && file.isDirectory()) {
                     // Found a new directory with no matching project, so
                     // create a new project with default properties.
-                    Project p = new Project();
-                    p.setName(name);
-                    p.setPath(path);
+                    Project p = new Project(name, path);
                     p.setTabSize(env.getConfiguration().getTabSize());
-                    projects.add(p);
+                    projects.put(p.getName(), p);
                 }
             }
-
-            // The projects should be sorted...
-            Collections.sort(projects, new Comparator<Project>() {
-                @Override
-                public int compare(Project p1, Project p2) {
-                    String s1 = p1.getName();
-                    String s2 = p2.getName();
-
-                    int ret;
-                    if (s1 == null) {
-                        ret = (s2 == null) ? 0 : 1;
-                    } else {
-                        ret = s1.compareTo(s2);
-                    }
-                    return ret;
-                }
-            });
         }
 
         if (defaultProjects != null && !defaultProjects.isEmpty()) {
             Set<Project> projects = new TreeSet<>();
             for (String projectPath : defaultProjects) {
                 if (projectPath.equals("__all__")) {
-                    projects.addAll(env.getProjects());
+                    projects.addAll(env.getProjects().values());
                     break;
                 }
-                for (Project p : env.getProjects()) {
+                for (Project p : env.getProjectList()) {
                     if (p.getPath().equals(projectPath)) {
                         projects.add(p);
                         break;
