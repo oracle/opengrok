@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -822,8 +823,10 @@ public final class PageConfig {
      */
     protected SortedSet<String> getRequestedProjects(String paramName,
             String cookieName) {
+
         TreeSet<String> set = new TreeSet<>();
-        List<Project> projects = getEnv().getProjects();
+        List<Project> projects = getEnv().getProjectList();
+
         if (projects == null) {
             return set;
         }
@@ -836,10 +839,14 @@ public final class PageConfig {
             return set;
         }
 
-        if (projects.size() == 1 && authFramework.isAllowed(req, projects.get(0))) {
-            set.add(projects.get(0).getName());
+        if (projects.size() == 1) {
+            Project p = projects.get(0);
+            if (authFramework.isAllowed(req, p)) {
+                set.add(p.getName());
+            }
             return set;
         }
+
         List<String> vals = getParamVals(paramName);
         for (String s : vals) {
             Project x = Project.getByName(s);
@@ -847,6 +854,7 @@ public final class PageConfig {
                 set.add(s);
             }
         }
+
         if (set.isEmpty()) {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
@@ -856,6 +864,7 @@ public final class PageConfig {
                 }
             }
         }
+
         if (set.isEmpty()) {
             Set<Project> defaultProjects = env.getDefaultProjects();
             if (defaultProjects != null) {
@@ -866,6 +875,7 @@ public final class PageConfig {
                 }
             }
         }
+
         return set;
     }
     

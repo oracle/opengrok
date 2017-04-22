@@ -43,7 +43,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
         ProjectHelperTest.setUpClass();
 
         List<Group> grps = new ArrayList<>(env.getGroups());
-        List<Project> prjs = env.getProjects();
+        Map<String,Project> projects = env.getProjects();
         List<RepositoryInfo> rps = env.getRepositories();
         Map<Project, List<RepositoryInfo>> map = getRepositoriesMap();
 
@@ -61,7 +61,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
         Group.getByName("group_1").addGroup(Group.getByName("allowed_group_3"));
 
         setRepositoriesMap(map);
-        env.setProjects(prjs);
+        env.setProjects(projects);
         env.setGroups(new TreeSet<>(grps));
         env.setRepositories(rps);
         env.register();
@@ -80,8 +80,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
     }
 
     protected static Project createProject(String name) {
-        Project p = new Project();
-        p.setName(name);
+        Project p = new Project(name);
         return p;
     }
 

@@ -254,11 +254,10 @@ public final class Groups {
      *
      * @param out stream to write the results
      * @param groups set of groups
-     * @param match project description
+     * @param match project name
      */
     private static void matchGroups(PrintStream out, Set<Group> groups, String match) {
-        Project p = new Project();
-        p.setName(match);
+        Project p = new Project(match);
 
         List<Group> matched = new ArrayList<>();
         linearTraverseGroups(groups, new Walker() {

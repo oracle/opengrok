@@ -152,8 +152,7 @@ public class AuthorizationPluginClassLoaderTest {
 
         Group g = new Group();
         g.setName("group1");
-        Project p = new Project();
-        p.setName(("project1"));
+        Project p = new Project("project1");
 
         Assert.assertFalse(
                 plugin.isAllowed(new DummyHttpServletRequest(), g)
@@ -174,8 +173,7 @@ public class AuthorizationPluginClassLoaderTest {
 
         Group g = new Group();
         g.setName("group1");
-        Project p = new Project();
-        p.setName(("project1"));
+        Project p = new Project("project1");
 
         Assert.assertTrue(
                 plugin.isAllowed(new DummyHttpServletRequest(), g)

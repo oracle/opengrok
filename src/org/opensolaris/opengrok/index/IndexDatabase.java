@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -164,7 +164,7 @@ public class IndexDatabase {
         List<IndexDatabase> dbs = new ArrayList<>();
 
         if (env.hasProjects()) {
-            for (Project project : env.getProjects()) {
+            for (Project project : env.getProjectList()) {
                 dbs.add(new IndexDatabase(project));
             }
         } else {
@@ -465,7 +465,7 @@ public class IndexDatabase {
         List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            for (Project project : env.getProjects()) {
+            for (Project project : env.getProjectList()) {
                 dbs.add(new IndexDatabase(project));
             }
         } else {
@@ -949,7 +949,7 @@ public class IndexDatabase {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             if (subFiles == null || subFiles.isEmpty()) {
-                for (Project project : env.getProjects()) {
+                for (Project project : env.getProjectList()) {
                     IndexDatabase db = new IndexDatabase(project);
                     db.listFiles();
                 }
@@ -1015,9 +1015,9 @@ public class IndexDatabase {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             if (subFiles == null || subFiles.isEmpty()) {
-                for (Project project : env.getProjects()) {
+                for (Project project : env.getProjectList()) {
                     IndexDatabase db = new IndexDatabase(project);
-                    db.listTokens(4);
+                    db.listTokens(limit);
                 }
             } else {
                 for (String path : subFiles) {
@@ -1026,7 +1026,7 @@ public class IndexDatabase {
                         LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
-                        db.listTokens(4);
+                        db.listTokens(limit);
                     }
                 }
             }
