@@ -275,14 +275,22 @@
                     return
    
                 var lines = inner.getLinesParts(window.location.hash);
-                if(lines.length > 0) {
-                   var line = lines[0] // first line
-                   $("#content").animate({
-                      scrollTop: $(inner.format(inner.options.linkSelectorTemplate, {
-                          parent: inner.options.parent,
-                          n: line
-                      })).offset().top - $(inner.options.parent).offset().top
-                   }, inner.options.autoScrollDuration);
+                if (lines.length > 0) {
+                    var line = lines[0]; // first line
+                    var $line = $(inner.format(inner.options.linkSelectorTemplate, {
+                        parent: inner.options.parent,
+                        n: line
+                    }));
+                    if ($line.length > 0) {
+                        // if there is such element identified with the line number
+                        // we can scroll to it
+                        $("#content").animate({
+                            scrollTop: $(inner.format(inner.options.linkSelectorTemplate, {
+                                parent: inner.options.parent,
+                                n: line
+                            })).offset().top - $(inner.options.parent).offset().top
+                        }, inner.options.autoScrollDuration);
+                    }
                 }
             },
             tooltip: function() {
