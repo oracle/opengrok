@@ -221,7 +221,7 @@ public class AuthorizationStack extends AuthorizationEntity {
     public boolean setPlugin(IAuthorizationPlugin plugin) {
         boolean ret = false;
         for (AuthorizationEntity p : getStack()) {
-            ret = ret || p.setPlugin(plugin);
+            ret = p.setPlugin(plugin) || ret;
         }
         return ret;
     }
