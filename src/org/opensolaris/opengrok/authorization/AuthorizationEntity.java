@@ -59,7 +59,7 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
      * @see IAuthorizationPlugin#unload()
      */
     abstract public void unload();
-    
+
     /**
      * Test the given entity if it should be allowed with this authorization
      * check.
@@ -74,9 +74,10 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
 
     /**
      * Set the plugin to all classes which requires this class in the
-     * configuration.
+     * configuration. This creates a new instance of the plugin for each class
+     * which needs it.
      *
-     * @param plugin the new instance of a plugion
+     * @param plugin the new instance of a plugin
      * @return true if there is such case; false otherwise
      */
     abstract public boolean setPlugin(IAuthorizationPlugin plugin);

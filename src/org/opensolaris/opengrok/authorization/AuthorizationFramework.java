@@ -312,7 +312,7 @@ public final class AuthorizationFramework {
         } catch (SecurityException ex) {
             LOGGER.log(Level.INFO, "Class was found but it is placed in prohibited package: ", ex);
         } catch (InstantiationException ex) {
-            LOGGER.log(Level.INFO, "Class couldn not be instantiated: ", ex);
+            LOGGER.log(Level.INFO, "Class could not be instantiated: ", ex);
         } catch (IllegalAccessException ex) {
             LOGGER.log(Level.INFO, "Class loader threw an exception: ", ex);
         } catch (Throwable ex) {
@@ -517,14 +517,13 @@ public final class AuthorizationFramework {
      *
      * <p>
      * The order of plugin invokation is given by the configuration
-     * {@link RuntimeEnvironment#getPluginStack()} and appropriate
-     * actions are taken when traversing the list with set of keywords, such
-     * as:</p>
+     * {@link RuntimeEnvironment#getPluginStack()} and appropriate actions are
+     * taken when traversing the list with set of keywords, such as:</p>
      *
      * <h4>required</h4>
      * Failure of such a plugin will ultimately lead to the authorization
-     * framework returning failure but only after the remaining plugins have been
-     * invoked.
+     * framework returning failure but only after the remaining plugins have
+     * been invoked.
      *
      * <h4>requisite</h4>
      * Like required, however, in the case that such a plugin returns a failure,
@@ -534,12 +533,13 @@ public final class AuthorizationFramework {
      * <h4>sufficient</h4>
      * If such a plugin succeeds and no prior required plugin has failed the
      * authorization framework returns success to the application immediately
-     * without calling any further plugins in the stack. A failure of a sufficient
-     * plugin is ignored and processing of the plugin list continues unaffected.
+     * without calling any further plugins in the stack. A failure of a
+     * sufficient plugin is ignored and processing of the plugin list continues
+     * unaffected.
      *
      * <p>
-     * Loaded plugins which do not occur in the configuration are appended to the
-     * list with "required" keyword. As of the nature of the class discovery
+     * Loaded plugins which do not occur in the configuration are appended to
+     * the list with "required" keyword. As of the nature of the class discovery
      * this means that the order of invocation of these plugins is rather
      * random.</p>
      *

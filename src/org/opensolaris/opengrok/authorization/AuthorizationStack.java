@@ -212,9 +212,10 @@ public class AuthorizationStack extends AuthorizationEntity {
 
     /**
      * Set the plugin to all classes in this stack which requires this class in
-     * the configuration.
+     * the configuration. This creates a new instance of the plugin for each
+     * class which needs it.
      *
-     * @param plugin the new instance of a plugion
+     * @param plugin the new instance of a plugin
      * @return true if there is such case; false otherwise
      */
     @Override

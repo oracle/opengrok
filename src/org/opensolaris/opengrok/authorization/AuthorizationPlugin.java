@@ -149,9 +149,10 @@ public class AuthorizationPlugin extends AuthorizationStack {
 
     /**
      * Set the plugin to this entity if this entity requires this plugin class
-     * in the configuration.
+     * in the configuration. This creates a new instance of the plugin for each
+     * class which needs it.
      *
-     * @param plugin the new instance of a plugion
+     * @param plugin the new instance of a plugin
      * @return true if there is the class names are equal and the plugin is not
      * null; false otherwise
      */
@@ -164,7 +165,25 @@ public class AuthorizationPlugin extends AuthorizationStack {
         if (hasPlugin()) {
             unload();
         }
-        return (this.plugin = plugin) != null;
+        try {
+            /**
+             * The exception should not happen here as we already have an
+             * instance of IAuthoriazationPlugin. But is is required by the
+             * compiler.
+             *
+             * NOTE: If we were to add a throws clause here we would interrupt
+             * the whole stack walk through and prevent the other authorization
+             * entities to work properly.
+             */
+            return (this.plugin = plugin.getClass().newInstance()) != null;
+        } catch (InstantiationException ex) {
+            LOGGER.log(Level.INFO, "Class could not be instantiated: ", ex);
+        } catch (IllegalAccessException ex) {
+            LOGGER.log(Level.INFO, "Class loader threw an exception: ", ex);
+        } catch (Throwable ex) {
+            LOGGER.log(Level.INFO, "Class loader threw an uknown error: ", ex);
+        }
+        return false;
     }
 
     /**
