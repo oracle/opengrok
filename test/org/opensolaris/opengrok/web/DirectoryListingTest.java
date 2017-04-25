@@ -41,6 +41,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.RepositoryFactory;
 
 /**
  * JUnit test to test that the DirectoryListing produce the expected result
@@ -55,7 +57,7 @@ public class DirectoryListingTest {
         String name;
         String href;
         long lastModified;
-        int size;
+        int size; // If negative, don't check it.
 
         FileEntry() {
             dateFormatter = new SimpleDateFormat("dd-MMM-yyyy");
@@ -91,18 +93,23 @@ public class DirectoryListingTest {
         }
 
         public int compareTo(Object o) {
+            int ret = -1;
+
             if (o instanceof FileEntry) {
                 FileEntry fe = (FileEntry) o;
 
                 // @todo verify all attributes!
                 if (name.compareTo(fe.name) == 0 &&
-                    href.compareTo(fe.href) == 0 &&
-                    size == fe.size) {
-
-                    return 0;
+                    href.compareTo(fe.href) == 0) {
+                    ret = 0;
+                }
+                // Negative size is not verified.
+                if (size >= 0 && size == fe.size) {
+                    ret = 0;
                 }
             }
-            return -1;
+
+            return ret;
         }
     }
 
@@ -124,11 +131,29 @@ public class DirectoryListingTest {
         entries = new FileEntry[3];
         entries[0] = new FileEntry("foo.c", "foo.c", 0, 1);
         entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0);
-        entries[2] = new FileEntry(".hg", ".hg", 0, 1);
+        entries[2] = null;
 
         for (FileEntry entry : entries) {
-            entry.create();
+            if (entry != null) {
+                entry.create();
+            }
         }
+        // Create the entry that will be ignored separately.
+        FileEntry hgtags = new FileEntry(".hgtags", ".hgtags", 0, 1);
+        hgtags.create();
+
+        // Will test getSimplifiedPath() behavior for ignored directories.
+        // Use negative value for length so it is not checked as the return value
+        // of length() is unspecified for directories.
+        entries[2] = new FileEntry("subdir", "subdir/", 0, -1);
+        File subdir = new File(directory, "subdir");
+        subdir.mkdir();
+        File SCCSdir = new File(subdir, "SCCS");
+        SCCSdir.mkdir();
+
+        // Need to populate list of ignored entries for all repository types.
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        RepositoryFactory.setIgnored(env);
     }
 
     @After
@@ -186,7 +211,15 @@ public class DirectoryListingTest {
 
         Node node = a.getFirstChild();
         assertNotNull(node);
-        assertEquals(Node.TEXT_NODE, node.getNodeType());
+        // If this is element node then it is probably a directory in which case
+        // it contains the &lt;b&gt; element.
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            node = node.getFirstChild();
+            assertNotNull(node);
+            assertEquals(Node.TEXT_NODE, node.getNodeType());
+        } else {
+            assertEquals(Node.TEXT_NODE, node.getNodeType());
+        }
 
         return node.getNodeValue();
     }
@@ -231,6 +264,7 @@ public class DirectoryListingTest {
         FileEntry entry = new FileEntry();
         NodeList nl = element.getElementsByTagName("td");
         int len = nl.getLength();
+        // There should be 5 columns or less in the table.
         if (len < 5) {
             return;
         }
@@ -240,7 +274,11 @@ public class DirectoryListingTest {
         entry.name = getFilename(nl.item(1));
         entry.href = getHref(nl.item(1));
         entry.lastModified = getLastModified(nl.item(3));
-        entry.size = getSize(nl.item(4));
+        try {
+            entry.size = getSize(nl.item(4));
+        } catch (Exception e) {
+            entry.size = -1;
+        }
 
         // Try to look it up in the list of files.
         for (int ii = 0; ii < entries.length; ++ii) {
@@ -280,9 +318,9 @@ public class DirectoryListingTest {
 
         NodeList nl = document.getElementsByTagName("tr");
         int len = nl.getLength();
-        // add one extra for header and one for parent directory link
+        // Add one extra for header and one for parent directory link.
         assertEquals(entries.length + 2, len);
-        // Skip the the header and parent link
+        // Skip the the header and parent link.
         for (int i = 2; i < len; ++i) {
             validateEntry((Element) nl.item(i));
         }
