@@ -24,9 +24,12 @@ package org.opensolaris.opengrok.authorization;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -315,15 +318,15 @@ public final class AuthorizationFramework {
         try {
             return loadClass(classname);
         } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.INFO, "Class was not found: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" was not found: ", classname), ex);
         } catch (SecurityException ex) {
-            LOGGER.log(Level.INFO, "Class was found but it is placed in prohibited package: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" was found but it is placed in prohibited package: ", classname), ex);
         } catch (InstantiationException ex) {
-            LOGGER.log(Level.INFO, "Class could not be instantiated: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" could not be instantiated: ", classname), ex);
         } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.INFO, "Class loader threw an exception: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an exception: ", classname), ex);
         } catch (Throwable ex) {
-            LOGGER.log(Level.INFO, "Class loader threw an uknown error: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an uknown error: ", classname), ex);
         }
         return null;
     }
@@ -356,15 +359,31 @@ public final class AuthorizationFramework {
         Class c = loader.loadClass(classname);
 
         // check for implemented interfaces
-        Class[] intf = c.getInterfaces();
-        for (Class intf1 : intf) {
-            if (intf1.getCanonicalName().equals(IAuthorizationPlugin.class.getCanonicalName())) {
+        for (Class intf1 : getInterfaces(c)) {
+            if (intf1.getCanonicalName().equals(IAuthorizationPlugin.class.getCanonicalName())
+                    && !Modifier.isAbstract(c.getModifiers())) {
                 // call to non-parametric constructor
                 return (IAuthorizationPlugin) c.newInstance();
             }
         }
         LOGGER.log(Level.FINEST, "Plugin class \"{0}\" does not implement IAuthorizationPlugin interface.", classname);
         return null;
+    }
+
+    /**
+     * Get all available interfaces of a class c.
+     *
+     * @param c class
+     * @return array of interfaces of the class c
+     */
+    protected List<Class> getInterfaces(Class c) {
+        List<Class> interfaces = new LinkedList<>();
+        Class self = c;
+        while (self != null && !interfaces.contains(IAuthorizationPlugin.class)) {
+            interfaces.addAll(Arrays.asList(self.getInterfaces()));
+            self = self.getSuperclass();
+        }
+        return interfaces;
     }
 
     /**
