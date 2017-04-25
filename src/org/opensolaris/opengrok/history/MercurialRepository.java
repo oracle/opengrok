@@ -118,6 +118,7 @@ public class MercurialRepository extends Repository {
         };
 
         ignoredFiles.add(".hgtags");
+        ignoredFiles.add(".hgignore");
         ignoredDirs.add(".hg");
     }
 
