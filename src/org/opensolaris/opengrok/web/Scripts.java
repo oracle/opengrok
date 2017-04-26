@@ -23,6 +23,8 @@
 package org.opensolaris.opengrok.web;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,18 +42,25 @@ public class Scripts implements Iterable<Scripts.Script> {
      */
     static abstract public class Script {
 
-        protected String script;
+        /**
+         * Represents the script information, either
+         * <ul>
+         * <li>script HTML src attribute for remote scripts</li>
+         * <li>inline javascript code for inline scripts</li>
+         * </ul>
+         */
+        protected String scriptData;
         protected int priority;
 
-        public Script(String script, int priority) {
-            this.script = script;
+        public Script(String scriptData, int priority) {
+            this.scriptData = scriptData;
             this.priority = priority;
         }
 
         abstract public String toHtml();
 
-        public String getScript() {
-            return script;
+        public String getScriptData() {
+            return scriptData;
         }
 
         public int getPriority() {
@@ -72,9 +81,9 @@ public class Scripts implements Iterable<Scripts.Script> {
         public String toHtml() {
             StringBuilder builder = new StringBuilder();
             builder.append("\t<script type=\"text/javascript\" src=\"");
-            builder.append(this.script);
+            builder.append(this.getScriptData());
             builder.append("\" data-priority=\"");
-            builder.append(this.priority);
+            builder.append(this.getPriority());
             builder.append("\"></script>\n");
             return builder.toString();
         }
@@ -94,9 +103,9 @@ public class Scripts implements Iterable<Scripts.Script> {
         public String toHtml() {
             StringBuilder builder = new StringBuilder();
             builder.append("\t<script type=\"text/javascript\" data-priority=\"");
-            builder.append(this.priority);
+            builder.append(this.getPriority());
             builder.append("\">/* <![CDATA[ */");
-            builder.append(this.script);
+            builder.append(this.getScriptData());
             builder.append("\n/* ]]> */</script>\n");
             return builder.toString();
         }
@@ -122,16 +131,10 @@ public class Scripts implements Iterable<Scripts.Script> {
     }
 
     /**
-     * Scripts which will be written to the page.
+     * Scripts which will be written to the page. We assume that the length
+     * could be the same as for {@link #SCRIPTS}.
      */
-    private final List<Script> outputScripts = new ArrayList<>();
-
-    /**
-     * Sort the page scripts according to the priority.
-     */
-    public void sort() {
-        outputScripts.sort((a, b) -> a.getPriority() - b.getPriority());
-    }
+    private final List<Script> outputScripts = new ArrayList<>(SCRIPTS.size());
 
     /**
      * Convert the page scripts into HTML.
@@ -141,7 +144,6 @@ public class Scripts implements Iterable<Scripts.Script> {
      * @see #sort()
      */
     public String toHtml() {
-        sort();
         StringBuilder builder = new StringBuilder();
         for (Script entry : this) {
             builder.append(entry.toHtml());
@@ -204,24 +206,45 @@ public class Scripts implements Iterable<Scripts.Script> {
     public boolean addScript(String contextPath, String scriptName) {
         contextPath = contextPath == null || contextPath.isEmpty() ? "" : contextPath + "/";
         if (SCRIPTS.containsKey(scriptName)) {
-            return this.addScript(
+            this.addScript(
                     // put the context path end append the script path
-                    new FileScript(contextPath + SCRIPTS.get(scriptName).getScript(),
+                    new FileScript(contextPath + SCRIPTS.get(scriptName).getScriptData(),
                             SCRIPTS.get(scriptName).getPriority()));
+            return true;
         }
         return false;
     }
 
     /**
-     * Add a script to the page
+     * Add a script to the page, taking the script priority into account. The
+     * position is determined as the upper bound for the given priority.
      *
      * @param script the script
-     * @return true if script was added; false otherwise
-     *
-     * @see List#add(java.lang.Object) for return value
      */
-    public boolean addScript(Script script) {
-        return this.outputScripts.add(script);
+    public void addScript(Script script) {
+        int index = Collections.binarySearch(outputScripts, script, new Comparator<Script>() {
+            @Override
+            public int compare(Script a, Script b) {
+                return a.getPriority() - b.getPriority();
+            }
+        });
+        if (index < 0) {
+            /**
+             * Key is not found in the list the index<br>
+             * equals to -(insertion index) - 1.
+             */
+            this.outputScripts.add(Math.abs(index + 1), script);
+        } else {
+            /**
+             * Key found in the list, append it after the last element with the
+             * same priority => insert it at the upper bound index.
+             */
+            while (index < this.outputScripts.size()
+                    && this.outputScripts.get(index).getPriority() == script.getPriority()) {
+                index++;
+            }
+            this.outputScripts.add(index, script);
+        }
     }
 
     /**

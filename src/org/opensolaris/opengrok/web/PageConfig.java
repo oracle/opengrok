@@ -1202,21 +1202,6 @@ public final class PageConfig {
     }
 
     /**
-     * Add a new file script to the page.
-     *
-     * @param path web path to the file
-     * @param priority script priority (scripts are sorted based on the
-     * priority)
-     * @return this
-     *
-     * @see Scripts.FileScript#FileScript(java.lang.String, int)
-     */
-    public PageConfig addScript(String path, int priority) {
-        this.scripts.addScript(new Scripts.FileScript(path, priority));
-        return this;
-    }
-
-    /**
      * Return the page scripts.
      *
      * @return the scripts

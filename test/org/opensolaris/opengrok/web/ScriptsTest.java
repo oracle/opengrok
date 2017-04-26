@@ -51,13 +51,12 @@ public class ScriptsTest {
         scripts.addScript(new Scripts.FileScript("http://example.com/main3.js", 0));
 
         assertEquals(3, scripts.size());
-        scripts.sort();
 
-        assertEquals(scripts.get(0).getScript(), "http://example.com/main1.js");
+        assertEquals(scripts.get(0).getScriptData(), "http://example.com/main1.js");
         assertEquals(scripts.get(0).getPriority(), 0);
-        assertEquals(scripts.get(1).getScript(), "http://example.com/main2.js");
+        assertEquals(scripts.get(1).getScriptData(), "http://example.com/main2.js");
         assertEquals(scripts.get(1).getPriority(), 0);
-        assertEquals(scripts.get(2).getScript(), "http://example.com/main3.js");
+        assertEquals(scripts.get(2).getScriptData(), "http://example.com/main3.js");
         assertEquals(scripts.get(2).getPriority(), 0);
     }
 
@@ -69,13 +68,11 @@ public class ScriptsTest {
 
         assertEquals(3, scripts.size());
 
-        scripts.sort();
-
-        assertEquals(scripts.get(0).getScript(), "http://example.com/main2.js");
+        assertEquals(scripts.get(0).getScriptData(), "http://example.com/main2.js");
         assertEquals(scripts.get(0).getPriority(), 1);
-        assertEquals(scripts.get(1).getScript(), "http://example.com/main3.js");
+        assertEquals(scripts.get(1).getScriptData(), "http://example.com/main3.js");
         assertEquals(scripts.get(1).getPriority(), 2);
-        assertEquals(scripts.get(2).getScript(), "http://example.com/main1.js");
+        assertEquals(scripts.get(2).getScriptData(), "http://example.com/main1.js");
         assertEquals(scripts.get(2).getPriority(), 3);
     }
 
@@ -86,7 +83,6 @@ public class ScriptsTest {
         scripts.addScript(new Scripts.FileScript("http://example.com/main3.js", 0));
 
         assertEquals(3, scripts.size());
-        scripts.sort();
 
         assertTrue(scripts.toHtml()
                 .contains("<script type=\"text/javascript\""
@@ -110,7 +106,6 @@ public class ScriptsTest {
         scripts.addScript("", "jquery-tablesorter");
 
         assertEquals(4, scripts.size());
-        scripts.sort();
 
         int prev = -1;
         for (Script s : scripts) {
@@ -128,11 +123,47 @@ public class ScriptsTest {
                 continue;
             }
             assertTrue(scripts.toHtml() + " must contain <script type=\"text/javascript\""
-                    + " src=\"" + s.getValue().getScript() + "\""
-                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>", scripts.toHtml()
-                    .contains("<script type=\"text/javascript\""
-                            + " src=\"" + s.getValue().getScript() + "\""
-                            + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"));
+                    + " src=\"" + s.getValue().getScriptData() + "\""
+                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>",
+                    scripts.toHtml()
+                            .contains("<script type=\"text/javascript\""
+                                    + " src=\"" + s.getValue().getScriptData() + "\""
+                                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"));
+        }
+    }
+
+    @Test
+    public void testLookupWithContextPath() {
+        String contextPath = "/source";
+        scripts.addScript(contextPath, "utils");
+        scripts.addScript(contextPath, "jquery");
+        scripts.addScript(contextPath, "diff");
+        scripts.addScript(contextPath, "jquery-tablesorter");
+
+        assertEquals(4, scripts.size());
+
+        int prev = -1;
+        for (Script s : scripts) {
+            if (prev > s.getPriority()) {
+                fail("The scripts must be sorted in ascending order by the priority, " + prev + " > " + s.getPriority());
+            }
+            prev = s.getPriority();
+        }
+
+        for (Entry<String, Script> s : Scripts.SCRIPTS.entrySet()) {
+            if (!s.getKey().equals("utils")
+                    && !s.getKey().equals("jquery")
+                    && !s.getKey().equals("jquery-tablesorter")
+                    && !s.getKey().equals("diff")) {
+                continue;
+            }
+            assertTrue(scripts.toHtml() + " must contain <script type=\"text/javascript\""
+                    + " src=\"" + contextPath + '/' + s.getValue().getScriptData() + "\""
+                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>",
+                    scripts.toHtml()
+                            .contains("<script type=\"text/javascript\""
+                                    + " src=\"" + contextPath + '/' + s.getValue().getScriptData() + "\""
+                                    + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"));
         }
     }
 }
