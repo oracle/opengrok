@@ -102,10 +102,13 @@ public class DirectoryListing {
 
         if (files.length == 1) {
             File entry = new File(dir, files[0]);
-            if (entry.isDirectory()) {
+            IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
+
+            if (!ignoredNames.ignore(entry) && entry.isDirectory()) {
                 return (dir.getName() + "/" + getSimplifiedPath(entry));
             }
         }
+
         return dir.getName();
     }
 
