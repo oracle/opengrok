@@ -428,7 +428,7 @@ public final class AuthorizationFramework {
      * Old instances of stack are removed and new list of stack is constructed.
      * Unload and load event is fired on each plugin.
      *
-     * @see IAuthorizationPlugin#load()
+     * @see IAuthorizationPlugin#load(java.util.Map)
      * @see IAuthorizationPlugin#unload()
      * @see Configuration#getPluginDirectory()
      */
