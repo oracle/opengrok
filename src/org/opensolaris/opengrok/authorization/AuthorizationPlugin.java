@@ -33,6 +33,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
+ * This is a subclass of {@link AuthorizationEntity} and is a wrapper to a
+ * {@link IAuthorizationPlugin} delegating the decision methods to the contained
+ * plugin.
  *
  * @author Krystof Tulinger
  */
@@ -128,7 +131,8 @@ public class AuthorizationPlugin extends AuthorizationStack {
      * Test the underlying plugin with the predicate if and only if the plugin
      * is not marked as failed.
      *
-     * @param entity the given entity
+     * @param entity the given entity - this is either group or project and is
+     * passed just for the logging purposes.
      * @param predicate predicate returning true or false for the given entity
      * which determines if the authorization for such entity is successful or
      * failed for particular request and plugin
@@ -168,7 +172,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
         try {
             /**
              * The exception should not happen here as we already have an
-             * instance of IAuthoriazationPlugin. But is is required by the
+             * instance of IAuthoriazationPlugin. But it is required by the
              * compiler.
              *
              * NOTE: If we were to add a throws clause here we would interrupt

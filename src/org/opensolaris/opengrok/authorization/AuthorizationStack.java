@@ -33,6 +33,12 @@ import org.opensolaris.opengrok.configuration.Nameable;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
+ * This is a subclass of {@link AuthorizationEntity} implementing the methods to
+ * be able to contain and making decision for:
+ * <ul>
+ * <li>other stacks</li>
+ * <li>plugins</li>
+ * </ul>
  *
  * @author Krystof Tulinger
  */
@@ -69,18 +75,18 @@ public class AuthorizationStack extends AuthorizationEntity {
     }
 
     /**
-     * Add a new authorization check in this stack.
+     * Add a new authorization entity into this stack.
      *
-     * @param s new check
+     * @param s new entity
      */
     public void add(AuthorizationEntity s) {
         this.stack.add(s);
     }
 
     /**
-     * Remove the given authorization check from this stack.
+     * Remove the given authorization entity from this stack.
      *
-     * @param s the check to remove
+     * @param s the entity to remove
      */
     public void remove(AuthorizationEntity s) {
         s.unload();
@@ -88,11 +94,12 @@ public class AuthorizationStack extends AuthorizationEntity {
     }
 
     /**
-     * Load all authorization checks in this stack.
+     * Load all authorization entities in this stack.
      *
      * <p>
-     * If the method is unable to load all the checks contained in this stack
-     * then any authorization check should fail for this stack in the future.
+     * If the method is unable to load any of the entities contained in this
+     * stack then this stack is marked as failed. Note that it does not affect
+     * the authorization decision made by this stack.
      * </p>
      *
      * @param parameters parameters given in the configuration
@@ -120,7 +127,7 @@ public class AuthorizationStack extends AuthorizationEntity {
             }
         }
 
-        if (getStack().size() > 0 && cnt == 0) {
+        if (getStack().size() > 0 && cnt < getStack().size()) {
             setFailed();
         }
 
@@ -147,7 +154,8 @@ public class AuthorizationStack extends AuthorizationEntity {
      * Test the given entity if it should be allowed with in this stack context
      * if and only if the stack is not marked as failed.
      *
-     * @param entity the given entity
+     * @param entity the given entity - this is either group or project and is
+     * passed just for the logging purposes.
      * @param predicate predicate returning true or false for the given entity
      * which determines if the authorization for such entity is successful or
      * failed for particular request and plugin
@@ -214,6 +222,13 @@ public class AuthorizationStack extends AuthorizationEntity {
      * Set the plugin to all classes in this stack which requires this class in
      * the configuration. This creates a new instance of the plugin for each
      * class which needs it.
+     *
+     * <p>
+     * This is where the loaded plugin classes get to be a part of the
+     * authorization process. When the {@link AuthorizationPlugin} does not get
+     * its {@link IAuthorizationPlugin} it is marked as failed and returns false
+     * to all authorization decisions.
+     * </p>
      *
      * @param plugin the new instance of a plugin
      * @return true if there is such case; false otherwise

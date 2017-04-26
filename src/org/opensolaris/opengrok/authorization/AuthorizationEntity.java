@@ -29,6 +29,25 @@ import java.util.function.Predicate;
 import org.opensolaris.opengrok.configuration.Nameable;
 
 /**
+ * This class covers authorization entities used in opengrok.
+ *
+ * Currently there are two:
+ * <ul>
+ * <li>stack of plugins</li>
+ * <li>plugin</li>
+ * </ul>
+ *
+ * The purpose is to extract common member variables and methods into an class,
+ * namely:
+ * <ul>
+ * <li>name</li>
+ * <li>role - sufficient/required/requisite</li>
+ * <li>state - working/failed</li>
+ * <li>setup - from configuration</li>
+ * </ul>
+ * and let the subclasses implement the important abstract methods.
+ *
+ * This class is intended to be read from a configuration.
  *
  * @author Krystof Tulinger
  */
@@ -64,7 +83,8 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
      * Test the given entity if it should be allowed with this authorization
      * check.
      *
-     * @param entity the given entity
+     * @param entity the given entity - this is either group or project and is
+     * passed just for the logging purposes.
      * @param predicate predicate returning true or false for the given entity
      * which determines if the authorization for such entity is successful or
      * failed

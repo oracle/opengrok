@@ -77,13 +77,21 @@ public enum AuthControlFlag {
         return SUFFICIENT.equals(this);
     }
 
-    public static AuthControlFlag get(String flag) {
+    /**
+     * Get the enum value for the string parameter.
+     *
+     * @param flag parameter describing the desired enum value
+     * @return the flag representing the parameter value
+     *
+     * @throws IllegalArgumentException when there is no such value in the enum
+     */
+    public static AuthControlFlag get(String flag) throws IllegalArgumentException {
         try {
             return AuthControlFlag.valueOf(flag.toUpperCase());
         } catch (IllegalArgumentException ex) {
-            // role does not exist -> add some more info about which roles do exist
+            // flag does not exist -> add some more info about which flags do exist
             throw new IllegalArgumentException(
-                    String.format("No authorization flag \"%s\", available flags are [%s]. %s",
+                    String.format("No control flag \"%s\", available flags are [%s]. %s",
                             flag,
                             Arrays.asList(AuthControlFlag.values())
                                     .stream()
