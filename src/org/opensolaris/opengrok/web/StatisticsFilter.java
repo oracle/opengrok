@@ -78,6 +78,10 @@ public class StatisticsFilter implements Filter {
             stats.addRequestTime(req, category, processTime); // add this category
 
             /* supplementary categories */
+            if (config.getProject() != null) {
+                stats.addRequestTime(req, "viewing_of_" + config.getProject().getName(), processTime);
+            }
+
             SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
             if (helper != null) {
                 if (helper.hits == null || helper.hits.length == 0) {
