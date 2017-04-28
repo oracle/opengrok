@@ -34,3 +34,5 @@ addons:
       name: "OpenGrok/OpenGrok"
       description: "Build submitted via Travis CI"
       branch_pattern: "coverity_scan"
+      #    build_command_prepend: "mvn clean"
+      build_command: "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile"
