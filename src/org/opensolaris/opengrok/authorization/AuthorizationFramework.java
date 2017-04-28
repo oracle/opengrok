@@ -619,8 +619,18 @@ public final class AuthorizationFramework {
 
         boolean overallDecision = performCheck(entity, predicate);
 
-        stats.addRequestTime(request, "authorization", System.currentTimeMillis() - time);
-        stats.addRequestTime(request, "authorization_of_" + entity.getName(), System.currentTimeMillis() - time);
+        time = System.currentTimeMillis() - time;
+
+        stats.addRequestTime(request, "authorization", time);
+        stats.addRequestTime(request,
+                String.format("authorization_%s", overallDecision ? "positive" : "negative"),
+                time);
+        stats.addRequestTime(request,
+                String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()),
+                time);
+        stats.addRequestTime(request,
+                String.format("authorization_of_%s", entity.getName()),
+                time);
 
         m.put(entity.getName(), overallDecision);
         request.setAttribute(cache, m);
