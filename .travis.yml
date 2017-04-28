@@ -33,4 +33,4 @@ addons:
       description: "Build submitted via Travis CI"
       branch_pattern: "coverity_scan"
       #    build_command_prepend: "mvn clean"
-    build_command:   "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile"
+      build_command:   "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile && cd opengrok-indexer && mvn javadoc:javadoc && cd ../opengrok-web && mvn javadoc:javadoc"
