@@ -51,7 +51,7 @@ import org.opensolaris.opengrok.configuration.Nameable;
  *
  * @author Krystof Tulinger
  */
-public abstract class AuthorizationEntity implements Nameable, Serializable {
+public abstract class AuthorizationEntity implements Nameable, Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
     /**
@@ -62,6 +62,32 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
     protected Map<String, Object> setup = new TreeMap<>();
 
     protected transient boolean working = true;
+
+    public AuthorizationEntity() {
+    }
+
+    /**
+     * Copy constructor for the entity:
+     * <ul>
+     * <li>copy flag</li>
+     * <li>copy name</li>
+     * <li>deep copy of the setup</li>
+     * <li>copy the working attribute</li>
+     * </ul>
+     *
+     * @param x the entity to be copied
+     */
+    public AuthorizationEntity(AuthorizationEntity x) {
+        flag = x.flag;
+        name = x.name;
+        setup = new TreeMap<>(x.setup);
+        working = x.working;
+    }
+
+    public AuthorizationEntity(AuthControlFlag flag, String name) {
+        this.flag = flag;
+        this.name = name;
+    }
 
     /**
      * Load this entity with given parameters.
@@ -101,6 +127,14 @@ public abstract class AuthorizationEntity implements Nameable, Serializable {
      * @return true if there is such case; false otherwise
      */
     abstract public boolean setPlugin(IAuthorizationPlugin plugin);
+
+    /**
+     * Perform a deep copy of the entity.
+     *
+     * @return the new instance of this entity
+     */
+    @Override
+    abstract public AuthorizationEntity clone();
 
     /**
      * Get the value of flag

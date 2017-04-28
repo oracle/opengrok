@@ -51,9 +51,26 @@ public class AuthorizationStack extends AuthorizationEntity {
     public AuthorizationStack() {
     }
 
+    /**
+     * Copy constructor from another stack
+     * <ul>
+     * <li>copy the superclass {@link AuthorizationEntity}</li>
+     * <li>perform a deep copy of the contained stack (using
+     * {@link AuthorizationEntity#clone()}</li>
+     * </ul>
+     *
+     * @param x the stack to be copied
+     */
+    public AuthorizationStack(AuthorizationStack x) {
+        super(x);
+        stack = new ArrayList<>(x.stack.size());
+        for (AuthorizationEntity e : x.getStack()) {
+            stack.add(e.clone());
+        }
+    }
+
     public AuthorizationStack(AuthControlFlag flag, String name) {
-        this.flag = flag;
-        this.name = name;
+        super(flag, name);
     }
 
     /**
@@ -240,5 +257,19 @@ public class AuthorizationStack extends AuthorizationEntity {
             ret = p.setPlugin(plugin) || ret;
         }
         return ret;
+    }
+
+    /**
+     * Clone the stack:
+     * <ul>
+     * <li>copy the superclass {@link AuthorizationEntity}</li>
+     * <li>perform a deep copy of the contained stack</li>
+     * </ul>
+     *
+     * @return new instance of {@link AuthorizationStack}
+     */
+    @Override
+    public AuthorizationStack clone() {
+        return new AuthorizationStack(this);
     }
 }

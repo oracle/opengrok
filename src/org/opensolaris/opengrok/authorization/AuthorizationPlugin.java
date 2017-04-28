@@ -49,6 +49,20 @@ public class AuthorizationPlugin extends AuthorizationStack {
     public AuthorizationPlugin() {
     }
 
+    /**
+     * Clone the plugin:
+     * <ul>
+     * <li>copy the superclass {@link AuthorizationStack}</li>
+     * <li>sets the plugin to {@code null}</li>
+     * </ul>
+     *
+     * @param x the plugin to be copied
+     */
+    public AuthorizationPlugin(AuthorizationPlugin x) {
+        super(x);
+        plugin = null;
+    }
+
     public AuthorizationPlugin(AuthControlFlag flag, IAuthorizationPlugin plugin) {
         this(flag, plugin.getClass().getCanonicalName() == null ? plugin.getClass().getName() : plugin.getClass().getCanonicalName(), plugin);
     }
@@ -216,5 +230,19 @@ public class AuthorizationPlugin extends AuthorizationStack {
      */
     public boolean hasPlugin() {
         return plugin != null;
+    }
+
+    /**
+     * Clone the plugin:
+     * <ul>
+     * <li>copy the superclass {@link AuthorizationStack}</li>
+     * <li>sets the plugin to {@code null}</li>
+     * </ul>
+     *
+     * @return new instance of {@link AuthorizationPlugin}
+     */
+    @Override
+    public AuthorizationPlugin clone() {
+        return new AuthorizationPlugin(this);
     }
 }

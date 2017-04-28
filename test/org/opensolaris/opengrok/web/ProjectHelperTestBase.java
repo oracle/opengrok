@@ -256,12 +256,12 @@ public class ProjectHelperTestBase {
     }
 
     protected void invokeRemoveAll() {
-        env.setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default-stack"));
-        AuthorizationFramework.getInstance().removeAll();
+        AuthorizationFramework.getInstance().removeAll(AuthorizationFramework.getInstance().getStack());
+        AuthorizationFramework.getInstance().setStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default-stack"));
     }
 
     protected void invokeAddPlugin(IAuthorizationPlugin plugin) {
-        AuthorizationFramework.getInstance().addPlugin(plugin);
+        AuthorizationFramework.getInstance().addPlugin(AuthorizationFramework.getInstance().getStack(), plugin);
     }
 
     protected AuthorizationFramework getInstance() {

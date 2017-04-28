@@ -653,7 +653,7 @@ public class AuthorizationFrameworkTest {
     public void testPluginsGeneric() {
         AuthorizationFramework instance = getInstance();
         instance.setStack(setup.stack);
-        instance.loadAllPlugins();
+        instance.loadAllPlugins(setup.stack);
 
         boolean actual;
         String format = "%s <%s> was <%s> for entity %s";
@@ -685,8 +685,7 @@ public class AuthorizationFrameworkTest {
     }
 
     static private AuthorizationFramework getInstance() {
-        AuthorizationFramework.getInstance().removeAll();
-        RuntimeEnvironment.getInstance().setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
+        AuthorizationFramework.getInstance().removeAll(AuthorizationFramework.getInstance().getStack());
         return AuthorizationFramework.getInstance();
     }
 
