@@ -38,6 +38,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.opensolaris.opengrok.authorization.AuthorizationCheck.AuthControlFlag;
+import org.opensolaris.opengrok.authorization.plugins.GroupPlugin;
+import org.opensolaris.opengrok.authorization.plugins.ProjectPlugin;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
@@ -555,6 +557,10 @@ public final class AuthorizationFramework {
                 IOUtils.listFilesRec(pluginDirectory, ".class"),
                 IOUtils.listFiles(pluginDirectory, ".jar"));
 
+        stack.setPlugin(new GroupPlugin());
+        stack.setPlugin(new ProjectPlugin());
+
+        // fire load events
         loadAllPlugins();
     }
 
