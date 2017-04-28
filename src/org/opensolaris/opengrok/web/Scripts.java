@@ -140,8 +140,6 @@ public class Scripts implements Iterable<Scripts.Script> {
      * Convert the page scripts into HTML.
      *
      * @return the HTML
-     *
-     * @see #sort()
      */
     public String toHtml() {
         StringBuilder builder = new StringBuilder();

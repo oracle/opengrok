@@ -124,14 +124,13 @@ public final class AuthorizationFramework {
 
     /**
      * Checks if the request should have an access to project. See
-     * {@link #checkAll(HttpServletRequest, String, Nameable, Predicate)} for
-     * more information about invocation order.
+     * {@link #checkAll} for more information about invocation order.
      *
      * @param request request object
      * @param project project object
      * @return true if yes
      *
-     * @see #checkAll(HttpServletRequest, String, Nameable, Predicate)
+     * @see #checkAll
      */
     public boolean isAllowed(HttpServletRequest request, Project project) {
         return checkAll(
@@ -148,14 +147,13 @@ public final class AuthorizationFramework {
 
     /**
      * Checks if the request should have an access to group. See
-     * {@link #checkAll(HttpServletRequest, String, Nameable, Predicate)} for
-     * more information about invocation order.
+     * {@link #checkAll} for more information about invocation order.
      *
      * @param request request object
      * @param group group object
      * @return true if yes
      *
-     * @see #checkAll(HttpServletRequest, String, Nameable, Predicate)
+     * @see #checkAll
      */
     public boolean isAllowed(HttpServletRequest request, Group group) {
         return checkAll(
