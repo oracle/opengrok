@@ -25,10 +25,13 @@ package org.opensolaris.opengrok.authorization;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Predicate;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
@@ -134,6 +137,23 @@ public class AuthorizationStack extends AuthorizationEntity {
                     getFlag().toString().toUpperCase(),
                     getName()});
 
+        Set<String> groups = new TreeSet<>();
+        for (String x : forGroups()) {
+            /**
+             * Full group discovery takes place here. All projects/repositories
+             * in the group are added into "forProjects" and all subgroups
+             * (including projects/repositories) and parent groups (excluding
+             * the projects/repositories) are added into "forGroups".
+             */
+            Group g;
+            if ((g = Group.getByName(x)) != null) {
+                forProjects().addAll(g.getAllProjects().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
+                groups.addAll(g.getRelatedGroups().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
+                groups.add(x);
+            }
+        }
+        setForGroups(groups);
+
         setWorking();
 
         int cnt = 0;
@@ -152,7 +172,7 @@ public class AuthorizationStack extends AuthorizationEntity {
                 new Object[]{
                     getFlag().toString().toUpperCase(),
                     getName(),
-                    isWorking() ? "working" : "failed"});
+                    isWorking() ? "ready" : "not fully ok"});
     }
 
     /**
@@ -173,26 +193,63 @@ public class AuthorizationStack extends AuthorizationEntity {
      *
      * @param entity the given entity - this is either group or project and is
      * passed just for the logging purposes.
-     * @param predicate predicate returning true or false for the given entity
-     * which determines if the authorization for such entity is successful or
-     * failed for particular request and plugin
+     * @param pluginPredicate predicate returning true or false for the given
+     * entity which determines if the authorization for such entity is
+     * successful or failed for particular request and plugin
+     * @param skippingPredicate predicate returning true if this authorization
+     * entity should be omitted from the authorization process
      * @return true if successful; false otherwise
      */
     @Override
-    public boolean isAllowed(Nameable entity, Predicate<IAuthorizationPlugin> predicate) {
+    public boolean isAllowed(Nameable entity,
+            PluginDecisionPredicate pluginPredicate,
+            PluginSkippingPredicate skippingPredicate) {
         boolean overallDecision = true;
+        LOGGER.log(Level.FINER, "Authorization for \"{0}\" in \"{1}\" [{2}]",
+                new Object[]{entity.getName(), this.getName(), this.getFlag()});
 
-        LOGGER.log(Level.FINEST, "Authorization for \"{0}\"",
-                new Object[]{entity.getName()});
+        if (skippingPredicate.shouldSkip(this)) {
+            LOGGER.log(Level.FINER, "AuthEntity \"{0}\" [{1}] skipping testing of name \"{2}\"",
+                    new Object[]{this.getName(), this.getFlag(), entity.getName()});
+        } else {
+            overallDecision = processStack(entity, pluginPredicate, skippingPredicate);
+        }
+
+        LOGGER.log(Level.FINER, "Authorization for \"{0}\" in \"{1}\" [{2}] => {3}",
+                new Object[]{entity.getName(), this.getName(), this.getFlag(), overallDecision ? "true" : "false"});
+        return overallDecision;
+    }
+
+    /**
+     * Process the stack.
+     *
+     * @param entity the given entity
+     * @param pluginPredicate predicate returning true or false for the given
+     * entity which determines if the authorization for such entity is
+     * successful or failed for particular request and plugin
+     * @param skippingPredicate predicate returning true if this authorization
+     * entity should be omitted from the authorization process
+     * @return true if entity is allowed; false otherwise
+     */
+    protected boolean processStack(Nameable entity,
+            PluginDecisionPredicate pluginPredicate,
+            PluginSkippingPredicate skippingPredicate) {
+        boolean overallDecision = true;
         for (AuthorizationEntity authEntity : getStack()) {
+
+            if (skippingPredicate.shouldSkip(authEntity)) {
+                LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] skipping testing of name \"{2}\"",
+                        new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName()});
+                continue;
+            }
             // run the plugin's test method
             try {
-                LOGGER.log(Level.FINEST, "Plugin \"{0}\" [{1}] testing a name \"{2}\"",
+                LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\"",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName()});
 
-                boolean pluginDecision = authEntity.isAllowed(entity, predicate);
+                boolean pluginDecision = authEntity.isAllowed(entity, pluginPredicate, skippingPredicate);
 
-                LOGGER.log(Level.FINEST, "Plugin \"{0}\" [{1}] testing a name \"{2}\" => {3}",
+                LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\" => {3}",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName(),
                             pluginDecision ? "true" : "false"});
 
@@ -211,12 +268,12 @@ public class AuthorizationStack extends AuthorizationEntity {
                 }
             } catch (Throwable ex) {
                 LOGGER.log(Level.WARNING,
-                        String.format("Plugin \"%s\" has failed the testing of \"%s\" with an exception.",
+                        String.format("AuthEntity \"%s\" has failed the testing of \"%s\" with an exception.",
                                 authEntity.getName(),
                                 entity.getName()),
                         ex);
 
-                LOGGER.log(Level.FINEST, "Plugin \"{0}\" [{1}] testing a name \"{2}\" => {3}",
+                LOGGER.log(Level.FINEST, "AuthEntity \"{0}\" [{1}] testing a name \"{2}\" => {3}",
                         new Object[]{authEntity.getName(), authEntity.getFlag(), entity.getName(),
                             "false (failed)"});
 
@@ -230,8 +287,6 @@ public class AuthorizationStack extends AuthorizationEntity {
                 }
             }
         }
-        LOGGER.log(Level.FINEST, "Authorization for \"{0}\" => {1}",
-                new Object[]{entity.getName(), overallDecision ? "true" : "false"});
         return overallDecision;
     }
 

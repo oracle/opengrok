@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -145,10 +144,25 @@ public final class AuthorizationFramework {
                 request,
                 "plugin_framework_project_cache",
                 project,
-                new Predicate<IAuthorizationPlugin>() {
+                new AuthorizationEntity.PluginDecisionPredicate() {
             @Override
-            public boolean test(IAuthorizationPlugin plugin) {
+            public boolean decision(IAuthorizationPlugin plugin) {
                 return plugin.isAllowed(request, project);
+            }
+        }, new AuthorizationEntity.PluginSkippingPredicate() {
+            @Override
+            public boolean shouldSkip(AuthorizationEntity entity) {
+                // shouldn't skip if there is no setup
+                if (entity.forProjects().isEmpty() && entity.forGroups().isEmpty()) {
+                    return false;
+                }
+
+                // shouldn't skip if the project is contained in the setup
+                if (entity.forProjects().contains(project.getName())) {
+                    return false;
+                }
+
+                return true;
             }
         });
     }
@@ -168,10 +182,21 @@ public final class AuthorizationFramework {
                 request,
                 "plugin_framework_group_cache",
                 group,
-                new Predicate<IAuthorizationPlugin>() {
+                new AuthorizationEntity.PluginDecisionPredicate() {
             @Override
-            public boolean test(IAuthorizationPlugin plugin) {
+            public boolean decision(IAuthorizationPlugin plugin) {
                 return plugin.isAllowed(request, group);
+            }
+        }, new AuthorizationEntity.PluginSkippingPredicate() {
+            @Override
+            public boolean shouldSkip(AuthorizationEntity entity) {
+                // shouldn't skip if there is no setup
+                if (entity.forProjects().isEmpty() && entity.forGroups().isEmpty()) {
+                    return false;
+                }
+
+                // shouldn't skip if the group is contained in the setup
+                return !entity.forGroups().contains(group.getName());
             }
         });
     }
@@ -579,7 +604,7 @@ public final class AuthorizationFramework {
      * <p>
      * The order of plugin invokation is given by the configuration
      * {@link RuntimeEnvironment#getPluginStack()} and appropriate actions are
-     * taken when traversing the list with set of keywords, such as:</p>
+     * taken when traversing the stack with set of keywords, such as:</p>
      *
      * <h4>required</h4>
      * Failure of such a plugin will ultimately lead to the authorization
@@ -617,7 +642,8 @@ public final class AuthorizationFramework {
      */
     @SuppressWarnings("unchecked")
     private boolean checkAll(HttpServletRequest request, String cache, Nameable entity,
-            Predicate<IAuthorizationPlugin> predicate) {
+            AuthorizationEntity.PluginDecisionPredicate pluginPredicate,
+            AuthorizationEntity.PluginSkippingPredicate skippingPredicate) {
         if (stack == null) {
             return true;
         }
@@ -639,7 +665,7 @@ public final class AuthorizationFramework {
 
         long time = System.currentTimeMillis();
 
-        boolean overallDecision = performCheck(entity, predicate);
+        boolean overallDecision = performCheck(entity, pluginPredicate, skippingPredicate);
 
         time = System.currentTimeMillis() - time;
 
@@ -663,14 +689,18 @@ public final class AuthorizationFramework {
      * Perform the actual check for the entity.
      *
      * @param entity either a project or a group
-     * @param predicate a predicate that decides if the authorization is
+     * @param pluginPredicate a predicate that decides if the authorization is
      * successful for the given plugin
+     * @param skippingPredicate predicate that decides if given authorization
+     * entity should be omitted from the authorization process
      * @return true if entity is allowed; false otherwise
      */
-    private boolean performCheck(Nameable entity, Predicate<IAuthorizationPlugin> predicate) {
+    private boolean performCheck(Nameable entity,
+            AuthorizationEntity.PluginDecisionPredicate pluginPredicate,
+            AuthorizationEntity.PluginSkippingPredicate skippingPredicate) {
         lock.readLock().lock();
         try {
-            return stack.isAllowed(entity, predicate);
+            return stack.isAllowed(entity, pluginPredicate, skippingPredicate);
         } finally {
             lock.readLock().unlock();
         }
