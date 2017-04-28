@@ -81,6 +81,20 @@ public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
         }
     }
 
+    /**
+     * Add this group, all parent groups, all subgroups, all projects in this
+     * group, all repositories in this group, all projects in the subgroups and
+     * all repositories in the subgroups among the allowed entities for the
+     * authorization.
+     *
+     * <p>
+     * The purpose of this is when user allows a particular group then the
+     * expectation is to allow all included groups/projects/repositories.
+     * </p>
+     *
+     * @param group string name of the group to be discovered
+     * @param request the requests containing the user information
+     */
     private void discoverGroup(String group, HttpServletRequest request) {
         Group g;
         if ((g = Group.getByName(group)) != null) {
