@@ -54,6 +54,7 @@ private String getAnnotateRevision(DiffData data) {
 <%
 {
     PageConfig cfg = PageConfig.get(request);
+    cfg.addScript("diff");
     cfg.checkSourceRootExistence();
     /**
      * This block must be the first block before any other output in the
@@ -534,4 +535,3 @@ include file="mast.jsp"
 include file="foot.jspf"
 
 %>
-<script src="<%=request.getContextPath()%>/js/diff-0.0.1.js" type="text/javascript"></script>

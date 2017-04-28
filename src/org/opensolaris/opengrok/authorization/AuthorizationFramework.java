@@ -24,10 +24,12 @@ package org.opensolaris.opengrok.authorization;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -37,7 +39,6 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.opensolaris.opengrok.authorization.AuthorizationCheck.AuthControlFlag;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
@@ -67,9 +68,9 @@ public final class AuthorizationFramework {
     private AuthorizationPluginClassLoader loader;
 
     /**
-     * List of available plugins in the order of the execution.
+     * Stack of available plugins/stacks in the order of the execution.
      */
-    List<AuthorizationPluginWrapper> plugins;
+    AuthorizationStack stack;
 
     /**
      * Keeping track of the number of reloads in this framework. This can be
@@ -118,13 +119,13 @@ public final class AuthorizationFramework {
      * @param directory the directory path
      */
     public void setPluginDirectory(String directory) {
-        AuthorizationFramework.this.setPluginDirectory(directory != null ? new File(directory) : null);
+        setPluginDirectory(directory != null ? new File(directory) : null);
     }
 
     /**
      * Checks if the request should have an access to project. See
-     * {@link #checkAll(HttpServletRequest, String, Nameable, Predicate)} for more
-     * information about invocation order.
+     * {@link #checkAll(HttpServletRequest, String, Nameable, Predicate)} for
+     * more information about invocation order.
      *
      * @param request request object
      * @param project project object
@@ -137,9 +138,9 @@ public final class AuthorizationFramework {
                 request,
                 "plugin_framework_project_cache",
                 project,
-                new Predicate<AuthorizationPluginWrapper>() {
+                new Predicate<IAuthorizationPlugin>() {
             @Override
-            public boolean test(AuthorizationPluginWrapper plugin) {
+            public boolean test(IAuthorizationPlugin plugin) {
                 return plugin.isAllowed(request, project);
             }
         });
@@ -147,8 +148,8 @@ public final class AuthorizationFramework {
 
     /**
      * Checks if the request should have an access to group. See
-     * {@link #checkAll(HttpServletRequest, String, Nameable, Predicate)} for more
-     * information about invocation order.
+     * {@link #checkAll(HttpServletRequest, String, Nameable, Predicate)} for
+     * more information about invocation order.
      *
      * @param request request object
      * @param group group object
@@ -161,9 +162,9 @@ public final class AuthorizationFramework {
                 request,
                 "plugin_framework_group_cache",
                 group,
-                new Predicate<AuthorizationPluginWrapper>() {
+                new Predicate<IAuthorizationPlugin>() {
             @Override
-            public boolean test(AuthorizationPluginWrapper plugin) {
+            public boolean test(IAuthorizationPlugin plugin) {
                 return plugin.isAllowed(request, group);
             }
         });
@@ -172,7 +173,7 @@ public final class AuthorizationFramework {
     private AuthorizationFramework() {
         String path = RuntimeEnvironment.getInstance()
                 .getPluginDirectory();
-        plugins = new ArrayList<>();
+        stack = RuntimeEnvironment.getInstance().getPluginStack();
         setPluginDirectory(path);
         reload();
     }
@@ -203,174 +204,104 @@ public final class AuthorizationFramework {
      * So this tries to ensure that there will be no
      * ConcurrentModificationException or other similar exceptions.
      *
-     * @return list of available plugins
+     * @return the stack containing plugins/other stacks
      */
-    protected List<AuthorizationPluginWrapper> getPlugins() {
-        List<AuthorizationPluginWrapper> p;
-        synchronized (this) {
-            p = new ArrayList<>(plugins);
-        }
-        return p;
+    public synchronized AuthorizationStack getStack() {
+        return stack;
     }
 
     /**
-     * Find the plugin wrapper for the class name.
+     * Set the internal stack to this new value.
      *
-     * @param classname class name
-     * @return the plugin wrapper or null if there is none
+     * @param s new stack to be used
      */
-    public AuthorizationPluginWrapper findPlugin(String classname) {
-        if (classname == null) {
-            return null;
-        }
-        for (AuthorizationPluginWrapper p : getPlugins()) {
-            if (p.getClassname().equals(classname)) {
-                return p;
-            }
-        }
-        return null;
+    public synchronized void setStack(AuthorizationStack s) {
+        this.stack = s;
     }
 
     /**
-     * Add a plugin into the plugin array. This has the same effect as invoking
-     * {@link #addPlugin(IAuthorizationPlugin)}.
+     * Add an entity into the plugin stack.
      *
+     * @param stack the stack
+     * @param entity the authorization entity (stack or plugin)
+     */
+    protected void addPlugin(AuthorizationStack stack, AuthorizationEntity entity) {
+        if (stack != null) {
+            stack.add(entity);
+        }
+    }
+
+    /**
+     * Add a plugin into the plugin stack. This has the same effect as invoking
+     * addPlugin(stack, IAuthorizationPlugin, REQUIRED).
+     *
+     * @param stack the stack
      * @param plugin the authorization plugin
      */
-    protected synchronized void addPlugin(IAuthorizationPlugin plugin) {
-        addPlugin(plugin, AuthControlFlag.REQUIRED);
+    public void addPlugin(AuthorizationStack stack, IAuthorizationPlugin plugin) {
+        addPlugin(stack, plugin, AuthControlFlag.REQUIRED);
     }
 
     /**
      * Add a plugin into the plugin array.
      *
-     * <h3>Configured plugins</h3>
-     * For plugins which have an entry in configuration, the new plugin is put
-     * in the place respecting the user-defined order of exectution. If the
-     * plugin has existed before, it is unloaded and the plugin is overwritten
-     * with the new plugin.
+     * <h3>Configured plugin</h3>
+     * For plugin which have an entry in configuration, the new plugin is put in
+     * the place respecting the user-defined order of execution.
      *
-     * <h3>New plugins</h3>
+     * <h3>New plugin</h3>
      * If there is no entry in configuration for this class, the plugin is
-     * appended to the end of the plugin container with role <code>role</code>
+     * appended to the end of the plugin stack with flag <code>flag</code>
      *
      * <p>
-     * <b>The plugin's load method is NOT invoked</b></p>
+     * <b>The plugin's load method is NOT invoked at this point</b></p>
      *
+     * This has the same effect as invoking addPlugin(new
+     * AuthorizationEntity(stack, flag, getClassName(plugin), plugin).
+     *
+     * @param stack the stack
      * @param plugin the authorization plugin
-     * @param role the role for the new plugins
+     * @param flag the flag for the new plugin
      */
-    public synchronized void addPlugin(IAuthorizationPlugin plugin, AuthControlFlag role) {
-        AuthorizationPluginWrapper wrapper;
-        if ((wrapper = findPlugin(getClassName(plugin))) != null) {
-            if (wrapper.hasPlugin()) {
-                LOGGER.log(Level.FINEST, "Plugin class \"{0}\" is rewriting previously loaded plugin.",
-                        getClassName(plugin));
-                unloadPlugin(wrapper);
-            }
-            wrapper.setPlugin(plugin);
-            return;
-        }
-        LOGGER.log(Level.INFO, "Plugin class \"{0}\" was not found in configuration."
-                + " Appending the plugin at the end of the list with role \"{1}\"",
-                new Object[]{getClassName(plugin), role});
-        plugins.add(new AuthorizationPluginWrapper(role, getClassName(plugin), plugin));
-    }
-
-    /**
-     * Remove and unload a single plugin.
-     *
-     * @param plugin the plugin wrapper
-     * @see AuthorizationPluginWrapper#unload()
-     */
-    protected synchronized void removePlugin(AuthorizationPluginWrapper plugin) {
-        unloadPlugin(plugin);
-        plugins.remove(plugin);
-    }
-
-    /**
-     * Remove and unload all plugins.
-     *
-     * @see AuthorizationPluginWrapper#unload()
-     */
-    public synchronized void removeAll() {
-        unloadAllPlugins();
-        plugins = new ArrayList<>();
-    }
-
-    /**
-     * Call unload and load method on the plugin.
-     *
-     * @param plugin the plugin wrapper
-     * @see AuthorizationPluginWrapper#unload()
-     * @see AuthorizationPluginWrapper#load()
-     */
-    protected synchronized void reloadPlugin(AuthorizationPluginWrapper plugin) {
-        unloadPlugin(plugin);
-        loadPlugin(plugin);
-    }
-
-    /**
-     * Call the load method on the plugin and set it as working if it does not
-     * fail.
-     *
-     * @param plugin the plugin wrapper
-     * @see AuthorizationPluginWrapper#load()
-     */
-    protected synchronized void loadPlugin(AuthorizationPluginWrapper plugin) {
-        try {
-            plugin.load();
-            plugin.setWorking();
-
-        } catch (Throwable ex) {
-            LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClassname() + "\" has failed while loading with exception:", ex);
-            plugin.setFailed();
+    public void addPlugin(AuthorizationStack stack, IAuthorizationPlugin plugin, AuthControlFlag flag) {
+        if (stack != null) {
+            LOGGER.log(Level.INFO, "Plugin class \"{0}\" was not found in configuration."
+                    + " Appending the plugin at the end of the list with flag \"{1}\"",
+                    new Object[]{getClassName(plugin), flag});
+            addPlugin(stack, new AuthorizationPlugin(flag, getClassName(plugin), plugin));
         }
     }
 
     /**
-     * Load all plugins in the current array. If the plugin has not been loaded
-     * yet it is marked as failed.
-     */
-    public void loadAllPlugins() {
-        for (AuthorizationPluginWrapper plugin : getPlugins()) {
-            // replace all plugins which have not been loaded (possibly they do not exist) with failing plugin
-            if (!plugin.hasPlugin()) {
-                LOGGER.log(Level.SEVERE, "Configured plugin \"{0}\" has not been loaded into JVM (missing file?). "
-                        + "This can cause the authorization to fail always.",
-                        plugin.getClassname());
-                plugin.setFailed();
-            }
-            loadPlugin(plugin);
-            LOGGER.log(Level.INFO, "[{0}] Plugin \"{1}\" {2} and is {3}.",
-                    new Object[]{
-                        plugin.getRole().toString().toUpperCase(),
-                        plugin.getClassname(),
-                        plugin.hasPlugin() ? "loaded" : "not found",
-                        plugin.isWorking() ? "working" : "failed"});
-        }
-    }
-
-    /**
-     * Call the unload method on the plugin.
+     * Remove and unload all plugins from the stack.
      *
-     * @param plugin the plugin wrapper
-     * @see AuthorizationPluginWrapper#unload()
+     * @param stack the stack
+     * @see AuthorizationEntity#unload()
      */
-    protected synchronized void unloadPlugin(AuthorizationPluginWrapper plugin) {
-        try {
-            plugin.unload();
-        } catch (Throwable ex) {
-            LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClassname() + "\" has failed while unloading with exception:", ex);
+    public void removeAll(AuthorizationStack stack) {
+        unloadAllPlugins(stack);
+    }
+
+    /**
+     * Load all plugins in the stack. If any plugin has not been loaded yet it
+     * is marked as failed.
+     *
+     * @param stack the stack
+     */
+    public void loadAllPlugins(AuthorizationStack stack) {
+        if (stack != null) {
+            stack.load(new TreeMap<>());
         }
     }
 
     /**
-     * Unload all plugins in the current array.
+     * Unload all plugins in the stack
+     *
+     * @param stack the stack
      */
-    public void unloadAllPlugins() {
-        for (AuthorizationPluginWrapper p : getPlugins()) {
-            unloadPlugin(p);
+    public void unloadAllPlugins(AuthorizationStack stack) {
+        if (stack != null) {
+            stack.unload();
         }
     }
 
@@ -378,23 +309,26 @@ public final class AuthorizationFramework {
      * Wrapper around the class loading. Report all exceptions into the log.
      *
      * @param classname full name of the class
+     * @return the class implementing the {@link IAuthorizationPlugin} interface
+     * or null if there is no such class
      *
      * @see #loadClass(String)
      */
-    private void handleLoadClass(String classname) {
+    public IAuthorizationPlugin handleLoadClass(String classname) {
         try {
-            loadClass(classname);
+            return loadClass(classname);
         } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.INFO, "Class was not found: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" was not found: ", classname), ex);
         } catch (SecurityException ex) {
-            LOGGER.log(Level.INFO, "Class was found but it is placed in prohibited package: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" was found but it is placed in prohibited package: ", classname), ex);
         } catch (InstantiationException ex) {
-            LOGGER.log(Level.INFO, "Class couldn not be instantiated: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" could not be instantiated: ", classname), ex);
         } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.INFO, "Class loader threw an exception: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an exception: ", classname), ex);
         } catch (Throwable ex) {
-            LOGGER.log(Level.INFO, "Class loader threw an uknown error: ", ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an uknown error: ", classname), ex);
         }
+        return null;
     }
 
     /**
@@ -403,10 +337,12 @@ public final class AuthorizationFramework {
      *
      * <p>
      * The classes implementing the {@link IAuthorizationPlugin} interface are
-     * automatically added among the discovered plugins.
+     * returned and initialized with a call to a non-parametric constructor.
      * </p>
      *
      * @param classname the full name of the class to load
+     * @return the class implementing the {@link IAuthorizationPlugin} interface
+     * or null if there is no such class
      *
      * @throws ClassNotFoundException when the class can not be found
      * @throws SecurityException when it is prohibited to load such class
@@ -415,7 +351,7 @@ public final class AuthorizationFramework {
      * @throws IllegalAccessException when the constructor of the class is not
      * accessible
      */
-    private void loadClass(String classname) throws ClassNotFoundException,
+    private IAuthorizationPlugin loadClass(String classname) throws ClassNotFoundException,
             SecurityException,
             InstantiationException,
             IllegalAccessException {
@@ -423,44 +359,59 @@ public final class AuthorizationFramework {
         Class c = loader.loadClass(classname);
 
         // check for implemented interfaces
-        Class[] intf = c.getInterfaces();
-        boolean loaded = false;
-        for (Class intf1 : intf) {
-            if (intf1.getCanonicalName().equals(IAuthorizationPlugin.class.getCanonicalName())) {
+        for (Class intf1 : getInterfaces(c)) {
+            if (intf1.getCanonicalName().equals(IAuthorizationPlugin.class.getCanonicalName())
+                    && !Modifier.isAbstract(c.getModifiers())) {
                 // call to non-parametric constructor
-                IAuthorizationPlugin pf = (IAuthorizationPlugin) c.newInstance();
-
-                addPlugin(pf);
-
-                LOGGER.log(Level.INFO, "Plugin \"{0}\" loaded.", getClassName(pf));
-                loaded = true;
+                return (IAuthorizationPlugin) c.newInstance();
             }
         }
-        if (!loaded) {
-            LOGGER.log(Level.FINEST, "Plugin class \"{0}\" does not implement IAuthorizationPlugin interface.", classname);
+        LOGGER.log(Level.FINEST, "Plugin class \"{0}\" does not implement IAuthorizationPlugin interface.", classname);
+        return null;
+    }
+
+    /**
+     * Get all available interfaces of a class c.
+     *
+     * @param c class
+     * @return array of interfaces of the class c
+     */
+    protected List<Class> getInterfaces(Class c) {
+        List<Class> interfaces = new LinkedList<>();
+        Class self = c;
+        while (self != null && !interfaces.contains(IAuthorizationPlugin.class)) {
+            interfaces.addAll(Arrays.asList(self.getInterfaces()));
+            self = self.getSuperclass();
         }
+        return interfaces;
     }
 
     /**
      * Traverse list of files which possibly contain a java class and then
      * traverse a list of jar files to load all classes which are contained
-     * within them. Each class is loaded with {@link #handleLoadClass(String)}
-     * which delegates the loading to the custom class loader
-     * {@link #loadClass(String)}.
+     * within them into the given stack. Each class is loaded with
+     * {@link #handleLoadClass(String)} which delegates the loading to the
+     * custom class loader {@link #loadClass(String)}.
      *
+     * @param stack the stack where to add the loaded classes
      * @param classfiles list of files which possibly contain a java class
      * @param jarfiles list of jar files containing java classes
      *
      * @see #handleLoadClass(String)
      * @see #loadClass(String)
      */
-    private void loadClasses(List<File> classfiles, List<File> jarfiles) {
+    private void loadClasses(AuthorizationStack stack, List<File> classfiles, List<File> jarfiles) {
+        IAuthorizationPlugin pf;
         for (File file : classfiles) {
             String classname = getClassName(file);
             if (classname.isEmpty()) {
                 continue;
             }
-            handleLoadClass(classname);
+            // load the class in memory and try to find a configured space for this class
+            if ((pf = handleLoadClass(classname)) != null && !stack.setPlugin(pf)) {
+                // if there is not configured space -> append it to the stack
+                addPlugin(stack, pf);
+            }
         }
 
         for (File file : jarfiles) {
@@ -472,7 +423,11 @@ public final class AuthorizationFramework {
                     if (!entry.getName().endsWith(".class") || classname.isEmpty()) {
                         continue;
                     }
-                    handleLoadClass(classname);
+                    // load the class in memory and try to find a configured space for this class
+                    if ((pf = handleLoadClass(classname)) != null && !stack.setPlugin(pf)) {
+                        // if there is not configured space -> append it to the stack
+                        addPlugin(stack, pf);
+                    }
                 }
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Could not manipulate with file because of: ", ex);
@@ -493,45 +448,33 @@ public final class AuthorizationFramework {
     }
 
     /**
-     * Calling this function forces the framework to reload its plugins.
+     * Calling this function forces the framework to reload its stack.
      *
-     * Plugins are taken from the pluginDirectory (set in web.xml).
+     * Plugins are taken from the pluginDirectory.
      *
-     * Old instances of plugins are removed and new list of plugins is
-     * constructed. Unload and load event is fired on each plugin.
+     * Old instances of stack are removed and new list of stack is constructed.
+     * Unload and load event is fired on each plugin.
      *
-     * This function has the same effect as calling {@code reload(new ArrayList<>())}.
-     *
-     * @see IAuthorizationPlugin#load()
+     * @see IAuthorizationPlugin#load(java.util.Map)
      * @see IAuthorizationPlugin#unload()
-     */
-    public synchronized void reload() {
-        reload(new ArrayList<>());
-    }
-
-    /**
-     * Calling this function forces the framework to reload its plugins.
-     *
-     * Plugins are taken from the pluginDirectory (set in web.xml).
-     *
-     * Old instances of plugins are removed and new list of plugins is
-     * constructed. Unload and load event is fired on each plugin.
-     *
-     * @param oldPlugins old plugins which are being discarded
-     * @see IAuthorizationPlugin#load()
-     * @see IAuthorizationPlugin#unload()
+     * @see Configuration#getPluginDirectory()
      */
     @SuppressWarnings("unchecked")
-    public synchronized void reload(List<AuthorizationPluginWrapper> oldPlugins) {
+    public void reload() {
         if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {
-            LOGGER.log(Level.WARNING, "plugin directory not found or not readable: {0}. "
+            LOGGER.log(Level.WARNING, "Plugin directory not found or not readable: {0}. "
                     + "All requests allowed.", pluginDirectory);
             return;
         }
+        if (stack == null) {
+            LOGGER.log(Level.WARNING, "Plugin stack not found in configuration: null. All requests allowed.");
+            return;
+        }
+
         LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
 
         // trashing out the old instance of the loaded enables us
-        // to reaload the plugins at runtime
+        // to reaload the stack at runtime
         loader = (AuthorizationPluginClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
             @Override
             public Object run() {
@@ -539,29 +482,41 @@ public final class AuthorizationFramework {
             }
         });
 
-        // clean all plugins
-        removeAll();
+        // clone a new stack not interfering with the current stack
+        AuthorizationStack newStack = RuntimeEnvironment.getInstance().getPluginStack().clone();
 
         // increase the current plugin version tracked by the framework
         increasePluginVersion();
 
-        // add spaces with configured plugins - leaving null just to obtain the correct order of execution
-        for (AuthorizationCheck check : RuntimeEnvironment.getInstance().getPluginConfiguration()) {
-            plugins.add(new AuthorizationPluginWrapper(check, null));
-        }
-
-        // load all possible classes
-        loadClasses(
+        // load all other possible plugin classes
+        loadClasses(newStack,
                 IOUtils.listFilesRec(pluginDirectory, ".class"),
                 IOUtils.listFiles(pluginDirectory, ".jar"));
 
-        loadAllPlugins();
+        // fire load events
+        loadAllPlugins(newStack);
+
+        /**
+         * Replace the stack in a synchronized block to avoid inconsistent state
+         * between the stack change and currently executing requests performing
+         * some authorization on the same stack.
+         *
+         * @see #performCheck is also marked as synchronized
+         */
+        AuthorizationStack oldStack = stack;
+        synchronized (this) {
+            stack = newStack;
+        }
+
+        // clean the old stack
+        removeAll(oldStack);
+        oldStack = null;
     }
 
     /**
-     * Returns the current plugins version in this framework. This can be used
-     * by the plugins to invalidate the session and force reload the
-     * authorization values.
+     * Returns the current plugin version in this framework. This can be used by
+     * the plugin to invalidate the session and force reload the authorization
+     * values.
      *
      * This number changes with every plugin reload.
      *
@@ -602,9 +557,8 @@ public final class AuthorizationFramework {
      *
      * <p>
      * The order of plugin invokation is given by the configuration
-     * {@link RuntimeEnvironment#getPluginConfiguration()} and appropriate
-     * actions are taken when traversing the list with set of keywords, such
-     * as:</p>
+     * {@link RuntimeEnvironment#getPluginStack()} and appropriate actions are
+     * taken when traversing the list with set of keywords, such as:</p>
      *
      * <h4>required</h4>
      * Failure of such a plugin will ultimately lead to the authorization
@@ -638,11 +592,15 @@ public final class AuthorizationFramework {
      * @param predicate predicate
      * @return true if yes
      *
-     * @see RuntimeEnvironment#getPluginConfiguration()
+     * @see RuntimeEnvironment#getPluginStack()
      */
     @SuppressWarnings("unchecked")
     private boolean checkAll(HttpServletRequest request, String cache, Nameable entity,
-            Predicate<AuthorizationPluginWrapper> predicate) {
+            Predicate<IAuthorizationPlugin> predicate) {
+        if (stack == null) {
+            return true;
+        }
+
         Boolean val;
         Map<String, Boolean> m = (Map<String, Boolean>) request.getAttribute(cache);
 
@@ -660,58 +618,15 @@ public final class AuthorizationFramework {
         return overallDecision;
     }
 
-    private boolean performCheck(Nameable entity, Predicate<AuthorizationPluginWrapper> predicate) {
-        boolean overallDecision = true;
-        LOGGER.log(Level.FINEST, "Authorization for \"{0}\"",
-                new Object[]{entity.getName()});
-        for (AuthorizationPluginWrapper plugin : getPlugins()) {
-            // run the plugin's test method
-            try {
-                LOGGER.log(Level.FINEST, "Plugin \"{0}\" [{1}] testing a name \"{2}\"",
-                        new Object[]{plugin.getClassname(), plugin.getRole(), entity.getName()});
-
-                boolean pluginDecision = predicate.test(plugin);
-
-                LOGGER.log(Level.FINEST, "Plugin \"{0}\" [{1}] testing a name \"{2}\" => {3}",
-                        new Object[]{plugin.getClassname(), plugin.getRole(), entity.getName(),
-                            pluginDecision ? "true" : "false"});
-
-                if (!pluginDecision && plugin.isRequired()) {
-                    // required sets a failure but still invokes all other plugins
-                    overallDecision = false;
-                    continue;
-                } else if (!pluginDecision && plugin.isRequisite()) {
-                    // requisite sets a failure and immediately returns the failure
-                    overallDecision = false;
-                    break;
-                } else if (overallDecision && pluginDecision && plugin.isSufficient()) {
-                    // sufficient immediately returns the success
-                    overallDecision = true;
-                    break;
-                }
-            } catch (Throwable ex) {
-                LOGGER.log(Level.WARNING,
-                        String.format("Plugin \"%s\" has failed the testing of \"%s\" with an exception.",
-                                plugin.getClassname(),
-                                entity.getName()),
-                        ex);
-
-                LOGGER.log(Level.FINEST, "Plugin \"{0}\" [{1}] testing a name \"{2}\" => {3}",
-                        new Object[]{plugin.getClassname(), plugin.getRole(), entity.getName(),
-                            "false (failed)"});
-
-                // set the return value to false for this faulty plugin
-                if (!plugin.isSufficient()) {
-                    overallDecision = false;
-                }
-                // requisite plugin may immediately return the failure
-                if (plugin.isRequisite()) {
-                    break;
-                }
-            }
-        }
-        LOGGER.log(Level.FINEST, "Authorization for \"{0}\" => {1}",
-                new Object[]{entity.getName(), overallDecision ? "true" : "false"});
-        return overallDecision;
+    /**
+     * Perform the actual check for the entity.
+     *
+     * @param entity either a project or a group
+     * @param predicate a predicate that decides if the authorization is
+     * successful for the given plugin
+     * @return true if entity is allowed; false otherwise
+     */
+    private synchronized boolean performCheck(Nameable entity, Predicate<IAuthorizationPlugin> predicate) {
+        return stack.isAllowed(entity, predicate);
     }
 }
