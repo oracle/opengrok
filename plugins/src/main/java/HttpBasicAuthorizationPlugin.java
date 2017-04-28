@@ -25,11 +25,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
-
 
 /**
  * This class is a full example of a working plugin from HTTP Basic tutorial on
@@ -39,24 +39,24 @@ import org.opensolaris.opengrok.configuration.Project;
  */
 public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
 
-    private static final Map<String, Set<String>> userProjects = new TreeMap<>();
-    private static final Map<String, Set<String>> userGroups = new TreeMap<>();
+    private static final Map<String, Set<String>> USER_PROJECTS = new TreeMap<>();
+    private static final Map<String, Set<String>> USER_GROUPS = new TreeMap<>();
 
     static {
         // all have access to "test-project-11" and some to other "test-project-5" or "test-project-8"
-        userProjects.put("007", new TreeSet<>(Arrays.asList(new String[]{"test-project-11", "test-project-5"})));
-        userProjects.put("008", new TreeSet<>(Arrays.asList(new String[]{"test-project-11", "test-project-8"})));
-        userProjects.put("009", new TreeSet<>(Arrays.asList(new String[]{"test-project-11"})));
-        userProjects.put("00A", new TreeSet<>(Arrays.asList(new String[]{"test-project-11"})));
-        userProjects.put("00B", new TreeSet<>(Arrays.asList(new String[]{"test-project-11"})));
+        USER_PROJECTS.put("007", new TreeSet<>(Arrays.asList(new String[]{"test-project-11", "test-project-5"})));
+        USER_PROJECTS.put("008", new TreeSet<>(Arrays.asList(new String[]{"test-project-11", "test-project-8"})));
+        USER_PROJECTS.put("009", new TreeSet<>(Arrays.asList(new String[]{"test-project-11"})));
+        USER_PROJECTS.put("00A", new TreeSet<>(Arrays.asList(new String[]{"test-project-11"})));
+        USER_PROJECTS.put("00B", new TreeSet<>(Arrays.asList(new String[]{"test-project-11"})));
     }
 
     static {
-        userGroups.put("007", new TreeSet<>(Arrays.asList(new String[]{})));
-        userGroups.put("008", new TreeSet<>(Arrays.asList(new String[]{})));
-        userGroups.put("009", new TreeSet<>(Arrays.asList(new String[]{})));
-        userGroups.put("00A", new TreeSet<>(Arrays.asList(new String[]{})));
-        userGroups.put("00B", new TreeSet<>(Arrays.asList(new String[]{})));
+        USER_GROUPS.put("007", new TreeSet<>(Arrays.asList(new String[]{})));
+        USER_GROUPS.put("008", new TreeSet<>(Arrays.asList(new String[]{})));
+        USER_GROUPS.put("009", new TreeSet<>(Arrays.asList(new String[]{})));
+        USER_GROUPS.put("00A", new TreeSet<>(Arrays.asList(new String[]{})));
+        USER_GROUPS.put("00B", new TreeSet<>(Arrays.asList(new String[]{})));
     }
 
     @Override
@@ -72,42 +72,39 @@ public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
         Set<String> groups = new TreeSet<>();
         Group g;
 
-        Set<String> descendants = new TreeSet<>();
         for (String group : Arrays.asList(new String[]{"admins", "users", "plugins", "ghost"})) {
             if (!request.isUserInRole(group)) {
                 continue;
             }
 
-            discoverGroup(group, request, descendants);
+            discoverGroup(group, request);
         }
-
-        userGroups.get(request.getUserPrincipal().getName()).addAll(descendants);
     }
 
-    private void discoverGroup(String group, HttpServletRequest request, Set<String> descendants) {
+    /**
+     * Add this group, all parent groups, all subgroups, all projects in this
+     * group, all repositories in this group, all projects in the subgroups and
+     * all repositories in the subgroups among the allowed entities for the
+     * authorization.
+     *
+     * <p>
+     * The purpose of this is when user allows a particular group then the
+     * expectation is to allow all included groups/projects/repositories.
+     * </p>
+     *
+     * @param group string name of the group to be discovered
+     * @param request the requests containing the user information
+     */
+    private void discoverGroup(String group, HttpServletRequest request) {
         Group g;
         if ((g = Group.getByName(group)) != null) {
-            // group discovery
-            for (Project p : g.getRepositories()) {
-                userProjects.get(request.getUserPrincipal().getName()).add(p.getName());
-            }
-            for (Project p : g.getProjects()) {
-                userProjects.get(request.getUserPrincipal().getName()).add(p.getName());
-            }
-            for (Group grp : g.getDescendants()) {
-                for (Project p : grp.getRepositories()) {
-                    userProjects.get(request.getUserPrincipal().getName()).add(p.getName());
-                }
-                for (Project p : grp.getProjects()) {
-                    userProjects.get(request.getUserPrincipal().getName()).add(p.getName());
-                }
-                descendants.add(grp.getName());
-            }
-            while (g != null) {
-                descendants.add(g.getName());
-                g = g.getParent();
-            }
+            USER_GROUPS.get(request.getUserPrincipal().getName()).addAll(g.getRelatedGroups().stream().map((t) -> {
+                return t.getName();
+            }).collect(Collectors.toSet()));
 
+            USER_PROJECTS.get(request.getUserPrincipal().getName()).addAll(g.getAllProjects().stream().map((t) -> {
+                return t.getName();
+            }).collect(Collectors.toSet()));
         }
     }
 
@@ -119,7 +116,7 @@ public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
 
         init(request);
 
-        return userProjects.get(request.getUserPrincipal().getName()).contains(project.getName());
+        return USER_PROJECTS.get(request.getUserPrincipal().getName()).contains(project.getName());
     }
 
     @Override
@@ -130,7 +127,7 @@ public class HttpBasicAuthorizationPlugin implements IAuthorizationPlugin {
 
         init(request);
 
-        return userGroups.get(request.getUserPrincipal().getName()).contains(group.getName());
+        return USER_GROUPS.get(request.getUserPrincipal().getName()).contains(group.getName());
     }
 
 }
