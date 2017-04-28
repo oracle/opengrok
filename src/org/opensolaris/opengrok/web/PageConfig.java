@@ -827,6 +827,15 @@ public final class PageConfig {
         if (projects == null) {
             return set;
         }
+
+        /**
+         * If the project was determined from the URL, use this project.
+         */
+        if (getProject() != null) {
+            set.add(getProject().getName());
+            return set;
+        }
+
         if (projects.size() == 1 && authFramework.isAllowed(req, projects.get(0))) {
             set.add(projects.get(0).getName());
             return set;
