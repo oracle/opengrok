@@ -145,8 +145,8 @@ public final class ProjectHelper {
 
         // populate all grouped
         for (Group g : getGroups()) {
-            all_projects.addAll(getProjects(g));
-            all_repositories.addAll(getRepositories(g));
+            all_projects.addAll(g.getProjects());
+            all_repositories.addAll(g.getRepositories());
         }
     }
 
