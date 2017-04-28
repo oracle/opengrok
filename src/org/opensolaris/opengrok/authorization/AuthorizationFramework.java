@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.web.Statistics;
 
 /**
  * Placeholder for performing authorization checks.
@@ -599,6 +600,8 @@ public final class AuthorizationFramework {
             return true;
         }
 
+        Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
+
         Boolean val;
         Map<String, Boolean> m = (Map<String, Boolean>) request.getAttribute(cache);
 
@@ -606,10 +609,18 @@ public final class AuthorizationFramework {
             m = new TreeMap<>();
         } else if ((val = m.get(entity.getName())) != null) {
             // cache hit
+            stats.addRequest(request, "authorization_cache_hits");
             return val;
         }
 
+        stats.addRequest(request, "authorization_cache_misses");
+
+        long time = System.currentTimeMillis();
+
         boolean overallDecision = performCheck(entity, predicate);
+
+        stats.addRequestTime(request, "authorization", System.currentTimeMillis() - time);
+        stats.addRequestTime(request, "authorization_of_" + entity.getName(), System.currentTimeMillis() - time);
 
         m.put(entity.getName(), overallDecision);
         request.setAttribute(cache, m);

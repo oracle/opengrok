@@ -99,6 +99,7 @@ public class Statistics {
     /**
      * Adds a request into the category
      *
+     * @param req the given request
      * @param category category
      */
     public void addRequest(HttpServletRequest req, String category) {
@@ -113,6 +114,7 @@ public class Statistics {
     /**
      * Adds a request's process time into given category.
      *
+     * @param req the given request
      * @param category category
      * @param v time spent on processing this request
      */
