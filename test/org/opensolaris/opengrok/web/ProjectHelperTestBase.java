@@ -23,7 +23,6 @@
 package org.opensolaris.opengrok.web;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +34,9 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.opensolaris.opengrok.authorization.AuthControlFlag;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
+import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
 import org.opensolaris.opengrok.authorization.TestPlugin;
 import org.opensolaris.opengrok.configuration.Group;
@@ -47,6 +48,7 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 public class ProjectHelperTestBase {
 
     protected static String pluginDirectory;
+    protected static AuthorizationStack stack;
     protected static Set<Group> groups;
     protected static List<Project> projects;
     protected static List<RepositoryInfo> repositories;
@@ -204,6 +206,7 @@ public class ProjectHelperTestBase {
     public static void setUpClass() {
         env = RuntimeEnvironment.getInstance();
         pluginDirectory = env.getPluginDirectory();
+        stack = env.getPluginStack();
         groups = env.getGroups();
         projects = env.getProjects();
         repositories = env.getRepositories();
@@ -244,6 +247,7 @@ public class ProjectHelperTestBase {
     @AfterClass
     public static void tearDownClass() {
         env.setPluginDirectory(pluginDirectory);
+        env.setPluginStack(stack);
         setRepositoriesMap(repositories_map);
         env.setProjects(projects);
         env.setGroups(groups);
@@ -252,23 +256,12 @@ public class ProjectHelperTestBase {
     }
 
     protected void invokeRemoveAll() {
-        try {
-            Method method = AuthorizationFramework.class.getDeclaredMethod("removeAll");
-            method.setAccessible(true);
-            method.invoke(AuthorizationFramework.getInstance());
-        } catch (Exception ex) {
-            Assert.fail("invokeRemoveAll should not throw an exception");
-        }
+        AuthorizationFramework.getInstance().removeAll(AuthorizationFramework.getInstance().getStack());
+        AuthorizationFramework.getInstance().setStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default-stack"));
     }
 
     protected void invokeAddPlugin(IAuthorizationPlugin plugin) {
-        try {
-            Method method = AuthorizationFramework.class.getDeclaredMethod("addPlugin", new Class[]{IAuthorizationPlugin.class});
-            method.setAccessible(true);
-            method.invoke(AuthorizationFramework.getInstance(), new Object[]{plugin});
-        } catch (Exception ex) {
-            Assert.fail("invokeAddPlugin should not throw an exception");
-        }
+        AuthorizationFramework.getInstance().addPlugin(AuthorizationFramework.getInstance().getStack(), plugin);
     }
 
     protected AuthorizationFramework getInstance() {

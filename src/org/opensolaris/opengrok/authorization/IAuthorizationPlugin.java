@@ -18,10 +18,11 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
 
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
@@ -36,15 +37,18 @@ import org.opensolaris.opengrok.configuration.Project;
 public interface IAuthorizationPlugin {
 
     /**
-     * Called when the plugin is loaded into memory.
-     * 
+     * Called when the plugin is loaded into memory. With the parameters from
+     * the configuration.
+     *
      * This can be used for establishing db/ldap connection or other init stuff.
+     *
+     * @param parameters parameters specified in the configuration
      */
-    void load();
-    
+    void load(Map<String, Object> parameters);
+
     /**
      * Called when the plugin is about to be deleted from the memory.
-     * 
+     *
      * This can be used for releasing connections and/or other release stuff.
      */
     void unload();
