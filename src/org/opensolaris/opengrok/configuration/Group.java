@@ -139,7 +139,7 @@ public class Group implements Comparable<Group>, Nameable {
      * <ul>
      * <li>any anchestor</li>
      * <li>any subgroup</li>
-     * <ul>
+     * </ul>
      *
      * @return all collected related groups to this group
      */
