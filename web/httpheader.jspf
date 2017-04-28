@@ -31,7 +31,8 @@ to set the title of the document before the include directive for this fragment:
     cfg.setTitle("your title");
 
 </pre>
---%><%@page import="org.opensolaris.opengrok.web.Prefix"%>
+--%><%@page import="org.opensolaris.opengrok.web.Scripts"%>
+<%@page import="org.opensolaris.opengrok.web.Prefix"%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="
 org.opensolaris.opengrok.Info,
 org.opensolaris.opengrok.web.PageConfig"
@@ -66,6 +67,19 @@ org.opensolaris.opengrok.web.PageConfig"
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.combo.css%>" />
 --%>
 <%
+    /**
+     * The order can be arbitrary here, it is hardcoded in Scripts. These
+     * are printed out in footer.
+     *
+     * @see Scripts
+     */
+    cfg.addScript("jquery");
+    cfg.addScript("jquery-ui");
+    cfg.addScript("jquery-tablesorter");
+    cfg.addScript("tablesorter-parsers");
+    cfg.addScript("searchable-option-list");
+    cfg.addScript("utils");
+
 if (cfg.getPrefix().equals(Prefix.HIST_L)) {
     out.write("<link rel=\"alternate\" type=\"application/rss+xml\" " +
         "title=\"RSS feed for " + cfg.getPath() + "\" " +
