@@ -107,7 +107,8 @@ public final class ProjectHelper {
      * Get repository info for particular project
      *
      * @param p Project
-     * @return List of repository info or empty List if no info is found
+     * @return Copy of a list of repository info or empty List if no info is
+     * found
      */
     public List<RepositoryInfo> getRepositoryInfo(Project p) {
         if (!cfg.isAllowed(p)) {
@@ -115,7 +116,7 @@ public final class ProjectHelper {
         }
         Map<Project, List<RepositoryInfo>> map = cfg.getEnv().getProjectRepositoriesMap();
         List<RepositoryInfo> info = map.get(p);
-        return info == null ? new ArrayList<>() : info;
+        return info == null ? new ArrayList<>() : new ArrayList<>(info);
     }
 
     /**
@@ -249,7 +250,7 @@ public final class ProjectHelper {
         }
         return cacheProjects(PROJECT_HELPER_GROUPED_PROJECT_GROUP + g.getName().toLowerCase(), g.getProjects());
     }
-    
+
     /**
      * @param g group
      * @return filtered group's repositories
@@ -421,7 +422,7 @@ public final class ProjectHelper {
         cfg.setRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP, p);
         return val;
     }
-    
+
     /**
      * Checks if the project is a favourite project
      *
