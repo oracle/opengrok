@@ -67,7 +67,7 @@ public class Statistics {
     /**
      * Adds a single request into all requests.
      */
-    public void addRequest(HttpServletRequest req) {
+    synchronized public void addRequest(HttpServletRequest req) {
         maybeRefresh();
 
         requestsPerMinute++;
@@ -87,7 +87,7 @@ public class Statistics {
     /**
      * Refreshes the last timestamp and number of minutes since start if needed.
      */
-    protected void maybeRefresh() {
+    synchronized protected void maybeRefresh() {
         if (timeStart + 60 * 1000 <= System.currentTimeMillis()) {
             // several minutes have passed
             minutes += (System.currentTimeMillis() - timeStart) / (60 * 1000);
@@ -102,7 +102,7 @@ public class Statistics {
      * @param req the given request
      * @param category category
      */
-    public void addRequest(HttpServletRequest req, String category) {
+    synchronized public void addRequest(HttpServletRequest req, String category) {
         Long val = requestCategories.get(category);
         if (val == null) {
             val = new Long(0);
@@ -118,7 +118,7 @@ public class Statistics {
      * @param category category
      * @param v time spent on processing this request
      */
-    public void addRequestTime(HttpServletRequest req, String category, long v) {
+    synchronized public void addRequestTime(HttpServletRequest req, String category, long v) {
         addRequest(req, category);
         Long val = timing.get(category);
         Long min = timingMin.get(category);
@@ -172,19 +172,19 @@ public class Statistics {
         return timingAvg;
     }
 
-    public void setRequestCategories(Map<String, Long> requestCategories) {
+    synchronized public void setRequestCategories(Map<String, Long> requestCategories) {
         this.requestCategories = requestCategories;
     }
 
-    public void setTiming(Map<String, Long> timing) {
+    synchronized public void setTiming(Map<String, Long> timing) {
         this.timing = timing;
     }
 
-    public void setTimingMin(Map<String, Long> timing_min) {
+    synchronized public void setTimingMin(Map<String, Long> timing_min) {
         this.timingMin = timing_min;
     }
 
-    public void setTimingMax(Map<String, Long> timing_max) {
+    synchronized public void setTimingMax(Map<String, Long> timing_max) {
         this.timingMax = timing_max;
     }
 
@@ -192,7 +192,7 @@ public class Statistics {
         return timeStart;
     }
 
-    public void setTimeStart(long timeStart) {
+    synchronized public void setTimeStart(long timeStart) {
         this.timeStart = timeStart;
     }
 
@@ -200,7 +200,7 @@ public class Statistics {
         return requests;
     }
 
-    public void setRequests(long requests) {
+    synchronized public void setRequests(long requests) {
         this.requests = requests;
     }
 
@@ -209,7 +209,7 @@ public class Statistics {
         return minutes;
     }
 
-    public void setMinutes(long minutes) {
+    synchronized public void setMinutes(long minutes) {
         this.minutes = minutes;
     }
 
@@ -218,7 +218,7 @@ public class Statistics {
         return requestsPerMinute;
     }
 
-    public void setRequestsPerMinute(long requestsPerMinute) {
+    synchronized public void setRequestsPerMinute(long requestsPerMinute) {
         this.requestsPerMinute = requestsPerMinute;
     }
 
@@ -229,7 +229,7 @@ public class Statistics {
         return requestsPerMinuteMin;
     }
 
-    public void setRequestsPerMinuteMin(long requestsPerMinuteMin) {
+    synchronized public void setRequestsPerMinuteMin(long requestsPerMinuteMin) {
         this.requestsPerMinuteMin = requestsPerMinuteMin;
     }
 
@@ -240,7 +240,7 @@ public class Statistics {
         return requestsPerMinuteMax;
     }
 
-    public void setRequestsPerMinuteMax(long requestsPerMinuteMax) {
+    synchronized public void setRequestsPerMinuteMax(long requestsPerMinuteMax) {
         this.requestsPerMinuteMax = requestsPerMinuteMax;
     }
 
@@ -253,7 +253,7 @@ public class Statistics {
         return dayHistogram;
     }
 
-    public void setDayHistogram(long[] dayHistogram) {
+    synchronized public void setDayHistogram(long[] dayHistogram) {
         this.dayHistogram = dayHistogram;
     }
 
@@ -261,7 +261,7 @@ public class Statistics {
         return monthHistogram;
     }
 
-    public void setMonthHistogram(long[] monthHistogram) {
+    synchronized public void setMonthHistogram(long[] monthHistogram) {
         this.monthHistogram = monthHistogram;
     }
 
