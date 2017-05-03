@@ -168,6 +168,13 @@ public class AuthorizationPlugin extends AuthorizationStack {
     public boolean isAllowed(Nameable entity,
             AuthorizationEntity.PluginDecisionPredicate pluginPredicate,
             AuthorizationEntity.PluginSkippingPredicate skippingPredicate) {
+        /**
+         * We don't check the skippingPredicate here as this instance is
+         * <b>always</b> a part of some stack (may be the default stack) and the
+         * stack checks the skipping predicate before invoking this method.
+         *
+         * @see AuthorizationStack#processStack
+         */
 
         if (isFailed()) {
             return false;

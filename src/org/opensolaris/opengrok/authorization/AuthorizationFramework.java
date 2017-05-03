@@ -151,14 +151,14 @@ public final class AuthorizationFramework {
             }
         }, new AuthorizationEntity.PluginSkippingPredicate() {
             @Override
-            public boolean shouldSkip(AuthorizationEntity entity) {
+            public boolean shouldSkip(AuthorizationEntity authEntity) {
                 // shouldn't skip if there is no setup
-                if (entity.forProjects().isEmpty() && entity.forGroups().isEmpty()) {
+                if (authEntity.forProjects().isEmpty() && authEntity.forGroups().isEmpty()) {
                     return false;
                 }
 
                 // shouldn't skip if the project is contained in the setup
-                if (entity.forProjects().contains(project.getName())) {
+                if (authEntity.forProjects().contains(project.getName())) {
                     return false;
                 }
 
@@ -189,14 +189,14 @@ public final class AuthorizationFramework {
             }
         }, new AuthorizationEntity.PluginSkippingPredicate() {
             @Override
-            public boolean shouldSkip(AuthorizationEntity entity) {
+            public boolean shouldSkip(AuthorizationEntity authEntity) {
                 // shouldn't skip if there is no setup
-                if (entity.forProjects().isEmpty() && entity.forGroups().isEmpty()) {
+                if (authEntity.forProjects().isEmpty() && authEntity.forGroups().isEmpty()) {
                     return false;
                 }
 
                 // shouldn't skip if the group is contained in the setup
-                return !entity.forGroups().contains(group.getName());
+                return !authEntity.forGroups().contains(group.getName());
             }
         });
     }
