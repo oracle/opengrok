@@ -109,6 +109,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
     <property name="test.hg" value="${test.repositories}/mercurial"/>
     <property name="test.bk" value="${test.repositories}/bitkeeper"/>
+    <property name="test.bzr" value="${test.repositories}/bzr"/>
     <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
@@ -797,6 +798,11 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <fileset dir="${test.bk}/bk" defaultexcludes="no"/>
         </copy>
 
+	<!-- Generate ZIP files used for unit testing bzr/.bzr are renamed -->
+        <copy todir="${test.bzr}/.bzr">
+            <fileset dir="${test.bzr}/bzr"/>
+        </copy>
+
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
              basedir="${test.sources}"
              update="false"
@@ -897,6 +903,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <!-- clean up generated test repositories -->
     <target name="-delete-generated-repository-files">
         <delete dir="${test.bk}/.bk"/>
+        <delete dir="${test.bzr}/.bzr"/>
         <delete dir="${test.hg}/.hg"/>
         <delete file="${test.hg}/.hgignore"/>
         <delete dir="${test.git}/.git"/>
