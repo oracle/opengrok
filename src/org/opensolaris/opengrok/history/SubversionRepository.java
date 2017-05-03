@@ -420,7 +420,7 @@ public class SubversionRepository extends Repository {
             result.add("--password");
             result.add(password);
         }
-        result.add("--trust-server-cert");
+
         return result;
     }
 
