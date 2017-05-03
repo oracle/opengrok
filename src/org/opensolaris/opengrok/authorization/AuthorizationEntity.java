@@ -24,7 +24,9 @@ package org.opensolaris.opengrok.authorization;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 import org.opensolaris.opengrok.configuration.Nameable;
 
@@ -53,6 +55,52 @@ import org.opensolaris.opengrok.configuration.Nameable;
  */
 public abstract class AuthorizationEntity implements Nameable, Serializable, Cloneable {
 
+    /**
+     * Predicate specialized for the the plugin decisions. The caller should
+     * implement the <code>decision</code> method. Returning true if the plugin
+     * allows the action or false when the plugin forbids the action.
+     */
+    public static abstract class PluginDecisionPredicate implements Predicate<IAuthorizationPlugin> {
+
+        @Override
+        public boolean test(IAuthorizationPlugin t) {
+            return decision(t);
+        }
+
+        /**
+         * Perform the authorization check for this plugin.
+         *
+         * @param t the plugin
+         * @return true if plugin allows the action; false otherwise
+         */
+        public abstract boolean decision(IAuthorizationPlugin t);
+
+    }
+
+    /**
+     * Predicate specialized for the the entity skipping decisions. The caller
+     * should implement the <code>shouldSkip</code> method. Returning true if
+     * the entity should be skipped for this action and false if the entity
+     * should be used.
+     */
+    public static abstract class PluginSkippingPredicate implements Predicate<AuthorizationEntity> {
+
+        @Override
+        public boolean test(AuthorizationEntity t) {
+            return shouldSkip(t);
+        }
+
+        /**
+         * Decide if the entity should be skipped in this step of authorization.
+         *
+         * @param t the entity
+         * @return true if skipped (authorization decision will not be affected
+         * by this entity) or false if it should be used (authorization decision
+         * will be affected by this entity)
+         */
+        public abstract boolean shouldSkip(AuthorizationEntity t);
+    }
+
     private static final long serialVersionUID = 1L;
     /**
      * One of "required", "requisite", "sufficient".
@@ -60,6 +108,9 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     protected AuthControlFlag flag;
     protected String name;
     protected Map<String, Object> setup = new TreeMap<>();
+
+    private Set<String> forProjects = new TreeSet<>();
+    private Set<String> forGroups = new TreeSet<>();
 
     protected transient boolean working = true;
 
@@ -82,6 +133,8 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
         name = x.name;
         setup = new TreeMap<>(x.setup);
         working = x.working;
+        forGroups = new TreeSet<>(x.forGroups);
+        forProjects = new TreeSet<>(x.forProjects);
     }
 
     public AuthorizationEntity(AuthControlFlag flag, String name) {
@@ -111,12 +164,16 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      *
      * @param entity the given entity - this is either group or project and is
      * passed just for the logging purposes.
-     * @param predicate predicate returning true or false for the given entity
-     * which determines if the authorization for such entity is successful or
-     * failed
+     * @param pluginPredicate predicate returning true or false for the given
+     * entity which determines if the authorization for such entity is
+     * successful or failed
+     * @param skippingPredicate predicate returning true if this authorization
+     * entity should be omitted from the authorization process
      * @return true if successful; false otherwise
      */
-    abstract public boolean isAllowed(Nameable entity, Predicate<IAuthorizationPlugin> predicate);
+    abstract public boolean isAllowed(Nameable entity,
+            PluginDecisionPredicate pluginPredicate,
+            PluginSkippingPredicate skippingPredicate);
 
     /**
      * Set the plugin to all classes which requires this class in the
@@ -199,6 +256,104 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      */
     public void setSetup(Map<String, Object> setup) {
         this.setup = setup;
+    }
+
+    /**
+     * Get the value of forProjects
+     *
+     * @return the value of forProjects
+     */
+    public Set<String> forProjects() {
+        return getForProjects();
+    }
+
+    /**
+     * Get the value of forProjects
+     *
+     * @return the value of forProjects
+     */
+    public Set<String> getForProjects() {
+        return forProjects;
+    }
+
+    /**
+     * Set the value of forProjects
+     *
+     * @param forProjects new value of forProjects
+     */
+    public void setForProjects(Set<String> forProjects) {
+        this.forProjects = forProjects;
+    }
+
+    /**
+     * Set the value of forProjects
+     *
+     * @param project add this project into the set
+     */
+    public void setForProjects(String project) {
+        this.forProjects.add(project);
+    }
+
+    /**
+     * Set the value of forProjects
+     *
+     * @param projects add all projects in this array into the set
+     *
+     * @see #setForProjects(java.lang.String)
+     */
+    public void setForProjects(String[] projects) {
+        for (String project : projects) {
+            setForProjects(project);
+        }
+    }
+
+    /**
+     * Get the value of forGroups
+     *
+     * @return the value of forGroups
+     */
+    public Set<String> forGroups() {
+        return getForGroups();
+    }
+
+    /**
+     * Get the value of forGroups
+     *
+     * @return the value of forGroups
+     */
+    public Set<String> getForGroups() {
+        return forGroups;
+    }
+
+    /**
+     * Set the value of forGroups
+     *
+     * @param forGroups new value of forGroups
+     */
+    public void setForGroups(Set<String> forGroups) {
+        this.forGroups = forGroups;
+    }
+
+    /**
+     * Set the value of forGroups
+     *
+     * @param group add this group into the set
+     */
+    public void setForGroups(String group) {
+        this.forGroups.add(group);
+    }
+
+    /**
+     * Set the value of forGroups
+     *
+     * @param groups add all groups in this array into the set
+     *
+     * @see #setForGroups(java.lang.String)
+     */
+    public void setForGroups(String[] groups) {
+        for (String group : groups) {
+            setForGroups(group);
+        }
     }
 
     /**

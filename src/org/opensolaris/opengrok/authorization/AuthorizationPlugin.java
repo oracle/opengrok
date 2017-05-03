@@ -24,7 +24,6 @@ package org.opensolaris.opengrok.authorization;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -99,6 +98,12 @@ public class AuthorizationPlugin extends AuthorizationStack {
                     + "This can cause the authorization to fail always.",
                     getName());
             setFailed();
+            LOGGER.log(Level.INFO, "[{0}] Plugin \"{1}\" {2} and is {3}.",
+                    new Object[]{
+                        getFlag().toString().toUpperCase(),
+                        getName(),
+                        hasPlugin() ? "found" : "not found",
+                        isWorking() ? "working" : "failed"});
             return;
         }
 
@@ -147,9 +152,11 @@ public class AuthorizationPlugin extends AuthorizationStack {
      *
      * @param entity the given entity - this is either group or project and is
      * passed just for the logging purposes.
-     * @param predicate predicate returning true or false for the given entity
-     * which determines if the authorization for such entity is successful or
-     * failed for particular request and plugin
+     * @param pluginPredicate predicate returning true or false for the given
+     * entity which determines if the authorization for such entity is
+     * successful or failed for particular request and plugin
+     * @param skippingPredicate predicate returning true if this authorization
+     * entity should be omitted from the authorization process
      * @return true if the plugin is not failed and the project is allowed;
      * false otherwise
      *
@@ -158,11 +165,22 @@ public class AuthorizationPlugin extends AuthorizationStack {
      * @see IAuthorizationPlugin#isAllowed(HttpServletRequest, Group)
      */
     @Override
-    public boolean isAllowed(Nameable entity, Predicate<IAuthorizationPlugin> predicate) {
+    public boolean isAllowed(Nameable entity,
+            AuthorizationEntity.PluginDecisionPredicate pluginPredicate,
+            AuthorizationEntity.PluginSkippingPredicate skippingPredicate) {
+        /**
+         * We don't check the skippingPredicate here as this instance is
+         * <b>always</b> a part of some stack (may be the default stack) and the
+         * stack checks the skipping predicate before invoking this method.
+         *
+         * @see AuthorizationStack#processStack
+         */
+
         if (isFailed()) {
             return false;
         }
-        return predicate.test(plugin);
+
+        return pluginPredicate.decision(this.plugin);
     }
 
     /**
