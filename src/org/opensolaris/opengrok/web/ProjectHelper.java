@@ -104,10 +104,13 @@ public final class ProjectHelper {
     }
 
     /**
-     * Get repository info for particular project
+     * Get repository info list for particular project. A copy of the list is
+     * returned always to allow concurrent modifications of the list in the
+     * caller. The items in the list shall not be modified concurrently, though.
      *
-     * @param p Project
-     * @return List of repository info or empty List if no info is found
+     * @param p the project for which we find the repository info list
+     * @return Copy of a list of repository info or empty list if no info is
+     * found
      */
     public List<RepositoryInfo> getRepositoryInfo(Project p) {
         if (!cfg.isAllowed(p)) {
@@ -115,7 +118,7 @@ public final class ProjectHelper {
         }
         Map<Project, List<RepositoryInfo>> map = cfg.getEnv().getProjectRepositoriesMap();
         List<RepositoryInfo> info = map.get(p);
-        return info == null ? new ArrayList<>() : info;
+        return info == null ? new ArrayList<>() : new ArrayList<>(info);
     }
 
     /**
@@ -249,7 +252,7 @@ public final class ProjectHelper {
         }
         return cacheProjects(PROJECT_HELPER_GROUPED_PROJECT_GROUP + g.getName().toLowerCase(), g.getProjects());
     }
-    
+
     /**
      * @param g group
      * @return filtered group's repositories
@@ -421,7 +424,7 @@ public final class ProjectHelper {
         cfg.setRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP, p);
         return val;
     }
-    
+
     /**
      * Checks if the project is a favourite project
      *
