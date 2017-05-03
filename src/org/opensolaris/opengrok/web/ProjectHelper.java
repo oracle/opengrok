@@ -104,10 +104,12 @@ public final class ProjectHelper {
     }
 
     /**
-     * Get repository info for particular project
+     * Get repository info list for particular project. A copy of the list is
+     * returned always to allow concurrent modifications of the list in the
+     * caller. The items in the list shall not be modified concurrently, though.
      *
-     * @param p Project
-     * @return Copy of a list of repository info or empty List if no info is
+     * @param p the project for which we find the repository info list
+     * @return Copy of a list of repository info or empty list if no info is
      * found
      */
     public List<RepositoryInfo> getRepositoryInfo(Project p) {
