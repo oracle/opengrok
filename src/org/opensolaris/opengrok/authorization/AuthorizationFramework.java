@@ -33,6 +33,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -72,6 +74,11 @@ public final class AuthorizationFramework {
      * Stack of available plugins/stacks in the order of the execution.
      */
     AuthorizationStack stack;
+
+    /**
+     * Lock for safe reloads.
+     */
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * Keeping track of the number of reloads in this framework. This can be
@@ -205,8 +212,13 @@ public final class AuthorizationFramework {
      *
      * @return the stack containing plugins/other stacks
      */
-    public synchronized AuthorizationStack getStack() {
-        return stack;
+    public AuthorizationStack getStack() {
+        lock.readLock().lock();
+        try {
+            return stack;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -214,8 +226,13 @@ public final class AuthorizationFramework {
      *
      * @param s new stack to be used
      */
-    public synchronized void setStack(AuthorizationStack s) {
-        this.stack = s;
+    public void setStack(AuthorizationStack s) {
+        lock.writeLock().lock();
+        try {
+            this.stack = s;
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -495,16 +512,20 @@ public final class AuthorizationFramework {
         // fire load events
         loadAllPlugins(newStack);
 
+        AuthorizationStack oldStack;
         /**
-         * Replace the stack in a synchronized block to avoid inconsistent state
-         * between the stack change and currently executing requests performing
-         * some authorization on the same stack.
+         * Replace the stack in a write lock to avoid inconsistent state between
+         * the stack change and currently executing requests performing some
+         * authorization on the same stack.
          *
-         * @see #performCheck is also marked as synchronized
+         * @see #performCheck is controlled with a read lock
          */
-        AuthorizationStack oldStack = stack;
-        synchronized (this) {
+        lock.writeLock().lock();
+        try {
+            oldStack = stack;
             stack = newStack;
+        } finally {
+            lock.writeLock().unlock();
         }
 
         // clean the old stack
@@ -546,7 +567,8 @@ public final class AuthorizationFramework {
     }
 
     /**
-     * Checks if the request should have an access to a resource.
+     * Checks if the request should have an access to a resource. This method is
+     * thread safe with respect to the concurrent reload of plugins.
      *
      * <p>
      * Internally performed with a predicate. Using cache in request
@@ -645,7 +667,12 @@ public final class AuthorizationFramework {
      * successful for the given plugin
      * @return true if entity is allowed; false otherwise
      */
-    private synchronized boolean performCheck(Nameable entity, Predicate<IAuthorizationPlugin> predicate) {
-        return stack.isAllowed(entity, predicate);
+    private boolean performCheck(Nameable entity, Predicate<IAuthorizationPlugin> predicate) {
+        lock.readLock().lock();
+        try {
+            return stack.isAllowed(entity, predicate);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 }
