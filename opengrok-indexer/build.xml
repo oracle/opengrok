@@ -140,7 +140,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
               defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
                 basedir="${test.repositories}"
-                excludes="mercurial/hg/**, mercurial/hgignore, git/git/**, bitkeeper/bk/**"
+                excludes="mercurial/hg/**, mercurial/hgignore, git/git/**, bitkeeper/bk/**, bazaar/bzr/**"
                 update="false"
                 defaultexcludes="no"/>
 
