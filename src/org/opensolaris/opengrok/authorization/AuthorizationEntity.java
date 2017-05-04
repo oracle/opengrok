@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
 
 /**
@@ -354,6 +356,38 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
         for (String group : groups) {
             setForGroups(group);
         }
+    }
+
+    /**
+     * Discover all targeted groups and projects for every group given by
+     * {@link #forGroups()}.
+     *
+     * <ul>
+     * <li>add to the {@link #forGroups()} all groups which are descendant
+     * groups to the group</li>
+     * <li>add to the {@link #forGroups()} all groups which are parent groups to
+     * the group</li>
+     * <li>add to the {@link #forProjects()} all projects and repositories which
+     * are in the descendant groups or in the group itself</li>
+     * </ul>
+     */
+    protected void discoverGroups() {
+        Set<String> groups = new TreeSet<>();
+        for (String x : forGroups()) {
+            /**
+             * Full group discovery takes place here. All projects/repositories
+             * in the group are added into "forProjects" and all subgroups
+             * (including projects/repositories) and parent groups (excluding
+             * the projects/repositories) are added into "forGroups".
+             */
+            Group g;
+            if ((g = Group.getByName(x)) != null) {
+                forProjects().addAll(g.getAllProjects().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
+                groups.addAll(g.getRelatedGroups().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
+                groups.add(x);
+            }
+        }
+        setForGroups(groups);
     }
 
     /**
