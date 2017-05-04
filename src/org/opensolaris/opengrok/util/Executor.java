@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
@@ -144,8 +145,21 @@ public class Executor {
      */
     public int exec(final boolean reportExceptions, StreamHandler handler) {
         int ret = -1;
-        ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
-        final String cmd_str = processBuilder.command().toString();
+        List<String> cmd = new ArrayList<>(cmdList);
+        ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+
+        List<String> cmd_list = processBuilder.command();
+        if (LOGGER.isLoggable(Level.FINE)) {
+            /**
+             * Obfuscate sensitive information in the command.
+             *
+             * Perform only when the log level is FINE because all of the logs
+             * below are set up to level FINE.
+             */
+            cmd_list = StringUtils.obfuscateCommand(processBuilder.command());
+        }
+
+        final String cmd_str = cmd_list.toString();
         final String dir_str;
         Timer t = null; // timer for timeouting the process
 

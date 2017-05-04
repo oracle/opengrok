@@ -23,7 +23,10 @@
 
 package org.opensolaris.opengrok.util;
 
+import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.opensolaris.opengrok.history.SubversionRepository;
 
 /**
  * Various String utility methods.
@@ -130,5 +133,26 @@ public final class StringUtils {
             n--;
         }
         return pos;
+    }
+
+    /**
+     * Obfuscate sensitive information in the command list. Current sensitive
+     * information are:
+     * <ul>
+     * <li>--username .*</li>
+     * <li>--password .*</li>
+     * </ul>
+     *
+     * @param cmdList the cmd list to be obfuscated
+     * @return the obfuscated cmd list
+     *
+     * @see SubversionRepository#getAuthCommandLineParams()
+     */
+    public static List<String> obfuscateCommand(List<String> cmdList) {
+        return cmdList.stream().map((t) -> {
+            t = t.replaceAll("--username \\S*", "--username ******");
+            t = t.replaceAll("--password \\S*", "--password ******");
+            return t;
+        }).collect(Collectors.toList());
     }
 }
