@@ -1015,6 +1015,30 @@ public final class Configuration {
     }
 
     /**
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should
+     * be included into the error page handling access forbidden errors - HTTP
+     * code 403 Forbidden.
+     */
+    public static final String E_FORBIDDEN_INCLUDE_FILE = "error_forbidden_include";
+
+    private transient String eforbidden_content = null;
+
+    /**
+     * Get the contents of the page for forbidden error page (403 Forbidden)
+     * include file.
+     *
+     * @return an empty string if it could not be read successfully, the
+     * contents of the file otherwise.
+     * @see Configuration#E_FORBIDDEN_INCLUDE_FILE
+     */
+    public String getForbiddenIncludeFileContent() {
+        if (eforbidden_content == null) {
+            eforbidden_content = getFileContent(new File(getDataRoot(), E_FORBIDDEN_INCLUDE_FILE));
+        }
+        return eforbidden_content;
+    }
+
+    /**
      * Get the eftar file, which contains definition tags.
      *
      * @return {@code null} if there is no such file, the file otherwise.

@@ -433,6 +433,9 @@ web.xml of source.war file and change them (see note1) appropriately.
   - The file 'body_include' can be created under DATA_ROOT.
     The contents of this file will be inserted above the footer of the web
     application's "Home" page.
+  - The file 'error_forbidden_include' can be created under DATA_ROOT.
+    The contents of this file will be displayed as the error page when
+    the user is forbidden to see a particular project with HTTP 403 code.
 
 
 5.4.3 - Path Descriptions (optional)
