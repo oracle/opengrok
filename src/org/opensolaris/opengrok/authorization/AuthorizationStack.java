@@ -25,13 +25,9 @@ package org.opensolaris.opengrok.authorization;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
@@ -137,22 +133,8 @@ public class AuthorizationStack extends AuthorizationEntity {
                     getFlag().toString().toUpperCase(),
                     getName()});
 
-        Set<String> groups = new TreeSet<>();
-        for (String x : forGroups()) {
-            /**
-             * Full group discovery takes place here. All projects/repositories
-             * in the group are added into "forProjects" and all subgroups
-             * (including projects/repositories) and parent groups (excluding
-             * the projects/repositories) are added into "forGroups".
-             */
-            Group g;
-            if ((g = Group.getByName(x)) != null) {
-                forProjects().addAll(g.getAllProjects().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
-                groups.addAll(g.getRelatedGroups().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
-                groups.add(x);
-            }
-        }
-        setForGroups(groups);
+        // fill properly the "forGroups" and "forProjects" fields
+        discoverGroups();
 
         setWorking();
 

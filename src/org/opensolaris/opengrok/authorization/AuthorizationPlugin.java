@@ -27,6 +27,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -110,6 +111,9 @@ public class AuthorizationPlugin extends AuthorizationStack {
         Map<String, Object> s = new TreeMap<>();
         s.putAll(parameters);
         s.putAll(getSetup());
+
+        // fill properly the "forGroups" and "forProjects" fields
+        discoverGroups();
 
         try {
             plugin.load(s);
