@@ -127,6 +127,15 @@
 <param-name>keepgenerated</param-name><param-value>true</param-value>
 </init-param>
   </servlet>
+  <servlet>
+      <display-name>Forbidden error handler</display-name>
+      <servlet-name>eforbidden</servlet-name>
+      <jsp-file>/eforbidden.jsp</jsp-file>
+      <init-param>
+          <param-name>keepgenerated</param-name>
+          <param-value>true</param-value>
+      </init-param>
+  </servlet>
   <servlet-mapping>
     <servlet-name>search</servlet-name>
     <url-pattern>/search</url-pattern>		<!-- SEARCH_P -->
@@ -179,6 +188,10 @@
     <servlet-name>enoent</servlet-name>
     <url-pattern>/enoent</url-pattern>		<!-- NOT_FOUND -->
   </servlet-mapping>
+  <servlet-mapping>
+      <servlet-name>eforbidden</servlet-name>
+      <url-pattern>/eforbidden</url-pattern>		<!-- FORBIDDEN -->
+  </servlet-mapping>
   <error-page>
     <error-code>404</error-code>
     <location>/enoent</location>
@@ -187,8 +200,12 @@
     <error-code>500</error-code>
     <location>/error</location>
   </error-page>
+  <error-page>
+      <error-code>403</error-code>
+      <location>/eforbidden</location>
+  </error-page>
   <jsp-config>
-    <jsp-property-group>
+      <jsp-property-group>
       <url-pattern>*.jsp</url-pattern>
       <trim-directive-whitespaces>true</trim-directive-whitespaces>
     </jsp-property-group>
