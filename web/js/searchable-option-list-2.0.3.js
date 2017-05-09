@@ -1023,7 +1023,7 @@
                 if ($changedItem.data('messages-available')) {
                     label += ' <span class="important-note important-note-rounded" ';
                     label += 'title="Some message is important in this project.';
-                    label += ' Find more info in the project list below.">!</span>'
+                    label += ' Find more info in the project list.">!</span>'
                 }
 
                 $displayItemText = $('<span class="sol-selected-display-item-text" />').html(label);
