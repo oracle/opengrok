@@ -134,7 +134,7 @@ public class AuthorizationStack extends AuthorizationEntity {
                     getName()});
 
         // fill properly the "forGroups" and "forProjects" fields
-        discoverGroups();
+        processTargetGroupsAndProjects();
 
         setWorking();
 

@@ -94,6 +94,9 @@ public class AuthorizationPlugin extends AuthorizationStack {
      */
     @Override
     public synchronized void load(Map<String, Object> parameters) {
+        // fill properly the "forGroups" and "forProjects" fields
+        processTargetGroupsAndProjects();
+
         if (!hasPlugin()) {
             LOGGER.log(Level.SEVERE, "Configured plugin \"{0}\" has not been loaded into JVM (missing file?). "
                     + "This can cause the authorization to fail always.",
@@ -111,9 +114,6 @@ public class AuthorizationPlugin extends AuthorizationStack {
         Map<String, Object> s = new TreeMap<>();
         s.putAll(parameters);
         s.putAll(getSetup());
-
-        // fill properly the "forGroups" and "forProjects" fields
-        discoverGroups();
 
         try {
             plugin.load(s);
