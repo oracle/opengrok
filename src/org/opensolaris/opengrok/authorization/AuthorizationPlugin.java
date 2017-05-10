@@ -111,12 +111,12 @@ public class AuthorizationPlugin extends AuthorizationStack {
             return;
         }
 
-        Map<String, Object> s = new TreeMap<>();
-        s.putAll(parameters);
-        s.putAll(getSetup());
+        setCurrentSetup(new TreeMap<>());
+        getCurrentSetup().putAll(parameters);
+        getCurrentSetup().putAll(getSetup());
 
         try {
-            plugin.load(s);
+            plugin.load(getCurrentSetup());
             setWorking();
         } catch (Throwable ex) {
             LOGGER.log(Level.SEVERE, "Plugin \"" + getName() + "\" has failed while loading with exception:", ex);
@@ -266,5 +266,29 @@ public class AuthorizationPlugin extends AuthorizationStack {
     @Override
     public AuthorizationPlugin clone() {
         return new AuthorizationPlugin(this);
+    }
+
+    /**
+     * Print the plugin info.
+     *
+     * @param prefix this prefix should be prepended to every line produced by
+     * this stack
+     * @param colorElement a possible element where any occurrence of %color%
+     * will be replaced with a HTML HEX color representing this entity state.
+     * @return the string containing this stack representation
+     */
+    @Override
+    public String hierarchyToString(String prefix, String colorElement) {
+        StringBuilder builder = new StringBuilder(prefix);
+
+        builder.append(colorToString(colorElement));
+        builder.append(infoToString(prefix));
+        builder.append(" (class ").append(isWorking() ? "loaded" : "missing/failed").append(")");
+        builder.append("\n");
+
+        builder.append(setupToString(prefix));
+        builder.append(targetsToString(prefix));
+
+        return builder.toString();
     }
 }

@@ -24,13 +24,16 @@ package org.opensolaris.opengrok.authorization;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
 import org.opensolaris.opengrok.configuration.Project;
@@ -116,6 +119,10 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     protected AuthControlFlag flag;
     protected String name;
     protected Map<String, Object> setup = new TreeMap<>();
+    /**
+     * Hold current setup - merged with all ancestor's stacks.
+     */
+    protected transient Map<String, Object> currentSetup = new TreeMap<>();
 
     private Set<String> forProjects = new TreeSet<>();
     private Set<String> forGroups = new TreeSet<>();
@@ -202,6 +209,17 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
     abstract public AuthorizationEntity clone();
 
     /**
+     * Print the entity hierarchy.
+     *
+     * @param prefix this prefix should be prepended to every line produced by
+     * this entity
+     * @param colorElement a possible element where any occurrence of %color%
+     * will be replaced with a HTML HEX color representing this entity state.
+     * @return the string containing this entity representation
+     */
+    abstract public String hierarchyToString(String prefix, String colorElement);
+
+    /**
      * Get the value of flag
      *
      * @return the value of flag
@@ -264,6 +282,24 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      */
     public void setSetup(Map<String, Object> setup) {
         this.setup = setup;
+    }
+
+    /**
+     * Get the value of current setup
+     *
+     * @return the value of current setup
+     */
+    public Map<String, Object> getCurrentSetup() {
+        return currentSetup;
+    }
+
+    /**
+     * Set the value of current setup
+     *
+     * @param currentSetup new value of current setup
+     */
+    public void setCurrentSetup(Map<String, Object> currentSetup) {
+        this.currentSetup = currentSetup;
     }
 
     /**
@@ -484,5 +520,98 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      */
     public boolean isRequisite() {
         return getFlag().isRequisite();
+    }
+
+    /**
+     * Print the entity hierarchy.
+     *
+     * @return the string containing this entity representation
+     */
+    public String hierarchyToString() {
+        return hierarchyToString("", "<span style=\"background-color: %color%;\"> </span>");
+    }
+
+    /**
+     * Print the color element for this entity. Replace all occurrences of
+     * %color% in the input string by the current state color in the HTML HEX
+     * format.
+     *
+     * @param colorElement the string, possibly an HTML element, describing the
+     * color (can use %color%) to inject the true color of this entity state.
+     * @return the color element with filled color
+     */
+    protected String colorToString(String colorElement) {
+        StringBuilder builder = new StringBuilder(colorElement.length() + 10);
+        String tmp;
+        try {
+            // #66ff33 - green
+            // #ff0000 - red
+            tmp = colorElement.replaceAll("(?<!\\\\)%color(?<!\\\\)%", isWorking() ? "#66ff33" : "#ff0000");
+            if (tmp.isEmpty()) {
+                builder.append(" ");
+            } else {
+                builder.append(tmp);
+            }
+        } catch (PatternSyntaxException ex) {
+            builder.append(" ");
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Print the basic information about this entity.
+     *
+     * @param prefix prepend this value to each line produced
+     * @return the string containing the information.
+     */
+    protected String infoToString(String prefix) {
+        StringBuilder builder = new StringBuilder(40);
+        builder.append(" ").append(getFlag().toString().toUpperCase()).append(" '").append(getName()).append("'");
+        return builder.toString();
+    }
+
+    /**
+     * Print the setup into a string.
+     *
+     * @param prefix prepend this value to each line produced
+     * @return the string representing the entity setup
+     */
+    protected String setupToString(String prefix) {
+        StringBuilder builder = new StringBuilder();
+        if (!currentSetup.isEmpty()) {
+            builder.append(prefix).append("      setup:\n");
+            for (Entry<String, Object> entry : currentSetup.entrySet()) {
+                builder.append(prefix)
+                        .append("          ")
+                        .append(entry.getKey())
+                        .append(": ")
+                        .append(entry.getValue())
+                        .append("\n");
+            }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Print the targets for groups and projects into a string.
+     *
+     * @param prefix prepend this value to each line produced
+     * @return the string representing targeted the groups and projects
+     */
+    protected String targetsToString(String prefix) {
+        StringBuilder builder = new StringBuilder();
+        if (forGroups().size() > 0) {
+            builder.append(prefix).append("      only for groups:\n");
+            for (String x : forGroups()) {
+                builder.append(prefix).append("          ").append(x).append("\n");
+            }
+        }
+        if (forProjects().size() > 0) {
+            builder.append(prefix).append("      only for projects:\n");
+            for (String x : forProjects()) {
+                builder.append(prefix).append("          ").append(x).append("\n");
+            }
+        }
+        return builder.toString();
     }
 }
