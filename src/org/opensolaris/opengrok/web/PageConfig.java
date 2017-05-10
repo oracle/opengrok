@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -1173,11 +1172,21 @@ public final class PageConfig {
      */
     public String getDirectoryRedirect() {
         if (isDir()) {
+            getPrefix();
+            /**
+             * Redirect /xref -> /xref/
+             */
+            if (prefix == Prefix.XREF_P
+                    && getUriEncodedPath().isEmpty()
+                    && !req.getRequestURI().endsWith("/")) {
+                return req.getContextPath() + Prefix.XREF_P + '/';
+            }
+
             if (path.length() == 0) {
                 // => /
                 return null;
             }
-            getPrefix();
+
             if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L
                     && prefix != Prefix.RSS_P) {
                 // if it is an existing dir perhaps people wanted dir xref
