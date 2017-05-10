@@ -152,7 +152,7 @@ public final class Configuration {
     private String webappLAF;
     private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
-    private boolean useLuceneLocking;
+    private boolean usingLuceneLocking;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
     private boolean tagsEnabled;
@@ -833,15 +833,15 @@ public final class Configuration {
     }
 
     public boolean isUsingLuceneLocking() {
-        return useLuceneLocking;
+        return usingLuceneLocking;
     }
 
     public boolean getUsingLuceneLocking() {
-        return this.useLuceneLocking;
+        return usingLuceneLocking;
     }
 
     public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        this.useLuceneLocking = useLuceneLocking;
+        this.usingLuceneLocking = useLuceneLocking;
     }
 
     public void setCompressXref(boolean compressXref) {

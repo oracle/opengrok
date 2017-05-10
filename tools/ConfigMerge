@@ -1,0 +1,226 @@
+#!/bin/ksh
+
+# Supported Environment Variables:
+#   - OPENGROK_STANDARD_ENV       Run Time Shell Environment (Shell Script)
+#   - OPENGROK_CONFIGURATION      User Configuration (Shell Script)
+#
+# Supported Environment Variables for configuring the default setup:
+#   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
+#                                   - containing the lib/opengrok.jar
+#   - OPENGROK_JAR                OpenGrok java package
+#   - JAVA_HOME                   Full Path to Java Installation Root
+#   - JAVA                        Full Path to java binary (to enable 64bit JDK)
+#   - JAVA_OPTS                   Java options (e.g. for JVM memory increase view
+
+PROGNAME=`basename $0`
+
+SCRIPT_DIRECTORY=`dirname "${0}"`
+SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd`
+
+Usage()
+{
+    exec >&2
+    echo ""
+    echo "Usage: ${PROGNAME} [options] <config_file_base> <config_file_new>"
+    echo ""
+    echo "[OPTIONS]:"
+    echo "  -h|--help                     display this message and exit"
+    echo ""
+}
+
+CommonInvocation()
+{
+    ${DO} \
+    ${JAVA} \
+    ${JAVA_OPTS} \
+    ${JAVA_CLASSPATH:+-classpath} ${JAVA_CLASSPATH} \
+    ${MAIN_CLASS} \
+    "${@}"
+}
+
+StdInvocation()
+{
+    CommonInvocation \
+    -- "${@}"
+}
+
+
+OneArgument()
+{
+    if [ $# -gt 0 ]
+    then
+            echo "$1"
+    fi
+}
+
+ExpectOption()
+{
+    if [ $# -lt 2 ]
+    then
+            echo "Argument \"$1\" expects a value"
+            exit 3
+    fi
+}
+
+Info()
+{
+    if $VERBOSE
+    then
+            echo "Configuration loaded"
+            echo -e "\tJAVA_HOME = "${JAVA_HOME}
+            if [ -n "$JAVA_HOME" ]
+            then
+                    echo -e "\tJAVA = $JAVA_HOME/bin/java"
+            else
+                    echo -e "\tJAVA ="
+            fi
+            echo -e "\tJAVA_OPTS = "${JAVA_OPTS}
+            echo -e "\tJAVA_CLASSPATH = "${JAVA_CLASSPATH}
+            echo -e "\tOPENGROK_JAR = "${OPENGROK_JAR}
+            echo -e "\tOPENGROK_CONFIGURATION = "${OPENGROK_CONFIGURATION}
+            echo -e "\tOPENGROK_STANDARD_ENV = "${OPENGROK_STANDARD_ENV}
+            echo -e "\tOPENGROK_DISTRIBUTION_BASE = "${OPENGROK_DISTRIBUTION_BASE}
+            echo -e "\tOPENGROK_JAR = "${OPENGROK_JAR}
+            echo ""
+    fi
+}
+
+Progress()
+{
+    if $VERBOSE
+    then
+            echo "$@"
+    fi
+}
+
+# Find and load relevant configuration
+#
+# Taken (and modified) from original OpenGrok shell wrapper
+#
+SetupInstanceConfiguration()
+{
+    VERBOSE="${VERBOSE:-false}"
+
+    if [ -f "${OPENGROK_STANDARD_ENV}" ]
+    then
+        Progress "Loading ${OPENGROK_STANDARD_ENV} ..."
+        . "${OPENGROK_STANDARD_ENV}"
+    fi
+
+    if [ -n "${OPENGROK_CONFIGURATION}" -a -f "${OPENGROK_CONFIGURATION}" ]
+    then
+        # Load the Local OpenGrok Configuration Environment
+        Progress "Loading ${OPENGROK_CONFIGURATION} ..."
+        . "${OPENGROK_CONFIGURATION}"
+    fi
+
+    if [ -z "${OPENGROK_DISTRIBUTION_BASE}" ]
+    then
+        if [ -d "${SCRIPT_DIRECTORY}/../dist" -a \
+             -f "${SCRIPT_DIRECTORY}/../dist/opengrok.jar" -a \
+             -f "${SCRIPT_DIRECTORY}/../dist/source.war" \
+           ]
+        then
+            # Handle Developer Build Environments
+            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/../dist"
+        else
+            # Handle Binary Distributions
+            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/../lib"
+        fi
+    fi
+
+    # REQUIRED: Java Home
+    JAVA_HOME="${JAVA_HOME:-`FindJavaHome`}"
+
+    # REQUIRED: Java Virtual Machine
+    JAVA="${JAVA:-$JAVA_HOME/bin/java}"
+
+    # REQUIRED: OpenGrok library
+    OPENGROK_JAR="${OPENGROK_JAR:-${OPENGROK_DISTRIBUTION_BASE}/opengrok.jar}"
+
+    JAVA_CLASSPATH="$CLASSPATH"
+    JAVA_CLASSPATH="${JAVA_CLASSPATH}:${OPENGROK_JAR}"
+    JAVA_OPTS="${JAVA_OPTS:--Xmx32m}"
+    MAIN_CLASS="org.opensolaris.opengrok.configuration.ConfigMerge"
+}
+
+# Find java home based on your system information
+#
+# Taken from original OpenGrok shell wrapper
+#
+FindJavaHome()
+{
+    if [ -x "/bin/uname" ]; then
+        OS_NAME="`/bin/uname -s`"
+        OS_VERSION="`/bin/uname -r`"
+    elif [ -x "/usr/bin/uname" ]; then
+        OS_NAME="`/usr/bin/uname -s`"
+        OS_VERSION="`/usr/bin/uname -r`"
+    else
+        echo "Cannot determine operating system version"
+        exit 3
+    fi
+
+    javaHome=""
+    case "${OS_NAME}:${OS_VERSION}" in
+        SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.7.0" ;;
+        SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
+        SunOS:5.12) javaHome="/usr/jdk/latest"             ;;
+        Darwin:*)    javaHome=`/usr/libexec/java_home`     ;;
+        Linux:*)
+            if [ -f /etc/alternatives/java ]
+            then
+               javaHome=`ls -l /etc/alternatives/java | cut -f 2 -d \> `
+               javaHome=`dirname $javaHome`
+               javaHome=`dirname $javaHome`
+            fi
+        ;;
+    esac
+
+    if [ -z "${javaHome}" ]
+    then
+        echo "Unable to determine Java Home" \
+              "for ${OS_NAME} ${OS_VERSION}"
+        exit 3
+    fi
+
+    if [ ! -d "${javaHome}" ]
+    then
+        echo "Missing Java Home ${javaHome}"
+        exit 3
+    fi
+
+    echo "${javaHome}"
+}
+
+
+if [ $# -eq 0 ]
+then
+    echo "Bad syntax. Expecting some arguments."
+    echo "Maybe try --help option?"
+    exit 3
+fi
+
+SetupInstanceConfiguration
+
+optidx=1
+while [ $optidx -lt $# ]
+do
+    # opt=$( eval echo \${${optidx}} )
+    eval opt=\${${optidx}}
+    case $opt in
+        -h|--help)
+            Usage
+            exit 0
+        ;;
+        -*)
+            echo "Uknown option \"$opt\""
+	    Usage
+	    exit 1
+        ;;
+    esac
+    optidx=`expr $optidx + 1`
+done
+
+Info
+StdInvocation $*
