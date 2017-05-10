@@ -22,7 +22,8 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="org.opensolaris.opengrok.web.Util"%>
+--%>
+<%@page import="org.opensolaris.opengrok.web.Util"%>
 <%@page import="org.opensolaris.opengrok.history.HistoryGuru"%>
 <%@page import="java.io.File"%>
 <%@page errorPage="error.jsp" import="
@@ -45,6 +46,30 @@ org.opensolaris.opengrok.configuration.RuntimeEnvironment"
 
     // Need to set the title before inlcuding httpheader.jspf
     cfg.setTitle(cfg.getHistoryTitle());
+
+    String path = cfg.getPath();
+
+    if (path.length() > 0) {
+        File f = cfg.getResourceFile();
+        History hist = null;
+        try {
+            hist = HistoryGuru.getInstance().getHistoryUI(f);
+        } catch (Exception e) {
+            // should not happen
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            return;
+        }
+
+        if (hist == null) {
+            /**
+             * The history is not available even for a renamed file.
+             * Send 404 Not Found.
+             */
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        request.setAttribute("history.jsp-hist", hist);
+    }
 }
 %>
 <%@
@@ -55,19 +80,7 @@ include file="httpheader.jspf"
 <%
 {
     PageConfig cfg = PageConfig.get(request);
-    String path = cfg.getPath();
-
-    if (path.length() > 0) {
-        File f = cfg.getResourceFile();
-        History hist = null;
-        try {
-            hist = HistoryGuru.getInstance().getHistoryUI(f);
-        } catch (Exception e) {
-            // should not happen
-            %><h3>Problem</h3><p class="error"><%= e.getMessage() %></p><%
-        }
-        if (hist != null) {
-            request.setAttribute("history.jsp-hist", hist);
+    if ((request.getAttribute("history.jsp-hist")) != null) {
 %>
 <body>
 <script type="text/javascript">/* <![CDATA[ */
@@ -80,7 +93,6 @@ include file="httpheader.jspf"
     <div id="whole_header">
         <div id="header">
 <%
-        }
     }
 }
 {
