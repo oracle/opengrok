@@ -156,9 +156,7 @@ public class RuntimeEnvironmentTest {
         assertNotNull(instance.getGroups());
         assertEquals(0, instance.getGroups().size());
 
-        Group g = new Group();
-        g.setName("Random");
-        g.setPattern("xyz.*");
+        Group g = new Group("Random", "xyz.*");
 
         instance.getGroups().add(g);
         assertEquals(1, instance.getGroups().size());

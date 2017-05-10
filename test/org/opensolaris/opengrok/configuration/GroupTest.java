@@ -114,9 +114,7 @@ public class GroupTest {
 
     @Test
     public void basicTest() {
-        Group g = new Group();
-        g.setName("Random name");
-        g.setPattern("abcd");
+        Group g = new Group("Random name", "abcd");
 
         assertTrue(g.getName().equals("Random name"));
         assertTrue(g.getPattern().equals("abcd"));
@@ -154,15 +152,9 @@ public class GroupTest {
 
     @Test
     public void subgroupsTest() {
-        Group g1 = new Group();
-        g1.setName("Random name");
-        g1.setPattern("abcd");
-        Group g2 = new Group();
-        g2.setName("Random name2");
-        g2.setPattern("efgh");
-        Group g3 = new Group();
-        g3.setName("Random name3");
-        g3.setPattern("xyz");
+        Group g1 = new Group("Random name", "abcd");
+        Group g2 = new Group("Random name2", "efgh");
+        Group g3 = new Group("Random name3", "xyz");
 
         g1.getSubgroups().add(g2);
         g1.getSubgroups().add(g3);
@@ -197,12 +189,8 @@ public class GroupTest {
 
     @Test
     public void projectTest() {
-        Group random1 = new Group();
-        random1.setName("Random name");
-        random1.setPattern("abcd");
-        Group random2 = new Group();
-        random2.setName("Random name2");
-        random2.setPattern("efgh");
+        Group random1 = new Group("Random name", "abcd");
+        Group random2 = new Group("Random name2", "efgh");
 
         random1.getSubgroups().add(random2);
 

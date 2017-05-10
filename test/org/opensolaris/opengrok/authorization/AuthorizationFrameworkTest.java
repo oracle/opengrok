@@ -700,14 +700,12 @@ public class AuthorizationFrameworkTest {
     }
 
     static private Group createAllowedGroup() {
-        Group g = new Group();
-        g.setName("allowed" + "_" + "group_" + random.nextInt());
+        Group g = new Group("allowed" + "_" + "group_" + random.nextInt());
         return g;
     }
 
     static private Group createUnallowedGroup() {
-        Group g = new Group();
-        g.setName("not_allowed" + "_" + "group_" + random.nextInt());
+        Group g = new Group("not_allowed" + "_" + "group_" + random.nextInt());
         return g;
     }
 

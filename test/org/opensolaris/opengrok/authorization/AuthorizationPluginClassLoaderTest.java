@@ -150,8 +150,7 @@ public class AuthorizationPluginClassLoaderTest {
 
         IAuthorizationPlugin plugin = getNewInstance(clazz);
 
-        Group g = new Group();
-        g.setName("group1");
+        Group g = new Group("group1");
         Project p = new Project("project1");
 
         Assert.assertFalse(
@@ -171,8 +170,7 @@ public class AuthorizationPluginClassLoaderTest {
 
         IAuthorizationPlugin plugin = getNewInstance(clazz);
 
-        Group g = new Group();
-        g.setName("group1");
+        Group g = new Group("group1");
         Project p = new Project("project1");
 
         Assert.assertTrue(

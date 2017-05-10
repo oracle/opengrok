@@ -289,9 +289,7 @@ public final class Groups {
      * @return false if parent group was not found, true otherwise
      */
     private static boolean modifyGroup(Set<Group> groups, String groupname, String grouppattern, String parent) {
-        Group g = new Group();
-        g.setName(groupname);
-        g.setPattern(grouppattern);
+        Group g = new Group(groupname, grouppattern);
 
         if (updateGroup(groups, groupname, grouppattern)) {
             return true;

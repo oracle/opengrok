@@ -116,8 +116,7 @@ public class ProjectHelperTestBase {
             List<Group> grps) {
 
         for (int i = start; i < start + cnt; i++) {
-            Group g = new Group();
-            g.setName((allowed ? "allowed_" : "") + "group_" + i);
+            Group g = new Group((allowed ? "allowed_" : "") + "group_" + i);
             String pattern = "";
 
             pattern += createProject(i, 1, true, false, false, rps, prjs, map).getName() + "|";

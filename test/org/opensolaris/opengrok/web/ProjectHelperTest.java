@@ -80,8 +80,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Project p = new Project("some random name not in any group");
 
         // group
-        Group g = new Group();
-        g.setName("some random name of a group");
+        Group g = new Group("some random name of a group");
 
         // repository
         Project repo = new Project("some random name not in any other group");
