@@ -28,9 +28,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
+import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * This class covers authorization entities used in opengrok.
@@ -56,6 +60,8 @@ import org.opensolaris.opengrok.configuration.Nameable;
  * @author Krystof Tulinger
  */
 public abstract class AuthorizationEntity implements Nameable, Serializable, Cloneable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationEntity.class);
 
     /**
      * Predicate specialized for the the plugin decisions. The caller should
@@ -369,25 +375,49 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      * the group</li>
      * <li>add to the {@link #forProjects()} all projects and repositories which
      * are in the descendant groups or in the group itself</li>
+     * <li>issue a warning for non-existent groups</li>
+     * <li>issue a warning for non-existent projects</li>
      * </ul>
      */
-    protected void discoverGroups() {
+    protected void processTargetGroupsAndProjects() {
         Set<String> groups = new TreeSet<>();
+
         for (String x : forGroups()) {
             /**
              * Full group discovery takes place here. All projects/repositories
              * in the group are added into "forProjects" and all subgroups
              * (including projects/repositories) and parent groups (excluding
              * the projects/repositories) are added into "forGroups".
+             *
+             * If the group does not exist then a warning is issued.
              */
             Group g;
             if ((g = Group.getByName(x)) != null) {
                 forProjects().addAll(g.getAllProjects().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
                 groups.addAll(g.getRelatedGroups().stream().map((t) -> t.getName()).collect(Collectors.toSet()));
                 groups.add(x);
+            } else {
+                LOGGER.log(Level.WARNING, "Configured group \"{0}\" in forGroups section"
+                        + " for name \"{1}\" does not exist",
+                        new Object[]{x, getName()});
             }
         }
         setForGroups(groups);
+
+        forProjects().removeIf((t) -> {
+            /**
+             * Check the existence of the projects and issue a warning if there
+             * is no such project.
+             */
+            Project p;
+            if ((p = Project.getByName(t)) == null) {
+                LOGGER.log(Level.WARNING, "Configured project \"{0}\" in forProjects"
+                        + " section for name \"{1}\" does not exist",
+                        new Object[]{t, getName()});
+                return true;
+            }
+            return false;
+        });
     }
 
     /**
