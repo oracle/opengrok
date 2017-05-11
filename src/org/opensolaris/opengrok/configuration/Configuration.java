@@ -159,8 +159,6 @@ public final class Configuration {
     private int hitsPerPage;
     private int cachePages;
     private boolean lastEditedDisplayMode;
-    private String databaseDriver;
-    private String databaseUrl;
     private String CTagsExtraOptionsFile;
     private int scanningDepth;
     private Set<String> allowedSymlinks;
@@ -168,7 +166,7 @@ public final class Configuration {
     private boolean chattyStatusPage;
     private final Map<String, String> cmds;  // repository type -> command
     private int tabSize;
-    private int command_timeout; // in seconds
+    private int commandTimeout; // in seconds
     private int indexRefreshPeriod; // in seconds
     private boolean scopesEnabled;
     private boolean foldingEnabled;
@@ -279,7 +277,7 @@ public final class Configuration {
     }
 
     public int getCommandTimeout() {
-        return command_timeout;
+        return commandTimeout;
     }
 
     /**
@@ -293,7 +291,7 @@ public final class Configuration {
             throw new IllegalArgumentException(
                     String.format(NEGATIVE_NUMBER_ERROR, "command_timeout", command_timeout));
         }
-        this.command_timeout = command_timeout;
+        this.commandTimeout = command_timeout;
     }
 
     public int getIndexRefreshPeriod() {
@@ -838,6 +836,10 @@ public final class Configuration {
         return useLuceneLocking;
     }
 
+    public boolean getUsingLuceneLocking() {
+        return this.useLuceneLocking;
+    }
+
     public void setUsingLuceneLocking(boolean useLuceneLocking) {
         this.useLuceneLocking = useLuceneLocking;
     }
@@ -1127,7 +1129,7 @@ public final class Configuration {
         return bos.toString();
     }
 
-    private void encodeObject(OutputStream out) {
+    public void encodeObject(OutputStream out) {
         try (XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out))) {
             e.writeObject(this);
         }
