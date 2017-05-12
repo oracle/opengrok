@@ -45,12 +45,6 @@ public class ConfigMerge {
 
     public static void main(String[] argv) {
 
-        String type = null;
-
-        String text = null;
-        String className = null;
-        boolean check = false;
-
         Getopt getopt = new Getopt(argv, "h?");
 
         try {
@@ -108,7 +102,8 @@ public class ConfigMerge {
         for (Field field : cfgNew.getClass().getDeclaredFields()) {
             String fieldName = field.getName();
             int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers)) {
+            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers) ||
+                Modifier.isFinal(modifiers)) {
                 continue;
             }
             PropertyDescriptor desc = null;
@@ -133,8 +128,9 @@ public class ConfigMerge {
 
             try {
                 Object obj = getter.invoke(cfgNew);
-                if (obj == null || obj.equals(getter.invoke(cfgDefault))) {
-                    continue;
+                if ((obj == null && getter.invoke(cfgDefault) == null) ||
+                    obj.equals(getter.invoke(cfgDefault))) {
+                        continue;
                 }
             } catch (Exception ex) {
                 System.err.println("failed to invoke getter for " + fieldName + ": " + ex);
@@ -142,7 +138,6 @@ public class ConfigMerge {
             }
 
             try {
-                // System.err.println("invoking for " + fieldName);
                 setter.invoke(cfgBase, getter.invoke(cfgNew));
             } catch (Exception ex) {
                 System.err.println("failed to invoke setter for '" + fieldName + "'");

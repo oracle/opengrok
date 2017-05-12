@@ -283,15 +283,15 @@ public final class Configuration {
     /**
      * Set the command timeout to a new value
      *
-     * @param command_timeout the new value
+     * @param commandTimeout the new value
      * @throws IllegalArgumentException when the timeout is negative
      */
-    public void setCommandTimeout(int command_timeout) throws IllegalArgumentException {
-        if (command_timeout < 0) {
+    public void setCommandTimeout(int commandTimeout) throws IllegalArgumentException {
+        if (commandTimeout < 0) {
             throw new IllegalArgumentException(
-                    String.format(NEGATIVE_NUMBER_ERROR, "command_timeout", command_timeout));
+                    String.format(NEGATIVE_NUMBER_ERROR, "commandTimeout", commandTimeout));
         }
-        this.commandTimeout = command_timeout;
+        this.commandTimeout = commandTimeout;
     }
 
     public int getIndexRefreshPeriod() {

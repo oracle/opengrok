@@ -44,24 +44,6 @@ StdInvocation()
     -- "${@}"
 }
 
-
-OneArgument()
-{
-    if [ $# -gt 0 ]
-    then
-            echo "$1"
-    fi
-}
-
-ExpectOption()
-{
-    if [ $# -lt 2 ]
-    then
-            echo "Argument \"$1\" expects a value"
-            exit 3
-    fi
-}
-
 Info()
 {
     if $VERBOSE
@@ -206,7 +188,6 @@ SetupInstanceConfiguration
 optidx=1
 while [ $optidx -lt $# ]
 do
-    # opt=$( eval echo \${${optidx}} )
     eval opt=\${${optidx}}
     case $opt in
         -h|--help)
@@ -223,4 +204,4 @@ do
 done
 
 Info
-StdInvocation $*
+StdInvocation $@
