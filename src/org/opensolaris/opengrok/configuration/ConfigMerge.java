@@ -98,8 +98,8 @@ public class ConfigMerge {
         }
 
         // Basic strategy: take all non-static/transient fields that have a setter
-        // from cfgNew that are not of default value and set them to cfgBase.
-        for (Field field : cfgNew.getClass().getDeclaredFields()) {
+        // from cfgBase that are not of default value and set them to cfgNew.
+        for (Field field : cfgBase.getClass().getDeclaredFields()) {
             String fieldName = field.getName();
             int modifiers = field.getModifiers();
             if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers) ||
@@ -127,7 +127,7 @@ public class ConfigMerge {
             }
 
             try {
-                Object obj = getter.invoke(cfgNew);
+                Object obj = getter.invoke(cfgBase);
                 if ((obj == null && getter.invoke(cfgDefault) == null) ||
                     obj.equals(getter.invoke(cfgDefault))) {
                         continue;
@@ -138,7 +138,7 @@ public class ConfigMerge {
             }
 
             try {
-                setter.invoke(cfgBase, getter.invoke(cfgNew));
+                setter.invoke(cfgNew, getter.invoke(cfgBase));
             } catch (Exception ex) {
                 System.err.println("failed to invoke setter for '" + fieldName + "'");
                 System.exit(1);
@@ -147,7 +147,7 @@ public class ConfigMerge {
 
         // Write the resulting XML representation to standard output.
         OutputStream os = System.out;
-        cfgBase.encodeObject(os);
+        cfgNew.encodeObject(os);
     }
 
     private static final void a_usage() {
