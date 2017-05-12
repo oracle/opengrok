@@ -134,10 +134,14 @@ Currently supported message types:
                     and returns the empty statistics
         - "get"     the application returns current statistics
 4) ConfigMessage (config)
-    This message retrieves or sends a configuration to the webapp,
-    depending on tag. "setconf" tag sends config to webapp and requires
-    file as argument. "set" tag sets particular configuration option in the webapp.
-5) RefreshMessage (refresh)
+    This message performs some configuration communication with the webapp,
+    depending on tag.
+        - "setconf" tag sends config to webapp and requires a file as an argument.
+        - "getconf" tag retrieves the configuration from the webapp.
+        - "set" tag sets particular configuration option in the webapp.
+        - "auth" tag requires "reload" text and
+                 reloads all authorization plugins.
+5) RefreshMesssage (refresh)
     Sent at the end of partial reindex to trigger refresh of SearcherManagers.
 
 4. OpenGrok install
