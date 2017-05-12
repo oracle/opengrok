@@ -60,6 +60,11 @@ public class AuthorizationFilter implements Filter {
             config.getEnv().getStatistics().addRequestTime(httpReq,
                     "requests_forbidden",
                     System.currentTimeMillis() - processTime);
+
+            if (!config.getEnv().getConfiguration().getForbiddenIncludeFileContent().isEmpty()) {
+                sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);
+                return;
+            }
             httpRes.sendError(403, "Access forbidden");
             return;
         }
