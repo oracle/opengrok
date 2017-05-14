@@ -126,6 +126,8 @@ public final class PageConfig {
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
     private HttpServletRequest req;
+    
+    private static String ALL_PROJECTS_WILDCARD = "*";
 
     /**
      * Sets current request's attribute.
@@ -860,6 +862,12 @@ public final class PageConfig {
                 Project x = Project.getByName(s);
                 if (x != null && authFramework.isAllowed(req, x)) {
                     set.add(s);
+                }
+                if (s.equals(ALL_PROJECTS_WILDCARD)) {
+                    //use all existing projects 
+                    for (Project p : projects) {
+                        set.add(p.getDescription());
+                    }
                 }
             }
         }
