@@ -162,7 +162,7 @@ public class SimpleDiff
      * @param orig The original sequence.
      * @param rev The revised sequence to be compared with the original.
      * @return A Revision object describing the differences.
-     * @throws DifferenciationFailedException if the diff could not be computed.
+     * @throws DifferentiationFailedException if the diff could not be computed.
      */
     public Revision diff(Object[] orig, Object[] rev)
         throws DifferentiationFailedException
