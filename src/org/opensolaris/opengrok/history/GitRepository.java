@@ -598,7 +598,7 @@ public class GitRepository extends Repository {
         Process process = null;
 
         try {
-            // First we have to obtain list of all tags, and put it asside
+            // First we have to obtain list of all tags, and put it aside
             // Otherwise we can't use git to get date & hash for each tag
             process = pb.start();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
