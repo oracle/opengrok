@@ -1737,7 +1737,7 @@ function HighlightKeywordsFullText(keywords) {
 */
 
 /**
- *  Highlight keywords by changeing the style of matching tags.
+ *  Highlight keywords by changing the style of matching tags.
  */
 function HighlightKeyword(keyword) {
     var high_colors = [ "#ffff66", "#ffcccc", "#ccccff", "#99ff99", "#cc66ff" ];
