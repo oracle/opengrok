@@ -148,7 +148,7 @@ Method summary
 Configuration.addGroup(Group group)
 
 This method adds a group to the set of groups in the configuration. If the group name is not
-unique accross the set, it throws an IOException and does not add that group.
+unique across the set, it throws an IOException and does not add that group.
 
 Group.addGroup(Group group)
 
