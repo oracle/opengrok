@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
- * Enum for avaliable authorization roles.
+ * Enum for available authorization roles.
  *
  * @author Krystof Tulinger
  */
