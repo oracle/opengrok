@@ -96,7 +96,7 @@ The /opengrok/smf subdirectory contains scripts and manifest files that may be
 used to run the index generation as a Solaris service. You will find a script
 that may be used as a skeleton to create you own startup / shutdown script in
 tools/init.d. This should be placed in /etc/init.d and appropriate links
-must be creted from the desired rcX.d directory.
+must be created from the desired rcX.d directory.
 
 Solaris users should edit /opengrok/smf/opengrok.xml and verify that the
 variables specified there are correct. The service is imported by executing
