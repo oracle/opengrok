@@ -338,7 +338,7 @@ public abstract class Node
      * current revision and the next revision in the RCS logical hierarchy.
      * The deltas are codified in a format similar to the one used by Unix diff.</p>
      * <p> The passed string is converted to an array of objects
-     * befored being stored as the revision's text</p>
+     * before being stored as the revision's text</p>
      * @param value The revision's text.
      * @see ArchiveParser
      */
