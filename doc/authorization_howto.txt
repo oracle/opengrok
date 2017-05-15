@@ -120,7 +120,7 @@ The plugin class must be compiled to the .class file (and the it can be packaged
 The frameworks supports both .class and .jar files.
 For compiling you have to provide opengrok.jar in the classpath
 
-Example (for the SampleAuthorizaionPlugin which is included):
+Example (for the SampleAuthorizationPlugin which is included):
 $ javac -classpath dist/opengrok.jar -d . plugins/SampleAuthorizationPlugin.java
 
 Then you can just drop the compiled .class file into plugin directory and deploy the webapp.
