@@ -453,7 +453,7 @@ public abstract class Node
      * identified by the given version.
      * @param vernum The version number of the last node in the path.
      * @param soft If true, no error is thrown if a node with the given
-     * version doesn't exist. Use soft=true to find a apth to where a new
+     * version doesn't exist. Use soft=true to find a path to where a new
      * node should be added.
      * @return The path
      * @throws NodeNotFoundException if a node with the given version number
@@ -483,7 +483,7 @@ public abstract class Node
      * identified by the given version.
      * @param vernum The version number of the last node in the path.
      * @param soft If true, no error is thrown if a node with the given
-     * version doesn't exist. Use soft=true to find a apth to where a new
+     * version doesn't exist. Use soft=true to find a path to where a new
      * node should be added.
      * @return The path
      * @throws NodeNotFoundException if a node with the given version number
