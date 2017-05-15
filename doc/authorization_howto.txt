@@ -72,7 +72,7 @@ Each plugin must implement the IAuthorizationPlugin interface which contains fou
         - watchdog service enabled and change was made - forced reload
         - deploy of the webapp
 2) void unload ( void );
-    This method is called whenever the framework destroyes the plugin
+    This method is called whenever the framework destroys the plugin
         - watchdog service enabled and change was made - forced reload
           (the order is first unload the old instance then load the new one)
         - undeploy of the webapp
