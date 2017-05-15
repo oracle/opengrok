@@ -154,7 +154,7 @@ public final class ProjectHelper {
     }
 
     /**
-     * Filters set of projects based on the authorizator options.
+     * Filters set of projects based on the authorizer options.
      *
      * @param p set of projects
      * @return filtered set of projects
@@ -171,7 +171,7 @@ public final class ProjectHelper {
     }
 
     /**
-     * Filters set of groups based on the authorizator options.
+     * Filters set of groups based on the authorizer options.
      *
      * @param p set of groups
      * @return filtered set of groups
