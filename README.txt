@@ -282,7 +282,7 @@ in /tank/source then to get more verbosity run the indexer as:
   $ OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok \
        ./OpenGrok index /tank/source
 
-Since above will also change default location of config file, beforehands(or
+Since above will also change default location of config file, beforehand(or
 restart your web container after creating this symlink) I suggest doing
 below for our case of having opengrok instance in /tank/opengrok :
 
