@@ -1457,7 +1457,7 @@ $(document).ready(function () {
     }
 
     /**
-     * Initialize spaces plugin which automaticaly inserts a single space between
+     * Initialize spaces plugin which automatically inserts a single space between
      * the line number and the following text. It strongly relies on the fact
      * that the line numbers are stored in 'name' attribute on each line link.
      */
@@ -1483,7 +1483,7 @@ $(document).ready(function () {
 
     /**
      * Initialize the history input picker.
-     * Checkboxes are automaticaly covered with a click event and automaticaly
+     * Checkboxes are automatically covered with a click event and automatically
      * colored as disabled or checked.
      *
      * Also works for paging where it stores the actual selected revision range in the
