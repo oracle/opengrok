@@ -143,8 +143,8 @@
             }, options || {
                 /*
                  * {
-                 *  $parent: // jQuery object for common anchestor of all diff features
-                 *  $content: // jQuery object which is anchestor and scrollable - fixing animation
+                 *  $parent: // jQuery object for common ancestor of all diff features
+                 *  $content: // jQuery object which is ancestor and scrollable - fixing animation
                  *  chunkSelector: // String describing chunk selection
                  *  addSelector: // String describing added lines
                  *  delSelector: // String describin deleted lines
