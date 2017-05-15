@@ -58,7 +58,7 @@ import org.opensolaris.opengrok.web.Util;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
   
-  // Q&D methods to asure well-formed documents
+  // Q&D methods to assure well-formed documents
   protected void closePara() throws IOException {
       if (p > 0) {
           out.write("</p>");
