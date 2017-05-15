@@ -60,7 +60,7 @@ package org.apache.commons.jrcs.diff;
 import java.util.*;
 
 /**
- * Implements a simple differencing algortithm.<p>
+ * Implements a simple differencing algorithm.<p>
  *
  * @date $Date: 2003/10/13 08:00:24 $
  * @version $Revision: 1.7 $
