@@ -83,7 +83,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
     protected int finalOffset;
 
     /**
-     * This will re-initalize internal AttributeImpls, or it returns false if
+     * This will re-initialize internal AttributeImpls, or it returns false if
      * end of input Reader ...
      *
      * @return false if no more tokens, otherwise true
