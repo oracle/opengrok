@@ -44,7 +44,7 @@ org.opensolaris.opengrok.configuration.RuntimeEnvironment"
 
     cfg.checkSourceRootExistence();
 
-    // Need to set the title before inlcuding httpheader.jspf
+    // Need to set the title before including httpheader.jspf
     cfg.setTitle(cfg.getHistoryTitle());
 
     String path = cfg.getPath();
