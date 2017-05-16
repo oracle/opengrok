@@ -602,7 +602,7 @@ public final class AuthorizationFramework {
      * <h3>Order of plugin invocation</h3>
      *
      * <p>
-     * The order of plugin invokation is given by the configuration
+     * The order of plugin invocation is given by the configuration
      * {@link RuntimeEnvironment#getPluginStack()} and appropriate actions are
      * taken when traversing the stack with set of keywords, such as:</p>
      *
