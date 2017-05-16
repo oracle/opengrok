@@ -124,9 +124,9 @@ public class AuthorizationStack extends AuthorizationEntity {
      */
     @Override
     public void load(Map<String, Object> parameters) {
-        Map<String, Object> s = new TreeMap<>();
-        s.putAll(parameters);
-        s.putAll(getSetup());
+        setCurrentSetup(new TreeMap<>());
+        getCurrentSetup().putAll(parameters);
+        getCurrentSetup().putAll(getSetup());
 
         LOGGER.log(Level.INFO, "[{0}] Stack \"{1}\" is loading.",
                 new Object[]{
@@ -140,7 +140,7 @@ public class AuthorizationStack extends AuthorizationEntity {
 
         int cnt = 0;
         for (AuthorizationEntity authEntity : getStack()) {
-            authEntity.load(s);
+            authEntity.load(getCurrentSetup());
             if (authEntity.isWorking()) {
                 cnt++;
             }
@@ -308,5 +308,33 @@ public class AuthorizationStack extends AuthorizationEntity {
     @Override
     public AuthorizationStack clone() {
         return new AuthorizationStack(this);
+    }
+
+    /**
+     * Print the stack hierarchy. Process also all contained plugins and
+     * substacks.
+     *
+     * @param prefix this prefix should be prepended to every line produced by
+     * this stack
+     * @param colorElement a possible element where any occurrence of %color%
+     * will be replaced with a HTML HEX color representing this entity state.
+     * @return the string containing this stack representation
+     */
+    @Override
+    public String hierarchyToString(String prefix, String colorElement) {
+        StringBuilder builder = new StringBuilder(prefix);
+
+        builder.append(colorToString(colorElement));
+        builder.append(infoToString(prefix));
+        builder.append(" (stack ").append(isWorking() ? "ok" : "not fully ok").append(")");
+        builder.append("\n");
+
+        builder.append(setupToString(prefix));
+        builder.append(targetsToString(prefix));
+
+        for (AuthorizationEntity authEntity : getStack()) {
+            builder.append(authEntity.hierarchyToString(prefix + "    ", colorElement));
+        }
+        return builder.toString();
     }
 }

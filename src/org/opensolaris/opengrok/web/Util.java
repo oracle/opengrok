@@ -60,6 +60,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.opensolaris.opengrok.Info;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -887,6 +888,7 @@ public final class Util {
                 env.isAllowLeadingWildcard());
         printTableRow(out, "History cache", HistoryGuru.getInstance()
                 .getCacheInfo());
+        printTableRow(out, "Authorization", "<pre>" + AuthorizationFramework.getInstance().getStack().hierarchyToString() + "</pre>");
         out.append("</table>");
     }
 
