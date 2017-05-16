@@ -392,7 +392,7 @@ public abstract class Node
 
     /**
      * Returns the version number that should correspond to
-     * the revision folowing this node.
+     * the revision following this node.
      * @return The next version number.
      */
     public Version nextVersion()
