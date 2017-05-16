@@ -1429,7 +1429,7 @@ $(document).ready(function () {
     init_tablesorter()
 
     /**
-     * Initialize inteligence window plugin. Presence of #contextpath indicates
+     * Initialize intelligence window plugin. Presence of #contextpath indicates
      * that we use the code view.
      */
     $("#contextpath").each(function () {
