@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the Javascript keywords
+ * Holds static hash set containing the JavaScript keywords
  * 
  * * ECMA-262 5.1 Edition June 2011
  * 

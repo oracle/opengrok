@@ -269,7 +269,7 @@ New features
 
     PHP analyzer
     Visual Basic analyzer
-    Javascript analyzer
+    JavaScript analyzer
     C# analyzer
     completely refactored UI, upgraded jquery to 1.4.4
     SSL, SSO and mod_proxy compatible

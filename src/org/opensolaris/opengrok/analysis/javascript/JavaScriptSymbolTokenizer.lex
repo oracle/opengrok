@@ -22,7 +22,7 @@
  */
 
 /*
- * Gets Javascript symbols - ignores comments, strings, keywords
+ * Gets JavaScript symbols - ignores comments, strings, keywords
  */
 
 package org.opensolaris.opengrok.analysis.javascript;
