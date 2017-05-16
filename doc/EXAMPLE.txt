@@ -32,7 +32,7 @@ Edit OpenGrok, review the configuration section and set at least the
 following parameters to reflect your system and requirements:
 SRC_ROOT=/opengrok/source
 DATA_ROOT=/opengrok/data
-EXUB_CTAGS=/absolute/path/to/Exubrant/Ctags
+EXUB_CTAGS=/absolute/path/to/Exuberant/Ctags
 
 The last thing we need to do is to configure the web application. To do so,
 please execute the following commands:
