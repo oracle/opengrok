@@ -64,7 +64,7 @@ fi
 # 0.12-rc<i>	~	0.12.0.0.<i>
 # ...
 #
-# Note that the release candidate must follow imediately after the basic version number (0.12)
+# Note that the release candidate must follow immediately after the basic version number (0.12)
 #
 #
 # 0.12.1	~	0.12.1.0.0
