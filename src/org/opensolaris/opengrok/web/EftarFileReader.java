@@ -131,7 +131,7 @@ public class EftarFileReader {
             } catch (EOFException e) { // NOPMD
                 // ignore
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Got excption while getting the tag: ", e);
+                LOGGER.log(Level.WARNING, "Got exception while getting the tag: ", e);
             }
             return "H[" + hash + "] num = " + numChildren + " tag = " + tagString;
         }
