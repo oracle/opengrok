@@ -144,7 +144,7 @@ public abstract class Delta
     }
 
     /**
-     * Initializaes the delta with the given chunks from the original
+     * Initializes the delta with the given chunks from the original
      * and revised texts.
      */
     protected void init(Chunk orig, Chunk rev)
