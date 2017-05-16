@@ -98,7 +98,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
             } else if ("path".equals(qname)) {
                 /*
                  * We only want valid files in the repository, not the
-                 * top-level directory itself, hence the check for inequivality.
+                 * top-level directory itself, hence the check for inequality.
                  */
                 if (s.startsWith(prefix) && !s.equals(prefix)) {
                     File file = new File(home, s.substring(prefix.length()));
