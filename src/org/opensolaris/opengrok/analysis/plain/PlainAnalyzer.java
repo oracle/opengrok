@@ -81,7 +81,7 @@ public class PlainAnalyzer extends TextAnalyzer {
             defs = ctags.doCtags(fullpath + "\n");
             if (defs != null && defs.numberOfSymbols() > 0) {
                 doc.add(new TextField(QueryBuilder.DEFS, new IteratorReader(defs.getSymbols())));
-                //this is to explicitely use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+                //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
                 TextField ref=new TextField(QueryBuilder.REFS,this.SymbolTokenizer);
                 this.SymbolTokenizer.setReader(getReader(src.getStream()));
                 doc.add(ref);
