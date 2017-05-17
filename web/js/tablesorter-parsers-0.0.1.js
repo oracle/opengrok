@@ -58,7 +58,7 @@ $.tablesorter.addParser({
          * with:
          * 1,000,123,133.235
          * 1 000.4564
-         * and with even mispelled numbers:
+         * and with even misspelled numbers:
          * 1,00,345,0.123 (wrong number of digits between the separator)
          * 13,456 13 45.1234 (mixed separators)
          * 1000,123 (wrong number of digits between the separator)
