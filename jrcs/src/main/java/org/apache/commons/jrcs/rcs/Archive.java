@@ -400,12 +400,12 @@ public class Archive
      * Set the keyword expansion flag for the archive.
      * @param value The keyword expansion value. It should be one of:
      * <ul>
-     * <li>     kv   (Default) Substitue keyword and value.
+     * <li>     kv   (Default) Substitute keyword and value.
      * <li>     kvl  Substitute keyword, value, and locker (if any).
      * <li>     k    Substitute keyword only.
      * <li>     o    Preserve original string.
      * <li>     b    Like o, but mark file as binary.
-     * <li>     v    Substitue value only.
+     * <li>     v    Substitute value only.
      * </ul>
      */
     public void setExpand(String value)
