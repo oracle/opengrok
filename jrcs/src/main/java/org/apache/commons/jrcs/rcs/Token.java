@@ -63,7 +63,7 @@ public class Token {
    * can create and return subclass objects based on the value of ofKind.
    * Simply add the cases to the switch for all those special cases.
    * For example, if you have a subclass of Token called IDToken that
-   * you want to create if ofKind is ID, simlpy add something like :
+   * you want to create if ofKind is ID, simply add something like :
    *
    *    case MyParserConstants.ID : return new IDToken();
    *
