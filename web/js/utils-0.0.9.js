@@ -1336,7 +1336,7 @@ function init_history_input() {
         $revisions.filter('[data-diff-revision=\'r2\']')
                 .data('revision-1', $this.data('revision-1'))
 
-        // set the correct revision for the form submittion
+        // set the correct revision for the form submission
         $("#input_" + $this.data('diff-revision')).val($this.data('revision-path'))
 
         // enable all input
