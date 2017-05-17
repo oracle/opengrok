@@ -948,7 +948,7 @@
                             $el = $el.last();
                             break;
                         default:
-                            this.$window.error("Uknown direction")
+                            this.$window.error("Unknown direction")
                             return;
                     }
 

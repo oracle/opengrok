@@ -170,7 +170,7 @@ Match ()
                 exit 0
             ;;
             -*)
-                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+                echo "Unknown option \"$opt\"" && LocalUsage && exit 5
             ;;
             *)
                 if [ "x$MATCH" = "x" ]
@@ -226,7 +226,7 @@ List ()
                 exit 0
             ;;
             -*)
-                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+                echo "Unknown option \"$opt\"" && LocalUsage && exit 5
             ;;
             *)
                 echo "this requires no other parameter"
@@ -280,7 +280,7 @@ Empty ()
                 exit 0
             ;;
             -*)
-                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+                echo "Unknown option \"$opt\"" && LocalUsage && exit 5
             ;;
             *)
                 echo "this requires no other parameter"
@@ -347,7 +347,7 @@ Delete ()
                 exit 0
             ;;
             -*)
-                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+                echo "Unknown option \"$opt\"" && LocalUsage && exit 5
             ;;
             *)
                 if [ "x$NAME" = "x" ]
@@ -430,7 +430,7 @@ Add ()
                 exit 0
             ;;
             -*)
-                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+                echo "Unknown option \"$opt\"" && LocalUsage && exit 5
             ;;
             *)
                 if [ "x$NAME" = "x" ]

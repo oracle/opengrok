@@ -367,7 +367,7 @@ public final class AuthorizationFramework {
         } catch (IllegalAccessException ex) {
             LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an exception: ", classname), ex);
         } catch (Throwable ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an uknown error: ", classname), ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an unknown error: ", classname), ex);
         }
         return null;
     }

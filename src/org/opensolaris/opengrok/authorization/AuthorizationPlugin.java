@@ -221,7 +221,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
         } catch (IllegalAccessException ex) {
             LOGGER.log(Level.INFO, "Class loader threw an exception: ", ex);
         } catch (Throwable ex) {
-            LOGGER.log(Level.INFO, "Class loader threw an uknown error: ", ex);
+            LOGGER.log(Level.INFO, "Class loader threw an unknown error: ", ex);
         }
         return false;
     }
