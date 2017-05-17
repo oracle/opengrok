@@ -91,7 +91,7 @@ class TrunkNode
     /**
      * Create a TrunkNode.
      * The next field in a TrunkNode points to the immediate
-     * previos revision or parent.
+     * previous revision or parent.
      */
     TrunkNode(Version vernum, TrunkNode next)
             throws InvalidTrunkVersionNumberException
