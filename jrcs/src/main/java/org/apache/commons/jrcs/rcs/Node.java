@@ -697,7 +697,7 @@ public abstract class Node
 
 
     /**
-     * Convert the urrent node to its RCS string representation.
+     * Convert the current node to its RCS string representation.
      * @return The string representation
      */
     public String toText()
@@ -708,7 +708,7 @@ public abstract class Node
     }
 
     /**
-     * Convert the urrent node to its RCS string representation and
+     * Convert the current node to its RCS string representation and
      * add it to the given StringBuffer using the given marker as
      * line separator.
      * @param s The string buffer to add the node's image to.
