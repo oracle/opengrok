@@ -27,7 +27,7 @@ engine, written in Java. It helps you search, cross-reference and navigate
 your source tree. It can understand various program file formats and
 version control histories of many source code management systems.
 
-Offical page of the project is on:
+Official page of the project is on:
 
   http://opengrok.github.com/OpenGrok/
 
