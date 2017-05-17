@@ -63,7 +63,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Holds a information about a parrt of the text involved in
+ * Holds a information about a part of the text involved in
  * a differencing or patching operation.
  *
  * @version $Id: Chunk.java,v 1.4 2003/10/13 08:00:24 rdonkin Exp $
