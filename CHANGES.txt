@@ -752,7 +752,7 @@ New Features:
 
 Bug fixes:
    Fixes a XSS security issue (reported by Wez Furlong)
-   Fixes bug where some CVS revisions could not be retrived
+   Fixes bug where some CVS revisions could not be retrieved
    Fixes bug in handling CVS long histories (reported by Wez Furlong)
    Handles extra characters in CVS symbol names (reported by Wez Furlong)
    More robust EFTAR file handling (reported by Andy Tucker)

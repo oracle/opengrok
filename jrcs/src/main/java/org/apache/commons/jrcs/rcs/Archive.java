@@ -124,14 +124,14 @@ import org.apache.commons.jrcs.util.ToString;
  *
  * <p>You can also initialize archives from streams.</p>
  *
- * <p>To retreive a revision from an archive use:
+ * <p>To retrieve a revision from an archive use:
  * <code><pre>
  *   String versionNumber = "1.2";
  *   Object[] text = archive.getRevision(versionNumber);
  * </pre></code>
  * </p>
  *
- * <p>You can also retreive revisions in such a way that each item
+ * <p>You can also retrieve revisions in such a way that each item
  * is annotated with the version number of the revision in which it was
  * last changed or added. To retrieve annotated text use:
  * <code><pre>

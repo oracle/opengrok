@@ -287,8 +287,8 @@ public class Chunk
     }
 
     /**
-     * Retreives the specified part from a {@link List List}.
-     * @param seq the list to retreive a slice from.
+     * Retrieves the specified part from a {@link List List}.
+     * @param seq the list to retrieve a slice from.
      * @param pos the start position.
      * @param count the number of items in the slice.
      * @return a {@link List List} containing the specified items.
@@ -307,7 +307,7 @@ public class Chunk
 
     /**
      * Retrieves a slice from an {@link Object Object} array.
-     * @param seq the list to retreive a slice from.
+     * @param seq the list to retrieve a slice from.
      * @param pos the start position.
      * @param count the number of items in the slice.
      * @return a {@link List List} containing the specified items.
