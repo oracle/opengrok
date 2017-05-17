@@ -364,7 +364,7 @@ public class Archive
 
 
     /**
-     * Add a lock over a revison.
+     * Add a lock over a revision.
      * @param user The user that locks the revision.
      * @param vernum The version number of the revision to lock.
      */
