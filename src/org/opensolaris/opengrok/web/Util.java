@@ -1481,7 +1481,7 @@ public final class Util {
      *
      * @param name displayed name of the anchor
      * @param url anchor's URL
-     * @param newTab a flag if the link should be opend in a new tab
+     * @param newTab a flag if the link should be opened in a new tab
      * @return string containing the result
      *
      * @throws URISyntaxException
