@@ -733,7 +733,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <!-- <target name="-pre-compile-test-single" depends="-set-jacocoagent"/> -->
 
-    <target name="check_repositories_zip" description="check if repositores.zip was generated">
+    <target name="check_repositories_zip" description="check if repositories.zip was generated">
         <available
             file="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
             type="file" property="repos_exists">

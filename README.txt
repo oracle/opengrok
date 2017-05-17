@@ -912,7 +912,7 @@ The initial index creation process is resource intensive and often the error
 avoid this increase the ulimit value to a higher number.
 
 It is noted that the hard and soft limit for open files of 10240 works for mid
-sized repositores and so the recommendation is to start with 10240.
+sized repositories and so the recommendation is to start with 10240.
 
 If you get a similar error, but for threads:
 "java.lang.OutOfMemoryError: unable to create new native thread "
