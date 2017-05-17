@@ -735,7 +735,7 @@
                 google_url: 'https://www.google.com/search?q=',
                 project: undefined,
                 init: function ($window) {
-                    var $highlight, $unhighlight, $unhighlighAll, $prev, $next
+                    var $highlight, $unhighlight, $unhighlightAll, $prev, $next
 
                     var $firstList = $("<ul>")
                             .append($("<li>").append(
@@ -745,12 +745,12 @@
                                     $unhighlight = $("<a href=\"#\" title=\"Unhighlight\">" +
                                             "<span>Unhighlight</span> <b class=\"symbol-name\"></b></a>")))
                             .append($("<li>").append(
-                                    $unhighlighAll = $("<a href=\"#\" title=\"Unhighlight all\">" +
+                                    $unhighlightAll = $("<a href=\"#\" title=\"Unhighlight all\">" +
                                             "<span>Unhighlight all</span></a>")))
 
                     this.bindOnClick($highlight, this.highlight)
                     this.bindOnClick($unhighlight, this.unhighlight)
-                    this.bindOnClick($unhighlighAll, this.unhighlightAll);
+                    this.bindOnClick($unhighlightAll, this.unhighlightAll);
 
                     var $secondList = $("<ul>")
                             .append($("<li>").append(
