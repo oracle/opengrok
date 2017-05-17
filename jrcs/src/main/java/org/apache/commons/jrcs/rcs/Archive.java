@@ -521,7 +521,7 @@ public class Archive
 
     /**
      * Place a string image of the archive in the given StringBuffer.
-     * @param s Where the image shoul go.
+     * @param s Where the image should go.
      */
     public void toString(StringBuffer s)
     {
