@@ -307,7 +307,7 @@ public class Diff
     /**
     * Shuffles around the items in the input sequence.
     * @param text The input sequence.
-    * @param seed A seed value for randomizing the suffle.
+    * @param seed A seed value for randomizing the shuffle.
     * @return The shuffled sequence.
     */
    public static Object[] shuffle(Object[] text, long seed)
