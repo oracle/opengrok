@@ -180,16 +180,16 @@ public class Ctags {
 
             command.add("--langdef=rust");
             command.add("--langmap=rust:.rs");
-            command.add("--regex-rust=/^[[:space:]]*(#\\[[^\\]]\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\"[^\"]+\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/f,functions,function definitions/");
+            command.add("--regex-rust=/^[[:space:]]*(#\\[[^\\]]\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\"[^\"]+\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/h,functions,function definitions/");
             command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?type[[:space:]]+([[:alnum:]_]+)/\\2/T,types,type definitions/");
             command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?enum[[:space:]]+([[:alnum:]_]+)/\\2/g,enum,enumeration names/");
-            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?struct[[:space:]]+([[:alnum:]_]+)/\\2/s,structure names/");
-            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?mod[[:space:]]+([[:alnum:]_]+)/\\2/m,modules,module names/");
-            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?([[:alnum:]_]+)/\\4/c,consts,static constants/");
-            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?trait[[:space:]]+([[:alnum:]_]+)/\\3/t,traits,traits/");
-            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?([[:alnum:]_]+)/\\5 \\7 \\8/i,impls,trait implementations/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?struct[[:space:]]+([[:alnum:]_]+)/\\2/S,structure names/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?mod[[:space:]]+([[:alnum:]_]+)/\\2/n,modules,module names/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?([[:alnum:]_]+)/\\4/C,consts,static constants/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?trait[[:space:]]+([[:alnum:]_]+)/\\3/r,traits,traits/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,trait implementations/");
             command.add("--regex-rust=/^[[:space:]]*macro_rules![[:space:]]+([[:alnum:]_]+)/\\1/d,macros,macro definitions/");
-            command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/v,variables/");
+            command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V,variables/");
 
             //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
 
