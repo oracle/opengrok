@@ -223,7 +223,7 @@ public abstract class Node
 
     /**
      * Retrieve the branch node identified with
-     * the given numer.
+     * the given number.
      * @param no The branch number.
      * @return The branch node.
      * @see BranchNode
