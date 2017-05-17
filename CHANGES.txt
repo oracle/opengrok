@@ -107,7 +107,7 @@ Bug fixes(newest first):
  make the OpenGrok script work on OS X fixes #687
  Countdownlatch (for renamed history)
  replace condvar with CountDownLatch fixes #754
- Seach the vb directory for a list of visual basic reserved words. Without this, the VB analyser will fail at runtime because the file is missing
+ Search the vb directory for a list of visual basic reserved words. Without this, the VB analyser will fail at runtime because the file is missing
  use separate pool for history generation of renamed files fixes #751
  better logging for indexing fixes #749
  human readable time format for duration of history index fixes #745
