@@ -165,7 +165,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
-     * @param repos Pointer to the SubversionReporitory
+     * @param repos Pointer to the SubversionRepository
      * @return object representing the file's history
      */
     History parse(File file, Repository repos) throws HistoryException {
