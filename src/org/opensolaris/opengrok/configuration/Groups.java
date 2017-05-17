@@ -132,7 +132,7 @@ public final class Groups {
             ex.printStackTrace(System.err);
             System.exit(3);
         } catch (IOException ex) {
-            System.err.println("An uknown error occured - the input file may be corrupted");
+            System.err.println("An unknown error occured - the input file may be corrupted");
             ex.printStackTrace(System.err);
             System.exit(3);
         }

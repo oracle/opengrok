@@ -137,7 +137,7 @@ public class Group implements Comparable<Group>, Nameable {
     /**
      * Collect all related groups to this group. A related group is
      * <ul>
-     * <li>any anchestor</li>
+     * <li>any ancestor</li>
      * <li>any subgroup</li>
      * </ul>
      *

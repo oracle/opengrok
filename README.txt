@@ -27,7 +27,7 @@ engine, written in Java. It helps you search, cross-reference and navigate
 your source tree. It can understand various program file formats and
 version control histories of many source code management systems.
 
-Offical page of the project is on:
+Official page of the project is on:
 
   http://opengrok.github.com/OpenGrok/
 
@@ -137,7 +137,7 @@ Currently supported message types:
     This message retrieves or sends a configuration to the webapp,
     depending on tag. "setconf" tag sends config to webapp and requires
     file as argument. "set" tag sets particular configuration option in the webapp.
-5) RefreshMesssage (refresh)
+5) RefreshMessage (refresh)
     Sent at the end of partial reindex to trigger refresh of SearcherManagers.
 
 4. OpenGrok install
@@ -177,7 +177,7 @@ control management (SCM) OpenGrok requires the checked out source tree under
 SRC_ROOT.
 
 By itself OpenGrok does not perform the setup of the source code repositories
-or sychronization of the source code with its origin. This needs to be done by
+or synchronization of the source code with its origin. This needs to be done by
 the user or by using automatic scripts.
 
 It is possible for SCM systems which are not distributed (Subversion, CVS)
@@ -282,7 +282,7 @@ in /tank/source then to get more verbosity run the indexer as:
   $ OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok \
        ./OpenGrok index /tank/source
 
-Since above will also change default location of config file, beforehands(or
+Since above will also change default location of config file, beforehand(or
 restart your web container after creating this symlink) I suggest doing
 below for our case of having opengrok instance in /tank/opengrok :
 
@@ -540,7 +540,7 @@ directory.
 OpenGrok script doesn't support this out of box, so you'd need to add it there.
 Usually to StdInvocation() function after line -jar ${OPENGROK_JAR} .
 It would look like this:
--A cs:org.opensolaris.opengrok.analysis.PlainAnalayzer
+-A cs:org.opensolaris.opengrok.analysis.PlainAnalyzer
 (this will map extension .cs to PlainAnalyzer)
 You should even be able to override OpenGroks analyzers using this option.
 
@@ -912,7 +912,7 @@ The initial index creation process is resource intensive and often the error
 avoid this increase the ulimit value to a higher number.
 
 It is noted that the hard and soft limit for open files of 10240 works for mid
-sized repositores and so the recommendation is to start with 10240.
+sized repositories and so the recommendation is to start with 10240.
 
 If you get a similar error, but for threads:
 "java.lang.OutOfMemoryError: unable to create new native thread "

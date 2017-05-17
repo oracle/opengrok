@@ -107,7 +107,7 @@ Bug fixes(newest first):
  make the OpenGrok script work on OS X fixes #687
  Countdownlatch (for renamed history)
  replace condvar with CountDownLatch fixes #754
- Seach the vb directory for a list of visual basic reserved words. Without this, the VB analyser will fail at runtime because the file is missing
+ Search the vb directory for a list of visual basic reserved words. Without this, the VB analyser will fail at runtime because the file is missing
  use separate pool for history generation of renamed files fixes #751
  better logging for indexing fixes #749
  human readable time format for duration of history index fixes #745
@@ -174,7 +174,7 @@ Bug fixes(newest first):
  netbeans 7.3.1
  add support for tomcat7, Solaris 12 (dev)
  scala support for ctags
- #59 Added support for printing multi-page soure code by disabling scrolling in print media's CSS.
+ #59 Added support for printing multi-page source code by disabling scrolling in print media's CSS.
  Added a new field “fileType” to the Lucene index. - search by type feature
  #57 div src not unique when multiple readmes
  #5 opensolaris.org cleanup
@@ -236,7 +236,7 @@ Bug fixes(newest first):
  Bug 19164 - OpenGrok shell script should have a way to tell not to send config to webapp
  fix clean button
  avoid eftar file test and exception on every page access
- avoid unecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occures
+ avoid unnecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occurs
 
 
 March 2012 update 0.11.1
@@ -246,7 +246,7 @@ This is a stability improvement release and we suggest to use it instead 0.11
 
 Bug fixes
 
- avoid unecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occures
+ avoid unnecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occurs
  avoid eftar file test and exception on every page access
  fix clean button
  various OpenGrok script fixes (JAVA_OPTS now configurable, can now disable sending config to webapp, 
@@ -269,7 +269,7 @@ New features
 
     PHP analyzer
     Visual Basic analyzer
-    Javascript analyzer
+    JavaScript analyzer
     C# analyzer
     completely refactored UI, upgraded jquery to 1.4.4
     SSL, SSO and mod_proxy compatible
@@ -752,7 +752,7 @@ New Features:
 
 Bug fixes:
    Fixes a XSS security issue (reported by Wez Furlong)
-   Fixes bug where some CVS revisions could not be retrived
+   Fixes bug where some CVS revisions could not be retrieved
    Fixes bug in handling CVS long histories (reported by Wez Furlong)
    Handles extra characters in CVS symbol names (reported by Wez Furlong)
    More robust EFTAR file handling (reported by Andy Tucker)

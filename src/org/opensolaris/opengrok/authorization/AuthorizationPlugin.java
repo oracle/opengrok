@@ -208,7 +208,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
         try {
             /**
              * The exception should not happen here as we already have an
-             * instance of IAuthoriazationPlugin. But it is required by the
+             * instance of IAuthorizationPlugin. But it is required by the
              * compiler.
              *
              * NOTE: If we were to add a throws clause here we would interrupt
@@ -221,7 +221,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
         } catch (IllegalAccessException ex) {
             LOGGER.log(Level.INFO, "Class loader threw an exception: ", ex);
         } catch (Throwable ex) {
-            LOGGER.log(Level.INFO, "Class loader threw an uknown error: ", ex);
+            LOGGER.log(Level.INFO, "Class loader threw an unknown error: ", ex);
         }
         return false;
     }

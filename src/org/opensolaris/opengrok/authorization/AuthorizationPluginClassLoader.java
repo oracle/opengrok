@@ -105,7 +105,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "Loading class threw an exception:", ex);
             } catch (Throwable ex) {
-                LOGGER.log(Level.SEVERE, "Loading class threw an uknown exception:", ex);
+                LOGGER.log(Level.SEVERE, "Loading class threw an unknown exception:", ex);
             }
         }
         throw new ClassNotFoundException("Class \"" + classname + "\" could not be found");

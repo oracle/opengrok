@@ -55,7 +55,7 @@ public class UuencodeAnalyzer extends TextAnalyzer {
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
-        //this is to explicitely use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+        //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
         TextField full=new TextField(QueryBuilder.FULL,SymbolTokenizer);
         this.SymbolTokenizer.setReader(getReader(src.getStream()));        
         doc.add(full);

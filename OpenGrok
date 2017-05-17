@@ -548,7 +548,7 @@ FindApplicationServerType()
     fi
 
     # This implementation favours Tomcat, but needs a lot of work,
-    # especially if Glassfish is perferrerd or it is under the control
+    # especially if Glassfish is preferred or it is under the control
     # of SMF (Service Management Facility)
 
     # Maybe a better implementation would be to call Application

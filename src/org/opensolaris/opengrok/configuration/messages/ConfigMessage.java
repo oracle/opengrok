@@ -174,7 +174,7 @@ public class ConfigMessage extends Message {
             } else if (paramClass.equals(String.class.getName())) {
                 setter.invoke(config, value);
             } else {
-                // error uknown type
+                // error unknown type
                 throw new IOException(
                         String.format("Unsupported type conversion for the name \"%s\". Expecting \"%s\".",
                                 field, paramClass));

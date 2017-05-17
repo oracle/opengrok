@@ -105,7 +105,7 @@ public class Project implements Comparable<Project>, Nameable {
     }
 
     /**
-     * Set a textual name of this project, prefferably don't use " , " in the
+     * Set a textual name of this project, preferably don't use " , " in the
      * name, since it's used as delimiter for more projects
      *
      * XXX we should not allow setting project name after it has been constructed

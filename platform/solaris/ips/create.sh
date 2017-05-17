@@ -64,7 +64,7 @@ fi
 # 0.12-rc<i>	~	0.12.0.0.<i>
 # ...
 #
-# Note that the release candidate must follow imediately after the basic version number (0.12)
+# Note that the release candidate must follow immediately after the basic version number (0.12)
 #
 #
 # 0.12.1	~	0.12.1.0.0
@@ -238,7 +238,7 @@ PKG pkgsend add depend fmri=pkg:/runtime/java/jre-8 type=require
 PKG pkgsend add depend fmri=pkg:/web/java-servlet/tomcat-8 type=require
 
 # Following line gets commented by that the developer/tool/exuberant-ctags has been removed from IPS
-# This has to stay commented until the next release of Solaris will contain the exhuberant ctags package
+# This has to stay commented until the next release of Solaris will contain the exuberant ctags package
 #PKG pkgsend add depend fmri=pkg:/developer/tool/exuberant-ctags type=require
 
 PKG pkgsend add file dist/source.war mode=0444 owner=webservd group=webservd path=/usr/opengrok/lib/source.war

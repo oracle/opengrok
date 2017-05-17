@@ -68,7 +68,7 @@ public class CVSRepository extends RCSRepository {
 
     public CVSRepository() {
         /**
-         * This variable is set in the anchestor to TRUE which has a side effect
+         * This variable is set in the ancestor to TRUE which has a side effect
          * that this repository is always marked as working even though it does
          * not have the binary available on the system.
          *

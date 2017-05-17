@@ -424,7 +424,7 @@
  * It doesn't really make sense to call all of the jQuery functions however
  * some of them might be useful: toggle, hide, show and so on.
  *
- * The window object also provides some userful functions like
+ * The window object also provides some useful functions like
  * $myWindow.error(message) to display an error in this.$errors element or
  * $myWindow.update(data) to trigger your update callback with given data or
  * $myWindow.move(position) to move the window to the given position
@@ -735,7 +735,7 @@
                 google_url: 'https://www.google.com/search?q=',
                 project: undefined,
                 init: function ($window) {
-                    var $highlight, $unhighlight, $unhighlighAll, $prev, $next
+                    var $highlight, $unhighlight, $unhighlightAll, $prev, $next
 
                     var $firstList = $("<ul>")
                             .append($("<li>").append(
@@ -745,12 +745,12 @@
                                     $unhighlight = $("<a href=\"#\" title=\"Unhighlight\">" +
                                             "<span>Unhighlight</span> <b class=\"symbol-name\"></b></a>")))
                             .append($("<li>").append(
-                                    $unhighlighAll = $("<a href=\"#\" title=\"Unhighlight all\">" +
+                                    $unhighlightAll = $("<a href=\"#\" title=\"Unhighlight all\">" +
                                             "<span>Unhighlight all</span></a>")))
 
                     this.bindOnClick($highlight, this.highlight)
                     this.bindOnClick($unhighlight, this.unhighlight)
-                    this.bindOnClick($unhighlighAll, this.unhighlightAll);
+                    this.bindOnClick($unhighlightAll, this.unhighlightAll);
 
                     var $secondList = $("<ul>")
                             .append($("<li>").append(
@@ -948,7 +948,7 @@
                             $el = $el.last();
                             break;
                         default:
-                            this.$window.error("Uknown direction")
+                            this.$window.error("Unknown direction")
                             return;
                     }
 
@@ -1269,7 +1269,7 @@ function init_searchable_option_list() {
                     })
                 }
             },
-            // override the default onScroll positioning event if neccessary
+            // override the default onScroll positioning event if necessary
             onScroll: function () {
 
                 var posY = this.$input.offset().top - this.config.scrollTarget.scrollTop() + this.$input.outerHeight() + 1,
@@ -1336,7 +1336,7 @@ function init_history_input() {
         $revisions.filter('[data-diff-revision=\'r2\']')
                 .data('revision-1', $this.data('revision-1'))
 
-        // set the correct revision for the form submittion
+        // set the correct revision for the form submission
         $("#input_" + $this.data('diff-revision')).val($this.data('revision-path'))
 
         // enable all input
@@ -1381,7 +1381,7 @@ function init_markdown_converter() {
         $.script.loadScript('js/xss-0.2.16.min.js').done(function () {
             $.script.loadScript('js/showdown-1.4.2.min.js').done(function () {
                 $that.find('.markdown-content[data-markdown-download]').each(function () {
-                    var $thet = $(this)
+                    var $that = $(this)
                     if (converter === null) {
                         converter = new showdown.Converter();
                     }
@@ -1392,7 +1392,7 @@ function init_markdown_converter() {
                         timeout: 5000,
                         mimeType: 'text/plain',
                     }).done(function (payload) {
-                        $thet.html(filterXSS(converter.makeHtml(payload)))
+                        $that.html(filterXSS(converter.makeHtml(payload)))
                                 .show()
                         $that.addClass('markdown')
                                 .find('[data-markdown-original]')
@@ -1429,7 +1429,7 @@ $(document).ready(function () {
     init_tablesorter()
 
     /**
-     * Initialize inteligence window plugin. Presence of #contextpath indicates
+     * Initialize intelligence window plugin. Presence of #contextpath indicates
      * that we use the code view.
      */
     $("#contextpath").each(function () {
@@ -1457,7 +1457,7 @@ $(document).ready(function () {
     }
 
     /**
-     * Initialize spaces plugin which automaticaly inserts a single space between
+     * Initialize spaces plugin which automatically inserts a single space between
      * the line number and the following text. It strongly relies on the fact
      * that the line numbers are stored in 'name' attribute on each line link.
      */
@@ -1483,7 +1483,7 @@ $(document).ready(function () {
 
     /**
      * Initialize the history input picker.
-     * Checkboxes are automaticaly covered with a click event and automaticaly
+     * Checkboxes are automatically covered with a click event and automatically
      * colored as disabled or checked.
      *
      * Also works for paging where it stores the actual selected revision range in the
@@ -1737,7 +1737,7 @@ function HighlightKeywordsFullText(keywords) {
 */
 
 /**
- *  Highlight keywords by changeing the style of matching tags.
+ *  Highlight keywords by changing the style of matching tags.
  */
 function HighlightKeyword(keyword) {
     var high_colors = [ "#ffff66", "#ffcccc", "#ccccff", "#99ff99", "#cc66ff" ];

@@ -129,7 +129,7 @@ public final class Messages {
         Message m = Message.createMessage(type);
 
         if (m == null) {
-            System.err.println("Uknown message type " + type);
+            System.err.println("Unknown message type " + type);
             b_usage();
             System.exit(1);
         }

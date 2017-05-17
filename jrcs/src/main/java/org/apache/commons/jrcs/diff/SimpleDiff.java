@@ -60,7 +60,7 @@ package org.apache.commons.jrcs.diff;
 import java.util.*;
 
 /**
- * Implements a simple differencing algortithm.<p>
+ * Implements a simple differencing algorithm.<p>
  *
  * @date $Date: 2003/10/13 08:00:24 $
  * @version $Revision: 1.7 $
@@ -80,7 +80,7 @@ import java.util.*;
  * <p>The algorithm consists of the following steps:</p>
  * <ul>
  *   <li>compute an equivalence set for the input data</li>
- *   <li>translate each element of the orginal
+ *   <li>translate each element of the original
  *       and revised input sequences to a member of the equivalence set
  *   </li>
  *   <li>match the the input sequences to determine the deltas, i.e.
@@ -162,7 +162,7 @@ public class SimpleDiff
      * @param orig The original sequence.
      * @param rev The revised sequence to be compared with the original.
      * @return A Revision object describing the differences.
-     * @throws DifferenciationFailedException if the diff could not be computed.
+     * @throws DifferentiationFailedException if the diff could not be computed.
      */
     public Revision diff(Object[] orig, Object[] rev)
         throws DifferentiationFailedException

@@ -22,7 +22,7 @@
  */
 
 /*
- * Cross reference a Javascript file
+ * Cross reference a JavaScript file
  */
 
 package org.opensolaris.opengrok.analysis.javascript;

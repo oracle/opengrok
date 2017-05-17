@@ -169,7 +169,7 @@ def post_request(url, timeout, data, headers=[], proxy=None):
             raise MyError("server returned non-JSON output")
     except HTTPError as e:
         print e.code
-        # XXX print string representatin of the code
+        # XXX print string representation of the code
         raise MyError("got HTTP error: {} ({})".format(e.code, e.reason))
 
 def upload_file(filepath, upload_url, headers, timeout, proxy=None):

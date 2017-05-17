@@ -367,7 +367,7 @@ public final class AuthorizationFramework {
         } catch (IllegalAccessException ex) {
             LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an exception: ", classname), ex);
         } catch (Throwable ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an uknown error: ", classname), ex);
+            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an unknown error: ", classname), ex);
         }
         return null;
     }
@@ -515,7 +515,7 @@ public final class AuthorizationFramework {
         LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
 
         // trashing out the old instance of the loaded enables us
-        // to reaload the stack at runtime
+        // to reload the stack at runtime
         loader = (AuthorizationPluginClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
             @Override
             public Object run() {
@@ -602,7 +602,7 @@ public final class AuthorizationFramework {
      * <h3>Order of plugin invocation</h3>
      *
      * <p>
-     * The order of plugin invokation is given by the configuration
+     * The order of plugin invocation is given by the configuration
      * {@link RuntimeEnvironment#getPluginStack()} and appropriate actions are
      * taken when traversing the stack with set of keywords, such as:</p>
      *

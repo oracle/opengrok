@@ -98,7 +98,7 @@ public abstract class PathNode
     /**
      * Is this a bootstrap node?
      * <p>
-     * In bottstrap nodes one of the two corrdinates is
+     * In bootstrap nodes one of the two coordinates is
      * less than zero.
      * @return tru if this is a bootstrap node.
      */

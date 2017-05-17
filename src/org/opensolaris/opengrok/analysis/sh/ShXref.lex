@@ -222,7 +222,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 <BRACEGROUP> {
  /* Bug #15661: Terminate a ksh brace group. According to ksh man page
   * http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
-  * the closing brace must be on beginning of line, or it must be preceeded by
+  * the closing brace must be on beginning of line, or it must be preceded by
   * a semi-colon and (optionally) whitespace.
   */
   ^ {WhiteSpace}* \}  { out.write(yytext()); popstate(); }

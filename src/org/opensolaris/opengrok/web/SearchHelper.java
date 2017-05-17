@@ -268,7 +268,7 @@ public class SearchHelper {
 
             // TODO check if below is somehow reusing sessions so we don't
             // requery again and again, I guess 2min timeout sessions could be
-            // usefull, since you click on the next page within 2mins, if not,
+            // useful, since you click on the next page within 2mins, if not,
             // then wait ;)
             // Most probably they are not reused. SearcherLifetimeManager might help here.
             switch (order) {

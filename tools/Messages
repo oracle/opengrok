@@ -339,7 +339,7 @@ do
             VERBOSE=true
         ;;
         -*)
-            echo "Uknown option \"$opt\"" && Usage && exit 5
+            echo "Unknown option \"$opt\"" && Usage && exit 5
         ;;
         *)
 	    if [ "$MESSAGE_TYPE" = "config" -a "$1" = "setconf" ]

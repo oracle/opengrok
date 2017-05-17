@@ -34,16 +34,16 @@
                 "showAllSelector": ".accordion_show_all",
                 "hideAllSelector": ".accordion_hide_all"
             },
-            $pannels: [],
+            $panels: [],
             determineButtonsVisibility: function() {
-                var decision = inner.$pannels.filter(":visible").length === inner.$pannels.length;
+                var decision = inner.$panels.filter(":visible").length === inner.$panels.length;
                 return {
                     hide: decision ? inner.options.showAllSelector : inner.options.hideAllSelector,
                     show: decision ? inner.options.hideAllSelector : inner.options.showAllSelector,
                 };
             },
             init: function () {
-                inner.$pannels = inner.options.parent.find(".panel-body-accordion");
+                inner.$panels = inner.options.parent.find(".panel-body-accordion");
 
                 inner.options.parent.find(".panel-heading-accordion").click(function (e) {
                     $(this).parent().find(".panel-body-accordion").each(function () {
@@ -71,7 +71,7 @@
                 });
                 
                 inner.options.parent.find(inner.options.showAllSelector).click(function (e) {
-                    inner.$pannels
+                    inner.$panels
                             .data("accordion-visible", true)
                             .show()
                             .parent()
@@ -84,7 +84,7 @@
                 });
 
                 inner.options.parent.find(inner.options.hideAllSelector).click(function (e) {
-                    inner.$pannels
+                    inner.$panels
                             .data("accordion-visible", false)
                             .hide()
                             .parent()

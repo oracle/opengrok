@@ -3,7 +3,7 @@ OpenGrok deployment, step by step
 
 One of the design goals of OpenGrok is that it should be easy to use, so a
 user should be able to use OpenGrok with a minimum of configuration. While the
-mimimum configuration is suitable for some users, it will not fit all users.
+minimum configuration is suitable for some users, it will not fit all users.
 The intent of this document is to offer a "step by step" guide for two
 different deployments of OpenGrok. A simple configuration suitable for small
 deployments, and a more "advanced" one for sites that want to host multiple
@@ -32,7 +32,7 @@ Edit OpenGrok, review the configuration section and set at least the
 following parameters to reflect your system and requirements:
 SRC_ROOT=/opengrok/source
 DATA_ROOT=/opengrok/data
-EXUB_CTAGS=/absolute/path/to/Exubrant/Ctags
+EXUB_CTAGS=/absolute/path/to/Exuberant/Ctags
 
 The last thing we need to do is to configure the web application. To do so,
 please execute the following commands:
@@ -96,7 +96,7 @@ The /opengrok/smf subdirectory contains scripts and manifest files that may be
 used to run the index generation as a Solaris service. You will find a script
 that may be used as a skeleton to create you own startup / shutdown script in
 tools/init.d. This should be placed in /etc/init.d and appropriate links
-must be creted from the desired rcX.d directory.
+must be created from the desired rcX.d directory.
 
 Solaris users should edit /opengrok/smf/opengrok.xml and verify that the
 variables specified there are correct. The service is imported by executing

@@ -253,7 +253,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         public static final int SHT_FINI_ARRAY =        15;     /* Array of destructors */
         public static final int SHT_PREINIT_ARRAY =     16;     /* Array of pre-constructors */
         public static final int SHT_GROUP =     17;     /* Section group */
-        public static final int SHT_SYMTAB_SHNDX =      18;     /* Extended section indeces */
+        public static final int SHT_SYMTAB_SHNDX =      18;     /* Extended section indices */
         public static final int SHT_NUM =       19;     /* Number of defined types.  */
         public static final int SHT_LOOS =      0x60000000;     /* Start OS-specific */
         public static final int SHT_GNU_LIBLIST =       0x6ffffff7;     /* Prelink library list */
