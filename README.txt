@@ -177,7 +177,7 @@ control management (SCM) OpenGrok requires the checked out source tree under
 SRC_ROOT.
 
 By itself OpenGrok does not perform the setup of the source code repositories
-or sychronization of the source code with its origin. This needs to be done by
+or synchronization of the source code with its origin. This needs to be done by
 the user or by using automatic scripts.
 
 It is possible for SCM systems which are not distributed (Subversion, CVS)
