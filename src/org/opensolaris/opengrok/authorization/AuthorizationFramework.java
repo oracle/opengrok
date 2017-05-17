@@ -515,7 +515,7 @@ public final class AuthorizationFramework {
         LOGGER.log(Level.INFO, "Plugins are being reloaded from {0}", pluginDirectory.getAbsolutePath());
 
         // trashing out the old instance of the loaded enables us
-        // to reaload the stack at runtime
+        // to reload the stack at runtime
         loader = (AuthorizationPluginClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
             @Override
             public Object run() {
