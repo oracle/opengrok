@@ -236,7 +236,7 @@ Bug fixes(newest first):
  Bug 19164 - OpenGrok shell script should have a way to tell not to send config to webapp
  fix clean button
  avoid eftar file test and exception on every page access
- avoid unecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occurs
+ avoid unnecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occurs
 
 
 March 2012 update 0.11.1
@@ -246,7 +246,7 @@ This is a stability improvement release and we suggest to use it instead 0.11
 
 Bug fixes
 
- avoid unecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occurs
+ avoid unnecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occurs
  avoid eftar file test and exception on every page access
  fix clean button
  various OpenGrok script fixes (JAVA_OPTS now configurable, can now disable sending config to webapp, 
