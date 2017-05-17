@@ -851,7 +851,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Set the client command to use to access the repository for the given
-     * fully quallified classname.
+     * fully qualified classname.
      *
      * @param clazzName name of the targeting class. If {@code null} this method
      * does nothing.
