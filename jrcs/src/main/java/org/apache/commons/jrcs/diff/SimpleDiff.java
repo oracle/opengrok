@@ -80,7 +80,7 @@ import java.util.*;
  * <p>The algorithm consists of the following steps:</p>
  * <ul>
  *   <li>compute an equivalence set for the input data</li>
- *   <li>translate each element of the orginal
+ *   <li>translate each element of the original
  *       and revised input sequences to a member of the equivalence set
  *   </li>
  *   <li>match the the input sequences to determine the deltas, i.e.
