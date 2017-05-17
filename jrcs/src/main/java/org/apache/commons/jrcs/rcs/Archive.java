@@ -242,7 +242,7 @@ public class Archive
     }
 
     /**
-     * Create an unitialized Archive.
+     * Create an uninitialized Archive.
      * Used internally by the ArchiveParser.
      * @see ArchiveParser
      */
