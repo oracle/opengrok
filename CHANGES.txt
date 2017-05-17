@@ -174,7 +174,7 @@ Bug fixes(newest first):
  netbeans 7.3.1
  add support for tomcat7, Solaris 12 (dev)
  scala support for ctags
- #59 Added support for printing multi-page soure code by disabling scrolling in print media's CSS.
+ #59 Added support for printing multi-page source code by disabling scrolling in print media's CSS.
  Added a new field “fileType” to the Lucene index. - search by type feature
  #57 div src not unique when multiple readmes
  #5 opensolaris.org cleanup
