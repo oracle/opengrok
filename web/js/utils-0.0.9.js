@@ -1269,7 +1269,7 @@ function init_searchable_option_list() {
                     })
                 }
             },
-            // override the default onScroll positioning event if neccessary
+            // override the default onScroll positioning event if necessary
             onScroll: function () {
 
                 var posY = this.$input.offset().top - this.config.scrollTarget.scrollTop() + this.$input.outerHeight() + 1,

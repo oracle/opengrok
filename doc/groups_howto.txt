@@ -130,7 +130,7 @@ Listing
 -------
 
 Groups are displayed in accordion on the main page, accordion can be expanded to see all subgroups and repositories
-in that group. It is neccessary to mention that in the accordion there are only repositories, i. e. projects with
+in that group. It is necessary to mention that in the accordion there are only repositories, i. e. projects with
 repository information.
 
 If no group matches the project the special section 'Other' is maintained with all such projects and repositories.
