@@ -424,7 +424,7 @@
  * It doesn't really make sense to call all of the jQuery functions however
  * some of them might be useful: toggle, hide, show and so on.
  *
- * The window object also provides some userful functions like
+ * The window object also provides some useful functions like
  * $myWindow.error(message) to display an error in this.$errors element or
  * $myWindow.update(data) to trigger your update callback with given data or
  * $myWindow.move(position) to move the window to the given position
