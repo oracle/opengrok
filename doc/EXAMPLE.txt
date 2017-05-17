@@ -3,7 +3,7 @@ OpenGrok deployment, step by step
 
 One of the design goals of OpenGrok is that it should be easy to use, so a
 user should be able to use OpenGrok with a minimum of configuration. While the
-mimimum configuration is suitable for some users, it will not fit all users.
+minimum configuration is suitable for some users, it will not fit all users.
 The intent of this document is to offer a "step by step" guide for two
 different deployments of OpenGrok. A simple configuration suitable for small
 deployments, and a more "advanced" one for sites that want to host multiple
