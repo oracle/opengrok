@@ -147,7 +147,7 @@ public class Executor {
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
         final String cmd_str = processBuilder.command().toString();
         final String dir_str;
-        Timer t = null; // timer for timeouting the process
+        Timer t = null; // timer for timing out the process
 
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
