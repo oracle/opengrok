@@ -545,7 +545,7 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHitsPerPage(hitsPerPage);
     }
 
-    // cache these tests instead of reruning them for every call
+    // cache these tests instead of rerunning them for every call
     private transient Boolean exCtagsFound;
     private transient Boolean isUniversalCtagsVal;
 
