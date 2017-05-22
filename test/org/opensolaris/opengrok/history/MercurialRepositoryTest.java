@@ -115,6 +115,22 @@ public class MercurialRepositoryTest {
         }
     }
 
+    @Test
+    public void testGetHistorySubdir() throws Exception {
+        setUpTestRepository();
+        File root = new File(repository.getSourceRoot(), "mercurial");
+
+        // Add a subdirectory with some history.
+        runHgCommand("import",
+            root, getClass().getResource("hg-export-subdir.txt").getPath());
+
+        MercurialRepository mr
+                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        History hist = mr.getHistory(new File(root, "subdir"));
+        List<HistoryEntry> entries = hist.getHistoryEntries();
+        assertEquals(1, entries.size());
+    }
+
     /**
      * Test that subset of changesets can be extracted based on penultimate
      * revision number. This works for directories only.
