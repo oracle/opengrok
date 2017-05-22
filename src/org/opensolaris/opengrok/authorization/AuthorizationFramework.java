@@ -57,7 +57,6 @@ import org.opensolaris.opengrok.web.Statistics;
 public final class AuthorizationFramework {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFramework.class);
-    private volatile static AuthorizationFramework instance = new AuthorizationFramework();
 
     /**
      * Plugin directory.
@@ -94,14 +93,26 @@ public final class AuthorizationFramework {
     private int pluginVersion = 0;
 
     /**
-     * Plugin directory is set through RuntimeEnvironment.
+     * Create a new instance of authorization framework with the plugin
+     * directory and the default plugin stack.
      *
-     * @return an instance of AuthorizationFramework
-     * @see RuntimeEnvironment#getConfiguration
-     * @see Configuration#setPluginDirectory
+     * @param path the plugin directory path
      */
-    public static AuthorizationFramework getInstance() {
-        return instance;
+    public AuthorizationFramework(String path) {
+        this(path, new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
+    }
+
+    /**
+     * Create a new instance of authorization framework with the plugin
+     * directory and the plugin stack.
+     *
+     * @param path the plugin directory path
+     * @param stack the top level stack configuration
+     */
+    public AuthorizationFramework(String path, AuthorizationStack stack) {
+        this.stack = stack;
+        setPluginDirectory(path);
+        reload();
     }
 
     /**
@@ -199,14 +210,6 @@ public final class AuthorizationFramework {
                 return !authEntity.forGroups().contains(group.getName());
             }
         });
-    }
-
-    private AuthorizationFramework() {
-        String path = RuntimeEnvironment.getInstance()
-                .getPluginDirectory();
-        stack = RuntimeEnvironment.getInstance().getPluginStack();
-        setPluginDirectory(path);
-        reload();
     }
 
     /**
@@ -491,10 +494,16 @@ public final class AuthorizationFramework {
     /**
      * Calling this function forces the framework to reload its stack.
      *
-     * Plugins are taken from the pluginDirectory.
+     * <p>
+     * Plugins are taken from the pluginDirectory.</p>
      *
+     * <p>
      * Old instances of stack are removed and new list of stack is constructed.
-     * Unload and load event is fired on each plugin.
+     * Unload and load event is fired on each plugin.</p>
+     *
+     * <p>
+     * This method is thread safe with respect to the currently running
+     * authorization checks.</p>
      *
      * @see IAuthorizationPlugin#load(java.util.Map)
      * @see IAuthorizationPlugin#unload()

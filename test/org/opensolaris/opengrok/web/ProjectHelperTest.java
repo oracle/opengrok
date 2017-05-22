@@ -48,20 +48,20 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Assert.assertNotNull("Project helper should not be null", result);
         Assert.assertSame(result.getClass(), ProjectHelper.class);
     }
-    
+
     /**
      * Test if projects and groups are always reloaded fully from the env.
-     * 
+     *
      * This ensures that when the RuntimeEnvironment changes that it also
      * updates the projects in the ui.
      */
     @Test
     public void testSynchronization() {
-        HashMap<String,Project> oldProjects = new HashMap<>(env.getProjects());
+        HashMap<String, Project> oldProjects = new HashMap<>(env.getProjects());
         List<RepositoryInfo> oldRepositories = new ArrayList<>(env.getRepositories());
         Set<Group> oldGroups = new TreeSet<>(env.getGroups());
         Map<Project, List<RepositoryInfo>> oldMap = new TreeMap<>(getRepositoriesMap());
-        invokeRemoveAll();
+        env.getAuthorizationFramework().removeAll(env.getAuthorizationFramework().getStack());
 
         cfg = PageConfig.get(getRequest());
         helper = cfg.getProjectHelper();

@@ -28,24 +28,22 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
 import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.web.DummyHttpServletRequest;
 
 @RunWith(Parameterized.class)
 public class AuthorizationFrameworkTest {
 
-    private static String pluginDirectory;
     private static final Random random = new Random();
 
+    private AuthorizationFramework framework;
     private final StackSetup setup;
 
     public AuthorizationFrameworkTest(StackSetup setup) {
@@ -651,21 +649,20 @@ public class AuthorizationFrameworkTest {
 
     @Test
     public void testPluginsGeneric() {
-        AuthorizationFramework instance = getInstance();
-        instance.setStack(setup.stack);
-        instance.loadAllPlugins(setup.stack);
+        framework.setStack(setup.stack);
+        framework.loadAllPlugins(setup.stack);
 
         boolean actual;
         String format = "%s <%s> was <%s> for entity %s";
 
         for (TestCase innerSetup : setup.setup) {
             try {
-                actual = instance.isAllowed(innerSetup.request, (Group) innerSetup.entity);
+                actual = framework.isAllowed(innerSetup.request, (Group) innerSetup.entity);
                 Assert.assertEquals(String.format(format, setup.toString(), innerSetup.expected, actual, innerSetup.entity.getName()),
                         innerSetup.expected,
                         actual);
             } catch (ClassCastException ex) {
-                actual = instance.isAllowed(innerSetup.request, (Project) innerSetup.entity);
+                actual = framework.isAllowed(innerSetup.request, (Project) innerSetup.entity);
                 Assert.assertEquals(String.format(format, setup.toString(), innerSetup.expected, actual, innerSetup.entity.getName()),
                         innerSetup.expected,
                         actual);
@@ -673,20 +670,9 @@ public class AuthorizationFrameworkTest {
         }
     }
 
-    @BeforeClass
-    public static void tearUpClass() {
-        pluginDirectory = RuntimeEnvironment.getInstance().getConfiguration().getPluginDirectory();
-        RuntimeEnvironment.getInstance().getConfiguration().setPluginDirectory(null);
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        RuntimeEnvironment.getInstance().getConfiguration().setPluginDirectory(pluginDirectory);
-    }
-
-    static private AuthorizationFramework getInstance() {
-        AuthorizationFramework.getInstance().removeAll(AuthorizationFramework.getInstance().getStack());
-        return AuthorizationFramework.getInstance();
+    @Before
+    public void setUp() {
+        framework = new AuthorizationFramework(null);
     }
 
     static private Project createAllowedProject() {

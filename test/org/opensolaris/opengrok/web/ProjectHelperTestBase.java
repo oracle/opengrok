@@ -31,13 +31,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.opensolaris.opengrok.authorization.AuthControlFlag;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
-import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
 import org.opensolaris.opengrok.authorization.TestPlugin;
 import org.opensolaris.opengrok.configuration.Group;
@@ -48,15 +47,12 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 
 public class ProjectHelperTestBase {
 
-    protected static String pluginDirectory;
-    protected static AuthorizationStack stack;
     protected static Set<Group> groups;
-    protected static Map<String,Project> projects;
+    protected static Map<String, Project> projects;
     protected static List<RepositoryInfo> repositories;
     protected static RuntimeEnvironment env;
     protected static Map<Project, List<RepositoryInfo>> repositories_map;
 
-    protected AuthorizationFramework instance;
     protected PageConfig cfg;
     protected ProjectHelper helper;
 
@@ -67,7 +63,7 @@ public class ProjectHelperTestBase {
             boolean grouped,
             boolean allowed,
             List<RepositoryInfo> rps,
-            Map<String,Project> prjs,
+            Map<String, Project> prjs,
             Map<Project, List<RepositoryInfo>> map) {
 
         Project p = createProject(index, number, grouped, allowed, true, rps, prjs, map);
@@ -94,7 +90,7 @@ public class ProjectHelperTestBase {
             boolean allowed,
             boolean repository,
             List<RepositoryInfo> rps,
-            Map<String,Project> prjs,
+            Map<String, Project> prjs,
             Map<Project, List<RepositoryInfo>> map) {
 
         Project p = new Project(
@@ -112,7 +108,7 @@ public class ProjectHelperTestBase {
             boolean allowed,
             List<RepositoryInfo> rps,
             Map<Project, List<RepositoryInfo>> map,
-            Map<String,Project> prjs,
+            Map<String, Project> prjs,
             List<Group> grps) {
 
         for (int i = start; i < start + cnt; i++) {
@@ -162,52 +158,51 @@ public class ProjectHelperTestBase {
     /**
      * The setup should create a structure like this.
      *
-     * Group: allowed_group_2 
+     * <pre>
+     * Group: allowed_group_2
      *  projects:
      *      allowed_grouped_project_2_1,allowed_grouped_project_2_2,
-     *      grouped_project_2_1,grouped_project_2_2 
+     *      grouped_project_2_1,grouped_project_2_2
      *  repositories:
      *      allowed_grouped_repository_2_1,allowed_grouped_repository_2_2,
      *      grouped_repository_2_1,grouped_repository_2_2
      *
-     * Group: allowed_group_3 
+     * Group: allowed_group_3
      *  projects:
      *      allowed_grouped_project_3_1,allowed_grouped_project_3_2,
-     *      grouped_project_3_1,grouped_project_3_2 
+     *      grouped_project_3_1,grouped_project_3_2
      *  repositories:
      *      allowed_grouped_repository_3_1,allowed_grouped_repository_3_2,
      *      grouped_repository_3_1,grouped_repository_3_2
      *
-     * Group: group_0 
+     * Group: group_0
      *  projects:
      *      allowed_grouped_project_0_1,allowed_grouped_project_0_2,
-     *      grouped_project_0_1,grouped_project_0_2 
+     *      grouped_project_0_1,grouped_project_0_2
      *  repositories:
      *      allowed_grouped_repository_0_1,allowed_grouped_repository_0_2,
      *      grouped_repository_0_1,grouped_repository_0_2
      *
-     * Group: group_1 
+     * Group: group_1
      *  projects:
      *      allowed_grouped_project_1_1,allowed_grouped_project_1_2,
-     *      grouped_project_1_1,grouped_project_1_2 
+     *      grouped_project_1_1,grouped_project_1_2
      *  repositories:
      *      allowed_grouped_repository_1_1,allowed_grouped_repository_1_2,
      *      grouped_repository_1_1,grouped_repository_1_2
      *
-     * ungrouped projects: 
+     * ungrouped projects:
      *  ungrouped_project_0_1,ungrouped_project_1_1,
      *  allowed_ungrouped_project_2_1, allowed_ungrouped_project_3_1
      *
-     * ungrouped repositories: 
+     * ungrouped repositories:
      *  ungrouped_repository_0_1, ungrouped_repository_1_1,
      *  allowed_ungrouped_repository_2_1, allowed_ungrouped_repository_3_1
-     *
+     * </pre>
      */
     @BeforeClass
     public static void setUpClass() {
         env = RuntimeEnvironment.getInstance();
-        pluginDirectory = env.getPluginDirectory();
-        stack = env.getPluginStack();
         groups = env.getGroups();
         projects = env.getProjects();
         repositories = env.getRepositories();
@@ -215,7 +210,7 @@ public class ProjectHelperTestBase {
         env.setPluginDirectory(null);
 
         List<Group> grps = new ArrayList<>();
-        Map<String,Project> prjs = new HashMap<>();
+        Map<String, Project> prjs = new HashMap<>();
         List<RepositoryInfo> rps = new ArrayList<>();
         Map<Project, List<RepositoryInfo>> map = new TreeMap<>();
 
@@ -247,8 +242,6 @@ public class ProjectHelperTestBase {
 
     @AfterClass
     public static void tearDownClass() {
-        env.setPluginDirectory(pluginDirectory);
-        env.setPluginStack(stack);
         setRepositoriesMap(repositories_map);
         env.setProjects(projects);
         env.setGroups(groups);
@@ -256,17 +249,8 @@ public class ProjectHelperTestBase {
         env.register();
     }
 
-    protected void invokeRemoveAll() {
-        AuthorizationFramework.getInstance().removeAll(AuthorizationFramework.getInstance().getStack());
-        AuthorizationFramework.getInstance().setStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default-stack"));
-    }
-
     protected void invokeAddPlugin(IAuthorizationPlugin plugin) {
-        AuthorizationFramework.getInstance().addPlugin(AuthorizationFramework.getInstance().getStack(), plugin);
-    }
-
-    protected AuthorizationFramework getInstance() {
-        return AuthorizationFramework.getInstance();
+        env.getAuthorizationFramework().addPlugin(env.getAuthorizationFramework().getStack(), plugin);
     }
 
     protected HttpServletRequest getRequest() {
@@ -282,8 +266,7 @@ public class ProjectHelperTestBase {
         Assert.assertNotNull("Repository map should not be null", env.getProjectRepositoriesMap());
         Assert.assertEquals("Repository map should contain 20 project", 20, env.getProjectRepositoriesMap().size());
 
-        invokeRemoveAll();
-        instance = getInstance();
+        env.setAuthorizationFramework(new AuthorizationFramework(null));
 
         IAuthorizationPlugin plugin = new TestPlugin() {
             @Override
@@ -296,9 +279,15 @@ public class ProjectHelperTestBase {
                 return group.getName().startsWith("allowed");
             }
         };
+
         invokeAddPlugin(plugin);
 
         cfg = PageConfig.get(getRequest());
         helper = cfg.getProjectHelper();
+    }
+
+    @After
+    public void tearDown() {
+        env.getAuthorizationFramework().removeAll(env.getAuthorizationFramework().getStack());
     }
 }
