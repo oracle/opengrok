@@ -68,6 +68,21 @@ public class Group implements Comparable<Group>, Nameable {
     private Set<Project> repositories = new TreeSet<>();
     private Set<Group> parents;
 
+    /**
+     * No-arg constructor is needed for deserialization.
+     */
+    public Group() {
+    }
+
+    public Group(String name) {
+        this(name, "");
+    }
+
+    public Group(String name, String pattern) {
+        this.name = name;
+        this.setPattern(pattern);
+    }
+
     public Set<Project> getProjects() {
         return projects;
     }
@@ -198,7 +213,7 @@ public class Group implements Comparable<Group>, Nameable {
      * @param pattern the regexp pattern for this group
      * @throws PatternSyntaxException when the pattern is invalid
      */
-    public void setPattern(String pattern) throws PatternSyntaxException {
+    public final void setPattern(String pattern) throws PatternSyntaxException {
         this.compiledPattern = Pattern.compile("(" + pattern + ")");
         this.pattern = pattern;
     }
