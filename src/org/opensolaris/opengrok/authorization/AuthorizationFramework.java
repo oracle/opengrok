@@ -321,6 +321,7 @@ public final class AuthorizationFramework {
      */
     public void removeAll(AuthorizationStack stack) {
         unloadAllPlugins(stack);
+        stack.getStack().clear();
     }
 
     /**
