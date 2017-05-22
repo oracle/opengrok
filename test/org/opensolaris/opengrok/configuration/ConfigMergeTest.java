@@ -24,6 +24,7 @@ package org.opensolaris.opengrok.configuration;
 
 import java.io.File;
 import java.io.IOException;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import static org.opensolaris.opengrok.configuration.ConfigMerge.merge;
 
@@ -34,25 +35,22 @@ import static org.opensolaris.opengrok.configuration.ConfigMerge.merge;
 public class ConfigMergeTest {
     @Test
     public void basicTest() throws Exception {
-        String baseFile = getClass().getResource("configuration.xml").getPath(),
-               newFile = getClass().getResource("readonly_config.xml").getPath();
 
-        Configuration cfgBase = null;
-        try {
-            cfgBase = Configuration.read(new File(baseFile));
-        } catch (IOException ex) {
-            System.err.println("cannot read base file " + baseFile + ":" + ex);
-            System.exit(1);
-        }
+        String srcRoot = "/foo";
+        String dataRoot = "/bar";
+        String bugPage = "https://foo/bar";
 
-        Configuration cfgNew = null;
-        try {
-            cfgNew = Configuration.read(new File(newFile));
-        } catch (IOException ex) {
-            System.err.println("cannot read file " + newFile);
-            System.exit(1);
-        }
+        Configuration cfgBase = new Configuration();
+        cfgBase.setSourceRoot(srcRoot);
+        cfgBase.setDataRoot(dataRoot);
+
+        Configuration cfgNew = new Configuration();
+        cfgNew.setBugPage(bugPage);
 
         merge(cfgBase, cfgNew);
+
+        assertEquals(cfgNew.getSourceRoot(), srcRoot);
+        assertEquals(cfgNew.getDataRoot(), dataRoot);
+        assertEquals(cfgNew.getBugPage(), bugPage);
     }
 }

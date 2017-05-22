@@ -31,6 +31,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.util.Getopt;
 
 /**
@@ -42,6 +44,58 @@ import org.opensolaris.opengrok.util.Getopt;
 public class ConfigMerge {
 
     private static final String name = "ConfigMerge";
+
+    /**
+     * Merge base and new configuration.
+     * @param cfgBase base configuration
+     * @param cfgNew new configuration, will receive properties from the base configuration
+     */
+    public static void merge(Configuration cfgBase, Configuration cfgNew) throws Exception {
+        Configuration cfgDefault = new Configuration();
+
+        // Basic strategy: take all non-static/transient fields that have a setter
+        // from cfgBase that are not of default value and set them to cfgNew.
+        for (Field field : cfgBase.getClass().getDeclaredFields()) {
+            String fieldName = field.getName();
+            int modifiers = field.getModifiers();
+            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers) ||
+                Modifier.isFinal(modifiers)) {
+                continue;
+            }
+            PropertyDescriptor desc = null;
+            try {
+                desc = new PropertyDescriptor(fieldName, Configuration.class);
+            } catch (IntrospectionException ex) {
+                throw new Exception("cannot get property descriptor for '" + fieldName + "'");
+            }
+
+            Method setter = desc.getWriteMethod();
+            if (setter == null) {
+                throw new Exception("no setter for '" + fieldName + "'");
+            }
+
+            Method getter = desc.getReadMethod();
+            if (getter == null) {
+                throw new Exception("no getter for '" + fieldName + "'");
+            }
+
+            try {
+                Object obj = getter.invoke(cfgBase);
+                if ((obj == null && getter.invoke(cfgDefault) == null) ||
+                    obj.equals(getter.invoke(cfgDefault))) {
+                        continue;
+                }
+            } catch (Exception ex) {
+                throw new Exception("failed to invoke getter for " + fieldName + ": " + ex);
+            }
+
+            try {
+                setter.invoke(cfgNew, getter.invoke(cfgBase));
+            } catch (Exception ex) {
+                throw new Exception("failed to invoke setter for '" + fieldName + "'");
+            }
+        }
+    }
 
     public static void main(String[] argv) {
 
@@ -79,8 +133,6 @@ public class ConfigMerge {
             System.exit(1);
         }
 
-        Configuration cfgDefault = new Configuration();
-
         Configuration cfgBase = null;
         try {
             cfgBase = Configuration.read(new File(argv[optind]));
@@ -97,52 +149,11 @@ public class ConfigMerge {
             System.exit(1);
         }
 
-        // Basic strategy: take all non-static/transient fields that have a setter
-        // from cfgBase that are not of default value and set them to cfgNew.
-        for (Field field : cfgBase.getClass().getDeclaredFields()) {
-            String fieldName = field.getName();
-            int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers) ||
-                Modifier.isFinal(modifiers)) {
-                continue;
-            }
-            PropertyDescriptor desc = null;
-            try {
-                desc = new PropertyDescriptor(fieldName, Configuration.class);
-            } catch (IntrospectionException ex) {
-                System.err.println("cannot get property descriptor for '" + fieldName + "'");
-                System.exit(1);
-            }
-
-            Method setter = desc.getWriteMethod();
-            if (setter == null) {
-                System.err.println("no setter for '" + fieldName + "'");
-                System.exit(1);
-            }
-
-            Method getter = desc.getReadMethod();
-            if (getter == null) {
-                System.err.println("no getter for '" + fieldName + "'");
-                System.exit(1);
-            }
-
-            try {
-                Object obj = getter.invoke(cfgBase);
-                if ((obj == null && getter.invoke(cfgDefault) == null) ||
-                    obj.equals(getter.invoke(cfgDefault))) {
-                        continue;
-                }
-            } catch (Exception ex) {
-                System.err.println("failed to invoke getter for " + fieldName + ": " + ex);
-                System.exit(1);
-            }
-
-            try {
-                setter.invoke(cfgNew, getter.invoke(cfgBase));
-            } catch (Exception ex) {
-                System.err.println("failed to invoke setter for '" + fieldName + "'");
-                System.exit(1);
-            }
+        try {
+            merge(cfgBase, cfgNew);
+        } catch (Exception ex) {
+            System.err.print(ex);
+            System.exit(1);
         }
 
         // Write the resulting XML representation to standard output.
