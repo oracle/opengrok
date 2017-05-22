@@ -63,25 +63,25 @@ public final class ProjectHelper {
     /**
      * Set of projects (not repositories) without group
      */
-    private final Set<Project> projects;
+    private final Set<Project> ungroupedProjects;
     /**
      * Set of all repositories without group
      */
-    private final Set<Project> repositories;
+    private final Set<Project> ungroupedRepositories;
     /**
      * Set of all projects with group
      */
-    private final Set<Project> all_projects = new TreeSet<>();
+    private final Set<Project> allProjects = new TreeSet<>();
     /**
      * Set of all repositories with group
      */
-    private final Set<Project> all_repositories = new TreeSet<>();
+    private final Set<Project> allRepositories = new TreeSet<>();
 
     private ProjectHelper(PageConfig cfg) {
         this.cfg = cfg;
         groups = new TreeSet<>(cfg.getEnv().getGroups());
-        projects = new TreeSet<>();
-        repositories = new TreeSet<>();
+        ungroupedProjects = new TreeSet<>();
+        ungroupedRepositories = new TreeSet<>();
 
         populateGroups();
     }
@@ -139,17 +139,17 @@ public final class ProjectHelper {
             // if no group matches the project, add it to not-grouped projects
             if (copy.isEmpty()) {
                 if (cfg.getEnv().getProjectRepositoriesMap().get(project) == null) {
-                    projects.add(project);
+                    ungroupedProjects.add(project);
                 } else {
-                    repositories.add(project);
+                    ungroupedRepositories.add(project);
                 }
             }
         }
 
         // populate all grouped
         for (Group g : getGroups()) {
-            all_projects.addAll(g.getProjects());
-            all_repositories.addAll(g.getRepositories());
+            allProjects.addAll(g.getProjects());
+            allRepositories.addAll(g.getRepositories());
         }
     }
 
@@ -232,14 +232,14 @@ public final class ProjectHelper {
      * @return filtered ungrouped projects
      */
     public Set<Project> getProjects() {
-        return cacheProjects(PROJECT_HELPER_UNGROUPED_PROJECTS, projects);
+        return cacheProjects(PROJECT_HELPER_UNGROUPED_PROJECTS, ungroupedProjects);
     }
 
     /**
      * @return filtered ungrouped repositories
      */
     public Set<Project> getRepositories() {
-        return cacheProjects(PROJECT_HELPER_UNGROUPED_REPOSITORIES, repositories);
+        return cacheProjects(PROJECT_HELPER_UNGROUPED_REPOSITORIES, ungroupedRepositories);
     }
 
     /**
@@ -268,14 +268,14 @@ public final class ProjectHelper {
      * @return filtered grouped projects
      */
     public Set<Project> getGroupedProjects() {
-        return cacheProjects(PROJECT_HELPER_GROUPED_PROJECTS, all_projects);
+        return cacheProjects(PROJECT_HELPER_GROUPED_PROJECTS, allProjects);
     }
 
     /**
      * @return filtered grouped repositories
      */
     public Set<Project> getGroupedRepositories() {
-        return cacheProjects(PROJECT_HELPER_GROUPED_REPOSITORIES, all_repositories);
+        return cacheProjects(PROJECT_HELPER_GROUPED_REPOSITORIES, allRepositories);
     }
 
     /**
@@ -283,7 +283,7 @@ public final class ProjectHelper {
      * @return filtered ungrouped projects
      */
     public Set<Project> getUngroupedProjects() {
-        return cacheProjects(PROJECT_HELPER_UNGROUPED_PROJECTS, projects);
+        return cacheProjects(PROJECT_HELPER_UNGROUPED_PROJECTS, ungroupedProjects);
     }
 
     /**
@@ -291,7 +291,7 @@ public final class ProjectHelper {
      * @return filtered ungrouped projects
      */
     public Set<Project> getUngroupedRepositories() {
-        return cacheProjects(PROJECT_HELPER_UNGROUPED_REPOSITORIES, repositories);
+        return cacheProjects(PROJECT_HELPER_UNGROUPED_REPOSITORIES, ungroupedRepositories);
     }
 
     /**
