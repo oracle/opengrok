@@ -325,7 +325,7 @@ label {
 }
 
 /* *** full search navbar *** */
-#qtbl {
+#qtbl, #ptbl {
     display: inline-block;
     vertical-align: top;
 }
@@ -334,19 +334,10 @@ label {
     background: none; /* remove alternating colors */
 }
 
-/* eops = end of project search */
-#ptbl tr:nth-child(2) td {
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 1ex;
-}
-
-#ptbl button {
-    font-size: small;
-}
-
-/* padding so that the border created above has equal space around */
-#qtbl tbody:nth-child(2) tr:first-child td {
-    padding-top: 1ex;
+#ptbl > p {
+    text-align: center;
+    white-space: nowrap;
+    margin: 0.5ex 1ex;
 }
 
 #qtbl td:first-child {
@@ -369,6 +360,27 @@ label {
     height: 1.3em;
 }
 
+#ptbl {
+    margin-left: 2em;
+}
+
+#ptbl button {
+    font-size: small;
+}
+
+#ptbl button:first-of-type {
+    margin-left: 1em;
+}
+
+#ptbl select {
+    width: 100%;
+}
+
+#ptbl option {
+    padding: 0 1ex;
+}
+
+
 #qtbl {
     float: left;
     width: 35%;
@@ -376,6 +388,16 @@ label {
     margin-left: unset;
     margin-top: 0.5em;
     margin-right: 2em;
+    height: 100%;
+}
+
+#ptbl {
+    float: left;
+    width: 30%;
+    margin-right: 2em;
+    margin-top: 0.5em;
+    margin-left: unset;
+    min-width: 300px;
     height: 100%;
 }
 
@@ -1346,4 +1368,16 @@ h6.message-group-caption {
 
 [data-markdown] .markdown-content {
     display: none;
+}
+
+@media only screen and (max-width: 770px) {
+  #ptbl{
+	width:50%;
+  }
+  #ltbl{
+	  width:40%;
+  }
+  #qtbl{
+	  width:50%
+  }
 }

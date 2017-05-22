@@ -71,24 +71,153 @@ org.opensolaris.opengrok.web.Util"
             pMap.put(name, esc);
         }
 %>
+<script type="text/javascript" src="<%= request.getContextPath() %>/js/jquery-3.2.0.min.js"></script>
 <script type="text/javascript">/* <![CDATA[ */
-    document.domReady.push(function() { domReadyMenu(); });
+    document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P
+    %>';document.domReady.push(function() { domReadyMenu(); });
 /* ]]> */
+var initialWidth = null;
+var isFirst = true;
+var checkWidth = function(){
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+	console.log(width);	
+	if(width <= 770) {
+		console.log('width less that 770');
+		//$(".fixture").each(function() {
+		//var detach = $(this).find(".fixture-date").detach();
+		//$(detach).insertAfter($(this).find(".teams"));
+		//})
+		$("#sbox").each(function() {
+		var detach = $(this).find("#qtbl").detach();
+		$(detach).insertAfter($(this).find("#ptbl"));
+		var detach1 = $(this).find("#ltbl").detach();
+		$(detach1).insertBefore($(this).find("#qtbl"));
+		});
+		console.log('width changed');
+	}else{
+		//revert back
+		$("#sbox").each(function() {
+		var detach = $(this).find("#qtbl").detach();
+		$(detach).insertBefore($(this).find("#ptbl"));
+		});	
+	}	
+	initialWidth = width;
+};
+$(document).ready(function(){ 
+	checkWidth();
+ });
+$(window).resize(function() { 
+	//Fires when window is resized
+	//To handle in mobiles where window resize gets triggerred for keypad open
+	var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+	if(initialWidth && width != initialWidth){
+		console.log('window has been resized');
+		checkWidth();
+	}else{
+		console.log('There is no width change. Will not re-order the elements!');
+	}
+});
 </script><%
     }
 %>
 <form action="<%= request.getContextPath() %>/search" id="sbox">
 <div id="qtbl">
-    <table>
-    <%
-    if (projects.size() != 0) {
-    %>
-    <tbody id="ptbl">
+<table>
     <tr>
-    <td>
-    <label for="project">Project(s)</label>
-    </td>
-    <td colspan="2">
+        <td><label for="s1" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
+        <td><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
+                Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
+    </tr>
+    <tr>
+	    <td><label for="s2" title="Definition of function/variable/class">Definition</label></td>
+        <td><input class="q" tabindex="2" name="defs" id="defs" type="text" value="<%=
+            Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="s3" title="Usage of function/variable/class">Symbol</label></td>
+        <td><input class="q" tabindex="3" name="refs" id="refs" type="text" value="<%=
+            Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="s4" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
+        <td><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
+            Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="s5" title="Search in log messages">History</label></td>
+        <td><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
+            Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="s5">Type</label></td>
+        <td><select class="q" tabindex="6" name="type" id="type"><%
+                String selection = queryParams.getType();
+                %>
+                <option value="">Any</option><%
+                for (Map.Entry<String, String> d : SearchHelper.getFileTypeDescriptions()) {
+                    %>
+                <option value="<%= Util.formQuoteEscape(d.getKey()) %>"<%
+                    if (d.getKey().equals(selection)) {
+                        %> selected="selected"<%
+                    }
+                    %>><%= Util.htmlize(d.getValue()) %></option><%
+                }
+            %>
+            </select>
+        </td>
+    </tr>
+<%-- TODO  Bug 11749
+<%
+    if (projects.size() != 0) {
+        String imgDir = cfg.getCssDir() + "/img/";
+    %>
+    <tr>
+        <td>Project(s)</td>
+        <td>
+            <table class="combo_table" id="combotable">
+                <tbody>
+                    <tr>
+                        <td class="combo_td1"><div class="combo_div4"
+                            style="background: transparent url(<%=
+                                imgDir %>transparent_pixel.gif)
+                                repeat scroll 0% 0%;"><input
+                                class="combo_input1 combo_input" id="project"
+                                name="project" size="25"
+                                value="<%= cfg.getRequestedProjectsAsString()
+                                %>"/></div>
+                        </td>
+                        <td valign="top" align="left" class="combo_td2"
+                            id="combotable_button"><a
+                            onclick='javascript: $("#project").click();
+                            $("#project").click();'/><img style="display: none;"
+                            alt="" src="<%= imgDir %>button2.png"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table></td>
+    </tr><%
+    }
+%>
+--%>
+</table>
+<div id="form-controls">
+    <input tabindex="9" class="submit btn" type="submit" value="Search"/>
+    <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
+           type="button" value="Clear"/>
+    <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
+</div>
+</div><%
+    if (projects.size() != 0) {
+%>
+<div id="ptbl">
+    <p><label for="project">In Project(s)</label> 
+        <button tabindex="6" type="button"
+        onclick="javascript: selectAllProjects(); return false;"
+        >select all</button>&nbsp;<button tabindex="7" type="button"
+        onclick="javascript: invertAllProjects(); return false;"
+        >invert selection</button>&nbsp;<button tabindex="8" type="button"
+        onclick="javascript: deselectAllProjects(); return false;"
+        >clear</button></p>
     <select tabindex="8" class="q" id="project"
         name="project" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
@@ -130,84 +259,15 @@ org.opensolaris.opengrok.web.Util"
         if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
             %></optgroup><%
         }
+
+
     %></select>
-    </td>
-    </tr>
-    <tr>
-    <td colspan="3" >
-    <button tabindex="6" type="button"
-        onclick="javascript: selectAllProjects(); return false;"
-        >select all</button>
-    &nbsp;
-    <button tabindex="7" type="button"
-        onclick="javascript: invertAllProjects(); return false;"
-        >invert selection</button>
-    &nbsp;
-    <button tabindex="8" type="button"
-        onclick="javascript: deselectAllProjects(); return false;"
-        >clear</button>
-    </td>
-    </tr>
-    </tbody>
-    <%
+	<div id="type-select-container">
+		<!-- filled with javascript -->
+	</div>
+</div><%
     }
     %>
-    <tbody>
-    <tr>
-        <td><label for="s1" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
-        <td colspan="2"><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
-                Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
-    </tr>
-    <tr>
-	<td><label for="s2" title="Definition of function/variable/class">Definition</label></td>
-        <td colspan="2"><input class="q" tabindex="2" name="defs" id="defs" type="text" value="<%=
-            Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
-    </tr>
-    <tr>
-        <td><label for="s3" title="Usage of function/variable/class">Symbol</label></td>
-        <td colspan="2"><input class="q" tabindex="3" name="refs" id="refs" type="text" value="<%=
-            Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
-    </tr>
-    <tr>
-        <td><label for="s4" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
-        <td colspan="2"><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
-            Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
-    </tr>
-    <tr>
-        <td><label for="s5" title="Search in log messages">History</label></td>
-        <td colspan="2"><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
-            Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
-    </tr>
-    <tr>
-        <td><label for="s5">Type</label></td>
-        <td><select class="q" tabindex="6" name="type" id="type"><%
-                String selection = queryParams.getType();
-                %>
-                <option value="">Any</option><%
-                for (Map.Entry<String, String> d : SearchHelper.getFileTypeDescriptions()) {
-                    %>
-                <option value="<%= Util.formQuoteEscape(d.getKey()) %>"<%
-                    if (d.getKey().equals(selection)) {
-                        %> selected="selected"<%
-                    }
-                    %>><%= Util.htmlize(d.getValue()) %></option><%
-                }
-            %>
-            </select>
-        </td>
-        <td id="type-select-container">
-            <!-- filled with javascript -->
-        </td>
-    </tr>
-    </tbody>
-</table>
-<div id="form-controls">
-    <input tabindex="9" class="submit btn" type="submit" value="Search"/>
-    <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
-           type="button" value="Clear"/>
-    <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
-</div>
-</div>
 <div id="ltbl">
     <!-- filled with javascript -->
 </div>

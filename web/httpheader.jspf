@@ -99,6 +99,7 @@ if (cfg.getPrefix().equals(Prefix.HIST_L)) {
 <title><%=cfg.getTitle()%></title><%
     out.write(cfg.getHeaderData());
 %>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head><%
 }
 /* ---------------------- httpheader.jsp end --------------------- */
