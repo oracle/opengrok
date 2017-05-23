@@ -131,6 +131,11 @@ public final class RuntimeEnvironment {
 
     private Statistics statistics = new Statistics();
 
+    /**
+     * Instance of authorization framework. Allowing every request by default.
+     */
+    private AuthorizationFramework authFramework = new AuthorizationFramework(null);
+
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
         if (historyExecutor == null) {
@@ -1547,7 +1552,29 @@ public final class RuntimeEnvironment {
      * @see AuthorizationFramework#getPluginVersion()
      */
     public int getPluginVersion() {
-        return AuthorizationFramework.getInstance().getPluginVersion();
+        return authFramework.getPluginVersion();
+    }
+
+    /**
+     * Return the authorization framework used in this environment.
+     *
+     * @return the framework
+     */
+    public AuthorizationFramework getAuthorizationFramework() {
+        return authFramework;
+    }
+
+    /**
+     * Set the authorization framework for this environment. Unload all
+     * previously load plugins.
+     *
+     * @param fw the new framework
+     */
+    public void setAuthorizationFramework(AuthorizationFramework fw) {
+        if (this.authFramework != null) {
+            this.authFramework.removeAll(this.authFramework.getStack());
+        }
+        this.authFramework = fw;
     }
 
     private ServerSocket configServerSocket;
@@ -1610,8 +1637,8 @@ public final class RuntimeEnvironment {
             config.refreshDateForLastIndexRun();
         }
 
-        AuthorizationFramework.getInstance().setPluginDirectory(config.getPluginDirectory());
-        AuthorizationFramework.getInstance().reload();
+        authFramework.setPluginDirectory(config.getPluginDirectory());
+        authFramework.reload();
     }
 
     /**
@@ -1778,7 +1805,7 @@ public final class RuntimeEnvironment {
                         }
                         if (reload) {
                             Thread.sleep(THREAD_SLEEP_TIME); // experimental wait if file is being written right now
-                            AuthorizationFramework.getInstance().reload();
+                            authFramework.reload();
                         }
                         if (!key.reset()) {
                             break;

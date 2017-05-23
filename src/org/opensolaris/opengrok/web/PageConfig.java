@@ -1325,7 +1325,7 @@ public final class PageConfig {
 
     private PageConfig(HttpServletRequest req) {
         this.req = req;
-        this.authFramework = AuthorizationFramework.getInstance();
+        this.authFramework = RuntimeEnvironment.getInstance().getAuthorizationFramework();
     }
 
     /**

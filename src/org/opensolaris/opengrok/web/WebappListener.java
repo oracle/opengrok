@@ -37,7 +37,6 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import org.json.simple.parser.ParseException;
-import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
@@ -103,8 +102,6 @@ public final class WebappListener
         } catch (ParseException ex) {
             LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
         }
-
-        AuthorizationFramework.getInstance(); // start + load
 
         if (env.getConfiguration().getPluginDirectory() != null && env.isAuthorizationWatchdog()) {
             RuntimeEnvironment.getInstance().startWatchDogService(new File(env.getConfiguration().getPluginDirectory()));
