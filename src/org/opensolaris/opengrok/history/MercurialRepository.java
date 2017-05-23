@@ -193,6 +193,9 @@ public class MercurialRepository extends Repository {
             // For files this does not matter since if getHistory() is called
             // for a file, the file has to be renamed so we want its complete history.
             cmd.add("--follow");
+        }
+
+        if (!filename.isEmpty()) {
             cmd.add(filename);
         }
 
