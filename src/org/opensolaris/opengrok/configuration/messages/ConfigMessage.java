@@ -55,7 +55,7 @@ public class ConfigMessage extends Message {
         if (hasTag("getconf")) {
             return env.getConfiguration().getXMLRepresentationAsString().getBytes();
         } else if (hasTag("auth") && "reload".equalsIgnoreCase(getText())) {
-            AuthorizationFramework.getInstance().reload();
+            env.getAuthorizationFramework().reload();
         } else if (hasTag("set")) {
             Matcher matcher = VARIABLE_PATTERN.matcher(getText());
             if (matcher.find()) {
