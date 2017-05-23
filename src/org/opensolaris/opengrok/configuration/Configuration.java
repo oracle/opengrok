@@ -152,15 +152,13 @@ public final class Configuration {
     private String webappLAF;
     private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
-    private boolean useLuceneLocking;
+    private boolean usingLuceneLocking;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
     private boolean lastEditedDisplayMode;
-    private String databaseDriver;
-    private String databaseUrl;
     private String CTagsExtraOptionsFile;
     private int scanningDepth;
     private Set<String> allowedSymlinks;
@@ -168,7 +166,7 @@ public final class Configuration {
     private boolean chattyStatusPage;
     private final Map<String, String> cmds;  // repository type -> command
     private int tabSize;
-    private int command_timeout; // in seconds
+    private int commandTimeout; // in seconds
     private int indexRefreshPeriod; // in seconds
     private boolean scopesEnabled;
     private boolean foldingEnabled;
@@ -279,21 +277,21 @@ public final class Configuration {
     }
 
     public int getCommandTimeout() {
-        return command_timeout;
+        return commandTimeout;
     }
 
     /**
      * Set the command timeout to a new value
      *
-     * @param command_timeout the new value
+     * @param commandTimeout the new value
      * @throws IllegalArgumentException when the timeout is negative
      */
-    public void setCommandTimeout(int command_timeout) throws IllegalArgumentException {
-        if (command_timeout < 0) {
+    public void setCommandTimeout(int commandTimeout) throws IllegalArgumentException {
+        if (commandTimeout < 0) {
             throw new IllegalArgumentException(
-                    String.format(NEGATIVE_NUMBER_ERROR, "command_timeout", command_timeout));
+                    String.format(NEGATIVE_NUMBER_ERROR, "commandTimeout", commandTimeout));
         }
-        this.command_timeout = command_timeout;
+        this.commandTimeout = commandTimeout;
     }
 
     public int getIndexRefreshPeriod() {
@@ -835,11 +833,15 @@ public final class Configuration {
     }
 
     public boolean isUsingLuceneLocking() {
-        return useLuceneLocking;
+        return usingLuceneLocking;
+    }
+
+    public boolean getUsingLuceneLocking() {
+        return usingLuceneLocking;
     }
 
     public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        this.useLuceneLocking = useLuceneLocking;
+        this.usingLuceneLocking = useLuceneLocking;
     }
 
     public void setCompressXref(boolean compressXref) {
@@ -1127,7 +1129,7 @@ public final class Configuration {
         return bos.toString();
     }
 
-    private void encodeObject(OutputStream out) {
+    public void encodeObject(OutputStream out) {
         try (XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out))) {
             e.writeObject(this);
         }
