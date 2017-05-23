@@ -195,15 +195,15 @@ public class MercurialRepository extends Repository {
             cmd.add("--follow");
         }
 
-        if (!filename.isEmpty()) {
-            cmd.add(filename);
-        }
-
         cmd.add("--template");
         if (file.isDirectory()) {
             cmd.add(env.isHandleHistoryOfRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
         } else {
             cmd.add(FILE_TEMPLATE);
+        }
+
+        if (!filename.isEmpty()) {
+            cmd.add(filename);
         }
 
         return new Executor(cmd, new File(directoryName), sinceRevision != null);
