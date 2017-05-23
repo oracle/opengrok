@@ -29,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
@@ -53,6 +54,8 @@ public class ConfigMessage extends Message {
     protected byte[] applyMessage(RuntimeEnvironment env) throws IOException {
         if (hasTag("getconf")) {
             return env.getConfiguration().getXMLRepresentationAsString().getBytes();
+        } else if (hasTag("auth") && "reload".equalsIgnoreCase(getText())) {
+            AuthorizationFramework.getInstance().reload();
         } else if (hasTag("set")) {
             Matcher matcher = VARIABLE_PATTERN.matcher(getText());
             if (matcher.find()) {
@@ -248,8 +251,9 @@ public class ConfigMessage extends Message {
     public void validate() throws Exception {
         if (toInteger(hasTag("setconf"))
                 + toInteger(hasTag("getconf"))
+                + toInteger(hasTag("auth"))
                 + toInteger(hasTag("set")) > 1) {
-            throw new Exception("The message tag must be either setconf, getconf or set");
+            throw new Exception("The message tag must be either setconf, getconf, auth or set");
         }
 
         if (hasTag("setconf")) {
@@ -270,8 +274,15 @@ public class ConfigMessage extends Message {
             if (getTags().size() != 1) {
                 throw new Exception("The set message should be the only tag.");
             }
+        } else if (hasTag("auth")) {
+            if (!"reload".equalsIgnoreCase(getText())) {
+                throw new Exception("The auth message can only accept a text \"reload\".");
+            }
+            if (getTags().size() != 1) {
+                throw new Exception("The auth message should be the only tag.");
+            }
         } else {
-            throw new Exception("The message tag must be either setconf, getconf or set");
+            throw new Exception("The message tag must be either setconf, getconf, auth or set");
         }
 
         super.validate();
