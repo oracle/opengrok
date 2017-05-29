@@ -200,10 +200,6 @@
     <error-code>500</error-code>
     <location>/error</location>
   </error-page>
-  <error-page>
-      <error-code>403</error-code>
-      <location>/eforbidden</location>
-  </error-page>
   <jsp-config>
       <jsp-property-group>
       <url-pattern>*.jsp</url-pattern>

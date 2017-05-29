@@ -17,14 +17,15 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
---%><%@page  session="false" isErrorPage="true" import="
+--%><%@page  session="false" import="
              org.opensolaris.opengrok.web.PageConfig"
 %><%
-    /* ---------------------- eforbidden.jspf start --------------------- */
-    {
+/* ---------------------- eforbidden.jspf start --------------------- */
+{
+    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 %>
-<%= PageConfig.get(request).getEnv().getConfiguration().getForbiddenIncludeFileContent()%>
+<%= PageConfig.get(request).getEnv().getConfiguration().getForbiddenIncludeFileContent() %>
 <%
-    }
-    /* ---------------------- eforbidden.jspf end --------------------- */
+}
+/* ---------------------- eforbidden.jspf end --------------------- */
 %>
