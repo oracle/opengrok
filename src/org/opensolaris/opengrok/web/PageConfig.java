@@ -378,6 +378,11 @@ public final class PageConfig {
      * @return an empty list, if the resource does not exist, is not a directory
      * or an error occurred when reading it, otherwise a list of filenames in
      * that directory, sorted alphabetically
+     *
+     * <p>
+     * For the root directory (/xref/) an authorization is performed for each of
+     * the project in case that projects are used in OpenGrok.</p>
+     *
      * @see #getResourceFile()
      * @see #isDir()
      */
@@ -391,8 +396,29 @@ public final class PageConfig {
                 dirFileList = Collections.emptyList();
             } else {
                 Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
-                dirFileList
-                        = Collections.unmodifiableList(Arrays.asList(files));
+                List<String> listOfFiles = Arrays.asList(files);
+                if (env.hasProjects() && getPath().isEmpty()) {
+                    /**
+                     * This denotes the source root directory, we need to filter
+                     * projects which aren't allowed by the authorization
+                     * because otherwise the main xref page expose the names of
+                     * all projects in OpenGrok even those which aren't allowed
+                     * for the particular user. E. g. remove all which aren't
+                     * among the filtered set of projects.
+                     *
+                     * The authorization check is made in
+                     * {@link ProjectHelper#getAllProjects()} as a part of all
+                     * projects filtering.
+                     */
+                    List<String> modifiableListOfFiles = new ArrayList<>(listOfFiles);
+                    modifiableListOfFiles.removeIf((t) -> {
+                        return !getProjectHelper().getAllProjects().stream().anyMatch((p) -> {
+                            return p.getName().equalsIgnoreCase(t);
+                        });
+                    });
+                    return dirFileList = Collections.unmodifiableList(modifiableListOfFiles);
+                }
+                dirFileList = Collections.unmodifiableList(listOfFiles);
             }
         }
         return dirFileList;
