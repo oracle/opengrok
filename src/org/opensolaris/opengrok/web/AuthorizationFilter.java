@@ -54,18 +54,23 @@ public class AuthorizationFilter implements Filter {
 
         Project p = config.getProject();
         if (p != null && !config.isAllowed(p)) {
-            LOGGER.log(Level.INFO, "access denied for uri: {0}", httpReq.getRequestURI());
+            if (httpReq.getRemoteUser() != null) {
+                LOGGER.log(Level.INFO, "Access denied for user ''{0}'' for URI: {1}",
+                        new Object[]{httpReq.getRemoteUser(),
+                            httpReq.getRequestURI()});
+            } else {
+                LOGGER.log(Level.INFO, "Access denied for URI: {0}", httpReq.getRequestURI());
+            }
             config.getEnv().getStatistics().addRequest(httpReq);
             config.getEnv().getStatistics().addRequest(httpReq, "requests_forbidden");
             config.getEnv().getStatistics().addRequestTime(httpReq,
                     "requests_forbidden",
                     System.currentTimeMillis() - processTime);
-
             if (!config.getEnv().getConfiguration().getForbiddenIncludeFileContent().isEmpty()) {
                 sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);
                 return;
             }
-            httpRes.sendError(403, "Access forbidden");
+            httpRes.sendError(HttpServletResponse.SC_FORBIDDEN, "Access forbidden");
             return;
         }
         fc.doFilter(sr, sr1);
