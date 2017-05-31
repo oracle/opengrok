@@ -153,7 +153,7 @@ public final class PageConfig {
     public void removeAttribute(String string) {
         req.removeAttribute(string);
     }
-    
+
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
      * generate.
@@ -752,6 +752,20 @@ public final class PageConfig {
         return requestedProjects;
     }
     
+	public SortedSet<String> getAllRequestedProjects() {
+		    TreeSet<String> set = new TreeSet<>();
+            Set<Project> allProjects = getProjectHelper().getAllProjects();
+            if (allProjects != null) {
+                for (Project project : allProjects) {
+                    if (authFramework.isAllowed(req, project)) {
+                        set.add(project.getName());
+                    }
+                }
+            }
+
+        return set;
+    }
+	
     private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
     private static void splitByComma(String value, List<String> result) {
@@ -874,7 +888,6 @@ public final class PageConfig {
                 }
             }
         }
-
         return set;
     }
     
@@ -1277,12 +1290,12 @@ public final class PageConfig {
      *
      * @return a search helper.
      */
-    public SearchHelper prepareSearch() {
+    public SearchHelper prepareSearch(boolean isSearchAll) {
         SearchHelper sh = new SearchHelper();
         sh.dataRoot = getDataRoot(); // throws Exception if none-existent
         List<SortOrder> sortOrders = getSortOrder();
         sh.order = sortOrders.isEmpty() ? SortOrder.RELEVANCY : sortOrders.get(0);
-        if (getRequestedProjects().isEmpty() && getEnv().hasProjects()) {
+        if (getEnv().hasProjects() && !isSearchAll && getRequestedProjects().isEmpty()) {
             sh.errorMsg = "You must select a project!";
             return sh;
         }

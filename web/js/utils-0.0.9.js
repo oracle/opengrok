@@ -1839,6 +1839,12 @@ function deselectAllProjects() {
     }
 }
 
+function SearchAll() {
+ deselectAllProjects();
+ $("#hdnSearchAll").val("true");
+ $( "#sbox" ).submit();
+ 
+}
 function clearSearchFrom() {
     $("#sbox input[type='text']").each(function () {
         $(this).val("");

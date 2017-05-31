@@ -65,11 +65,18 @@ include file="projects.jspf"
     PageConfig cfg = PageConfig.get(request);
 
     long starttime = System.currentTimeMillis();
-
-    SearchHelper searchHelper = cfg.prepareSearch();
+	SearchHelper searchHelper = null;
+    if (request.getParameter("hdnSearchAll") != null && request.getParameter("hdnSearchAll").equals("true"))
+		searchHelper = cfg.prepareSearch(true);
+    else
+		searchHelper = cfg.prepareSearch(false);
     request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
     request.setAttribute("search.jsp-query-start-time", starttime);
-    searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
+	if (request.getParameter("hdnSearchAll") != null && request.getParameter("hdnSearchAll").equals("true")) {
+		searchHelper.prepareExec(cfg.getAllRequestedProjects()).executeQuery().prepareSummary();
+	}
+	else 
+		searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
     if (searchHelper.redirect != null) {
         response.sendRedirect(searchHelper.redirect);
     }
@@ -82,7 +89,7 @@ include file="projects.jspf"
         cfg.setTitle(cfg.getSearchTitle());
     }
     response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), "utf-8")));
-}
+	}
 %><%@
 
 include file="httpheader.jspf"

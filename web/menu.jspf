@@ -92,7 +92,9 @@ org.opensolaris.opengrok.web.Util"
     <select tabindex="8" class="q" id="project"
         name="project" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
-        SortedSet<String> pRequested = cfg.getRequestedProjects();
+		SortedSet<String> pRequested = cfg.getRequestedProjects();
+		if (request.getParameter("hdnSearchAll") != null && request.getParameter("hdnSearchAll").equals("true"))
+			pRequested.clear(); 
         for ( Group group : ph.getGroups() ) {
             Set<Project> groupProjects = ph.getAllGrouped(group);
             if ( groupProjects.size() > 0) {
@@ -102,7 +104,7 @@ org.opensolaris.opengrok.web.Util"
                 // with F5
 
                 %><option value="<%= p.getName() %>"<%
-                    if (pRequested.contains(p.getName())) {
+                    if (pRequested.contains(p.getName()) ) {
                         %> selected="selected"<%
                     }
                     if (!(messages = Util.messagesToJson(p)).isEmpty()) {
@@ -119,8 +121,8 @@ org.opensolaris.opengrok.web.Util"
         }
         for ( Project p : ph.getAllUngrouped()) {
         %><option value="<%= p.getName() %>"<%
-            if (pRequested.contains(p.getName())) {
-                %> selected="selected"<%
+            if (pRequested.contains(p.getName()) ) {
+			%> selected="selected"<%
             }
             if (!(messages = Util.messagesToJson(p)).isEmpty()) {
                 %> data-messages='<%= messages %>' <%
@@ -202,10 +204,12 @@ org.opensolaris.opengrok.web.Util"
     </tbody>
 </table>
 <div id="form-controls">
+    <input tabindex="9" class="submit btn" type="button" value="Search All Projects" onclick="javascript: SearchAll();"/>
     <input tabindex="9" class="submit btn" type="submit" value="Search"/>
     <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
            type="button" value="Clear"/>
     <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
+	<input type="hidden" id="hdnSearchAll" name="hdnSearchAll" value="false">
 </div>
 </div>
 <div id="ltbl">
