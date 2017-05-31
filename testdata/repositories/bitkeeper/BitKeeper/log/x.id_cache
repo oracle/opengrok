@@ -1,0 +1,9 @@
+# This is a BitKeeper cache file.
+# If you suspect that the file is corrupted, simply remove it and 
+# and it will be rebuilt as needed.
+# The format of the file is <ID> <PATHNAME>
+# The file is used for performance during makepatch/takepatch commands.
+zenyatta/genji@genji.dev.bluearc.com|bkexbin.c|20170214135611|54496|90d8c445aaee4e79 bkexbin.cpp
+zenyatta/genji@genji.dev.bluearc.com|bkexlib.c|20170214135611|63245|dbd45a9fd3ae6abc bkexlib.cpp
+zenyatta/genji@genji.dev.bluearc.com|bkexlib.h|20170214135611|34423|14049761c5567457 bkexlib.hpp
+#$sum$ 24571

@@ -1,0 +1,13 @@
+# HG changeset patch
+# User Vladimir Kotal <Vladimir.Kotal@oracle.com>
+# Date 1495469596 -7200
+#      Mon May 22 18:13:16 2017 +0200
+# Node ID c78fa757c524557fe29293c2a63480deb5c4f651
+# Parent  8b340409b3a81618750aa660cb113c65440688be
+add file in a subdir
+
+diff -r 8b340409b3a8 -r c78fa757c524 subdir/foo.txt
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/subdir/foo.txt	Mon May 22 18:13:16 2017 +0200
+@@ -0,0 +1,1 @@
++Monday, May 22, 2017 06:12:42 PM CEST

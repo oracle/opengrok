@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.sh;
@@ -222,7 +222,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 <BRACEGROUP> {
  /* Bug #15661: Terminate a ksh brace group. According to ksh man page
   * http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
-  * the closing brace must be on beginning of line, or it must be preceeded by
+  * the closing brace must be on beginning of line, or it must be preceded by
   * a semi-colon and (optionally) whitespace.
   */
   ^ {WhiteSpace}* \}  { out.write(yytext()); popstate(); }
@@ -289,10 +289,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
 {
-    String url = yytext();
-    out.write("<a href=\"");
-    out.write(url);out.write("\">");
-    out.write(url);out.write("</a>");
+    appendLink(yytext());
 }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

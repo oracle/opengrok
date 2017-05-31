@@ -18,22 +18,23 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.uue;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import org.apache.lucene.analysis.Analyzer.TokenStreamComponents;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  * Analyzes [tn]roff files
@@ -45,28 +46,25 @@ public class UuencodeAnalyzer extends TextAnalyzer {
     private UuencodeXref xref;
     /**
      * Creates a new instance of UuencodeAnalyzer
+     * @param factory name
      */
     protected UuencodeAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+        SymbolTokenizer=new UuencodeFullTokenizer(FileAnalyzer.dummyReader);
     }
 
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
-        doc.add(new TextField("full", getReader(src.getStream())));
-
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
+        //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+        TextField full=new TextField(QueryBuilder.FULL,SymbolTokenizer);
+        this.SymbolTokenizer.setReader(getReader(src.getStream()));        
+        doc.add(full);
+                
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
                 writeXref(in, xrefOut);
             }
         }
-    }
-
-    @Override
-    public TokenStreamComponents createComponents(String fieldName) {        
-        if ("full".equals(fieldName)) {
-            return new TokenStreamComponents(new UuencodeFullTokenizer());
-        }
-        return super.createComponents(fieldName);
     }
 
     /**

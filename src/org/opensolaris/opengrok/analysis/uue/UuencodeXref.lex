@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
  */
 
@@ -64,10 +64,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
   }
 
   ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+ [a-zA-Z0-9/] {
-    String s = yytext();
-    out.write("<a href=\"");
-    out.write(s); out.write("\">");
-    out.write(s); out.write("</a>");
+    appendLink(yytext());
   }
 
   {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }

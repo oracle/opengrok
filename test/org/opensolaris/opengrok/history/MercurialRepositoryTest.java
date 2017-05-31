@@ -18,14 +18,18 @@
  */
 
 /*
- * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.TestRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,15 +39,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Test;
-import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.TestRepository;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for MercurialRepository.
  */
+@ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
 public class MercurialRepositoryTest {
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     /**
      * Revision numbers present in the Mercurial test repository, in the order
@@ -107,9 +115,25 @@ public class MercurialRepositoryTest {
         }
     }
 
+    @Test
+    public void testGetHistorySubdir() throws Exception {
+        setUpTestRepository();
+        File root = new File(repository.getSourceRoot(), "mercurial");
+
+        // Add a subdirectory with some history.
+        runHgCommand("import",
+            root, getClass().getResource("hg-export-subdir.txt").getPath());
+
+        MercurialRepository mr
+                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        History hist = mr.getHistory(new File(root, "subdir"));
+        List<HistoryEntry> entries = hist.getHistoryEntries();
+        assertEquals(1, entries.size());
+    }
+
     /**
      * Test that subset of changesets can be extracted based on penultimate
-     * revision number.
+     * revision number. This works for directories only.
      *
      * @throws Exception
      */
@@ -205,7 +229,7 @@ public class MercurialRepositoryTest {
     }
 
     /**
-     * Test that it is possible to get contents of last revision of a text file.
+     * Test that contents of last revision of a text file match expected content.
      *
      * @throws java.lang.Exception
      */
@@ -237,6 +261,11 @@ public class MercurialRepositoryTest {
         assertEquals(exp_str, str);
     }
 
+    /**
+     * Test that it is possible to get contents of multiple revisions of a file.
+     * 
+     * @throws java.lang.Exception
+     */
     @Test
     public void testgetHistoryGetForAll() throws Exception {
         setUpTestRepository();

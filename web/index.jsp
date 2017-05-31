@@ -16,19 +16,26 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
---%><%@ page session="false" errorPage="error.jsp" %><%@
+
+--%><%@ page session="false" errorPage="error.jsp" %>
+<%
+{
+    PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
+}
+%><%@
 
 include file="projects.jspf"
 
 %><%
 /* ---------------------- index.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     cfg.setTitle("Search");
+}
 %><%@
 
 include file="httpheader.jspf"
@@ -41,18 +48,16 @@ include file="httpheader.jspf"
 include file="pageheader.jspf"
 
             %></div>
-            <div id="Masthead"></div>
+            <div id="Masthead">OpenGrok search</div>
             <div id="sbar"><%@
 
 include file="menu.jspf"
 
             %></div>
         </div>
-        <div id="results"><%@
-
-include file="index_body.html"
-
-        %>
+        <div id="results">
+            <%= PageConfig.get(request).getEnv().getConfiguration().getBodyIncludeFileContent() %>
+        </div>
         <%@
 
 include file="repos.jspf"
@@ -60,7 +65,6 @@ include file="repos.jspf"
         %>
         </div>
 <%
-}
 /* ---------------------- index.jsp end --------------------- */
 %><%@
 

@@ -18,11 +18,15 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="
+--%>
+<%@page import="org.opensolaris.opengrok.web.Util"%>
+<%@page import="org.opensolaris.opengrok.history.HistoryGuru"%>
+<%@page import="java.io.File"%>
+<%@page errorPage="error.jsp" import="
 java.text.Format,
 java.text.SimpleDateFormat,
 java.util.Date,
@@ -33,51 +37,139 @@ org.opensolaris.opengrok.history.History,
 org.opensolaris.opengrok.history.HistoryEntry,
 org.opensolaris.opengrok.history.HistoryException,
 org.opensolaris.opengrok.configuration.RuntimeEnvironment"
-%><%@
-
-include file="mast.jsp"
-
-%><%/* ---------------------- history.jsp start --------------------- */
+%>
+<%/* ---------------------- history.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
+
+    cfg.checkSourceRootExistence();
+
+    // Need to set the title before including httpheader.jspf
+    cfg.setTitle(cfg.getHistoryTitle());
+
     String path = cfg.getPath();
 
     if (path.length() > 0) {
-        String context = request.getContextPath();
-        RuntimeEnvironment env = cfg.getEnv();
-        String uriEncodedName = cfg.getUriEncodedPath();
-
-        boolean striked = false;
-        String userPage = env.getUserPage();
-        String userPageSuffix = env.getUserPageSuffix();
-        if (userPageSuffix == null) {
-            // Set to empty string so we can append it to the URL
-            // unconditionally later.
-            userPageSuffix = "";
-        }
-        String bugPage = env.getBugPage();
-        String bugRegex = env.getBugPattern();
-        if (bugRegex == null || bugRegex.equals("")) {
-            bugRegex = "\\b([12456789][0-9]{6})\\b";
-        }
-        Pattern bugPattern = Pattern.compile(bugRegex);
-        String reviewPage = env.getReviewPage();
-        String reviewRegex = env.getReviewPattern();
-        if(reviewRegex == null || reviewRegex.equals("")) {
-            reviewRegex = "\\b(\\d{4}/\\d{3})\\b";
-        }
-        Pattern reviewPattern = Pattern.compile(reviewRegex);
-        Format df = new SimpleDateFormat("dd-MMM-yyyy");
         File f = cfg.getResourceFile();
         History hist = null;
         try {
             hist = HistoryGuru.getInstance().getHistoryUI(f);
         } catch (Exception e) {
             // should not happen
-            %><h3>Problem</h3><p class="error"><%= e.getMessage() %></p><%
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            return;
         }
-        if (hist != null) {
-%><script type="text/javascript">/* <![CDATA[ */
+
+        if (hist == null) {
+            /**
+             * The history is not available even for a renamed file.
+             * Send 404 Not Found.
+             */
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        request.setAttribute("history.jsp-hist", hist);
+    }
+}
+%>
+<%@
+
+include file="httpheader.jspf"
+
+%>
+<%
+{
+    PageConfig cfg = PageConfig.get(request);
+    if ((request.getAttribute("history.jsp-hist")) != null) {
+%>
+<body>
+<script type="text/javascript">/* <![CDATA[ */
+    document.rev = function() { return getParameter("r"); };
+    document.annotate = <%= PageConfig.get(request).annotate() %>;
+    document.domReady.push(function() { domReadyMast(); });
+    document.pageReady.push(function() { pageReadyMast(); });
+/* ]]> */</script>
+<div id="page">
+    <div id="whole_header">
+        <div id="header">
+<%
+    }
+}
+{
+    if (request.getAttribute("history.jsp-hist") != null) {
+%><%@
+
+include file="pageheader.jspf"
+
+%>
+<%
+    }
+}
+{
+    PageConfig cfg = PageConfig.get(request);
+    String context = request.getContextPath();
+    String path = cfg.getPath();
+
+    History hist = null;
+    if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
+
+        int start = cfg.getSearchStart();
+        int max = cfg.getSearchMaxItems();
+        int totalHits = hist.getHistoryEntries().size();
+        int thispage = Math.min(totalHits - start, max);
+
+        // We have a lots of results to show: create a slider for them
+        request.setAttribute("history.jsp-slider", Util.createSlider(start, max, totalHits, request));
+%>
+        </div>
+        <div id="Masthead">History log of 
+        <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
+        (Results <b> <%= start + 1 %> - <%= thispage + start
+            %></b> of <b><%= totalHits %></b>)
+        </div>
+<%
+    }
+}
+{
+    if (request.getAttribute("history.jsp-hist") != null) {
+%>
+        <%@
+
+include file="minisearch.jspf"
+
+%>
+<%
+    }
+}
+{
+    PageConfig cfg = PageConfig.get(request);
+    String context = request.getContextPath();
+    String path = cfg.getPath();
+    History hist = null;
+    if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
+        RuntimeEnvironment env = cfg.getEnv();
+        String uriEncodedName = cfg.getUriEncodedPath();
+
+        boolean striked = false;
+        String userPage = env.getUserPage();
+        String userPageSuffix = env.getUserPageSuffix();
+        String bugPage = env.getBugPage();
+        String bugRegex = env.getBugPattern();
+        Pattern bugPattern = Pattern.compile(bugRegex);
+        String reviewPage = env.getReviewPage();
+        String reviewRegex = env.getReviewPattern();
+        Pattern reviewPattern = Pattern.compile(reviewRegex);
+
+        Format df = new SimpleDateFormat("dd-MMM-yyyy");
+
+        int revision2 = cfg.getIntParam("r2", -1) < 0 ? 0 : cfg.getIntParam("r2", -1);
+        int revision1 = cfg.getIntParam("r1", -1) < revision2 ? revision2 + 1 : cfg.getIntParam("r1", -1);
+        revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntries().size() - 1 : revision2;
+
+        int start = cfg.getSearchStart();
+        int max = cfg.getSearchMaxItems();
+%>
+<script type="text/javascript">/* <![CDATA[ */
 document.domReady.push(function() {domReadyHistory();});
 /* ]]> */</script>
 <!--[if IE]>
@@ -89,8 +181,6 @@ document.domReady.push(function() {domReadyHistory();});
 <![endif]-->
 <form action="<%= context + Prefix.DIFF_P + uriEncodedName %>">
 <table class="src" id="revisions">
-    <caption>History log of <a href="<%= context + Prefix.XREF_P
-        + uriEncodedName %>"><%= path %></a></caption>
     <thead>
         <tr>
             <th>Revision <%
@@ -104,7 +194,14 @@ document.domReady.push(function() {domReadyHistory();});
             %></th><%
             if (!cfg.isDir()) {
             %>
-            <th><input type="submit" value=" Compare "/></th><%
+            <th><input type="submit" value=" Compare "/>
+            <% if (hist.getHistoryEntries().size() > revision1 && revision1 >= 0) { %>
+                <input type="hidden" id="input_r1" name="r1" value="<%= path + '@' + hist.getHistoryEntries().get(revision1).getRevision() %>" />
+            <% } %>
+            <% if (hist.getHistoryEntries().size() > revision2 && revision2 >= 0) { %>
+                <input type="hidden" id="input_r2" name="r2" value="<%= path + '@' + hist.getHistoryEntries().get(revision2).getRevision() %>" />
+            <% } %>
+            </th><%
             }
             %>
             <th>Date</th>
@@ -122,9 +219,9 @@ document.domReady.push(function() {domReadyHistory();});
         </tr>
     </thead>
     <tbody>
-    <%
+            <%
             int count=0;
-            for (HistoryEntry entry : hist.getHistoryEntries()) {
+            for (HistoryEntry entry : hist.getHistoryEntries(max, start)) {
                 String rev = entry.getRevision();
                 if (rev == null || rev.length() == 0) {
                     rev = "";
@@ -152,25 +249,51 @@ document.domReady.push(function() {domReadyHistory();});
                 } else {
                     if (entry.isActive()) {
                         String rp = uriEncodedName;
+                        StringBuffer urlBuffer = request.getRequestURL();
+                        if (request.getQueryString() != null) {
+                            urlBuffer.append('?').append(request.getQueryString());
+                        }
+                        urlBuffer.append('#').append(rev);
             %>
-            <td><a href="<%= context + Prefix.HIST_L + rp %>#<%= rev %>"
+            <td><a href="<%= urlBuffer %>"
                 title="link to revision line">#</a>
                 <a href="<%= context + Prefix.XREF_P + rp + "?r=" + Util.URIEncode(rev) %>"><%=
                     rev %></a></td>
-            <td>
-                <input type="radio"<%
-                        if (count == 0 ) {
-                    %> disabled="disabled"<%
-                        } else if (count == 1) {
+            <td><%
+                %><input type="radio"
+                        data-revision-1="<%= (start + count) %>"
+                        data-revision-2="<%= revision2 %>"
+                        data-diff-revision="r1"
+                        data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(start + count).getRevision()%>"
+                <%
+                if (count + start > revision1 || (count + start > revision2 && count + start <= revision1 - 1)) {
+                    // revision1 enabled
+                } else if (count + start == revision1 ) {
+                    // revision1 selected
                     %> checked="checked"<%
-                        }
-                    %> name="r1" value="<%= path %>@<%= rev%>"/>
-                <input type="radio"
-                    name="r2"<%
-                        if (count == 0) {
-                    %> checked="checked"<%
-                        }
-                    %> value="<%= path %>@<%= rev %>"/></td><%
+                } else if( count + start <= revision2 ) {
+                    // revision1 disabled
+                    %> disabled="disabled" <%
+                }
+                %>/><%
+
+                %><input type="radio"
+                        data-revision-1="<%= revision1 %>"
+                        data-revision-2="<%= (start + count) %>"
+                        data-diff-revision="r2"
+                        data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(start + count).getRevision() %>"
+                <%
+                if( count + start < revision2 || (count + start > revision2 && count + start <= revision1 - 1) ) {
+                    // revision2 enabled
+                } else if( count + start == revision2 ) {
+                    // revision2 selected
+                    %> checked="checked" <%
+                } else if (count + start >= revision1 ) {
+                    // revision2 disabled
+                    %> disabled="disabled" <%
+                }
+                %>/><%
+                %></td><%
                     } else {
                         striked = true;
                 %>
@@ -197,17 +320,43 @@ document.domReady.push(function() {domReadyHistory();});
                 %><%= author %><%
                 }
                 %></td>
-            <td><a name="<%= rev %>"></a><p><%
+            <td><a name="<%= rev %>"></a><%
+                // revision message collapse threshold minimum of 10
+                int summaryLength = Math.max(10, cfg.getRevisionMessageCollapseThreshold());
                 String cout = Util.htmlize(entry.getMessage());
+
                 if (bugPage != null && bugPage.length() > 0) {
-                    cout = bugPattern.matcher(cout).replaceAll("<a href=\""
-                        + bugPage + "$1\">$1</a>");
+                    cout = Util.linkifyPattern(cout, bugPattern, "$1", Util.completeUrl(bugPage + "$1", request));
                 }
                 if (reviewPage != null && reviewPage.length() > 0) {
-                    cout = reviewPattern.matcher(cout).replaceAll("<a href=\""
-                        + reviewPage + "$1\">$1</a>");
+                    cout = Util.linkifyPattern(cout, reviewPattern, "$1", Util.completeUrl(reviewPage + "$1", request));
                 }
-                %><%= cout %></p><%
+                
+                boolean showSummary = false;
+                String coutSummary = entry.getMessage();
+                if (coutSummary.length() > summaryLength) {
+                    showSummary = true;
+                    coutSummary = coutSummary.substring(0, summaryLength - 1);
+                    coutSummary = Util.htmlize(coutSummary);
+                    if (bugPage != null && bugPage.length() > 0) {
+                        coutSummary = Util.linkifyPattern(coutSummary, bugPattern, "$1", Util.completeUrl(bugPage + "$1", request));
+                    }
+                    if (reviewPage != null && reviewPage.length() > 0) {
+                        coutSummary = Util.linkifyPattern(coutSummary, reviewPattern, "$1", Util.completeUrl(reviewPage + "$1", request));
+                    }
+                }
+
+                if (showSummary) {
+                    %>
+                    <p class="rev-message-summary"><%= coutSummary %></p>
+                    <p class="rev-message-full rev-message-hidden"><%= cout %></p>
+                    <p class="rev-message-toggle" data-toggle-state="less"><a class="rev-toggle-a" href="#">show more ... </a></p>
+                    <%
+                }
+                else {
+                     %><p class="rev-message-full"><%= cout %></p><%
+                }
+
                 Set<String> files = entry.getFiles();
                 if (files != null) {
                 %><div class="filelist-hidden"><br/><%
@@ -229,7 +378,21 @@ document.domReady.push(function() {domReadyHistory();});
             }
         %>
     </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="5">
+<%
+    String slider = null;
+    if ((slider = (String) request.getAttribute("history.jsp-slider")) != null) {
+        // NOTE: shouldn't happen that it doesn't have this attribute
+        %><p class="slider"><%= slider %></p><%
+    }
+%>
+            </td>
+        </tr>
+    </tfoot>
 </table>
+
 </form><%
             if (striked) {
 %><p><b>Note:</b> No associated file changes are available for
@@ -237,8 +400,10 @@ revisions with strike-through numbers (eg. <del>1.45</del>)</p><%
             }
 %>
 <p class="rssbadge"><a href="<%=context + Prefix.RSS_P + uriEncodedName
-%>" title="RSS XML Feed of latest changes"><span id="rssi"></span></a></p><%
-        }
+%>" title="RSS XML Feed of latest changes"><span id="rssi"></span></a></p>
+
+<%
+
     }
 }
 /* ---------------------- history.jsp end --------------------- */

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -80,27 +80,29 @@ class FileHistoryCache implements HistoryCache {
 
     /**
      * Generate history for single file.
-     * @param map_entry entry mapping filename to list of history entries
+     * @param filename name of the file
+     * @param historyEntries list of HistoryEntry objects forming the (incremental) history of the file
      * @param env runtime environment
      * @param repository repository object in which the file belongs
-     * @param test file object
+     * @param srcFile file object
      * @param root root of the source repository
-     * @param renamed true if the files was renamed in the past
+     * @param renamed true if the file was renamed in the past
      */
-    private void doFileHistory(Map.Entry<String, List<HistoryEntry>> map_entry,
+    private void doFileHistory(String filename, List<HistoryEntry> historyEntries,
             RuntimeEnvironment env, Repository repository,
-            File test, File root, boolean renamed) throws HistoryException {
+            File srcFile, File root, boolean renamed) throws HistoryException {
 
         History hist = null;
 
         /*
-         * Certain files require special handling - this is mainly for
-         * files which have been renamed in Mercurial repository.
-         * This ensures that their complete history (follow) will be
-         * saved.
+         * If the file was renamed (in the changesets that are being indexed),
+         * its history is not stored in the historyEntries so it needs to be acquired
+         * directly from the repository.
+         * This ensures that complete history of the file (across renames)
+         * will be saved.
          */
         if (renamed) {
-            hist = repository.getHistory(test);
+            hist = repository.getHistory(srcFile);
         }
 
         if (hist == null) {
@@ -108,12 +110,12 @@ class FileHistoryCache implements HistoryCache {
 
             // File based history cache does not store files for individual
             // changesets so strip them.
-            for (HistoryEntry ent : map_entry.getValue()) {
+            for (HistoryEntry ent : historyEntries) {
                 ent.strip();
             }
 
             // add all history entries
-            hist.setHistoryEntries(map_entry.getValue());
+            hist.setHistoryEntries(historyEntries);
         } else {
             for (HistoryEntry ent : hist.getHistoryEntries()) {
                 ent.strip();
@@ -125,20 +127,19 @@ class FileHistoryCache implements HistoryCache {
             repository.assignTagsInHistory(hist);
         }
 
-        File file = new File(root, map_entry.getKey());
+        File file = new File(root, filename);
         if (!file.isDirectory()) {
-            storeFile(hist, file, repository);
+            storeFile(hist, file, repository, !renamed);
         }
     }
 
-    private boolean isRenamedFile(Map.Entry<String,
-            List<HistoryEntry>> map_entry, RuntimeEnvironment env, 
+    private boolean isRenamedFile(String filename,
+            RuntimeEnvironment env, 
             Repository repository, History history) throws IOException {
 
-        String fullfile = map_entry.getKey();
         String repodir = env.getPathRelativeToSourceRoot(
             new File(repository.getDirectoryName()), 0);
-        String shortestfile = fullfile.substring(repodir.length() + 1);
+        String shortestfile = filename.substring(repodir.length() + 1);
 
         return (history.isRenamed(shortestfile));
     }
@@ -212,28 +213,71 @@ class FileHistoryCache implements HistoryCache {
     }
 
     /**
-     * Store history object (encoded as XML and compressed with gzip) in a file.
-     *
-     * @param history history object to store
-     * @param file file to store the history object into
-     * @param repo repository for the file
+     * Store history in file on disk.
+     * @param dir directory where the file will be saved
+     * @param history history to store
+     * @param cacheFile the file to store the history to
      * @throws HistoryException
      */
-    private void storeFile(History histNew, File file, Repository repo) throws HistoryException {
-
-        File cache = getCachedFile(file);
-        History history = histNew;
-
-        File dir = cache.getParentFile();
-        if (!dir.isDirectory() && !dir.mkdirs()) {
-            throw new HistoryException(
-                    "Unable to create cache directory '" + dir + "'.");
-        }
-
-        // Incremental update of the history for this file.
-        History histOld;
+    private void writeHistoryToFile(File dir, History history, File cacheFile) throws HistoryException {
+        // We have a problem that multiple threads may access the cache layer
+        // at the same time. Since I would like to avoid read-locking, I just
+        // serialize the write access to the cache file. The generation of the
+        // cache file would most likely be executed during index generation, and
+        // that happens sequencial anyway....
+        // Generate the file with a temporary name and move it into place when
+        // I'm done so I don't have to protect the readers for partially updated
+        // files...
+        final File output;
         try {
-            histOld = readCache(cache);
+            output = File.createTempFile("oghist", null, dir);
+            try (FileOutputStream out = new FileOutputStream(output);
+                    XMLEncoder e = new XMLEncoder(
+                            new BufferedOutputStream(
+                                    new GZIPOutputStream(out)))) {
+                e.setPersistenceDelegate(File.class,
+                        new FilePersistenceDelegate());
+                e.writeObject(history);
+            }
+        } catch (IOException ioe) {
+            throw new HistoryException("Failed to write history", ioe);
+        }
+        synchronized (lock) {
+            if (!cacheFile.delete() && cacheFile.exists()) {
+                if (!output.delete()) {
+                    LOGGER.log(Level.WARNING,
+                            "Failed to remove temporary history cache file");
+                }
+                throw new HistoryException(
+                        "Cachefile exists, and I could not delete it.");
+            }
+            if (!output.renameTo(cacheFile)) {
+                if (!output.delete()) {
+                    LOGGER.log(Level.WARNING,
+                            "Failed to remove temporary history cache file");
+                }
+                throw new HistoryException("Failed to rename cache tmpfile.");
+            }
+        }
+    }
+
+    /**
+     * Read history from cacheFile and merge it with histNew, return merged history.
+     *
+     * @param cacheFile file to where the history object will be stored
+     * @param histNew history object with new history entries
+     * @param repo repository to where pre pre-image of the cacheFile belong
+     * @return merged history (can be null if merge failed for some reason)
+     * @throws HistoryException
+     */
+    private History mergeOldAndNewHistory(File cacheFile, History histNew, Repository repo)
+            throws HistoryException {
+
+        History histOld;
+        History history = null;
+
+        try {
+            histOld = readCache(cacheFile);
             // Merge old history with the new history.
             List<HistoryEntry> listOld = histOld.getHistoryEntries();
             if (!listOld.isEmpty()) {
@@ -259,50 +303,51 @@ class FileHistoryCache implements HistoryCache {
                 }
             }
         } catch (IOException ex) {
-            // Ideally we would want to catch the case when incremental update
-            // is done but the cached file is not there however we do not have
-            // the data to do it here.
+            LOGGER.log(Level.SEVERE,
+                String.format("Cannot open history cache file %s", cacheFile.getPath()), ex);
         }
 
-        // We have a problem that multiple threads may access the cache layer
-        // at the same time. Since I would like to avoid read-locking, I just
-        // serialize the write access to the cache file. The generation of the
-        // cache file would most likely be executed during index generation, and
-        // that happens sequencial anyway....
-        // Generate the file with a temporary name and move it into place when
-        // I'm done so I don't have to protect the readers for partially updated
-        // files...
-        final File output;
-        try {
-            output = File.createTempFile("oghist", null, dir);
-            try (FileOutputStream out = new FileOutputStream(output);
-                    XMLEncoder e = new XMLEncoder(
-                        new BufferedOutputStream(
-                        new GZIPOutputStream(out)))) {
-                e.setPersistenceDelegate(File.class,
-                    new FilePersistenceDelegate());
-                e.writeObject(history);
-            }
-        } catch (IOException ioe) {
-            throw new HistoryException("Failed to write history", ioe);
+        return history;
+    }
+
+    /**
+     * Store history object (encoded as XML and compressed with gzip) in a file.
+     *
+     * @param history history object to store
+     * @param file file to store the history object into
+     * @param repo repository for the file
+     * @param mergeHistory whether to merge the history with existing or
+     *                     store the histNew as is
+     * @throws HistoryException
+     */
+    private void storeFile(History histNew, File file, Repository repo,
+            boolean mergeHistory) throws HistoryException {
+
+        File cacheFile = getCachedFile(file);
+        History history = histNew;
+
+        File dir = cacheFile.getParentFile();
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            throw new HistoryException(
+                    "Unable to create cache directory '" + dir + "'.");
         }
-        synchronized (lock) {
-            if (!cache.delete() && cache.exists()) {
-                if (!output.delete()) {
-                    LOGGER.log(Level.WARNING,
-                        "Failed to remove temporary history cache file");
-                }
-                throw new HistoryException(
-                        "Cachefile exists, and I could not delete it.");
-            }
-            if (!output.renameTo(cache)) {
-                if (!output.delete()) {
-                    LOGGER.log(Level.WARNING,
-                        "Failed to remove temporary history cache file");
-                }
-                throw new HistoryException("Failed to rename cache tmpfile.");
-            }
+
+        if (mergeHistory && cacheFile.exists()) {
+            history = mergeOldAndNewHistory(cacheFile, histNew, repo);
         }
+
+        // If the merge failed, null history will be returned.
+        // In such case store at least new history as a best effort.
+        if (history != null) {
+            writeHistoryToFile(dir, history, cacheFile);
+        } else {
+            writeHistoryToFile(dir, histNew, cacheFile);
+        }
+    }
+
+    private void storeFile(History histNew, File file, Repository repo)
+            throws HistoryException {
+        storeFile(histNew, file, repo, false);
     }
 
     private void finishStore(Repository repository, String latestRev) {
@@ -340,7 +385,7 @@ class FileHistoryCache implements HistoryCache {
             new Object[] {repository.getDirectoryName()});
 
         HashMap<String, List<HistoryEntry>> map =
-                new HashMap<String, List<HistoryEntry>>();
+                new HashMap<>();
 
         /*
          * Go through all history entries for this repository (acquired through
@@ -366,7 +411,7 @@ class FileHistoryCache implements HistoryCache {
 
                 List<HistoryEntry> list = map.get(s);
                 if (list == null) {
-                    list = new ArrayList<HistoryEntry>();
+                    list = new ArrayList<>();
                     map.put(s, list);
                 }
                 /*
@@ -391,15 +436,16 @@ class FileHistoryCache implements HistoryCache {
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
                 if (env.isHandleHistoryOfRenamedFiles() &&
-                    isRenamedFile(map_entry, env, repository, history)) {
+                    isRenamedFile(map_entry.getKey(), env, repository, history)) {
                         continue;
                 }
             } catch (IOException ex) {
                LOGGER.log(Level.WARNING,
-                   "isRenamedFile() got exception: " + ex);
+                   "isRenamedFile() got exception " , ex);
             }
 
-            doFileHistory(map_entry, env, repository, null, root, false);
+            doFileHistory(map_entry.getKey(), map_entry.getValue(),
+                env, repository, null, root, false);
         }
 
         if (!env.isHandleHistoryOfRenamedFiles()) {
@@ -411,15 +457,15 @@ class FileHistoryCache implements HistoryCache {
          * Now handle renamed files (in parallel).
          */
         HashMap<String, List<HistoryEntry>> renamed_map =
-                new HashMap<String, List<HistoryEntry>>();
+                new HashMap<>();
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                if (isRenamedFile(map_entry, env, repository, history)) {
+                if (isRenamedFile(map_entry.getKey(), env, repository, history)) {
                     renamed_map.put(map_entry.getKey(), map_entry.getValue());
                 }
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING,
-                    "isRenamedFile() got exception: " + ex);
+                    "isRenamedFile() got exception ", ex);
             }
         }
         // The directories for the renamed files have to be created before
@@ -432,7 +478,7 @@ class FileHistoryCache implements HistoryCache {
 
             if (!dir.isDirectory() && !dir.mkdirs()) {
                 LOGGER.log(Level.WARNING,
-                   "Unable to create cache directory '" + dir + "'.");
+                   "Unable to create cache directory ' {0} '.", dir);
             }
         }
         final Repository repositoryF = repository;
@@ -442,13 +488,14 @@ class FileHistoryCache implements HistoryCache {
                 @Override
                 public void run() {
                     try {
-                        doFileHistory(map_entry, env, repositoryF,
+                        doFileHistory(map_entry.getKey(), map_entry.getValue(),
+                            env, repositoryF,
                             new File(env.getSourceRootPath() + map_entry.getKey()),
                             root, true);
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
                         LOGGER.log(Level.WARNING,
-                            "doFileHistory() got exception: " + ex);
+                            "doFileHistory() got exception ", ex);
                     } finally {
                         latch.countDown();
                     }
@@ -461,7 +508,7 @@ class FileHistoryCache implements HistoryCache {
             // Wait for the executors to finish.
             latch.await();
         } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception" + ex);
+            LOGGER.log(Level.SEVERE, "latch exception ",ex);
         }
         finishStore(repository, latestRev);
     }
@@ -518,6 +565,7 @@ class FileHistoryCache implements HistoryCache {
                 storeFile(history, file, repository);
             }
         }
+
         return history;
     }
 
@@ -595,15 +643,15 @@ class FileHistoryCache implements HistoryCache {
                   new FileOutputStream(getRepositoryCachedRevPath(repository))));
             writer.write(rev);
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "cannot write latest cached revision to file: " +
-                ex.getCause());
+            LOGGER.log(Level.WARNING, "Cannot write latest cached revision to file for "+repository.getDirectoryName(),
+                ex);
         } finally {
            try {
                if (writer != null) {
                    writer.close();
                }
            } catch (IOException ex) {
-               LOGGER.log(Level.INFO, "cannot close file: " + ex);
+               LOGGER.log(Level.FINEST, "Cannot close file", ex);
            }
         }
     }
@@ -618,18 +666,18 @@ class FileHistoryCache implements HistoryCache {
             try {
                 rev = input.readLine();
             } catch (java.io.IOException e) {
-                LOGGER.log(Level.WARNING, "failed to load: {0}", e);
+                LOGGER.log(Level.WARNING, "failed to load ", e);
                 return null;
             } finally {
                 try {
                     input.close();
                 } catch (java.io.IOException e) {
-                    LOGGER.log(Level.INFO, "failed to close: {0}", e);
+                    LOGGER.log(Level.FINEST, "failed to close", e);
                 }
             }
         } catch (java.io.FileNotFoundException e) {
-            LOGGER.log(Level.FINE, "not loading latest cached revision file from "
-                + getRepositoryCachedRevPath(repository));
+            LOGGER.log(Level.FINE, "not loading latest cached revision file from {0}",
+                getRepositoryCachedRevPath(repository));
             return null;
         }
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.sh;
 
@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
@@ -42,15 +42,12 @@ public class ShAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of ShAnalyzer
+     * @param factory name
      */
     protected ShAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-    }
-
-    @Override
-    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
-        return new ShSymbolTokenizer(reader);
-    }
+        SymbolTokenizer=new ShSymbolTokenizer(FileAnalyzer.dummyReader);    
+    }    
 
     @Override
     protected JFlexXref newXref(Reader reader) {

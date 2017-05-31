@@ -16,28 +16,22 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page session="false" isErrorPage="true" import="
+--%><%@page session="false" errorPage="error.jsp" isErrorPage="true" import="
 org.opensolaris.opengrok.web.Prefix,
 org.opensolaris.opengrok.configuration.RuntimeEnvironment"
  %><%
 /* ---------------------- enoent.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
     cfg.setTitle("File not found");
 
     String context = request.getContextPath();
     cfg.getEnv().setUrlPrefix(context + Prefix.SEARCH_R + "?");
-    String configError = "";
-    if (cfg.getSourceRootPath().isEmpty()) {
-        configError = "CONFIGURATION parameter has not been configured in "
-            + "web.xml! Please configure your webapp.";
-    } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
-        configError = "The source root specified in your configuration does "
-            + "not point to a valid directory! Please configure your webapp.";
-    }
+}
 %><%@
 
 include file="httpheader.jspf"
@@ -50,15 +44,25 @@ include file="httpheader.jspf"
 include file="pageheader.jspf"
 
         %></div>
-        <div id="Masthead"></div>
+        <div id="Masthead">Error: file not found</div>
         <div id="sbar"><%@
 
 include file="menu.jspf"
 
         %></div>
     </div>
+<%
+{
+    PageConfig cfg = PageConfig.get(request);
+    String configError = "";
+    if (!cfg.hasHistory()) {
+        configError = "Resource lacks history info. Was remote SCM side up when indexing occurred? "
+            + "Cleanup history cache dir(or just the .gz for the file or db record) and rerun indexer making sure remote side will respond during indexing.";
+   }
+%>
     <h3 class="error">Error: File not found!</h3>
-    <p>The requested resource is not available. <%= configError %></p>
+    <p>The requested resource is not available. </p>
+    <p> <%= configError %> </p>
 <%
 }
 /* ---------------------- enoent.jsp end --------------------- */

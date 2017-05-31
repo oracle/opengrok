@@ -84,7 +84,7 @@ public class Consts{
         kwd.add("ref");
         kwd.add("return");
         kwd.add("sbyte");
-        kwd.add("seale");
+        kwd.add("sealed");
         kwd.add("short");
         kwd.add("sizeof");
         kwd.add("stackalloc");

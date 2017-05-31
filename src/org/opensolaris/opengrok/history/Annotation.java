@@ -208,7 +208,7 @@ public class Annotation {
     }
 
     //TODO below might be useless, need to test with more SCMs and different commit messages
-    // to see if it will not be usefull, if title attribute of <a> loses it's breath
+    // to see if it will not be useful, if title attribute of <a> loses it's breath
     public void writeTooltipMap(Writer out) throws IOException {
         out.append("<script type=\"text/javascript\">\nvar desc = new Object();\n");
         for (Entry<String, String> entry : desc.entrySet()) {

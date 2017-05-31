@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -27,8 +27,9 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.TreeSet;
+import java.util.regex.PatternSyntaxException;
 import junit.framework.AssertionFailedError;
 import org.junit.Test;
 
@@ -85,21 +86,45 @@ public class GroupTest {
     }
 
     @Test
-    public void basicTest() {
-        Group g = new Group();
-        Project t = new Project();
+    public void invalidPatternTest() {
+        testPattern("*dangling asterisk", false);
+        testPattern(".*(", false);
+        testPattern("+", false);
+        testPattern("[a-z?.*", false);
+        testPattern("()", true);
+        testPattern("[a-z?(.*)]", true);
+        testPattern("[a-z?.*]", true);
+        testPattern("valid pattern", true);
+        testPattern(".*(.*.*)?\\*.*", true);
+    }
 
-        g.setName("Random name");
-        g.setPattern("abcd");
-        t.setDescription("abcd");
+    private void testPattern(String pattern, boolean valid) {
+        try {
+            Group g = new Group();
+            g.setPattern(pattern);
+            if (!valid) {
+                fail("Pattern \"" + pattern + "\" is invalid regex pattern, exception expected.");
+            }
+        } catch (PatternSyntaxException ex) {
+            if (valid) {
+                fail("Pattern \"" + pattern + "\" is valid regex pattern, exception thrown.");
+            }
+        }
+    }
+
+    @Test
+    public void basicTest() {
+        Group g = new Group("Random name", "abcd");
 
         assertTrue(g.getName().equals("Random name"));
         assertTrue(g.getPattern().equals("abcd"));
 
+        Project t = new Project("abcd");
+
         // basic matching
         assertTrue("Should match pattern", g.match(t));
 
-        t.setDescription("abcde");
+        t.setName("abcde");
 
         assertFalse("Shouldn't match, pattern is shorter", g.match(t));
 
@@ -115,52 +140,45 @@ public class GroupTest {
 
         assertFalse("Shouldn't match pattern", g.match(t));
 
-        t.setDescription("ab");
+        t.setName("ab");
         g.setPattern("ab|cd");
 
         assertTrue("Should match pattern", g.match(t));
 
-        t.setDescription("cd");
+        t.setName("cd");
 
         assertTrue("Should match pattern", g.match(t));
     }
 
     @Test
     public void subgroupsTest() {
-        Group g1 = new Group();
-        g1.setName("Random name");
-        g1.setPattern("abcd");
-        Group g2 = new Group();
-        g2.setName("Random name2");
-        g2.setPattern("efgh");
-        Group g3 = new Group();
-        g3.setName("Random name3");
-        g3.setPattern("xyz");
+        Group g1 = new Group("Random name", "abcd");
+        Group g2 = new Group("Random name2", "efgh");
+        Group g3 = new Group("Random name3", "xyz");
 
         g1.getSubgroups().add(g2);
         g1.getSubgroups().add(g3);
 
-        Project t = new Project();
-        t.setDescription("abcd");
+        Project t = new Project("abcd");
 
         assertFalse(g2.match(t));
         assertFalse(g3.match(t));
         assertTrue(g1.match(t));
 
-        t.setDescription("xyz");
+        t.setName("xyz");
 
         assertFalse(g1.match(t));
         assertFalse(g2.match(t));
         assertTrue(g3.match(t));
 
-        t.setDescription("efgh");
+        t.setName("efgh");
 
         assertFalse(g1.match(t));
         assertTrue(g2.match(t));
         assertFalse(g3.match(t));
 
-        t.setDescription("xyz");
-        g1.setSubgroups(new ArrayList<Group>());
+        t.setName("xyz");
+        g1.setSubgroups(new TreeSet<Group>());
         g1.getSubgroups().add(g2);
         g2.getSubgroups().add(g3);
 
@@ -171,17 +189,12 @@ public class GroupTest {
 
     @Test
     public void projectTest() {
-        Group random1 = new Group();
-        random1.setName("Random name");
-        random1.setPattern("abcd");
-        Group random2 = new Group();
-        random2.setName("Random name2");
-        random2.setPattern("efgh");
+        Group random1 = new Group("Random name", "abcd");
+        Group random2 = new Group("Random name2", "efgh");
 
         random1.getSubgroups().add(random2);
 
-        Project abcd = new Project();
-        abcd.setDescription("abcd");
+        Project abcd = new Project("abcd");
 
         assertFalse(random2.match(abcd));
         assertTrue(random1.match(abcd));
@@ -191,8 +204,7 @@ public class GroupTest {
         assertTrue(random1.getProjects().size() == 1);
         assertTrue(random1.getProjects().iterator().next() == abcd);
 
-        Project efgh = new Project();
-        efgh.setDescription("efgh");
+        Project efgh = new Project("efgh");
 
         assertTrue(random2.match(efgh));
         assertFalse(random1.match(efgh));

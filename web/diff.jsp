@@ -18,11 +18,12 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
---%><%@page import="
+--%><%@page errorPage="error.jsp" import="
+java.io.ByteArrayInputStream,
+java.io.OutputStream,
 java.io.BufferedReader,
 java.io.FileNotFoundException,
 java.io.InputStream,
@@ -42,11 +43,52 @@ org.opensolaris.opengrok.web.DiffType"
 %><%!
 private String getAnnotateRevision(DiffData data) {
     if (data.type == DiffType.OLD || data.type == DiffType.NEW) {
+        String rev = data.rev[data.type == DiffType.NEW ? 1 : 0];
         return "<script type=\"text/javascript\">/* <![CDATA[ */ "
-            + "document.rev = 'r=" + data.rev[data.type == DiffType.NEW ? 1 : 0]
-            + "'; /* ]]> */</script>";
+            + "document.rev = function() { return " + Util.htmlize(Util.jsStringLiteral(rev))
+            + "; } /* ]]> */</script>";
     }
     return "";
+}
+%>
+<%
+{
+    PageConfig cfg = PageConfig.get(request);
+    cfg.addScript("diff");
+    cfg.checkSourceRootExistence();
+    /**
+     * This block must be the first block before any other output in the
+     * response.
+     *
+     * If there is already any output written into the response and we
+     * use the same response and reset the content and the headers then we have
+     * a collision with the response streams and the "getOutputStream() has
+     * already been called" exception occurs.
+     */
+    DiffData data = cfg.getDiffData();
+    request.setAttribute("diff.jsp-data", data);
+    if (data.type == DiffType.TEXT
+            && request.getParameter("action") != null
+            && request.getParameter("action").equals("download")) {
+        try (OutputStream o = response.getOutputStream()) {
+            for (int i = 0; i < data.revision.size(); i++) {
+                Delta d = data.revision.getDelta(i);
+                try (InputStream in = new ByteArrayInputStream(d.toString().getBytes("UTF-8"))) {
+                    response.setHeader("content-disposition", "attachment; filename="
+                            + cfg.getResourceFile().getName() + "@" + data.rev[0]
+                            + "-" + data.rev[1] + ".diff");
+                    byte[] buffer = new byte[8192];
+                    int nr;
+                    while ((nr = in.read(buffer)) > 0) {
+                        o.write(buffer, 0, nr);
+                    }
+                }
+            }
+            o.flush();
+            o.close();
+            return;
+        }
+    }
 }
 %><%@
 
@@ -55,9 +97,10 @@ include file="mast.jsp"
 %><%
 /* ---------------------- diff.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
-    DiffData data = cfg.getDiffData();
+    PageConfig cfg = PageConfig.get(request);
+    DiffData data = (DiffData) request.getAttribute("diff.jsp-data");
 
+    // the data is never null as the getDiffData always return valid object
     if (data.errorMsg != null)  {
 
 %>
@@ -65,7 +108,6 @@ include file="mast.jsp"
     <h3 class="error">Error:</h3>
     <p><%= data.errorMsg %></p>
 </div><%
-
     } else if (data.genre == Genre.IMAGE) {
 
         String link = request.getContextPath() + Prefix.DOWNLOAD_P
@@ -157,6 +199,8 @@ include file="mast.jsp"
         <span> <a href="<%= reqURI %>?r1=<%= rp1 %>&amp;r2=<%= rp2
             %>&amp;format=<%= type.getAbbrev() %>&amp;full=0">compact</a></span><%
         }
+        %><span><a href="#" id="toggle-jumper">jumper</a></span>
+          <span><a href="<%= reqURI %>?r1=<%= rp1 %>&amp;r2=<%= rp2 %>&amp;format=<%= DiffType.TEXT %>&amp;action=download">download diff</a></span><%
     %></div>
 </div>
 
@@ -243,7 +287,7 @@ include file="mast.jsp"
                     }
                     if (cn1 <= cl1) {
             %>
-            <tr><td><%
+            <tr class="chunk"><td><%
                         for (int j = cn1; j  <= cl1 ; j++) {
                 %><del class="d"><%= ++ln1 %></del><%= file1[j]
                 %><br/><%
@@ -253,7 +297,11 @@ include file="mast.jsp"
                     }
                     if (cn2 <= cl2) {
             %>
-            <tr class="k"><td><%
+            <tr class="k<%
+                    if (cn1 > cl1) {
+                        %> chunk<%
+                    }
+                %>"><td><%
                         for (int j = cn2; j  < cl2; j++) {
                 %><i class="a"><%= ++ln2 %></i><%= file2[j]
                 %><br/><%
@@ -315,7 +363,7 @@ include file="mast.jsp"
             </tr><%
                     }
             %>
-            <tr class="k"><td><%
+            <tr class="k chunk"><td><%
                     for (int j = cn1; j  <= cl1; j++) {
                 %><i><%= ++ln1 %></i><%= file1[j] %><br/><%
                     }

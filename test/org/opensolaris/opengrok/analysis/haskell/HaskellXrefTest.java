@@ -18,12 +18,9 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.haskell;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,9 +30,11 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the {@link HaskellXref} class.
@@ -51,7 +50,7 @@ public class HaskellXrefTest {
         HaskellAnalyzer.writeXref(new StringReader(s), w, null, null, null);
         assertEquals(
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
-                + "<a href=\"/source/s?defs=putStrLn\" onmouseover=\"onMouseOverSymbol('putStrLn', 'undefined-in-file')\">putStrLn</a>"
+                + "<a href=\"/source/s?defs=putStrLn\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">putStrLn</a>"
                 + " <span class=\"s\">\"&#72;&#101;&#108;&#108;&#111;&#44; &#119;&#111;&#114;&#108;&#100;&#33;\"</span>",
                 w.toString());
     }

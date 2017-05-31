@@ -18,10 +18,12 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="
+--%>
+<%@page errorPage="error.jsp" import="
 java.io.BufferedInputStream,
 java.io.BufferedReader,
 java.io.FileInputStream,
@@ -29,6 +31,7 @@ java.io.FileReader,
 java.io.InputStream,
 java.io.InputStreamReader,
 java.io.Reader,
+java.net.URLEncoder,
 java.util.ArrayList,
 java.util.Arrays,
 java.util.List,
@@ -49,14 +52,17 @@ org.opensolaris.opengrok.web.DirectoryListing"
     if (request.getCharacterEncoding() == null) {
         request.setCharacterEncoding("UTF-8");
     }
-    cfg = PageConfig.get(request);
+
+    PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
+
     Annotation annotation = cfg.getAnnotation();
     if (annotation != null) {
         int r = annotation.getWidestRevision();
         int a = annotation.getWidestAuthor();
         cfg.addHeaderData("<style type=\"text/css\">"
-            + ".blame .r { width: " + (r == 0 ? 6 : r) + "ex; } "
-            + ".blame .a { width: " + (a == 0 ? 6 : a) + "ex; } "
+            + ".blame .r { width: " + (r == 0 ? 6 : Math.ceil(r * 0.7)) + "em; } "
+            + ".blame .a { width: " + (a == 0 ? 6 : Math.ceil(a * 0.7)) + "em; } "
             + "</style>");
     }
 }
@@ -70,7 +76,7 @@ document.pageReady.push(function() { pageReadyList();});
 <%
 /* ---------------------- list.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
 
     File resourceFile = cfg.getResourceFile();
@@ -86,13 +92,13 @@ document.pageReady.push(function() { pageReadyList();});
         String cookieValue = cfg.getRequestedProjectsAsString();
         if (activeProject != null) {
             Set<String>  projects = cfg.getRequestedProjects();
-            if (!projects.contains(activeProject.getDescription())) {
-                projects.add(activeProject.getDescription());
+            if (!projects.contains(activeProject.getName())) {
+                projects.add(activeProject.getName());
                 // update cookie
                 cookieValue = cookieValue.length() == 0
-                    ? activeProject.getDescription()
-                    : activeProject.getDescription() + '/' + cookieValue;
-                Cookie cookie = new Cookie("OpenGrokProject", cookieValue);
+                    ? activeProject.getName()
+                    : activeProject.getName() + ',' + cookieValue;
+                Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, "utf-8"));
                 // TODO hmmm, projects.jspf doesn't set a path
                 cookie.setPath(request.getContextPath() + '/');
                 response.addCookie(cookie);
@@ -110,12 +116,30 @@ document.pageReady.push(function() { pageReadyList();});
                 if (catfiles[i] == null) {
                     continue;
                 }
-%><h3><%= readMes.get(i) %></h3>
-<div id="src<%=i%>">
-    <pre><%
-                Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));
-    %></pre>
-</div><%
+%>
+<%
+    if (readMes.get(i).toLowerCase().endsWith(".md")) {
+    %><div id="src<%=i%>" data-markdown>
+        <div class="markdown-heading">
+            <h3><%= readMes.get(i) %></h3>
+        </div>
+        <div class="markdown-content"
+             data-markdown-download="<%= request.getContextPath() + Prefix.DOWNLOAD_P + Util.URIEncodePath(cfg.getPath() + readMes.get(i)) %>">
+        </div>
+        <pre data-markdown-original><%
+            Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));
+        %></pre>
+    </div>
+<% } else { %>
+    <h3><%= readMes.get(i) %></h3>
+    <div id="src<%=i%>">
+        <pre><%
+            Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));
+        %></pre>
+    </div>
+<%
+    }
+
             }
         }
     } else if (rev.length() != 0) {
@@ -127,7 +151,7 @@ document.pageReady.push(function() { pageReadyList();});
             InputStream in = null;
             try {
                 in = HistoryGuru.getInstance()
-                    .getRevision(resourceFile.getParent(), basename, rev.substring(2));
+                    .getRevision(resourceFile.getParent(), basename, rev);
             } catch (Exception e) {
                 // fall through to error message
                 error = e.getMessage();
@@ -143,14 +167,11 @@ document.pageReady.push(function() { pageReadyList();});
                     {
 %>
 <div id="src">
-    Binary file [Click <a href="<%= rawPath %>?<%= rev
-        %>">here</a> to download]
+Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
 </div><%
                     } else {
 %>
 <div id="src">
-    <span class="pagetitle"><%= basename %> revision <%=
-        rev.substring(2) %></span>
     <pre><%
                         if (g == Genre.PLAIN) {
                             // We don't have any way to get definitions
@@ -164,13 +185,13 @@ document.pageReady.push(function() { pageReadyList();});
                                 annotation, Project.getProject(resourceFile));
                         } else if (g == Genre.IMAGE) {
     %></pre>
-    <img src="<%= rawPath %>?<%= rev %>"/>
+    <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
     <pre><%
                         } else if (g == Genre.HTML) {
                             r = new InputStreamReader(in);
                             Util.dump(out, r);
                         } else {
-        %> Click <a href="<%= rawPath %>?<%= rev %>">download <%= basename %></a><%
+    %> Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">download <%= basename %></a><%
                         }
                     }
                 } catch (IOException e) {
@@ -198,13 +219,12 @@ document.pageReady.push(function() { pageReadyList();});
         } else if (g == Genre.IMAGE) {
 %>
 <div id="src">
-    <img src="<%= rawPath %>?<%= rev %>"/>
+    <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
 </div><%
         } else {
 %>
 <div id="src">
-    Binary file [Click <a href="<%= rawPath %>?<%= rev
-        %>">here</a> to download]
+Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
 </div><%
         }
     } else {

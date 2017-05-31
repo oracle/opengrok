@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2006, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
- * Gets Javascript symbols - ignores comments, strings, keywords
+ * Gets JavaScript symbols - ignores comments, strings, keywords
  */
 
 package org.opensolaris.opengrok.analysis.javascript;
@@ -35,6 +35,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class JavaScriptSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
+%buffer 32766
 %init{
 super(in);
 %init}

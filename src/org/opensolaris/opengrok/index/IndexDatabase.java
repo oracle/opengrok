@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -164,7 +164,7 @@ public class IndexDatabase {
         List<IndexDatabase> dbs = new ArrayList<>();
 
         if (env.hasProjects()) {
-            for (Project project : env.getProjects()) {
+            for (Project project : env.getProjectList()) {
                 dbs.add(new IndexDatabase(project));
             }
         } else {
@@ -226,7 +226,7 @@ public class IndexDatabase {
                             dbs.add(db);
                         }
                     } else {
-                        LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\" .", path);
                     }
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "An error occured while updating index", e);
@@ -465,7 +465,7 @@ public class IndexDatabase {
         List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            for (Project project : env.getProjects()) {
+            for (Project project : env.getProjectList()) {
                 dbs.add(new IndexDatabase(project));
             }
         } else {
@@ -544,8 +544,8 @@ public class IndexDatabase {
     private void setDirty() {
         synchronized (lock) {
             try {
-                if (!dirty && !dirtyFile.createNewFile()) {
-                    if (!dirtyFile.exists()) {
+                if (!dirty) {
+                    if (!dirtyFile.createNewFile() && !dirtyFile.exists()) {
                         LOGGER.log(Level.FINE,
                                 "Failed to create \"dirty-file\": {0}",
                                 dirtyFile.getAbsolutePath());
@@ -615,6 +615,7 @@ public class IndexDatabase {
         fa.setCtags(ctags);
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
+        fa.setFoldingEnabled(RuntimeEnvironment.getInstance().isFoldingEnabled());
 
         Document doc = new Document();
         try (Writer xrefOut = getXrefWriter(fa, path)) {
@@ -677,14 +678,16 @@ public class IndexDatabase {
                 (!(file.isDirectory() || includedNames.match(file)))) {
             return false;
         }
-        if (ignoredNames.ignore(file)) {
-            return false;
-        }
 
         String absolutePath = file.getAbsolutePath();
 
+        if (ignoredNames.ignore(file)) {
+            LOGGER.log(Level.FINER, "ignoring {0}", absolutePath);
+            return false;
+        }
+
         if (!file.canRead()) {
-            LOGGER.log(Level.WARNING, "Warning: could not read {0}", absolutePath);
+            LOGGER.log(Level.WARNING, "Could not read {0}", absolutePath);
             return false;
         }
 
@@ -699,12 +702,12 @@ public class IndexDatabase {
             }
             //below will only let go files and directories, anything else is considered special and is not added
             if (!file.isFile() && !file.isDirectory()) {
-                LOGGER.log(Level.WARNING, "Warning: ignored special file {0}",
+                LOGGER.log(Level.WARNING, "Ignored special file {0}",
                     absolutePath);
                 return false;
             }
         } catch (IOException exp) {
-            LOGGER.log(Level.WARNING, "Warning: Failed to resolve name: {0}",
+            LOGGER.log(Level.WARNING, "Failed to resolve name: {0}",
                 absolutePath);
             LOGGER.log(Level.FINE, "Stack Trace: ", exp);
         }
@@ -745,7 +748,7 @@ public class IndexDatabase {
 
             return accept(file);
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Warning: Failed to resolve name: {0} {1}",
+            LOGGER.log(Level.WARNING, "Failed to resolve name: {0} {1}",
                     new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
         }
         return false;
@@ -946,7 +949,7 @@ public class IndexDatabase {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             if (subFiles == null || subFiles.isEmpty()) {
-                for (Project project : env.getProjects()) {
+                for (Project project : env.getProjectList()) {
                     IndexDatabase db = new IndexDatabase(project);
                     db.listFiles();
                 }
@@ -954,7 +957,7 @@ public class IndexDatabase {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        LOGGER.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
                         db.listFiles();
@@ -1012,18 +1015,18 @@ public class IndexDatabase {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             if (subFiles == null || subFiles.isEmpty()) {
-                for (Project project : env.getProjects()) {
+                for (Project project : env.getProjectList()) {
                     IndexDatabase db = new IndexDatabase(project);
-                    db.listTokens(4);
+                    db.listTokens(limit);
                 }
             } else {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        LOGGER.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
-                        db.listTokens(4);
+                        db.listTokens(limit);
                     }
                 }
             }

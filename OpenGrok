@@ -4,13 +4,10 @@
 #
 # Supported Operating Systems:
 #   - Solaris 11  (SunOS 5.11)
-#   - Solaris 12  (SunOS 5.12)
 #   - Debian      (Linux)
 #
 # Supported Deployment Engines:
 #   - Tomcat 8
-#   - Tomcat 7
-#   - Tomcat 6
 #   - Glassfish
 #
 # Supported Environment Variables:
@@ -21,7 +18,7 @@
 # Supported Environment Variables for configuring the default setup:
 #   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
 #   - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
-#   - EXUBERANT_CTAGS             Full Path to Exuberant CTags
+#   - OPENGROK_CTAGS              Full path to Exuberant or Universal CTags binary
 #   - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
 #                                 options for CTags program (for its --options
 #                                 switch), default is DATA_ROOT/etc/ctags.config
@@ -30,20 +27,30 @@
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
 #                                 or enabling server JDK)
 #                                 JAVA_OPTS=-Xmx2048m is the default!
-#   - OPENGROK_APP_SERVER         Application Server ("Tomcat" or "Glassfish")
+#   - OPENGROK_APP_SERVER         Application Server ("Tomcat", "Glassfish" or "Resin")
 #   - OPENGROK_WAR_TARGET_TOMCAT  Tomcat Specific WAR Target Directory
 #   - OPENGROK_WAR_TARGET_GLASSFISH Glassfish Specific WAR Target Directory
+#   - OPENGROK_WAR_TARGET_RESIN   Resin Specific WAR Target Directory
 #   - OPENGROK_WAR_TARGET         Fallback WAR Target Directory
 #   - OPENGROK_TOMCAT_BASE        Base Directory for Tomcat (contains webapps)
 #   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish
 #                                 (contains domains)
 #   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
+#   - OPENGROK_RESIN_BASE         Base Directory for Resin (contains webapps)
 #   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
 #   - OPENGROK_PROGRESS           Shows progress in %(percentage) of working
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
-#   - OPENGROK_GENERATE_HISTORY   Influence history cache generation 
+#   - OPENGROK_DISABLE_RENAMED_FILES_HISTORY Disable getting full history of
+#                                 renamed files for SCMs that support it (Git,
+#                                 Mercurial).
+#                                 The default is handle the history which makes
+#                                 indexing slower, especially in the presence of
+#                                 lots of renamed files in the repository.
+#                                 Set it to non-empty value to disable the
+#                                 renamed files history handling.
+#   - OPENGROK_GENERATE_HISTORY   Influence history cache generation
 #                                 Following values are recognized:
 #                                   on		- enabled (default)
 #                                   off		- disabled for indexing and UI
@@ -52,6 +59,9 @@
 #                                                 directory
 #                                   local	- for local repos only
 #                                   uionly	- enabled for UI only
+#   - OPENGROK_ENABLE_PROJECTS    Enable projects (set it to true or false)
+#                                 Every directory in SRC_ROOT is
+#                                   considered a separate project
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
 #                                 (by default 3 directories from SRC_ROOT)
@@ -63,19 +73,13 @@
 #                                 (old already indexed files won't be refreshed)
 #   - OPENGROK_WPREFIX            Disable wildcard prefix search query
 #                                 support (*)
-#   - OPENGROK_DERBY              if set, then indexer tries to use derby as
-#                                 historycache (see derby command of this
-#                                 script)
-#   - OPENGROK_DERBY_URL          Use specific URL to JavaDB, e.g.
-#                                 "jdbc:derby://localhost:1528/cachedb;create=true"
-#                                 (default port is 1527)
 #   - OPENGROK_TAG                Enable parsing of revision tags into the History
 #                                 view
-#   - READ_XML_CONFIGURATION      file with read only configuration
+#   - OPENGROK_READ_XML_CONFIGURATION file with read only configuration
 #                                 - temporary workaround for bug # 327
-#   - OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 16" - set RAM buffer size for flushing, 
-#                                 default is 16MB per thread, you might try to 
-#                                 increase it to 256MB, but do increase JVM to 
+#   - OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 16" - set RAM buffer size for flushing,
+#                                 default is 16MB per thread, you might try to
+#                                 increase it to 256MB, but do increase JVM to
 #                                 4/8/16GB ! Lucene defaults to 8 threads.
 #                                 Increase JVM memory as noted using JAVA_OPTS
 #   - OPENGROK_LOGGER_CONFIG_PATH Set path to custom logging.properties file.
@@ -89,8 +93,9 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 #
+
 #
 # Print usage to stdout and exit.
 #
@@ -129,9 +134,8 @@ else
 	exit 1
 fi
 
-# TODO: Handle symlinks correctly (especially in ${0})
-SCRIPT_DIRECTORY=`dirname "${0}"`
-SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd`
+SCRIPT_FILE=`readlink -f "${0}"`
+SCRIPT_DIRECTORY=`dirname "${SCRIPT_FILE}"`
 
 #
 # Default Instance Configuration
@@ -196,7 +200,7 @@ DefaultInstanceConfiguration()
     XML_CONFIGURATION="${OPENGROK_INSTANCE_BASE}/etc/configuration.xml"
 
     # OPTIONAL: read only XML config, if it exists, it will be read
-    READ_XML_CONFIGURATION="${READ_XML_CONFIGURATION:-}"
+    READ_XML_CONFIGURATION="${OPENGROK_READ_XML_CONFIGURATION:-}"
 
     if [ -f "${READ_XML_CONFIGURATION}" ] ; then
         READ_XML_CONF="-R ${READ_XML_CONFIGURATION}"
@@ -222,8 +226,8 @@ DefaultInstanceConfiguration()
     #            files in the "dist" directory after the build is completed)
     OPENGROK_DIST_WAR="${OPENGROK_DISTRIBUTION_BASE}/source.war"
 
-    # REQUIRED: Exuberant CTags (http://ctags.sf.net)
-    EXUBERANT_CTAGS="${EXUBERANT_CTAGS:-`FindExuberantCTags`}"
+    # REQUIRED: Exuberant or Universal CTags
+    OPENGROK_CTAGS="${OPENGROK_CTAGS:-`FindCtags`}"
 
     # OPTIONAL: supply extra command line options to CTags program
     if [ -n "${OPENGROK_CTAGS_OPTIONS_FILE}" ]; then
@@ -252,7 +256,12 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: Enable Projects
     #           (Every directory in SRC_ROOT is considered a separate project)
-    ENABLE_PROJECTS="-P"
+    OPENGROK_ENABLE_PROJECTS="${OPENGROK_ENABLE_PROJECTS:-true}"
+    case $OPENGROK_ENABLE_PROJECTS in
+        true) ENABLE_PROJECTS="-P" ;;
+        false) ENABLE_PROJECTS="" ;;
+        *) ENABLE_PROJECTS="-P" ;;
+    esac
 
     # OPTIONAL: Scanning Options (for Mercurial repositories)
     SCAN_FOR_REPOSITORY="-S"
@@ -266,6 +275,16 @@ DefaultInstanceConfiguration()
     if [ -n "${OPENGROK_GENERATE_HISTORY}" ]
     then
         GENERATE_HISTORY="-r ${OPENGROK_GENERATE_HISTORY}"
+    fi
+
+    if [ "$OPENGROK_GENERATE_HISTORY" != "off" ]
+    then
+        GENERATE_HISTORY="${GENERATE_HISTORY} -H"
+    fi
+
+    if [ -n "$OPENGROK_DISABLE_RENAMED_FILES_HISTORY" ]
+    then
+        DISABLE_RENAMED_FILES_HISTORY="-D"
     fi
 
     # OPTIONAL: override depth of scanning for repositories
@@ -314,6 +333,7 @@ DefaultInstanceConfiguration()
     JAVA_OPTS="${JAVA_OPTS:--Xmx2048m}"
     
     # OPTIONAL: Full Path to History Utilities
+    BK="`Which bk`"
     HG="`Which hg`"
     CVS="`Which cvs`"
     SVN="`Which svn`"
@@ -327,6 +347,7 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Override Built-in Properties
     # Assumption: We should not set properties to the empty string
     PROPERTIES="\
+${BK:+-Dorg.opensolaris.opengrok.history.BitKeeper=$BK} \
 ${HG:+-Dorg.opensolaris.opengrok.history.Mercurial=$HG} \
 ${CVS:+-Dorg.opensolaris.opengrok.history.cvs=$CVS} \
 ${SVN:+-Dorg.opensolaris.opengrok.history.Subversion=$SVN} \
@@ -337,21 +358,6 @@ ${P4:+-Dorg.opensolaris.opengrok.history.Perforce=$P4} \
 ${MTN:+-Dorg.opensolaris.opengrok.history.Monotone=$MTN} \
 ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
 "
-
-    # OPTIONAL: Store The History Cache in Java DB (derby),
-    #           instead of file system (in gzipped xml files).
-    #
-    # Requirements:
-    #   - derbyclient.jar      - See README.txt for more details
-    #   - Running Derby Server - Defaults to localhost:1527
-    #
-    if [ -n "${OPENGROK_DERBY}" ]
-    then
-        DERBY_OPTIONS="-D"
-	if [ -n "${OPENGROK_DERBY_URL}" ]; then
-		DERBY_OPTIONS="${DERBY_OPTIONS} -u ${OPENGROK_DERBY_URL}"
-	fi
-    fi
 
     # OPTIONAL: Show revision tags in History view.
     #		Turn this off if you want to increase indexing performance a bit
@@ -456,7 +462,7 @@ LocateBinary() {
     return 1
 }
 
-FindExuberantCTags()
+FindCtags()
 {
     #
     # Search for Exuberant ctags intelligently, skipping
@@ -469,7 +475,7 @@ FindExuberantCTags()
 		if [ -x "$path/$program" ]; then
 			binary="$path/$program"
 
-			# Verify that this really is Exuberant Ctags.
+			# Verify that this tool is or is based on Exuberant Ctags.
 			$binary --version 2>&1 | grep "Exuberant Ctags" > /dev/null
 			if [ $? -eq 0 ]; then
 				found=1
@@ -482,7 +488,7 @@ FindExuberantCTags()
 	fi
     done
     if [ $found -ne 1 ]; then
-        Error "Unable to determine Exuberant CTags command name" \
+        Error "Unable to determine Exuberant/Universal CTags command name" \
             "for ${OS_NAME} ${OS_VERSION}"
         return
     fi
@@ -542,15 +548,13 @@ FindApplicationServerType()
     fi
 
     # This implementation favours Tomcat, but needs a lot of work,
-    # especially if Glassfish is perferrerd or it is under the control
+    # especially if Glassfish is preferred or it is under the control
     # of SMF (Service Management Facility)
 
     # Maybe a better implementation would be to call Application
     # Server specific WAR Directory and see if they exist.
 
-    if [    -d "/var/tomcat6/webapps"        \
-         -o -d "/var/lib/tomcat6/webapps"    \
-         -o -d "/var/lib/tomcat7/webapps"    \
+    if [    -d "/var/tomcat8/webapps"        \
          -o -d "/var/lib/tomcat8/webapps"    \
        ]
     then
@@ -561,6 +565,12 @@ FindApplicationServerType()
     if [ -x "/etc/init.d/appserv" -a -d "/var/appserver/domains" ]
     then
         echo "Glassfish"
+        return
+    fi
+
+    if [ -d "/etc/resin" -o -d "/usr/local/share/resin" ]
+    then
+        echo "Resin"
         return
     fi
 
@@ -582,10 +592,8 @@ DetermineWarDirectoryTomcat()
 
     for prefix in               \
         ${OPENGROK_TOMCAT_BASE} \
-        /var/tomcat6            \
-        /var/lib/tomcat6        \
-        /var/lib/tomcat7        \
-        /var/lib/tomcat8
+        /var/lib/tomcat8	\
+        /var/tomcat8
     do
         if [ -d "${prefix}/webapps" ]
         then
@@ -653,6 +661,31 @@ DetermineWarDirectoryGlassfish()
     echo "${domainDirectory}/${firstDomain}/autodeploy"
 }
 
+DetermineWarDirectoryResin()
+{
+    if [ -n "${OPENGROK_WAR_TARGET_RESIN}" ]
+    then
+        echo "${OPENGROK_WAR_TARGET_RESIN}"
+        return
+    elif [ -n "${OPENGROK_WAR_TARGET}" ]
+    then
+        echo "${OPENGROK_WAR_TARGET}"
+        return
+    fi
+
+    for prefix in               \
+        ${OPENGROK_RESIN_BASE} \
+        /var/resin	\
+        /opt/resin
+    do
+        if [ -d "${prefix}/webapps" ]
+        then
+            echo "${prefix}/webapps"
+            return
+        fi
+    done
+}
+
 #
 # Implementation
 #
@@ -698,9 +731,9 @@ LoadInstanceConfiguration()
 
 ValidateConfiguration()
 {
-    if [ ! -x "${EXUBERANT_CTAGS}" ]
+    if [ ! -x "${OPENGROK_CTAGS}" ]
     then
-        FatalError "Missing Dependent Application - Exuberant CTags"
+        FatalError "Missing Dependent Application - Exuberant/Universal CTags"
     fi
 
     if [ ! -d "${SRC_ROOT}" ]
@@ -713,27 +746,6 @@ ValidateConfiguration()
         Warning "Both Quiet and Verbose Mode Enabled - Choosing Verbose"
         QUIET=""
         VERBOSE="-v"
-    fi
-
-    if [ -n "${OPENGROK_DERBY}" ]
-    then
-        if [ "`uname -s`" = "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
-	then
-	    if [ -d "/var/tomcat6" -a \
-	        ! -r "/var/tomcat6/webapps/source/WEB-INF/lib/derbyclient.jar" ];
-	    then
-	        FatalError "JavaDB on but no derbyclient.jar under" \
-		    "/var/tomcat6/webapps/source/WEB-INF/lib"
-	    fi
-	    if [ ! -r "/usr/opengrok/lib/derbyclient.jar" ]; then
-	        FatalError "JavaDB on but no derbyclient.jar under" \
-		    "/usr/opengrok/lib"
-	    fi
-	else
-            Warning "CHECK: derbyclient.jar needs to be in where the rest of " \
-	        "opengrok used jars are and in unpacked source.war in " \
-		"WEB-INF/lib !"
-	fi
     fi
 }
 
@@ -785,17 +797,6 @@ CreateRuntimeRequirements()
             fi
         fi
     fi
-
-    if [ -n "${OPENGROK_DERBY}" ]
-    then
-        if [ ! -d "${OPENGROK_INSTANCE_BASE}/derby" ]
-        then
-            Warning "OpenGrok generated derby path " \
-	        "${OPENGROK_INSTANCE_BASE}/derby doesn't exist"
-            Progress "  Attempting to create generated derby directory ... "
-            ${DO} mkdir -p ${OPENGROK_INSTANCE_BASE}/derby
-        fi
-    fi
 }
 
 MinimalInvocation()
@@ -812,12 +813,12 @@ CommonInvocation()
 {
     MinimalInvocation							\
         ${IGNORE_PATTERNS}                    				\
-        ${DERBY_OPTIONS}						\
         ${HISTORY_TAGS}							\
         ${GENERATE_HISTORY}           					\
+	${DISABLE_RENAMED_FILES_HISTORY}				\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
-        ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               	\
+        ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
         ${READ_XML_CONF}                                        	\
@@ -839,7 +840,7 @@ StdInvocation()
 
 UpdateGeneratedData()
 {
-    StdInvocation -H
+    StdInvocation
 }
 
 UpdateDataPartial()
@@ -880,6 +881,7 @@ DeployWar()
 
         Tomcat)    warTarget="`DetermineWarDirectoryTomcat`"    ;;
         Glassfish) warTarget="`DetermineWarDirectoryGlassfish`" ;;
+        Resin)     warTarget="`DetermineWarDirectoryResin`" ;;
 
         *) FatalError "Unsupported Application Server ${applicationServer}" ;;
 

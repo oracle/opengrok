@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%--
@@ -31,18 +31,15 @@ to set the title of the document before the include directive for this fragment:
     cfg.setTitle("your title");
 
 </pre>
---%><%@page import="org.opensolaris.opengrok.web.Prefix"%>
+--%><%@page import="org.opensolaris.opengrok.web.Scripts"%>
+<%@page import="org.opensolaris.opengrok.web.Prefix"%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="
 org.opensolaris.opengrok.Info,
 org.opensolaris.opengrok.web.PageConfig"
-%><%@
-
-include file="pageconfig.jspf"
-
 %><%
 /* ---------------------- httpheader.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     String styleDir = cfg.getCssDir();
     String ctxPath = request.getContextPath();
     String dstyle = styleDir + '/' + "style.css";
@@ -55,19 +52,34 @@ include file="pageconfig.jspf"
 <meta name="robots" content="noindex,nofollow" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="generator" content="{OpenGrok <%=Info.getVersion()%> (<%=Info.getRevision()%>)" />
-<meta http-equiv="X-UA-Compatible" content="IE=8" />
 <link rel="icon" href="<%=styleDir%>/img/icon.png" type="image/png" />
 <link rel="stylesheet" type="text/css" media="all"
     title="Default" href="<%= dstyle %>" />
 <link rel="alternate stylesheet" type="text/css" media="all"
     title="Paper White" href="<%= pstyle %>" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/print.css" media="print" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.0-custom.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tooltip.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tablesorter.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/searchable-option-list-2.0.2.min.css" />
 <%-- TODO  Bug 11749
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.autocomplete.css" />
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.combo.css%>" />
 --%>
 <%
+    /**
+     * The order can be arbitrary here, it is hardcoded in Scripts. These
+     * are printed out in footer.
+     *
+     * @see Scripts
+     */
+    cfg.addScript("jquery");
+    cfg.addScript("jquery-ui");
+    cfg.addScript("jquery-tablesorter");
+    cfg.addScript("tablesorter-parsers");
+    cfg.addScript("searchable-option-list");
+    cfg.addScript("utils");
+
 if (cfg.getPrefix().equals(Prefix.HIST_L)) {
     out.write("<link rel=\"alternate\" type=\"application/rss+xml\" " +
         "title=\"RSS feed for " + cfg.getPath() + "\" " +
@@ -77,76 +89,16 @@ if (cfg.getPrefix().equals(Prefix.HIST_L)) {
 <link rel="search" href="<%=ctxPath%>/opensearch"
     type="application/opensearchdescription+xml"
     title="OpenGrok Search for current project(s)" />
-<script type="text/javascript" src="<%=ctxPath%>/jquery-1.4.4.min.js"></script>
-<script type="text/javascript" src="<%=ctxPath%>/jquery.tooltip-1.3.pack.js"></script>
-<script type="text/javascript" src="<%=ctxPath%>/jquery.tablesorter-2.0.5b.js"></script>
-<%--<script type="text/javascript" src="<%=ctxPath%>/jquery.autocomplete-1.1.pack.js"></script> --%>
-<script type="text/javascript" src="<%=ctxPath%>/utils.js"></script>
+<script type="text/javascript">/* <![CDATA[ */
+    window.contextPath = '<%= ctxPath %>';
+    document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P %>';
+    document.pageReady = [];
+    document.domReady = [];
+/* ]]> */
+</script>
 <title><%=cfg.getTitle()%></title><%
     out.write(cfg.getHeaderData());
 %>
-<script type="text/javascript">
-$.tablesorter.addParser({
-        id: 'dates',
-        is: function(s) { 
-            // return false so this parser is not auto detected
-            return false; 
-        }, 
-        format: function(s) {
-            var date = s.match(/^(\d{2})\-(\w{3})\-(\d{4})$/);
-            var d = date[1];
-            var m = date[2];
-            var y = date[3];
-            return new Date(m + ' ' + d + ' ' + y);
-        },
-        type: 'date'
-    }); 
-
-$.tablesorter.addParser({
-        id: 'groksizes',
-        is: function(s) {
-            // return false so this parser is not auto detected
-            return false;
-        },
-        format: function(s) {
-            var parts = s.match(/^([\d\.]+) (\w*)$/);
-            var num = parts[1];
-            var unit = parts[2];
-
-            // convert to bytes
-            if (unit == "KiB") {
-                return (num * 1024);
-            } else if (unit == "MiB") {
-                return (num * 1024 * 1024);
-            } else if (unit == "GiB") {
-                return (num * 1024 * 1024 * 1024);
-            } else {
-                return (num);
-            }
-        },
-        type: 'numeric'
-    });
-
-$(document).ready(function()
-    {
-        $("#dirlist").tablesorter({
-            sortList: [[0,0]],
-            cancelSelection: true,
-            headers: {
-                1: {
-                    sorter:'text'
-                },
-                3: {
-                    sorter:'dates'
-                },
-                4: {
-                    sorter:'groksizes'
-                }
-            }
-        });
-    }
-);
-</script>
 </head><%
 }
 /* ---------------------- httpheader.jsp end --------------------- */

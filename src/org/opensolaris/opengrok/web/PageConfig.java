@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -29,8 +29,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +45,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -51,8 +54,11 @@ import org.apache.commons.jrcs.diff.DifferentiationFailedException;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
+import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -83,8 +89,11 @@ public final class PageConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
 
+    public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
+    
     // TODO if still used, get it from the app context
 
+    private final AuthorizationFramework authFramework;
     private RuntimeEnvironment env;
     private IgnoredNames ignoredNames;
     private String path;
@@ -110,11 +119,41 @@ public final class PageConfig {
     private QueryBuilder queryBuilder;
     private File dataRoot;
     private StringBuilder headLines;
-    private boolean lastEditedDisplayMode = true;
+    /**
+     * Page java scripts.
+     */
+    private final Scripts scripts = new Scripts();
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
-    private final HttpServletRequest req;
+    private HttpServletRequest req;
 
+    /**
+     * Sets current request's attribute.
+     * 
+     * @param attr attribute
+     * @param val value
+     */
+    public void setRequestAttribute(String attr, Object val) {
+        this.req.setAttribute(attr, val);
+    }
+    
+    /**
+     * Gets current request's attribute.
+     * @param attr attribute
+     * @return Object attribute value or null if attribute does not exist
+     */
+    public Object getRequestAttribute(String attr) {
+        return this.req.getAttribute(attr);
+    }  
+    
+    /**
+     * Removes an attribute from the current request
+     * @param string the attribute 
+     */
+    public void removeAttribute(String string) {
+        req.removeAttribute(string);
+    }
+    
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
      * generate.
@@ -172,14 +211,13 @@ public final class PageConfig {
          * The code below extracts file path and revision from the URI.
          */
         for (int i = 1; i <= 2; i++) {
-            String[] tmp = null;
             String p = req.getParameter("r" + i);
             if (p != null) {
-                tmp = p.split("@");
-            }
-            if (tmp != null && tmp.length == 2) {
-                filepath[i - 1] = tmp[0];
-                data.rev[i - 1] = tmp[1];
+                int j = p.lastIndexOf("@");
+                if (j != -1) {
+                    filepath[i - 1] = p.substring(0, j);
+                    data.rev[i - 1] = p.substring(j + 1);
+                }
             }
         }
         if (data.rev[0] == null || data.rev[1] == null
@@ -201,8 +239,8 @@ public final class PageConfig {
                     in[i] = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), data.rev[i]);
                     if (in[i] == null) {
                         data.errorMsg = "Unable to get revision "
-                                + data.rev[i] + " for file: "
-                                + getResourceFile().getPath();
+                                + Util.htmlize(data.rev[i]) + " for file: "
+                                + Util.htmlize(getPath());
                         return data;
                     }
                 }
@@ -416,7 +454,7 @@ public final class PageConfig {
         }
         return ret;
     }
-
+    
     /**
      * Get the <b>start</b> index for a search result to return by looking up
      * the {@code start} request parameter.
@@ -437,6 +475,18 @@ public final class PageConfig {
      */
     public int getSearchMaxItems() {
         return getIntParam("n", getEnv().getHitsPerPage());
+    }
+
+    public int getRevisionMessageCollapseThreshold() {
+        return getEnv().getRevisionMessageCollapseThreshold();
+    }
+
+    public int getCurrentIndexedCollapseThreshold() {
+        return getEnv().getCurrentIndexedCollapseThreshold();
+    }
+
+    public int getGroupsCollapseThreshold() {
+        return getEnv().getGroupsCollapseThreshold();
     }
 
     /**
@@ -483,18 +533,8 @@ public final class PageConfig {
                     .setPath(req.getParameter(QueryBuilder.PATH))
                     .setHist(req.getParameter(QueryBuilder.HIST))
                     .setType(req.getParameter(QueryBuilder.TYPE));
-
-            // This is for backward compatibility with links created by OpenGrok
-            // 0.8.x and earlier. We used to concatenate the entire query into a
-            // single string and send it in the t parameter. If we get such a
-            // link, just add it to the freetext field, and we'll get the old
-            // behaviour. We can probably remove this code in the first feature
-            // release after 0.9.
-            String t = req.getParameter("t");
-            if (t != null) {
-                queryBuilder.setFreetext(t);
-            }
         }
+
         return queryBuilder;
     }
 
@@ -549,12 +589,12 @@ public final class PageConfig {
     /**
      * Get the revision parameter {@code r} from the request.
      *
-     * @return {@code "r=<i>revision</i>"} if found, an empty string otherwise.
+     * @return revision if found, an empty string otherwise.
      */
     public String getRequestedRevision() {
         if (rev == null) {
             String tmp = req.getParameter("r");
-            rev = (tmp != null && tmp.length() > 0) ? "r=" + tmp : "";
+            rev = (tmp != null && tmp.length() > 0) ? tmp : "";
         }
         return rev;
     }
@@ -613,7 +653,7 @@ public final class PageConfig {
         }
         getRequestedRevision();
         try {
-            annotation = HistoryGuru.getInstance().annotate(resourceFile, rev.isEmpty() ? null : rev.substring(2));
+            annotation = HistoryGuru.getInstance().annotate(resourceFile, rev.isEmpty() ? null : rev);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to get annotations: ", e);
             /* ignore */
@@ -685,16 +725,6 @@ public final class PageConfig {
     }
 
     /**
-     * Get the document hash provided by the request parameter {@code h}.
-     *
-     * @return {@code null} if the request does not contain such a parameter,
-     * its value otherwise.
-     */
-    public String getDocumentHash() {
-        return req.getParameter("h");
-    }
-
-    /**
      * Get a reference to a set of requested projects via request parameter
      * {@code project} or cookies or defaults.
      * <p>
@@ -717,10 +747,11 @@ public final class PageConfig {
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects
-                    = getRequestedProjects("project", "OpenGrokProject");
+                    = getRequestedProjects("project", OPEN_GROK_PROJECT);
         }
         return requestedProjects;
     }
+    
     private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
     private static void splitByComma(String value, List<String> result) {
@@ -748,7 +779,12 @@ public final class PageConfig {
         if (cookies != null) {
             for (int i = cookies.length - 1; i >= 0; i--) {
                 if (cookies[i].getName().equals(cookieName)) {
-                    splitByComma(cookies[i].getValue(), res);
+                    try {
+                        String value = URLDecoder.decode(cookies[i].getValue(), "utf-8");
+                        splitByComma(value, res);
+                    } catch (UnsupportedEncodingException ex) {
+                        LOGGER.log(Level.INFO, "decoding cookie failed", ex);
+                    }
                 }
             }
         }
@@ -786,36 +822,64 @@ public final class PageConfig {
      */
     protected SortedSet<String> getRequestedProjects(String paramName,
             String cookieName) {
+
         TreeSet<String> set = new TreeSet<>();
-        List<Project> projects = getEnv().getProjects();
+        List<Project> projects = getEnv().getProjectList();
+
         if (projects == null) {
             return set;
         }
-        if (projects.size() == 1) {
-            set.add(projects.get(0).getDescription());
+
+        /**
+         * If the project was determined from the URL, use this project.
+         */
+        if (getProject() != null) {
+            set.add(getProject().getName());
             return set;
         }
+
+        if (projects.size() == 1) {
+            Project p = projects.get(0);
+            if (authFramework.isAllowed(req, p)) {
+                set.add(p.getName());
+            }
+            return set;
+        }
+
         List<String> vals = getParamVals(paramName);
         for (String s : vals) {
-            if (Project.getByDescription(s) != null) {
+            Project x = Project.getByName(s);
+            if (x != null && authFramework.isAllowed(req, x)) {
                 set.add(s);
             }
         }
+
         if (set.isEmpty()) {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
-                if (Project.getByDescription(s) != null) {
+                Project x = Project.getByName(s);
+                if (x != null && authFramework.isAllowed(req, x)) {
                     set.add(s);
                 }
             }
         }
+
         if (set.isEmpty()) {
-            Project defaultProject = env.getDefaultProject();
-            if (defaultProject != null) {
-                set.add(defaultProject.getDescription());
+            Set<Project> defaultProjects = env.getDefaultProjects();
+            if (defaultProjects != null) {
+                for (Project project : defaultProjects) {
+                    if (authFramework.isAllowed(req, project)) {
+                        set.add(project.getName());
+                    }
+                }
             }
         }
+
         return set;
+    }
+    
+    public ProjectHelper getProjectHelper() {
+        return ProjectHelper.getInstance(this);
     }
 
     /**
@@ -926,6 +990,27 @@ public final class PageConfig {
     }
 
     /**
+     * Get the on disk file for the given path.
+     *
+     * NOTE: If a repository contains hard or symbolic links, the returned file
+     * may finally point to a file outside of the source root directory.
+     *
+     * @param path the path to the file relatively to the source root
+     * @return null if the related file or directory is not
+     * available (can not be find below the source root directory), the readable
+     * file or directory otherwise.
+     * @see #getSourceRootPath()
+     */
+    public File getResourceFile(String path) {
+        File f;
+        f = new File(getSourceRootPath(), path);
+        if (!f.canRead()) {
+            return null;
+        }
+        return f;
+    }
+
+    /**
      * Get the on disk file to the request related file or directory.
      *
      * NOTE: If a repository contains hard or symbolic links, the returned file
@@ -939,8 +1024,8 @@ public final class PageConfig {
      */
     public File getResourceFile() {
         if (resourceFile == null) {
-            resourceFile = new File(getSourceRootPath(), getPath());
-            if (!resourceFile.canRead()) {
+            resourceFile = getResourceFile(getPath());
+            if (resourceFile == null) {
                 resourceFile = new File("/");
             }
         }
@@ -975,7 +1060,7 @@ public final class PageConfig {
     public boolean resourceNotAvailable() {
         getIgnoredNames();
         return getResourcePath().equals("/") || ignoredNames.ignore(getPath())
-                || ignoredNames.ignore(resourceFile.getParentFile().getName())
+                || ignoredNames.ignore(resourceFile.getParentFile())
                 || ignoredNames.ignore(resourceFile);
     }
 
@@ -1087,11 +1172,21 @@ public final class PageConfig {
      */
     public String getDirectoryRedirect() {
         if (isDir()) {
+            getPrefix();
+            /**
+             * Redirect /xref -> /xref/
+             */
+            if (prefix == Prefix.XREF_P
+                    && getUriEncodedPath().isEmpty()
+                    && !req.getRequestURI().endsWith("/")) {
+                return req.getContextPath() + Prefix.XREF_P + '/';
+            }
+
             if (path.length() == 0) {
                 // => /
                 return null;
             }
-            getPrefix();
+
             if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L
                     && prefix != Prefix.RSS_P) {
                 // if it is an existing dir perhaps people wanted dir xref
@@ -1122,6 +1217,30 @@ public final class PageConfig {
     }
 
     /**
+     * Add a new file script to the page by the name.
+     *
+     * @param name name of the script to search for
+     * @return this
+     *
+     * @see Scripts#addScript(java.lang.String, java.lang.String)
+     */
+    public PageConfig addScript(String name) {
+        this.scripts.addScript(this.req.getContextPath(), name);
+        return this;
+    }
+
+    /**
+     * Return the page scripts.
+     *
+     * @return the scripts
+     *
+     * @see Scripts
+     */
+    public Scripts getScripts() {
+        return this.scripts;
+    }
+
+    /**
      * Get opengrok's configured dataroot directory. It is verified, that the
      * used environment has a valid opengrok data root set and that it is an
      * accessible directory.
@@ -1144,14 +1263,6 @@ public final class PageConfig {
             }
         }
         return dataRoot;
-    }
-    
-    public boolean isLastEditedDisplayMode() {
-        return lastEditedDisplayMode;
-    }
-
-    public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
-        this.lastEditedDisplayMode = lastEditedDisplayMode;
     }
 
     /**
@@ -1190,7 +1301,6 @@ public final class PageConfig {
         sh.compressed = env.isCompressXref();
         sh.desc = getEftarReader();
         sh.sourceRoot = new File(getSourceRootPath());
-        sh.lastEditedDisplayMode = isLastEditedDisplayMode();
         return sh;
     }
 
@@ -1215,6 +1325,7 @@ public final class PageConfig {
 
     private PageConfig(HttpServletRequest req) {
         this.req = req;
+        this.authFramework = RuntimeEnvironment.getInstance().getAuthorizationFramework();
     }
 
     /**
@@ -1232,10 +1343,139 @@ public final class PageConfig {
         if (cfg == null) {
             return;
         }
+        ProjectHelper.cleanup(cfg);
         sr.removeAttribute(ATTR_NAME);
         cfg.env = null;
+        cfg.req = null;
         if (cfg.eftarReader != null) {
             cfg.eftarReader.close();
+        }
+    }
+    
+    /**
+     * Checks if current request is allowed to access project.
+     * @param t project
+     * @return true if yes
+     */
+    public boolean isAllowed(Project t) {
+        return this.authFramework.isAllowed(this.req, t);
+    }
+    
+    /**
+     * Checks if current request is allowed to access group.
+     * @param g group
+     * @return true if yes
+     */
+    public boolean isAllowed(Group g) {
+        return this.authFramework.isAllowed(this.req, g);
+    }
+
+    
+    public SortedSet<Message> getMessages() {
+        return env.getMessages();
+    }
+    
+    public SortedSet<Message> getMessages(String tag) {
+        return env.getMessages(tag);
+    }
+
+    /**
+     * Get basename of the path or "/" if the path is empty.
+     * This is used for setting title of various pages.
+     * @param path
+     * @return short version of the path
+     */
+    public String getShortPath(String path) {
+        File file = new File(path);
+
+        if (path.isEmpty()) {
+            return "/";
+        }
+
+        return file.getName();
+    }
+
+    private String addTitleDelimiter(String title) {
+        if (!title.isEmpty()) {
+            return title + ", ";
+        }
+
+        return title;
+    }
+
+    /**
+     * The search page title string should progressively reflect the search terms
+     * so that if only small portion of the string is seen, it describes
+     * the action as closely as possible while remaining readable.
+     * @return string used for setting page title of search results page
+     */
+    public String getSearchTitle() {
+        String title = new String();
+
+        if (req.getParameter("q") != null && !req.getParameter("q").isEmpty()) {
+            title += req.getParameter("q") + " (full)";
+        }
+        if (req.getParameter(QueryBuilder.DEFS) != null && !req.getParameter(QueryBuilder.DEFS).isEmpty()) {
+            title = addTitleDelimiter(title);
+            title += req.getParameter(QueryBuilder.DEFS) + " (definition)";
+        }
+        if (req.getParameter(QueryBuilder.REFS) != null && !req.getParameter(QueryBuilder.REFS).isEmpty()) {
+            title = addTitleDelimiter(title);
+            title += req.getParameter(QueryBuilder.REFS) + " (reference)";
+        }
+        if (req.getParameter(QueryBuilder.PATH) != null && !req.getParameter(QueryBuilder.PATH).isEmpty()) {
+            title = addTitleDelimiter(title);
+            title += req.getParameter(QueryBuilder.PATH) + " (path)";
+        }
+        if (req.getParameter(QueryBuilder.HIST) != null && !req.getParameter(QueryBuilder.HIST).isEmpty()) {
+            title = addTitleDelimiter(title);
+            title += req.getParameter(QueryBuilder.HIST) + " (history)";
+        }
+
+        if (req.getParameterValues(QueryBuilder.PROJECT) != null && req.getParameterValues(QueryBuilder.PROJECT).length != 0) {
+            if (!title.isEmpty()) {
+                title += " ";
+            }
+            title += "in projects: ";
+            String projects[] = req.getParameterValues(QueryBuilder.PROJECT);
+            title += Arrays.asList(projects).stream().collect(Collectors.joining(","));
+        }
+
+        return Util.htmlize(title + " - OpenGrok search results");
+    }
+
+    /**
+     * Similar as {@link #getSearchTitle()}
+     * @return string used for setting page title of search view
+     */
+    public String getHistoryTitle() {
+        return Util.htmlize(getShortPath(path) +
+                " - OpenGrok history log for " + path);
+    }
+
+    public String getPathTitle() {
+        String title = getShortPath(path);
+        if (getRequestedRevision() != null && !getRequestedRevision().isEmpty()) {
+            title += " (revision " + getRequestedRevision() + ")";
+        }
+        title += " - OpenGrok cross reference for " + (path.isEmpty() ? "/" : path);
+
+        return Util.htmlize(title);
+    }
+    
+    public void checkSourceRootExistence() throws IOException {
+        if (getSourceRootPath() == null || getSourceRootPath().isEmpty()) {
+            throw new FileNotFoundException("Unable to determine source root path. Missing configuration?");
+        }
+        File sourceRootPathFile = RuntimeEnvironment.getInstance().getSourceRootFile();
+        if (!sourceRootPathFile.exists()) {
+            throw new FileNotFoundException(String.format("Source root path \"%s\" does not exist", sourceRootPathFile.getAbsolutePath()));
+        }
+        if (!sourceRootPathFile.isDirectory()) {
+            throw new FileNotFoundException(String.format("Source root path \"%s\" is not a directory", sourceRootPathFile.getAbsolutePath()));
+        }
+        if (!sourceRootPathFile.canRead()) {
+            throw new IOException(String.format("Source root path \"%s\" is not readable", sourceRootPathFile.getAbsolutePath()));
         }
     }
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -131,7 +131,7 @@ public class EftarFileReader {
             } catch (EOFException e) { // NOPMD
                 // ignore
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Got excption while getting the tag: ", e);
+                LOGGER.log(Level.WARNING, "Got exception while getting the tag: ", e);
             }
             return "H[" + hash + "] num = " + numChildren + " tag = " + tagString;
         }

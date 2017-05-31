@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -36,6 +36,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 super(in);
 %init}
 %unicode
+%buffer 32766
 %type boolean
 %eofval{
 this.finalOffset =  zzEndRead;

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.clojure;
 
@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
@@ -37,13 +37,9 @@ public class ClojureAnalyzer extends AbstractSourceCodeAnalyzer {
 
     protected ClojureAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+        SymbolTokenizer=new ClojureSymbolTokenizer(FileAnalyzer.dummyReader);    
     }
-
-    @Override
-    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
-        return new ClojureSymbolTokenizer(reader);
-    }
-
+    
     @Override
     protected JFlexXref newXref(Reader reader) {
         return new ClojureXref(reader);

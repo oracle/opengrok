@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.javascript;
@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds static hash set containing the Javascript keywords
+ * Holds static hash set containing the JavaScript keywords
  * 
  * * ECMA-262 5.1 Edition June 2011
  * 

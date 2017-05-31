@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -58,7 +58,7 @@ import org.opensolaris.opengrok.web.Util;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
   
-  // Q&D methods to asure well-formed documents
+  // Q&D methods to assure well-formed documents
   protected void closePara() throws IOException {
       if (p > 0) {
           out.write("</p>");

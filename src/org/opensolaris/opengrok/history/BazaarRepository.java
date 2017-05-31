@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -62,7 +62,11 @@ public class BazaarRepository extends Repository {
 
     public BazaarRepository() {
         type = "Bazaar";
-        datePattern = "EEE yyyy-MM-dd hh:mm:ss ZZZZ";
+        datePatterns = new String[]{
+            "EEE yyyy-MM-dd hh:mm:ss ZZZZ"
+        };
+
+        ignoredDirs.add(".bzr");
     }
 
     /**
@@ -70,6 +74,8 @@ public class BazaarRepository extends Repository {
      * file.
      *
      * @param file The file to retrieve history for
+     * @param sinceRevision the oldest changeset to return from the executor, or
+     *                      {@code null} if all changesets should be returned
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, final String sinceRevision)
@@ -95,7 +101,7 @@ public class BazaarRepository extends Repository {
             cmd.add(sinceRevision + "..-1");
         }
 
-        return new Executor(cmd, new File(getDirectoryName()));
+        return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
     }
 
     @Override
@@ -356,7 +362,7 @@ public class BazaarRepository extends Repository {
         cmd.add("config");
         cmd.add("parent_location");
         Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
+        if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
 

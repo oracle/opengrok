@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -67,8 +67,26 @@ public class CVSRepository extends RCSRepository {
             = Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
 
     public CVSRepository() {
+        /**
+         * This variable is set in the ancestor to TRUE which has a side effect
+         * that this repository is always marked as working even though it does
+         * not have the binary available on the system.
+         *
+         * Setting this to null does restores the default behavior (as java
+         * default for reference is null) for this repository - detecting the
+         * binary and act upon that.
+         *
+         * @see #isWorking
+         */
+        working = null;
         setType("CVS");
-        setDatePattern("yyyy-MM-dd hh:mm:ss");
+        datePatterns = new String[]{
+            "yyyy-MM-dd hh:mm:ss"
+        };
+
+        ignoredFiles.add(".cvsignore");
+        ignoredDirs.add("CVS");
+        ignoredDirs.add("CVSROOT");
     }
 
     @Override

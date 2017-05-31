@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -31,21 +31,39 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-
+import javax.servlet.http.HttpServletRequest;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.opensolaris.opengrok.Info;
+import org.opensolaris.opengrok.configuration.Group;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -63,65 +81,6 @@ public final class Util {
     private static final String SPAN_D = "<span class=\"d\">";
     private static final String SPAN_A = "<span class=\"a\">";
     private static final String SPAN_E = "</span>";
-
-    private static final char[][] specialCharactersRepresentation = new char[63][];
-
-    static {
-        specialCharactersRepresentation[38] = "&amp;".toCharArray();
-        specialCharactersRepresentation[60] = "&lt;".toCharArray();
-        specialCharactersRepresentation[62] = "&gt;".toCharArray();
-        specialCharactersRepresentation[34] = "&#034;".toCharArray();
-        specialCharactersRepresentation[39] = "&#039;".toCharArray();
-    }
-
-    /**
-     * Please use this function to show any variable from servlet getParameter
-     * in a html/js This is to avoid XSS such as
-     * http://OPENGROK_SERVER/source/xref/?r=%27;alert(1)// 
-     * big thnx to Alex Concha alex.concha at automattic.com
-     * - taken from jstl 1.2
-     *
-     * @param buffer
-     * @return
-     */
-    public static String escapeXml(String buffer) {
-        if (buffer == null) {
-            return "";
-        }
-        int start = 0;
-        int length = buffer.length();
-        char[] arrayBuffer = buffer.toCharArray();
-        StringBuffer escapedBuffer = null;
-
-        for (int i = 0; i < length; ++i) {
-            char c = arrayBuffer[i];
-            if (c <= 62) {
-                char[] escaped = specialCharactersRepresentation[c];
-                if (escaped != null) {
-                    if (start == 0) {
-                        escapedBuffer = new StringBuffer(length + 5);
-                    }
-
-                    if (start < i) {
-                        escapedBuffer.append(arrayBuffer, start, i - start);
-                    }
-
-                    start = i + 1;
-                    escapedBuffer.append(escaped);
-                }
-            }
-        }
-
-        if (start == 0) {
-            return buffer;
-        } else {
-            if (start < length) {
-                escapedBuffer.append(arrayBuffer, start, length - start);
-            }
-
-            return escapedBuffer.toString();
-        }
-    }
 
     private Util() {
         // singleton
@@ -478,46 +437,73 @@ public final class Util {
     }
 
     /**
-     * Converts different html special characters into their encodings used in
-     * html. Currently used only for tooltips of annotation revision number view
+     * Converts different HTML special characters into their encodings used in
+     * html.
      *
      * @param s input text
      * @return encoded text for use in &lt;a title=""&gt; tag
      */
     public static String encode(String s) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '"':
-                    sb.append('\'');
-                    break; // \\\"
-                case '&':
-                    sb.append("&amp;");
-                    break;
-                case '>':
-                    sb.append("&gt;");
-                    break;
-                case '<':
-                    sb.append("&lt;");
-                    break;
-                case ' ':
-                    sb.append("&nbsp;");
-                    break;
-                case '\t':
-                    sb.append("&nbsp;&nbsp;&nbsp;&nbsp;");
-                    break;
-                case '\n':
-                    sb.append("&lt;br/&gt;");
-                    break;
-                case '\r':
-                    break;
-                default:
-                    sb.append(c);
-                    break;
-            }
+        /**
+         * Make sure that the buffer is long enough to contain the whole string
+         * with the expanded special characters. We use 1.5*length as a
+         * heuristic.
+         */
+        StringBuilder sb = new StringBuilder((int) Math.max(10, s.length() * 1.5));
+        try {
+            encode(s, sb);
+        } catch (IOException ex) {
+            // IOException cannot happen when the destination is a
+            // StringBuilder. Wrap in an AssertionError so that callers
+            // don't have to check for an IOException that should never
+            // happen.
+            throw new AssertionError("StringBuilder threw IOException", ex);
         }
         return sb.toString();
+    }
+
+    /**
+     * Converts different HTML special characters into their encodings used in
+     * html.
+     *
+     * @param s input text
+     * @param dest appendable destination for appending the encoded characters
+     * @throws java.io.IOException
+     */
+    public static void encode(String s, Appendable dest) throws IOException {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&' || c == '\'') {
+                // special html characters
+                dest.append("&#").append("" + (int) c).append(";");
+            } else if (c == ' ') {
+                // non breaking space
+                dest.append("&nbsp;");
+            } else if (c == '\t') {
+                dest.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+            } else if (c == '\n') {
+                // <br/>
+                dest.append("&lt;br/&gt;");
+            } else {
+                dest.append(c);
+            }
+        }
+    }
+
+    /**
+     * Encode URL
+     *
+     * @param urlStr string URL
+     * @return the encoded URL
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
+        URL url = new URL(urlStr);
+        URI constructed = new URI(url.getProtocol(), url.getUserInfo(),
+                url.getHost(), url.getPort(),
+                url.getPath(), url.getQuery(), url.getRef());
+        return constructed.toString();
     }
 
     /**
@@ -535,10 +521,18 @@ public final class Util {
      */
     public static void readableLine(int num, Writer out, Annotation annotation,
             String userPageLink, String userPageSuffix, String project)
-            throws IOException {
+            throws IOException
+    {    
+        readableLine(num, out, annotation, userPageLink, userPageSuffix, project, false);
+    }
+
+    public static void readableLine(int num, Writer out, Annotation annotation,
+            String userPageLink, String userPageSuffix, String project, boolean skipNewline)
+            throws IOException
+    {
         // this method should go to JFlexXref
         String snum = String.valueOf(num);
-        if (num > 1) {
+        if (num > 1 && !skipNewline) {
             out.write("\n");
         }
         out.write(anchorClassStart);
@@ -578,7 +572,7 @@ public final class Util {
                 }
                 if (annotation.getFileVersion(r) != 0) {
                     out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/"
-                            + annotation.getFileVersionsCount());
+                            + annotation.getRevisions().size());
                 }
                 out.write(closeQuotedTag);
             }
@@ -594,10 +588,10 @@ public final class Util {
                 // Write link to search the revision in current project.
                 out.write(anchorClassStart);
                 out.write("search\" href=\"" + env.getUrlPrefix());
-                out.write("defs=&refs=&path=");
+                out.write("defs=&amp;refs=&amp;path=");
                 out.write(project);
-                out.write("&hist=" + URIEncode(r));
-                out.write("&type=\" title=\"Search history for this changeset");
+                out.write("&amp;hist=" + URIEncode(r));
+                out.write("&amp;type=\" title=\"Search history for this changeset");
                 out.write(closeQuotedTag);
                 out.write("S");
                 out.write(anchorEnd);
@@ -893,6 +887,7 @@ public final class Util {
                 env.isAllowLeadingWildcard());
         printTableRow(out, "History cache", HistoryGuru.getInstance()
                 .getCacheInfo());
+        printTableRow(out, "Authorization", "<pre>" + env.getAuthorizationFramework().getStack().hierarchyToString() + "</pre>");
         out.append("</table>");
     }
 
@@ -959,6 +954,223 @@ public final class Util {
                     "An error occured while piping file " + file + ": ", e);
         }
         return false;
+    }
+
+    /**
+     * Print list of messages into output
+     *
+     * @param out output
+     * @param set set of messages
+     */
+    public static void printMessages(Writer out, SortedSet<Message> set) {
+        printMessages(out, set, false);
+    }
+
+    /**
+     * Print set of messages into output
+     *
+     * @param out output
+     * @param set set of messages
+     * @param limited if the container should be limited
+     */
+    public static void printMessages(Writer out, SortedSet<Message> set, boolean limited) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        if (!set.isEmpty()) {
+            try {
+                out.write("<ul class=\"message-group");
+                if (limited) {
+                    out.write(" limited");
+                }
+                out.write("\">\n");
+                for (Message m : set) {
+                    out.write("<li class=\"message-group-item ");
+                    out.write(Util.encode(m.getClassName()));
+                    out.write("\" title=\"Expires on ");
+                    out.write(Util.encode(df.format(m.getExpiration())));
+                    out.write("\">");
+                    out.write(Util.encode(df.format(m.getCreated())));
+                    out.write(": ");
+                    out.write(m.getText());
+                    out.write("</li>");
+                }
+                out.write("</ul>");
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING,
+                        "An error occured for a group of messages", ex);
+            }
+        }
+    }
+
+    /**
+     * Print set of messages into json array
+     *
+     * @param set set of messages
+     * @return json array containing the set of messages
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONArray messagesToJson(SortedSet<Message> set) {
+        JSONArray array = new JSONArray();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        for (Message m : set) {
+            JSONObject message = new JSONObject();
+            message.put("class", Util.encode(m.getClassName()));
+            message.put("expiration", Util.encode(df.format(m.getExpiration())));
+            message.put("created", Util.encode(df.format(m.getCreated())));
+            message.put("text", Util.encode(m.getText()));
+            JSONArray tags = new JSONArray();
+            for (String t : m.getTags()) {
+                tags.add(Util.encode(t));
+            }
+            message.put("tags", tags);
+            array.add(message);
+        }
+        return array;
+    }
+
+    /**
+     * Print set of messages into json object for given tag.
+     *
+     * @param tag return messages in json format for the given tag
+     * @return json object with 'tag' and 'messages' attribute or null
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONObject messagesToJsonObject(String tag) {
+        SortedSet<Message> messages = RuntimeEnvironment.getInstance().getMessages(tag);
+        if (messages.isEmpty()) {
+            return null;
+        }
+        JSONObject toRet = new JSONObject();
+        toRet.put("tag", tag);
+        toRet.put("messages", messagesToJson(messages));
+        return toRet;
+    }
+
+    /**
+     * Print messages for given tags into json array
+     *
+     * @param array the array where the result should be stored
+     * @param tags list of tags
+     * @return json array of the messages (the same as the parameter)
+     * @see #messagesToJsonObject(String)
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONArray messagesToJson(JSONArray array, String... tags) {
+        array = array == null ? new JSONArray() : array;
+        for (String tag : tags) {
+            JSONObject messages = messagesToJsonObject(tag);
+            if (messages == null || messages.isEmpty()) {
+                continue;
+            }
+            array.add(messages);
+        }
+        return array;
+    }
+
+    /**
+     * Print messages for given tags into json array
+     *
+     * @param tags list of tags
+     * @return json array of the messages
+     * @see #messagesToJson(JSONArray, String...)
+     * @see #messagesToJsonObject(String)
+     */
+    public static JSONArray messagesToJson(String... tags) {
+        return messagesToJson((JSONArray) null, tags);
+    }
+
+    /**
+     * Print messages for given tags into json array
+     *
+     * @param tags list of tags
+     * @return json array of the messages
+     * @see #messagesToJson(String...)
+     * @see #messagesToJsonObject(String)
+     */
+    public static JSONArray messagesToJson(List<String> tags) {
+        String[] array = new String[tags.size()];
+        return messagesToJson(tags.toArray(array));
+    }
+
+    /**
+     * Print messages for given project into json array. These messages are
+     * tagged by project description or tagged by any of the project's group
+     * name.
+     *
+     * @param project the project
+     * @param additionalTags additional list of tags
+     * @return the json array
+     * @see #messagesToJson(String...)
+     */
+    public static JSONArray messagesToJson(Project project, String... additionalTags) {
+        if (project == null) {
+            return new JSONArray();
+        }
+        List<String> tags = new ArrayList<>();
+        tags.addAll(Arrays.asList(additionalTags));
+        tags.add(project.getName());
+        project.getGroups().stream().forEach((Group t) -> {
+            tags.add(t.getName());
+        });
+        return messagesToJson(tags);
+    }
+
+    /**
+     * Print messages for given project into json array. These messages are
+     * tagged by project description or tagged by any of the project's group
+     * name
+     *
+     * @param project the project
+     * @return the json array
+     * @see #messagesToJson(Project, String...)
+     */
+    public static JSONArray messagesToJson(Project project) {
+        return messagesToJson(project, new String[0]);
+    }
+
+    /**
+     * Print messages for given group into json array.
+     *
+     * @param group the group
+     * @param additionalTags additional list of tags
+     * @return the json array
+     * @see #messagesToJson(java.util.List)
+     */
+    public static JSONArray messagesToJson(Group group, String... additionalTags) {
+        List<String> tags = new ArrayList<>();
+        tags.add(group.getName());
+        tags.addAll(Arrays.asList(additionalTags));
+        return messagesToJson(tags);
+    }
+
+    /**
+     * Print messages for given group into json array.
+     *
+     * @param group the group
+     * @return the json array
+     * @see #messagesToJson(Group, String...)
+     */
+    public static JSONArray messagesToJson(Group group) {
+        return messagesToJson(group, new String[0]);
+    }
+
+    /**
+     * Convert statistics object into JSONObject.
+     *
+     * @param stats object containing statistics
+     * @return the json object
+     */
+    public static JSONObject statisticToJson(Statistics stats) {
+        return stats.toJson();
+    }
+
+    /**
+     * Convert JSONObject object into statistics.
+     *
+     * @param input object containing statistics
+     * @return the statistics object
+     */
+    public static Statistics jsonToStatistics(JSONObject input) {
+        return Statistics.from(input);
     }
 
     /**
@@ -1063,5 +1275,287 @@ public final class Util {
 
         // Otherwise, return the full path.
         return fullPath;
+    }
+
+    /**
+     * Creates a html slider for pagination. This has the same effect as
+     * invoking <code>createSlider(offset, limit, size, null)</code>.
+     *
+     * @param offset start of the current page
+     * @param limit max number of items per page
+     * @param size number of total hits to paginate
+     * @return string containing slider html
+     */
+    public static String createSlider(int offset, int limit, int size) {
+        return createSlider(offset, limit, size, null);
+    }
+
+    /**
+     * Creates a html slider for pagination.
+     *
+     *
+     * @param offset start of the current page
+     * @param limit max number of items per page
+     * @param size number of total hits to paginate
+     * @param request request containing URL parameters which should be appended
+     * to the page URL
+     * @return string containing slider html
+     */
+    public static String createSlider(int offset, int limit, int size, HttpServletRequest request) {
+        String slider = "";
+        if (limit < size) {
+            final StringBuilder buf = new StringBuilder(4096);
+            int lastPage = (int) Math.ceil((double) size / limit);
+            // startingResult is the number of a first result on the current page
+            int startingResult = offset - limit * (offset / limit % 10 + 1);
+            int myFirstPage = startingResult < 0 ? 1 : startingResult / limit + 1;
+            int myLastPage = Math.min(lastPage, myFirstPage + 10 + (myFirstPage == 1 ? 0 : 1));
+
+            // function taking the page number and appending the desired content into the final buffer
+            Function<Integer, Void> generatePageLink = new Function<Integer, Void>() {
+                @Override
+                public Void apply(Integer page) {
+                    int myOffset = Math.max(0, (page - 1) * limit);
+                    if (myOffset <= offset && offset < myOffset + limit) {
+                        // do not generate anchor for current page
+                        buf.append("<span class=\"sel\">").append(page).append("</span>");
+                    } else {
+                        buf.append("<a class=\"more\" href=\"?");
+                        // append request parameters
+                        if (request != null && request.getQueryString() != null) {
+                            String query = request.getQueryString();
+                            query = query.replaceFirst("(\\?|&amp;|&|)n=\\d+", "");
+                            query = query.replaceFirst("(\\?|&amp;|&|)start=\\d+", "");
+                            query = query.replaceFirst("^(\\?|&amp;|&)", "");
+                            if (!query.isEmpty()) {
+                                buf.append(query);
+                                buf.append("&amp;");
+                            }
+                        }
+                        buf.append("n=").append(limit);
+                        if (myOffset != 0) {
+                            buf.append("&amp;start=").append(myOffset);
+                        }
+                        buf.append("\">");
+                        // add << or >> if this link would lead to another section
+                        if (page == myFirstPage && page != 1) {
+                            buf.append("&lt;&lt");
+                        } else if (page == myLastPage && myOffset + limit < size) {
+                            buf.append("&gt;&gt;");
+                        } else {
+                            buf.append(page);
+                        }
+                        buf.append("</a>");
+                    }
+                    return null;
+                }
+            };
+
+            // slider composition
+            if (myFirstPage != 1) {
+                generatePageLink.apply(1);
+                buf.append("<span>...</span>");
+            }
+            for (int page = myFirstPage; page <= myLastPage; page++) {
+                generatePageLink.apply(page);
+            }
+            if (myLastPage != lastPage) {
+                buf.append("<span>...</span>");
+                generatePageLink.apply(lastPage);
+            }
+            return buf.toString();
+        }
+        return slider;
+    }
+
+    /**
+     * Check if the string is a http URL.
+     *
+     * @param string the string to check
+     * @return true if it is http URL, false otherwise
+     */
+    public static boolean isHttpUri(String string) {
+        URL url;
+        try {
+            url = new URL(string);
+        } catch (MalformedURLException ex) {
+            return false;
+        }
+        return url.getProtocol().equals("http") || url.getProtocol().equals("https");
+    }
+
+    /**
+     * Build a html link to the given http url. If the URL is not an http URL
+     * then it is returned as it was received. This has the same effect as
+     * invoking <code>linkify(url, true)</code>.
+     *
+     * @param url the text to be linkified
+     * @return the linkified string
+     *
+     * @see #linkify(java.lang.String, boolean)
+     */
+    public static String linkify(String url) {
+        return linkify(url, true);
+    }
+
+    /**
+     * Build a html link to the given http URL. If the URL is not an http URL
+     * then it is returned as it was received.
+     *
+     * @param url the http URL
+     * @param newTab if the link should open in a new tab
+     * @return html containing the link &lt;a&gt;...&lt;/a&gt;
+     */
+    public static String linkify(String url, boolean newTab) {
+        if (isHttpUri(url)) {
+            try {
+                Map<String, String> attrs = new TreeMap<>();
+                attrs.put("href", url);
+                attrs.put("title", String.format("Link to %s", Util.encode(url)));
+                if (newTab) {
+                    attrs.put("target", "_blank");
+                }
+                return buildLink(url, attrs);
+            } catch (URISyntaxException | MalformedURLException ex) {
+                return url;
+            }
+        }
+        return url;
+    }
+
+    /**
+     * Build an anchor with given name and a pack of attributes. Automatically
+     * escapes href attributes and automatically escapes the name into HTML
+     * entities.
+     *
+     * @param name displayed name of the anchor
+     * @param attrs map of attributes for the html element
+     * @return string containing the result
+     *
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    public static String buildLink(String name, Map<String, String> attrs)
+            throws URISyntaxException, MalformedURLException {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("<a");
+        for (Entry<String, String> attr : attrs.entrySet()) {
+            buffer.append(" ");
+            buffer.append(attr.getKey());
+            buffer.append("=\"");
+            String value = attr.getValue();
+            if (attr.getKey().equals("href")) {
+                value = Util.encodeURL(value);
+            }
+            buffer.append(value);
+            buffer.append("\"");
+        }
+        buffer.append(">");
+        buffer.append(Util.htmlize(name));
+        buffer.append("</a>");
+        return buffer.toString();
+    }
+
+    /**
+     * Build an anchor with given name and a pack of attributes. Automatically
+     * escapes href attributes and automatically escapes the name into HTML
+     * entities.
+     *
+     * @param name displayed name of the anchor
+     * @param url anchor's URL
+     * @return string containing the result
+     *
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    public static String buildLink(String name, String url)
+            throws URISyntaxException, MalformedURLException {
+        Map<String, String> attrs = new TreeMap<>();
+        attrs.put("href", url);
+        return buildLink(name, attrs);
+    }
+
+    /**
+     * Build an anchor with given name and a pack of attributes. Automatically
+     * escapes href attributes and automatically escapes the name into HTML
+     * entities.
+     *
+     * @param name displayed name of the anchor
+     * @param url anchor's URL
+     * @param newTab a flag if the link should be opened in a new tab
+     * @return string containing the result
+     *
+     * @throws URISyntaxException
+     * @throws MalformedURLException
+     */
+    public static String buildLink(String name, String url, boolean newTab)
+            throws URISyntaxException, MalformedURLException {
+        Map<String, String> attrs = new TreeMap<>();
+        attrs.put("href", url);
+        if (newTab) {
+            attrs.put("target", "_blank");
+        }
+        return buildLink(name, attrs);
+    }
+
+    /**
+     * Replace all occurrences of pattern in the incoming text with the link
+     * named name pointing to an URL. It is possible to use the regexp pattern
+     * groups in name and URL when they are specified in the pattern.
+     *
+     * @param text text to replace all patterns
+     * @param pattern the pattern to match
+     * @param name link display name
+     * @param url link URL
+     * @return the text with replaced links
+     */
+    public static String linkifyPattern(String text, Pattern pattern, String name, String url) {
+        try {
+            String buildLink = buildLink(name, url, true);
+            return pattern.matcher(text).replaceAll(buildLink);
+        } catch (URISyntaxException | MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, "The given URL '{0}' is not valid", url);
+            return text;
+        }
+    }
+
+    /**
+     * Try to complete the given URL part into full URL with server name, port,
+     * scheme, ...
+     * <dl>
+     * <dt>for request http://localhost:8080/source/xref/xxx and part
+     * /cgi-bin/user=</dt>
+     * <dd>http://localhost:8080/cgi-bin/user=</dd>
+     * <dt>for request http://localhost:8080/source/xref/xxx and part
+     * cgi-bin/user=</dt>
+     * <dd>http://localhost:8080/source/xref/xxx/cgi-bin/user=</dd>
+     * <dt>for request http://localhost:8080/source/xref/xxx and part
+     * http://users.com/user=</dt>
+     * <dd>http://users.com/user=</dd>
+     * </dl>
+     *
+     * @param url the given URL part, may be already full URL
+     * @param req the request containing the information about the server
+     * @return the converted URL or the input parameter if there was an error
+     */
+    public static String completeUrl(String url, HttpServletRequest req) {
+        try {
+            if (!isHttpUri(url)) {
+                if (url.startsWith("/")) {
+                    return new URI(req.getScheme(), null, req.getServerName(), req.getServerPort(), url, null, null).toString();
+                }
+                StringBuffer prepUrl = req.getRequestURL();
+                if (!url.isEmpty()) {
+                    prepUrl.append('/').append(url);
+                }
+                return new URI(prepUrl.toString()).toString();
+            }
+            return url;
+        } catch (URISyntaxException ex) {
+            LOGGER.log(Level.INFO,
+                    String.format("Unable to convert given URL part '%s' to complete URL", url),
+                    ex);
+            return url;
+        }
     }
 }

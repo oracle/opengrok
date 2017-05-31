@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -50,6 +50,10 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import org.opensolaris.opengrok.authorization.AuthControlFlag;
+import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -64,6 +68,29 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 public final class Configuration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
+    public static final String PLUGIN_DIRECTORY_DEFAULT = "plugins";
+    public static final String STATISTICS_FILE_DEFAULT = "statistics.json";
+
+    /**
+     * A check if a pattern contains at least one pair of parentheses meaning
+     * that there is at least one capture group. This group must not be empty.
+     */
+    private static final String PATTERN_SINGLE_GROUP = ".*\\([^\\)]+\\).*";
+    /**
+     * Error string for invalid patterns without a single group. This is passed
+     * as a first argument to the constructor of PatternSyntaxException and in
+     * the output it is followed by the invalid pattern.
+     *
+     * @see PatternSyntaxException
+     * @see #PATTERN_SINGLE_GROUP
+     */
+    private static final String PATTERN_MUST_CONTAIN_GROUP = "The pattern must contain at least one non-empty group -";
+    /**
+     * Error string for negative numbers (could be int, double, long, ...).
+     * First argument is the name of the property, second argument is the actual
+     * value.
+     */
+    private static final String NEGATIVE_NUMBER_ERROR = "Invalid value for \"%s\" - \"%s\". Expected value greater or equal than 0";
 
     private String ctags;
     /**
@@ -75,12 +102,21 @@ public final class Configuration {
      * before its result is cached.
      */
     private int historyCacheTime;
-    /**
-     * Should the history cache be stored in a database?
-     */
-    private boolean historyCacheInDB;
 
-    private List<Project> projects;
+    private int messageLimit;
+    /**
+     * Directory with authorization plugins. Default value is
+     * dataRoot/../plugins (can be /var/opengrok/plugins if dataRoot is
+     * /var/opengrok/data).
+     */
+    private String pluginDirectory;
+    /**
+     * Enable watching the plugin directory for changes in real time. Suitable
+     * for development.
+     */
+    private boolean authorizationWatchdogEnabled;
+    private AuthorizationStack pluginStack;
+    private Map<String,Project> projects; // project name -> Project
     private Set<Group> groups;
     private String sourceRoot;
     private String dataRoot;
@@ -88,21 +124,20 @@ public final class Configuration {
     private String urlPrefix;
     private boolean generateHtml;
     /**
-     * Default project will be used, when no project is selected and no project
-     * is in cookie, so basically only the first time you open the first page,
-     * or when you clear your web cookies
+     * Default projects will be used, when no project is selected and no project
+     * is in cookie, so basically only the first time a page is opened,
+     * or when web cookies are cleared.
      */
-    private Project defaultProject;
+    private Set<Project> defaultProjects;
     /**
-     * Default size of memory to be used for flushing of Lucene docs
-     * per thread.
+     * Default size of memory to be used for flushing of Lucene docs per thread.
      * Lucene 4.x uses 16MB and 8 threads, so below is a nice tunable.
      */
     private double ramBufferSize;
     private boolean verbose;
     /**
-     * If below is set, then we count how many files per project we need
-     * to process and print percentage of completion per project.
+     * If below is set, then we count how many files per project we need to
+     * process and print percentage of completion per project.
      */
     private boolean printProgress;
     private boolean allowLeadingWildcard;
@@ -117,23 +152,25 @@ public final class Configuration {
     private String webappLAF;
     private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
-    private boolean useLuceneLocking;
+    private boolean usingLuceneLocking;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
-    private String databaseDriver;
-    private String databaseUrl;
+    private boolean lastEditedDisplayMode;
     private String CTagsExtraOptionsFile;
     private int scanningDepth;
     private Set<String> allowedSymlinks;
     private boolean obfuscatingEMailAddresses;
     private boolean chattyStatusPage;
-    private final Map<String, String> cmds;
+    private final Map<String, String> cmds;  // repository type -> command
     private int tabSize;
-    private int command_timeout;
+    private int commandTimeout; // in seconds
+    private int indexRefreshPeriod; // in seconds
     private boolean scopesEnabled;
+    private boolean foldingEnabled;
+    private String statisticsFilePath;
     /*
      * Set to false if we want to disable fetching history of individual files
      * (by running appropriate SCM command) when the history is not found
@@ -148,8 +185,8 @@ public final class Configuration {
      */
     private boolean handleHistoryOfRenamedFiles;
 
-    public static final double defaultRamBufferSize=16;
-    public static final int defaultScanningDepth=3;
+    public static final double defaultRamBufferSize = 16;
+    public static final int defaultScanningDepth = 3;
 
     /**
      * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
@@ -157,6 +194,33 @@ public final class Configuration {
      */
     public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
     private transient File dtagsEftar = null;
+
+    /**
+     * Revision messages will be collapsible if they exceed this many number of
+     * characters. Front end enforces an appropriate minimum.
+     */
+    private int revisionMessageCollapseThreshold;
+
+    /**
+     * Groups are collapsed if number of repositories is greater than this
+     * threshold. This applies only for non-favorite groups - groups which don't
+     * contain a project which is considered as a favorite project for the user.
+     * Favorite projects are the projects which the user browses and searches
+     * and are stored in a cookie. Favorite groups are always expanded.
+     */
+    private int groupsCollapseThreshold;
+
+    /**
+     * Current indexed message will be collapsible if they exceed this many
+     * number of characters. Front end enforces an appropriate minimum.
+     */
+    private int currentIndexedCollapseThreshold;
+
+    /**
+     * Upper bound for number of threads used for performing multi-project
+     * searches. This is total for the whole webapp/CLI utility.
+     */
+    private int MaxSearchThreadCount;
 
     /*
      * types of handling history for remote SCM repositories:
@@ -198,64 +262,140 @@ public final class Configuration {
         return scanningDepth;
     }
 
-    public void setScanningDepth(int scanningDepth) {
+    /**
+     * Set the scanning depth to a new value
+     *
+     * @param scanningDepth the new value
+     * @throws IllegalArgumentException when the scanningDepth is negative
+     */
+    public void setScanningDepth(int scanningDepth) throws IllegalArgumentException {
+        if (scanningDepth < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "scanningDepth", scanningDepth));
+        }
         this.scanningDepth = scanningDepth;
     }
 
     public int getCommandTimeout() {
-        return command_timeout;
+        return commandTimeout;
     }
 
-    public void setCommandTimeout(int timeout) {
-        this.command_timeout = timeout;
+    /**
+     * Set the command timeout to a new value
+     *
+     * @param commandTimeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setCommandTimeout(int commandTimeout) throws IllegalArgumentException {
+        if (commandTimeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "commandTimeout", commandTimeout));
+        }
+        this.commandTimeout = commandTimeout;
     }
-    
+
+    public int getIndexRefreshPeriod() {
+        return indexRefreshPeriod;
+    }
+
+    public void setIndexRefreshPeriod(int seconds) {
+        this.indexRefreshPeriod = seconds;
+    }
+
+    public String getStatisticsFilePath() {
+        return statisticsFilePath;
+    }
+
+    public void setStatisticsFilePath(String statisticsFilePath) {
+        this.statisticsFilePath = statisticsFilePath;
+    }
+
+    public boolean isLastEditedDisplayMode() {
+        return lastEditedDisplayMode;
+    }
+
+    public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
+        this.lastEditedDisplayMode = lastEditedDisplayMode;
+    }
+
+    public int getGroupsCollapseThreshold() {
+        return groupsCollapseThreshold;
+    }
+
+    /**
+     * Set the groups collapse threshold to a new value
+     *
+     * @param groupsCollapseThreshold the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setGroupsCollapseThreshold(int groupsCollapseThreshold) throws IllegalArgumentException {
+        if (groupsCollapseThreshold < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "groupsCollapseThreshold", groupsCollapseThreshold));
+        }
+        this.groupsCollapseThreshold = groupsCollapseThreshold;
+    }
+
     /**
      * Creates a new instance of Configuration
      */
     public Configuration() {
         //defaults for an opengrok instance configuration
-        setHistoryCache(true);
-        setHistoryCacheTime(30);
-        setHistoryCacheInDB(false);
-        setProjects(new ArrayList<Project>());
-        setGroups(new TreeSet<Group>());
-        setRepositories(new ArrayList<RepositoryInfo>());
-        setUrlPrefix("/source/s?");
-        //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
-        setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
-        //below can cause an outofmemory error, since it is defaulting to NO LIMIT
-        setRamBufferSize(defaultRamBufferSize); //MB
-        setVerbose(false);
-        setPrintProgress(false);
-        setGenerateHtml(true);
-        setQuickContextScan(true);
-        setIgnoredNames(new IgnoredNames());
-        setIncludedNames(new Filter());
-        setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
+        cmds = new HashMap<>();
+        setAllowedSymlinks(new HashSet<>());
+        setAuthorizationWatchdogEnabled(false);
         setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
+        setCachePages(5);
+        setCommandTimeout(600); // 10 minutes
+        setCompressXref(true);
+        setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
+        setCurrentIndexedCollapseThreshold(27);
+        setDataRoot(null);
+        setFetchHistoryWhenNotInCache(true);
+        setFoldingEnabled(true);
+        setGenerateHtml(true);
+        setGroups(new TreeSet<>());
+        setGroupsCollapseThreshold(4);
+        setHandleHistoryOfRenamedFiles(true);
+        setHistoryCache(true);
+        setHistoryCacheTime(30);
+        setHitsPerPage(25);
+        setIgnoredNames(new IgnoredNames());
+        setIncludedNames(new Filter());
+        setIndexRefreshPeriod(3600);
+        setIndexVersionedFilesOnly(false);
+        setLastEditedDisplayMode(true);
+        setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
+        setMessageLimit(500);
+        setOptimizeDatabase(true);
+        setPluginDirectory(null);
+        setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
+        setPrintProgress(false);
+        setProjects(new HashMap<>());
+        setQuickContextScan(true);
+        //below can cause an outofmemory error, since it is defaulting to NO LIMIT
+        setRamBufferSize(defaultRamBufferSize); //MB
+        setRemoteScmSupported(RemoteSCM.OFF);
+        setRepositories(new ArrayList<>());
         setReviewPage("http://arc.myserver.org/caselog/PSARC/");
         setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
-        setWebappLAF("default");
-        setRemoteScmSupported(RemoteSCM.OFF);
-        setOptimizeDatabase(true);
-        setUsingLuceneLocking(false);
-        setCompressXref(true);
-        setIndexVersionedFilesOnly(false);
-        setTagsEnabled(false);
-        setHitsPerPage(25);
-        setCachePages(5);
+        setRevisionMessageCollapseThreshold(200);
         setScanningDepth(defaultScanningDepth); // default depth of scanning for repositories
-        setAllowedSymlinks(new HashSet<String>());
-        //setTabSize(4);
-        cmds = new HashMap<String, String>();
-        setSourceRoot(null);
-        setDataRoot(null);
-        setCommandTimeout(600); // 10 minutes
         setScopesEnabled(true);
-        setFetchHistoryWhenNotInCache(true);
-        setHandleHistoryOfRenamedFiles(true);
+        setSourceRoot(null);
+        setStatisticsFilePath(null);
+        //setTabSize(4);
+        setTagsEnabled(false);
+        setUrlPrefix("/source/s?");
+        //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
+        setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
+        // Set to empty string so we can append it to the URL
+        // unconditionally later.
+        setUserPageSuffix("");
+        setUsingLuceneLocking(false);
+        setVerbose(false);
+        setWebappLAF("default");
     }
 
     public String getRepoCmd(String clazzName) {
@@ -277,6 +417,53 @@ public final class Configuration {
         return Collections.unmodifiableMap(cmds);
     }
 
+    /**
+     * @see RuntimeEnvironment#getMessagesInTheSystem()
+     *
+     * @return int the current message limit
+     */
+    public int getMessageLimit() {
+        return messageLimit;
+    }
+
+    /**
+     * @see RuntimeEnvironment#getMessagesInTheSystem()
+     *
+     * @param messageLimit the limit
+     * @throws IllegalArgumentException when the limit is negative
+     */
+    public void setMessageLimit(int messageLimit) throws IllegalArgumentException {
+        if (messageLimit < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "messageLimit", messageLimit));
+        }
+        this.messageLimit = messageLimit;
+    }
+
+    public String getPluginDirectory() {
+        return pluginDirectory;
+    }
+
+    public void setPluginDirectory(String pluginDirectory) {
+        this.pluginDirectory = pluginDirectory;
+    }
+
+    public boolean isAuthorizationWatchdogEnabled() {
+        return authorizationWatchdogEnabled;
+    }
+
+    public void setAuthorizationWatchdogEnabled(boolean authorizationWatchdogEnabled) {
+        this.authorizationWatchdogEnabled = authorizationWatchdogEnabled;
+    }
+
+    public AuthorizationStack getPluginStack() {
+        return pluginStack;
+    }
+
+    public void setPluginStack(AuthorizationStack pluginStack) {
+        this.pluginStack = pluginStack;
+    }
+
     public void setCmds(Map<String, String> cmds) {
         this.cmds.clear();
         this.cmds.putAll(cmds);
@@ -294,7 +481,17 @@ public final class Configuration {
         return cachePages;
     }
 
-    public void setCachePages(int cachePages) {
+    /**
+     * Set the cache pages to a new value
+     *
+     * @param cachePages the new value
+     * @throws IllegalArgumentException when the cachePages is negative
+     */
+    public void setCachePages(int cachePages) throws IllegalArgumentException {
+        if (cachePages < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "cachePages", cachePages));
+        }
         this.cachePages = cachePages;
     }
 
@@ -302,7 +499,17 @@ public final class Configuration {
         return hitsPerPage;
     }
 
-    public void setHitsPerPage(int hitsPerPage) {
+    /**
+     * Set the hits per page to a new value
+     *
+     * @param hitsPerPage the new value
+     * @throws IllegalArgumentException when the hitsPerPage is negative
+     */
+    public void setHitsPerPage(int hitsPerPage) throws IllegalArgumentException {
+        if (hitsPerPage < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "hitsPerPage", hitsPerPage));
+        }
         this.hitsPerPage = hitsPerPage;
     }
 
@@ -363,34 +570,11 @@ public final class Configuration {
         this.handleHistoryOfRenamedFiles = enable;
     }
 
-    /**
-     * Should the history cache be stored in a database? If yes,
-     * {@code JDBCHistoryCache} will be used to cache the history; otherwise,
-     * {@code FileHistoryCache} is used.
-     *
-     * @return whether the history cache should be stored in a database
-     */
-    public boolean isHistoryCacheInDB() {
-        return historyCacheInDB;
-    }
-
-    /**
-     * Set whether the history cache should be stored in a database, and
-     * {@code JDBCHistoryCache} should be used instead of {@code
-     * FileHistoryCache}.
-     *
-     * @param historyCacheInDB whether the history cached should be stored in a
-     * database
-     */
-    public void setHistoryCacheInDB(boolean historyCacheInDB) {
-        this.historyCacheInDB = historyCacheInDB;
-    }
-
-    public List<Project> getProjects() {
+    public Map<String,Project> getProjects() {
         return projects;
     }
 
-    public void setProjects(List<Project> projects) {
+    public void setProjects(Map<String,Project> projects) {
         this.projects = projects;
     }
 
@@ -415,7 +599,7 @@ public final class Configuration {
     public void setGroups(Set<Group> groups) {
         this.groups = groups;
     }
-    
+
     public String getSourceRoot() {
         return sourceRoot;
     }
@@ -428,7 +612,24 @@ public final class Configuration {
         return dataRoot;
     }
 
+    /**
+     * Sets data root.
+     *
+     * This method also sets the pluginDirectory if it is not already set and
+     * also this method sets the statisticsFilePath if it is not already set
+     *
+     * @see #setPluginDirectory(java.lang.String)
+     * @see #setStatisticsFilePath(java.lang.String)
+     *
+     * @param dataRoot
+     */
     public void setDataRoot(String dataRoot) {
+        if (dataRoot != null && getPluginDirectory() == null) {
+            setPluginDirectory(dataRoot + "/../" + PLUGIN_DIRECTORY_DEFAULT);
+        }
+        if (dataRoot != null && getStatisticsFilePath() == null) {
+            setStatisticsFilePath(dataRoot + "/" + STATISTICS_FILE_DEFAULT);
+        }
         this.dataRoot = dataRoot;
     }
 
@@ -464,12 +665,12 @@ public final class Configuration {
         return generateHtml;
     }
 
-    public void setDefaultProject(Project defaultProject) {
-        this.defaultProject = defaultProject;
+    public void setDefaultProjects(Set<Project> defaultProjects) {
+        this.defaultProjects = defaultProjects;
     }
 
-    public Project getDefaultProject() {
-        return defaultProject;
+    public Set<Project> getDefaultProjects() {
+        return defaultProjects;
     }
 
     public double getRamBufferSize() {
@@ -477,9 +678,10 @@ public final class Configuration {
     }
 
     /**
-     * set size of memory to be used for flushing docs (default 16 MB)
-     * (this can improve index speed a LOT)
-     * note that this is per thread (lucene uses 8 threads by default in 4.x)
+     * set size of memory to be used for flushing docs (default 16 MB) (this can
+     * improve index speed a LOT) note that this is per thread (lucene uses 8
+     * threads by default in 4.x)
+     *
      * @param ramBufferSize new size in MB
      */
     public void setRamBufferSize(double ramBufferSize) {
@@ -560,8 +762,19 @@ public final class Configuration {
         return bugPage;
     }
 
-    public void setBugPattern(String bugPattern) {
-        this.bugPattern = bugPattern;
+    /**
+     * Set the bug pattern to a new value
+     *
+     * @param bugPattern the new pattern
+     * @throws PatternSyntaxException when the pattern is not a valid regexp or
+     * does not contain at least one capture group and the group does not
+     * contain a single character
+     */
+    public void setBugPattern(String bugPattern) throws PatternSyntaxException {
+        if (!bugPattern.matches(PATTERN_SINGLE_GROUP)) {
+            throw new PatternSyntaxException(PATTERN_MUST_CONTAIN_GROUP, bugPattern, 0);
+        }
+        this.bugPattern = Pattern.compile(bugPattern).toString();
     }
 
     public String getBugPattern() {
@@ -580,8 +793,19 @@ public final class Configuration {
         return reviewPattern;
     }
 
-    public void setReviewPattern(String reviewPattern) {
-        this.reviewPattern = reviewPattern;
+    /**
+     * Set the review pattern to a new value
+     *
+     * @param reviewPattern the new pattern
+     * @throws PatternSyntaxException when the pattern is not a valid regexp or
+     * does not contain at least one capture group and the group does not
+     * contain a single character
+     */
+    public void setReviewPattern(String reviewPattern) throws PatternSyntaxException {
+        if (!reviewPattern.matches(PATTERN_SINGLE_GROUP)) {
+            throw new PatternSyntaxException(PATTERN_MUST_CONTAIN_GROUP, reviewPattern, 0);
+        }
+        this.reviewPattern = Pattern.compile(reviewPattern).toString();
     }
 
     public String getWebappLAF() {
@@ -609,11 +833,15 @@ public final class Configuration {
     }
 
     public boolean isUsingLuceneLocking() {
-        return useLuceneLocking;
+        return usingLuceneLocking;
+    }
+
+    public boolean getUsingLuceneLocking() {
+        return usingLuceneLocking;
     }
 
     public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        this.useLuceneLocking = useLuceneLocking;
+        this.usingLuceneLocking = useLuceneLocking;
     }
 
     public void setCompressXref(boolean compressXref) {
@@ -631,13 +859,29 @@ public final class Configuration {
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         this.indexVersionedFilesOnly = indexVersionedFilesOnly;
     }
-    
+
     public boolean isTagsEnabled() {
         return this.tagsEnabled;
     }
-    
+
     public void setTagsEnabled(boolean tagsEnabled) {
         this.tagsEnabled = tagsEnabled;
+    }
+
+    public void setRevisionMessageCollapseThreshold(int threshold) {
+        this.revisionMessageCollapseThreshold = threshold;
+    }
+
+    public int getRevisionMessageCollapseThreshold() {
+        return this.revisionMessageCollapseThreshold;
+    }
+
+    public int getCurrentIndexedCollapseThreshold() {
+        return currentIndexedCollapseThreshold;
+    }
+
+    public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
+        this.currentIndexedCollapseThreshold = currentIndexedCollapseThreshold;
     }
 
     private transient Date lastModified;
@@ -650,9 +894,15 @@ public final class Configuration {
     public Date getDateForLastIndexRun() {
         if (lastModified == null) {
             File timestamp = new File(getDataRoot(), "timestamp");
-            lastModified = new Date(timestamp.lastModified());
+            if (timestamp.exists()) {
+                lastModified = new Date(timestamp.lastModified());
+            }
         }
         return lastModified;
+    }
+
+    public void refreshDateForLastIndexRun() {
+        lastModified = null;
     }
 
     /**
@@ -684,13 +934,15 @@ public final class Configuration {
             if (input != null) {
                 try {
                     input.close();
-                } catch (Exception e) { /*
+                } catch (Exception e) {
+                    /*
                      * nothing we can do about it
                      */ }
             } else if (fin != null) {
                 try {
                     fin.close();
-                } catch (Exception e) { /*
+                } catch (Exception e) {
+                    /*
                      * nothing we can do about it
                      */ }
             }
@@ -711,6 +963,7 @@ public final class Configuration {
      *
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
+     * @see #FOOTER_INCLUDE_FILE
      */
     public String getFooterIncludeFileContent() {
         if (footer == null) {
@@ -732,12 +985,59 @@ public final class Configuration {
      *
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
+     * @see #HEADER_INCLUDE_FILE
      */
     public String getHeaderIncludeFileContent() {
         if (header == null) {
             header = getFileContent(new File(getDataRoot(), HEADER_INCLUDE_FILE));
         }
         return header;
+    }
+
+    /**
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should
+     * be included into the body of web app's "Home" page.
+     */
+    public static final String BODY_INCLUDE_FILE = "body_include";
+
+    private transient String body = null;
+
+    /**
+     * Get the contents of the body include file.
+     *
+     * @return an empty string if it could not be read successfully, the
+     * contents of the file otherwise.
+     * @see Configuration#BODY_INCLUDE_FILE
+     */
+    public String getBodyIncludeFileContent() {
+        if (body == null) {
+            body = getFileContent(new File(getDataRoot(), BODY_INCLUDE_FILE));
+        }
+        return body;
+    }
+
+    /**
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should
+     * be included into the error page handling access forbidden errors - HTTP
+     * code 403 Forbidden.
+     */
+    public static final String E_FORBIDDEN_INCLUDE_FILE = "error_forbidden_include";
+
+    private transient String eforbidden_content = null;
+
+    /**
+     * Get the contents of the page for forbidden error page (403 Forbidden)
+     * include file.
+     *
+     * @return an empty string if it could not be read successfully, the
+     * contents of the file otherwise.
+     * @see Configuration#E_FORBIDDEN_INCLUDE_FILE
+     */
+    public String getForbiddenIncludeFileContent() {
+        if (eforbidden_content == null) {
+            eforbidden_content = getFileContent(new File(getDataRoot(), E_FORBIDDEN_INCLUDE_FILE));
+        }
+        return eforbidden_content;
     }
 
     /**
@@ -753,22 +1053,6 @@ public final class Configuration {
             }
         }
         return dtagsEftar;
-    }
-
-    public String getDatabaseDriver() {
-        return databaseDriver;
-    }
-
-    public void setDatabaseDriver(String databaseDriver) {
-        this.databaseDriver = databaseDriver;
-    }
-
-    public String getDatabaseUrl() {
-        return databaseUrl;
-    }
-
-    public void setDatabaseUrl(String databaseUrl) {
-        this.databaseUrl = databaseUrl;
     }
 
     public String getCTagsExtraOptionsFile() {
@@ -806,11 +1090,27 @@ public final class Configuration {
     public boolean isScopesEnabled() {
         return scopesEnabled;
     }
-    
+
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
     }
-    
+
+    public boolean isFoldingEnabled() {
+        return foldingEnabled;
+    }
+
+    public void setFoldingEnabled(boolean foldingEnabled) {
+        this.foldingEnabled = foldingEnabled;
+    }
+
+    public int getMaxSearchThreadCount() {
+        return MaxSearchThreadCount;
+    }
+
+    public void setMaxSearchThreadCount(int count) {
+        this.MaxSearchThreadCount = count;
+    }
+
     /**
      * Write the current configuration to a file
      *
@@ -829,7 +1129,7 @@ public final class Configuration {
         return bos.toString();
     }
 
-    private void encodeObject(OutputStream out) {
+    public void encodeObject(OutputStream out) {
         try (XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out))) {
             e.writeObject(this);
         }
@@ -847,10 +1147,10 @@ public final class Configuration {
         ret = decodeObject(in);
         return ret;
     }
-    
+
     private static Configuration decodeObject(InputStream in) throws IOException {
         final Object ret;
-        final LinkedList<Exception> exceptions = new LinkedList<Exception>();
+        final LinkedList<Exception> exceptions = new LinkedList<>();
         ExceptionListener listener = new ExceptionListener() {
             @Override
             public void exceptionThrown(Exception e) {
@@ -875,8 +1175,8 @@ public final class Configuration {
             throw new IOException(exceptions.getFirst());
         }
 
-        Configuration conf = ((Configuration) ret);        
-        
+        Configuration conf = ((Configuration) ret);
+
         // Removes all non root groups.
         // This ensures that when the configuration is reloaded then the set 
         // contains only root groups. Subgroups are discovered again
@@ -891,16 +1191,23 @@ public final class Configuration {
         // Traversing subgroups and checking for duplicates,
         // effectively transforms the group tree to a structure (Set)
         // supporting an iterator.
-        TreeSet<Group> copy = new TreeSet<Group>();
-        LinkedList<Group> stack = new LinkedList<Group>(conf.groups);
+        TreeSet<Group> copy = new TreeSet<>();
+        LinkedList<Group> stack = new LinkedList<>(conf.groups);
         while (!stack.isEmpty()) {
             Group group = stack.pollFirst();
             stack.addAll(group.getSubgroups());
-            
+
             if (!copy.add(group)) {
                 throw new IOException(
                         String.format("Duplicate group name '%s' in configuration.",
                                 group.getName()));
+            }
+
+            // populate groups where the current group in in their subtree
+            Group tmp = group.getParent();
+            while (tmp != null) {
+                tmp.addDescendant(group);
+                tmp = tmp.getParent();
             }
         }
         conf.setGroups(copy);

@@ -22,7 +22,7 @@ ___INSERT_USAGE___
 <refsect1><title>DESCRIPTION</title>
 <para>
 OpenGrok is a fast and usable source code search and cross reference
-engine written in pure Java. It helps you search, cross-referenece
+engine written in pure Java. It helps you search, cross-reference
 and navigate your source tree. It can understand various program file
 formats and version control histories.
 </para>

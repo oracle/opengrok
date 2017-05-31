@@ -18,12 +18,11 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="
+--%><%@page errorPage="error.jsp" import="
 java.io.File,
 java.io.FileInputStream,
 java.io.FileNotFoundException,
@@ -34,14 +33,12 @@ org.opensolaris.opengrok.configuration.RuntimeEnvironment,
 org.opensolaris.opengrok.history.HistoryGuru,
 org.opensolaris.opengrok.web.PageConfig,
 org.opensolaris.opengrok.web.Prefix"
-%><%@
-
-include file="pageconfig.jspf"
-
 %><%
 /* ---------------------- raw.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
+    cfg.checkSourceRootExistence();
+
     String redir = cfg.canProcess();
     if (redir == null || redir.length() > 0) {
         if (redir != null) {
@@ -59,10 +56,9 @@ include file="pageconfig.jspf"
     }
     InputStream in = null;
     try {
-        Prefix prefix;
         if (revision != null) {
             in = HistoryGuru.getInstance().getRevision(f.getParent(),
-                f.getName(), revision.substring(2));
+                f.getName(), revision);
         } else {
             long flast = cfg.getLastModified();
             if (request.getDateHeader("If-Modified-Since") >= flast) {

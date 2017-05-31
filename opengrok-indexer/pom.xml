@@ -18,11 +18,11 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>opengrok-indexer</artifactId>
@@ -45,35 +45,29 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
                 <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/analysis/sql/</directory>
                 <includes>
-                  <include>*.dat</include>
+                    <include>*.dat</include>
                 </includes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/analysis/vb/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/analysis/vb/</directory>
                 <includes>
-                  <include>*.dat</include>
+                    <include>*.dat</include>
                 </includes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/index/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/index/</directory>
-                <excludes><exclude>*.java</exclude></excludes>
-            </resource>
-            <resource>
-                <targetPath>org/opensolaris/opengrok/management/</targetPath>
-                <directory>../src/org/opensolaris/opengrok/management/</directory>
-                <includes>
-                  <include>*.properties</include>
-                  <include>**/*.gif</include>
-                </includes>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/history/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/history/</directory>
                 <excludes>
-                  <exclude>*.java</exclude>
-                  <exclude>*.html</exclude>
+                    <exclude>*.java</exclude>
+                    <exclude>*.html</exclude>
                 </excludes>
             </resource>
         </resources>
@@ -82,17 +76,30 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
             <testResource>
                 <targetPath>org/opensolaris/opengrok/history/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/history/</directory>
-                <excludes><exclude>*.java</exclude></excludes>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/php/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/php/</directory>
-                <excludes><exclude>*.java</exclude></excludes>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/haskell/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/haskell/</directory>
-                <excludes><exclude>*.java</exclude></excludes>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/java/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/java/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
             </testResource>
         </testResources>
 
@@ -101,7 +108,7 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>3.0.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -110,12 +117,6 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
                             <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
                         <manifestEntries>
-                            <!--
-                                We don't include Derby yet, but set
-                                up the classpath so that it's found
-                                at runtime if it's installed.
-                            -->
-                            <Class-Path>lib/derbyclient.jar lib/derby.jar</Class-Path>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -139,11 +140,67 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
                     </execution>
                 </executions>
             </plugin>
+            
+            <!--  add the same fix as is in build.xml to patch jflex generated files to stop increasing buffer beyond token size that lucene accepts
+            https://github.com/OpenGrok/OpenGrok/issues/1170 make parsers stop producing tokens > 32766 chars
+            at least for PlainFullTokenizer, PlainSymbolTokenizer, JavaScriptSymbolTokenizer, JavaSymbolTokenizer
+            use below  
+            
+            DON'T forget to SYNC this with ../build.xml !!!
+            
+            -->
+ 
+            <plugin>                                                                                                                                                                                                                        
+                <groupId>com.google.code.maven-replacer-plugin</groupId>                                                                                                                                                                     
+                <artifactId>replacer</artifactId>                                                                                                                                                                                            
+                <version>1.5.3</version>                                                                                                                                                                                                     
+                <executions>                                                                                                                                                                                                                 
+                    <execution>                                                                                                                                                                                                              
+                        <phase>generate-sources</phase>                                                                                                                                                                                      
+                        <goals>                                                                                                                                                                                                              
+                            <goal>replace</goal>                                                                                                                                                                                             
+                        </goals>                                                                                                                                                                                                             
+                    </execution>                                                                                                                                                                                                             
+                </executions>                                                                                                                                                                                                                
+                <configuration>                                                                                                                                                                                                              
+                    <filesToInclude>                                                                                                                                                                                                         
+                        ${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.java             
+                    </filesToInclude>                                                                                                                                                                                                        
+                    <replacements>                                                                                                                                                                                                           
+                        <replacement>                                                                                                                                                                                                        
+                            <token>private static final int ZZ_BUFFERSIZE =</token>                                                                                                                                                          
+                            <value>private int ZZ_BUFFERSIZE =</value>                                                                                                                                                                       
+                        </replacement>                                                                                                                                                                                                       
+                        <replacement>                                                                                                                                                                                                        
+                            <token>int requested = zzBuffer\.length - zzEndRead;</token>                                                                                                                                                     
+                            <value>int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;</value>                                                                                                                               
+                        </replacement>                                                                                                                                                                                                       
+                        <replacement>                                                                                                                                                                                                        
+                            <token>(zzFinalHighSurrogate = 1;)(\r?\n)</token>                                                                                                                                                                
+                            <value>$1$2          if (numRead == 1) { return true; }$2</value>                                                                                                                                                
+                        </replacement>                                                                                                                                                                                                       
+                                                                                                                                                                                                                                             
+                        <replacement>                                                                                                                                                                                                        
+                            <token>[ \t]*/\* is the buffer big enough\? \*/\s+if \(zzCurrentPos >= zzBuffer\.length.*?\}[ \t]*\r?\n</token>                                                                                                  
+                            <value></value>                                                                                                                                                                                                  
+                        </replacement>                                                                                                                                                                                                       
+                        <!-- also revert 0 character check that got in with 1.6.1 : https://github.com/jflex-de/jflex/blob/master/jflex/examples/zero-reader/README.md -->                                                                                           
+                        <replacement>                                                                                                                                                                                                        
+                            <token>[ \t]*/\* not supposed to occur according to specification of java\.io\.Reader \*/\s+if \(numRead == 0.*?\}[ \t]*\r?\n</token>                                                                            
+                            <value></value>                                                                                                                                                                                                  
+                        </replacement>                                                                                                                                                                                                       
+                                                                                                                                                                                                                                             
+                    </replacements>                                                                                                                                                                                                          
+                    <regexFlags>                                                                                                                                                                                                      
+                        <regexFlag>DOTALL</regexFlag>                                                                                                                                                                                 
+                    </regexFlags>                                                                                                                                                                                                   
+                </configuration>                                                                                                                                                                                                             
+            </plugin>                                        
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
+                <version>1.8</version>
                 <executions>
                     <execution>
                         <phase>generate-resources</phase>
@@ -176,6 +233,9 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <systemPropertyVariables>
+                        <junit-force-all>true</junit-force-all>
+                    </systemPropertyVariables>
                     <excludes>
                         <!-- Test helper class with name that confuses surefire -->
                         <exclude>**/TestRepository.java</exclude>
@@ -200,10 +260,12 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
         </dependency>
-        <dependency>                                                                                                                                                                                     <groupId>org.apache.lucene</groupId>
+        <dependency>                                                                                                                                                                                     
+            <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
         </dependency>
-        <dependency>                                                                                                                                                                                     <groupId>org.apache.lucene</groupId>
+        <dependency>                                                                                                                                                                                     
+            <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-suggest</artifactId>
         </dependency>
         <dependency>
@@ -228,17 +290,6 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derby</artifactId>
-            <scope>test</scope>
-        </dependency>
-<!--        <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derbyclient</artifactId>
-            <scope>run</scope>
-        </dependency>
--->
 
     </dependencies>
 

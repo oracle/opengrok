@@ -18,15 +18,19 @@
  */
 
  /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +61,8 @@ public class Ctags {
     private final int MAX_METHOD_LINE_LENGTH = 1030; //96 is used by universal ctags for some lines, but it's too low, OpenGrok can theoretically handle 50000 with 8G heap    
     // also this might break scopes functionality, if set too low
 
+    private boolean junit_testing = false;
+
     public void setBinary(String binary) {
         this.binary = binary;
     }
@@ -68,6 +74,7 @@ public class Ctags {
     public void close() throws IOException {
         IOUtils.close(ctagsIn);
         if (ctags != null) {
+            LOGGER.log(Level.FINE, "Destroying ctags command");
             ctags.destroy();
         }
     }
@@ -79,15 +86,15 @@ public class Ctags {
 
             command.add(binary);
             command.add("--c-kinds=+l");
-                        
-            if (env.isUniversalCtags()) {                                
+
+            if (env.isUniversalCtags()) {
                 command.add("--langmap=clojure:+.cljs");
                 command.add("--langmap=clojure:+.cljx");
-                
-            // Workaround for bug #14924: Don't get local variables in Java
-            // code since that creates many false positives.
-            // CtagsTest : bug14924 "too many methods" guards for this
-            // universal ctags are however safe, so enabling for them
+
+                // Workaround for bug #14924: Don't get local variables in Java
+                // code since that creates many false positives.
+                // CtagsTest : bug14924 "too many methods" guards for this
+                // universal ctags are however safe, so enabling for them
                 command.add("--java-kinds=+l");
             }
             command.add("--sql-kinds=+l");
@@ -114,15 +121,15 @@ public class Ctags {
             command.add("--langdef=scala"); // below is bug 61 to get full scala support
             command.add("--langmap=scala:.scala");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
-            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,objects/");
-            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,case classes/");
-            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,case objects/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/o,objects/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/C,case classes/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/O,case objects/"); 
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*trait[[:space:]]+([a-zA-Z0-9_]+)/\\4/t,traits/");
             command.add("--regex-scala=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/T,types/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*def[[:space:]]+([a-zA-Z0-9_]+)/\\3/m,methods/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*val[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,constants/");
-            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*var[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,variables/");
-            command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*var[[:space:]]+([a-zA-Z0-9_]+)/\\3/v,variables/");
+            command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/"); 
 
             command.add("--langdef=haskell"); // below was added with #912
             command.add("--langmap=haskell:.hs.hsc");
@@ -141,22 +148,50 @@ public class Ctags {
                 command.add("--regex-golang=/func([[:space:]]+([^)]+))?[[:space:]]+([a-zA-Z0-9_]+)/\\2/f,func/");
                 command.add("--regex-golang=/var[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/v,var/");
                 command.add("--regex-golang=/type[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/t,type/");
-
-                command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/xzj/1518834)
-                command.add("--langmap=clojure:.clj");
-                command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/n,namespace/");
-                command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/d,definition/");
-                command.add("--regex-clojure=/\\([[:space:]]*defn[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/f,function/");
-                command.add("--regex-clojure=/\\([[:space:]]*defn-[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/p,private function/");
-                command.add("--regex-clojure=/\\([[:space:]]*defmacro[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/m,macro/");
-                command.add("--regex-clojure=/\\([[:space:]]*definline[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/i,inline/");
-                command.add("--regex-clojure=/\\([[:space:]]*defmulti[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/a,multimethod definition/");
-                command.add("--regex-clojure=/\\([[:space:]]*defmethod[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/b,multimethod instance/");
-                command.add("--regex-clojure=/\\([[:space:]]*defonce[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/c,definition (once)/");
-                command.add("--regex-clojure=/\\([[:space:]]*defstruct[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/s,struct/");
-                command.add("--regex-clojure=/\\([[:space:]]*intern[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/v,intern/");
-                command.add("--regex-clojure=/\\([[:space:]]*ns[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/n,namespace/");
             }
+            //temporarily use our defs until ctags will fix https://github.com/universal-ctags/ctags/issues/988
+            command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/kul/8704283)
+            command.add("--langmap=clojure:.clj");
+            command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
+            command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d,definition/");
+            command.add("--regex-clojure=/\\([[:space:]]*defn[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/f,function/");
+            command.add("--regex-clojure=/\\([[:space:]]*defn-[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/p,private function/");
+            command.add("--regex-clojure=/\\([[:space:]]*defmacro[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/m,macro/");
+            command.add("--regex-clojure=/\\([[:space:]]*definline[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/i,inline/");
+            command.add("--regex-clojure=/\\([[:space:]]*defmulti[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/a,multimethod definition/");
+            command.add("--regex-clojure=/\\([[:space:]]*defmethod[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/b,multimethod instance/");
+            command.add("--regex-clojure=/\\([[:space:]]*defonce[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/c,definition (once)/");
+            command.add("--regex-clojure=/\\([[:space:]]*defstruct[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/s,struct/");
+            command.add("--regex-clojure=/\\([[:space:]]*intern[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/v,intern/");
+            command.add("--regex-clojure=/\\([[:space:]]*ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
+
+            command.add("--langdef=pascal");
+            command.add("--langmap=pascal:.pas");
+            command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*\\([[:space:]]*[[:alnum:]_][[:space:]]*\\)/\\1/t,Type/");
+            command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*class[[:space:]]*[^;]*$/\\1/c,Class/");
+            command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*interface[[:space:]]*[^;]*$/\\1/i,interface/");
+            command.add("--regex-pascal=/^constructor[[:space:]]+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/n,Constructor/");
+            command.add("--regex-pascal=/^destructor[[:space:]]+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/d,Destructor/");
+            command.add("--regex-pascal=/^(procedure)[[:space:]]+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/p,procedure/");
+            command.add("--regex-pascal=/^(function)[[:space:]]+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/f,function/");
+            command.add("--regex-pascal=/^[[:space:]]*property[[:space:]]+([a-zA-Z0-9_<>, ]+)[[:space:]]*\\:(.*)/\\1/o,property/");
+            command.add("--regex-pascal=/^(uses|interface|implementation)$/\\1/s,Section/");
+            command.add("--regex-pascal=/^unit[[:space:]]+([a-zA-Z0-9_<>, ]+)[;(]/\\1/u,unit/");
+
+            command.add("--langdef=rust");
+            command.add("--langmap=rust:.rs");
+            command.add("--regex-rust=/^[[:space:]]*(#\\[[^\\]]\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\"[^\"]+\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/h,functions,function definitions/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?type[[:space:]]+([[:alnum:]_]+)/\\2/T,types,type definitions/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?enum[[:space:]]+([[:alnum:]_]+)/\\2/g,enum,enumeration names/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?struct[[:space:]]+([[:alnum:]_]+)/\\2/S,structure names/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?mod[[:space:]]+([[:alnum:]_]+)/\\2/n,modules,module names/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?([[:alnum:]_]+)/\\4/C,consts,static constants/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?trait[[:space:]]+([[:alnum:]_]+)/\\3/r,traits,traits/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,trait implementations/");
+            command.add("--regex-rust=/^[[:space:]]*macro_rules![[:space:]]+([[:alnum:]_]+)/\\1/d,macros,macro definitions/");
+            command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V,variables/");
+
+            //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
 
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
@@ -206,12 +241,15 @@ public class Ctags {
         boolean ctagsRunning = false;
         if (ctags != null) {
             try {
-                ctags.exitValue();
+                int exitValue = ctags.exitValue();
+                // If it is possible to retrieve exit value without exception
+                // this means the ctags process is dead so we must restart it.
                 ctagsRunning = false;
-                // ctags is dead! we must restart!!!
+                LOGGER.log(Level.WARNING, "Ctags process exited with exit value {0}",
+                    exitValue);
             } catch (IllegalThreadStateException exp) {
                 ctagsRunning = true;
-                // ctags is still running :)
+                // The ctags process is still running.
             }
         }
 
@@ -231,16 +269,125 @@ public class Ctags {
         return ret;
     }
 
+    /**
+     * produce definitions for the text in the buffer String ctags process is
+     * mocked, not real mostly used for junit testing
+     *
+     * @param bufferTags tags file output
+     * @return definitions parsed from buffer
+     */
+    public Definitions testCtagsParser(String bufferTags) {
+        junit_testing = true;
+        ctagsOut = new BufferedReader(new StringReader(bufferTags));
+        ctags = new Process() {
+            @Override
+            public OutputStream getOutputStream() {
+                return null;
+            }
+
+            @Override
+            public InputStream getInputStream() {
+                return null;
+            }
+
+            @Override
+            public InputStream getErrorStream() {
+                return null;
+            }
+
+            @Override
+            public int waitFor() throws InterruptedException {
+                return 0;
+            }
+
+            @Override
+            public int exitValue() {
+                return 0;
+            }
+
+            @Override
+            public void destroy() {
+            }
+        };
+
+        Definitions ret;
+        ret = new Definitions();
+        readTags(ret);
+        return ret;
+    }
+
+    // this should mimic https://github.com/universal-ctags/ctags/blob/master/docs/format.rst
+    // or http://ctags.sourceforge.net/FORMAT (for backwards compatibility)
+    //uncomment only those that are used ... (to avoid populating the hashmap for every record)
+    public enum tagFields {
+//        ARITY("arity"),
+        CLASS("class"),
+        //        INHERIT("inherit"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+        //        INTERFACE("interface"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+        //        ENUM("enum"),
+        //        FILE("file"),
+        //        FUNCTION("function"),
+        //        KIND("kind"),
+        LINE("line"),
+        //        NAMESPACE("namespace"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+        //        PROGRAM("program"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+        SIGNATURE("signature");
+//        STRUCT("struct"),
+//        TYPEREF("typeref"),
+//        UNION("union");
+
+        //NOTE: if you edit above, always consult below charCmpEndOffset
+        private final String name;
+
+        tagFields(String name) {
+            this.name = name;
+        }
+
+        //this is very important, we only compare that amount of chars from field types with input to save time,
+        //this number has to be long enough to get rid of disambiguation (so currently 2 characters)
+        //TODO:
+        //NOTE this is a big tradeoff in terms of input data, e.g. field "find"
+        //will be considered "file" and overwrite the value, so if ctags will send us buggy input
+        //we will output buggy data TOO!
+        //NO VALIDATION happens of input - but then we gain LOTS of speed, due to not comparing the same field names again and again fully
+        // 1 - means only 2 first chars are compared
+        public static int charCmpEndOffset = 0; // make this MAX. 8 chars! (backwards compat to DOS/Win )        
+
+        //quickly get if the field name matches allowed/consumed ones
+        public static Ctags.tagFields quickValueOf(String fullName) {
+            int i;
+            boolean match;
+            for (tagFields x : tagFields.values()) {
+                match = true;
+                for (i = 0; i <= charCmpEndOffset; i++) {
+                    if (x.name.charAt(i) != fullName.charAt(i)) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    return x;
+                }
+            }
+            return null;
+        }
+    }
+
     private void readTags(Definitions defs) {
+        EnumMap<tagFields, String> fields = new EnumMap<>(tagFields.class);
         try {
             do {
                 String tagLine = ctagsOut.readLine();
                 //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
-                    LOGGER.warning("Unexpected end of file!");
+                    if (!junit_testing) {
+                        LOGGER.warning("Unexpected end of file!");
+                    }
                     try {
                         int val = ctags.exitValue();
-                        LOGGER.log(Level.WARNING, "ctags exited with code: {0}", val);
+                        if (!junit_testing) {
+                            LOGGER.log(Level.WARNING, "ctags exited with code: {0}", val);
+                        }
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "Ctags problem: ", e);
                     }
@@ -265,43 +412,50 @@ public class Ctags {
                 }
                 String def = tagLine.substring(0, p);
                 int mstart = tagLine.indexOf('\t', p + 1);
-                String lnum = "-1";
-                String signature = null;
+
                 String kind = null;
-                String inher = null;
 
                 int lp = tagLine.length();
                 while ((p = tagLine.lastIndexOf('\t', lp - 1)) > 0) {
                     //log.fine(" p = " + p + " lp = " + lp);
                     String fld = tagLine.substring(p + 1, lp);
-                    //log.fine("FIELD===" + fld);
+                    //log.fine("FIELD===" + fld);                    
                     lp = p;
-                    if (fld.startsWith("line:")) {
-                        int sep = fld.indexOf(':');
-                        lnum = fld.substring(sep + 1);
-                    } else if (fld.startsWith("signature:")) {
-                        int sep = fld.indexOf(':');
-                        signature = fld.substring(sep + 1);
-                    } else if (fld.indexOf(':') < 0) {
+
+                    int sep = fld.indexOf(':');
+                    if (sep != -1) {
+                        tagFields pos = tagFields.quickValueOf(fld);
+                        if (pos != null) {
+                            String val = fld.substring(sep + 1);
+                            fields.put(pos, val);
+                        } else {
+                            //unknown field name                            
+                            //don't log on purpose, since we don't consume all possible fields, so just ignore this error for now
+//                            LOGGER.log(Level.WARNING, "Unknown field name found: {0}", fld.substring(0, sep - 1));
+                        }
+                    } else {
+                        //TODO no separator, assume this is the kind
                         kind = fld;
                         break;
-                    } else {
-                        inher = fld;
                     }
                 }
+
+                String lnum = fields.get(tagFields.LINE);
+                String signature = fields.get(tagFields.SIGNATURE);
+                String classInher = fields.get(tagFields.CLASS);
 
                 final String match;
                 int mlength = p - mstart;
                 if ((p > 0) && (mlength > MIN_METHOD_LINE_LENGTH)) {
                     if (mlength < MAX_METHOD_LINE_LENGTH) {
                         match = tagLine.substring(mstart + 3, p - 4).
-                                replace("\\/", "/").replaceAll("[ \t]+", " ");
+                                replace("\\/", "/").replaceAll("[ \t]+", " "); //TODO per format we should also recognize \r and \n and \\
                     } else {
-                        LOGGER.log(Level.FINEST, "Ctags: stripping method body for def {0} line {1}(scopes might break)", new Object[]{def, lnum});
+                        LOGGER.log(Level.FINEST, "Ctags: stripping method body for def {0} line {1}(scopes/highlight might break)", new Object[]{def, lnum});
                         match = tagLine.substring(mstart + 3, mstart + MAX_METHOD_LINE_LENGTH - 1). // +3 - 4 = -1
                                 replace("\\/", "/").replaceAll("[ \t]+", " ");
                     }
-                } else {
+                } else { //tag is in wrong format, cannot extract tagaddress from it, skip
                     continue;
                 }
 
@@ -310,8 +464,8 @@ public class Ctags {
                 final Interner<String> seenSymbols = new Interner<>();
 
                 final String type
-                        = inher == null ? kind : kind + " in " + inher;
-                addTag(defs, seenSymbols, lnum, def, type, match, inher);
+                        = classInher == null ? kind : kind + " in " + classInher;
+                addTag(defs, seenSymbols, lnum, def, type, match, classInher, signature);
                 if (signature != null) {
                     //TODO if some languages use different character for separating arguments, below needs to be adjusted
                     String[] args = signature.split(",");
@@ -326,7 +480,7 @@ public class Ctags {
                                 if (name.length() > 0) {
                                     //log.fine("Param Def = "+ string);
                                     addTag(defs, seenSymbols, lnum, name, "argument",
-                                            def.trim() + signature.trim(), null);
+                                            def.trim() + signature.trim(), null, signature);
                                     break;
                                 }
                             }
@@ -334,6 +488,7 @@ public class Ctags {
                     }
                 }
                 //log.fine("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
+                fields.clear();
             } while (true);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "CTags parsing problem: ", e);
@@ -345,13 +500,20 @@ public class Ctags {
      * Add a tag to a {@code Definitions} instance.
      */
     private void addTag(Definitions defs, Interner<String> seenSymbols,
-            String lnum, String symbol, String type, String text, String scope) {
+            String lnum, String symbol, String type, String text, String namespace, String signature) {
         // The strings are frequently repeated (a symbol can be used in
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
         // the space consumed by them (see bug #809).
-        defs.addTag(Integer.parseInt(lnum), seenSymbols.intern(symbol.trim()),
+        int lineno=0;
+        try {
+            lineno=Integer.parseInt(lnum);
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.WARNING, "CTags line number parsing problem(but I will continue with line # 0) for symbol {0}", symbol);
+        }
+        defs.addTag(lineno, seenSymbols.intern(symbol.trim()),
                 seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()),
-                scope == null ? null : seenSymbols.intern(scope.trim()));
+                namespace == null ? null : seenSymbols.intern(namespace.trim()), signature);
+        
     }
 }

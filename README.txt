@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -13,11 +13,10 @@ OpenGrok - a wicked fast source browser
 5.  OpenGrok setup
 6.  Optional Command Line Interface Usage
 7.  Change web application properties or name
-8.  OpenGrok systray
-9.  Information for developers
-10. Tuning OpenGrok for large code bases
-11. Authors
-12. Contact us
+8.  Information for developers
+9. Tuning OpenGrok for large code bases
+10. Authors
+11. Contact us
 
 
 1. Introduction
@@ -26,10 +25,9 @@ OpenGrok - a wicked fast source browser
 OpenGrok is a fast and usable source code search and cross reference
 engine, written in Java. It helps you search, cross-reference and navigate
 your source tree. It can understand various program file formats and
-version control histories like Mercurial, Git, SCCS, RCS, CVS, Subversion,
-Teamware, ClearCase, Perforce, Monotone and Bazaar.
+version control histories of many source code management systems.
 
-Offical page of the project is on:
+Official page of the project is on:
 
   http://opengrok.github.com/OpenGrok/
 
@@ -51,7 +49,7 @@ Offical page of the project is on:
         http://ant.apache.org/
       - JFlex
         http://www.jflex.de/
-      - Netbeans (optional, at least 8.0, will need Ant 1.9.4)
+      - Netbeans (optional, at least 8.2, will need Ant 1.9.4)
         http://netbeans.org/
 
 3. Usage
@@ -70,7 +68,7 @@ called DATA_ROOT.
 
 OpenGrok has a concept of Projects - one project is one directory underneath
 SRC_ROOT directory which usually contains a checkout of a project sources.
-(this can be branch, version, ...) 
+(this can be branch, version, ...)
 
 Projects effectively replace the need to have more web applications, each with
 opengrok .war file. Instead it leaves you with one indexer and one web
@@ -92,6 +90,59 @@ Each of these directories was created with 'cvs checkout' command (with
 appropriate arguments to get given branch) and will be treated by OpenGrok
 as a project.
 
+3.2 Messages
+------------
+
+Deployed OpenGrok can receive couple of messages through the active socket which
+usually listens for the main configuration file. These are used in the web
+application and displayed to the users. One can easily notify users about some
+important events, for example that the reindex is being in progress and that
+the searched information can be inconsistent.
+
+The OpenGrok comes with a tool which allows you to send these messages without
+any problem. It is called Messages and it is located under the tools directory.
+See the file for usage and more information.
+
+3.2.1 Tags
+----------
+
+Any message can use tags which makes it more specific for the application.
+Messages which tag match some OpenGrok project are considered project specific
+and the information contained in them are displayed only for the specific projects.
+
+There is a key tag "main" which is exclusive for displaying
+messages on the OpenGrok landing page - like a common information.
+
+3.2.2 Types
+-----------
+
+Currently supported message types:
+1) NormalMessage (normal)
+    This message is designed to display some information in the web application.
+    Use tags to target a specific project.
+2) AbortMessage (abort)
+    This message can delete some already published information in
+    the web application.
+    Use tags to restrict the deletion only to specific projects.
+3) StatsMessage (stats)
+    This message is designed to retrieve some information from the web application.
+
+    The purpose of the message is specified in the text field as one of:
+        - "reload"  the application reloads the statistics file
+                    and returns the loaded statistics
+        - "clean"   the application cleans its current statistics
+                    and returns the empty statistics
+        - "get"     the application returns current statistics
+4) ConfigMessage (config)
+    This message performs some configuration communication with the webapp,
+    depending on tag.
+        - "setconf" tag sends config to webapp and requires a file as an argument.
+        - "getconf" tag retrieves the configuration from the webapp.
+        - "set" tag sets particular configuration option in the webapp.
+        - "auth" tag requires "reload" text and
+                 reloads all authorization plugins.
+5) RefreshMesssage (refresh)
+    Sent at the end of partial reindex to trigger refresh of SearcherManagers.
 
 4. OpenGrok install
 -----------------
@@ -112,7 +163,7 @@ The file <package_name>.p5p you can easily use as a new publisher for the pkg co
 
 You can also update OpenGrok software with the *.p5p file by running a command
 
-  # pkg update --no-refresh -g /path/to/file/<package_name>.p5p 'pkg://<publisher>/*'
+  # pkg update --no-refresh -g /path/to/file/<package_name>.p5p 'pkg://opengrok/*'
 
 
 5. OpenGrok setup
@@ -130,7 +181,7 @@ control management (SCM) OpenGrok requires the checked out source tree under
 SRC_ROOT.
 
 By itself OpenGrok does not perform the setup of the source code repositories
-or sychronization of the source code with its origin. This needs to be done by
+or synchronization of the source code with its origin. This needs to be done by
 the user or by using automatic scripts.
 
 It is possible for SCM systems which are not distributed (Subversion, CVS)
@@ -147,7 +198,8 @@ Note that OpenGrok ignores symbolic links.
 If you want to skip indexing the history of a particular directory
 (and all of it's subdirectories), you can touch '.opengrok_skip_history' file
 at the root of that directory.
-
+If you want to disable history generation for all repositories globally, then
+set OPENGROK_GENERATE_HISTORY environment variable to "off" during indexing.
 
 5.2 Using Opengrok shell wrapper script to create indexes
 ---------------------------------------------------------
@@ -161,13 +213,13 @@ of the tasks. It has been tested on Solaris and Linux distributions.
 First please change to opengrok directory where the OpenGrok shell script is
 stored (can vary on your system).
 
-Note that now you might need to change to user which owns the target 
+Note that now you might need to change to user which owns the target
 directories for data, e.g. on Solaris you'd do:
 
   # pfexec su - webservd
   $ cd /usr/opengrok/bin
 
-and run 
+and run
 
   $ ./OpenGrok deploy
 
@@ -232,14 +284,14 @@ E.g. if opengrok data directory is /tank/opengrok and source root is
 in /tank/source then to get more verbosity run the indexer as:
 
   $ OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok \
-       ./OpenGrok index /tank/source 
+       ./OpenGrok index /tank/source
 
-Since above will also change default location of config file, beforehands(or
+Since above will also change default location of config file, beforehand(or
 restart your web container after creating this symlink) I suggest doing
 below for our case of having opengrok instance in /tank/opengrok :
 
   $ ln -s /tank/opengrok/etc/configuration.xml \
-      /var/opengrok/etc/configuration.xml 
+      /var/opengrok/etc/configuration.xml
 
 More customizations can be found inside the script, you just need to
 have a look at it, eventually create a configuration out of it and use
@@ -268,15 +320,15 @@ Thus, the overall approach would be:
 
      This will produce configuration.xml, optionally by combining the
      discovered projects with read-only configuration (as specified
-     with READ_XML_CONFIGURATION). This step has to be performed only once
-     - during the initial OpenGrok setup.
+     with OPENGROK_READ_XML_CONFIGURATION). This step has to be performed
+     only once - during the initial OpenGrok setup.
 
   2. mirror and index all projects in parallel
 
      This is done by running indexpart command of the OpenGrok script and
      specifying the configuration.xml written in previous step as
-     READ_XML_CONFIGURATION. The configuration will help the indexer to
-     discover source/data root and project to source path mapping.
+     OPENGROK_READ_XML_CONFIGURATION. The configuration will help the indexer
+     to discover source/data root and project to source path mapping.
 
   3. perform complete reindex (like in step 1)
 
@@ -299,7 +351,7 @@ logging.properties file can be easily done in a script.
 The command used in step 2 can look like this:
 
   OPENGROK_LOGGER_CONFIG_PATH=/var/opengrok/myproj.logging \
-     READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
+     OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
      OpenGrok indexpart /myproj
 
 The last argument is path relative to SRC_ROOT.
@@ -316,17 +368,17 @@ service like this:
        opengrok/srcdir="/absolute/path/to/your/sourcetree"
   # svccfg -s opengrok setprop opengrok/maxmemory="2048"
 
-Then make the service start the indexing, at this point it would be nice if 
+Then make the service start the indexing, at this point it would be nice if
 the web application is already running.
 
 Now enable the service:
 
   # svcadm enable -rs opengrok
 
-Note that this will enable tomcat6 service as dependency.
+Note that this will enable tomcat service as dependency.
 
 When the service starts indexing for first time, it's already enabled and
-depending on tomcat6, so at this point the web application should be 
+depending on tomcat, so at this point the web application should be
 already running.
 
 Note that indexing is not done when the opengrok service is disabled.
@@ -376,14 +428,19 @@ web.xml of source.war file and change them (see note1) appropriately.
     * DATA_ROOT: absolute path of the directory where OpenGrok data
                  files are stored
 
-  - Header file 'header_include' can be created under DATA_ROOT.
-    The contents of this file file will be appended to the header of each
+  - File 'header_include' can be created under DATA_ROOT.
+    The contents of this file will be appended to the header of each
     web page after the OpenGrok logo element.
-  - Footer file 'footer_include' can be created under DATA_ROOT.
-    The contents of this file file will be appended to the footer of each
+  - File 'footer_include' can be created under DATA_ROOT.
+    The contents of this file will be appended to the footer of each
     web page after the information about last index update.
-  - The body of the home page can be changed by updating index_body.html
-    under the webapp directory.
+  - The file 'body_include' can be created under DATA_ROOT.
+    The contents of this file will be inserted above the footer of the web
+    application's "Home" page.
+  - The file 'error_forbidden_include' can be created under DATA_ROOT.
+    The contents of this file will be displayed as the error page when
+    the user is forbidden to see a particular project with HTTP 403 code.
+
 
 5.4.3 - Path Descriptions (optional)
 ------------------------------------
@@ -424,13 +481,13 @@ file named source.war, you can change it as follows:
 
     * Option 1: Unzip the file to TOMCAT/webapps/source/ directory and
      change the source/WEB-INF/web.xml and other static html files like
-     index.html to customize to your project. 
-    
+     index.html to customize to your project.
+
     * Option 2: Extract the web.xml file from source.war file
 
      $ unzip source.war WEB-INF/web.xml
 
-     edit web.xml and re-package the jar file. 
+     edit web.xml and re-package the jar file.
 
      $ zip -u source.war WEB-INF/web.xml
 
@@ -440,8 +497,8 @@ file named source.war, you can change it as follows:
 
      Copy source.war to TOMCAT/webapps
 
-     When invoking OpenGrok to build the index, use -w <webapp> to set the 
-     context. If you change this(or set using OPENGROK_WEBAPP_CONTEXT) later, 
+     When invoking OpenGrok to build the index, use -w <webapp> to set the
+     context. If you change this(or set using OPENGROK_WEBAPP_CONTEXT) later,
      FULL clean reindex is needed.
 
      After the index is built, there's a couple different ways to set the
@@ -481,110 +538,14 @@ the full path to the file will be /var/opengrok/etc/ctags.config).
 Sample configuration file for Solaris code base is delivered in the doc/
 directory.
 
-5.5 Using Java DB for history cache
------------------------------------
-
-By default OpenGrok stores history indexes in gzipped xml files. An alternative
-is to use Java DB instead. This has the advantage of less disk space and
-incremental indexing. Also, for some Source Code Management systems the
-History view will show a list of files modified with given change.
-On the other hand it consumes more system memory because the database has to
-run in background.
-
-Versions of Java DB from 10.5.3 to 10.8.3.0 are known to work.
-Java DB 10.10.x.y versions are known to NOT work.
-To install it perform the following steps:
-
-Solaris 11:
-
-   # pkg install library/java/javadb
-
-Debian/Ubuntu:
-
-  # apt-get install libderby-java
-
-Other:
-
-  Fetch the db-derby bundle from db.apache.org, and unpack to your preferred path.
-
-1) Start the server:
-
-  There are two modes, having Java DB embedded, or running a Java DB server.
-  Java DB server is the default option, we will not describe how to set up the
-  embedded one.
-
-  Solaris 11:
-
-    Use one of the following methods to start the database:
-  
-    a) via SMF (preferred):
-  
-       # svcadm enable javadb
-  
-    b) from command line:
-  
-       $ mkdir -p $DATA_ROOT/derby
-       $ java -Dderby.system.home=$DATA_ROOT/derby \
-           -jar /opt/SUNWjavadb/lib/derbynet.jar start
-  
-  Debian:
-
-    $ mkdir -p $DATA_ROOT/derby
-    $ java -Dderby.system.home=$DATA_ROOT/derby \
-          -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
-
-
-2) Copy derbyclient.jar to the lib directory 
-
-  The derbyclient.jar is provided with Java DB installation.
-  The lib directory is the one where opengrok.jar is located.
-  E.g. for Tomcat it is located in the WEB-INF directory which was created
-  as a result of deploying the source.war file.
-
-Copy it over from:
-
-  Solaris 11: /opt/SUNWjavadb/lib/derbyclient.jar
-  Debian: /usr/lib/jvm/java-6-sun/db/lib/derbyclient.jar
-
-  For example on Solaris 11 with bundled Java DB and Tomcat and OpenGrok
-  installed from the OSOLopengrok package the command will be:
-
-    # cp /opt/SUNWjavadb/lib/derbyclient.jar \
-          /var/tomcat6/webapps/source/WEB-INF/lib/
-    # cp /opt/SUNWjavadb/lib/derbyclient.jar \
-          /usr/opengrok/lib
-
-3) Use these options with indexer when indexing/generating the configuration:
-   -D -H
-
-   This is achieved by setting the OPENGROK_DERBY environment variable when
-   using the OpenGrok shell script.
-
-The Java DB server has to be running during indexing and for the web
-application.
-
-Note: To use a bigger database buffer, which may improve performance of both
-indexing and fetching of history, create a file named derby.properties in
-the JavaDB data directory and add this line to it:
-
-  - If using specific data directory:
-
-    # echo "derby.storage.pageCacheSize=25000" >> \
-          $DATA_ROOT/derby/derby.properties
-
-  - Using default directory on Solaris with JavaDB being run from SMF:
-
-    # echo "derby.storage.pageCacheSize=25000" >> \
-          /var/lib/javadb/data/derby.properties
-
 5.6 Introduce own mapping for an extension to analyzer
 ------------------------------------------------------
 
 OpenGrok script doesn't support this out of box, so you'd need to add it there.
 Usually to StdInvocation() function after line -jar ${OPENGROK_JAR} .
 It would look like this:
--A cs:org.opensolaris.opengrok.analysis.PlainAnalayzer 
-(this will map extension .cs to PlainAnalyzer) 
+-A cs:org.opensolaris.opengrok.analysis.PlainAnalyzer
+(this will map extension .cs to PlainAnalyzer)
 You should even be able to override OpenGroks analyzers using this option.
 
 
@@ -640,7 +601,7 @@ Deploy the modified .war file in glassfish/Sun Java App Server:
   * Option 2: Copy the source.war file to
     GLASSFISH/domains/YOURDOMAIN/autodeploy directory, glassfish will try
     to deploy it "auto magically".
-    
+
   * Option 3: Use cli from GLASSFISH directory:
 
     # ./bin/asadmin deploy /path/to/source.war
@@ -649,36 +610,11 @@ Deploy the modified .war file in tomcat:
 
   * just copy the source.war file to TOMCAT_INSTALL/webapps directory.
 
-8. OpenGrok systray
--------------------
 
-The indexer can be setup with agent and systray GUI control application.
-This is optional step for those who wish to monitor and configure OpenGrok
-from their desktop using systray application.
-
-An example opengrok-agent.properties file is provided, which can be used when
-starting special OpenGrok Agent, where you can connect with a systray GUI
-application.
-
-To start the indexer with configuration run:
-
-  $ java -cp ./opengrok.jar org.opensolaris.opengrok.management.OGAgent \
-        --config opengrok-agent.properties
-
-Then from the remote machine one can run:
-
-  $ java -cp ./opengrok.jar \
-        org.opensolaris.opengrok.management.client.OpenGrokTrayApp
-
-assuming configuration permits remote connections (i.e. not listening on
-localhost, but rather on a physical network interface).
-
-This agent is work in progress, so it might not fully work.
-
-9. Information for developers
+8. Information for developers
 -----------------------------
 
-9.0 Building
+8.0 Building
 ------------
 
 Just run 'ant' from command line in the top-level directory or use build
@@ -688,22 +624,21 @@ Note: in case you are behind http proxy, use ANT_OPTS to download jflex, lucene
 E.g. $ ANT_OPTS="-Dhttp.proxyHost=?.? -Dhttp.proxyPort=80" ant
 
 
-9.0.1 Package build
+8.0.1 Package build
 -------------------
 
 Run 'ant package' to create package (specific for the operating system this is
 being executed on) under the dist/ directory.
 
-9.1 Unit testing
+8.1 Unit testing
 ----------------
 
-Note: For full coverage report your system has to provide proper junit test 
+Note: For full coverage report your system has to provide proper junit test
 environment, that would mean:
 
   - you have to use Ant 1.9 and above
-  - at least junit-4.12.jar has to be in ant's classpath (e.g. in ./lib)    
+  - at least junit-4.12.jar has to be in ant's classpath (e.g. in ./lib)
 
-  - install derby.jar to ant's classpath so that Java DB tests can be run
   - your PATH must contain directory with exuberant ctags binary
     - Note: make sure that the directory which contains exuberant ctags binary
       is prepended before the directory with plain ctags program.
@@ -718,11 +653,11 @@ The tests are then run as follows:
 To check if the test completed without error look for AssertionFailedError
 occurences in the TESTS-TestSuites.xml file produced by the test run.
 
-9.2 Using Findbugs
+8.2 Using Findbugs
 ------------------
 
 If you want to run Findbugs (http://findbugs.sourceforge.net/) on OpenGrok,
-you have to download Findbugs to your machine, and install it where you have 
+you have to download Findbugs to your machine, and install it where you have
 checked out your OpenGrok source code, under the lib/findbugs directory,
 like this:
 
@@ -753,7 +688,7 @@ under the lib directory):
 There is also a findbugs-xml ant target that can be used to generate XML files
 that can later be parsed, e.g. by Jenkins.
 
-9.3 Using Jacoco
+8.3 Using Jacoco
 --------------
 
 If you want to check test coverage on OpenGrok, download jacoco from
@@ -768,7 +703,7 @@ Now you should get output data in jacoco.exec
 
 Look at jacoco/index.html to see how complete your tests are.
 
-9.4 Using Checkstyle
+8.4 Using Checkstyle
 --------------------
 
 To check that your code follows the standard coding conventions,
@@ -780,13 +715,13 @@ downloaded, and create a symbolic link to it from ~/.ant/lib/checkstyle,
 e.g. like this:
 
    $ cd ~/.ant/lib
-   $ unzip ~/Desktop/checkstyle-6.8.zip
-   $ ln -s checkstyle-6.8 checkstyle
+   $ unzip ~/Desktop/checkstyle-7.6.zip
+   $ ln -s checkstyle-7.6 checkstyle
 
 You also have to create symbolic links to the jar files:
 
-   $ cd checkstyle   
-   $ ln -s checkstyle-6.8-all.jar checkstyle-all.jar
+   $ cd checkstyle
+   $ ln -s checkstyle-7.6-all.jar checkstyle-all.jar
 
 To run checkstyle on the source code, just run ant checkstyle:
 
@@ -796,22 +731,22 @@ Output from the command will be stored in the checkstyle directory.
 
 If you want to install checkstyle some other place than ~/.ant/lib, you can
 untar the .tar.gz file to a directory, and use the checkstyle.home property
-to tell ant where to find checkstyle, like this (if you have installed 
+to tell ant where to find checkstyle, like this (if you have installed
 checkstyle under the lib directory):
 
   $ ant checkstyle -Dcheckstyle.home=lib/checkstyle
 
-9.5 Using PMD and CPD
+8.5 Using PMD and CPD
 ---------------------
 
 To check the quality of the OpenGrok code you can also use PMD
-from http://pmd.sourceforge.net/.
+from https://pmd.github.io/ .
 
 How to install:
 
   $ cd ~/.ant/lib
-  $ unzip ~/Desktop/pmd-bin-5.2.3.zip
-  $ ln -s pmd-5.2.3/ pmd
+  $ unzip ~/Desktop/pmd-bin-5.5.4.zip
+  $ ln -s pmd-5.5.4/ pmd
 
 To run PMD on the source code, just run ant pmd:
 
@@ -824,7 +759,7 @@ Output from the command will be stored in the pmd subdirectory:
 
 If you want to install PMD some other place than ~/.ant/lib, you can
 unzip the .zip file to a directory, and use the pmd.home property
-to tell ant where to find PMD, like this (if you have installed 
+to tell ant where to find PMD, like this (if you have installed
 PMD under the ./ext_lib directory):
 
   $ ant pmd -Dpmd.home=ext_lib/pmd
@@ -838,19 +773,19 @@ Which will result in:
   $ ls pmd
   cpd_report.xml cpd_report.txt
 
-9.6 Using JDepend
+8.6 Using JDepend
 -----------------
 
 To see dependencies in the source code, you can use JDepend from
-http://clarkware.com/software/JDepend.html.
+https://github.com/clarkware/jdepend .
 
 How to install:
 
   $ cd ~/.ant/lib
-  $ unzip ~/Desktop/jdepend-2.9.zip
-  $ ln -s jdepend-2.9/ jdepend
+  $ unzip ~/Desktop/jdepend-2.9.1.zip
+  $ ln -s jdepend-2.9.1/ jdepend
   $ cd jdepend/lib
-  $ ln -s jdepend-2.9.jar jdepend.jar
+  $ ln -s jdepend-2.9.1.jar jdepend.jar
 
 How to analyze:
 
@@ -861,20 +796,20 @@ Output is stored in the jdepend directory:
   $ ls jdepend/
   report.txt  report.xml
 
-9.7 Using SonarQube
+8.7 Using SonarQube
 -------------------
 
-Use a sonar runner with included sonar-project.properties properties, 
+Use a sonar runner with included sonar-project.properties properties,
 e.g. using bash:
 
   $ cd <checkout_dir> # it has to contain sonar-project.properties!
   $ export SONAR_RUNNER_OPTS="-Xmx768m -XX:MaxPermSize=256m"
   $ export SERVERIP=10.163.26.78
   $ ~//Projects/sonar-runner-2.3/bin/sonar-runner \
-    -Dsonar.host.url=http://${SERVERIP}:9000 
+    -Dsonar.host.url=http://${SERVERIP}:9000
     -Dsonar.jdbc.url=jdbc:h2:tcp://${SERVERIP}:9092/sonar
 
-9.8 Using Travis CI
+8.8 Using Travis CI
 -------------------
 
 Travis depends on updated and working maven build.
@@ -883,29 +818,55 @@ you should be able to connect your Github to Travis CI.
 OpenGroks Travis is here: https://travis-ci.org/OpenGrok/OpenGrok
 
 
-10. Tuning OpenGrok for large code bases
+8.9 Maven
+------------------
+The build can now be done through Maven (https://maven.apache.org/) which takes care of the dependency management
+and setup (calls Ant for certain actions).
+
+
+8.9.1 Unit Testing
+-------------------------
+You can test the code at the moment by running `./mvn test` which will execute *all* tests.
+Conditionally, if you don't have every type of repository installed, you can set it to unit-test only those which are
+found to be working on your system.
+
+> ./mvnw test -Djunit-force-all=false
+
+You can also force a specific repository test from running through the following system property
+
+> ./mvnw test -Djunit-force-all=false -Djunit-force-git=true
+
+9. Tuning OpenGrok for large code bases
 ---------------------------------------
 
-While indexing big source repos you might consider using ZFS filesystem to give 
+9.1 Almost atomic index flip using ZFS
+---------------------------------------
+
+While indexing big source repos you might consider using ZFS filesystem to give
 you advantage of datasets which can be flipped over or cloned when needed.
-If the machine is strong enough it will also give you an option to 
+If the machine is strong enough it will also give you an option to
 incrementally index in parallel to having the current sources and index in sync.
-(So tomcat sees certain zfs datasets, then you just stop it, flip datasets to 
-the ones that were updated by SCM/index and start tomcat again - outage is 
+(So Tomcat sees certain zfs datasets, then you just stop it, flip datasets to
+the ones that were updated by SCM/index and start tomcat again - outage is
 minimal, sources+indexes are ALWAYS in sync, users see the truth)
 
-OpenGrok script by default uses 2G of heap and 16MB per thread for flush size of 
+9.2 JVM tuning
+---------------
+
+OpenGrok script by default uses 2G of heap and 16MB per thread for flush size of
 lucene docs indexing(when to flush to disk).
 It also uses default 32bit JRE.
 This MIGHT NOT be enough. You might need to consider this:
 Lucene 4.x sets indexer defaults:
+
  DEFAULT_RAM_PER_THREAD_HARD_LIMIT_MB = 1945;
  DEFAULT_MAX_THREAD_STATES = 8;
- DEFAULT_RAM_BUFFER_SIZE_MB = 16.0; 
+ DEFAULT_RAM_BUFFER_SIZE_MB = 16.0;
+
  - which might grow as big as 16GB (though DEFAULT_RAM_BUFFER_SIZE_MB shouldn't
  really allow it, but keep it around 1-2GB)
 
- - the lucenes RAM_BUFFER_SIZE_MB can be tuned now using the parameter -m, so 
+ - the lucenes RAM_BUFFER_SIZE_MB can be tuned now using the parameter -m, so
 running a 8GB 64 bit server JDK indexer with tuned docs flushing(on Solaris 11):
 
  # export JAVA=/usr/java/bin/`isainfo -k`/java
@@ -914,7 +875,7 @@ running a 8GB 64 bit server JDK indexer with tuned docs flushing(on Solaris 11):
  # OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 256" ./OpenGrok index /source
 
 Tomcat by default also supports only small deployments. For bigger ones you
-MIGHT need to increase its heap which might necessitate the switch to 64-bit 
+MIGHT need to increase its heap which might necessitate the switch to 64-bit
 Java. It will most probably be the same for other containers as well.
 For tomcat you can easily get this done by creating conf/setenv.sh:
 
@@ -930,8 +891,10 @@ For tomcat you can easily get this done by creating conf/setenv.sh:
 
  export JAVA_OPTS
 
+9.3 Tomcat/Apache tuning
+-------------------------
 
-For tomcat you might also hit a limit for http header size (we use it to send 
+For tomcat you might also hit a limit for http header size (we use it to send
 the project list when requesting search results):
  - increase(add) in conf/server.xml maxHttpHeaderSize
   connectionTimeout="20000"
@@ -945,8 +908,29 @@ The same tuning to Apache can be done with the LimitRequestLine directive:
   LimitRequestLine 65536
   LimitRequestFieldSize 65536
 
+9.4 Open File and processes hard and soft limits
+-----------------------------------
 
-11. Authors
+The initial index creation process is resource intensive and often the error
+"java.io.IOException: error=24, Too many open files" appears in the logs. To
+avoid this increase the ulimit value to a higher number.
+
+It is noted that the hard and soft limit for open files of 10240 works for mid
+sized repositories and so the recommendation is to start with 10240.
+
+If you get a similar error, but for threads:
+"java.lang.OutOfMemoryError: unable to create new native thread "
+it might be due to strict security limits and you need to increase the limits.
+
+9.5 Multi-project search speed tip
+-----------------------------------
+
+If multi-project search is performed frequently, it might be good to warm
+up file system cache after each reindex. This can be done e.g. with
+https://github.com/hoytech/vmtouch
+
+
+10. Authors
 -----------
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
@@ -959,12 +943,13 @@ Knut Anders Hatlen, Oracle. http://blogs.oracle.com/kah/
 Lubos Kosco, Oracle. http://blogs.oracle.com/taz/
 Vladimir Kotal, Oracle. http://blogs.oracle.com/vlad/
 
-12. Contact us
+11. Contact us
 --------------
 
-Feel free to participate in discussion on discuss@opengrok.java.net.
+Feel free to participate in discussion on the mailing lists:
 
-You can subscribe via web interface on:
+  opengrok-users@yahoogroups.com (user topics)
+  opengrok-dev@yahoogroups.com (developers' discussion)
 
-  http://java.net/projects/opengrok/lists
+To subscribe, send email to <mailing_list_name>-subscribe@yahoogroups.com
 

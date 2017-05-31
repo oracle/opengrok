@@ -18,11 +18,9 @@
  */
 
 /*
- * Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.php;
-
-import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -34,8 +32,9 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the {@link PhpXref} class.
@@ -51,7 +50,7 @@ public class PhpXrefTest {
         PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
         assertEquals(
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> <a href=\"/"
-                + "source/s?defs=foo\" onmouseover=\"onMouseOverSymbol('foo', 'undefined-in-file')\">foo</a> <a href=\"/source/s?defs=bar\" onmouseover=\"onMouseOverSymbol('bar', 'undefined-in-file')\">bar</a>",
+                + "source/s?defs=foo\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">foo</a> <a href=\"/source/s?defs=bar\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">bar</a>",
                 w.toString());
     }
 
@@ -62,11 +61,11 @@ public class PhpXrefTest {
         PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
         assertEquals(
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> "
-                + "<a href=\"/source/s?defs=define\" onmouseover=\"onMouseOverSymbol('define', 'undefined-in-file')\">define</a>(<span class=\"s\">\"FOO\"</span>, <span class=\"s\">'BAR<strong>\\'</strong>\"'</span>); "
-                + "$<a href=\"/source/s?defs=foo\" onmouseover=\"onMouseOverSymbol('foo', 'undefined-in-file')\">foo</a>=<span class=\"s\">'bar'</span>; "
-                + "$<a href=\"/source/s?defs=hola\" onmouseover=\"onMouseOverSymbol('hola', 'undefined-in-file')\">hola</a>=<span class=\"s\">\"ls\"</span>; "
-                + "$<a href=\"/source/s?defs=hola\" onmouseover=\"onMouseOverSymbol('hola', 'undefined-in-file')\">hola</a>=<span class=\"s\">''</span>; "
-                + "$<a href=\"/source/s?defs=hola\" onmouseover=\"onMouseOverSymbol('hola', 'undefined-in-file')\">hola</a>=<span class=\"s\">\"\"</span>;",
+                + "<a href=\"/source/s?defs=define\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">define</a>(<span class=\"s\">\"FOO\"</span>, <span class=\"s\">'BAR<strong>\\'</strong>\"'</span>); "
+                + "$<a href=\"/source/s?defs=foo\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">foo</a>=<span class=\"s\">'bar'</span>; "
+                + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">\"ls\"</span>; "
+                + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">''</span>; "
+                + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">\"\"</span>;",
                 w.toString());
     }
 

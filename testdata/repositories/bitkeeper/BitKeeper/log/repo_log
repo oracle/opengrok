@@ -1,0 +1,34 @@
+@zenyatta 1487079620.624203   0.075 bk-7.3.1ce:       "remote clone" -z0 -l = 0 xfered=1621
+@zenyatta 1487081018.165755   0.123 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF keysin=290(4) keysout=0(0)
+@zenyatta 1487081018.166913   0.124 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF
+@zenyatta 1487081022.015773   0.037 bk-7.3.1ce:       "remote push part1" -z0 = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0 keysin=290(4) keysout=0(0)
+@zenyatta 1487081022.333425   0.355 bk-7.3.1ce:       "remote push part2" -z0 = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=629
+@zenyatta 1487081049.622564   0.034 bk-7.3.1ce:       "remote clone" -z0 -l = 0 xfered=1963
+@zenyatta 1487081126.483986   0.093 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=290(4) keysout=0(0)
+@zenyatta 1487081126.492703   0.101 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@zenyatta 1487081396.795957   0.103 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF keysin=279(4) keysout=0(0)
+@zenyatta 1487081396.802375   0.110 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF
+@zenyatta 1487081399.291965   0.046 bk-7.3.1ce:       "remote push part1" -z0 = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0 keysin=279(4) keysout=0(0)
+@zenyatta 1487081399.551979   0.306 bk-7.3.1ce:       "remote push part2" -z0 = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=1504
+@reinhardt 1487081502.201164   0.076 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=280(4) keysout=78(1)
+@reinhardt 1487081502.212173   0.087 bk-7.3.1ce:         "remote changes part2" -a -n -d. = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@reinhardt 1487081506.568997   0.023 bk-7.3.1ce:       "remote pull part1" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=0
+@reinhardt 1487081506.626431   0.081 bk-7.3.1ce:       "remote pull part2" -z0 = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=1548
+@reinhardt 1487081519.276918   0.146 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=280(4) keysout=0(0)
+@reinhardt 1487081519.277588   0.147 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@reinhardt 1487081525.361691   0.008 bk-7.3.1ce:       "remote push part1" -z0 = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=0 keysin=280(4) keysout=0(0)
+@reinhardt 1487081525.535427   0.182 bk-7.3.1ce:       "remote push part2" -z0 = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=1509
+@zenyatta 1487082149.950931   0.061 bk-7.3.1ce:       "remote pull part1" = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0
+@zenyatta 1487082149.983928   0.094 bk-7.3.1ce:       "remote pull part2" -z0 -q = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=2411
+@zenyatta 1487082566.061508   0.065 bk-7.3.1ce:       "remote push part1" -z0 -q = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0 keysin=358(5) keysout=0(0)
+@zenyatta 1487082566.247705   0.251 bk-7.3.1ce:       "remote push part2" -z0 -q = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=3510
+@reinhardt 1487082614.513173   0.084 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=359(5) keysout=156(2)
+@reinhardt 1487082614.552082   0.123 bk-7.3.1ce:         "remote changes part2" -a -n -d. = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@reinhardt 1487082627.475599   0.061 bk-7.3.1ce:       "remote pull part1" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=0
+@reinhardt 1487082627.488535   0.074 bk-7.3.1ce:       "remote pull part2" -z0 -q = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=3292
+@reinhardt 1487083398.374244   0.097 bk-7.3.1ce:         "remote changes part1" -K = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs keysin=350(5) keysout=156(2)
+@reinhardt 1487083398.379307   0.102 bk-7.3.1ce:         "remote changes part2" = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs
+@reinhardt 1487083401.103395   0.043 bk-7.3.1ce:       "remote push part1" -z0 -q = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=0 keysin=350(5) keysout=156(2)
+@reinhardt 1487083401.392897   0.332 bk-7.3.1ce:       "remote push part2" -z0 -q = 0 rmtc=20170214140409+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkreinhardt|genji|zlXs xfered=5286
+@zenyatta 1487083449.334853   0.032 bk-7.3.1ce:       "remote pull part1" = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=0
+@zenyatta 1487083449.388484   0.086 bk-7.3.1ce:       "remote pull part2" -z0 -q = 0 rmtc=20170214134020+00:00|genji.dev.bluearc.com|/home/genji/workspace/bkzenyatta|genji|ZnTF xfered=10602

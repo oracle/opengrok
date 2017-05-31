@@ -18,14 +18,16 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.search;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,7 +37,9 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
+
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.history.RepositoryFactory;
 
 /**
  * Do basic testing of the SearchEngine
@@ -57,12 +61,13 @@ public class SearchEngineTest {
         env.setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
+        RepositoryFactory.setIgnored(env);
 
         if (env.validateExuberantCtags()) {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(false);
-            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null, new ArrayList<String>(), false);
+            Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null, false, false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -161,6 +166,7 @@ public class SearchEngineTest {
         }
 
         List<Hit> hits = new ArrayList<Hit>();
+
         SearchEngine instance = new SearchEngine();
         instance.setHistory("\"Add lint make target and fix lint warnings\"");
         int noHits =  instance.search();
@@ -168,6 +174,7 @@ public class SearchEngineTest {
             instance.results(0, noHits, hits);
             assertEquals(noHits, hits.size());
         }
+        instance.destroy();
 
         instance = new SearchEngine();
         instance.setSymbol("printf");
@@ -180,10 +187,10 @@ public class SearchEngineTest {
             assertEquals("main.c", hit.getFilename());
             assertEquals(1, 1);
         }
-
         instance.setFile("main.c OR Makefile");
         noHits = instance.search();
         assertEquals(8, noHits);
+        instance.destroy();
 
         instance = new SearchEngine();
         instance.setFreetext("arguments");
@@ -193,11 +200,12 @@ public class SearchEngineTest {
         instance.results(0, noHits, hits);
         for (Hit hit : hits) {
             assertEquals("main.c", hit.getFilename());
-            if (hit.getLine().indexOf("arguments") == -1) {
+            if (!hit.getLine().contains("arguments")) {
                fail("got an incorrect match: " + hit.getLine());
             }
         }
         assertEquals(8, noHits);
+        instance.destroy();
 
         instance = new SearchEngine();
         instance.setDefinition("main");
@@ -207,12 +215,23 @@ public class SearchEngineTest {
         instance.results(0, noHits, hits);
         for (Hit hit : hits) {
             assertEquals("main.c", hit.getFilename());
-            if (hit.getLine().indexOf("main") == -1) {
+            if (!hit.getLine().contains("main")) {
                fail("got an incorrect match: " + hit.getLine());
             }
         }
         assertEquals(8, noHits);
+        instance.destroy();
 
+        // negative symbol test (comments should be ignored)
+        instance = new SearchEngine();
+        instance.setSymbol("Ordinary"); 
+        instance.setFile("\"Main.java\"");
+        instance.search();
+        assertEquals("+path:\"main . java\" +refs:Ordinary",
+                     instance.getQuery());
+        assertEquals(0, instance.search());        
+        instance.destroy();
+        
         // wildcards and case sensitivity of definition search
         instance = new SearchEngine();
         instance.setDefinition("Mai*"); // definition is case sensitive
@@ -224,6 +243,7 @@ public class SearchEngineTest {
         instance.setDefinition("MaI*"); // should not match Main
         instance.search();
         assertEquals(0, instance.search());
+        instance.destroy();
 
         // wildcards and case sensitivity of symbol search
         instance = new SearchEngine();
@@ -234,16 +254,36 @@ public class SearchEngineTest {
         instance.setSymbol("MaI*"); // should not match Main
         instance.search();
         assertEquals(0, instance.search());
+        instance.destroy();
 
         // wildcards and case insensitivity of freetext search
         instance = new SearchEngine();
         instance.setFreetext("MaI*"); // should match both Main and main
         instance.setFile("\"Main.java\" OR \"main.c\"");
         assertEquals(10, instance.search());
+        instance.destroy();
 
         // file name search is case insensitive
         instance = new SearchEngine();
         instance.setFile("JaVa"); // should match java
-        assertEquals(7, instance.search());
+        assertEquals(8, instance.search());
+        instance.destroy();
+        
+        //test eol and eof        
+        instance = new SearchEngine();
+        instance.setFreetext("makeW"); 
+        assertEquals(1, instance.search());
+        instance.destroy();
+
+        instance = new SearchEngine();
+        instance.setFreetext("WeirdEOL");
+        assertEquals(1, instance.search());
+        instance.destroy();
+        
+        //test bcel jar parser
+        instance = new SearchEngine();
+        instance.setFreetext("InstConstraintVisitor");
+        assertEquals(1, instance.search());
+        instance.destroy();
     }
 }

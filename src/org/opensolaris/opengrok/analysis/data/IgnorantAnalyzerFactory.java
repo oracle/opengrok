@@ -32,13 +32,16 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
  */
 public class IgnorantAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
-        "BDF", "XPM", "PS", "AFM", "PDF"
+        "BDF", "XPM", "PS", "AFM", "PDF", "LIB", "PDB"
     };
 
     private static final String[] MAGICS = {
         "%!PS-",                // post script files
         "# PaCkAg",
         "%PDF",
+        "Microsoft C/C++ MSF ", // PDB files: https://msdn.microsoft.com/en-us/library/yd4f8bd1(vs.71).aspx
+        "!<arch>", // LIB files: https://msdn.microsoft.com/en-us/library/ba1z7822.aspx
+        
     };
 
     public IgnorantAnalyzerFactory() {

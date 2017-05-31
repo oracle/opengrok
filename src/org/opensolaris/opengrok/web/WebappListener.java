@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.nio.file.WatchService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
@@ -35,19 +36,28 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
+import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
- * Populate the Mercurial Repositories
+ * Initialize webapp context
  *
  * @author Trond Norbye
  */
 public final class WebappListener
-    implements ServletContextListener, ServletRequestListener {
+        implements ServletContextListener, ServletRequestListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
+    private static final String ENABLE_AUTHORIZATION_WATCH_DOG = "enableAuthorizationWatchDog";
+    private static final String AUTHORIZATION_PLUGIN_DIRECTORY = "authorizationPluginDirectory";
 
+    private Thread thread;
+    private WatchService watcher;
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
@@ -74,9 +84,7 @@ public final class WebappListener
                     if (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(addr)) {
                         LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread");
                     }
-                } catch (NumberFormatException ex) {
-                    LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread:", ex);
-                } catch (UnknownHostException ex) {
+                } catch (NumberFormatException | UnknownHostException ex) {
                     LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread:", ex);
                 }
             } else {
@@ -86,11 +94,45 @@ public final class WebappListener
                 }
             }
         }
+
+        try {
+            RuntimeEnvironment.getInstance().loadStatistics();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
+        } catch (ParseException ex) {
+            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
+        }
+
+        if (env.getConfiguration().getPluginDirectory() != null && env.isAuthorizationWatchdog()) {
+            RuntimeEnvironment.getInstance().startWatchDogService(new File(env.getConfiguration().getPluginDirectory()));
+        }
+
+        RuntimeEnvironment.getInstance().startIndexReopenThread();
+        RuntimeEnvironment.getInstance().startExpirationTimer();
+
+        try {
+            RuntimeEnvironment.getInstance().loadStatistics();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
+        } catch (ParseException ex) {
+            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
+        RuntimeEnvironment.getInstance().stopWatchDogService();
+        RuntimeEnvironment.getInstance().stopIndexReopenThread();
+        RuntimeEnvironment.getInstance().stopExpirationTimer();
+        try {
+            RuntimeEnvironment.getInstance().saveStatistics();
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
+        }
     }
 
     /**
@@ -99,6 +141,10 @@ public final class WebappListener
     @Override
     public void requestDestroyed(ServletRequestEvent e) {
         PageConfig.cleanup(e.getServletRequest());
+        SearchHelper sh = (SearchHelper) e.getServletRequest().getAttribute(SearchHelper.REQUEST_ATTR);
+        if (sh != null) {
+            sh.destroy();
+        }
     }
 
     /**

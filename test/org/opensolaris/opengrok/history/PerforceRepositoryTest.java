@@ -18,50 +18,58 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.util.FileUtilities;
 
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.opensolaris.opengrok.util.FileUtilities;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Do basic testing of the Perforce support
  *
  * @author Trond Norbye
  */
+@ConditionalRun(condition = RepositoryInstalled.PerforceInstalled.class)
 public class PerforceRepositoryTest {
 
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
+    
     private static boolean skip;
     private static List<File> files;
-    private static File root = new File("/export/opengrok_p4_test");
+    private static final File root = new File("/export/opengrok_p4_test");
 
     public PerforceRepositoryTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        if (!root.exists() || !(new PerforceRepository()).isWorking()) {
-            skip = true;
+        if (!root.exists()) {
+            skip=true;
             return;
         }
-        files = new ArrayList<File>();
+        files = new ArrayList<>();
+        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
         FileUtilities.getAllFiles(root, files, false);
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
-        if (skip) {
-            return;
-        }
+    public static void tearDownClass() throws Exception {        
     }
 
     @Test

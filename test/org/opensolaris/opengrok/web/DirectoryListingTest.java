@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -41,6 +41,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.RepositoryFactory;
 
 /**
  * JUnit test to test that the DirectoryListing produce the expected result
@@ -52,12 +54,18 @@ public class DirectoryListingTest {
     private SimpleDateFormat dateFormatter;
 
     class FileEntry implements Comparable {
+        String name;
+        String href;
+        long lastModified;
+        int size; // If negative, don't check it.
+
         FileEntry() {
             dateFormatter = new SimpleDateFormat("dd-MMM-yyyy");
         }
 
-        FileEntry(String name, long lastModified, int size) {
+        FileEntry(String name, String href, long lastModified, int size) {
             this.name = name;
+            this.href = href;
             this.lastModified = lastModified;
             this.size = size;
         }
@@ -83,18 +91,25 @@ public class DirectoryListingTest {
                 out.close();
             }
         }
-        String name;
-        long lastModified;
-        int size;
 
         public int compareTo(Object o) {
+            int ret = -1;
+
             if (o instanceof FileEntry) {
                 FileEntry fe = (FileEntry) o;
 
                 // @todo verify all attributes!
-                return name.compareTo(fe.name);
+                if (name.compareTo(fe.name) == 0 &&
+                    href.compareTo(fe.href) == 0) {
+                    ret = 0;
+                }
+                // Negative size is not verified.
+                if (size >= 0 && size == fe.size) {
+                    ret = 0;
+                }
             }
-            return -1;
+
+            return ret;
         }
     }
 
@@ -113,13 +128,32 @@ public class DirectoryListingTest {
     public void setUp() throws Exception {
         directory = FileUtilities.createTemporaryDirectory("directory");
 
-        entries = new FileEntry[2];
-        entries[0] = new FileEntry("foo", 0, 0);
-        entries[1] = new FileEntry("bar", Long.MAX_VALUE, 0);
+        entries = new FileEntry[3];
+        entries[0] = new FileEntry("foo.c", "foo.c", 0, 1);
+        entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0);
+        entries[2] = null;
 
         for (FileEntry entry : entries) {
-            entry.create();
+            if (entry != null) {
+                entry.create();
+            }
         }
+        // Create the entry that will be ignored separately.
+        FileEntry hgtags = new FileEntry(".hgtags", ".hgtags", 0, 1);
+        hgtags.create();
+
+        // Will test getSimplifiedPath() behavior for ignored directories.
+        // Use negative value for length so it is not checked as the return value
+        // of length() is unspecified for directories.
+        entries[2] = new FileEntry("subdir", "subdir/", 0, -1);
+        File subdir = new File(directory, "subdir");
+        subdir.mkdir();
+        File SCCSdir = new File(subdir, "SCCS");
+        SCCSdir.mkdir();
+
+        // Need to populate list of ignored entries for all repository types.
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        RepositoryFactory.setIgnored(env);
     }
 
     @After
@@ -143,6 +177,26 @@ public class DirectoryListingTest {
     }
 
     /**
+     * Get the href attribute from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a href="foo"
+     * class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;
+     *
+     * @param item
+     * @return
+     * @throws java.lang.Exception
+     */
+    private String getHref(Node item) throws Exception {
+        Node a = item.getFirstChild(); // a
+        assertNotNull(a);
+        assertEquals(Node.ELEMENT_NODE, a.getNodeType());
+
+        Node href = a.getAttributes().getNamedItem("href");
+        assertNotNull(href);
+        assertEquals(Node.ATTRIBUTE_NODE, href.getNodeType());
+
+        return href.getNodeValue();
+    }
+
+    /**
      * Get the filename from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a href="foo"
      * class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;
      *
@@ -151,12 +205,22 @@ public class DirectoryListingTest {
      * @throws java.lang.Exception
      */
     private String getFilename(Node item) throws Exception {
-        Node node = item.getFirstChild(); // a
+        Node a = item.getFirstChild(); // a
+        assertNotNull(a);
+        assertEquals(Node.ELEMENT_NODE, a.getNodeType());
+
+        Node node = a.getFirstChild();
         assertNotNull(node);
-        assertEquals(Node.ELEMENT_NODE, node.getNodeType());
-        node = node.getFirstChild();
-        assertNotNull(node);
-        assertEquals(Node.TEXT_NODE, node.getNodeType());
+        // If this is element node then it is probably a directory in which case
+        // it contains the &lt;b&gt; element.
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            node = node.getFirstChild();
+            assertNotNull(node);
+            assertEquals(Node.TEXT_NODE, node.getNodeType());
+        } else {
+            assertEquals(Node.TEXT_NODE, node.getNodeType());
+        }
+
         return node.getNodeValue();
     }
 
@@ -200,6 +264,7 @@ public class DirectoryListingTest {
         FileEntry entry = new FileEntry();
         NodeList nl = element.getElementsByTagName("td");
         int len = nl.getLength();
+        // There should be 5 columns or less in the table.
         if (len < 5) {
             return;
         }
@@ -207,10 +272,15 @@ public class DirectoryListingTest {
 
         // item(0) is a decoration placeholder, i.e. no content
         entry.name = getFilename(nl.item(1));
+        entry.href = getHref(nl.item(1));
         entry.lastModified = getLastModified(nl.item(3));
-        entry.size = getSize(nl.item(4));
+        try {
+            entry.size = getSize(nl.item(4));
+        } catch (Exception e) {
+            entry.size = -1;
+        }
 
-        // Try to look it up in the list of files
+        // Try to look it up in the list of files.
         for (int ii = 0; ii < entries.length; ++ii) {
             if (entries[ii] != null && entries[ii].compareTo(entry) == 0) {
                 entries[ii] = null;
@@ -239,7 +309,7 @@ public class DirectoryListingTest {
         assertNotNull("DocumentBuilderFactory is null", factory);
 
         DocumentBuilder builder = factory.newDocumentBuilder();
-        assertNotNull("DocumentBuilder is null", out);
+        assertNotNull("DocumentBuilder is null", builder);
 
         out.append("</start>\n");
         String str = out.toString();
@@ -248,9 +318,9 @@ public class DirectoryListingTest {
 
         NodeList nl = document.getElementsByTagName("tr");
         int len = nl.getLength();
-        // add one extra for header and one for parent directory link
+        // Add one extra for header and one for parent directory link.
         assertEquals(entries.length + 2, len);
-        // Skip the the header and parent link
+        // Skip the the header and parent link.
         for (int i = 2; i < len; ++i) {
             validateEntry((Element) nl.item(i));
         }

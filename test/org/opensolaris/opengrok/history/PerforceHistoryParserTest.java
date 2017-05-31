@@ -123,7 +123,7 @@ public class PerforceHistoryParserTest {
         assertEquals(4, result.getHistoryEntries().size());
 
         HistoryEntry e1 = result.getHistoryEntries().get(0);
-        assertEquals("4", e1.getRevision());
+        assertEquals("1234", e1.getRevision());
         assertEquals("User", e1.getAuthor());
         assertEquals(0, e1.getFiles().size());
         assertTrue(e1.getMessage().contains("number 4"));

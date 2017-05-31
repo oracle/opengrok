@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.util;
@@ -37,7 +37,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
@@ -54,6 +53,7 @@ public class Executor {
     private File workingDirectory;
     private byte[] stdout;
     private byte[] stderr;
+    private int timeout; // in seconds, 0 means no timeout
 
     /**
      * Create a new instance of the Executor.
@@ -80,6 +80,36 @@ public class Executor {
     public Executor(List<String> cmdList, File workingDirectory) {
         this.cmdList = cmdList;
         this.workingDirectory = workingDirectory;
+        this.timeout = RuntimeEnvironment.getInstance().getCommandTimeout() * 1000;
+    }
+
+    /**
+     * Create a new instance of the Executor with specific timeout value.
+     * @param cmdList A list containing the command to execute
+     * @param workingDirectory The directory the process should have as the
+     *                         working directory
+     * @param timeout If the command runs longer than the timeout (seconds),
+     *                it will be terminated. If the value is 0, no timer
+     *                will be set up.
+     */
+    public Executor(List<String> cmdList, File workingDirectory, int timeout) {
+        this.cmdList = cmdList;
+        this.workingDirectory = workingDirectory;
+        this.timeout = timeout * 1000;
+    }
+
+    /**
+     * Create a new instance of the Executor with or without timeout,
+     * @param cmdList A list containing the command to execute
+     * @param workingDirectory The directory the process should have as the
+     *                         working directory
+     * @param UseTimeout terminate the process after default timeout or not
+     */
+    public Executor(List<String> cmdList, File workingDirectory, boolean UseTimeout) {
+        this(cmdList, workingDirectory);
+        if (!UseTimeout) {
+            this.timeout = 0;
+        }
     }
 
     /**
@@ -117,6 +147,7 @@ public class Executor {
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
         final String cmd_str = processBuilder.command().toString();
         final String dir_str;
+        Timer t = null; // timer for timing out the process
 
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
@@ -164,25 +195,27 @@ public class Executor {
              * Setup timer so if the process get stuck we can terminate it and
              * make progress instead of hanging the whole indexer.
              */
-            Timer t = new Timer();
-            t.schedule(new TimerTask() {
-                @Override public void run() {
-                    LOGGER.log(Level.INFO,
-                        "Terminating process of command {0} in directory {1} " +
-                        "due to timeout {2} seconds",
-                        new Object[] {cmd_str, dir_str,
-                        RuntimeEnvironment.getInstance().getCommandTimeout()});
-                    proc.destroy();
-                }
-            }, RuntimeEnvironment.getInstance().getCommandTimeout() * 1000);
-            
+            if (this.timeout != 0) {
+                // invoking the constructor starts the background thread
+                t = new Timer();
+                t.schedule(new TimerTask() {
+                    @Override public void run() {
+                        LOGGER.log(Level.INFO,
+                            "Terminating process of command {0} in directory {1} " +
+                            "due to timeout {2} seconds",
+                            new Object[] {cmd_str, dir_str,
+                            RuntimeEnvironment.getInstance().getCommandTimeout()});
+                        proc.destroy();
+                    }
+                }, this.timeout);
+            }
+
             handler.processStream(process.getInputStream());
 
             ret = process.waitFor();
             LOGGER.log(Level.FINE,
                 "Finished command {0} in directory {1}",
                 new Object[] {cmd_str,dir_str});
-            t.cancel();
             process = null;
             thread.join();
             stderr = err.getBytes();
@@ -202,7 +235,13 @@ public class Executor {
                     ret = process.exitValue();
                 }
             } catch (IllegalThreadStateException e) {
-                process.destroy();
+                if (process != null) {
+                    process.destroy();
+                }
+            }
+            // stop timer thread if the instance exists
+            if (t != null) {
+                t.cancel();
             }
         }
 
@@ -283,9 +322,9 @@ public class Executor {
     }
 
     /**
-     * Get an inputstreamto read the output the process wrote to the error stream.
+     * Get an input stream to read the output the process wrote to the error stream.
      *
-     * @return An inputstream for reading the process error stream
+     * @return An input stream for reading the process error stream
      */
     public InputStream getErrorStream() {
         return new ByteArrayInputStream(stderr);
@@ -303,7 +342,7 @@ public class Executor {
          * process all of the input you want before returning from the function.
          *
          * @param in The InputStream containing the data
-         * @throws java.io.IOException
+         * @throws java.io.IOException if any read error
          */
         public void processStream(InputStream in) throws IOException;
     }

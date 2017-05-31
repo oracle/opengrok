@@ -77,7 +77,7 @@ import org.apache.commons.jrcs.util.ToString;
  * library.</p>
  *
  * <p>This library provides a framework in which different differencing
- * algorithms may be used.  If no algorithm is specififed, a default
+ * algorithms may be used.  If no algorithm is specified, a default
  * algorithm is used.</p>
  *
  * @version $Revision: 1.16 $ $Date: 2003/10/13 08:00:24 $
@@ -307,7 +307,7 @@ public class Diff
     /**
     * Shuffles around the items in the input sequence.
     * @param text The input sequence.
-    * @param seed A seed value for randomizing the suffle.
+    * @param seed A seed value for randomizing the shuffle.
     * @return The shuffled sequence.
     */
    public static Object[] shuffle(Object[] text, long seed)

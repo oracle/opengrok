@@ -1,8 +1,9 @@
-#tooltip {
-	position: absolute;
-	z-index: 3000;
-	border: 1px solid #111;
-	background-color: rgba(238,238,238,0.75);
-	padding: 5px;
+.ui-tooltip {
+    max-width: 100%;
+    margin-right: 10px;
+    overflow-x: auto;
 }
-#tooltip h3, #tooltip div { margin: 0; font-size: small; }
+
+.ui-tooltip dt {
+    font-weight: bold;
+}

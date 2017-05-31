@@ -115,7 +115,7 @@ CDDL HEADER END
 
                    <!-- The email address to send an email if the
                    source update fails, or a fatal error occurs while
-                   the index database is beeing updated. -->
+                   the index database is being updated. -->
                    <envvar name="ADMINISTRATOR" value="root@localhost"/>
 
                    <!-- The current version of the Mercurial log parser

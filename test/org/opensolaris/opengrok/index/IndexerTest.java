@@ -18,22 +18,22 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -51,6 +51,11 @@ import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  *
  * @author Trond Norbye
@@ -67,6 +72,7 @@ public class IndexerTest {
     public static void setUpClass() throws Exception {
         assertTrue("No point in running indexer tests without valid ctags",
                 RuntimeEnvironment.getInstance().validateExuberantCtags());
+        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
     }
 
     @AfterClass
@@ -97,8 +103,8 @@ public class IndexerTest {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(true);
-            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null,
-                false, false, false, null, null, new ArrayList<>(), false);
+            Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
+                    false, false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -113,21 +119,17 @@ public class IndexerTest {
     public void testRescanProjects() throws Exception {
         // Generate one project that will be found in source.zip, and set
         // some properties that we can verify after the rescan.
-        Project p1 = new Project();
-        p1.setPath("/java");
-        p1.setDescription("Project 1");
+        Project p1 = new Project("java", "/java");
         p1.setTabSize(3);
 
         // Generate one project that will not be found in source.zip, and that
         // should not be in the list of projects after the rescan.
-        Project p2 = new Project();
-        p2.setPath("/this_path_does_not_exist");
-        p2.setDescription("Project 2");
+        Project p2 = new Project("Project 2", "/this_path_does_not_exist");
 
         // Make the runtime environment aware of these two projects.
-        List<Project> projects = new ArrayList<>();
-        projects.add(p1);
-        projects.add(p2);
+        Map<String,Project> projects = new HashMap<>();
+        projects.put(p1.getName(), p1);
+        projects.put("nonexistent", p2);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();        
         env.setProjects(projects);
 
@@ -147,7 +149,7 @@ public class IndexerTest {
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
 
-        List<Project> newProjects = env.getProjects();
+        List<Project> newProjects = env.getProjectList();
 
         // p2 should not be in the project list anymore
         for (Project p : newProjects) {
@@ -166,8 +168,8 @@ public class IndexerTest {
 
         // The properties of p1 should be preserved
         assertEquals("project path", p1.getPath(), newP1.getPath());
-        assertEquals("project description",
-                p1.getDescription(), newP1.getDescription());
+        assertEquals("project name",
+                p1.getName(), newP1.getName());
         assertEquals("project tabsize", p1.getTabSize(), newP1.getTabSize());
     }
 
@@ -240,7 +242,7 @@ public class IndexerTest {
         }
 
         if (r != null && r.isWorking() && env.validateExuberantCtags()) {
-            Project project = new Project();
+            Project project = new Project("rfe2575");
             project.setPath("/rfe2575");
             IndexDatabase idb = new IndexDatabase(project);
             assertNotNull(idb);
@@ -290,7 +292,7 @@ public class IndexerTest {
         env.setDataRoot(repository.getDataRoot());
 
         if (env.validateExuberantCtags()) {
-            Project project = new Project();
+            Project project = new Project("bug3430");
             project.setPath("/bug3430");
             IndexDatabase idb = new IndexDatabase(project);
             assertNotNull(idb);
@@ -311,9 +313,8 @@ public class IndexerTest {
         env.setDataRoot(repository.getDataRoot());
 
         if (env.validateExuberantCtags()) {
-            Project project = new Project();
-            String ppath="bug3430";
-            project.setPath("/"+ppath);            
+            String ppath = "/bug3430";
+            Project project = new Project("bug3430", ppath);
             IndexDatabase idb = new IndexDatabase(project);
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
@@ -355,7 +356,7 @@ public class IndexerTest {
             executor.exec(true);
 
             if (env.validateExuberantCtags()) {
-                Project project = new Project();
+                Project project = new Project("testBug11896");
                 project.setPath("/testBug11896");
                 IndexDatabase idb = new IndexDatabase(project);
                 assertNotNull(idb);
@@ -370,5 +371,58 @@ public class IndexerTest {
         } else {
             System.out.println("Skipping test for bug 11896. Could not find a mkfifo in path.");
         }
+    }
+
+    /**
+     * Should include the existing project.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDefaultProjectsSingleProject() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
+                false, false, false, null, null, new ArrayList<>(), false);
+        assertEquals(1, env.getDefaultProjects().size());
+        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+                env.getDefaultProjects().stream().map((Project p) -> '/' + p.getName()).collect(Collectors.toSet()));
+    }
+
+    /**
+     * Should discard the non existing project.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDefaultProjectsNonExistent() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                new TreeSet<>(Arrays.asList(new String[]{"/lisp", "/pascal", "/perl", "/data", "/no-project-x32ds1"})),
+                null, false, false, false, null, null, new ArrayList<>(), false);
+        assertEquals(4, env.getDefaultProjects().size());
+        assertEquals(new TreeSet<>(Arrays.asList(new String[]{"/lisp", "/pascal", "/perl", "/data"})),
+                env.getDefaultProjects().stream().map((Project p) -> '/' + p.getName()).collect(Collectors.toSet()));
+    }
+
+    /**
+     * Should include all projects in the source root.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDefaultProjectsAll() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                new TreeSet<>(Arrays.asList(new String[]{"/c", "/data", "__all__", "/no-project-x32ds1"})),
+                null, false, false, false, null, null, new ArrayList<>(), false);
+        Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
+        assertEquals(projects.size(), env.getDefaultProjects().size());
+        assertEquals(projects, env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));
     }
 }

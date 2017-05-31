@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -37,18 +37,18 @@ public class CompatibleAnalyser extends Analyzer {
     protected TokenStreamComponents createComponents(String fieldName) {        
         switch (fieldName) {
             case QueryBuilder.FULL:
-                return new TokenStreamComponents(new PlainFullTokenizer());
+                return new TokenStreamComponents(new PlainFullTokenizer(FileAnalyzer.dummyReader));
             case QueryBuilder.REFS:
-                return new TokenStreamComponents(new PlainSymbolTokenizer());
+                return new TokenStreamComponents(new PlainSymbolTokenizer(FileAnalyzer.dummyReader));
             case QueryBuilder.DEFS:
-                return new TokenStreamComponents(new PlainSymbolTokenizer());
+                return new TokenStreamComponents(new PlainSymbolTokenizer(FileAnalyzer.dummyReader));
             case QueryBuilder.PATH:
             case QueryBuilder.PROJECT:
                 return new TokenStreamComponents(new PathTokenizer());
             case QueryBuilder.HIST:
                 return new HistoryAnalyzer().createComponents(fieldName);
             default:
-                return new TokenStreamComponents(new PlainFullTokenizer());
+                return new TokenStreamComponents(new PlainFullTokenizer(FileAnalyzer.dummyReader));
         }
     }
 }

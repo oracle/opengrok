@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -47,7 +47,7 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-WhiteSpace     = [ \t\f]+
+WhiteSpace     = [ \t\f\u{B}]+
 EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_@]+
 
@@ -145,10 +145,8 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
         {
-         String url = yytext();
-         out.write("<a href=\"");
-         out.write(url);out.write("\">");
-         out.write(url);out.write("</a>");}
+          appendLink(yytext());
+        }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -32,13 +32,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.w3c.dom.Document;
@@ -78,7 +76,13 @@ public class SubversionRepository extends Repository {
 
     public SubversionRepository() {
         type = "Subversion";
-        datePattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+        datePatterns = new String[]{
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        };
+
+        ignoredDirs.add(".svn");
     }
 
     private String getValue(Node node) {
@@ -162,7 +166,8 @@ public class SubversionRepository extends Repository {
      *
      * @param file The file to retrieve history for
      * @param sinceRevision the revision number immediately preceding the first
-     * revision we want, or {@code null} to fetch the entire history
+     *                      revision we want, or {@code null} to fetch the entire
+     *                      history
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, String sinceRevision) {
@@ -199,7 +204,7 @@ public class SubversionRepository extends Repository {
             cmd.add(escapeFileName(filename));
         }
 
-        return new Executor(cmd, new File(directoryName));
+        return new Executor(cmd, new File(directoryName), sinceRevision != null);
     }
 
     @Override
@@ -415,7 +420,7 @@ public class SubversionRepository extends Repository {
             result.add("--password");
             result.add(password);
         }
-        result.add("--trust-server-cert");
+
         return result;
     }
 

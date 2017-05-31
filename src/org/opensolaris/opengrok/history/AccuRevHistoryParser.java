@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -72,7 +72,10 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
          * When the path given is really just the root to the source
          * workarea, no history is available, create fake.
          */
-        if (relPath.equals("/./")) {
+        
+        String rootRelativePath = File.separator + "." + File.separator;
+        
+        if (relPath.equals(rootRelativePath)) {
 
             List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
@@ -158,7 +161,11 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
                     date = df.parse(data[2]);
                     entry.setDate(date);
                 } catch (ParseException pe) {
-                    LOGGER.log(Level.WARNING, "Could not parse date: " + line, pe);
+                    //
+                    // Overriding processStream() thus need to comply with the
+                    // set of exceptions it can throw.
+                    //
+                    throw new IOException("Could not parse date: " + line, pe);
                 }
 
             } else if (line.startsWith("  #")) {  // found comment

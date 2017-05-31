@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -33,7 +33,6 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.IteratorReader;
-import org.opensolaris.opengrok.analysis.JFlexScopeParser;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
@@ -54,6 +53,7 @@ public class PlainAnalyzer extends TextAnalyzer {
 
     /**
      * Creates a new instance of PlainAnalyzer
+     * @param factory name of factory
      */
     protected PlainAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
@@ -73,15 +73,6 @@ public class PlainAnalyzer extends TextAnalyzer {
         return ExpandTabsReader.wrap(super.getReader(stream), project);
     }
     
-    /**
-     * Create new scope parser for given file type. Default implementation is none.
-     * @param reader
-     * @return new instance of scope parser
-     */
-    protected JFlexScopeParser newScopeParser(Reader reader) {
-        return null;
-    }
-
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
@@ -90,16 +81,12 @@ public class PlainAnalyzer extends TextAnalyzer {
             defs = ctags.doCtags(fullpath + "\n");
             if (defs != null && defs.numberOfSymbols() > 0) {
                 doc.add(new TextField(QueryBuilder.DEFS, new IteratorReader(defs.getSymbols())));
-                doc.add(new TextField(QueryBuilder.REFS, getReader(src.getStream())));
+                //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+                TextField ref=new TextField(QueryBuilder.REFS,this.SymbolTokenizer);
+                this.SymbolTokenizer.setReader(getReader(src.getStream()));
+                doc.add(ref);
                 byte[] tags = defs.serialize();
-                doc.add(new StoredField(QueryBuilder.TAGS, tags));
-                
-                /*
-                 * Parse all scopes for file if we know how
-                 */
-                if (scopesEnabled) {
-                    addScopes(doc, src);
-                }
+                doc.add(new StoredField(QueryBuilder.TAGS, tags));                
             }
         }
 
@@ -107,19 +94,8 @@ public class PlainAnalyzer extends TextAnalyzer {
             try (Reader in = getReader(src.getStream())) {
                 writeXref(in, xrefOut);
             }
-        }
-    }
-    
-    private void addScopes(Document doc, StreamSource src) throws IOException {
-        JFlexScopeParser scopeParser = newScopeParser(getReader(src.getStream()));
-        if (scopeParser != null) {
-            for (Definitions.Tag tag : defs.getTags()) {
-                if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
-                    scopeParser.parse(tag, getReader(src.getStream()));
-                }
-            }
-
-            Scopes scopes = scopeParser.getScopes();
+            
+            Scopes scopes = xref.getScopes();
             if (scopes.size() > 0) {
                 byte[] scopesSerialized = scopes.serialize();
                 doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
@@ -140,6 +116,8 @@ public class PlainAnalyzer extends TextAnalyzer {
             xref.reInit(in);
         }
         xref.setDefs(defs);
+        xref.setScopesEnabled(scopesEnabled);
+        xref.setFoldingEnabled(foldingEnabled);
         xref.project = project;
         xref.write(out);
     }

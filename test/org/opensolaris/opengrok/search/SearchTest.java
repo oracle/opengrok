@@ -18,19 +18,16 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
-
+import java.util.Arrays;
+import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,8 +38,12 @@ import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.index.IndexerTest;
 import org.opensolaris.opengrok.util.TestRepository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
- * Basic testing of the Search class
+ * Basic testing of the Search class, i.e. the command line utility.
  *
  * @author Trond Norbye
  */
@@ -67,7 +68,7 @@ public class SearchTest {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(false);
-            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null,
+            Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
                     false, false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
@@ -139,7 +140,9 @@ public class SearchTest {
         if (skip) {
             return;
         }
+
         Search instance = new Search();
+
         assertFalse(instance.search());
         assertTrue(instance.parseCmdLine(new String[]{"-p", "Makefile"}));
         assertTrue(instance.search());
@@ -147,7 +150,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "main~"}));
         assertTrue(instance.search());
-        assertEquals("Search for main~ in testdata sources", 8, instance.results.size());
+        assertEquals("Search for main~ in testdata sources", 9, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main troff\"~5"}));
         assertTrue(instance.search());
@@ -155,7 +158,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "Main OR main"}));
         assertTrue(instance.search());
-        assertEquals("Search for Main OR main in testdata sources", 8, instance.results.size());
+        assertEquals("Search for Main OR main in testdata sources", 9, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main file\""}));
         assertTrue(instance.search());
@@ -163,7 +166,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "+main -file"}));
         assertTrue(instance.search());
-        assertEquals("search for main but not file", 8, instance.results.size());
+        assertEquals("search for main but not file", 9, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "main AND (file OR field)"}));
         assertTrue(instance.search());
@@ -171,11 +174,11 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "opengrok && something || else"}));
         assertTrue(instance.search());
-        assertEquals(7, instance.results.size());
+        assertEquals(9, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "op*ng?ok"}));
         assertTrue(instance.search());
-        assertEquals(6, instance.results.size());
+        assertEquals(8, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "\"op*n g?ok\""}));
         assertTrue(instance.search());
@@ -272,4 +275,26 @@ public class SearchTest {
         assertTrue(array.toString().contains("Makefile: [...]"));
         System.setOut(out);
     }
+    
+    /**
+     * Test of long line indexing/splitting for plain symbol tokenizer.
+     */
+    @Test
+    public void testJavascriptLongLine() {
+        if (skip) {
+            return;
+        }
+        
+        Search instance = new Search();
+        
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "\"beforelongline\"","-p", "\"testlong.js\""}));
+        assertTrue(instance.search());
+        assertEquals(1, instance.results.size());
+        
+        //if fix for #1170 works, below should be also in index
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "\"afterlongline\"","-p", "\"testlong.js\""}));
+        assertTrue(instance.search());
+        assertEquals(1, instance.results.size());
+    }
+    
 }

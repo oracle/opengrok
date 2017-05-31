@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -35,62 +35,115 @@ import java.util.TreeSet;
  * @author kotal
  */
 public class Scopes implements Serializable {
+
     private static final long serialVersionUID = 1191703801007779489L;
-    
+
+    /**
+     * Note: this class has a natural ordering that is inconsistent with equals.
+     */
     public static class Scope implements Serializable, Comparable<Scope> {
+
         private static final long serialVersionUID = 1191703801007779489L;
 
-        public int lineFrom;
-        public int lineTo;
-        public String name;
-        public String scope;
+        private int lineFrom;
+        private int lineTo;
+        private String name;
+        private String namespace;
+        private String signature;
 
-        public Scope(int lineFrom, int lineTo, String name, String scope) {
+        public Scope(int lineFrom, int lineTo, String name, String namespace) {
+            this(lineFrom, lineTo, name, namespace, "");
+        }
+
+        public Scope(int lineFrom, int lineTo, String name, String namespace, String signature) {
             this.lineFrom = lineFrom;
             this.lineTo = lineTo;
             this.name = name;
-            this.scope = scope;
+            this.namespace = namespace;
+            this.signature = signature;
         }
-        
+
         public Scope(int lineFrom) {
             this.lineFrom = lineFrom;
         }
-        
-        public String getName() {
-            return name; //(scope == null ? name : scope + "::" + name) + "()";
+
+        public boolean matches(int line) {
+            return line >= lineFrom && line <= lineTo;
         }
 
         @Override
         public int compareTo(Scope o) {
             return lineFrom < o.lineFrom ? -1 : lineFrom > o.lineFrom ? 1 : 0;
         }
+
+        public int getLineFrom() {
+            return lineFrom;
+        }
+
+        public void setLineFrom(int lineFrom) {
+            this.lineFrom = lineFrom;
+        }
+
+        public int getLineTo() {
+            return lineTo;
+        }
+
+        public void setLineTo(int lineTo) {
+            this.lineTo = lineTo;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public void setNamespace(String namespace) {
+            this.namespace = namespace;
+        }
+
+        public String getSignature() {
+            return signature;
+        }
+
+        public void setSignature(String signature) {
+            this.signature = signature;
+        }
     }
-    
+
     // default global scope
-    private static Scope globalScope = new Scope(0, 0, "global", null);
-    
+    public static final Scope GLOBAL_SCOPE = new Scope(0, 0, "global", null, null);
+
     // tree of scopes sorted by starting line
     private TreeSet<Scope> scopes = new TreeSet<>();
-    
-    public Scopes() {        
+
+    public Scopes() {
+        // nothing to do here
     }
-    
+
     public int size() {
         return scopes.size();
     }
-    
+
     public void addScope(Scope scope) {
         scopes.add(scope);
     }
-    
+
     public Scope getScope(int line) {
         // find closest scope that starts before or on given line
-        Scope s = scopes.lower(new Scope(line+1));        
-        return (s != null && s.lineTo >= line) ? s : globalScope;
+        Scope s = scopes.floor(new Scope(line));
+        return (s != null && s.matches(line)) ? s : GLOBAL_SCOPE;
     }
-    
+
     /**
      * Create a binary representation of this object.
+     *
      * @return a byte array representing this object
      * @throws IOException if an error happens when writing to the array
      */
@@ -101,7 +154,8 @@ public class Scopes implements Serializable {
     }
 
     /**
-     * Deserialize a binary representation of a {@code Definitions} object.
+     * De-serialize a binary representation of a {@code Definitions} object.
+     *
      * @param bytes a byte array containing the {@code Definitions} object
      * @return a {@code Definitions} object
      * @throws IOException if an I/O error happens when reading the array
@@ -112,8 +166,8 @@ public class Scopes implements Serializable {
      */
     public static Scopes deserialize(byte[] bytes)
             throws IOException, ClassNotFoundException {
-        ObjectInputStream in =
-                new ObjectInputStream(new ByteArrayInputStream(bytes));
+        ObjectInputStream in
+                = new ObjectInputStream(new ByteArrayInputStream(bytes));
         return (Scopes) in.readObject();
     }
 }

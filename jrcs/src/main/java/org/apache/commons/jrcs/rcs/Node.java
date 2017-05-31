@@ -223,7 +223,7 @@ public abstract class Node
 
     /**
      * Retrieve the branch node identified with
-     * the given numer.
+     * the given number.
      * @param no The branch number.
      * @return The branch node.
      * @see BranchNode
@@ -338,7 +338,7 @@ public abstract class Node
      * current revision and the next revision in the RCS logical hierarchy.
      * The deltas are codified in a format similar to the one used by Unix diff.</p>
      * <p> The passed string is converted to an array of objects
-     * befored being stored as the revision's text</p>
+     * before being stored as the revision's text</p>
      * @param value The revision's text.
      * @see ArchiveParser
      */
@@ -392,7 +392,7 @@ public abstract class Node
 
     /**
      * Returns the version number that should correspond to
-     * the revision folowing this node.
+     * the revision following this node.
      * @return The next version number.
      */
     public Version nextVersion()
@@ -453,7 +453,7 @@ public abstract class Node
      * identified by the given version.
      * @param vernum The version number of the last node in the path.
      * @param soft If true, no error is thrown if a node with the given
-     * version doesn't exist. Use soft=true to find a apth to where a new
+     * version doesn't exist. Use soft=true to find a path to where a new
      * node should be added.
      * @return The path
      * @throws NodeNotFoundException if a node with the given version number
@@ -483,7 +483,7 @@ public abstract class Node
      * identified by the given version.
      * @param vernum The version number of the last node in the path.
      * @param soft If true, no error is thrown if a node with the given
-     * version doesn't exist. Use soft=true to find a apth to where a new
+     * version doesn't exist. Use soft=true to find a path to where a new
      * node should be added.
      * @return The path
      * @throws NodeNotFoundException if a node with the given version number
@@ -622,7 +622,7 @@ public abstract class Node
 
 
     /**
-     * Conver the current node and all of its branches
+     * Convert the current node and all of its branches
      * to their RCS string representation and
      * add it to the given StringBuffer.
      * @param s The string buffer to add the node's image to.
@@ -633,7 +633,7 @@ public abstract class Node
     }
 
     /**
-     * Conver the current node and all of its branches
+     * Convert the current node and all of its branches
      * to their RCS string representation and
      * add it to the given StringBuffer using the given marker as
      * line separator.
@@ -697,7 +697,7 @@ public abstract class Node
 
 
     /**
-     * Conver the urrent node to its RCS string representation.
+     * Convert the current node to its RCS string representation.
      * @return The string representation
      */
     public String toText()
@@ -708,7 +708,7 @@ public abstract class Node
     }
 
     /**
-     * Conver the urrent node to its RCS string representation and
+     * Convert the current node to its RCS string representation and
      * add it to the given StringBuffer using the given marker as
      * line separator.
      * @param s The string buffer to add the node's image to.

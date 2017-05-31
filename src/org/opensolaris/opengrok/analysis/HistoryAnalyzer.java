@@ -18,13 +18,13 @@
  */
 
 /*
- * Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.StopFilter;
-import org.apache.lucene.analysis.util.CharArraySet;
+import org.apache.lucene.analysis.StopFilter;
+import org.apache.lucene.analysis.CharArraySet;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 public final class HistoryAnalyzer extends Analyzer {
@@ -58,7 +58,7 @@ public final class HistoryAnalyzer extends Analyzer {
      */
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {        
-        final PlainFullTokenizer plainfull = new PlainFullTokenizer();
+        final PlainFullTokenizer plainfull = new PlainFullTokenizer(FileAnalyzer.dummyReader);
         //we are counting position increments, this might affect the queries later and need to be in sync, especially for highlighting of results
         return new TokenStreamComponents(plainfull, new StopFilter(plainfull, stopWords));
     }

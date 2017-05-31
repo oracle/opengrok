@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -27,7 +27,6 @@ package org.opensolaris.opengrok.index;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.InetAddress;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,11 +35,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Configuration;
@@ -73,10 +75,6 @@ public final class Indexer {
     private static final String UIONLY = "uionly";
 
     private static final Indexer index = new Indexer();
-    private static final String DERBY_EMBEDDED_DRIVER
-            = "org.apache.derby.jdbc.EmbeddedDriver";
-    private static final String DERBY_CLIENT_DRIVER
-            = "org.apache.derby.jdbc.ClientDriver";
 
     public static Indexer getInstance() {
         return index;
@@ -121,11 +119,13 @@ public final class Indexer {
             String configHost = null;
             boolean addProjects = false;
             boolean refreshHistory = false;
-            String defaultProject = null;
+            Set<String> defaultProjects = new TreeSet<>();
             boolean listFiles = false;
             boolean listRepos = false;
             boolean createDict = false;
             int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
+            String host = null;
+            int port = 0;
 
             // Parse command line options:
             Getopt getopt = new Getopt(argv, cmdOptions.getCommandString());
@@ -154,9 +154,6 @@ public final class Indexer {
                 if (cfg == null) {
                     cfg = new Configuration();
                 }
-
-                String databaseDriver = cfg.getDatabaseDriver();
-                String databaseURL = cfg.getDatabaseUrl();
 
                 // Now we can handle all the other options..
                 getopt.reset();
@@ -193,7 +190,7 @@ public final class Indexer {
                                     AnalyzerGuru.addPrefix(
                                             arg[0],
                                             AnalyzerGuru.findFactory(arg[1]));
-                                } catch (Exception e) {
+                                } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                                     LOGGER.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
                                     LOGGER.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
                                     System.exit(1);
@@ -203,7 +200,7 @@ public final class Indexer {
                                     AnalyzerGuru.addExtension(
                                             arg[0],
                                             AnalyzerGuru.findFactory(arg[1]));
-                                } catch (Exception e) {
+                                } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                                     LOGGER.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
                                     LOGGER.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
                                     System.exit(1);
@@ -233,9 +230,6 @@ public final class Indexer {
                         case 'c':
                             cfg.setCtags(getopt.getOptarg());
                             break;
-                        case 'D':
-                            cfg.setHistoryCacheInDB(true);
-                            break;
                         case 'd': {
                             File dataRoot = new File(getopt.getOptarg());
                             if (!dataRoot.exists() && !dataRoot.mkdirs()) {
@@ -249,6 +243,9 @@ public final class Indexer {
                             cfg.setDataRoot(dataRoot.getCanonicalPath());
                             break;
                         }
+                        case 'D':
+                            cfg.setHandleHistoryOfRenamedFiles(false);
+                            break;
                         case 'e':
                             cfg.setGenerateHtml(false);
                             break;
@@ -266,20 +263,6 @@ public final class Indexer {
                             break;
                         case 'i':
                             cfg.getIgnoredNames().add(getopt.getOptarg());
-                            break;
-                        case 'j':
-                            databaseDriver = getopt.getOptarg();
-                            // Should be a full class name, but we also accept
-                            // the shorthands "client" and "embedded". Expand
-                            // the shorthands here.
-                            switch (databaseDriver) {
-                                case "client":
-                                    databaseDriver = DERBY_CLIENT_DRIVER;
-                                    break;
-                                case "embedded":
-                                    databaseDriver = DERBY_EMBEDDED_DRIVER;
-                                    break;
-                            }
                             break;
                         case 'K':
                             listRepos = true;
@@ -349,7 +332,7 @@ public final class Indexer {
                             addProjects = true;
                             break;
                         case 'p':
-                            defaultProject = getopt.getOptarg();
+                            defaultProjects.add(getopt.getOptarg());
                             break;
                         case 'Q':
                             if (getopt.getOptarg().equalsIgnoreCase(ON)) {
@@ -386,6 +369,7 @@ public final class Indexer {
                                 System.err.println("           \"-r dirbased\" will allow retrieval during history index "
                                         + "only for repositories which allow getting history for directories");
                                 System.err.println("           \"-r uionly\" will support remote SCM for UI only");
+                                System.exit(1);
                             }
                             break;
                         case 'S':
@@ -422,9 +406,6 @@ public final class Indexer {
                             break;
                         case 'U':
                             configHost = getopt.getOptarg();
-                            break;
-                        case 'u':
-                            databaseURL = getopt.getOptarg();
                             break;
                         case 'V':
                             System.out.println(Info.getFullVersion());
@@ -471,9 +452,30 @@ public final class Indexer {
                     }
                 }
 
+                if (configHost != null) {
+                    String[] configHostArray = configHost.split(":");
+                    if (configHostArray.length == 2) {
+                        host = configHostArray[0];
+                        try {
+                            port = Integer.parseInt(configHostArray[1]);
+                        } catch (NumberFormatException ex) {
+                            System.err.println("Failed to parse: " + configHost);
+                            System.exit(1);
+                        }
+                    } else {
+                        System.err.println("Syntax error: ");
+                        for (String s : configHostArray) {
+                            System.err.println(s);
+                        }
+                        System.exit(1);
+                    }
+                }
+
+                // Complete the configuration of repository types.
                 List<Class<? extends Repository>> repositoryClasses
                         = RepositoryFactory.getRepositoryClasses();
                 for (Class<? extends Repository> clazz : repositoryClasses) {
+                    // Set external repository binaries from System properties.
                     try {
                         Field f = clazz.getDeclaredField("CMD_PROPERTY_KEY");
                         Object key = f.get(null);
@@ -486,37 +488,13 @@ public final class Indexer {
                     }
                 }
 
-                //logging starts here
+                // Logging starts here.
                 if (cfg.isVerbose()) {
                     String fn = LoggerUtil.getFileHandlerPattern();
                     if (fn != null) {
                         System.out.println("Logging filehandler pattern: " + fn);
                     }
                 }
-
-                if (cfg.isHistoryCacheInDB()) {
-                    // The default database driver is Derby's client driver.
-                    if (databaseDriver == null) {
-                        databaseDriver = DERBY_CLIENT_DRIVER;
-                    }
-
-                    // The default URL depends on the database driver.
-                    if (databaseURL == null) {
-                        StringBuilder defaultURL = new StringBuilder();
-                        defaultURL.append("jdbc:derby:");
-                        if (databaseDriver.equals(DERBY_EMBEDDED_DRIVER)) {
-                            defaultURL.append(cfg.getDataRoot())
-                                    .append(File.separator);
-                        } else {
-                            defaultURL.append("//localhost/");
-                        }
-                        defaultURL.append("cachedb;create=true");
-                        databaseURL = defaultURL.toString();
-                    }
-                }
-
-                cfg.setDatabaseDriver(databaseDriver);
-                cfg.setDatabaseUrl(databaseURL);
 
                 // automatically allow symlinks that are directly in source root
                 String file = cfg.getSourceRoot();
@@ -549,6 +527,11 @@ public final class Indexer {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 env.setConfiguration(cfg, subFilesList);
 
+                // Let repository types to add items to ignoredNames.
+                // This changes env so is called after the setConfiguration()
+                // call above.
+                RepositoryFactory.setIgnored(env);
+
                 /*
                  * Add paths to directories under source root. If projects
                  * are enabled the path should correspond to a project because
@@ -558,7 +541,13 @@ public final class Indexer {
                  * For the check we need to have 'env' already set.
                  */
                 for (String path : subFilesList) {
-                    path = path.substring(env.getSourceRootPath().length());
+                    String srcPath = env.getSourceRootPath();
+                    if (srcPath == null) {
+                        System.err.println("Error getting source root from environment. Exiting.");
+                        System.exit(1);
+                    }
+
+                    path = path.substring(srcPath.length());
                     if (env.hasProjects()) {
                         // The paths need to correspond to a project.
                         if (Project.getProject(path) != null) {
@@ -577,16 +566,9 @@ public final class Indexer {
                     System.exit(1);
                 }
 
-                // Issue a warning when JDBC is used with renamed file handling.
-                // This causes heavy slowdown when used with JavaDB (issue #774).
-                if (env.isHandleHistoryOfRenamedFiles() && cfg.isHistoryCacheInDB()) {
-                    System.out.println("History stored in DB and renamed file "
-                            + "handling is on - possible performance degradation");
-                }
-
                 // Get history first.
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
-                        defaultProject, configFilename, refreshHistory,
+                        defaultProjects, configFilename, refreshHistory,
                         listFiles, createDict, subFiles, repositories,
                         zapCache, listRepos);
                 if (listRepos || !zapCache.isEmpty()) {
@@ -600,8 +582,15 @@ public final class Indexer {
                             progress);
                 }
 
-                // Finally send new configuration to the web application.
-                getInstance().sendToConfigHost(env, configHost);
+                // Finally ping webapp to refresh indexes in the case of partial reindex
+                // or send new configuration to the web application in the case of full reindex.
+                if (host != null) {
+                    if (!subFiles.isEmpty()) {
+                        getInstance().refreshSearcherManagers(env, subFiles, host, port);
+                    } else {
+                        getInstance().sendToConfigHost(env, host, port);
+                    }
+                }
             } catch (IndexerException ex) {
                 LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
                 System.err.println(cmdOptions.getUsage());
@@ -628,7 +617,7 @@ public final class Indexer {
     public void prepareIndexer(RuntimeEnvironment env,
             boolean searchRepositories,
             boolean addProjects,
-            String defaultProject,
+            Set<String> defaultProjects,
             String configFilename,
             boolean refreshHistory,
             boolean listFiles,
@@ -656,7 +645,9 @@ public final class Indexer {
         if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
             long start = System.currentTimeMillis();
-            HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
+            if (refreshHistory == true) {
+                HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
+            }
             long time = (System.currentTimeMillis() - start) / 1000;
             LOGGER.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
             if (listRepoPaths || !zapCache.isEmpty()) {
@@ -705,13 +696,13 @@ public final class Indexer {
 
         if (addProjects) {
             File files[] = env.getSourceRootFile().listFiles();
-            List<Project> projects = env.getProjects();
+            Map<String,Project> projects = env.getProjects();
 
             // Keep a copy of the old project list so that we can preserve
             // the customization of existing projects.
             Map<String, Project> oldProjects = new HashMap<>();
-            for (Project p : projects) {
-                oldProjects.put(p.getPath(), p);
+            for (Project p : projects.values()) {
+                oldProjects.put(p.getName(), p);
             }
 
             projects.clear();
@@ -720,46 +711,37 @@ public final class Indexer {
             for (File file : files) {
                 String name = file.getName();
                 String path = "/" + name;
-                if (oldProjects.containsKey(path)) {
+                if (oldProjects.containsKey(name)) {
                     // This is an existing object. Reuse the old project,
                     // possibly with customizations, instead of creating a
                     // new with default values.
-                    projects.add(oldProjects.get(path));
+                    projects.put(name, oldProjects.get(name));
                 } else if (!name.startsWith(".") && file.isDirectory()) {
                     // Found a new directory with no matching project, so
                     // create a new project with default properties.
-                    Project p = new Project();
-                    p.setDescription(name);
-                    p.setPath(path);
+                    Project p = new Project(name, path);
                     p.setTabSize(env.getConfiguration().getTabSize());
-                    projects.add(p);
+                    projects.put(p.getName(), p);
                 }
             }
-
-            // The projects should be sorted...
-            Collections.sort(projects, new Comparator<Project>() {
-                @Override
-                public int compare(Project p1, Project p2) {
-                    String s1 = p1.getDescription();
-                    String s2 = p2.getDescription();
-
-                    int ret;
-                    if (s1 == null) {
-                        ret = (s2 == null) ? 0 : 1;
-                    } else {
-                        ret = s1.compareTo(s2);
-                    }
-                    return ret;
-                }
-            });
         }
 
-        if (defaultProject != null) {
-            for (Project p : env.getProjects()) {
-                if (p.getPath().equals(defaultProject)) {
-                    env.setDefaultProject(p);
+        if (defaultProjects != null && !defaultProjects.isEmpty()) {
+            Set<Project> projects = new TreeSet<>();
+            for (String projectPath : defaultProjects) {
+                if (projectPath.equals("__all__")) {
+                    projects.addAll(env.getProjects().values());
                     break;
                 }
+                for (Project p : env.getProjectList()) {
+                    if (p.getPath().equals(projectPath)) {
+                        projects.add(p);
+                        break;
+                    }
+                }
+            }
+            if (!projects.isEmpty()) {
+                env.setDefaultProjects(projects);
             }
         }
 
@@ -770,15 +752,17 @@ public final class Indexer {
         }
 
         if (refreshHistory) {
-            LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
-            HistoryGuru.getInstance().createCache();
-            LOGGER.info("Done...");
-        } else if (repositories != null && !repositories.isEmpty()) {
-            LOGGER.log(Level.INFO, "Generating history cache for specified repositories ...");
-            HistoryGuru.getInstance().createCache(repositories);
-            LOGGER.info("Done...");
+            if (repositories != null && !repositories.isEmpty()) {
+                LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
+                    repositories.stream().collect(Collectors.joining(",")));
+                HistoryGuru.getInstance().createCache(repositories);
+                LOGGER.info("Done...");
+              } else {
+                  LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
+                  HistoryGuru.getInstance().createCache();
+                  LOGGER.info("Done...");
+              }
         }
-
         if (listFiles) {
             IndexDatabase.listAllFiles(subFiles);
         }
@@ -881,26 +865,25 @@ public final class Indexer {
         elapsed.report(LOGGER, "Done indexing data of all repositories");
     }
 
-    public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
-        if (configHost != null) {
-            String[] cfg = configHost.split(":");
-            LOGGER.log(Level.INFO, "Send configuration to: {0}", configHost);
-            if (cfg.length == 2) {
-                try {
-                    InetAddress host = InetAddress.getByName(cfg[0]);
-                    env.writeConfiguration(host, Integer.parseInt(cfg[1]));
-                } catch (Exception ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to send configuration to "
-                            + configHost + " (is web application server running with opengrok deployed?)", ex);
-                }
-            } else {
-                LOGGER.severe("Syntax error: ");
-                for (String s : cfg) {
-                    LOGGER.log(Level.SEVERE, "[{0}]", s);
-                }
-            }
-            LOGGER.info("Configuration update routine done, check log output for errors.");
+    public void refreshSearcherManagers(RuntimeEnvironment env, List<String> projects, String host, int port) {
+        LOGGER.log(Level.INFO, "Refreshing searcher managers to: {0}", host);
+        try {
+            env.signalTorefreshSearcherManagers(projects, host, port);
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Failed to refresh searcher managers on " + host, ex);
         }
+    }
+
+    public void sendToConfigHost(RuntimeEnvironment env, String host, int port) {
+        LOGGER.log(Level.INFO, "Sending configuration to: {0}:{1}", new Object[]{host, Integer.toString(port)});
+        try {
+            env.writeConfiguration(host, port);
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, String.format(
+                    "Failed to send configuration to %s:%d "
+                    + "(is web application server running with opengrok deployed?)", host, port), ex);
+        }
+        LOGGER.info("Configuration update routine done, check log output for errors.");
     }
 
     private Indexer() {

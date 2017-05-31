@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.analysis;
@@ -30,12 +30,14 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
 import org.opensolaris.opengrok.analysis.Definitions.Tag;
+import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
@@ -53,6 +55,14 @@ public abstract class JFlexXref {
     public Annotation annotation;
     public Project project;
     protected Definitions defs;
+    private boolean scopesEnabled = false;
+    private boolean foldingEnabled = false;
+
+    private boolean scopeOpen = false;
+    protected Scopes scopes = new Scopes();
+    protected Scope scope;
+    private int scopeLevel = 0;
+
     /**
      * EOF value returned by yylex().
      */
@@ -73,8 +83,8 @@ public abstract class JFlexXref {
      * @see #startNewLine()
      */
     protected String userPageSuffix;
-    protected Stack<Integer> stack = new Stack<Integer>();
-    protected Stack<String> stackPopString = new Stack<String>();
+    protected Stack<Integer> stack = new Stack<>();
+    protected Stack<String> stackPopString = new Stack<>();
 
     /**
      * Description of the style to use for a type of definitions.
@@ -143,15 +153,16 @@ public abstract class JFlexXref {
             if (userPageSuffix != null && userPageSuffix.length() == 0) {
                 userPageSuffix = null;
             }
-        } catch (Exception e) {
+        } catch (NoSuchFieldException | SecurityException 
+                | IllegalArgumentException | IllegalAccessException e) {
             // The auto-generated constructors for the Xref classes don't
             // expect a checked exception, so wrap it in an AssertionError.
             // This should never happen, since all the Xref classes will get
             // a public static YYEOF field from JFlex.
-            AssertionError ae = new AssertionError("Couldn't initialize yyeof");
-            ae.initCause(e);
-            throw ae; // NOPMD (stack trace is preserved by initCause(), but
-            // PMD thinks it's lost)
+                        
+            // NOPMD (stack trace is preserved by initCause(), but
+            // PMD thinks it's lost)            
+            throw new AssertionError("Couldn't initialize yyeof", e); 
         }
     }
 
@@ -173,46 +184,141 @@ public abstract class JFlexXref {
     public final void reInit(Reader reader) {
         this.yyreset(reader);
         annotation = null;
+
+        scopes = new Scopes();
+        scope = null;
+        scopeLevel = 0;
+        scopeOpen = false;
     }
 
+    /**
+     * set definitions
+     * @param defs definitions
+     */
     public void setDefs(Definitions defs) {
         this.defs = defs;
+    }
+
+    /**
+     * set scopes
+     * @param scopesEnabled if they should be enabled or disabled
+     */
+    public void setScopesEnabled(boolean scopesEnabled) {
+        this.scopesEnabled = scopesEnabled;
+    }
+
+    /**
+     * set folding of code
+     * @param foldingEnabled whether to fold or not
+     */
+    public void setFoldingEnabled(boolean foldingEnabled) {
+        this.foldingEnabled = foldingEnabled;
     }
 
     protected void appendProject() throws IOException {
         if (project != null) {
             out.write("&amp;project=");
-            out.write(project.getDescription());
+            out.write(project.getName());
         }
+    }
+
+    protected void appendLink(String url) throws IOException {
+        out.write("<a href=\"");
+        out.write(Util.formQuoteEscape(url));
+        out.write("\">");
+        Util.htmlize(url, out);
+        out.write("</a>");
     }
 
     protected String getProjectPostfix(boolean encoded) {
         String amp = encoded ? "&amp;" : "&";
-        return project == null ? "" : (amp + "project=" + project.getDescription());
+        return project == null ? "" : (amp + "project=" + project.getName());
+    }
+
+    protected void startScope() {
+        if (scopesEnabled && scope == null) {
+            int line = getLineNumber();
+            List<Tag> tags = defs.getTags(line);
+            if (tags != null) {
+                for (Tag tag : tags) {
+                    if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
+                        scope = new Scope(tag.line, tag.line, tag.symbol, tag.namespace, tag.signature);
+                        scopeLevel = 0;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    protected void incScope() {
+        if (scope != null) {
+            scopeLevel++;
+        }
+    }
+
+    protected void decScope() {
+        if (scope != null && scopeLevel > 0) {
+            scopeLevel--;
+            if (scopeLevel == 0) {
+                scope.setLineTo(getLineNumber());
+                scopes.addScope(scope);
+                scope = null;
+            }
+        }
+    }
+
+    protected void endScope() {
+        if (scope != null && scopeLevel == 0) {
+            scope.setLineTo(getLineNumber());
+            scopes.addScope(scope);
+            scope = null;
+        }
+    }
+
+    /**
+     * Get generated scopes.
+     * @return scopes for current line
+     */
+    public Scopes getScopes() {
+        return scopes;
     }
 
     /**
      * Get the next token from the scanner.
+     * @return state number (e.g. YYEOF)
+     * @throws java.io.IOException in case of any I/O prob
      */
     public abstract int yylex() throws IOException;
 
     /**
      * Reset the scanner.
+     * @param reader new reader to reinit this 
      */
     public abstract void yyreset(Reader reader);
 
     /**
      * Get the value of {@code yyline}.
+     * @return line number
      */
     protected abstract int getLineNumber();
 
     /**
      * Set the value of {@code yyline}.
+     * @param x line number
      */
     protected abstract void setLineNumber(int x);
 
+    /**
+     * start new analysis
+     * @param newState state to begin from
+     */
     public abstract void yybegin(int newState);
 
+    /**
+     * returns current state of analysis
+     * @return id of state
+     */
     public abstract int yystate();
 
     /**
@@ -228,6 +334,16 @@ public abstract class JFlexXref {
         startNewLine();
         while (yylex() != yyeof) { // NOPMD while statement intentionally empty
             // nothing to do here, yylex() will do the work
+        }
+
+        // terminate scopes
+        if (scopeOpen) {
+            out.write("</span>");
+            scopeOpen = false;
+        }
+
+        while (!stack.empty()) {
+            yypop();
         }
     }
 
@@ -258,21 +374,22 @@ public abstract class JFlexXref {
             }
         };
 
-        Map<String, SortedSet<Tag>> symbols =
-                new HashMap<String, SortedSet<Tag>>();
+        Map<String, SortedSet<Tag>> symbols
+                = new HashMap<>();
 
         for (Tag tag : defs.getTags()) {
             Style style = getStyle(tag.type);
             if (style != null && style.title != null) {
                 SortedSet<Tag> tags = symbols.get(style.name);
                 if (tags == null) {
-                    tags = new TreeSet<Tag>(cmp);
+                    tags = new TreeSet<>(cmp);
                     symbols.put(style.name, tags);
                 }
                 tags.add(tag);
             }
         }
 
+        //TODO try to get rid of included js scripts generated from here (all js should ideally be in util)
         out.append("<script type=\"text/javascript\">/* <![CDATA[ */\n");
         out.append("function get_sym_list(){return [");
 
@@ -327,16 +444,88 @@ public abstract class JFlexXref {
     }
 
     /**
+     * Generate span id for namespace based on line number, name, and signature
+     * (more functions with same name and signature can be defined in single
+     * file)
+     *
+     * @param scope Scope to generate id from
+     * @return generated span id
+     */
+    private String generateId(Scope scope) {
+        String name = Integer.toString(scope.getLineFrom()) + scope.getName()
+                + scope.getSignature();
+        int hash = name.hashCode();
+        return "scope_id_" + Integer.toHexString(hash);
+    }
+
+    /**
+     * Simple escape of html characters in raw string.
+     *
+     * @param raw Raw string
+     * @return String with escaped html characters
+     */
+    protected String htmlize(String raw) {
+        return raw.replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
+
+    /**
      * Terminate the current line and insert preamble for the next line. The
      * line count will be incremented.
      *
      * @throws IOException on error when writing the xref
      */
     protected void startNewLine() throws IOException {
+        String iconId = null;
         int line = getLineNumber() + 1;
+        boolean skipNl = false;
         setLineNumber(line);
+
+        if (scopesEnabled) {
+            startScope();
+
+            if (scopeOpen && scope == null) {
+                scopeOpen = false;
+                out.write("\n</span>");
+                skipNl = true;
+            } else if (scope != null) {
+                String scopeId = generateId(scope);
+                if (scope.getLineFrom() == line) {
+                    out.write("\n<span id='");
+                    out.write(scopeId);
+                    out.write("' class='scope-head'><span class='scope-signature'>");
+                    out.write(htmlize(scope.getName() + scope.getSignature()));
+                    out.write("</span>");
+                    iconId = scopeId + "_fold_icon";
+                    skipNl = true;
+                } else if (scope.getLineFrom() == line - 1) {
+                    if (scopeOpen) {
+                        out.write("</span>");
+                    }
+
+                    out.write("\n<span id='");
+                    out.write(scopeId);
+                    out.write("_fold' class='scope-body'>");
+                    skipNl = true;
+                }
+                scopeOpen = true;
+            }
+        }
+
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-            getProjectPostfix(false));
+                getProjectPostfix(true), skipNl);
+
+        if (foldingEnabled && scopesEnabled) {
+            if (iconId != null) {
+                out.write("<a href=\"#\" onclick='fold(this.parentNode.id)' id='");
+                out.write(iconId);
+                /* space inside span for IE support */
+                out.write("'><span class='fold-icon'>&nbsp;</span></a>");
+            } else {
+                out.write("<span class='fold-space'>&nbsp;</span>");
+            }
+        }
     }
 
     /**
@@ -370,8 +559,8 @@ public abstract class JFlexXref {
         strs[0] = "";
         String jsEscapedSymbol = symbol.replace("'", "\\'");
 
-        if (keywords != null && keywords.contains(
-                caseSensitive ? symbol : symbol.toLowerCase())) {
+        String check = caseSensitive ? symbol : symbol.toLowerCase();
+        if (keywords != null && keywords.contains( check )) {
             // This is a keyword, so we don't create a link.
             out.append("<b>").append(symbol).append("</b>");
 
@@ -389,11 +578,19 @@ public abstract class JFlexXref {
             //    do this when there's exactly one definition of the symbol in
             //    this file? Otherwise, we may end up with multiple anchors with
             //    the same name.)
-            out.append("<a class=\"");
-            out.append(style_class);
-            out.append("\" name=\"");
-            out.append(symbol);
-            out.append("\"/>");
+            //
+            //    Note: In HTML 4, the name must start with a letter, and can
+            //    only contain letters, digits, hyphens, underscores, colons,
+            //    and periods. https://www.w3.org/TR/html4/types.html#type-name
+            //    Skip the anchor if the symbol name is not a valid anchor
+            //    name. This restriction is lifted in HTML 5.
+            if (symbol.matches("[a-zA-Z][a-zA-Z0-9_:.-]*")) {
+                out.append("<a class=\"");
+                out.append(style_class);
+                out.append("\" name=\"");
+                out.append(symbol);
+                out.append("\"/>");
+            }
 
             // 2) Create a link that searches for all references to this symbol.
             out.append("<a href=\"");
@@ -403,10 +600,9 @@ public abstract class JFlexXref {
             appendProject();
             out.append("\" class=\"");
             out.append(style_class);
-            out.append("\" onmouseover=\"onMouseOverSymbol('");
-            out.append(jsEscapedSymbol);
-            out.append("', 'def')");
-            out.append("\">");
+            out.append(" intelliWindow-symbol\"");
+            out.append(" data-definition-place=\"def\"");
+            out.append(">");
             out.append(symbol);
             out.append("</a>");
 
@@ -417,12 +613,11 @@ public abstract class JFlexXref {
             // Generate a direct link to the symbol definition.
             out.append("<a class=\"");
             out.append(style_class);
-            out.append("\" href=\"#");
+            out.append(" intelliWindow-symbol\" href=\"#");
             out.append(symbol);
-            out.append("\" onmouseover=\"onMouseOverSymbol('");
-            out.append(jsEscapedSymbol);
-            out.append("', 'defined-in-file')");
-            out.append("\">");
+            out.append("\"");
+            out.append(" data-definition-place=\"defined-in-file\"");
+            out.append(">");
             out.append(symbol);
             out.append("</a>");
 
@@ -436,10 +631,10 @@ public abstract class JFlexXref {
             out.append("defs=");
             out.append(symbol);
             appendProject();
-            out.append("\" onmouseover=\"onMouseOverSymbol('");
-            out.append(jsEscapedSymbol);
-            out.append("', 'undefined-in-file')");
-            out.append("\">");
+            out.append("\"");
+            out.append(" class=\"intelliWindow-symbol\"");
+            out.append(" data-definition-place=\"undefined-in-file\"");
+            out.append(">");
             out.append(symbol);
             out.append("</a>");
         }
@@ -474,12 +669,21 @@ public abstract class JFlexXref {
         }
     }
 
+    /**
+     * save current yy state to stack
+     * @param newState state id
+     * @param popString string for the state
+     */
     public void yypush(int newState, String popString) {
         this.stack.push(yystate());
         this.stackPopString.push(popString);
         yybegin(newState);
     }
 
+    /**
+     * pop last state from stack
+     * @throws IOException in case of any I/O problem
+     */
     public void yypop() throws IOException {
         yybegin(this.stack.pop());
         String popString = this.stackPopString.pop();

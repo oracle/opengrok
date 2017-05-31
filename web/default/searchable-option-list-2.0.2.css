@@ -1,0 +1,351 @@
+@-moz-keyframes blinker {
+    0% {
+        opacity: 1.0;
+    }
+    50% {
+        opacity: 0.2;
+    }
+    100% {
+        opacity: 1.0;
+    }
+}
+
+@-webkit-keyframes blinker {
+    0% {
+        opacity: 1.0;
+    }
+    50% {
+        opacity: 0.2;
+    }
+    100% {
+        opacity: 1.0;
+    }
+}
+
+@keyframes blinker {
+    0% {
+        opacity: 1.0;
+    }
+    50% {
+        opacity: 0.2;
+    }
+    100% {
+        opacity: 1.0;
+    }
+}
+
+.sol-container * {
+    margin: 0;
+    padding: 0;
+}
+
+.sol-inner-container {
+    position: relative;
+    /*
+     * Modified 2016
+     */
+    height: 1.3em;
+    line-height: 1.3em;
+
+    border: 1px solid #ccc;
+    border-radius: 4px;
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+
+    -webkit-transition: border linear .2s, box-shadow linear .2s;
+    -moz-transition: border linear .2s, box-shadow linear .2s;
+    -o-transition: border linear .2s, box-shadow linear .2s;
+    transition: border linear .2s, box-shadow linear .2s;
+}
+
+.sol-container.sol-active .sol-inner-container {
+    z-index: 9999;
+    background: #fff;
+
+    border-color: rgba(82, 168, 236, 0.8);
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(82, 168, 236, .6);
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(82, 168, 236, .6);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(82, 168, 236, .6);
+}
+
+.sol-input-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 25px;
+}
+
+.sol-caret-container {
+    position: absolute;
+    display: inline-block;
+    width: 25px;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.sol-caret-container .sol-caret {
+    position: relative;
+    display: inline-block;
+    left: 10px;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    border-top: 4px solid #000;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+}
+
+.sol-input-container input[type="text"] {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: #555;
+    padding: 0 7px;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    /*
+     * Modified 2016
+     */
+    font-size: 16px;
+}
+
+.sol-input-container input[type="text"]:-ms-input-placeholder {
+    color: #ccc;
+
+}
+
+.sol-input-container input[type="text"]::-ms-clear {
+    display: none;
+}
+
+.sol-selection-container {
+    display: none;
+}
+
+.sol-container.sol-active .sol-selection-container {
+    display: block;
+    position: fixed;
+    left: inherit;
+    top: inherit;
+    z-index: 10000;
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: 4px;
+}
+
+.sol-active.sol-selection-top .sol-selection-container {
+    -webkit-border-bottom-left-radius: 0;
+    -moz-border-bottom-left-radius: 0;
+    border-bottom-left-radius: 0;
+
+    -webkit-box-shadow: 0 0 12px rgba(0, 0, 0, .175);
+    -moz-box-shadow: 0 0 12px rgba(0, 0, 0, .175);
+    box-shadow: 0 0 12px rgba(0, 0, 0, .175);
+}
+
+.sol-active.sol-selection-top .sol-inner-container {
+    -webkit-border-top-left-radius: 0;
+    -moz-border-top-left-radius: 0;
+    border-top-left-radius: 0;
+
+    -webkit-border-top-right-radius: 0;
+    -moz-border-top-right-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.sol-active.sol-selection-bottom .sol-selection-container {
+    -webkit-border-top-left-radius: 0;
+    -moz-border-top-left-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.sol-active.sol-selection-bottom .sol-inner-container {
+    -webkit-border-bottom-left-radius: 0;
+    -moz-border-bottom-left-radius: 0;
+    border-bottom-left-radius: 0;
+
+    -webkit-border-bottom-right-radius: 0;
+    -moz-border-bottom-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.sol-action-buttons {
+    color: #555;
+    border-bottom: 1px solid #ccc;
+    background: #eee;
+    padding: 7px 10px;
+
+    -webkit-border-top-right-radius: 4px;
+    -moz-border-top-right-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.sol-action-buttons a {
+    line-height: 1em;
+    text-decoration: none;
+    color: #0088cc;
+    border-bottom: 1px solid transparent;
+}
+
+.sol-action-buttons a:hover {
+    border-bottom: 1px solid #0088CC;
+}
+
+.sol-action-buttons .sol-select-all {
+    float: left;
+}
+
+.sol-action-buttons .sol-deselect-all {
+    float: right;
+}
+
+.sol-action-buttons .sol-clearfix {
+    clear: both;
+}
+
+.sol-selection {
+    overflow: auto;
+    position: relative;
+    min-height: 0px;
+}
+
+.sol-selection:empty {
+    display: none;
+}
+
+.sol-option {
+    /*
+     * Modified 2016
+     * padding: 5px 10px;
+     */
+    display: block;
+}
+
+.sol-label {
+    /*
+     * Modified 2016
+     */
+    padding: 3px 8px;
+    display: block;
+    position: relative;
+    font-size: 14px;
+}
+
+.sol-label-text {
+    padding-left: 20px;
+    line-height: 1.2em;
+}
+
+.sol-selection:not(.sol-keyboard-navigation) .sol-option:hover, .sol-option.keyboard-selection {
+    background: #a3b8cb;
+    color: #fff;
+}
+
+.sol-optiongroup {
+    background: #f7f7f7;
+    padding-bottom: 1px;
+}
+
+.sol-optiongroup-label {
+    color: #555;
+    background: #eee;
+    font-weight: bold;
+    margin-bottom: 5px;
+    padding: 3px 5px;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    /*
+     * Modified 2016
+     */
+    font-size: 14px;
+}
+
+.sol-optiongroup.disabled {
+    color: #999;
+}
+
+.sol-selection div:first-child.sol-optiongroup > .sol-optiongroup-label {
+    border-top: none;
+}
+
+.sol-checkbox, .sol-radio {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    margin: 0;
+    top: 4px;
+}
+
+.sol-selected-display-item,
+.sol-results-count {
+    display: inline-table;
+    border: 1px solid #ccc;
+    background: #f7f7f9;
+    font-size: 0.9em;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border-collapse: separate;
+
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+
+.sol-selected-display-item-text {
+    padding: 3px 5px;
+    display: table-cell;
+    vertical-align: top;
+}
+
+.sol-quick-delete {
+    color: #777;
+    display: table-cell;
+    font-weight: bold;
+    text-align: center;
+    padding: 3px 5px;
+    vertical-align: top;
+}
+
+.sol-quick-delete:hover {
+    color: #111;
+    cursor: pointer;
+}
+
+.sol-quick-delete + .sol-selected-display-item-text {
+    padding-left: 0;
+}
+
+.sol-filtered-search {
+    display: none;
+}
+
+.sol-no-results, .sol-loading-data {
+    padding: 5px 0 5px 0;
+    color: #999;
+    font-style: italic;
+    text-align: center;
+}
+
+.sol-loading-data {
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-iteration-count: infinite;
+
+    -moz-animation-name: blinker;
+    -moz-animation-duration: 1s;
+    -moz-animation-timing-function: linear;
+    -moz-animation-iteration-count: infinite;
+
+    animation-name: blinker;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}

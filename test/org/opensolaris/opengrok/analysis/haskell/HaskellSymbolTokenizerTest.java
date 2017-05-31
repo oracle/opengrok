@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.haskell;
 
@@ -31,7 +31,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -57,7 +56,7 @@ public class HaskellSymbolTokenizerTest {
 
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<>();
-        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.createComponents("refs").getTokenStream();        
+        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.tokenStream("refs", r);
         ts.setReader(r);        
         ts.yyreset(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
@@ -77,8 +76,7 @@ public class HaskellSymbolTokenizerTest {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "org/opensolaris/opengrok/analysis/haskell/sample.hs");
         InputStreamReader r = new InputStreamReader(res, "UTF-8");
-        String[] termsFor = getTermsFor(r);
-        LOGGER.log(Level.SEVERE, null, termsFor);
+        String[] termsFor = getTermsFor(r);        
         assertArrayEquals(
                 new String[]{
                     "qsort", // line 2

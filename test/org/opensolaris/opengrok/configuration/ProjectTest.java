@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.configuration;
@@ -29,9 +28,14 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import junit.framework.AssertionFailedError;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class ProjectTest {
@@ -53,7 +57,7 @@ public class ProjectTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XMLEncoder enc = new XMLEncoder(out);
         enc.setExceptionListener(listener);
-        Project p1 = new Project();
+        Project p1 = new Project("foo");
         enc.writeObject(p1);
         enc.close();
 
@@ -80,5 +84,53 @@ public class ProjectTest {
             afe.initCause(exceptions.getFirst());
             throw afe;
         }
+    }
+
+    /**
+     * Test project matching.
+     */
+    @Test
+    public void testGetProject() {
+        // Create 2 projects, one being prefix of the other.
+        Project foo = new Project("Project foo", "/foo");
+        Project bar = new Project("Project foo-bar", "/foo-bar");
+
+        // Make the runtime environment aware of these two projects.
+        HashMap<String,Project> projects = new HashMap<>();
+        projects.put("foo", foo);
+        projects.put("bar", bar);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setProjects(projects);
+
+        // The matching of project name to project should be exact.
+        assertEquals(foo, Project.getProject("/foo"));
+        assertEquals(bar, Project.getProject("/foo-bar"));
+        assertEquals(foo, Project.getProject("/foo/blah.c"));
+        assertEquals(bar, Project.getProject("/foo-bar/ha.c"));
+        assertNull(Project.getProject("/foof"));
+        assertNull(Project.getProject("/foof/ha.c"));
+    }
+
+    /**
+     * Test getProjectDescriptions().
+     */
+    @Test
+    public void testGetProjectDescriptions() {
+        // Create 2 projects.
+        Project foo = new Project("foo", "/foo");
+        Project bar = new Project("bar", "/bar");
+
+        // Make the runtime environment aware of these two projects.
+        HashMap<String,Project> projects = new HashMap<>();
+        projects.put("foo", foo);
+        projects.put("bar", bar);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setProjects(projects);
+
+        List<String> descs = env.getProjectDescriptions();
+        assertTrue(descs.contains("foo"));
+        assertTrue(descs.contains("bar"));
+        assertFalse(descs.contains("foobar"));
+        assertEquals(2, descs.size());
     }
 }

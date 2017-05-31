@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -29,10 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
@@ -42,6 +40,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Interner;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 /**
@@ -86,7 +85,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         }
 
         @Override
-        public void endElement(String uri, String localName, String qname) {
+        public void endElement(String uri, String localName, String qname) throws SAXException {
             String s = sb.toString();
             if ("author".equals(qname)) {
                 entry.setAuthor(s);
@@ -94,12 +93,12 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 try {
                     entry.setDate(format.parse(s));
                 } catch (ParseException ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to parse: " + s, ex);
+                    throw new SAXException("Failed to parse date: " + s, ex);
                 }
             } else if ("path".equals(qname)) {
                 /*
                  * We only want valid files in the repository, not the
-                 * top-level directory itself, hence the check for inequivality.
+                 * top-level directory itself, hence the check for inequality.
                  */
                 if (s.startsWith(prefix) && !s.equals(prefix)) {
                     File file = new File(home, s.substring(prefix.length()));
@@ -130,6 +129,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
 
     /**
      * Initialize the SAX parser instance.
+     * @throws HistoryException
      */
     private void initSaxParser() throws HistoryException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -145,13 +145,14 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
-     * @param repos Pointer to the SubversionReporitory
+     * @param repos Pointer to the SubversionRepository
      * @param sinceRevision the revision number immediately preceding the first
      * revision we want, or {@code null} to fetch the entire history
      * @return object representing the file's history
      */
     History parse(File file, SubversionRepository repos, String sinceRevision)
             throws HistoryException {
+
         initSaxParser();
         handler = new Handler(repos.getDirectoryName(), repos.reposPath,
                 RuntimeEnvironment.getInstance().getSourceRootPath().length(),
@@ -183,12 +184,12 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * @param input The output from the process
      */
     @Override
-    public void processStream(InputStream input) {
+    public void processStream(InputStream input) throws IOException {
         try {
             initSaxParser();
             saxParser.parse(new BufferedInputStream(input), handler);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "An error occurred while parsing the xml output", e);
+            throw new IOException("An error occurred while parsing the xml output", e);
         }
     }
 
@@ -200,7 +201,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * @throws IOException if we fail to parse the buffer
      */
     History parse(String buffer) throws IOException {
-        handler = new Handler("/", "", 0, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()));
+        handler = new Handler("/", "", 0, new SubversionRepository().getDateFormat());
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return new History(handler.entries);
     }

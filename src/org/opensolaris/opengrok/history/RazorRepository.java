@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 /* Portions Copyright 2008 Peter Bray */
 package org.opensolaris.opengrok.history;
@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
@@ -145,10 +144,16 @@ public class RazorRepository extends Repository {
     // The base directory of that Razor Group (.razor symlink destination)
     private String razorGroupBaseDirectoryPath;
 
+    private static String RAZOR_DIR = ".razor";
+
     public RazorRepository() {
         type = "Razor";
         working = Boolean.TRUE;
-        datePattern = "yyyy/MM/dd,hh:mm:ss";
+        datePatterns = new String[]{
+            "yyyy/MM/dd,hh:mm:ss"
+        };
+
+        ignoredDirs.add(RAZOR_DIR);
     }
 
     @Override
@@ -158,7 +163,7 @@ public class RazorRepository extends Repository {
         opengrokSourceRootDirectoryPath
                 = opengrokBaseDirectory.getParentFile().getAbsolutePath();
         razorGroupBaseDirectoryPath
-                = new File(directoryName, ".razor").getAbsolutePath();
+                = new File(directoryName, RAZOR_DIR).getAbsolutePath();
     }
 
     public String getOpengrokSourceRootDirectoryPath() {

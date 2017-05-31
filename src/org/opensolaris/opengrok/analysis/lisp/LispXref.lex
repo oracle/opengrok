@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -139,10 +139,8 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
         {
-         String url = yytext();
-         out.write("<a href=\"");
-         out.write(url);out.write("\">");
-         out.write(url);out.write("</a>");}
+          appendLink(yytext());
+        }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {

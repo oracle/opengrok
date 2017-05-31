@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -52,13 +52,14 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 
     <modules>
         <module>jrcs</module>
+        <module>plugins</module>
         <module>opengrok-indexer</module>
         <module>opengrok-web</module>
     </modules>
 
     <properties>
-	<lucene.version>5.4.1</lucene.version>
-	<mavenjavadocplugin.version>2.9.1</mavenjavadocplugin.version>
+	<lucene.version>6.5.1</lucene.version>
+	<mavenjavadocplugin.version>2.10.4</mavenjavadocplugin.version>
         <compileSource>1.8</compileSource>
         <compileTarget>1.8</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -74,7 +75,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <dependency>
                 <groupId>org.apache.bcel</groupId>
                 <artifactId>bcel</artifactId>
-                <version>5.2</version>
+                <version>6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
@@ -109,20 +110,8 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <dependency>
                 <groupId>org.apache.ant</groupId>
                 <artifactId>ant</artifactId>
-                <version>1.9.4</version>
+                <version>1.10.1</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.derby</groupId>
-                <artifactId>derby</artifactId>
-                <version>10.11.1.1</version>
-            </dependency>
-<!--
-            <dependency>
-                <groupId>org.apache.derby</groupId>
-                <artifactId>derbyclient</artifactId>
-                <version>10.10.1.1</version>
-            </dependency>
--->
         </dependencies>
     </dependencyManagement>
 
@@ -136,21 +125,21 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
                     <target>${compileTarget}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
-                <version>3.1</version>
+                <version>3.6.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>			
+                <configuration>
                         <forkCount>1</forkCount>
-                        <reuseForks>false</reuseForks>			
+                        <reuseForks>false</reuseForks>
                 </configuration>
-                <version>2.16</version>
+                <version>2.20</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.4</version>                
+                <version>0.7.9</version>
             </plugin>
 	    <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -159,7 +148,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             </plugin>
            <plugin>
             <artifactId>maven-project-info-reports-plugin</artifactId>
-            <version>2.7</version>
+            <version>2.9</version>
            </plugin>
         </plugins>
     </build>
@@ -169,7 +158,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
-                <version>2.5.3</version>
+                <version>3.0.4</version>
                 <configuration>
                     <xmlOutput>true</xmlOutput>
                     <includeFilterFile>tools/findbugs_filter.xml</includeFilterFile>
@@ -183,7 +172,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.8</version>
                 <reportSets>
                     <reportSet>
                         <reports>
@@ -203,7 +192,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-docck-plugin</artifactId>
-                <version>1.0</version>
+                <version>1.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -227,12 +216,12 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.16</version>
+                <version>2.20</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.4</version>
+                <version>2.5</version>
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
@@ -240,7 +229,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.11</version>
+                <version>2.17</version>
                 <configuration>
                     <configLocation>checkstyle/style.xml</configLocation>
                 </configuration>
@@ -255,9 +244,15 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <url>http://repo.maven.apache.org/maven2/</url>
             <layout>default</layout>
         </repository>
+        <repository>
+            <id>apache.snapshots</id>
+            <name>apache.snapshots</name>
+            <url>http://repository.apache.org/snapshots/</url>
+            <layout>default</layout>
+        </repository>
     </repositories>
 
-    <pluginRepositories>        
+    <pluginRepositories>
         <pluginRepository>
             <id>maven.org</id>
             <url>http://repo.maven.apache.org/maven2/</url>

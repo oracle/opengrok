@@ -17,40 +17,88 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
- */
+ /*
+  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+  */
 package org.opensolaris.opengrok.configuration;
 
 import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.nio.file.ClosedWatchServiceException;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
+import org.opensolaris.opengrok.authorization.AuthorizationStack;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.util.XmlEofInputStream;
+import org.opensolaris.opengrok.web.Statistics;
+import org.opensolaris.opengrok.web.Util;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static org.opensolaris.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -62,9 +110,31 @@ public final class RuntimeEnvironment {
 
     private Configuration configuration;
     private final ThreadLocal<Configuration> threadConfig;
-    private static RuntimeEnvironment instance = new RuntimeEnvironment();
+    private static final RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
     private static ExecutorService historyRenamedExecutor = null;
+    private static ExecutorService searchExecutor = null;
+
+    private final Map<Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
+    private final Map<Project, Set<Group>> project_group_map = new TreeMap<>();
+    private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
+    
+    public static final String MESSAGES_MAIN_PAGE_TAG = "main";
+    /*
+    initial capacity - default 16
+    initial load factor - default 0.75f
+    initial concurrency level - number of concurrently updating threads (default 16)
+        - just two (the timer, configuration listener) so set it to small value
+    */
+    private final ConcurrentMap<String, SortedSet<Message>> tagMessages = new ConcurrentHashMap<>(16, 0.75f, 5);
+    private int messagesInTheSystem = 0;
+
+    private Statistics statistics = new Statistics();
+
+    /**
+     * Instance of authorization framework. Allowing every request by default.
+     */
+    private AuthorizationFramework authFramework = new AuthorizationFramework(null);
 
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
@@ -75,19 +145,20 @@ public final class RuntimeEnvironment {
                 try {
                     num = Integer.valueOf(total);
                 } catch (Throwable t) {
-                    LOGGER.log(Level.WARNING, "Failed to parse the number of " +
-                        "cache threads to use for cache creation", t);
+                    LOGGER.log(Level.WARNING, "Failed to parse the number of "
+                            + "cache threads to use for cache creation", t);
                 }
             }
 
             historyExecutor = Executors.newFixedThreadPool(num,
-                new ThreadFactory() {
-                    public Thread newThread(Runnable runnable) {
-                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                        thread.setName("history-handling-" + thread.getId());
-                        return thread;
-                    }
-                });
+                    new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable runnable) {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("history-handling-" + thread.getId());
+                    return thread;
+                }
+            });
         }
 
         return historyExecutor;
@@ -102,22 +173,41 @@ public final class RuntimeEnvironment {
                 try {
                     num = Integer.valueOf(total);
                 } catch (Throwable t) {
-                    LOGGER.log(Level.WARNING, "Failed to parse the number of " +
-                        "cache threads to use for cache creation of renamed files", t);
+                    LOGGER.log(Level.WARNING, "Failed to parse the number of "
+                            + "cache threads to use for cache creation of renamed files", t);
                 }
             }
 
             historyRenamedExecutor = Executors.newFixedThreadPool(num,
-                new ThreadFactory() {
-                    public Thread newThread(Runnable runnable) {
-                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                        thread.setName("renamed-handling-" + thread.getId());
-                        return thread;
-                    }
-                });
+                    new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable runnable) {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("renamed-handling-" + thread.getId());
+                    return thread;
+                }
+            });
         }
 
         return historyRenamedExecutor;
+    }
+
+    /* Get thread pool used for multi-project searches. */
+    public synchronized ExecutorService getSearchExecutor() {
+        if (searchExecutor == null) {
+            searchExecutor = Executors.newFixedThreadPool(
+                this.getMaxSearchThreadCount(),
+                new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable runnable) {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("search-" + thread.getId());
+                    return thread;
+                }
+            });
+        }
+
+        return searchExecutor;
     }
 
     public static synchronized void freeHistoryExecutor() {
@@ -184,6 +274,30 @@ public final class RuntimeEnvironment {
 
     public void setCommandTimeout(int timeout) {
         threadConfig.get().setCommandTimeout(timeout);
+    }
+
+    public int getIndexRefreshPeriod() {
+        return threadConfig.get().getIndexRefreshPeriod();
+    }
+
+    public void setIndexRefreshPeriod(int seconds) {
+        threadConfig.get().setIndexRefreshPeriod(seconds);
+    }
+
+    public Statistics getStatistics() {
+        return statistics;
+    }
+
+    public void setStatistics(Statistics statistics) {
+        this.statistics = statistics;
+    }
+
+    public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
+        threadConfig.get().setLastEditedDisplayMode(lastEditedDisplayMode);
+    }
+
+    public boolean isLastEditedDisplayMode() {
+        return threadConfig.get().isLastEditedDisplayMode();
     }
 
     /**
@@ -266,45 +380,71 @@ public final class RuntimeEnvironment {
     public String getPathRelativeToSourceRoot(File file, int stripCount) throws IOException {
         String canonicalPath = file.getCanonicalPath();
         String sourceRoot = getSourceRootPath();
+        
+        if(sourceRoot == null){
+            throw new FileNotFoundException("Source Root Not Found");
+        }
+        
         if (canonicalPath.startsWith(sourceRoot)) {
             return canonicalPath.substring(sourceRoot.length() + stripCount);
         }
         for (String allowedSymlink : getAllowedSymlinks()) {
             String allowedTarget = new File(allowedSymlink).getCanonicalPath();
             if (canonicalPath.startsWith(allowedTarget)) {
-                return canonicalPath.substring(allowedTarget.length() +
-                        stripCount);
+                return canonicalPath.substring(allowedTarget.length()
+                        + stripCount);
             }
         }
-        throw new FileNotFoundException("Failed to resolve [" + canonicalPath +
-                "] relative to source root [" + sourceRoot + "]");
+        throw new FileNotFoundException("Failed to resolve [" + canonicalPath
+                + "] relative to source root [" + sourceRoot + "]");
     }
 
     /**
-     * Do we have projects?
+     * Do we have any projects ?
      *
      * @return true if we have projects
      */
     public boolean hasProjects() {
-        List<Project> proj = getProjects();
-        return (proj != null && !proj.isEmpty());
+        return (getProjects().size() > 0);
     }
 
     /**
-     * Get all of the projects
+     * Get list of projects.
      *
-     * @return a list containing all of the projects (may be null)
+     * @return a list containing all of the projects
      */
-    public List<Project> getProjects() {
+    public List<Project> getProjectList() {
+        return new ArrayList<Project>(threadConfig.get().getProjects().values());
+    }
+
+    /**
+     * Get project map.
+     *
+     * @return a Map with all of the projects
+     */
+    public Map<String,Project> getProjects() {
         return threadConfig.get().getProjects();
+    }
+
+    /**
+     * Get descriptions of all projects.
+     *
+     * @return a list containing descriptions of all projects.
+     */
+    public List<String> getProjectDescriptions() {
+        return getProjectList().stream().
+            map(Project::getName).collect(Collectors.toList());
     }
 
     /**
      * Set the list of the projects
      *
-     * @param projects the list of projects to use
+     * @param projects the map of projects to use
      */
-    public void setProjects(List<Project> projects) {
+    public void setProjects(Map<String,Project> projects) {
+        if (projects != null) {
+            populateGroups(getGroups(), new TreeSet<Project>(projects.values()));
+        }
         threadConfig.get().setProjects(projects);
     }
 
@@ -332,10 +472,10 @@ public final class RuntimeEnvironment {
      * @param groups the set of groups to use
      */
     public void setGroups(Set<Group> groups) {
+        populateGroups(groups, new TreeSet<Project>(getProjects().values()));
         threadConfig.get().setGroups(groups);
     }
 
-    
     /**
      * Register this thread in the thread/configuration map (so that all
      * subsequent calls to the RuntimeEnvironment from this thread will use the
@@ -346,6 +486,16 @@ public final class RuntimeEnvironment {
     public RuntimeEnvironment register() {
         threadConfig.set(configuration);
         return this;
+    }
+
+    /**
+     * Returns constructed project - repositories map.
+     *
+     * @return the map
+     * @see #generateProjectRepositoriesMap
+     */
+    public Map<Project, List<RepositoryInfo>> getProjectRepositoriesMap() {
+        return repository_map;
     }
 
     /**
@@ -400,28 +550,37 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHitsPerPage(hitsPerPage);
     }
 
+    // cache these tests instead of rerunning them for every call
+    private transient Boolean exCtagsFound;
+    private transient Boolean isUniversalCtagsVal;
+
     /**
      * Validate that I have a Exuberant ctags program I may use
      *
      * @return true if success, false otherwise
      */
     public boolean validateExuberantCtags() {
-        boolean ret = true;
-        Executor executor = new Executor(new String[]{getCtags(), "--version"});
-
-        executor.exec(false);
-        String output = executor.getOutputString();
-        if (output == null || ( output.indexOf("Exuberant Ctags") == -1 && output.indexOf("Universal Ctags") == -1 ) ) {
-            LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
-                    + "(tried running " + "{0}" + ")\n"
-                    + "Please use option -c to specify path to a good "
-                    + "Exuberant Ctags program.\n"
-                    + "Or set it in java property "
-                    + "org.opensolaris.opengrok.analysis.Ctags", getCtags());
-            ret = false;
+        if (exCtagsFound == null) {
+            Executor executor = new Executor(new String[]{getCtags(), "--version"});
+            executor.exec(false);
+            String output = executor.getOutputString();
+            boolean isUnivCtags = output!=null?output.contains("Universal Ctags"):false;
+            if (output == null || (!output.contains("Exuberant Ctags") && !isUnivCtags)) {
+                LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
+                        + "(tried running " + "{0}" + ")\n"
+                        + "Please use option -c to specify path to a good "
+                        + "Exuberant Ctags program.\n"
+                        + "Or set it in java property "
+                        + "org.opensolaris.opengrok.analysis.Ctags", getCtags());
+                exCtagsFound = false;
+            } else {
+                if (isUnivCtags) {
+                    isUniversalCtagsVal = true;
+                }
+                exCtagsFound = true;
+            }
         }
-
-        return ret;
+        return exCtagsFound;
     }
 
     /**
@@ -430,19 +589,21 @@ public final class RuntimeEnvironment {
      * @return true if we are using Universal ctags
      */
     public boolean isUniversalCtags() {
-        boolean ret = false;
-        Executor executor = new Executor(new String[]{getCtags(), "--version"});
+        if (isUniversalCtagsVal == null) {
+            isUniversalCtagsVal = false;
+            Executor executor = new Executor(new String[]{getCtags(), "--version"});
 
-        executor.exec(false);
-        String output = executor.getOutputString();
-        if (output.indexOf("Universal Ctags") != -1 ) {
-	  ret = true;
-	}
-	return ret;
+            executor.exec(false);
+            String output = executor.getOutputString();
+            if (output.contains("Universal Ctags")) {
+                isUniversalCtagsVal = true;
+            }
+        }
+        return isUniversalCtagsVal;
     }
 
     /**
-     * Get the max time a SMC operation may use to avoid beeing cached
+     * Get the max time a SMC operation may use to avoid being cached
      *
      * @return the max time
      */
@@ -476,24 +637,6 @@ public final class RuntimeEnvironment {
      */
     public void setUseHistoryCache(boolean useHistoryCache) {
         threadConfig.get().setHistoryCache(useHistoryCache);
-    }
-
-    /**
-     * Should the history cache be stored in a database instead of in XML files?
-     *
-     * @return {@code true} if the cache should be stored in a database
-     */
-    public boolean storeHistoryCacheInDB() {
-        return threadConfig.get().isHistoryCacheInDB();
-    }
-
-    /**
-     * Set whether the history cache should be stored in a database.
-     *
-     * @param store {@code true} if the cache should be stored in a database
-     */
-    public void setStoreHistoryCacheInDB(boolean store) {
-        threadConfig.get().setHistoryCacheInDB(store);
     }
 
     /**
@@ -555,25 +698,25 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set the project that is specified to be the default project to use. The
-     * default project is the project you will search (from the web application)
-     * if the page request didn't contain the cookie..
+     * Set the projects that are specified to be the default projects to use.
+     * The default projects are the projects you will search (from the web
+     * application) if the page request didn't contain the cookie..
      *
      * @param defaultProject The default project to use
      */
-    public void setDefaultProject(Project defaultProject) {
-        threadConfig.get().setDefaultProject(defaultProject);
+    public void setDefaultProjects(Set<Project> defaultProject) {
+        threadConfig.get().setDefaultProjects(defaultProject);
     }
 
     /**
-     * Get the project that is specified to be the default project to use. The
-     * default project is the project you will search (from the web application)
-     * if the page request didn't contain the cookie..
+     * Get the projects that are specified to be the default projects to use.
+     * The default projects are the projects you will search (from the web
+     * application) if the page request didn't contain the cookie..
      *
-     * @return the default project (may be null if not specified)
+     * @return the default projects (may be null if not specified)
      */
-    public Project getDefaultProject() {
-        return threadConfig.get().getDefaultProject();
+    public Set<Project> getDefaultProjects() {
+        return threadConfig.get().getDefaultProjects();
     }
 
     /**
@@ -586,13 +729,37 @@ public final class RuntimeEnvironment {
 
     /**
      * Set the size of buffer which will determine when the docs are flushed to
-     * disk. Specify size in MB please. 16MB is default
-     * note that this is per thread (lucene uses 8 threads by default in 4.x)
+     * disk. Specify size in MB please. 16MB is default note that this is per
+     * thread (lucene uses 8 threads by default in 4.x)
      *
      * @param ramBufferSize the size(in MB) when we should flush the docs
      */
     public void setRamBufferSize(double ramBufferSize) {
         threadConfig.get().setRamBufferSize(ramBufferSize);
+    }
+
+    public void setPluginDirectory(String pluginDirectory) {
+        threadConfig.get().setPluginDirectory(pluginDirectory);
+    }
+
+    public String getPluginDirectory() {
+        return threadConfig.get().getPluginDirectory();
+    }
+
+    public boolean isAuthorizationWatchdog() {
+        return threadConfig.get().isAuthorizationWatchdogEnabled();
+    }
+
+    public void setAuthorizationWatchdog(boolean authorizationWatchdogEnabled) {
+        threadConfig.get().setAuthorizationWatchdogEnabled(authorizationWatchdogEnabled);
+    }
+
+    public AuthorizationStack getPluginStack() {
+        return threadConfig.get().getPluginStack();
+    }
+
+    public void setPluginStack(AuthorizationStack pluginStack) {
+        threadConfig.get().setPluginStack(pluginStack);
     }
 
     /**
@@ -678,7 +845,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Get the client command to use to access the repository for the given
-     * fully quallified classname.
+     * fully qualified classname.
      *
      * @param clazzName name of the targeting class
      * @return {@code null} if not yet set, the client command otherwise.
@@ -689,7 +856,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Set the client command to use to access the repository for the given
-     * fully quallified classname.
+     * fully qualified classname.
      *
      * @param clazzName name of the targeting class. If {@code null} this method
      * does nothing.
@@ -857,24 +1024,16 @@ public final class RuntimeEnvironment {
         threadConfig.get().setScopesEnabled(scopesEnabled);
     }
 
+    public boolean isFoldingEnabled() {
+        return threadConfig.get().isFoldingEnabled();
+    }
+
+    public void setFoldingEnabled(boolean foldingEnabled) {
+        threadConfig.get().setFoldingEnabled(foldingEnabled);
+    }
+
     public Date getDateForLastIndexRun() {
         return threadConfig.get().getDateForLastIndexRun();
-    }
-
-    public String getDatabaseDriver() {
-        return threadConfig.get().getDatabaseDriver();
-    }
-
-    public void setDatabaseDriver(String databaseDriver) {
-        threadConfig.get().setDatabaseDriver(databaseDriver);
-    }
-
-    public String getDatabaseUrl() {
-        return threadConfig.get().getDatabaseUrl();
-    }
-
-    public void setDatabaseUrl(String databaseUrl) {
-        threadConfig.get().setDatabaseUrl(databaseUrl);
     }
 
     public String getCTagsExtraOptionsFile() {
@@ -895,6 +1054,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Return whether e-mail addresses should be obfuscated in the xref.
+     * @return if we obfuscate emails
      */
     public boolean isObfuscatingEMailAddresses() {
         return threadConfig.get().isObfuscatingEMailAddresses();
@@ -902,6 +1062,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Set whether e-mail addresses should be obfuscated in the xref.
+     * @param obfuscate should we obfuscate emails?
      */
     public void setObfuscatingEMailAddresses(boolean obfuscate) {
         threadConfig.get().setObfuscatingEMailAddresses(obfuscate);
@@ -943,6 +1104,34 @@ public final class RuntimeEnvironment {
         return threadConfig.get().isHandleHistoryOfRenamedFiles();
     }
 
+    public void setRevisionMessageCollapseThreshold(int threshold) {
+        threadConfig.get().setRevisionMessageCollapseThreshold(threshold);
+    }
+
+    public int getRevisionMessageCollapseThreshold() {
+        return threadConfig.get().getRevisionMessageCollapseThreshold();
+    }
+
+    public void setMaxSearchThreadCount(int count) {
+        threadConfig.get().setMaxSearchThreadCount(count);
+    }
+
+    public int getMaxSearchThreadCount() {
+        return threadConfig.get().getMaxSearchThreadCount();
+    }
+
+    public int getCurrentIndexedCollapseThreshold() {
+        return threadConfig.get().getCurrentIndexedCollapseThreshold();
+    }
+
+    public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
+        threadConfig.get().getCurrentIndexedCollapseThreshold();
+    }
+
+    public int getGroupsCollapseThreshold() {
+        return threadConfig.get().getGroupsCollapseThreshold();
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *
@@ -970,34 +1159,424 @@ public final class RuntimeEnvironment {
      * @param port the port to use on the host
      * @throws IOException if an error occurs
      */
-    public void writeConfiguration(InetAddress host, int port) throws IOException {
-        try (Socket sock = new Socket(host, port);
-                XMLEncoder e = new XMLEncoder(sock.getOutputStream())) {
-            e.writeObject(threadConfig.get());
+    public void writeConfiguration(String host, int port) throws IOException {
+        Message m = Message.createMessage("config");
+        m.addTag("setconf");
+        m.addTag("reindex");
+        m.setText(configuration.getXMLRepresentationAsString());
+        try {
+            m.validate();
+        } catch (Exception ex) {
+            throw new IOException(ex);
         }
+        m.write(host, port);
+    }
+
+    public void writeConfiguration(InetAddress hostAddr, int port) throws IOException {
+        writeConfiguration(hostAddr.getHostAddress(), port);
     }
 
     protected void writeConfiguration() throws IOException {
         writeConfiguration(configServerSocket.getInetAddress(), configServerSocket.getLocalPort());
     }
 
+    /**
+     * Send message to webapp to refresh SearcherManagers for given projects.
+     * This is used for partial reindex.
+     *
+     * @param subFiles list of directories to refresh corresponding SearcherManagers
+     * @param host the host address to receive the configuration
+     * @param port the port to use on the host
+     * @throws IOException if an error occurs
+     */
+    public void signalTorefreshSearcherManagers(List<String> subFiles, String host, int port) throws IOException {
+        Message m = Message.createMessage("refresh");
+        for (String proj : subFiles) {
+            // subFile entries start with path separator so get basename
+            // to convert them to project names.
+            m.addTag(new File(proj).getName());
+        }
+        m.write(host, port);
+    }
+
+    /**
+     * Generate a TreeMap of projects with corresponding repository information.
+     *
+     * Project with some repository information is considered as a repository
+     * otherwise it is just a simple project.
+     */
+    private void generateProjectRepositoriesMap() throws IOException {
+        repository_map.clear();
+        for (RepositoryInfo r : getRepositories()) {
+            Project proj;
+            String repoPath;
+
+            repoPath = getPathRelativeToSourceRoot(
+                    new File(r.getDirectoryName()), 0);
+
+            if ((proj = Project.getProject(repoPath)) != null) {
+                List<RepositoryInfo> values = repository_map.get(proj);
+                if (values == null) {
+                    values = new ArrayList<>();
+                    repository_map.put(proj, values);
+                }
+                values.add(r);
+            }
+        }
+    }
+
+    /**
+     * Classifies projects and puts them in their groups.
+     */
+    private void populateGroups(Set<Group> groups, Set<Project> projects) {
+        if (projects == null || groups == null) {
+            return;
+        }
+        for (Project project : projects) {
+            // filterProjects only groups which match project's description
+            Set<Group> copy = new TreeSet<>(groups);
+            copy.removeIf(new Predicate<Group>() {
+                @Override
+                public boolean test(Group g) {
+                    return !g.match(project);
+                }
+            });
+
+            // add project to the groups
+            for (Group group : copy) {
+                if (repository_map.get(project) == null) {
+                    group.addProject(project);
+                } else {
+                    group.addRepository(project);
+                }
+                project.addGroup(group);
+            }
+        }
+    }
+
+    /**
+     * Sets the configuration and performs necessary actions.
+     *
+     * Mainly it classifies the projects in their groups and generates project -
+     * repositories map
+     *
+     * @param configuration what configuration to use
+     */
     public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-        register();
-        HistoryGuru.getInstance().invalidateRepositories(
-            configuration.getRepositories());
+        setConfiguration(configuration, null);
     }
 
     public void setConfiguration(Configuration configuration, List<String> subFileList) {
         this.configuration = configuration;
         register();
-        HistoryGuru.getInstance().invalidateRepositories(
-            configuration.getRepositories(), subFileList);
+        try {
+            generateProjectRepositoriesMap();
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
+        }
+        populateGroups(getGroups(), new TreeSet<Project>(getProjects().values()));
+        if (subFileList != null) {
+            HistoryGuru.getInstance().invalidateRepositories(
+                configuration.getRepositories(), subFileList);
+        } else {
+            HistoryGuru.getInstance().invalidateRepositories(
+                configuration.getRepositories());
+        }
     }
 
     public Configuration getConfiguration() {
         return this.threadConfig.get();
     }
+
+    private Timer expirationTimer;
+
+    private static SortedSet<Message> emptyMessageSet(SortedSet<Message> toRet) {
+        return toRet == null ? new TreeSet<>() : toRet;
+    }
+
+    /**
+     * Get the default set of messages for the main tag.
+     *
+     * @return set of messages
+     */
+    public SortedSet<Message> getMessages() {
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+        return emptyMessageSet(tagMessages.get(MESSAGES_MAIN_PAGE_TAG));
+    }
+
+    /**
+     * Get the set of messages for the arbitrary tag
+     *
+     * @param tag the message tag
+     * @return set of messages
+     */
+    public SortedSet<Message> getMessages(String tag) {
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+        return emptyMessageSet(tagMessages.get(tag));
+    }
+
+    /**
+     * Add a message to the application.
+     * Also schedules a expiration timer to remove this message after its expiration.
+     *
+     * @param m the message
+     */
+    public void addMessage(Message m) {
+        if (!canAcceptMessage(m)) {
+            return;
+        }
+
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+
+        boolean added = false;
+        for (String tag : m.getTags()) {
+            if (!tagMessages.containsKey(tag)) {
+                tagMessages.put(tag, new ConcurrentSkipListSet<>());
+            }
+            if (tagMessages.get(tag).add(m)) {
+                messagesInTheSystem++;
+                added = true;
+            }
+        }
+
+        if (added) {
+            if (expirationTimer != null) {
+                expirationTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        expireMessages();
+                    }
+                }, new Date(m.getExpiration().getTime() + 10));
+            }
+        }
+    }
+
+    /**
+     * Immediately remove all messages in the application.
+     */
+    public void removeAllMessages() {
+        tagMessages.clear();
+        messagesInTheSystem = 0;
+    }
+
+    /**
+     * Remove all messages containing at least on of the tags.
+     *
+     * @param tags set of tags
+     */
+    public void removeAnyMessage(Set<String> tags) {
+        removeAnyMessage(new Predicate<Message>() {
+            @Override
+            public boolean test(Message t) {
+                return t.hasAny(tags);
+            }
+        });
+    }
+
+    /**
+     * Remove messages which have expired.
+     */
+    private void expireMessages() {
+        removeAnyMessage(new Predicate<Message>() {
+            @Override
+            public boolean test(Message t) {
+                return t.isExpired();
+            }
+        });
+    }
+
+    /**
+     * Generic function to remove any message according to the result of the
+     * predicate.
+     *
+     * @param predicate the testing predicate
+     */
+    private void removeAnyMessage(Predicate<Message> predicate) {
+        int size;
+        for (Map.Entry<String, SortedSet<Message>> set : tagMessages.entrySet()) {
+            size = set.getValue().size();
+            set.getValue().removeIf(predicate);
+            messagesInTheSystem -= size - set.getValue().size();
+        }
+
+        tagMessages.entrySet().removeIf(new Predicate<Map.Entry<String, SortedSet<Message>>>() {
+            @Override
+            public boolean test(Map.Entry<String, SortedSet<Message>> t) {
+                return t.getValue().isEmpty();
+            }
+        });
+    }
+
+    /**
+     * Test if the application can receive this messages.
+     *
+     * @param m the message
+     * @return true if it can
+     */
+    public boolean canAcceptMessage(Message m) {
+        return messagesInTheSystem < getMessageLimit() && !m.isExpired();
+    }
+
+    /**
+     * Get the maximum number of messages in the application
+     *
+     * @see #getMessagesInTheSystem()
+     * @return the number
+     */
+    public int getMessageLimit() {
+        return threadConfig.get().getMessageLimit();
+    }
+
+    /**
+     * Set the maximum number of messages in the application
+     *
+     * @see #getMessagesInTheSystem()
+     * @param limit the new limit
+     */
+    public void setMessageLimit(int limit) {
+        threadConfig.get().setMessageLimit(limit);
+    }
+
+    /**
+     * Return number of messages present in the hash map.
+     *
+     * DISCLAIMER: This is not the real number of unique messages in the
+     * application because the same message is duplicated for all of the tags in
+     * the map.
+     *
+     * This is just a cheap counter to indicate how many messages are stored in
+     * total under different tags.
+     *
+     * Also one can bypass the counter by not calling
+     * {@link #addMessage(Message)}
+     *
+     * @return number of messages
+     */
+    public int getMessagesInTheSystem() {
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+        return messagesInTheSystem;
+    }
+
+    /**
+     * Dump statistics in JSON format into the file specified in configuration.
+     *
+     * @throws IOException
+     */
+    public void saveStatistics() throws IOException {
+        if (getConfiguration().getStatisticsFilePath() == null) {
+            throw new FileNotFoundException("Statistics file is not set (null)");
+        }
+        saveStatistics(new File(getConfiguration().getStatisticsFilePath()));
+    }
+
+    /**
+     * Dump statistics in JSON format into a file.
+     *
+     * @param out the output file
+     * @throws IOException
+     */
+    public void saveStatistics(File out) throws IOException {
+        if (out == null) {
+            throw new FileNotFoundException("Statistics file is not set (null)");
+        }
+        try (FileOutputStream ofstream = new FileOutputStream(out)) {
+            saveStatistics(ofstream);
+        }
+    }
+
+    /**
+     * Dump statistics in JSON format into an output stream.
+     *
+     * @param out the output stream
+     * @throws IOException
+     */
+    public void saveStatistics(OutputStream out) throws IOException {
+        out.write(Util.statisticToJson(getStatistics()).toJSONString().getBytes());
+    }
+
+    /**
+     * Load statistics from JSON file specified in configuration.
+     *
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void loadStatistics() throws IOException, ParseException {
+        if (getConfiguration().getStatisticsFilePath() == null) {
+            throw new FileNotFoundException("Statistics file is not set (null)");
+        }
+        loadStatistics(new File(getConfiguration().getStatisticsFilePath()));
+    }
+
+    /**
+     * Load statistics from JSON file.
+     *
+     * @param in the file with json
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void loadStatistics(File in) throws IOException, ParseException {
+        if (in == null) {
+            throw new FileNotFoundException("Statistics file is not set (null)");
+        }
+        try (FileInputStream ifstream = new FileInputStream(in)) {
+            loadStatistics(ifstream);
+        }
+    }
+
+    /**
+     * Load statistics from an input stream.
+     *
+     * @param in the file with json
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void loadStatistics(InputStream in) throws IOException, ParseException {
+        try (InputStreamReader iReader = new InputStreamReader(in)) {
+            JSONParser jsonParser = new JSONParser();
+            setStatistics(Util.jsonToStatistics((JSONObject) jsonParser.parse(iReader)));
+        }
+    }
+
+    /**
+     * Return the current plugin version tracked by the authorization framework.
+     *
+     * @return the version
+     * @see AuthorizationFramework#getPluginVersion()
+     */
+    public int getPluginVersion() {
+        return authFramework.getPluginVersion();
+    }
+
+    /**
+     * Return the authorization framework used in this environment.
+     *
+     * @return the framework
+     */
+    public AuthorizationFramework getAuthorizationFramework() {
+        return authFramework;
+    }
+
+    /**
+     * Set the authorization framework for this environment. Unload all
+     * previously load plugins.
+     *
+     * @param fw the new framework
+     */
+    public void setAuthorizationFramework(AuthorizationFramework fw) {
+        if (this.authFramework != null) {
+            this.authFramework.removeAll(this.authFramework.getStack());
+        }
+        this.authFramework = fw;
+    }
+
     private ServerSocket configServerSocket;
 
     /**
@@ -1007,9 +1586,65 @@ public final class RuntimeEnvironment {
         IOUtils.close(configServerSocket);
     }
 
+    private Thread configurationListenerThread;
+
     /**
-     * Start a thread to listen on a socket to receive new configurations to
-     * use.
+     * Set configuration from a message. The message could have come from the
+     * Indexer (in which case some extra work is needed) or is it just a request
+     * to set new configuration in place.
+     *
+     * @param m message containing the configuration
+     * @param reindex is the message result of reindex
+     * @see #applyConfig(org.opensolaris.opengrok.configuration.Configuration,
+     * boolean) applyConfig(config, reindex)
+     */
+    public void applyConfig(Message m, boolean reindex) {
+        Configuration config;
+        try {
+            config = makeXMLStringAsConfiguration(m.getText());
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Configuration decoding failed" + ex);
+            return;
+        }
+
+        applyConfig(config, reindex);
+    }
+
+    /**
+     * Set configuration from the incoming parameter. The configuration could
+     * have come from the Indexer (in which case some extra work is needed) or
+     * is it just a request to set new configuration in place.
+     *
+     * @param config the incoming configuration
+     * @param reindex is the message result of reindex
+     *
+     */
+    public void applyConfig(Configuration config, boolean reindex) {
+
+        setConfiguration(config);
+        LOGGER.log(Level.INFO, "Configuration updated: {0}",
+                configuration.getSourceRoot());
+
+        if (reindex) {
+            // We are assuming that each update of configuration
+            // means reindex. If dedicated thread is introduced
+            // in the future solely for the purpose of getting
+            // the event of reindex, the 2 calls below should
+            // be moved there.
+            refreshSearcherManagerMap();
+            maybeRefreshIndexSearchers();
+            // Force timestamp to update itself upon new config arrival.
+            config.refreshDateForLastIndexRun();
+        }
+
+        authFramework.setPluginDirectory(config.getPluginDirectory());
+        authFramework.reload();
+    }
+
+    /**
+     * Start a thread to listen on a socket to receive new messages.
+     * The messages can contain various commands for the webapp, including
+     * upload of new configuration.
      *
      * @param endpoint The socket address to listen on
      * @return true if the endpoint was available (and the thread was started)
@@ -1022,34 +1657,37 @@ public final class RuntimeEnvironment {
             configServerSocket.bind(endpoint);
             ret = true;
             final ServerSocket sock = configServerSocket;
-            Thread t = new Thread(new Runnable() {
+            configurationListenerThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 13);
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 15);
                     while (!sock.isClosed()) {
                         try (Socket s = sock.accept();
-                                BufferedInputStream in = new BufferedInputStream(s.getInputStream())) {
+                                BufferedInputStream in = new BufferedInputStream(new XmlEofInputStream(s.getInputStream()));
+                                OutputStream output = s.getOutputStream()) {
                             bos.reset();
                             LOGGER.log(Level.FINE, "OpenGrok: Got request from {0}",
                                     s.getInetAddress().getHostAddress());
+
                             byte[] buf = new byte[1024];
                             int len;
                             while ((len = in.read(buf)) != -1) {
                                 bos.write(buf, 0, len);
                             }
+
                             buf = bos.toByteArray();
                             if (LOGGER.isLoggable(Level.FINE)) {
                                 LOGGER.log(Level.FINE, "new config:{0}", new String(buf));
                             }
+
                             Object obj;
                             try (XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(buf))) {
                                 obj = d.readObject();
                             }
 
-                            if (obj instanceof Configuration) {
-                                setConfiguration((Configuration) obj);
-                                LOGGER.log(Level.INFO, "Configuration updated: {0}",
-                                    configuration.getSourceRoot());
+                            if (obj instanceof Message) {
+                                Message m = ((Message) obj);
+                                handleMessage(m, output);
                             }
                         } catch (IOException e) {
                             LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
@@ -1058,12 +1696,12 @@ public final class RuntimeEnvironment {
                         }
                     }
                 }
-            });
-            t.start();
+            }, "configurationListener");
+            configurationListenerThread.start();
         } catch (UnknownHostException ex) {
-            LOGGER.log(Level.FINE, "Problem resolving sender: ", ex);
+            LOGGER.log(Level.WARNING, "Problem resolving sender: ", ex);
         } catch (IOException ex) {
-            LOGGER.log(Level.FINE, "I/O error when waiting for config: ", ex);
+            LOGGER.log(Level.WARNING, "I/O error when waiting for config: ", ex);
         }
 
         if (!ret && configServerSocket != null) {
@@ -1071,5 +1709,328 @@ public final class RuntimeEnvironment {
         }
 
         return ret;
+    }
+
+    /**
+     * Handle incoming message.
+     *
+     * @param m message
+     * @param output output stream for errors or success
+     * @throws IOException
+     */
+    protected void handleMessage(Message m, final OutputStream output) throws IOException {
+        byte[] out;
+        if (!canAcceptMessage(m)) {
+            LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system",
+                    m.getTags());
+            output.write(Message.MESSAGE_LIMIT);
+        }
+
+        try {
+            out = m.apply(RuntimeEnvironment.getInstance());
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING,
+                    String.format("Message dropped: {0} - message error", m.getTags()),
+                    ex);
+            output.write(Message.MESSAGE_ERROR);
+            output.write(ex.getMessage().getBytes());
+            return;
+        }
+
+        LOGGER.log(Level.FINER, "Message received: {0}",
+                m.getTags());
+        LOGGER.log(Level.FINER, "Messages in the system: {0}",
+                getMessagesInTheSystem());
+
+        output.write(Message.MESSAGE_OK);
+        if (out != null) {
+            output.write(out);
+        }
+    }
+
+    private Thread watchDogThread;
+    private WatchService watchDogWatcher;
+    public static final int THREAD_SLEEP_TIME = 2000;
+
+    /**
+     * Starts a watch dog service for a directory. It automatically reloads the
+     * AuthorizationFramework if there was a change in <b>real-time</b>.
+     * Suitable for plugin development.
+     *
+     * You can control start of this service by a configuration parameter
+     * {@link Configuration#authorizationWatchdogEnabled}
+     *
+     * @param directory root directory for plugins
+     */
+    public void startWatchDogService(File directory) {
+        if (directory == null || !directory.isDirectory() || !directory.canRead()) {
+            LOGGER.log(Level.INFO, "Watch dog cannot be started - invalid directory: {0}", directory);
+            return;
+        }
+        watchDogThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    watchDogWatcher = FileSystems.getDefault().newWatchService();
+                    Path dir = Paths.get(directory.getAbsolutePath());
+
+                    Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
+                            // attach monitor
+                            d.register(watchDogWatcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+                            return CONTINUE;
+                        }
+                    });
+                    
+                    LOGGER.log(Level.INFO, "Watch dog started {0}", directory);
+                    while (!Thread.currentThread().isInterrupted()) {
+                        final WatchKey key;
+                        try {
+                            key = watchDogWatcher.take();
+                        } catch (ClosedWatchServiceException x) {
+                            break;
+                        }
+                        boolean reload = false;
+                        for (WatchEvent<?> event : key.pollEvents()) {
+                            final WatchEvent.Kind<?> kind = event.kind();
+
+                            if (kind == ENTRY_CREATE) {
+                                reload = true;
+                            } else if (kind == ENTRY_DELETE) {
+                                reload = true;
+                            } else if (kind == ENTRY_MODIFY) {
+                                reload = true;
+                            }
+                        }
+                        if (reload) {
+                            Thread.sleep(THREAD_SLEEP_TIME); // experimental wait if file is being written right now
+                            authFramework.reload();
+                        }
+                        if (!key.reset()) {
+                            break;
+                        }
+                    }
+                } catch (InterruptedException | IOException ex) {
+                    Thread.currentThread().interrupt();
+                }
+                LOGGER.log(Level.INFO, "Watchdog finishing (exiting)");
+            }
+        }, "watchDogService");
+        watchDogThread.start();
+    }
+
+    /**
+     * Stops the watch dog service.
+     */
+    public void stopWatchDogService() {
+        if (watchDogWatcher != null) {
+            try {
+                watchDogWatcher.close();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Cannot close WatchDogService: ", ex);
+            }
+        }
+        if (watchDogThread != null) {
+            watchDogThread.interrupt();
+            try {
+                watchDogThread.join();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, "Cannot join WatchDogService thread: ", ex);
+            }
+        }
+    }
+
+    public void startExpirationTimer() {
+        if (expirationTimer != null) {
+            stopExpirationTimer();
+        }
+        expirationTimer = new Timer("expirationThread");
+        expireMessages();
+    }
+
+    /**
+     * Stops the watch dog service.
+     */
+    public void stopExpirationTimer() {
+        if (expirationTimer != null) {
+            expirationTimer.cancel();
+            expirationTimer = null;
+        }
+    }
+
+    private Thread indexReopenThread;
+
+    private void maybeRefreshSearcherManager(SearcherManager sm) {
+        try {
+            sm.maybeRefresh();
+        }  catch (AlreadyClosedException ex) {
+            // This is a case of removed project.
+            // See refreshSearcherManagerMap() for details.
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "maybeRefresh failed", ex);
+        }
+    }
+
+    public void maybeRefreshIndexSearchers(Set<String> projects) {
+        for (String proj : projects) {
+            if (searcherManagerMap.containsKey(proj)) {
+                maybeRefreshSearcherManager(searcherManagerMap.get(proj));
+            }
+        }
+    }
+
+    public void maybeRefreshIndexSearchers() {
+        for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
+            maybeRefreshSearcherManager(entry.getValue());
+        }
+    }
+
+    /**
+     * Call maybeRefresh() on each SearcherManager object from dedicated thread
+     * periodically.
+     * If the corresponding index has changed in the meantime, it will be safely
+     * reopened, i.e. without impacting existing IndexSearcher/IndexReader
+     * objects, thus not disrupting searches in progress.
+     */
+    public void startIndexReopenThread() {
+        indexReopenThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        maybeRefreshIndexSearchers();
+                        Thread.sleep(getIndexRefreshPeriod() * 1000);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }, "indexReopenThread");
+
+        indexReopenThread.start();
+    }
+
+    public void stopIndexReopenThread() {
+        if (indexReopenThread != null) {
+            indexReopenThread.interrupt();
+            try {
+                indexReopenThread.join();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, "Cannot join indexReopen thread: ", ex);
+            }
+        }
+    }
+
+    /**
+     * Get IndexSearcher for given project.
+     * Each IndexSearcher is born from a SearcherManager object. There is
+     * one SearcherManager for every project.
+     * This schema makes it possible to reuse IndexSearcher/IndexReader objects
+     * so the heavy lifting (esp. system calls) performed in FSDirectory
+     * and DirectoryReader happens only once for a project.
+     * The caller has to make sure that the IndexSearcher is returned back
+     * to the SearcherManager. This is done with returnIndexSearcher().
+     * The return of the IndexSearcher should happen only after the search
+     * result data are read fully.
+     *
+     * @param proj project
+     * @return SearcherManager for given project
+     */
+    public SuperIndexSearcher getIndexSearcher(String proj) throws IOException {
+        SearcherManager mgr = searcherManagerMap.get(proj);
+        SuperIndexSearcher searcher = null;
+
+        if (mgr == null) {
+            File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
+
+            try {
+                Directory dir = FSDirectory.open(new File(indexDir, proj).toPath());
+                mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
+                searcherManagerMap.put(proj, mgr);
+                searcher = (SuperIndexSearcher) mgr.acquire();
+                searcher.setSearcherManager(mgr);
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot construct IndexSearcher for project " + proj, ex);
+            }
+        } else {
+            searcher = (SuperIndexSearcher) mgr.acquire();
+            searcher.setSearcherManager(mgr);
+        }
+
+        return searcher;
+    }
+
+    /**
+     * After new configuration is put into place, the set of projects might
+     * change so we go through the SearcherManager objects and close those where
+     * the corresponding project is no longer present.
+     */
+    private void refreshSearcherManagerMap() {
+        ArrayList<String> toRemove = new ArrayList<>();
+
+        for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
+            // If a project is gone, close the corresponding SearcherManager
+            // so that it cannot produce new IndexSearcher objects.
+            if (!getProjectDescriptions().contains(entry.getKey())) {
+                try {
+                    LOGGER.log(Level.FINE,
+                        "closing SearcherManager for project" + entry.getKey());
+                    entry.getValue().close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.SEVERE,
+                        "cannot close IndexReader for project" + entry.getKey(), ex);
+                }
+                toRemove.add(entry.getKey());
+            }
+        }
+
+        for (String proj : toRemove) {
+            searcherManagerMap.remove(proj);
+        }
+    }
+
+    /**
+     * Return collection of IndexReader objects as MultiReader object
+     * for given list of projects.
+     * The caller is responsible for releasing the IndexSearcher objects
+     * so we add them to the map.
+     *
+     * @param projects list of projects
+     * @param searcherList each SuperIndexSearcher produced will be put into this list
+     * @return MultiReader for the projects
+     */
+    public MultiReader getMultiReader(SortedSet<String> projects,
+        ArrayList<SuperIndexSearcher> searcherList) {
+
+        IndexReader[] subreaders = new IndexReader[projects.size()];
+        int ii = 0;
+
+        // TODO might need to rewrite to Project instead of
+        // String , need changes in projects.jspf too
+        for (String proj : projects) {
+            try {
+                SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                subreaders[ii++] = searcher.getIndexReader();
+                searcherList.add(searcher);
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot get IndexReader for project " + proj, ex);
+                return null;
+            } catch (NullPointerException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot get IndexReader for project " + proj, ex);
+                return null;
+            }
+        }
+        MultiReader multiReader = null;
+        try {
+            multiReader = new MultiReader(subreaders, true);
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE,
+                "cannot construct MultiReader for set of projects", ex);
+        }
+        return multiReader;
     }
 }

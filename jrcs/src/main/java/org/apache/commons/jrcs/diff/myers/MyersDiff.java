@@ -101,7 +101,7 @@ public class MyersDiff
      *
      * @param orig The original sequence.
      * @param rev The revised sequence.
-     * @return A minimum {@link PathNode Path} accross the differences graph.
+     * @return A minimum {@link PathNode Path} across the differences graph.
      * @throws DifferentiationFailedException if a diff path could not be found.
      */
     public static PathNode buildPath(Object[] orig, Object[] rev)

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -77,17 +77,16 @@ public class CommandLineOptions {
         options.add(new Option('B', "url", "Base URL of the user Information provider. Default: \"http://www.myserver.org/viewProfile.jspa?username=\""));
         options.add(new Option('C', null, "Print per project percentage progress information(I/O extensive, since one read through dir structure is made before indexing, needs -v, otherwise it just goes to the log)"));
         options.add(new Option('c', "/path/to/ctags", "Path to Exuberant Ctags from http://ctags.sf.net by default takes the Exuberant Ctags in PATH."));
-        options.add(new Option('D', null, "Store history cache in a database (needs the JDBC driver in the classpath, typically derbyclient.jar or derby.jar)"));
         options.add(new Option('d', "/path/to/data/root", "The directory where OpenGrok stores the generated data"));
+        options.add(new Option('D', null, "Disable generating history for renamed files. Makes indexing faster for repositories with lots of renamed files."));
         options.add(new Option('e', null, "Economical - consumes less disk space. It does not generate hyper text cross reference files offline, but will do so on demand - which could be sightly slow."));
         options.add(new Option('G', null, "Assign commit tags to all entries in history for all repositories."));
         options.add(new Option('H', null, "Generate history cache for all repositories"));
         options.add(new Option('h', "/path/to/repository", "just generate history cache for the specified repos (absolute path from source root)"));
         options.add(new Option('I', "pattern", "Only files matching this pattern will be examined (supports wildcards, example: -I *.java -I *.c)"));
         options.add(new Option('i', "pattern", "Ignore the named files (prefix with 'f:') or directories (prefix with 'd:') (supports wildcards, example: -i *.so -i *.dll)"));
-        options.add(new Option('j', "class", "Name of the JDBC driver class used by the history cache. Can use one of the shorthands \"client\" (org.apache.derby.jdbc.ClientDriver) or \"embedded\" (org.apache.derby.jdbc.EmbeddedDriver). Default: \"client\""));
         options.add(new Option('k', "/path/to/repository", "Kill the history cache for the given repository and exit. Use '*' to delete the cache for all repositories."));
-        options.add(new Option('K', null, "List all repository pathes and exit."));
+        options.add(new Option('K', null, "List all repository paths and exit."));
         options.add(new Option('L', "path", "Path to the subdirectory in the web-application containing the requested stylesheet. The following factory-defaults exist: \"default\", \"offwhite\" and \"polished\""));
         options.add(new Option('l', ON_OFF, "Turn on/off locking of the Lucene database during index generation"));
         options.add(new Option('m', NUMBER, "Amount of memory that may be used for buffering added documents and deletions before they are flushed to the Directory(default "+Configuration.defaultRamBufferSize+"MB). Please increase JVM heap accordingly, too."));
@@ -96,7 +95,7 @@ public class CommandLineOptions {
         options.add(new Option('O', ON_OFF, "Turn on/off the optimization of the index database as part of the indexing step"));
         options.add(new Option('o', "path", "File with extra command line options for ctags"));
         options.add(new Option('P', null, "Generate a project for each of the top-level directories in source root"));
-        options.add(new Option('p', "/path/to/default/project", "This is the path to the project that should be selected by default in the web application(when no other project set either in cookie or in parameter). You should strip off the source root."));
+        options.add(new Option('p', "/path/to/default/project", "This is the path to the project that should be selected by default in the web application (when no other project set either in cookie or in parameter). May be used multiple times for several projects. Use \"__all__\" for all projects. You should strip off the source root."));
         options.add(new Option('Q', ON_OFF, "Turn on/off quick context scan. By default only the first 1024k of a file is scanned, and a '[..all..]' link is inserted if the file is bigger. Activating this may slow the server down (Note: this is setting only affects the web application)"));
         options.add(new Option('q', null, "Run as quietly as possible"));
         options.add(new Option('R', "/path/to/configuration", "Read configuration from the specified file"));
@@ -106,7 +105,6 @@ public class CommandLineOptions {
         options.add(new Option('T', NUMBER, "The number of threads to use for index generation. By default the number of threads will be set to the number of available CPUs"));
         options.add(new Option('t', NUMBER, "Default tabsize to use (number of spaces per tab character)"));
         options.add(new Option('U', "host:port", "Send the current configuration to the specified address (This is most likely the web-app configured with ConfigAddress)"));
-        options.add(new Option('u', "url", "URL to the database that contains the history cache. Default: If -j specifies \"embedded\", \"jdbc:derby:$DATA_ROOT/cachedb;create=true\"; otherwise, \"jdbc:derby://localhost/cachedb;create=true\""));
         options.add(new Option('V', null, "Print version and quit"));
         options.add(new Option('v', null, "Print progress information as we go along"));
         options.add(new Option('W', "/path/to/configuration", "Write the current configuration to the specified file (so that the web application can use the same configuration"));

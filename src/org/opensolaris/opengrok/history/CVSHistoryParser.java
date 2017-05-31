@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -50,7 +50,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
     }
 
     private History history;
-    private CVSRepository repository=new CVSRepository();
+    private CVSRepository repository = new CVSRepository();
 
    /**
      * Process the output from the log command and insert the HistoryEntries
@@ -81,7 +81,11 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 if (s.startsWith("\t")) {
                     String[] pair = s.trim().split(": ");
                     if (pair.length != 2) {
-                        LOGGER.log(Level.WARNING, "Failed to parse tag: ''{0}''", s);
+                        //
+                        // Overriding processStream() thus need to comply with the
+                        // set of exceptions it can throw.
+                        //
+                        throw new IOException("Failed to parse tag: '" + s + "'");
                     } else {
                         if (tags.containsKey(pair[1])) {
                             // Join multiple tags for one revision
@@ -122,7 +126,11 @@ class CVSHistoryParser implements Executor.StreamHandler {
                             val = val.replace('/', '-');
                             entry.setDate(df.parse(val));
                         } catch (ParseException pe) {
-                            LOGGER.log(Level.WARNING, "Failed to parse date: '" + val + "'", pe);
+                            //
+                            // Overriding processStream() thus need to comply with the
+                            // set of exceptions it can throw.
+                            //
+                            throw new IOException("Failed to parse date: '" + val + "'", pe);
                         }
                     } else if ("author".equals(key)) {
                         entry.setAuthor(val);
@@ -157,7 +165,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
-     * @param repos Pointer to the SubversionReporitory
+     * @param repos Pointer to the SubversionRepository
      * @return object representing the file's history
      */
     History parse(File file, Repository repos) throws HistoryException {

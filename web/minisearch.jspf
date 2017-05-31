@@ -1,0 +1,117 @@
+<%-- 
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").  
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+
+--%>
+<%@ page session="false" errorPage="error.jsp" import="
+java.io.File,
+java.io.IOException,
+
+org.opensolaris.opengrok.configuration.Project,
+org.opensolaris.opengrok.history.HistoryGuru,
+org.opensolaris.opengrok.web.EftarFileReader,
+org.opensolaris.opengrok.web.PageConfig,
+org.opensolaris.opengrok.web.Prefix,
+org.opensolaris.opengrok.web.Util"%><%
+    /* ---------------------- minisearch.jspf start --------------------- */
+{
+        PageConfig cfg = PageConfig.get(request);
+        String context = request.getContextPath();
+%>
+
+<form action="<%= context + Prefix.SEARCH_P %>">
+<div id="bar">
+    <ul>
+        <li><a href="<%= context %>/"><span id="home"></span>Home</a></li><%
+    if (!cfg.hasHistory()) {
+        %><li><span id="history"></span><span class="c">History</span></li><%
+    } else {
+        %><li><a href="<%= context + Prefix.HIST_L + cfg.getUriEncodedPath()
+            %>"><span id="history"></span>History</a></li><%
+    }
+    if (!cfg.hasAnnotations() /* || cfg.getPrefix() == Prefix.HIST_S */ ) {
+        %><li><span class="c"><span class="annotate"></span>Annotate</span></li><%
+    } else if (cfg.annotate()) {
+        %><li><span id="toggle-annotate-by-javascript" style="display: none"><a
+            href="#" onclick="javascript:toggle_annotations(); return false;"
+            title="Show or hide line annotation(commit revisions,authors)."
+            ><span class="annotate"></span>Annotate</a></span><span
+            id="toggle-annotate"><a href="#"><span class="annotate"></span>
+            Annotate</a></span></li><%
+    } else if (cfg.getPrefix() == Prefix.HIST_L) {
+        %><li>
+            <a href="#"
+               onclick="javascript:
+                           window.location = '<%= context + Prefix.XREF_P + cfg.getUriEncodedPath() %>'
+                           // taken from get_annotations() from utils.js
+                           + '?a=true'
+                           + (document.rev && document.rev() ? '&amp;r=' + encodeURIComponent(document.rev()) : '')
+                           + (window.location.hash ? '&amp;h=' + window.location.hash.substring(1, window.location.hash.length) : '');
+                           return false;">
+                <span class="annotate"></span>
+                Annotate
+            </a>
+        </li><%
+    } else {
+        %><li><a href="#" onclick="javascript:get_annotations(); return false;"
+            ><span class="annotate"></span>Annotate</a></li><%
+    }
+    if (!cfg.isDir()) {
+        if (cfg.getPrefix() == Prefix.XREF_P) {
+        %><li><a href="#" onclick="javascript:lntoggle();return false;"
+            title="<%= "Show or hide line numbers (might be slower if "
+                + "file has more than 10 000 lines)."
+            %>"><span id="line"></span>Line#</a></li>
+          <li><a href="#" class="scopes-toggle"
+            title="<%= "Toggle scopes window."
+            %>"><span id="line"></span>Scopes#</a></li><li><a
+            href="#" id="navigate"
+            title="Show or hide symbol list."><%--
+            --%><span id="defbox"></span>Navigate#</a></li><%
+        }
+        %>
+	<li><a href="<%= context + Prefix.RAW_P + cfg.getUriEncodedPath()
+            + (cfg.getRequestedRevision().length() == 0 ? "" : "?r=" + Util.URIEncode(cfg.getRequestedRevision()))
+            %>"><span id="raw"></span>Raw</a></li>
+	<li><a href="<%= context + Prefix.DOWNLOAD_P + cfg.getUriEncodedPath()
+            + (cfg.getRequestedRevision().length() == 0 ? "" : "?r=" + Util.URIEncode(cfg.getRequestedRevision()))
+            %>"><span id="download"></span>Download</a></li>
+	<%
+    }
+        %><li><input type="text" id="search" name="q" class="q" />
+            <input type="submit" value="Search" class="submit" /></li><%
+    Project proj = cfg.getProject();
+    String[] vals = cfg.getSearchOnlyIn();
+        %><li><input type="checkbox" name="path" value='"<%= vals[0]
+            %>"' <%= vals[2] %>/> only in <b><%= vals[1] %></b></li>
+    </ul><%
+    if (proj != null) {
+    %>
+    <input type="hidden" name="project" value="<%=proj.getName()%>" /><%
+    }
+%>
+    <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />
+</div>
+        </form>
+    </div>
+<div id="content">
+<% 
+}
+/* ---------------------- minisearch.jspf end --------------------- */
+%>

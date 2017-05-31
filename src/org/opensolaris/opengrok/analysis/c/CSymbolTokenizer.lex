@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -33,6 +33,9 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class CSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
+%init{
+super(in);
+%init}
 %type boolean
 %eofval{
 return false;

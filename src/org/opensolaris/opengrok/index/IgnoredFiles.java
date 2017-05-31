@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -27,7 +27,7 @@ import java.io.File;
 /**
  * This class maintains a list of file names (like "cscope.out"), SRC_ROOT
  * relative file paths (like "usr/src/uts" or "usr/src/Makefile"), and glob
- * patterns (like .make.*) which opengrok should ignore.
+ * patterns (like .make.*) which should be ignored.
  *
  * @author Chandan
  */
@@ -40,26 +40,20 @@ public final class IgnoredFiles extends Filter {
         "cscope.po.in",
         "cscope.files",
         "cscope.out",
-        // CVS
-        ".cvsignore",
-        ".repo",
-        ".hgtags",
-        ".p4config",
         "*~",
         ".make.*",
         ".del-*",
         "_MTN",
-        // File Extensions for Visual Studio and Mono Projects
-        ".vspscc",
-        ".suo",
-        ".vssscc",
+        ".vspscc", // Visual Studio
+        ".vssscc", // Visual Studio
+        ".suo", // Visual Studio user specific settings
         ".user",
         ".ncb",
-        ".gpState",
+        ".gpState",  // Guidance automation toolkit (MS)
         ".snc",
         ".sln",
-        ".vsmdi",
-        ".dll",
+        ".vsmdi", // Visual Studio tests
+        "*.dll",
         ".opengrok_skip_history",
     };
 
@@ -74,7 +68,7 @@ public final class IgnoredFiles extends Filter {
      * @return true if this file should be ignored, false otherwise
      */
     public boolean ignore(File file) {
-        return match(file) && file.isFile();
+        return file.isFile() && match(file);
     }
 
     /**

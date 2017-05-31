@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -63,7 +63,11 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 %%
 <YYINITIAL>{
  ^{Label} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
- ^[^ \t\f\r\n]+ { String commentStr = yytext(); yybegin(LCOMMENT);out.write("<span class=\"c\">"+commentStr);}
+ ^[^ \t\f\r\n]+ {
+    yypush(LCOMMENT, "</span>");
+    out.write("<span class=\"c\">");
+    Util.htmlize(yytext(), out);
+}
 
 {Identifier} {
     String id = yytext();
@@ -85,14 +89,14 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 */
 {Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- \!     { yybegin(SCOMMENT);out.write("<span class=\"c\">!");}
+ \"     { yypush(STRING, "</span>"); out.write("<span class=\"s\">\"");}
+ \'     { yypush(QSTRING, "</span>"); out.write("<span class=\"s\">\'");}
+ \!     { yypush(SCOMMENT, "</span>"); out.write("<span class=\"c\">!");}
 }
 
 <STRING> {
  \" {WhiteSpace} \"  { out.write(yytext());}
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
+ \"     { out.write('"'); yypop(); }
  \\\\   { out.write("\\\\"); }
  \\\"   { out.write("\\\""); }
 }
@@ -101,15 +105,15 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
  "\\\\" { out.write("\\\\"); }
  "\\'" { out.write("\\\'"); }
  \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { yybegin(YYINITIAL); out.write("'</span>"); }
+ \'     { out.write('\''); yypop(); }
 }
 
 <COMMENT> {
-"*/"    { yybegin(YYINITIAL); out.write("*/</span>"); }
+"*/"    { out.write("*/"); yypop(); }
 }
 
 <SCOMMENT> {
-{WhiteSpace}*{EOL}      { yybegin(YYINITIAL); out.write("</span>");
+{WhiteSpace}*{EOL}      { yypop();
                   startNewLine();}
 }
 
@@ -117,7 +121,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { yybegin(YYINITIAL); out.write("</span>");
+{WhiteSpace}*{EOL}      { yypop();
                   startNewLine();}
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
@@ -148,10 +152,8 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
         {
-         String url = yytext();
-         out.write("<a href=\"");
-         out.write(url);out.write("\">");
-         out.write(url);out.write("</a>");}
+          appendLink(yytext());
+        }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {

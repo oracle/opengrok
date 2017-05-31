@@ -18,11 +18,14 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="java.util.TreeSet"%>
+--%><%@page import="org.json.simple.JSONArray"%>
+<%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
+<%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
+<%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.LinkedList"%>
 <%@page import="org.opensolaris.opengrok.configuration.Group"%>
@@ -45,66 +48,134 @@ org.opensolaris.opengrok.web.Util"
 %><%
 /* ---------------------- menu.jspf start --------------------- */
 {
-    // PageConfig cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     ProjectHelper ph = ProjectHelper.getInstance(cfg);
+    JSONArray messages;
     Set<Project> projects = ph.getAllProjects();
     if (projects == null) {
         projects = new TreeSet<>();
+    }
+    int projectsSize = ph.getAllUngrouped().size();
+    if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0)
+        projectsSize++;
+    for (Group group : ph.getGroups()) {
+        projectsSize++;
+        projectsSize += ph.getAllGrouped(group).size();
     }
     TreeMap<String, String> pMap = new TreeMap<>();
     QueryBuilder queryParams = cfg.getQueryBuilder();
     if (projects.size() != 0) {
         for (Project p : projects) {
-            String name = p.getDescription();
-            String esc = Util.formQuoteEscape(p.getDescription());
+            String name = p.getName();
+            String esc = Util.formQuoteEscape(p.getName());
             pMap.put(name, esc);
-        }
-        StringBuilder jsProjects = new StringBuilder(64);
-        jsProjects.append('\'');
-        for (String name : cfg.getRequestedProjects()) {
-            jsProjects.append(name).append("','");
-        }
-        if (jsProjects.length() > 1) {
-            jsProjects.setLength(jsProjects.length()-2);
-        } else {
-            jsProjects.setLength(0);
         }
 %>
 <script type="text/javascript">/* <![CDATA[ */
-    document.projects = [ <%= Util.encode(jsProjects.toString())
-    %> ];document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P
-    %>';document.domReady.push(function() { domReadyMenu(); });
+    document.domReady.push(function() { domReadyMenu(); });
 /* ]]> */
 </script><%
     }
 %>
-<form action="search" id="sbox">
-
+<form action="<%= request.getContextPath() %>/search" id="sbox">
 <div id="qtbl">
-<table>
+    <table>
+    <%
+    if (projects.size() != 0) {
+    %>
+    <tbody id="ptbl">
+    <tr>
+    <td>
+    <label for="project">Project(s)</label>
+    </td>
+    <td colspan="2">
+    <select tabindex="8" class="q" id="project"
+        name="project" multiple="multiple" size="<%=
+        Math.min(15, projectsSize) %>"><%
+        SortedSet<String> pRequested = cfg.getRequestedProjects();
+        for ( Group group : ph.getGroups() ) {
+            Set<Project> groupProjects = ph.getAllGrouped(group);
+            if ( groupProjects.size() > 0) {
+                %><optgroup label="<%= group.getName() %>"><%
+                for (Project p : groupProjects) {
+                // TODO below "selected" has no effect if one refreshes the page
+                // with F5
+
+                %><option value="<%= p.getName() %>"<%
+                    if (pRequested.contains(p.getName())) {
+                        %> selected="selected"<%
+                    }
+                    if (!(messages = Util.messagesToJson(p)).isEmpty()) {
+                    %> data-messages='<%= messages %>' <%
+                        }
+                    %>><%= Util.formQuoteEscape(p.getName()) %></option><%
+                }
+                %></optgroup><%
+            }
+        }
+  
+        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
+            %><optgroup label="Other"><%
+        }
+        for ( Project p : ph.getAllUngrouped()) {
+        %><option value="<%= p.getName() %>"<%
+            if (pRequested.contains(p.getName())) {
+                %> selected="selected"<%
+            }
+            if (!(messages = Util.messagesToJson(p)).isEmpty()) {
+                %> data-messages='<%= messages %>' <%
+            }
+            %>><%= Util.formQuoteEscape(p.getName()) %></option><%
+        }
+        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
+            %></optgroup><%
+        }
+    %></select>
+    </td>
+    </tr>
+    <tr>
+    <td colspan="3" >
+    <button tabindex="6" type="button"
+        onclick="javascript: selectAllProjects(); return false;"
+        >select all</button>
+    &nbsp;
+    <button tabindex="7" type="button"
+        onclick="javascript: invertAllProjects(); return false;"
+        >invert selection</button>
+    &nbsp;
+    <button tabindex="8" type="button"
+        onclick="javascript: deselectAllProjects(); return false;"
+        >clear</button>
+    </td>
+    </tr>
+    </tbody>
+    <%
+    }
+    %>
+    <tbody>
     <tr>
         <td><label for="s1" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
-        <td><input tabindex="1" class="q" name="q" id="q" value="<%=
+        <td colspan="2"><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>
-	    <td><label for="s2" title="Definition of function/variable/class">Definition</label></td>
-        <td><input class="q" tabindex="2" name="defs" id="defs" value="<%=
+	<td><label for="s2" title="Definition of function/variable/class">Definition</label></td>
+        <td colspan="2"><input class="q" tabindex="2" name="defs" id="defs" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s3" title="Usage of function/variable/class">Symbol</label></td>
-        <td><input class="q" tabindex="3" name="refs" id="refs" value="<%=
+        <td colspan="2"><input class="q" tabindex="3" name="refs" id="refs" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s4" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
-        <td><input class="q" tabindex="4" name="path" id="path" value="<%=
+        <td colspan="2"><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s5" title="Search in log messages">History</label></td>
-        <td><input class="q" tabindex="5" name="hist" id="hist" value="<%=
+        <td colspan="2"><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
     <tr>
@@ -124,102 +195,24 @@ org.opensolaris.opengrok.web.Util"
             %>
             </select>
         </td>
+        <td id="type-select-container">
+            <!-- filled with javascript -->
+        </td>
     </tr>
-<%-- TODO  Bug 11749
-<%
-    if (projects.size() != 0) {
-        String imgDir = cfg.getCssDir() + "/img/";
-    %>
-    <tr>
-        <td>Project(s)</td>
-        <td>
-            <table class="combo_table" id="combotable">
-                <tbody>
-                    <tr>
-                        <td class="combo_td1"><div class="combo_div4"
-                            style="background: transparent url(<%=
-                                imgDir %>transparent_pixel.gif)
-                                repeat scroll 0% 0%;"><input
-                                class="combo_input1 combo_input" id="project"
-                                name="project" size="25"
-                                value="<%= cfg.getRequestedProjectsAsString()
-                                %>"/></div>
-                        </td>
-                        <td valign="top" align="left" class="combo_td2"
-                            id="combotable_button"><a
-                            onclick='javascript: $("#project").click();
-                            $("#project").click();'/><img style="display: none;"
-                            alt="" src="<%= imgDir %>button2.png"/>
-                        </td>
-                    </tr>
-                </tbody>
-            </table></td>
-    </tr><%
-    }
-%>
---%>
+    </tbody>
 </table>
-</div><%
-
-    if (projects.size() != 0) {
-%>
-<div id="ptbl">
-    <p><label for="project">In Project(s)</label> <button tabindex="6" type="button"
-        onclick="javascript: selectAllProjects(); return false;"
-        >select all</button>&nbsp;<button tabindex="7" type="button"
-        onclick="javascript: invertAllProjects(); return false;"
-        >invert selection</button> </p>
-    <select tabindex="8" ondblclick="javascript: goFirstProject(event);"
-        onkeyup="javascript: checkEnter(event);" class="q" id="project"
-        name="project" multiple="multiple" size="<%=
-        Math.min(15, projects.size()) %>"><%
-        SortedSet<String> pRequested = cfg.getRequestedProjects();
-        for ( Group group : ph.getGroups() ) {
-            Set<Project> groupProjects = ph.getAllGrouped(group);
-            if ( groupProjects.size() > 0) {
-                %><optgroup label="<%= group.getName() %>"><%
-                for (Project p : groupProjects) {
-                // TODO below "selected" has no effect if one refreshes the page
-                // with F5 also below ondblclick doesn't work in IE ...
-                // ondblclick="javascript:goFirstProject();"
-
-                %><option value="<%= p.getDescription() %>"<%
-                    if (pRequested.contains(p.getDescription())) {
-                        %> selected="selected"<%
-                    }
-                    %>><%= Util.formQuoteEscape(p.getDescription()) %></option><%
-                }
-                %></optgroup><%
-            }
-        }
-  
-        if(ph.getGroups().size() > 0) {
-            %><optgroup label="Other"><%
-        }
-        for ( Project p : ph.getAllUngrouped()) {
-        %><option value="<%= p.getDescription() %>"<%
-            if (pRequested.contains(p.getDescription())) {
-                %> selected="selected"<%
-            }
-            %>><%= Util.formQuoteEscape(p.getDescription()) %></option><%
-        }
-        if(ph.getGroups().size() > 0) {
-            %></optgroup><%
-        }
-
-
-    %></select>
-</div><%
-    }
-    %>
-
-    <p><input tabindex="9" class="submit" type="submit" value="Search"/>
-    <input tabindex="10" class="submit" onclick="javascript: clearSearchFrom();"
-	   type="button" value=" Clear "/>
-    <button class="help" tabindex="11" onclick="window.open('help.jsp');">Help
-    </button>
-    </p>
+<div id="form-controls">
+    <input tabindex="9" class="submit btn" type="submit" value="Search"/>
+    <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
+           type="button" value="Clear"/>
+    <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
+</div>
+</div>
+<div id="ltbl">
+    <!-- filled with javascript -->
+</div>
 </form>
+<div class="clearfix"></div>
 <%
 }
 /* ---------------------- menu.jspf end --------------------- */

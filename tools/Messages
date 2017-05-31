@@ -1,0 +1,388 @@
+#!/bin/ksh
+
+# Supported Environment Variables:
+#   - OPENGROK_STANDARD_ENV       Run Time Shell Environment (Shell Script)
+#   - OPENGROK_CONFIGURATION      User Configuration (Shell Script)
+#
+# Supported Environment Variables for configuring the default setup:
+#   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
+#                                   - containing the lib/opengrok.jar
+#   - OPENGROK_JAR                OpenGrok java package
+#   - DATE                        GNU date binary (supporting --date switch)
+#   - JAVA_HOME                   Full Path to Java Installation Root
+#   - JAVA                        Full Path to java binary (to enable 64bit JDK)
+#   - JAVA_OPTS                   Java options (e.g. for JVM memory increase view
+
+PROGNAME=`basename $0`
+if date --date="+5 min" +"%s" >/dev/null 2>&1
+then
+    DATE="${DATE:-date}"
+else
+    DATE="${DATE:-gdate}"
+fi
+
+SCRIPT_DIRECTORY=`dirname "${0}"`
+SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd`
+
+Usage()
+{
+    exec >&2
+    echo ""
+    echo "Usage: ${PROGNAME} [options] <text>"
+    echo ""
+    echo "[OPTIONS]:"
+    echo "  -c|--class                    css class to apply for the message (default info)"
+    echo "  -e|--expire                   human readable date of expiration (default +5 min) (*)"
+    echo "  -h|--help                     display this message and exit"
+    echo "  -n|--type                     type of the message (default normal)"
+    echo "  -p|--port                     remote port number of the application (default 2424)"
+    echo "  -s|--server                   remote server of the application (default localhost)"
+    echo "  -t|--tag                      tag the message/multiple options (default main)"
+    echo "  -u|--expire-timestamp         explicit UTC timestamp for expiration in sec"
+    echo "  -v|--verbose                  verbose"
+    echo ""
+    echo "  (*) see man date: option --date (requires GNU date - use DATE env variable)"
+    echo "  css classes: success, info, warning, error"
+    echo "  types: normal, abort, stats"
+    echo "  tags: main, <project name>"
+    echo "  text: supports html markup"
+    echo ""
+    echo "  Message types:"
+    echo "    config:"
+    echo "     - set or get configuration"
+    echo "     - query is formed in the message <text>:"
+    echo "       - \"setconf\"  send configuration to webapp."
+    echo "                      Requires input file as argument."
+    echo "       - \"getconf\"  retrieves configuration from webapp."
+    echo "                      Prints the configuration in XML to stdout."
+    echo "       - \"set\"      sets the particular configuration option (only primitive types)"
+    echo "                    in the webapp."
+    echo "                      Examples:"
+    echo "                          histPerPage = 10"
+    echo "                          authorizationWatchdogEnabled = true"
+    echo "                      Returns text describing the action."
+    echo "                      The change is NOT persistent when reindex or redeploy!"
+    echo "    normal:"
+    echo "     - assign a <text> to the main page or a project"
+    echo "     - can be more precise with <tags> (for specific project)"
+    echo "    abort:"
+    echo "     - discard existing messages in the system with the same <tags>"
+    echo "    stats:"
+    echo "     - ask the application for its statistics"
+    echo "     - query is formed in the message <text>:"
+    echo "       - \"reload\"  the application reloads the statistics file"
+    echo "                   and returns the loaded statistics"
+    echo "       - \"clean\"   the application cleans its current statistics"
+    echo "                   and returns the empty statistics"
+    echo "       - \"get\"     the application returns current statistics"
+    echo "    refresh:"
+    echo "     - refresh SearcherManagers of projects given by <tags>"
+    echo ""
+    echo "  Optional environment variables:"
+    echo "    OPENGROK_CONFIGURATION - location of your configuration"
+    echo "      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ${0} ... "
+    echo ""
+    echo "    See the code for more information on configuration options /" \
+        "variables"
+    echo ""
+}
+
+CommonInvocation()
+{
+    ${DO} \
+    ${JAVA} \
+    ${JAVA_OPTS} \
+    ${JAVA_CLASSPATH:+-classpath} ${JAVA_CLASSPATH} \
+    ${MAIN_CLASS} \
+    "${@}"
+}
+
+StdInvocation()
+{
+    CommonInvocation \
+    ${MESSAGE_TYPE:+-m} ${MESSAGE_TYPE:+"$MESSAGE_TYPE"} \
+    ${MESSAGE_CLASS:+-c} ${MESSAGE_CLASS:+"$MESSAGE_CLASS"} \
+    ${MESSAGE_TAGS:+"${MESSAGE_TAGS[@]}"} \
+    ${MESSAGE_EXPIRE_TIMESTAMP:+-e} ${MESSAGE_EXPIRE_TIMESTAMP:+"$MESSAGE_EXPIRE_TIMESTAMP"} \
+    ${REMOTE_SERVER:+-s} ${REMOTE_SERVER:+"$REMOTE_SERVER"} \
+    ${REMOTE_PORT_NUM:+-p} ${REMOTE_PORT_NUM:+"$REMOTE_PORT_NUM"} \
+    ${MESSAGE_TEXT:+-t} ${MESSAGE_TEXT:+"$MESSAGE_TEXT"} \
+    ${MESSAGE_FILE:+-f} ${MESSAGE_FILE:+"$MESSAGE_FILE"} \
+    -- "${@}"
+}
+
+
+OneArgument()
+{
+    if [ $# -gt 0 ]
+    then
+            echo "$1"
+    fi
+}
+
+ExpectOption()
+{
+    if [ $# -lt 2 ]
+    then
+            echo "Argument \"$1\" expects a value"
+            exit 3
+    fi
+}
+
+Info()
+{
+    if $VERBOSE
+    then
+            echo "Configuration loaded"
+            echo -e "\tJAVA_HOME = "${JAVA_HOME}
+            if [ -n "$JAVA_HOME" ]
+            then
+                    echo -e "\tJAVA = $JAVA_HOME/bin/java"
+            else
+                    echo -e "\tJAVA ="
+            fi
+            echo -e "\tJAVA_OPTS = "${JAVA_OPTS}
+            echo -e "\tJAVA_CLASSPATH = "${JAVA_CLASSPATH}
+            echo -e "\tOPENGROK_JAR = "${OPENGROK_JAR}
+            echo -e "\tOPENGROK_CONFIGURATION = "${OPENGROK_CONFIGURATION}
+            echo -e "\tOPENGROK_STANDARD_ENV = "${OPENGROK_STANDARD_ENV}
+            echo -e "\tOPENGROK_DISTRIBUTION_BASE = "${OPENGROK_DISTRIBUTION_BASE}
+            echo -e "\tOPENGROK_JAR = "${OPENGROK_JAR}
+            echo ""
+            echo "Files used"
+            echo -e "\tDATE = "${DATE:-$DATE}
+            echo -e "\tREMOTE_SERVER = "${REMOTE_SERVER:-$REMOTE_SERVER}
+            echo -e "\tREMOTE_PORT_NUM = "${REMOTE_PORT_NUM:-$REMOTE_PORT_NUM}
+            echo -e "\tMESSAGE_TYPE = "${MESSAGE_TYPE:-$MESSAGE_TYPE}
+            echo -e "\tMESSAGE_TAGS = "${MESSAGE_TAGS[*]:-${MESSAGE_TAGS[*]}}
+            echo -e "\tMESSAGE_CLASS = "${MESSAGE_CLASS:-$MESSAGE_CLASS}
+            echo -e "\tMESSAGE_EXPIRE = "${MESSAGE_EXPIRE:-$MESSAGE_EXPIRE}
+            echo -e "\tMESSAGE_EXPIRE_TIMESTAMP = "${MESSAGE_EXPIRE_TIMESTAMP:-$MESSAGE_EXPIRE_TIMESTAMP}
+            echo -e "\tMESSAGE_TEXT = "${MESSAGE_TEXT:-$MESSAGE_TEXT}
+            echo -e "\tMESSAGE_FILE = "${MESSAGE_FILE:-$MESSAGE_FILE}
+            echo ""
+    fi
+}
+
+Progress()
+{
+    if $VERBOSE
+    then
+            echo "$@"
+    fi
+}
+
+# Find and load relevant configuration
+#
+# Taken (and modified) from original OpenGrok shell wrapper
+#
+SetupInstanceConfiguration()
+{
+    VERBOSE="${VERBOSE:-false}"
+
+    if [ -f "${OPENGROK_STANDARD_ENV}" ]
+    then
+        Progress "Loading ${OPENGROK_STANDARD_ENV} ..."
+        . "${OPENGROK_STANDARD_ENV}"
+    fi
+
+    if [ -n "${OPENGROK_CONFIGURATION}" -a -f "${OPENGROK_CONFIGURATION}" ]
+    then
+        # Load the Local OpenGrok Configuration Environment
+        Progress "Loading ${OPENGROK_CONFIGURATION} ..."
+        . "${OPENGROK_CONFIGURATION}"
+    fi
+
+    if [ -z "${OPENGROK_DISTRIBUTION_BASE}" ]
+    then
+        if [ -d "${SCRIPT_DIRECTORY}/../dist" -a \
+             -f "${SCRIPT_DIRECTORY}/../dist/opengrok.jar" -a \
+             -f "${SCRIPT_DIRECTORY}/../dist/source.war" \
+           ]
+        then
+            # Handle Developer Build Environments
+            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/../dist"
+        else
+            # Handle Binary Distributions
+            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/../lib"
+        fi
+    fi
+
+    # REQUIRED: Java Home
+    JAVA_HOME="${JAVA_HOME:-`FindJavaHome`}"
+
+    # REQUIRED: Java Virtual Machine
+    JAVA="${JAVA:-$JAVA_HOME/bin/java}"
+
+    # REQUIRED: OpenGrok library
+    OPENGROK_JAR="${OPENGROK_JAR:-${OPENGROK_DISTRIBUTION_BASE}/opengrok.jar}"
+
+    JAVA_CLASSPATH="$CLASSPATH"
+    JAVA_CLASSPATH="${JAVA_CLASSPATH}:${OPENGROK_JAR}"
+    JAVA_OPTS="${JAVA_OPTS:--Xmx32m}"
+    MAIN_CLASS="org.opensolaris.opengrok.configuration.messages.Messages"
+
+    REMOTE_SERVER="localhost"
+    REMOTE_PORT_NUM=2424
+    MESSAGE_TYPE="normal"
+    typeset -a MESSAGE_TAGS
+    MESSAGE_CLASS="info"
+    MESSAGE_EXPIRE="+5 min"
+    unset MESSAGE_TEXT
+    unset MESSAGE_FILE
+    VERBOSE=false
+}
+
+# Find java home based on your system information
+#
+# Taken from original OpenGrok shell wrapper
+#
+FindJavaHome()
+{
+    if [ -x "/bin/uname" ]; then
+        OS_NAME="`/bin/uname -s`"
+        OS_VERSION="`/bin/uname -r`"
+    elif [ -x "/usr/bin/uname" ]; then
+        OS_NAME="`/usr/bin/uname -s`"
+        OS_VERSION="`/usr/bin/uname -r`"
+    else
+        echo "Cannot determine operating system version"
+        exit 3
+    fi
+
+    javaHome=""
+    case "${OS_NAME}:${OS_VERSION}" in
+        SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.7.0" ;;
+        SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
+        SunOS:5.12) javaHome="/usr/jdk/latest"             ;;
+        Darwin:*)    javaHome=`/usr/libexec/java_home`     ;;
+        Linux:*)
+            if [ -f /etc/alternatives/java ]
+            then
+               javaHome=`ls -l /etc/alternatives/java | cut -f 2 -d \> `
+               javaHome=`dirname $javaHome`
+               javaHome=`dirname $javaHome`
+            fi
+        ;;
+    esac
+
+    if [ -z "${javaHome}" ]
+    then
+        echo "Unable to determine Java Home" \
+              "for ${OS_NAME} ${OS_VERSION}"
+        exit 3
+    fi
+
+    if [ ! -d "${javaHome}" ]
+    then
+        echo "Missing Java Home ${javaHome}"
+        exit 3
+    fi
+
+    echo "${javaHome}"
+}
+
+
+if [ $# -eq 0 ]
+then
+    echo "Bad syntax. Expecting some arguments."
+    echo "Maybe try --help option?"
+    exit 3
+fi
+
+SetupInstanceConfiguration
+
+while [ $# -gt 0 ]
+do
+    opt="$1"
+    case $opt in
+        -c|--class)
+            ExpectOption "$@"
+            shift
+            MESSAGE_CLASS=$(OneArgument "$@")
+        ;;
+        -e|--expire)
+            ExpectOption "$@"
+            shift
+            MESSAGE_EXPIRE=$(OneArgument "$@")
+        ;;
+        -h|--help)
+            Usage
+            exit 0
+        ;;
+        -n|--type)
+            ExpectOption "$@"
+            shift
+            MESSAGE_TYPE=$(OneArgument "$@")
+        ;;
+        -p|--port)
+            ExpectOption "$@"
+            shift
+            REMOTE_PORT_NUM=$(OneArgument "$@")
+        ;;
+        -s|--server)
+            ExpectOption "$@"
+            shift
+            REMOTE_SERVER=$(OneArgument "$@")
+        ;;
+        -t|--tag)
+            ExpectOption "$@"
+            shift
+            MESSAGE_TAGS+=(-g "$(OneArgument "$@")")
+        ;;
+        -u|--expire-timestamp)
+            ExpectOption "$@"
+            shift
+            MESSAGE_EXPIRE_TIMESTAMP=$(OneArgument "$@")
+        ;;
+        -v|--verbose)
+            VERBOSE=true
+        ;;
+        -*)
+            echo "Unknown option \"$opt\"" && Usage && exit 5
+        ;;
+        *)
+	    if [ "$MESSAGE_TYPE" = "config" -a "$1" = "setconf" ]
+            then
+                MESSAGE_TAGS+=(-g "setconf")
+                shift
+                MESSAGE_FILE="$@"
+	    else
+                if [ $# -ne 1 ]
+                then
+                    echo "Bad syntax. The text should be the last argument."
+                    echo "Stopped near \"$@\"."
+                    echo "Check the quotes around the arguments?"
+                    exit 3
+                fi
+                if [ "x$MESSAGE_TEXT" = "x" ]
+                then
+                    MESSAGE_TEXT="$@"
+                    break # exit the while cycle
+                else
+                    echo "Bad syntax. The text must be specified only once."
+                    exit 3
+                fi
+	    fi
+        ;;
+    esac
+    shift
+done
+
+
+if [ $MESSAGE_TYPE != "config" ]; then
+    if [ ! -z "$MESSAGE_EXPIRE" -a -z "$MESSAGE_EXPIRE_TIMESTAMP" ]
+    then
+        MESSAGE_EXPIRE_TIMESTAMP=`"$DATE" --date="$MESSAGE_EXPIRE" +"%s"`
+        if [ $? -ne 0 ]
+        then
+            echo "The date couldn't parse the input '$MESSAGE_EXPIRE'."
+            echo "Consider installing gnu date and setting env variable DATE."
+            exit 5;
+        fi
+    fi
+fi
+
+
+Info
+StdInvocation

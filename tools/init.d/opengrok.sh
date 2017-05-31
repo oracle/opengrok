@@ -43,7 +43,7 @@ PATH=/usr/bin; export PATH
 # WEBSERVERS="localhost:2424"
 
 # The email address to send an email if the source update fails, or a fatal
-# error occurs while the index database is beeing updated.
+# error occurs while the index database is being updated.
 ADMINISTRATOR=root@localhost; export ADMINISTRATOR
 
 # The current version of the Mercurial log parser expects C date format.

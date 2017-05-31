@@ -18,6 +18,10 @@
  */
 
 /*
+ * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ */
+
+/*
  * Cross reference a C# file
  * @author Christoph Hofmann - ChristophHofmann AT gmx dot de
  */
@@ -66,6 +70,9 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 
 %%
 <YYINITIAL>{
+ \{     { incScope(); writeUnicodeChar(yycharat(0)); }
+ \}     { decScope(); writeUnicodeChar(yycharat(0)); }
+ \;     { endScope(); writeUnicodeChar(yycharat(0)); }
 
 {Identifier} {
     String id = yytext();
@@ -155,10 +162,8 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
         {
-         String url = yytext();
-         out.write("<a href=\"");
-         out.write(url);out.write("\">");
-         out.write(url);out.write("</a>");}
+          appendLink(yytext());
+        }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {

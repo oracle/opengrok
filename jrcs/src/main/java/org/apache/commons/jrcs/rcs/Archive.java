@@ -124,14 +124,14 @@ import org.apache.commons.jrcs.util.ToString;
  *
  * <p>You can also initialize archives from streams.</p>
  *
- * <p>To retreive a revision from an archive use:
+ * <p>To retrieve a revision from an archive use:
  * <code><pre>
  *   String versionNumber = "1.2";
  *   Object[] text = archive.getRevision(versionNumber);
  * </pre></code>
  * </p>
  *
- * <p>You can also retreive revisions in such a way that each item
+ * <p>You can also retrieve revisions in such a way that each item
  * is annotated with the version number of the revision in which it was
  * last changed or added. To retrieve annotated text use:
  * <code><pre>
@@ -242,7 +242,7 @@ public class Archive
     }
 
     /**
-     * Create an unitialized Archive.
+     * Create an uninitialized Archive.
      * Used internally by the ArchiveParser.
      * @see ArchiveParser
      */
@@ -364,7 +364,7 @@ public class Archive
 
 
     /**
-     * Add a lock over a revison.
+     * Add a lock over a revision.
      * @param user The user that locks the revision.
      * @param vernum The version number of the revision to lock.
      */
@@ -400,12 +400,12 @@ public class Archive
      * Set the keyword expansion flag for the archive.
      * @param value The keyword expansion value. It should be one of:
      * <ul>
-     * <li>     kv   (Default) Substitue keyword and value.
+     * <li>     kv   (Default) Substitute keyword and value.
      * <li>     kvl  Substitute keyword, value, and locker (if any).
      * <li>     k    Substitute keyword only.
      * <li>     o    Preserve original string.
      * <li>     b    Like o, but mark file as binary.
-     * <li>     v    Substitue value only.
+     * <li>     v    Substitute value only.
      * </ul>
      */
     public void setExpand(String value)
@@ -521,7 +521,7 @@ public class Archive
 
     /**
      * Place a string image of the archive in the given StringBuffer.
-     * @param s Where the image shoul go.
+     * @param s Where the image should go.
      */
     public void toString(StringBuffer s)
     {

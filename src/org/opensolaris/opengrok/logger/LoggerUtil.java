@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.logger;
 
@@ -27,7 +27,13 @@ import org.opensolaris.opengrok.logger.formatter.FileLogFormatter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Utilities to maintain logging.
@@ -62,19 +68,17 @@ public class LoggerUtil {
         return getBaseLogLevel(FileHandler.class);
     }
 
-
-
     private static void setBaseLogLevel(Class<? extends Handler> handlerClass, Level level) {
-        for(Handler handler : getBaseLogger().getHandlers()) {
-            if(handlerClass.isInstance(handler)) {
+        for (Handler handler : getBaseLogger().getHandlers()) {
+            if (handlerClass.isInstance(handler)) {
                 handler.setLevel(level);
             }
         }
     }
 
     private static Level getBaseLogLevel(Class<? extends Handler> handlerClass) {
-        for(Handler handler : getBaseLogger().getHandlers()) {
-            if(handlerClass.isInstance(handler)) {
+        for (Handler handler : getBaseLogger().getHandlers()) {
+            if (handlerClass.isInstance(handler)) {
                 return handler.getLevel();
             }
         }
@@ -89,8 +93,8 @@ public class LoggerUtil {
         if (path != null) {
             File jlp = new File(path);
             if (!jlp.exists() && !jlp.mkdirs()) {
-                throw new IOException("could not make logpath: " +
-                        jlp.getAbsolutePath());
+                throw new IOException("could not make logpath: "
+                        + jlp.getAbsolutePath());
             }
         }
 
@@ -98,8 +102,8 @@ public class LoggerUtil {
         logfile.append(path == null ? "%t" : path);
         logfile.append(File.separatorChar).append("opengrok%g.%u.log");
 
-        for(Handler handler : getBaseLogger().getHandlers()) {
-            if(handler instanceof FileHandler) {
+        for (Handler handler : getBaseLogger().getHandlers()) {
+            if (handler instanceof FileHandler) {
                 FileHandler fileHandler = (FileHandler) handler;
                 FileHandler newFileHandler;
                 try {
@@ -113,7 +117,7 @@ public class LoggerUtil {
                 String formatter = LogManager.getLogManager().getProperty("java.util.logging.FileHandler.formatter");
                 newFileHandler.setLevel(fileHandler.getLevel());
                 try {
-                    newFileHandler.setFormatter((Formatter)Class.forName(formatter).newInstance());
+                    newFileHandler.setFormatter((Formatter) Class.forName(formatter).newInstance());
                 } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
                     newFileHandler.setFormatter(new FileLogFormatter());
                 }
@@ -130,7 +134,7 @@ public class LoggerUtil {
 
     private static int loggerIntProperty(String name, int def) {
         String val = LogManager.getLogManager().getProperty(name);
-        if(val == null) {
+        if (val == null) {
             return def;
         }
         try {
@@ -140,13 +144,12 @@ public class LoggerUtil {
         }
     }
 
-
     public static String initLogger(String logpath, Level filelevel, Level consolelevel) throws IOException {
         if (logpath != null) {
             File jlp = new File(logpath);
             if (!jlp.exists() && !jlp.mkdirs()) {
-                throw new RuntimeException("could not make logpath: " +
-                        jlp.getAbsolutePath());
+                throw new RuntimeException("could not make logpath: "
+                        + jlp.getAbsolutePath());
             }
             if (!jlp.canWrite() && !Level.OFF.equals(filelevel)) {
                 throw new IOException("logpath not writeable " + jlp.getAbsolutePath());
@@ -179,7 +182,7 @@ public class LoggerUtil {
             ch.setFormatter(new ConsoleFormatter());
             getBaseLogger().addHandler(ch);
 
-        } catch (Exception ex1) {
+        } catch (IOException | SecurityException ex1) {
             LOGGER.log(Level.SEVERE, "Exception logging", ex1);
             throw new IOException("Exception setting up logging " + ex1);
         }

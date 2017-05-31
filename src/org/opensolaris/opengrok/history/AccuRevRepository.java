@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -76,14 +77,16 @@ public class AccuRevRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "accurev";
     private static final Pattern annotationPattern
-            = Pattern.compile("^\\s+(\\d+/\\d+)\\s+(\\w+)");   // version, user
+            = Pattern.compile("^\\s+(\\d+\\\\\\d+)\\s+(\\w+)\\s+.*");   // version, user, code line
     private static final Pattern depotPattern
             = Pattern.compile("^Depot:\\s+(\\w+)");
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     public AccuRevRepository() {
         type = "AccuRev";
-        datePattern = "yyyy/MM/dd hh:mm:ss";
+        datePatterns = new String[]{
+            "yyyy/MM/dd hh:mm:ss"
+        };
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
     }
 
@@ -94,12 +97,7 @@ public class AccuRevRepository extends Repository {
 
         ArrayList<String> cmd = new ArrayList<>();
 
-        /*
-         * ----------------------------------------------- Strip off source root
-         * to get to workspace path.
-         *-----------------------------------------------
-         */
-        String path = getDepotRelativePath(file);
+        String path = file.getAbsolutePath();
 
         cmd.add(RepoCommand);
         cmd.add("annotate");
@@ -151,12 +149,7 @@ public class AccuRevRepository extends Repository {
      */
     Executor getHistoryLogExecutor(File file) throws IOException {
 
-        /*
-         * ----------------------------------------------- Strip off source root
-         * to get to workspace path.
-         *-----------------------------------------------
-         */
-        String path = getDepotRelativePath(file);
+        String path = file.getAbsolutePath();
 
         ArrayList<String> cmd = new ArrayList<>();
 
@@ -169,8 +162,10 @@ public class AccuRevRepository extends Repository {
         }
 
         cmd.add(path);
-
-        return new Executor(cmd, file.getParentFile());
+        
+        File workingDirectory = file.isDirectory() ? file : file.getParentFile();
+        
+        return new Executor(cmd, workingDirectory);
     }
 
     @Override
@@ -238,8 +233,17 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    public void update() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void update() throws IOException {      
+        File directory = new File(getDirectoryName());
+        List<String> cmd = new ArrayList<>();
+        
+        cmd.add(RepoCommand);
+        cmd.add("update");
+
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
+        }
     }
 
     @Override
@@ -302,15 +306,15 @@ public class AccuRevRepository extends Repository {
 
     public String getDepotRelativePath(File file) {
 
-        String path = "/./";
+        String path = File.separator + "." + File.separator;
 
         try {
             path = env.getPathRelativeToSourceRoot(file, 0);
 
-            if (path.startsWith("/")) {
-                path = "/." + path;
+            if (path.startsWith(File.separator)) {
+                path = File.separator + "." + path;
             } else {
-                path = "/./" + path;
+                path = File.separator + "." + File.separator + path;
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,

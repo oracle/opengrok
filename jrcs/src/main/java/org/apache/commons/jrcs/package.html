@@ -4,7 +4,7 @@ Text is represented as Object[] because the diff engine is capable of handling m
 
 Two implementations of the differencing algorithm are provided.
 
-    * {@link SimpleDiff Simple Diff} is a verys imple algorithm that is fast and works well with very large input sequences, but that frequently produces result that are subotimal (at times four or more times larger than GNU diff).
+    * {@link SimpleDiff Simple Diff} is a very simple algorithm that is fast and works well with very large input sequences, but that frequently produces result that are suboptimal (at times four or more times larger than GNU diff).
     * {@link org.apache.commons.jrcs.diff.myers.MyersDiff MyersDiff} is an implementation of Gene Myers differencing algorithm. Myer's algorithm produces optimum results (minimum diffs), but consumes considerably more memory than SimpleDiff, so its not suitable for very large files.
 
 @author Juanco Anez

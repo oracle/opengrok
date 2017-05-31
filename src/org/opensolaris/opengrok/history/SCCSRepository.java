@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -61,7 +61,11 @@ public class SCCSRepository extends Repository {
 
     public SCCSRepository() {
         type = "SCCS";
-        datePattern = "yy/MM/dd";
+        datePatterns = new String[]{
+            "yy/MM/dd"
+        };
+
+        ignoredDirs.add("SCCS");
     }
 
     @Override
