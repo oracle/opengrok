@@ -22,6 +22,7 @@
  */
 package org.opensolaris.opengrok.util;
 
+import java.util.Arrays;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -107,5 +108,37 @@ public class StringUtilsTest {
                     new Object[]{tests[i][2], tests[i][1], tests[i][0], indices[i], index}),
                     index, indices[i]);
         }
+    }
+
+    @Test
+    public void testObfuscateEmail() {
+        assertEquals(StringUtils.obfuscateCommand(Arrays.asList(new String[]{
+            "git", "log", "--username 007", "/var/xml/opengrok"
+        })), Arrays.asList(new String[]{
+            "git", "log", "--username ******", "/var/xml/opengrok"
+        }));
+        assertEquals(StringUtils.obfuscateCommand(Arrays.asList(new String[]{
+            "git", "log", "--password 007", "/var/xml/opengrok"
+        })), Arrays.asList(new String[]{
+            "git", "log", "--password ******", "/var/xml/opengrok"
+        }));
+
+        assertEquals(StringUtils.obfuscateCommand(Arrays.asList(new String[]{
+            "git", "log", "--password 007", "--username 008", "/var/xml/opengrok"
+        })), Arrays.asList(new String[]{
+            "git", "log", "--password ******", "--username ******", "/var/xml/opengrok"
+        }));
+
+        assertEquals(StringUtils.obfuscateCommand(Arrays.asList(new String[]{
+            "git", "log", "--username 008", "--password 007", "/var/xml/opengrok"
+        })), Arrays.asList(new String[]{
+            "git", "log", "--username ******", "--password ******", "/var/xml/opengrok"
+        }));
+
+        assertEquals(StringUtils.obfuscateCommand(Arrays.asList(new String[]{
+            "git", "log", "--username 008 --password 007", "/var/xml/opengrok"
+        })), Arrays.asList(new String[]{
+            "git", "log", "--username ****** --password ******", "/var/xml/opengrok"
+        }));
     }
 }

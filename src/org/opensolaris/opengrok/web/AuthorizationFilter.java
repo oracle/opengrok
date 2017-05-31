@@ -44,6 +44,8 @@ public class AuthorizationFilter implements Filter {
     public void init(FilterConfig fc) throws ServletException {
     }
 
+    private int id = 0; 
+
     @Override
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
@@ -51,6 +53,8 @@ public class AuthorizationFilter implements Filter {
 
         PageConfig config = PageConfig.get(httpReq);
         long processTime = System.currentTimeMillis();
+
+        // LOGGER.log(Level.INFO, "request nr. " + (++id));
 
         Project p = config.getProject();
         if (p != null && !config.isAllowed(p)) {
