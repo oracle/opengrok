@@ -743,7 +743,7 @@ public final class PageConfig {
      * {@code OpenGrokProject} and it contains any available project, the set
      * with invalid projects removed gets returned. Otherwise:</li> <li>If a
      * default project is set in the RTE, this project gets returned.
-	 * Otherwise<li> if seach all is requested, all allowed projects are returned </li>
+	 * Otherwise</li><li>if seach all is requested, all allowed projects are returned
      * Otherwise:</li> <li>an empty set</li> </ol>
      */
     public SortedSet<String> getRequestedProjects() {
@@ -1517,9 +1517,8 @@ public final class PageConfig {
      * remove cookie if present
      *
      * @param cookieName name of the cookie.
-     * @param httprequst
-     * @param httpresponse
-     * @return a possible empty list.
+     * @param request
+     * @param response
      */
 	 public static void resetCookie(String cookiename, HttpServletRequest request, HttpServletResponse response) {
          Cookie cookie = null;
