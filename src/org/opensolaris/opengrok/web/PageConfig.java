@@ -1516,7 +1516,7 @@ public final class PageConfig {
     /**
      * remove cookie if present
      *
-     * @param cookieName name of the cookie.
+     * @param cookiename name of the cookie.
      * @param request
      * @param response
      */
