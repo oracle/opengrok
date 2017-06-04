@@ -1841,7 +1841,7 @@ function deselectAllProjects() {
 
 function SearchAll() {
  deselectAllProjects();
- $("#hdnSearchAll").val("true");
+ $("#search_all").val("true");
  $( "#sbox" ).submit();
  
 }

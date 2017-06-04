@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.jrcs.diff.Diff;
 import org.apache.commons.jrcs.diff.DifferentiationFailedException;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
@@ -742,6 +743,7 @@ public final class PageConfig {
      * {@code OpenGrokProject} and it contains any available project, the set
      * with invalid projects removed gets returned. Otherwise:</li> <li>If a
      * default project is set in the RTE, this project gets returned.
+	 * Otherwise<li> if seach all is requested, all allowed projects are returned </li>
      * Otherwise:</li> <li>an empty set</li> </ol>
      */
     public SortedSet<String> getRequestedProjects() {
@@ -888,7 +890,15 @@ public final class PageConfig {
                 }
             }
         }
-        return set;
+		//if SearchAll is requested
+        if (set.isEmpty() && isSearchAll()) {
+            for (Project project : projects) {
+                if (authFramework.isAllowed(req, project)) {
+                    set.add(project.getName());
+                }
+            }
+        }
+		return set;
     }
     
     public ProjectHelper getProjectHelper() {
@@ -1278,7 +1288,18 @@ public final class PageConfig {
         return dataRoot;
     }
 
-    /**
+   /**
+     * Check, whether all projects is searched.
+     *
+     * @return {@code true} if all project is selected.
+     */
+	 public boolean isSearchAll() {
+		 if (req.getParameter("search_all") != null && req.getParameter("search_all").equals("true")) 
+			 return true;
+		 return false;
+	}
+	
+	/**
      * Prepare a search helper with all required information, ready to execute
      * the query implied by the related request parameters and cookies.
      * <p>
@@ -1290,12 +1311,12 @@ public final class PageConfig {
      *
      * @return a search helper.
      */
-    public SearchHelper prepareSearch(boolean isSearchAll) {
+    public SearchHelper prepareSearch() {
         SearchHelper sh = new SearchHelper();
         sh.dataRoot = getDataRoot(); // throws Exception if none-existent
         List<SortOrder> sortOrders = getSortOrder();
         sh.order = sortOrders.isEmpty() ? SortOrder.RELEVANCY : sortOrders.get(0);
-        if (getEnv().hasProjects() && !isSearchAll && getRequestedProjects().isEmpty()) {
+        if (getEnv().hasProjects() && !isSearchAll() && getRequestedProjects().isEmpty()) {
             sh.errorMsg = "You must select a project!";
             return sh;
         }
@@ -1490,5 +1511,33 @@ public final class PageConfig {
         if (!sourceRootPathFile.canRead()) {
             throw new IOException(String.format("Source root path \"%s\" is not readable", sourceRootPathFile.getAbsolutePath()));
         }
+    }
+	
+    /**
+     * remove cookie if present
+     *
+     * @param cookieName name of the cookie.
+     * @param httprequst
+     * @param httpresponse
+     * @return a possible empty list.
+     */
+	 public static void resetCookie(String cookiename, HttpServletRequest request, HttpServletResponse response) {
+         Cookie cookie = null;
+         Cookie[] cookies = null;
+         
+         // Get an array of Cookies associated with the this domain
+         cookies = request.getCookies();
+         
+         if( cookies != null ) {
+            
+            for (int i = 0; i < cookies.length; i++) {
+               cookie = cookies[i];
+               
+               if((cookie.getName( )).compareTo(cookiename) == 0 ) {
+                  cookie.setMaxAge(0);
+                  response.addCookie(cookie);
+               }
+            }
+          }
     }
 }

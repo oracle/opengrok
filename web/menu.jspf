@@ -93,8 +93,8 @@ org.opensolaris.opengrok.web.Util"
         name="project" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
 		SortedSet<String> pRequested = cfg.getRequestedProjects();
-		if (request.getParameter("hdnSearchAll") != null && request.getParameter("hdnSearchAll").equals("true"))
-			pRequested.clear(); 
+		//for all searches do not display any project selected
+		if (cfg.isSearchAll()) pRequested.clear(); 
         for ( Group group : ph.getGroups() ) {
             Set<Project> groupProjects = ph.getAllGrouped(group);
             if ( groupProjects.size() > 0) {
@@ -204,12 +204,12 @@ org.opensolaris.opengrok.web.Util"
     </tbody>
 </table>
 <div id="form-controls">
-    <input tabindex="9" class="submit btn" type="button" value="Search All Projects" onclick="javascript: SearchAll();"/>
     <input tabindex="9" class="submit btn" type="submit" value="Search"/>
-    <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
+    <input tabindex="10" class="submit btn" type="button" value="Search All" onclick="javascript: SearchAll();"/>
+    <input tabindex="11" class="submit btn" onclick="javascript: clearSearchFrom();"
            type="button" value="Clear"/>
     <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
-	<input type="hidden" id="hdnSearchAll" name="hdnSearchAll" value="false">
+	<input type="hidden" id="search_all" name="search_all" value="false">
 </div>
 </div>
 <div id="ltbl">
