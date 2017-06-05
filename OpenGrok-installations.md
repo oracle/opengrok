@@ -1,19 +1,14 @@
 ## Operating systems:
 * http://src.illumos.org/source/ &mdash; illumos, FreeBSD, Linux
-* http://nxr.netbsd.org/ &mdash; NetBSD src and xsrc, FreeBSD, DragonFly, Linux etc
+* http://nxr.netbsd.org/ &mdash; NetBSD src and BSD
 * http://BXR.SU/ &mdash; Super User's BSD Cross Reference &mdash; FreeBSD, NetBSD, OpenBSD, DragonFly _(very fast)_
 * http://www.midnightbsd.org/opengrok/ &mdash; MidnightBSD, MirBSD and other BSDs
-* http://opengrok.quantumachine.net/ &mdash; DragonFly, FreeBSD, OpenBSD and Linux
-* http://sauce.bbqdroid.org/ &mdash; CyanogenMod Android-related projects
-* http://lxr.devzen.net/source &mdash; Linux branches and some other projects
 * http://androidxref.com/ &mdash; Android
 
 ## Programming languages:
 * http://lxr.php.net/ &mdash; PHP
 
 ## Office and IDE:
-* http://svn.services.openoffice.org/opengrok/ &mdash; OpenOffice
-* http://grok.openkomodo.com/source/ &mdash; Open Komodo, Mozilla
 * http://opengrok.libreoffice.org/ &mdash; LibreOffice
 
 ## Miscellaneous:
