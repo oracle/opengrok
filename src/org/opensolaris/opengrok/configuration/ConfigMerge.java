@@ -145,7 +145,7 @@ public class ConfigMerge {
         try {
             cfgNew = Configuration.read(new File(argv[optind + 1]));
         } catch (IOException ex) {
-            System.err.println("cannot read file " + argv[optind + 1]);
+            System.err.println("cannot read file " + argv[optind + 1] + ":" + ex);
             System.exit(1);
         }
 
