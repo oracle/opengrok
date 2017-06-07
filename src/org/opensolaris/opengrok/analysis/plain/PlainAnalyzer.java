@@ -41,6 +41,7 @@ import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.NullWriter;
 
 /**
  * Analyzer for plain text files Created on September 21, 2005
@@ -101,6 +102,10 @@ public class PlainAnalyzer extends TextAnalyzer {
                     addScopes(doc, src);
                 }
             }
+        }
+        
+        if (scopesEnabled && xrefOut == null) {
+            xrefOut = new NullWriter();
         }
 
         if (xrefOut != null) {
