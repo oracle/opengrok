@@ -105,6 +105,11 @@ public class PlainAnalyzer extends TextAnalyzer {
         }
         
         if (scopesEnabled && xrefOut == null) {
+            /*
+             * Scopes are generated during xref generation. If xrefs are
+             * turned off we still need to run writeXref to produce scopes,
+             * we use a dummy writer that will throw away any xref output.
+             */
             xrefOut = new NullWriter();
         }
 

@@ -17,16 +17,19 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.util;
 
 import java.io.IOException;
 import java.io.Writer;
 
 /**
- *
+ * Implementation of Writer that doesn't produce any ouput. Serves as a dummy
+ * class where Writer is needed but the output is not relevant.
+ * 
  * @author tkotal
  */
 public class NullWriter extends Writer  {
