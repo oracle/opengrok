@@ -296,6 +296,9 @@ public class CVSRepository extends RCSRepository {
         if (revision != null) {
             cmd.add("-r");
             cmd.add(revision);
+        } else if (getBranch() != null && !getBranch().isEmpty()) {
+            cmd.add("-r");
+            cmd.add(getBranch());
         }
         cmd.add(file.getName());
 

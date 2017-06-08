@@ -775,6 +775,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
         <!-- Change root in CVS test repository -->
         <!-- Strange indentation in line two levels below to get newline correctly -->
+	<!-- This will be changed again in the CVS tests -->
         <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${basedir}/${test.cvs.root}/
         </concat>
 

@@ -43,6 +43,7 @@ import org.opensolaris.opengrok.condition.RepositoryInstalled;
 
 import static org.junit.Assert.*;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.TestRepository;
 
 /**
@@ -78,24 +79,15 @@ public class CVSRepositoryTest {
         repository = new TestRepository();
         repository.create(getClass().getResourceAsStream("repositories.zip"));
 
-        // Fix the CVS/Root so that it points to the temporary directory
-        // rather than the workspace directory.
-        // Normally this would be bad idea since every subdirectory includes
-        // CVS/Root file however in this case there is just one such file
-        // as the repository is flat in terms of directory structure.
-        // This is done so that 'cvs update' does not change the "upstream"
-        // cvsroot directory entries.
-        // The alternative would be to checkout cvsrepo from cvsroot.
-        // XXX no proper path separators + newline char below
-        File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo/CVS/Root");
-        if (root.isFile()) {
-            FileChannel outChan = new FileOutputStream(root, true).getChannel();
-            outChan.truncate(0);
-            outChan.close();
-        }
-        FileWriter fw = new FileWriter(root);
-        fw.write(repository.getSourceRoot() + "/cvs_test/cvsroot\n");
-        fw.close();
+        // Checkout cvsrepo anew in order to get the CVS/Root files point to
+        // the temporary directory rather than the OpenGrok workspace directory
+        // it was created from. This is necessary since 'cvs update' changes
+        // the CVS parent directory after branch has been created.
+        File root = new File(repository.getSourceRoot(), "cvs_test");
+        File cvsrepodir = new File(root, "cvsrepo");
+        IOUtils.removeRecursive(cvsrepodir.toPath());
+        File cvsroot = new File(root, "cvsroot");
+        runCvsCommand(root, "-d", cvsroot.getAbsolutePath(), "checkout", "cvsrepo");
     }
 
     @After
@@ -114,23 +106,21 @@ public class CVSRepositoryTest {
     }
 
     /**
-     * Run the 'cvs' command.
+     * Run the 'cvs' command with some arguments.
      *
      * @param reposRoot directory of the repository root
-     * @param command command to run
-     * @param arg argument to use for the command
+     * @param args arguments to use for the command
      */
-    private static void runCvsCommand(File reposRoot, String command, String ... args) {
+    private static void runCvsCommand(File reposRoot, String ... args) {
         List<String> cmdargs = new ArrayList<>();
         cmdargs.add(CVSRepository.CMD_FALLBACK);
-        cmdargs.add(command);
         for (String arg: args) {
             cmdargs.add(arg);
         }
         Executor exec = new Executor(cmdargs, reposRoot);
         int exitCode = exec.exec();
         if (exitCode != 0) {
-            fail("cvs " + command + " failed."
+            fail("cvs command '" + cmdargs.toString() + "'failed."
                     + "\nexit code: " + exitCode
                     + "\nstdout:\n" + exec.getOutputString()
                     + "\nstderr:\n" + exec.getErrorString());
@@ -152,7 +142,8 @@ public class CVSRepositoryTest {
     }
 
     /**
-     * Get the CVS repository, create new branch and verify getBranch() returns it.
+     * Get the CVS repository, create new branch and verify getBranch() returns it
+     * and check newly added commits annotate with branch revision numbers.
      * @throws Exception
      */
     @Test
@@ -171,6 +162,20 @@ public class CVSRepositoryTest {
             = (CVSRepository) RepositoryFactory.getRepository(root);
 
         assertEquals("mybranch", cvsrepo.getBranch());
+
+        // Change the content and commit.
+        File mainC = new File(root, "main.c");
+        FileChannel outChan = new FileOutputStream(mainC, true).getChannel();
+        outChan.truncate(0);
+        outChan.close();
+        FileWriter fw = new FileWriter(mainC);
+        fw.write("#include <foo.h>\n");
+        fw.close();
+        runCvsCommand(root, "commit", "-m", "change on a branch", "main.c");
+
+        // Check that annotation for the changed line has branch revision.
+        Annotation annotation = cvsrepo.annotate(mainC, null);
+        assertEquals("1.2.2.1", annotation.getRevision(1));
     }
 
     /**
