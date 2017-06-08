@@ -207,9 +207,8 @@ public class CVSRepository extends RCSRepository {
         cmd.add("log");
 
         if (getBranch() != null && !getBranch().isEmpty()) {
-            // Just generate THIS branch history, we don't care about the other
-            // branches which are not checked out.
-            cmd.add("-r" + branch);
+            // Generate history on this branch and follow up to the origin.
+            cmd.add("-r1.1:" + branch);
         } else {
             // Get revisions on this branch only (otherwise the revisions
             // list produced by the cvs log command would be unsorted).

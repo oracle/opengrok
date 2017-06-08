@@ -142,12 +142,15 @@ public class CVSRepositoryTest {
     }
 
     /**
-     * Get the CVS repository, create new branch and verify getBranch() returns it
-     * and check newly added commits annotate with branch revision numbers.
+     * Get the CVS repository, create new branch, change a file and verify that
+     * getBranch() returns the branch and check newly added commits annotate
+     * with branch revision numbers.
+     * Last, check that history entries of the file follow through before the
+     * branch was created.
      * @throws Exception
      */
     @Test
-    public void testGetBranchNewBranch() throws Exception {
+    public void testNewBranch() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo");
 
@@ -176,6 +179,12 @@ public class CVSRepositoryTest {
         // Check that annotation for the changed line has branch revision.
         Annotation annotation = cvsrepo.annotate(mainC, null);
         assertEquals("1.2.2.1", annotation.getRevision(1));
+
+        History mainCHistory = cvsrepo.getHistory(mainC);
+        assertEquals(3, mainCHistory.getHistoryEntries().size());
+        assertEquals("1.2.2.1", mainCHistory.getHistoryEntries().get(0).getRevision());
+        assertEquals("1.2", mainCHistory.getHistoryEntries().get(1).getRevision());
+        assertEquals("1.1", mainCHistory.getHistoryEntries().get(2).getRevision());
     }
 
     /**

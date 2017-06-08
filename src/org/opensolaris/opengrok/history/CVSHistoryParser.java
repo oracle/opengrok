@@ -31,7 +31,10 @@ import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,7 +53,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
     }
 
     private History history;
-    private CVSRepository repository = new CVSRepository();
+    private CVSRepository cvsrepo = new CVSRepository();
 
    /**
      * Process the output from the log command and insert the HistoryEntries
@@ -61,7 +64,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        DateFormat df = repository.getDateFormat();
+        DateFormat df = cvsrepo.getDateFormat();
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -169,9 +172,9 @@ class CVSHistoryParser implements Executor.StreamHandler {
      * @return object representing the file's history
      */
     History parse(File file, Repository repos) throws HistoryException {
-        repository = (CVSRepository) repos;
+        cvsrepo = (CVSRepository) repos;
         try {
-            Executor executor = repository.getHistoryLogExecutor(file);
+            Executor executor = cvsrepo.getHistoryLogExecutor(file);
             int status = executor.exec(true, this);
 
             if (status != 0) {
@@ -181,6 +184,19 @@ class CVSHistoryParser implements Executor.StreamHandler {
         } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
                                        file.getAbsolutePath() + "\"", e);
+        }
+
+        // In case there is a branch, the log entries can be returned in
+        // unsorted order (as a result of using '-r1.1:branch' for 'cvs log')
+        // so they need to be sorted according to revision.
+        if (cvsrepo.getBranch() != null && !cvsrepo.getBranch().isEmpty()) {
+            List<HistoryEntry> entries = history.getHistoryEntries();
+            Collections.sort(entries, new Comparator<HistoryEntry>() {
+                public int compare(HistoryEntry o1, HistoryEntry o2) {
+                    return o2.getRevision().compareTo(o1.getRevision());
+                }
+            });
+            history.setHistoryEntries(entries);
         }
 
         return history;
