@@ -40,6 +40,7 @@ import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.NullWriter;
 
 /**
  * Analyzer for plain text files Created on September 21, 2005
@@ -88,6 +89,15 @@ public class PlainAnalyzer extends TextAnalyzer {
                 byte[] tags = defs.serialize();
                 doc.add(new StoredField(QueryBuilder.TAGS, tags));                
             }
+        }
+        
+        if (scopesEnabled && xrefOut == null) {
+            /*
+             * Scopes are generated during xref generation. If xrefs are
+             * turned off we still need to run writeXref to produce scopes,
+             * we use a dummy writer that will throw away any xref output.
+             */
+            xrefOut = new NullWriter();
         }
 
         if (xrefOut != null) {
