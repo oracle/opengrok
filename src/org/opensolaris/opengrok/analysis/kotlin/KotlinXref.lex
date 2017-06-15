@@ -38,7 +38,7 @@ import org.opensolaris.opengrok.web.Util;
 %int
 %{
   /* Must match WhiteSpace regex */
-  private final static String WHITE_SPACE = "[\ \n\t\f]+";
+  private final static String WHITE_SPACE = "[ \n\t\f]+";
 
   // TODO move this into an include file when bug #16053 is fixed
   @Override
