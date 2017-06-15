@@ -260,12 +260,15 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <run-jflex dir="${gen.analysis.dir}/tcl" name="TclXref"/>
         <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaXref"/>
+        <!-- Kotlin tokenizer is below and has disabled buffer -->
+        <run-jflex dir="${gen.analysis.dir}/kotlin" name="KotlinXref"/>
         
         <!-- just those 4 below will not increase buffer size beyond lucene token limits -->        
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainSymbolTokenizer"/>
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/javascript" name="JavaScriptSymbolTokenizer"/>
-        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>
+        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>        
+        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/kotlin" name="KotlinSymbolTokenizer"/>        
         
         <!-- old analysers that will produce tokens > 32766 chars, since they have the buffer increase code in -->
         <!-- 

@@ -123,13 +123,13 @@ public class Ctags {
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/o,objects/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/C,case classes/");
-            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/O,case objects/"); 
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/O,case objects/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*trait[[:space:]]+([a-zA-Z0-9_]+)/\\4/t,traits/");
             command.add("--regex-scala=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/T,types/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*def[[:space:]]+([a-zA-Z0-9_]+)/\\3/m,methods/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*val[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,constants/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*var[[:space:]]+([a-zA-Z0-9_]+)/\\3/v,variables/");
-            command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/"); 
+            command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/");
 
             command.add("--langdef=haskell"); // below was added with #912
             command.add("--langmap=haskell:.hs.hsc");
@@ -191,6 +191,20 @@ public class Ctags {
             command.add("--regex-rust=/^[[:space:]]*macro_rules![[:space:]]+([[:alnum:]_]+)/\\1/d,macros,macro definitions/");
             command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V,variables/");
 
+            command.add("--langdef=kotlin");
+            command.add("--langmap=kotlin:.kt");
+            command.add("--langmap=kotlin:+.kts");
+            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c,classes/");
+            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*object[[:space:]]+([[:alnum:]_:]+)/\\4/o,objects/");
+            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*data class[[:space:]]+([[:alnum:]_:]+)/\\6/c,data classes/");
+            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*interface[[:space:]]+([[:alnum:]_:]+)/\\4/i,interfaces/");
+            command.add("--regex-kotlin=/^[ \\t]*type[[:space:]]+([[:alnum:]_:]+)/\\1/T,types/");
+            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy|private[^ ]*(\\[[a-z]*\\])*|protected)[[:space:]]*)*fun[[:space:]]+([[:alnum:]_:]+)/\\4/m,methods/");
+            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy|private[^ ]*|protected)[[:space:]]*)*val[[:space:]]+([[:alnum:]_:]+)/\\3/co,constants/");
+            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy|private[^ ]*|protected)[[:space:]]*)*var[[:space:]]+([[:alnum:]_:]+)/\\3/va,variables/");
+            command.add("--regex-kotlin=/^[ \\t]*package[[:space:]]+([[:alnum:]_.:]+)/\\1/p,packages/");
+            command.add("--regex-kotlin=/^[ \\t]*import[[:space:]]+([[:alnum:]_.:]+)/\\1/p,imports/");
+
             //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
 
             /* Add extra command line options for ctags. */
@@ -246,7 +260,7 @@ public class Ctags {
                 // this means the ctags process is dead so we must restart it.
                 ctagsRunning = false;
                 LOGGER.log(Level.WARNING, "Ctags process exited with exit value {0}",
-                    exitValue);
+                        exitValue);
             } catch (IllegalThreadStateException exp) {
                 ctagsRunning = true;
                 // The ctags process is still running.
@@ -505,15 +519,15 @@ public class Ctags {
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
         // the space consumed by them (see bug #809).
-        int lineno=0;
+        int lineno = 0;
         try {
-            lineno=Integer.parseInt(lnum);
+            lineno = Integer.parseInt(lnum);
         } catch (NumberFormatException nfe) {
             LOGGER.log(Level.WARNING, "CTags line number parsing problem(but I will continue with line # 0) for symbol {0}", symbol);
         }
         defs.addTag(lineno, seenSymbols.intern(symbol.trim()),
                 seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()),
                 namespace == null ? null : seenSymbols.intern(namespace.trim()), signature);
-        
+
     }
 }
