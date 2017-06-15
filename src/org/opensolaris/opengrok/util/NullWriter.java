@@ -18,25 +18,32 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.analysis;
 
-import java.io.BufferedInputStream;
+package org.opensolaris.opengrok.util;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import org.opensolaris.opengrok.util.IOUtils;
+import java.io.Writer;
 
-public abstract class TextAnalyzer extends FileAnalyzer {
+/**
+ * Implementation of Writer that doesn't produce any ouput. Serves as a dummy
+ * class where Writer is needed but the output is not relevant.
+ * 
+ * @author tkotal
+ */
+public class NullWriter extends Writer  {
 
-    public TextAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
+    @Override
+    public void write(char[] chars, int i, int i1) throws IOException {
     }
 
-    protected Reader getReader(InputStream stream) throws IOException {
-        return IOUtils.createBOMStrippedReader(stream);
+    @Override
+    public void flush() throws IOException {
     }
+
+    @Override
+    public void close() throws IOException {
+    }
+    
 }

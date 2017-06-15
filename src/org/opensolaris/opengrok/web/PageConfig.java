@@ -267,7 +267,7 @@ public final class PageConfig {
                 Project p = getProject();
                 for (int i = 0; i < 2; i++) {
                     try (BufferedReader br = new BufferedReader(
-                            ExpandTabsReader.wrap(new InputStreamReader(in[i]), p))) {
+                            ExpandTabsReader.wrap(IOUtils.createBOMStrippedReader(in[i]), p))) {
                         String line;
                         while ((line = br.readLine()) != null) {
                             lines.add(line);
