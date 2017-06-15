@@ -23,14 +23,16 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page errorPage="error.jsp" import="
-java.io.FileReader,
+java.io.FileInputStream,
+java.io.Reader,
 java.util.logging.Level,
 java.util.logging.Logger,
 
 org.apache.lucene.search.Query,
 org.opensolaris.opengrok.search.QueryBuilder,
 org.opensolaris.opengrok.search.context.Context,
-org.opensolaris.opengrok.logger.LoggerFactory"
+org.opensolaris.opengrok.logger.LoggerFactory,
+org.opensolaris.opengrok.util.IOUtils"
 %>
 <%
 {
@@ -54,7 +56,9 @@ file="mast.jsp"
 %><p><span class="pagetitle">Lines Matching <b><%= tquery %></b></span></p>
 <div id="more" style="line-height:1.5em;">
     <pre><%
-            sourceContext.getContext(new FileReader(cfg.getResourceFile()), out,
+            Reader r = IOUtils.createBOMStrippedReader(
+                    new FileInputStream(cfg.getResourceFile()));
+            sourceContext.getContext(r, out,
                 request.getContextPath() + Prefix.XREF_P, null, cfg.getPath(),
                 null, false, false, null, null);
     %></pre>

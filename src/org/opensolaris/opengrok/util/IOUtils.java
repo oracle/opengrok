@@ -23,10 +23,16 @@
  */
 package org.opensolaris.opengrok.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -164,5 +170,53 @@ public final class IOUtils {
             return new ArrayList<>();
         }
         return Arrays.asList(files);
+    }
+
+    /**
+     * Create BOM stripped reader from the stream.
+     * Charset of the reader is set to UTF-8, UTF-16 or system's default.
+     * @param stream input stream
+     * @return reader for the stream without BOM
+     */
+    public static Reader createBOMStrippedReader(InputStream stream) throws IOException {
+        return createBOMStrippedReader(stream, Charset.defaultCharset().name());
+    }
+
+    /**
+     * Create BOM stripped reader from the stream.
+     * Charset of the reader is set to UTF-8, UTF-16 or default.
+     * @param stream input stream
+     * @param defaultCharset default charset
+     * @return reader for the stream without BOM
+     */    
+    public static Reader createBOMStrippedReader(InputStream stream, String defaultCharset) throws IOException {
+        InputStream in = stream.markSupported() ?
+                stream : new BufferedInputStream(stream);
+
+        String charset = null;
+
+        in.mark(3);
+
+        byte[] head = new byte[3];
+        int br = in.read(head, 0, 3);
+
+        if (br >= 2
+                && (head[0] == (byte) 0xFE && head[1] == (byte) 0xFF)
+                || (head[0] == (byte) 0xFF && head[1] == (byte) 0xFE)) {
+            charset = "UTF-16";
+            in.reset();
+        } else if (br >= 3 && head[0] == (byte) 0xEF && head[1] == (byte) 0xBB
+                && head[2] == (byte) 0xBF) {
+            // InputStreamReader does not properly discard BOM on UTF8 streams,
+            // so don't reset the stream.
+            charset = "UTF-8";
+        }
+
+        if (charset == null) {
+            in.reset();
+            charset = defaultCharset;
+        }
+
+        return new InputStreamReader(in, charset);
     }
 }

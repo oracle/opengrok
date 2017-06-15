@@ -55,6 +55,7 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Prefix;
 import org.opensolaris.opengrok.web.SearchHelper;
 import org.opensolaris.opengrok.web.Util;
@@ -118,10 +119,11 @@ public final class Results {
                     File basedir, String path, boolean compressed)
             throws IOException {
         if (compressed) {
-            return new BufferedReader(new InputStreamReader(new GZIPInputStream(
-                    new FileInputStream(new File(basedir, path + ".gz")))));
+            return new BufferedReader(IOUtils.createBOMStrippedReader(
+                    new GZIPInputStream(new FileInputStream(new File(basedir, path + ".gz")))));
         } else {
-            return new BufferedReader(new FileReader(new File(basedir, path)));
+            return new BufferedReader(IOUtils.createBOMStrippedReader(
+                    new FileInputStream(new File(basedir, path))));
         }
     }
 
@@ -233,8 +235,8 @@ public final class Results {
                         String htags = getTags(sh.sourceRoot, rpath, false);
                         out.write(sh.summarizer.getSummary(htags).toString());
                     } else {
-                        FileReader r = genre == Genre.PLAIN
-                                ? new FileReader(new File(sh.sourceRoot, rpath))
+                        Reader r = genre == Genre.PLAIN
+                                ? IOUtils.createBOMStrippedReader(new FileInputStream(new File(sh.sourceRoot, rpath)))
                                 : null;
                         sh.sourceContext.getContext(r, out, xrefPrefix, morePrefix, 
                                 rpath, tags, true, sh.builder.isDefSearch(), null, scopes);

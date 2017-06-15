@@ -45,6 +45,7 @@ org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
 org.opensolaris.opengrok.analysis.FileAnalyzerFactory,
 org.opensolaris.opengrok.history.Annotation,
 org.opensolaris.opengrok.index.IndexDatabase,
+org.opensolaris.opengrok.util.IOUtils,
 org.opensolaris.opengrok.web.DirectoryListing"
 %><%
 {
@@ -180,7 +181,7 @@ Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a
                             Annotation annotation = cfg.getAnnotation();
                             //not needed yet
                             //annotation.writeTooltipMap(out);
-                            r = new InputStreamReader(in);
+                            r = IOUtils.createBOMStrippedReader(in);
                             AnalyzerGuru.writeXref(a, r, out, defs,
                                 annotation, Project.getProject(resourceFile));
                         } else if (g == Genre.IMAGE) {
@@ -267,7 +268,7 @@ Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a
                     // find the definitions in the index.
                     Definitions defs = IndexDatabase.getDefinitions(resourceFile);
                     Annotation annotation = cfg.getAnnotation();
-                    r = new InputStreamReader(bin);
+                    r = IOUtils.createBOMStrippedReader(bin);
                     AnalyzerGuru.writeXref(a, r, out, defs, annotation,
                         Project.getProject(resourceFile));
     %></pre>
