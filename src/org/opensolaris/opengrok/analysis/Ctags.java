@@ -119,7 +119,7 @@ public class Ctags {
             //on Solaris regexp.h used is different than on linux (gnu regexp)
             //http://en.wikipedia.org/wiki/Regular_expression#POSIX_basic_and_extended
             command.add("--langdef=scala"); // below is bug 61 to get full scala support
-            command.add("--langmap=scala:.scala");
+            command.add("--langmap=scala:+.scala");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/o,objects/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/C,case classes/");
@@ -132,7 +132,8 @@ public class Ctags {
             command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/");
 
             command.add("--langdef=haskell"); // below was added with #912
-            command.add("--langmap=haskell:.hs.hsc");
+            command.add("--langmap=haskell:+.hs");
+            command.add("--langmap=haskell:+.hsc");
             command.add("--regex-haskell=/^[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\1/c,classes/");
             command.add("--regex-haskell=/^[[:space:]]*data[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
             command.add("--regex-haskell=/^[[:space:]]*newtype[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
@@ -144,14 +145,14 @@ public class Ctags {
 
             if (!env.isUniversalCtags()) {
                 command.add("--langdef=golang");
-                command.add("--langmap=golang:.go");
+                command.add("--langmap=golang:+.go");
                 command.add("--regex-golang=/func([[:space:]]+([^)]+))?[[:space:]]+([a-zA-Z0-9_]+)/\\2/f,func/");
                 command.add("--regex-golang=/var[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/v,var/");
                 command.add("--regex-golang=/type[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/t,type/");
             }
             //temporarily use our defs until ctags will fix https://github.com/universal-ctags/ctags/issues/988
             command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/kul/8704283)
-            command.add("--langmap=clojure:.clj");
+            command.add("--langmap=clojure:+.clj");
             command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
             command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d,definition/");
             command.add("--regex-clojure=/\\([[:space:]]*defn[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/f,function/");
@@ -165,8 +166,22 @@ public class Ctags {
             command.add("--regex-clojure=/\\([[:space:]]*intern[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/v,intern/");
             command.add("--regex-clojure=/\\([[:space:]]*ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
 
+            command.add("--langdef=kotlin");
+            command.add("--langmap=kotlin:+.kt");
+            command.add("--langmap=kotlin:+.kts");
+            command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c,classes/");
+            command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*object[[:space:]]+([[:alnum:]_:]+)/\\4/o,objects/");
+            command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*data class[[:space:]]+([[:alnum:]_:]+)/\\6/c,data classes/");
+            command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*interface[[:space:]]+([[:alnum:]_:]+)/\\4/i,interfaces/");
+            command.add("--regex-kotlin=/^[[:space:]]*type[[:space:]]+([[:alnum:]_:]+)/\\1/T,types/");
+            command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*(\\[[a-z]*\\])*|protected)[[:space:]]*)*fun[[:space:]]+([[:alnum:]_:]+)/\\4/m,methods/");
+            command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*|protected)[[:space:]]*)*val[[:space:]]+([[:alnum:]_:]+)/\\3/co,constants/");
+            command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*|protected)[[:space:]]*)*var[[:space:]]+([[:alnum:]_:]+)/\\3/va,variables/");
+            command.add("--regex-kotlin=/^[[:space:]]*package[[:space:]]+([[:alnum:]_.:]+)/\\1/p,packages/");
+            command.add("--regex-kotlin=/^[[:space:]]*import[[:space:]]+([[:alnum:]_.:]+)/\\1/p,imports/");
+
             command.add("--langdef=pascal");
-            command.add("--langmap=pascal:.pas");
+            command.add("--langmap=pascal:+.pas");
             command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*\\([[:space:]]*[[:alnum:]_][[:space:]]*\\)/\\1/t,Type/");
             command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*class[[:space:]]*[^;]*$/\\1/c,Class/");
             command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*interface[[:space:]]*[^;]*$/\\1/i,interface/");
@@ -179,7 +194,7 @@ public class Ctags {
             command.add("--regex-pascal=/^unit[[:space:]]+([a-zA-Z0-9_<>, ]+)[;(]/\\1/u,unit/");
 
             command.add("--langdef=rust");
-            command.add("--langmap=rust:.rs");
+            command.add("--langmap=rust:+.rs");
             command.add("--regex-rust=/^[[:space:]]*(#\\[[^\\]]\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\"[^\"]+\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/h,functions,function definitions/");
             command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?type[[:space:]]+([[:alnum:]_]+)/\\2/T,types,type definitions/");
             command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?enum[[:space:]]+([[:alnum:]_]+)/\\2/g,enum,enumeration names/");
@@ -190,21 +205,7 @@ public class Ctags {
             command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,trait implementations/");
             command.add("--regex-rust=/^[[:space:]]*macro_rules![[:space:]]+([[:alnum:]_]+)/\\1/d,macros,macro definitions/");
             command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/V,variables/");
-
-            command.add("--langdef=kotlin");
-            command.add("--langmap=kotlin:.kt");
-            command.add("--langmap=kotlin:+.kts");
-            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*class[[:space:]]+([[:alnum:]_:]+)/\\4/c,classes/");
-            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*object[[:space:]]+([[:alnum:]_:]+)/\\4/o,objects/");
-            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*data class[[:space:]]+([[:alnum:]_:]+)/\\6/c,data classes/");
-            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private[^ ]*|protected)?[[:space:]]*interface[[:space:]]+([[:alnum:]_:]+)/\\4/i,interfaces/");
-            command.add("--regex-kotlin=/^[ \\t]*type[[:space:]]+([[:alnum:]_:]+)/\\1/T,types/");
-            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy|private[^ ]*(\\[[a-z]*\\])*|protected)[[:space:]]*)*fun[[:space:]]+([[:alnum:]_:]+)/\\4/m,methods/");
-            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy|private[^ ]*|protected)[[:space:]]*)*val[[:space:]]+([[:alnum:]_:]+)/\\3/co,constants/");
-            command.add("--regex-kotlin=/^[ \\t]*((abstract|final|sealed|implicit|lazy|private[^ ]*|protected)[[:space:]]*)*var[[:space:]]+([[:alnum:]_:]+)/\\3/va,variables/");
-            command.add("--regex-kotlin=/^[ \\t]*package[[:space:]]+([[:alnum:]_.:]+)/\\1/p,packages/");
-            command.add("--regex-kotlin=/^[ \\t]*import[[:space:]]+([[:alnum:]_.:]+)/\\1/p,imports/");
-
+                        
             //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
 
             /* Add extra command line options for ctags. */
