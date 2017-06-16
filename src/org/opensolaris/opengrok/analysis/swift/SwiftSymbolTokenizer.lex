@@ -28,12 +28,12 @@
 // comments can be nested in kotlin, so below logic doesn't allow that with yybegin we save only one nesting
 // same for strings
 
-package org.opensolaris.opengrok.analysis.kotlin;
+package org.opensolaris.opengrok.analysis.swift;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 %%
 %public
-%class KotlinSymbolTokenizer
+%class SwiftSymbolTokenizer
 %extends JFlexTokenizer
 %init{
 super(in);
@@ -47,6 +47,7 @@ return false;
 %eofval}
 %char
 
+/* TODO add unicode as stated in https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/LexicalStructure.html#//apple_ref/swift/grammar/identifier-head */
 Identifier = [:jletter:] [:jletterdigit:]*
 
 %state STRING COMMENT SCOMMENT QSTRING

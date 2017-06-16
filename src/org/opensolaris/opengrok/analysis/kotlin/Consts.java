@@ -68,7 +68,9 @@ public class Consts {
         kwd.add("is");
         kwd.add("lateinit");
         kwd.add("noinline");
+        kwd.add("null");
         kwd.add("nullobject");
+        kwd.add("object");        
         kwd.add("open");
         kwd.add("operator");
         kwd.add("out");
@@ -81,12 +83,14 @@ public class Consts {
         kwd.add("return");
         kwd.add("sealed");
         kwd.add("set");
-        kwd.add("super");
+        kwd.add("super");        
         kwd.add("tailrec");
         kwd.add("this");
         kwd.add("throw");
         kwd.add("true");
         kwd.add("try");
+        kwd.add("typealias");
+        kwd.add("typeof");
         kwd.add("val");
         kwd.add("var");
         kwd.add("vararg");

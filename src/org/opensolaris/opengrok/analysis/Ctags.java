@@ -179,6 +179,17 @@ public class Ctags {
             command.add("--regex-kotlin=/^[[:space:]]*((abstract|final|sealed|implicit|lazy|private[^ ]*|protected)[[:space:]]*)*var[[:space:]]+([[:alnum:]_:]+)/\\3/v,variables/");
             command.add("--regex-kotlin=/^[[:space:]]*package[[:space:]]+([[:alnum:]_.:]+)/\\1/p,packages/");
             command.add("--regex-kotlin=/^[[:space:]]*import[[:space:]]+([[:alnum:]_.:]+)/\\1/I,imports/");
+            
+            command.add("--langdef=swift");
+            command.add("--langmap=swift:+.swift");                                                            
+            command.add("--regex-swift=/enum[[:space:]]+([^\\{\\}]+).*$/\\1/n,enum,enums/");
+            command.add("--regex-swift=/typealias[[:space:]]+([^:=]+).*$/\\1/t,typealias,typealiases/");
+            command.add("--regex-swift=/protocol[[:space:]]+([^:\\{]+).*$/\\1/p,protocol,protocols/");            
+            command.add("--regex-swift=/struct[[:space:]]+([^:\\{]+).*$/\\1/s,struct,structs/");
+            command.add("--regex-swift=/class[[:space:]]+([^:\\{]+).*$/\\1/c,class,classes/");            
+            command.add("--regex-swift=/func[[:space:]]+([^\\(\\)]+)\\([^\\(\\)]*\\)/\\1/f,function,functions/");            
+            command.add("--regex-swift=/(var|let)[[:space:]]+([^:=]+).*$/\\2/v,variable,variables/");            
+            command.add("--regex-swift=/^[[:space:]]*extension[[:space:]]+([^:\\{]+).*$/\\1/e,extension,extensions/");
 
             command.add("--langdef=pascal");
             command.add("--langmap=pascal:+.pas");
