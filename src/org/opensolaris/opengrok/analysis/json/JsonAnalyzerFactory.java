@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.analysis.javascript;
+package org.opensolaris.opengrok.analysis.json;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -33,30 +33,29 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-public class JavaScriptAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "JavaScript";
+public class JsonAnalyzerFactory extends FileAnalyzerFactory {
+    // TODO add schema support
+    private static final String name = "Json";
     
     private static final String[] SUFFIXES = {
-        "JS",
-        "TS"
+        "JSON"        
     };
 
     private static final String[] MAGICS = {    
     };
 
-    public JavaScriptAnalyzerFactory() {
+    public JsonAnalyzerFactory() {
         super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override
     protected FileAnalyzer newAnalyzer() {
-        return new JavaScriptAnalyzer(this);
+        return new JsonAnalyzer(this);
     }
 
     @Override
     public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
         throws IOException {
-        JavaScriptAnalyzer.writeXref(in, out, defs, annotation, project);
+        JsonAnalyzer.writeXref(in, out, defs, annotation, project);
     }
 }

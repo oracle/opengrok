@@ -32,6 +32,8 @@ import java.util.Set;
  * * ECMA-262 5.1 Edition June 2011
  * 
  */
+
+//TODO update to latest ecmascript ... (for angular support)
 public class Consts{
     public static final Set<String> kwd = new HashSet<String>() ;
     static {

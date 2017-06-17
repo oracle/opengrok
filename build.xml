@@ -264,6 +264,8 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <run-jflex dir="${gen.analysis.dir}/kotlin" name="KotlinXref"/>
         <!-- Swift tokenizer is below and has disabled buffer -->
         <run-jflex dir="${gen.analysis.dir}/swift" name="SwiftXref"/>
+        <!-- Swift tokenizer is below and has disabled buffer -->
+        <run-jflex dir="${gen.analysis.dir}/json" name="JsonXref"/>
         
         <!-- just those 4 below will not increase buffer size beyond lucene token limits -->        
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
@@ -272,6 +274,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>        
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/kotlin" name="KotlinSymbolTokenizer"/>        
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/swift" name="SwiftSymbolTokenizer"/>        
+        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/json" name="JsonSymbolTokenizer"/>        
         
         <!-- old analysers that will produce tokens > 32766 chars, since they have the buffer increase code in -->
         <!-- 
@@ -281,6 +284,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <run-jflex dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/kotlin" name="KotlinSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/swift" name="SwiftSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/swift" name="JsonSymbolTokenizer"/>
         -->        
         
         <run-jflex dir="${gen.analysis.dir}/plain" name="PlainXref"/>        

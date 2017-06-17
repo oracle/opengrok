@@ -18,45 +18,44 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
-
-package org.opensolaris.opengrok.analysis.javascript;
+package org.opensolaris.opengrok.analysis.json;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-public class JavaScriptAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "JavaScript";
-    
-    private static final String[] SUFFIXES = {
-        "JS",
-        "TS"
-    };
+/**
+ *
+ * @author Lubos Kosco
+ *
+ */
+public class JsonAnalyzer extends AbstractSourceCodeAnalyzer {
 
-    private static final String[] MAGICS = {    
-    };
-
-    public JavaScriptAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
-    }
-
-    @Override
-    protected FileAnalyzer newAnalyzer() {
-        return new JavaScriptAnalyzer(this);
-    }
+    /**
+     * Creates a new instance of JavaAnalyzer
+     * @param factory factory for this analyzer
+     */
+    protected JsonAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
+        SymbolTokenizer=new JsonSymbolTokenizer(FileAnalyzer.dummyReader);    
+    }    
 
     @Override
-    public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
-        throws IOException {
-        JavaScriptAnalyzer.writeXref(in, out, defs, annotation, project);
+    protected JFlexXref newXref(Reader reader) {
+        return new JsonXref(reader);
+    }
+
+    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
+        JsonXref xref = new JsonXref(in);
+        AbstractSourceCodeAnalyzer.writeXref(xref, in, out, defs, annotation, project);
     }
 }
