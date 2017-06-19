@@ -85,7 +85,7 @@ public class DirectoryListingTest {
             assertTrue("Failed to set modification time",
                        file.setLastModified(val));
 
-            try {
+            if (!"-".equals(size)) {
                 int s = Integer.parseInt(size);
                 if (s > 0) {
                     FileOutputStream out = new FileOutputStream(file);
@@ -93,7 +93,6 @@ public class DirectoryListingTest {
                     out.write(buffer);
                     out.close();
                 }
-            } catch (NumberFormatException e) {
             }
         }
 
