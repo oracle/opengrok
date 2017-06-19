@@ -24,40 +24,29 @@
  */
 package org.opensolaris.opengrok.index;
 
+import org.opensolaris.opengrok.Info;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.configuration.Configuration;
+import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.*;
+import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.logger.LoggerUtil;
+import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.Getopt;
+import org.opensolaris.opengrok.util.Statistics;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.opensolaris.opengrok.Info;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.configuration.Configuration;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.Repository;
-import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.logger.LoggerUtil;
-import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.Getopt;
-import org.opensolaris.opengrok.util.Statistics;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
@@ -103,7 +92,7 @@ public final class Indexer {
         boolean update = true;
         boolean optimizedChanged = false;
         ArrayList<String> zapCache = new ArrayList<>();
-        CommandLineOptions cmdOptions = new CommandLineOptions();
+        org.opensolaris.opengrok.index.CommandLineOptions cmdOptions = new CommandLineOptions();
 
         if (argv.length == 0) {
             System.err.println(cmdOptions.getUsage());
@@ -441,6 +430,18 @@ public final class Indexer {
                                         + exp.getMessage());
                                 System.exit(1);
                             }
+                            break;
+                        case 'Z':
+                            if (getopt.getOptarg().equalsIgnoreCase(ON)) {
+                                cfg.setResponsiveUI(true);
+                            } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
+                                cfg.setResponsiveUI(false);
+                            } else {
+                                System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -Z");
+                                System.err.println("       Ex: \"-Z on\" will just turn on responsiveness in UI");
+                                System.err.println("           \"-Z off\" will just turn off responsiveness in UI");
+                            }
+
                             break;
                         case '?':
                             System.err.println(cmdOptions.getUsage());

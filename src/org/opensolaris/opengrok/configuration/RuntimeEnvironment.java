@@ -22,54 +22,6 @@
   */
 package org.opensolaris.opengrok.configuration;
 
-import java.beans.XMLDecoder;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
-import java.nio.file.ClosedWatchServiceException;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.search.SearcherManager;
@@ -94,10 +46,19 @@ import org.opensolaris.opengrok.util.XmlEofInputStream;
 import org.opensolaris.opengrok.web.Statistics;
 import org.opensolaris.opengrok.web.Util;
 
+import java.beans.XMLDecoder;
+import java.io.*;
+import java.net.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static java.nio.file.StandardWatchEventKinds.*;
 import static org.opensolaris.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
 
 /**
@@ -115,8 +76,8 @@ public final class RuntimeEnvironment {
     private static ExecutorService historyRenamedExecutor = null;
     private static ExecutorService searchExecutor = null;
 
-    private final Map<Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
-    private final Map<Project, Set<Group>> project_group_map = new TreeMap<>();
+    private final Map<org.opensolaris.opengrok.configuration.Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
+    private final Map<org.opensolaris.opengrok.configuration.Project, Set<Group>> project_group_map = new TreeMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
     
     public static final String MESSAGES_MAIN_PAGE_TAG = "main";
@@ -408,8 +369,8 @@ public final class RuntimeEnvironment {
      *
      * @return a list containing all of the projects
      */
-    public List<Project> getProjectList() {
-        return new ArrayList<Project>(threadConfig.get().getProjects().values());
+    public List<org.opensolaris.opengrok.configuration.Project> getProjectList() {
+        return new ArrayList<org.opensolaris.opengrok.configuration.Project>(threadConfig.get().getProjects().values());
     }
 
     /**
@@ -417,7 +378,7 @@ public final class RuntimeEnvironment {
      *
      * @return a Map with all of the projects
      */
-    public Map<String,Project> getProjects() {
+    public Map<String, org.opensolaris.opengrok.configuration.Project> getProjects() {
         return threadConfig.get().getProjects();
     }
 
@@ -428,7 +389,7 @@ public final class RuntimeEnvironment {
      */
     public List<String> getProjectDescriptions() {
         return getProjectList().stream().
-            map(Project::getName).collect(Collectors.toList());
+            map(org.opensolaris.opengrok.configuration.Project::getName).collect(Collectors.toList());
     }
 
     /**
@@ -436,9 +397,9 @@ public final class RuntimeEnvironment {
      *
      * @param projects the map of projects to use
      */
-    public void setProjects(Map<String,Project> projects) {
+    public void setProjects(Map<String, org.opensolaris.opengrok.configuration.Project> projects) {
         if (projects != null) {
-            populateGroups(getGroups(), new TreeSet<Project>(projects.values()));
+            populateGroups(getGroups(), new TreeSet<org.opensolaris.opengrok.configuration.Project>(projects.values()));
         }
         threadConfig.get().setProjects(projects);
     }
@@ -467,7 +428,7 @@ public final class RuntimeEnvironment {
      * @param groups the set of groups to use
      */
     public void setGroups(Set<Group> groups) {
-        populateGroups(groups, new TreeSet<Project>(getProjects().values()));
+        populateGroups(groups, new TreeSet<org.opensolaris.opengrok.configuration.Project>(getProjects().values()));
         threadConfig.get().setGroups(groups);
     }
 
@@ -489,7 +450,7 @@ public final class RuntimeEnvironment {
      * @return the map
      * @see #generateProjectRepositoriesMap
      */
-    public Map<Project, List<RepositoryInfo>> getProjectRepositoriesMap() {
+    public Map<org.opensolaris.opengrok.configuration.Project, List<RepositoryInfo>> getProjectRepositoriesMap() {
         return repository_map;
     }
 
@@ -699,7 +660,7 @@ public final class RuntimeEnvironment {
      *
      * @param defaultProject The default project to use
      */
-    public void setDefaultProjects(Set<Project> defaultProject) {
+    public void setDefaultProjects(Set<org.opensolaris.opengrok.configuration.Project> defaultProject) {
         threadConfig.get().setDefaultProjects(defaultProject);
     }
 
@@ -710,7 +671,7 @@ public final class RuntimeEnvironment {
      *
      * @return the default projects (may be null if not specified)
      */
-    public Set<Project> getDefaultProjects() {
+    public Set<org.opensolaris.opengrok.configuration.Project> getDefaultProjects() {
         return threadConfig.get().getDefaultProjects();
     }
 
@@ -971,11 +932,11 @@ public final class RuntimeEnvironment {
         threadConfig.get().setWebappLAF(laf);
     }
 
-    public Configuration.RemoteSCM getRemoteScmSupported() {
+    public org.opensolaris.opengrok.configuration.Configuration.RemoteSCM getRemoteScmSupported() {
         return threadConfig.get().getRemoteScmSupported();
     }
 
-    public void setRemoteScmSupported(Configuration.RemoteSCM supported) {
+    public void setRemoteScmSupported(org.opensolaris.opengrok.configuration.Configuration.RemoteSCM supported) {
         threadConfig.get().setRemoteScmSupported(supported);
     }
 
@@ -1127,6 +1088,14 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getGroupsCollapseThreshold();
     }
 
+    public boolean isResponsiveUI() {
+        return threadConfig.get().isResponsiveUI();
+    }
+
+    public void setResponsiveUI(boolean isResponsiveUI) {
+        threadConfig.get().setResponsiveUI(isResponsiveUI);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *
@@ -1134,7 +1103,7 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void readConfiguration(File file) throws IOException {
-        setConfiguration(Configuration.read(file));
+        setConfiguration(org.opensolaris.opengrok.configuration.Configuration.read(file));
     }
 
     /**
@@ -1203,13 +1172,13 @@ public final class RuntimeEnvironment {
     private void generateProjectRepositoriesMap() throws IOException {
         repository_map.clear();
         for (RepositoryInfo r : getRepositories()) {
-            Project proj;
+            org.opensolaris.opengrok.configuration.Project proj;
             String repoPath;
 
             repoPath = getPathRelativeToSourceRoot(
                     new File(r.getDirectoryName()), 0);
 
-            if ((proj = Project.getProject(repoPath)) != null) {
+            if ((proj = org.opensolaris.opengrok.configuration.Project.getProject(repoPath)) != null) {
                 List<RepositoryInfo> values = repository_map.get(proj);
                 if (values == null) {
                     values = new ArrayList<>();
@@ -1223,11 +1192,11 @@ public final class RuntimeEnvironment {
     /**
      * Classifies projects and puts them in their groups.
      */
-    private void populateGroups(Set<Group> groups, Set<Project> projects) {
+    private void populateGroups(Set<Group> groups, Set<org.opensolaris.opengrok.configuration.Project> projects) {
         if (projects == null || groups == null) {
             return;
         }
-        for (Project project : projects) {
+        for (org.opensolaris.opengrok.configuration.Project project : projects) {
             // filterProjects only groups which match project's description
             Set<Group> copy = new TreeSet<>(groups);
             copy.removeIf(new Predicate<Group>() {
@@ -1269,7 +1238,7 @@ public final class RuntimeEnvironment {
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
-        populateGroups(getGroups(), new TreeSet<Project>(getProjects().values()));
+        populateGroups(getGroups(), new TreeSet<org.opensolaris.opengrok.configuration.Project>(getProjects().values()));
         if (subFileList != null) {
             HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories(), subFileList);
@@ -1910,9 +1879,9 @@ public final class RuntimeEnvironment {
      * @param proj project
      * @return SearcherManager for given project
      */
-    public SuperIndexSearcher getIndexSearcher(String proj) throws IOException {
+    public org.opensolaris.opengrok.configuration.SuperIndexSearcher getIndexSearcher(String proj) throws IOException {
         SearcherManager mgr = searcherManagerMap.get(proj);
-        SuperIndexSearcher searcher = null;
+        org.opensolaris.opengrok.configuration.SuperIndexSearcher searcher = null;
 
         if (mgr == null) {
             File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
@@ -1921,14 +1890,14 @@ public final class RuntimeEnvironment {
                 Directory dir = FSDirectory.open(new File(indexDir, proj).toPath());
                 mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
                 searcherManagerMap.put(proj, mgr);
-                searcher = (SuperIndexSearcher) mgr.acquire();
+                searcher = (org.opensolaris.opengrok.configuration.SuperIndexSearcher) mgr.acquire();
                 searcher.setSearcherManager(mgr);
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE,
                     "cannot construct IndexSearcher for project " + proj, ex);
             }
         } else {
-            searcher = (SuperIndexSearcher) mgr.acquire();
+            searcher = (org.opensolaris.opengrok.configuration.SuperIndexSearcher) mgr.acquire();
             searcher.setSearcherManager(mgr);
         }
 
@@ -1975,7 +1944,7 @@ public final class RuntimeEnvironment {
      * @return MultiReader for the projects
      */
     public MultiReader getMultiReader(SortedSet<String> projects,
-        ArrayList<SuperIndexSearcher> searcherList) {
+        ArrayList<org.opensolaris.opengrok.configuration.SuperIndexSearcher> searcherList) {
 
         IndexReader[] subreaders = new IndexReader[projects.size()];
         int ii = 0;
@@ -1984,7 +1953,7 @@ public final class RuntimeEnvironment {
         // String , need changes in projects.jspf too
         for (String proj : projects) {
             try {
-                SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                org.opensolaris.opengrok.configuration.SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
                 subreaders[ii++] = searcher.getIndexReader();
                 searcherList.add(searcher);
             } catch (IOException ex) {

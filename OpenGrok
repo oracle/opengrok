@@ -305,6 +305,9 @@ DefaultInstanceConfiguration()
     #           (Options: default, offwhite and polished.
     #            Note the quoting requirements)
     #SKIN='-L default'
+    
+    # OPTIONAL: Turn on/off UI responsiveness. 
+    #RESPONSIVE_UI='-Z off'
 
     # OPTIONAL: Configuration Address (host:port)
     #           (conf/web.xml default is localhost:2424)
@@ -820,7 +823,7 @@ CommonInvocation()
         ${PROGRESS}                                             	\
         ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
-        ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
+        ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${RESPONSIVE_UI} ${LEADING_WILDCARD}	\
         ${READ_XML_CONF}                                        	\
         "${@}"
 }

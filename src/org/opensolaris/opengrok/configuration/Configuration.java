@@ -22,42 +22,23 @@
  */
 package org.opensolaris.opengrok.configuration;
 
-import java.beans.ExceptionListener;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.opensolaris.opengrok.authorization.AuthControlFlag;
 import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+
+import java.beans.ExceptionListener;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.*;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Placeholder class for all configuration variables. Due to the multithreaded
@@ -116,7 +97,7 @@ public final class Configuration {
      */
     private boolean authorizationWatchdogEnabled;
     private AuthorizationStack pluginStack;
-    private Map<String,Project> projects; // project name -> Project
+    private Map<String, org.opensolaris.opengrok.configuration.Project> projects; // project name -> Project
     private Set<Group> groups;
     private String sourceRoot;
     private String dataRoot;
@@ -128,7 +109,7 @@ public final class Configuration {
      * is in cookie, so basically only the first time a page is opened,
      * or when web cookies are cleared.
      */
-    private Set<Project> defaultProjects;
+    private Set<org.opensolaris.opengrok.configuration.Project> defaultProjects;
     /**
      * Default size of memory to be used for flushing of Lucene docs per thread.
      * Lucene 4.x uses 16MB and 8 threads, so below is a nice tunable.
@@ -173,6 +154,7 @@ public final class Configuration {
     private boolean scopesEnabled;
     private boolean foldingEnabled;
     private String statisticsFilePath;
+    private boolean responsiveUI;
     /*
      * Set to false if we want to disable fetching history of individual files
      * (by running appropriate SCM command) when the history is not found
@@ -398,6 +380,7 @@ public final class Configuration {
         setUsingLuceneLocking(false);
         setVerbose(false);
         setWebappLAF("default");
+        setResponsiveUI(false);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -572,11 +555,11 @@ public final class Configuration {
         this.handleHistoryOfRenamedFiles = enable;
     }
 
-    public Map<String,Project> getProjects() {
+    public Map<String, org.opensolaris.opengrok.configuration.Project> getProjects() {
         return projects;
     }
 
-    public void setProjects(Map<String,Project> projects) {
+    public void setProjects(Map<String, org.opensolaris.opengrok.configuration.Project> projects) {
         this.projects = projects;
     }
 
@@ -667,11 +650,11 @@ public final class Configuration {
         return generateHtml;
     }
 
-    public void setDefaultProjects(Set<Project> defaultProjects) {
+    public void setDefaultProjects(Set<org.opensolaris.opengrok.configuration.Project> defaultProjects) {
         this.defaultProjects = defaultProjects;
     }
 
-    public Set<Project> getDefaultProjects() {
+    public Set<org.opensolaris.opengrok.configuration.Project> getDefaultProjects() {
         return defaultProjects;
     }
 
@@ -763,6 +746,10 @@ public final class Configuration {
     public String getBugPage() {
         return bugPage;
     }
+
+    public boolean isResponsiveUI() { return responsiveUI; }
+
+    public void setResponsiveUI(boolean responsiveUI) { this.responsiveUI = responsiveUI; }
 
     /**
      * Set the bug pattern to a new value

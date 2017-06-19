@@ -23,32 +23,6 @@
  */
 package org.opensolaris.opengrok.web;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.jrcs.diff.Diff;
 import org.apache.commons.jrcs.diff.DifferentiationFailedException;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
@@ -65,6 +39,20 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.IOUtils;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.security.InvalidParameterException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * A simple container to lazy initialize common vars wrt. a single request. It
@@ -795,7 +783,7 @@ public final class PageConfig {
      * Get the parameter values for the given name. Splits comma separated
      * values automatically into a list of Strings.
      *
-     * @param name name of the parameter.
+     * @param paramName name of the parameter.
      * @return a possible empty list.
      */
     private List<String> getParamVals(String paramName) {
@@ -912,6 +900,8 @@ public final class PageConfig {
     public String getCssDir() {
         return req.getContextPath() + '/' + getEnv().getWebappLAF();
     }
+
+    public boolean isResponsiveUI(){ return getEnv().isResponsiveUI();}
 
     /**
      * Get the current runtime environment.

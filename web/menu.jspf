@@ -49,6 +49,7 @@ org.opensolaris.opengrok.web.Util"
 /* ---------------------- menu.jspf start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
+    boolean isResponsive = cfg.isResponsiveUI();
     ProjectHelper ph = ProjectHelper.getInstance(cfg);
     JSONArray messages;
     Set<Project> projects = ph.getAllProjects();
@@ -71,81 +72,41 @@ org.opensolaris.opengrok.web.Util"
             pMap.put(name, esc);
         }
 %>
-<script type="text/javascript" src="<%= request.getContextPath() %>/js/jquery-3.2.0.min.js"></script>
 <script type="text/javascript">/* <![CDATA[ */
     document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P
     %>';document.domReady.push(function() { domReadyMenu(); });
 /* ]]> */
-var initialWidth = null;
-var isFirst = true;
-var checkWidth = function(){
-    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-	console.log(width);	
-	if(width <= 770) {
-		console.log('width less that 770');
-		//$(".fixture").each(function() {
-		//var detach = $(this).find(".fixture-date").detach();
-		//$(detach).insertAfter($(this).find(".teams"));
-		//})
-		$("#sbox").each(function() {
-		var detach = $(this).find("#qtbl").detach();
-		$(detach).insertAfter($(this).find("#ptbl"));
-		var detach1 = $(this).find("#ltbl").detach();
-		$(detach1).insertBefore($(this).find("#qtbl"));
-		});
-		console.log('width changed');
-	}else{
-		//revert back
-		$("#sbox").each(function() {
-		var detach = $(this).find("#qtbl").detach();
-		$(detach).insertBefore($(this).find("#ptbl"));
-		});	
-	}	
-	initialWidth = width;
-};
-$(document).ready(function(){ 
-	checkWidth();
- });
-$(window).resize(function() { 
-	//Fires when window is resized
-	//To handle in mobiles where window resize gets triggerred for keypad open
-	var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-	if(initialWidth && width != initialWidth){
-		console.log('window has been resized');
-		checkWidth();
-	}else{
-		console.log('There is no width change. Will not re-order the elements!');
-	}
-});
 </script><%
     }
 %>
+
+<input type="hidden" id="isResponsive" style="display: none;" value="<%=isResponsive%>" />
 <form action="<%= request.getContextPath() %>/search" id="sbox">
 <div id="qtbl">
 <table>
     <tr>
         <td><label for="s1" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
-        <td><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
+        <td colspan="2"><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>
 	    <td><label for="s2" title="Definition of function/variable/class">Definition</label></td>
-        <td><input class="q" tabindex="2" name="defs" id="defs" type="text" value="<%=
+        <td colspan="2"><input class="q" tabindex="2" name="defs" id="defs" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s3" title="Usage of function/variable/class">Symbol</label></td>
-        <td><input class="q" tabindex="3" name="refs" id="refs" type="text" value="<%=
+        <td colspan="2"><input class="q" tabindex="3" name="refs" id="refs" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s4" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
-        <td><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
+        <td colspan="2"><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s5" title="Search in log messages">History</label></td>
-        <td><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
+        <td colspan="2"><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
     <tr>
@@ -165,6 +126,12 @@ $(window).resize(function() {
             %>
             </select>
         </td>
+        <td>
+            <div id="type-select-container">
+                <!-- filled with javascript -->
+            </div>
+        </td>
+        
     </tr>
 <%-- TODO  Bug 11749
 <%
@@ -262,9 +229,6 @@ $(window).resize(function() {
 
 
     %></select>
-	<div id="type-select-container">
-		<!-- filled with javascript -->
-	</div>
 </div><%
     }
     %>

@@ -47,3 +47,5 @@ cov-int.zip
 cov-int/*
 egrok/bin
 pmd.bat
+.idea
+*.iml

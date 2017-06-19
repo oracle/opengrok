@@ -1411,6 +1411,8 @@ window.onload = function () {
 };
 
 $(document).ready(function () {
+    /* For re-order the divs based on the width */
+    checkWidth();
     for (var i in this.domReady) {
         document.domReady[i]();
     }
@@ -1896,3 +1898,54 @@ function scope_on_scroll() {
         scope_timeout = null;
     }, 150);
 }
+
+$(window).resize(function () {
+    rearrangeOnResize();       
+});
+//UI responsive change
+var initialWidth = null;
+var isFirst = true;
+var checkWidth = function(){
+    var isResponsive = $('#isResponsive')[0].value;
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    console.log(width);      
+    if(isResponsive && isResponsive === 'true'){
+         if(width <= 770) {
+            console.log('width less that 770');
+            $("#sbox").each(function() {
+            var detach = $(this).find("#qtbl").detach();
+            $(detach).insertAfter($(this).find("#ptbl"));
+            var detach1 = $(this).find("#ltbl").detach();
+            $(detach1).insertBefore($(this).find("#qtbl"));
+            });
+            console.log('width changed');
+        }else{
+            //revert back
+            $("#sbox").each(function() {
+            var detach = $(this).find("#qtbl").detach();
+            $(detach).insertBefore($(this).find("#ptbl"));
+            });    
+        }
+        initialWidth = width;        
+    }else{
+        $("#sbox").each(function() {
+        var detach = $(this).find("#qtbl").detach();
+        $(detach).insertAfter($(this).find("#ptbl"));
+        $(this).find("#ltbl").css('float', 'none');  
+        var detach1 = $(this).find("#ltbl").detach();
+        $(detach1).insertBefore($(this).find("#qtbl"));
+        });  
+    }  
+};
+
+var rearrangeOnResize = function() {
+    //Fires when window is resized
+    //To handle in mobiles where window resize gets triggerred for keypad open
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    if(initialWidth && width != initialWidth){
+        console.log('window has been resized');
+        checkWidth();
+    }else{
+        console.log('There is no width change. Will not re-order the elements!');
+    }
+};

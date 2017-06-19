@@ -24,17 +24,14 @@
  */
 package org.opensolaris.opengrok.index;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.opensolaris.opengrok.configuration.Configuration;
+
+import java.io.*;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import org.opensolaris.opengrok.configuration.Configuration;
 
 public class CommandLineOptions {
 
@@ -111,6 +108,7 @@ public class CommandLineOptions {
         options.add(new Option('w', "webapp-context", "Context of webapp. Default is /source. If you specify a different name, make sure to rename source.war to that name. Also FULL reindex is needed if this is changed."));
         options.add(new Option('X', "url:suffix", "URL Suffix for the user Information provider. Default: \"\""));
         options.add(new Option('z', NUMBER, "depth of scanning for repositories in directory structure relative to source root. Default is "+Configuration.defaultScanningDepth+" ."));
+        options.add(new Option('Z', ON_OFF, "Turn on/off UI responsiveness. If turned on, by default, it will re-order UI based on window. Else it will remain static in all resolutions"));
     }
 
     public String getCommandString() {
