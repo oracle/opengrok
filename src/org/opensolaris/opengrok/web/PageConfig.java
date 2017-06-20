@@ -380,8 +380,8 @@ public final class PageConfig {
      * that directory, sorted alphabetically
      *
      * <p>
-     * For the root directory (/xref/) an authorization is performed for each of
-     * the project in case that projects are used in OpenGrok.</p>
+     * For the root directory (/xref/) an authorization is performed for each
+     * project in case that projects are used.</p>
      *
      * @see #getResourceFile()
      * @see #isDir()

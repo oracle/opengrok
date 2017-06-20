@@ -27,14 +27,21 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.opensolaris.opengrok.authorization.AuthControlFlag;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
+import org.opensolaris.opengrok.authorization.AuthorizationPlugin;
+import org.opensolaris.opengrok.authorization.TestPlugin;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -133,6 +140,71 @@ public class PageConfigTest {
         // Expect null if the file or directory doesn't exist.
         assertCanProcess(null, "/source", "/xref", "/mercurial/xyz");
         assertCanProcess(null, "/source", "/xref", "/mercurial/xyz/");
+    }
+
+    /**
+     * Testing the root of /xref for authorization filtering.
+     */
+    @Test
+    public void testGetResourceFileList() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // backup original values
+        String oldSourceRootPath = env.getSourceRootPath();
+        AuthorizationFramework oldAuthorizationFramework = env.getAuthorizationFramework();
+        Map<String, Project> oldProjects = env.getProjects();
+
+        // set up the source root directory containing some projects
+        env.setSourceRoot(repository.getSourceRoot());
+
+        // enable projects
+        for (String file : new File(repository.getSourceRoot()).list()) {
+            env.getProjects().put(file, new Project(file));
+        }
+
+        HttpServletRequest req = createRequest("/source", "/xref", "");
+        PageConfig cfg = PageConfig.get(req);
+        List<String> files = cfg.getResourceFileList();
+
+        /**
+         * Check if there are some files (the "5" here is just a sufficient
+         * value for now which won't break any future repository tests) without
+         * any authorization.
+         */
+        assertTrue(files.size() > 5);
+        assertTrue(files.contains("git"));
+        assertTrue(files.contains("mercurial"));
+
+        /**
+         * Now set up the same projects with authorization plugin enabling only
+         * some of them.
+         * <pre>
+         *  - disabling "git"
+         *  - disabling "mercurial"
+         * </pre>
+         */
+        env.setAuthorizationFramework(new AuthorizationFramework(null));
+        env.getAuthorizationFramework().getStack()
+                .add(new AuthorizationPlugin(AuthControlFlag.REQUIRED, new TestPlugin() {
+                    @Override
+                    public boolean isAllowed(HttpServletRequest request, Project project) {
+                        return !project.getName().startsWith("git")
+                                && !project.getName().startsWith("mercurial");
+                    }
+                }));
+
+        req = createRequest("/source", "/xref", "");
+        cfg = PageConfig.get(req);
+        files = cfg.getResourceFileList();
+
+        assertTrue(files.size() > 5);
+        assertFalse(files.contains("git"));
+        assertFalse(files.contains("mercurial"));
+
+        // restore original values
+        env.setAuthorizationFramework(oldAuthorizationFramework);
+        env.setSourceRoot(oldSourceRootPath);
+        env.setProjects(oldProjects);
     }
 
     @Test
