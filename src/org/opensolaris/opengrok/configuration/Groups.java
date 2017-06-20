@@ -168,7 +168,10 @@ public final class Groups {
             deleteGroup(cfg.getGroups(), groupname);
             out = prepareOutput(outFile);
             printOut(list, cfg, out);
-        } else if (groupname != null && grouppattern != null) {
+        } else if (groupname != null) {
+            if (grouppattern == null) {
+                grouppattern = "";
+            }
             // perform insert/update. parent may be null
             if (!modifyGroup(cfg.getGroups(), groupname, grouppattern, parent)) {
                 System.err.println("Parent group does not exist \"" + parent + "\"");

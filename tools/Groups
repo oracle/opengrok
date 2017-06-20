@@ -449,7 +449,6 @@ Add ()
     done
 
     [ -z "$NAME" ] && echo "name must be specified" && LocalUsage && exit 5
-    [ -z "$PATTERN" ] && echo "pattern must be specified" && LocalUsage && exit 5
 
     CheckInputFile
     Info
