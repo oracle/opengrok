@@ -249,25 +249,18 @@ Empty ()
     LocalUsage()
     {
         echo "Usage:"
-        echo "${PROGNAME} empty [-i|--input <file>] [-v|--verbose] [-d]"
+        echo "${PROGNAME} empty [-v|--verbose] [-d]"
         echo ""
-        echo "  Creates an empty configuration. If the input file is specified"
-        echo "  it directly outputs the given file."
+        echo "  Creates an empty configuration."
         echo ""
         echo "Options:"
         echo " -d option performs dry run with verbose mode"
-        echo " -i option can be used for specifying the input file"
     }
 
     while [ $# -gt 0 ]
     do
         opt="$1"
         case $opt in
-            -i|--input)
-                ExpectOption "$@"
-                shift
-                INPUT_FILE=$(OneArgument "$@")
-            ;;
             -d)
                 DO=echo
                 VERBOSE=true
@@ -292,6 +285,7 @@ Empty ()
     done
 
     EMPTY=true
+    unset INPUT_FILE
 
     CheckInputFile
     Info
