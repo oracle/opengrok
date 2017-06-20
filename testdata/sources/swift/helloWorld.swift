@@ -3,6 +3,15 @@
     print("Hello, world!")
 
 
+let banner = """
+          __,
+         (          o   /) _/_
+          `.  , , , ,  //  /
+        (___)(_(_/_(_ //_ (__
+                     /)
+                    (/
+        """
+
 
 
     func greet(person: String, day: String) -> String {

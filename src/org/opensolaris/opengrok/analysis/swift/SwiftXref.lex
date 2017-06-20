@@ -68,7 +68,7 @@ ClassName = "class"{WhiteSpace}+({Identifier} ".")* {Identifier}
 ParamName = {Identifier} | "<" {Identifier} ">"
 */
 
-%state  STRING COMMENT SCOMMENT QSTRING SDOC
+%state  STRING COMMENT SCOMMENT QSTRING SDOC TSTRING
 
 %%
 <YYINITIAL>{
@@ -101,11 +101,12 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
  \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
  \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
+ \"\"\"  { yybegin(TSTRING);out.write("<span class=\"s\">\"\"\"");}
  "/**" / [^/] { yybegin(SDOC);out.write("<span class=\"c\">/**");}
  "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
  "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
 }
-/* TODO : support raw """ strings */
+
 <STRING> {
  \" {WhiteSpace} \"  { out.write(yytext());}
  \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
@@ -118,6 +119,12 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  "\\\'" { out.write("\\\'"); }
  \' {WhiteSpace} \' { out.write(yytext()); }
  \'     { yybegin(YYINITIAL); out.write("'</span>"); }
+}
+
+<TSTRING> {
+"\\\\" { out.write("\\\\"); }
+ "\\\"" { out.write("\\\""); }
+ \"\"\" { yybegin(YYINITIAL); out.write("\"\"\"</span>"); }
 }
 
 <COMMENT, SDOC> {
@@ -149,7 +156,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 }
 
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, SDOC> {
+<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, SDOC, TSTRING> {
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
@@ -159,7 +166,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING, SDOC> {
+<STRING, COMMENT, SCOMMENT, STRING, QSTRING, SDOC, TSTRING> {
 {Path}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 

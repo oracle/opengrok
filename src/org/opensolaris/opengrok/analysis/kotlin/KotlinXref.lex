@@ -66,7 +66,7 @@ KdocWithParamNameArg = "@param"
 ClassName = ({Identifier} ".")* {Identifier}
 ParamName = {Identifier} | "<" {Identifier} ">"
 
-%state  STRING COMMENT SCOMMENT QSTRING KDOC
+%state  STRING COMMENT SCOMMENT QSTRING KDOC TSTRING
 
 %%
 <YYINITIAL>{
@@ -99,6 +99,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
  \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
  \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
+\"\"\"  { yybegin(TSTRING);out.write("<span class=\"s\">\"\"\"");}
  "/**" / [^/] { yybegin(KDOC);out.write("<span class=\"c\">/**");}
  "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
  "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
@@ -116,6 +117,12 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  "\\\'" { out.write("\\\'"); }
  \' {WhiteSpace} \' { out.write(yytext()); }
  \'     { yybegin(YYINITIAL); out.write("'</span>"); }
+}
+
+<TSTRING> {
+"\\\\" { out.write("\\\\"); }
+ "\\\"" { out.write("\\\""); }
+ \"\"\" { yybegin(YYINITIAL); out.write("\"\"\"</span>"); }
 }
 
 <COMMENT, KDOC> {
@@ -145,7 +152,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 }
 
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, KDOC> {
+<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, KDOC, TSTRING> {
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
@@ -155,7 +162,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING, KDOC> {
+<STRING, COMMENT, SCOMMENT, STRING, QSTRING, TSTRING, KDOC> {
 {Path}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 

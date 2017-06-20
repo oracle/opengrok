@@ -49,7 +49,7 @@ return false;
 
 Identifier = [:jletter:] [:jletterdigit:]*
 
-%state STRING COMMENT SCOMMENT QSTRING
+%state STRING COMMENT SCOMMENT QSTRING TSTRING
 
 %%
 
@@ -63,12 +63,12 @@ Identifier = [:jletter:] [:jletterdigit:]*
 
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
+ \"\"\"   { yybegin(TSTRING); }
  "/*"   { yybegin(COMMENT); }
  "//"   { yybegin(SCOMMENT); }
 
 }
 
-/* TODO : support raw """ strings */
 <STRING> {
  \"     { yybegin(YYINITIAL); }
 \\\\ | \\\"     {}
@@ -76,6 +76,10 @@ Identifier = [:jletter:] [:jletterdigit:]*
 
 <QSTRING> {
  \'     { yybegin(YYINITIAL); }
+}
+
+<TSTRING> {
+  \"\"\"     { yybegin(YYINITIAL); }
 }
 
 <COMMENT> {
@@ -86,7 +90,7 @@ Identifier = [:jletter:] [:jletterdigit:]*
 \n      { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, TSTRING> {
 <<EOF>>   { this.finalOffset =  zzEndRead; return false;}
 [^]    {}
 }
