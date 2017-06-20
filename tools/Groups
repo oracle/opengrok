@@ -376,7 +376,7 @@ Add ()
     LocalUsage()
     {
         echo "Usage:"
-        echo "${PROGNAME} add <name> <pattern> [-i|--input <file>] [-o|--output <file>] [-l] [-v|--verbose] [-u|--update] [-d]"
+        echo "${PROGNAME} add <name> <pattern> [-p|--parent <name>] [-i|--input <file>] [-o|--output <file>] [-l] [-v|--verbose] [-u|--update] [-d]"
         echo ""
         echo "  Adds or updates a group with given name"
         echo "    1) If given group name already exists, the pattern is updated."
@@ -388,6 +388,7 @@ Add ()
         echo " -i option can be used for specifying the input file"
         echo " -l option prints the overview to stdout (still -o can be used)"
         echo " -o option can be used for saving the result"
+        echo " -p option can be used to specify parent group by its name"
         echo " -u option forces the script to use same output file as input file (overwrite)"
     }
 
