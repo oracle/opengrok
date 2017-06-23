@@ -31,11 +31,8 @@ import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -191,11 +188,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
         // so they need to be sorted according to revision.
         if (cvsrepo.getBranch() != null && !cvsrepo.getBranch().isEmpty()) {
             List<HistoryEntry> entries = history.getHistoryEntries();
-            Collections.sort(entries, new Comparator<HistoryEntry>() {
-                public int compare(HistoryEntry o1, HistoryEntry o2) {
-                    return o2.getRevision().compareTo(o1.getRevision());
-                }
-            });
+            entries.sort((o1, o2) -> o2.getRevision().compareTo(o1.getRevision()));
             history.setHistoryEntries(entries);
         }
 
