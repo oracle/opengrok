@@ -660,17 +660,21 @@ public final class Util {
     public static void writeHAD(Writer out, String ctxE, String entry,
             boolean is_dir) throws IOException {
 
-        String histPrefixE = ctxE + Prefix.HIST_L;
         String downloadPrefixE = ctxE + Prefix.DOWNLOAD_P;
         String xrefPrefixE = ctxE + Prefix.XREF_P;
 
-        out.write("<td class=\"q\"><a href=\"");
-        out.write(histPrefixE);
-        if (!entry.startsWith("/")) {
-            entry = "/" + entry;
+        out.write("<td class=\"q\">");
+        if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
+            String histPrefixE = ctxE + Prefix.HIST_L;
+                    
+            out.write("<a href=\"");
+            out.write(histPrefixE);
+            if (!entry.startsWith("/")) {
+                entry = "/" + entry;
+            }
+            out.write(entry);
+            out.write("\" title=\"History\">H</a>");
         }
-        out.write(entry);
-        out.write("\" title=\"History\">H</a>");
 
         if (!is_dir) {
             out.write(" <a href=\"");

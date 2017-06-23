@@ -103,8 +103,9 @@ public class IndexerTest {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(true);
+            env.setHistoryEnabled(false);
             Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
-                    false, false, false, null, null, new ArrayList<>(), false);
+                false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -132,6 +133,7 @@ public class IndexerTest {
         projects.put("nonexistent", p2);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();        
         env.setProjects(projects);
+        env.setHistoryEnabled(false);
 
         // Do a rescan of the projects, and only that (we don't care about
         // the other aspects of indexing in this test case).
@@ -141,7 +143,6 @@ public class IndexerTest {
                 true, // scan and add projects
                 null, // no default project
                 null, // don't write config file
-                false, // don't refresh history
                 false, // don't list files
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
@@ -383,8 +384,9 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
+        env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
-                false, false, false, null, null, new ArrayList<>(), false);
+                false, false, null, null, new ArrayList<>(), false);
         assertEquals(1, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"/c"})),
                 env.getDefaultProjects().stream().map((Project p) -> '/' + p.getName()).collect(Collectors.toSet()));
@@ -400,9 +402,10 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
+        env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
                 new TreeSet<>(Arrays.asList(new String[]{"/lisp", "/pascal", "/perl", "/data", "/no-project-x32ds1"})),
-                null, false, false, false, null, null, new ArrayList<>(), false);
+                null, false, false, null, null, new ArrayList<>(), false);
         assertEquals(4, env.getDefaultProjects().size());
         assertEquals(new TreeSet<>(Arrays.asList(new String[]{"/lisp", "/pascal", "/perl", "/data"})),
                 env.getDefaultProjects().stream().map((Project p) -> '/' + p.getName()).collect(Collectors.toSet()));
@@ -418,9 +421,10 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
+        env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
                 new TreeSet<>(Arrays.asList(new String[]{"/c", "/data", "__all__", "/no-project-x32ds1"})),
-                null, false, false, false, null, null, new ArrayList<>(), false);
+                null, false, false, null, null, new ArrayList<>(), false);
         Set<String> projects = new TreeSet<>(Arrays.asList(new File(repository.getSourceRoot()).list()));
         assertEquals(projects.size(), env.getDefaultProjects().size());
         assertEquals(projects, env.getDefaultProjects().stream().map((Project p) -> p.getName()).collect(Collectors.toSet()));

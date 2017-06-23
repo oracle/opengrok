@@ -1132,6 +1132,14 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getGroupsCollapseThreshold();
     }
 
+    public boolean isHistoryEnabled() {
+        return threadConfig.get().isHistoryEnabled();
+    }
+
+    public void setHistoryEnabled(boolean flag) {
+        threadConfig.get().setHistoryEnabled(flag);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *

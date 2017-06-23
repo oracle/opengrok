@@ -178,8 +178,14 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:
     <dt>path</dt>
     <dd>path of the source file (no need to use dividers, or if, then use "/" - Windows users, "\" is an escape key in Lucene query syntax! <br/>Please don't use "\", or replace it with "/").<br/>Also note that if you want just exact path, enclose it in "", e.g. "src/mypath", otherwise dividers will be removed and you get more hits.</dd>
 
+    <%
+        if (PageConfig.get(request).getEnv().isHistoryEnabled()) {
+    %>
     <dt>hist</dt>
     <dd>History log comments.</dd>
+    <%
+        }
+    %>
 
     <dt>type</dt>
     <dd>Type of analyzer used to scope down to certain file types (e.g. just C sources).<br/>Current mappings: <%=SearchHelper.getFileTypeDescriptions().toString()%></dd>
