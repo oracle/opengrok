@@ -57,11 +57,8 @@ public class CVSRepository extends RCSRepository {
      */
     public static final String CMD_FALLBACK = "cvs";
 
-    private Boolean isBranch = null;
-    private String branch = null;
-
     /**
-     * Pattern used to extract author/revision from cvs annotate.
+     * Pattern used to extract author/revision from 'cvs annotate'.
      */
     private static final Pattern ANNOTATE_PATTERN
             = Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
@@ -165,6 +162,31 @@ public class CVSRepository extends RCSRepository {
         }
     }
 
+    @Override
+    String determineBranch() throws IOException {
+        String branch = null;
+
+        File tagFile = new File(getDirectoryName(), "CVS/Tag");
+        if (tagFile.isFile()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(tagFile))) {
+                String line = br.readLine();
+                if (line != null) {
+                    branch = line.substring(1);
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING,
+                    "Failed to work with CVS/Tag file of {0}",
+                    getDirectoryName() + ": " + ex.getClass().toString());
+            } catch (Exception exp) {
+                LOGGER.log(Level.WARNING,
+                    "Failed to get revision tag of {0}",
+                    getDirectoryName() + ": " + exp.getClass().toString());
+            }
+        }
+
+        return branch;
+    }
+
     /**
      * Get an executor to be used for retrieving the history log for the named
      * file.
@@ -184,33 +206,9 @@ public class CVSRepository extends RCSRepository {
         cmd.add(RepoCommand);
         cmd.add("log");
 
-        if (isBranch == null) {
-            File tagFile = new File(getDirectoryName(), "CVS/Tag");
-            if (tagFile.isFile()) {
-                isBranch = Boolean.TRUE;
-                try (BufferedReader br = new BufferedReader(new FileReader(tagFile))) {
-                    String line = br.readLine();
-                    if (line != null) {
-                        branch = line.substring(1);
-                    }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.WARNING,
-                            "Failed to work with CVS/Tag file of {0}",
-                            getDirectoryName() + ": " + ex.getClass().toString());
-                } catch (Exception exp) {
-                    LOGGER.log(Level.WARNING,
-                            "Failed to get revision tag of {0}",
-                            getDirectoryName() + ": " + exp.getClass().toString());
-                }
-            } else {
-                isBranch = Boolean.FALSE;
-            }
-        }
-
-        if (isBranch.equals(Boolean.TRUE) && branch != null && !branch.isEmpty()) {
-            // Just generate THIS branch history, we don't care about the other
-            // branches which are not checked out.
-            cmd.add("-r" + branch);
+        if (getBranch() != null && !getBranch().isEmpty()) {
+            // Generate history on this branch and follow up to the origin.
+            cmd.add("-r1.1:" + branch);
         } else {
             // Get revisions on this branch only (otherwise the revisions
             // list produced by the cvs log command would be unsorted).
@@ -220,6 +218,7 @@ public class CVSRepository extends RCSRepository {
         if (filename.length() > 0) {
             cmd.add(filename);
         }
+
         return new Executor(cmd, new File(getDirectoryName()));
     }
 
@@ -296,6 +295,9 @@ public class CVSRepository extends RCSRepository {
         if (revision != null) {
             cmd.add("-r");
             cmd.add(revision);
+        } else if (getBranch() != null && !getBranch().isEmpty()) {
+            cmd.add("-r");
+            cmd.add(getBranch());
         }
         cmd.add(file.getName());
 

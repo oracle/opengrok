@@ -180,7 +180,7 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    String determineBranch() {
+    String determineBranch() throws IOException {
         return null;
     }
 }

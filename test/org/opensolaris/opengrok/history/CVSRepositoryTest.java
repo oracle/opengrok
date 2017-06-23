@@ -18,12 +18,19 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,6 +42,9 @@ import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
 
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  *
@@ -59,14 +69,122 @@ public class CVSRepositoryTest {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
-    public void setUp() {
-        instance = new CVSRepository();
+    private TestRepository repository;
+
+    /**
+     * Set up a test repository. Should be called by the tests that need it. The
+     * test repository will be destroyed automatically when the test finishes.
+     */
+    private void setUpTestRepository() throws IOException {
+        repository = new TestRepository();
+        repository.create(getClass().getResourceAsStream("repositories.zip"));
+
+        // Checkout cvsrepo anew in order to get the CVS/Root files point to
+        // the temporary directory rather than the OpenGrok workspace directory
+        // it was created from. This is necessary since 'cvs update' changes
+        // the CVS parent directory after branch has been created.
+        File root = new File(repository.getSourceRoot(), "cvs_test");
+        File cvsrepodir = new File(root, "cvsrepo");
+        IOUtils.removeRecursive(cvsrepodir.toPath());
+        File cvsroot = new File(root, "cvsroot");
+        runCvsCommand(root, "-d", cvsroot.getAbsolutePath(), "checkout", "cvsrepo");
     }
 
     @After
     public void tearDown() {
         instance = null;
+
+        if (repository != null) {
+            repository.destroy();
+            repository = null;
+        }
+    }
+
+    @Before
+    public void setUp() {
+        instance = new CVSRepository();
+    }
+
+    /**
+     * Run the 'cvs' command with some arguments.
+     *
+     * @param reposRoot directory of the repository root
+     * @param args arguments to use for the command
+     */
+    private static void runCvsCommand(File reposRoot, String ... args) {
+        List<String> cmdargs = new ArrayList<>();
+        cmdargs.add(CVSRepository.CMD_FALLBACK);
+        for (String arg: args) {
+            cmdargs.add(arg);
+        }
+        Executor exec = new Executor(cmdargs, reposRoot);
+        int exitCode = exec.exec();
+        if (exitCode != 0) {
+            fail("cvs command '" + cmdargs.toString() + "'failed."
+                    + "\nexit code: " + exitCode
+                    + "\nstdout:\n" + exec.getOutputString()
+                    + "\nstderr:\n" + exec.getErrorString());
+        }
+    }
+
+    /**
+     * Get the CVS repository, test that getBranch() returns null if there is
+     * no branch.
+     * @throws Exception
+     */
+    @Test
+    public void testGetBranchNoBranch() throws Exception {
+        setUpTestRepository();
+        File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo");
+        CVSRepository cvsrepo
+                = (CVSRepository) RepositoryFactory.getRepository(root);
+        assertEquals(null, cvsrepo.getBranch());
+    }
+
+    /**
+     * Get the CVS repository, create new branch, change a file and verify that
+     * getBranch() returns the branch and check newly added commits annotate
+     * with branch revision numbers.
+     * Last, check that history entries of the file follow through before the
+     * branch was created.
+     * @throws Exception
+     */
+    @Test
+    public void testNewBranch() throws Exception {
+        setUpTestRepository();
+        File root = new File(repository.getSourceRoot(), "cvs_test/cvsrepo");
+
+        // Create new branch and switch to it.
+        runCvsCommand(root, "tag", "-b", "mybranch");
+        // Note that the 'update' command will change the entries in 'cvsroot' directory.
+        runCvsCommand(root, "update", "-r", "mybranch");
+
+        // Now the repository object can be instantiated so that determineBranch()
+        // will be called.
+        CVSRepository cvsrepo
+            = (CVSRepository) RepositoryFactory.getRepository(root);
+
+        assertEquals("mybranch", cvsrepo.getBranch());
+
+        // Change the content and commit.
+        File mainC = new File(root, "main.c");
+        FileChannel outChan = new FileOutputStream(mainC, true).getChannel();
+        outChan.truncate(0);
+        outChan.close();
+        FileWriter fw = new FileWriter(mainC);
+        fw.write("#include <foo.h>\n");
+        fw.close();
+        runCvsCommand(root, "commit", "-m", "change on a branch", "main.c");
+
+        // Check that annotation for the changed line has branch revision.
+        Annotation annotation = cvsrepo.annotate(mainC, null);
+        assertEquals("1.2.2.1", annotation.getRevision(1));
+
+        History mainCHistory = cvsrepo.getHistory(mainC);
+        assertEquals(3, mainCHistory.getHistoryEntries().size());
+        assertEquals("1.2.2.1", mainCHistory.getHistoryEntries().get(0).getRevision());
+        assertEquals("1.2", mainCHistory.getHistoryEntries().get(1).getRevision());
+        assertEquals("1.1", mainCHistory.getHistoryEntries().get(2).getRevision());
     }
 
     /**
