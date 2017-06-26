@@ -146,13 +146,21 @@ then
    exit 1
 fi
 
+cleanup()
+{
+	rm -rf "$PKG_REPO_NAME"
+	if [[ -n $manifest ]]; then
+		rm -f "$manifest"
+	fi
+}
+
 PKG()
 {
    "$@"
    if [ $? != 0 ]
    then
       echo Command failed: "$@"
-      rm -rf "$PKG_REPO_NAME"
+      cleanup
       exit 1
    fi
 }
@@ -169,7 +177,7 @@ eval `pkgsend open ${PKG_NAME}@${version}`
 if [ $? != 0 ]
 then
     echo "Fatal: could not open ${PKG_NAME}@${version}"
-    rm -rf "$PKR_REPO_NAME"
+    cleanup
     exit 1
 fi
 
@@ -244,11 +252,21 @@ PKG pkgsend add depend fmri=pkg:/web/java-servlet/tomcat-8 type=require
 
 PKG pkgsend add file dist/source.war mode=0444 owner=webservd group=webservd path=/usr/opengrok/lib/source.war
 
-PKG pkgsend add set name=description value="OpenGrok - wicked fast source browser"
+PKG pkgsend add set name=pkg.description value="OpenGrok - complete install"
+PKG pkgsend add set name=pkg.summary value="OpenGrok - wicked fast source browser"
 PKG pkgsend add set name=pkg.human-version value="${human_readable_version}"
 PKG pkgsend close
 
 PKG pkgrepo -s "$PKG_REPO_NAME" verify
+
+manifest=$( mktemp /tmp/manifest.XXXXXX )
+if [[ -z $manifest ]]; then
+	echo "cannot create temporary file for package manifest"
+	cleanup
+	exit 1
+fi
+PKG pkgrepo -s "$PKG_REPO_NAME" contents ${PKG_NAME} > $manifest
+PKG pkglint $manifest
 
 # checks whether the same file exists and updates it
 if [ -f "${PKG_NAME}-${human_readable_version}.p5p" ]
@@ -263,7 +281,7 @@ PKG pkgrecv -s "$PKG_REPO_NAME" -a -d "${outfile}" ${PKG_NAME}
 # cleanup
 if [ -d "$PKG_REPO_NAME" ]
 then
-   rm -rf "$PKG_REPO_NAME"
+	cleanup
 fi
 
 unset PKG_REPO
