@@ -248,6 +248,7 @@ PKG pkgsend add set name=description value="OpenGrok - wicked fast source browse
 PKG pkgsend add set name=pkg.human-version value="${human_readable_version}"
 PKG pkgsend close
 
+PKG pkgrepo -s "$PKG_REPO_NAME" verify
 
 # checks whether the same file exists and updates it
 if [ -f "${PKG_NAME}-${human_readable_version}.p5p" ]
