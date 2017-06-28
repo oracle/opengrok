@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<!DOCTYPE service_bundle
+  SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
+<!--
+    Manifest created by svcbundle (2017-Jun-27 16:42:23+0200)
+-->
+<service_bundle type="manifest" name="application/opengrok-migrate-shared">
+    <service version="1" type="service"
+        name="application/opengrok-migrate-shared">
+        <!--
+            The following dependency keeps us from starting until the
+            multi-user milestone is reached.
+        -->
+        <dependency restart_on="none" type="service"
+            name="multi_user_dependency" grouping="require_all">
+            <service_fmri value="svc:/milestone/multi-user"/>
+        </dependency>
+	<!--
+	    The migration of data can take a long time so give it one hour
+	    to finish.
+	-->
+        <exec_method timeout_seconds="3600" type="method" name="start"
+            exec="/lib/svc/method/opengrok-share-files.sh"/>
+        <!--
+            The exec attribute below can be changed to a command that SMF
+            should execute to stop the service.  See smf_method(5) for more
+            details.
+        -->
+        <exec_method timeout_seconds="60" type="method" name="stop"
+            exec=":true"/>
+        <!--
+            The exec attribute below can be changed to a command that SMF
+            should execute when the service is refreshed.  Services are
+            typically refreshed when their properties are changed in the
+            SMF repository.  See smf_method(5) for more details.  It is
+            common to retain the value of :true which means that SMF will
+            take no action when the service is refreshed.  Alternatively,
+            you may wish to provide a method to reread the SMF repository
+            and act on any configuration changes.
+        -->
+        <exec_method timeout_seconds="60" type="method" name="refresh"
+            exec=":true"/>
+        <property_group type="framework" name="startd">
+            <propval type="astring" name="duration" value="transient"/>
+        </property_group>
+        <instance enabled="true" name="default"/>
+        <template>
+            <common_name>
+                <loctext xml:lang="C">
+                    <!--
+                        Replace this comment with a short name for the
+                        service.
+                    -->
+                </loctext>
+            </common_name>
+            <description>
+                <loctext xml:lang="C">
+                    <!--
+                        Replace this comment with a brief description of
+                        the service
+                    -->
+                </loctext>
+            </description>
+        </template>
+    </service>
+</service_bundle>

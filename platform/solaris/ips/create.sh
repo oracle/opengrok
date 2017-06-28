@@ -64,7 +64,8 @@ fi
 # 0.12-rc<i>	~	0.12.0.0.<i>
 # ...
 #
-# Note that the release candidate must follow immediately after the basic version number (0.12)
+# Note that the release candidate must follow immediately after
+# the basic version number (0.12)
 #
 #
 # 0.12.1	~	0.12.1.0.0
@@ -146,13 +147,21 @@ then
    exit 1
 fi
 
+cleanup()
+{
+	rm -rf "$PKG_REPO_NAME"
+	if [[ -n $pkg_manifest ]]; then
+		rm -f "$pkg_manifest"
+	fi
+}
+
 PKG()
 {
    "$@"
    if [ $? != 0 ]
    then
       echo Command failed: "$@"
-      rm -rf "$PKG_REPO_NAME"
+      cleanup
       exit 1
    fi
 }
@@ -169,7 +178,7 @@ eval `pkgsend open ${PKG_NAME}@${version}`
 if [ $? != 0 ]
 then
     echo "Fatal: could not open ${PKG_NAME}@${version}"
-    rm -rf "$PKR_REPO_NAME"
+    cleanup
     exit 1
 fi
 
@@ -185,33 +194,68 @@ do
    PKG pkgsend add dir mode=0755 owner=root group=bin path=${dir}
 done
 
-for dir in /var/opengrok /var/opengrok/data /var/opengrok/etc \
-           /var/opengrok/log /var/opengrok/src
+PKG pkgsend add dir mode=0755 owner=webservd group=webservd path=/var/opengrok
+
+for dirname in data etc log src
 do
-   PKG pkgsend add dir mode=0755 owner=webservd group=webservd path=${dir}
+   #
+   # In future Solaris 11.x releases the refresh of filesystem/minimal
+   # will deal with data migration so the SMF service below will become
+   # unnecessary.
+   #
+   PKG pkgsend add dir mode=0755 owner=webservd group=webservd \
+       path=/var/.migrate/opengrok/${dirname} \
+       refresh_fmri=svc:/system/filesystem/minimal:default \
+       reboot-needed=true salvage-from=/var/opengrok/${dirname}
+   PKG pkgsend add link path=/var/opengrok/${dirname} \
+       target=../../var/share/opengrok/${dirname}
 done
+
+# Generate SMF service that will migrate /var/opengrok data to /var/share
+PKG pkgsend add file platform/solaris/smf/opengrok-migrate-shared.xml \
+    mode=0444 owner=root group=sys \
+    path=/var/svc/manifest/application/opengrok-migrate-shared.xml \
+    restart_fmri=svc:/system/manifest-import:default
+PKG pkgsend add file platform/solaris/smf/opengrok-share-files.sh \
+    mode=0555 owner=root group=bin path=/lib/svc/method/opengrok-share-files.sh
 
 PKG pkgsend add link path=/usr/opengrok/lib/lib target=../lib
 
-PKG pkgsend add file platform/solaris/smf/opengrok.xml mode=0444 owner=root group=sys path=/var/svc/manifest/application/opengrok.xml restart_fmri=svc:/system/manifest-import:default
-PKG pkgsend add file platform/solaris/smf/svc-opengrok mode=0555 owner=root group=bin path=/lib/svc/method/svc-opengrok
-PKG pkgsend add file platform/solaris/smf/ogindexd mode=0555 owner=root group=bin path=/usr/opengrok/lib/ogindexd
+PKG pkgsend add file platform/solaris/smf/opengrok.xml \
+    mode=0444 owner=root group=sys \
+    path=/var/svc/manifest/application/opengrok.xml \
+    restart_fmri=svc:/system/manifest-import:default
+PKG pkgsend add file platform/solaris/smf/svc-opengrok \
+    mode=0555 owner=root group=bin path=/lib/svc/method/svc-opengrok
+PKG pkgsend add file platform/solaris/smf/ogindexd \
+    mode=0555 owner=root group=bin path=/usr/opengrok/lib/ogindexd
 
-PKG pkgsend add file OpenGrok mode=0555 owner=root group=bin path=/usr/opengrok/bin/OpenGrok
-PKG pkgsend add file tools/Groups mode=0555 owner=root group=bin path=/usr/opengrok/bin/Groups
-PKG pkgsend add file tools/ConfigMerge mode=0555 owner=root group=bin path=/usr/opengrok/bin/ConfigMerge
-PKG pkgsend add file tools/Messages mode=0555 owner=root group=bin path=/usr/opengrok/bin/Messages
+PKG pkgsend add file OpenGrok \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/OpenGrok
+PKG pkgsend add file tools/Groups \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/Groups
+PKG pkgsend add file tools/ConfigMerge \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/ConfigMerge
+PKG pkgsend add file tools/Messages \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/Messages
 
-PKG pkgsend add file dist/opengrok.jar mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
+PKG pkgsend add file dist/opengrok.jar \
+    mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
 
-PKG pkgsend add file logging.properties mode=0444 owner=root group=sys path=/usr/opengrok/doc/logging.properties
-PKG pkgsend add file README.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/README.txt
-PKG pkgsend add file CHANGES.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/CHANGES.txt
-PKG pkgsend add file LICENSE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/LICENSE.txt
-PKG pkgsend add file NOTICE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/NOTICE.txt
-PKG pkgsend add file doc/EXAMPLE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/EXAMPLE.txt
-PKG pkgsend add file doc/ctags.config mode=0444 owner=root group=sys path=/usr/opengrok/doc/ctags.config
-
+PKG pkgsend add file logging.properties \
+    mode=0444 owner=root group=sys path=/usr/opengrok/doc/logging.properties
+PKG pkgsend add file README.txt \
+    mode=0444 owner=root group=sys path=/usr/opengrok/doc/README.txt
+PKG pkgsend add file CHANGES.txt \
+    mode=0444 owner=root group=sys path=/usr/opengrok/doc/CHANGES.txt
+PKG pkgsend add file LICENSE.txt \
+    mode=0444 owner=root group=sys path=/usr/opengrok/doc/LICENSE.txt
+PKG pkgsend add file NOTICE.txt \
+    mode=0444 owner=root group=sys path=/usr/opengrok/doc/NOTICE.txt
+PKG pkgsend add file doc/EXAMPLE.txt \
+    mode=0444 owner=root group=sys path=/usr/opengrok/doc/EXAMPLE.txt
+PKG pkgsend add file doc/ctags.config \
+    mode=0444 owner=root group=sys path=/usr/opengrok/doc/ctags.config
 
 
 # install libs
@@ -230,24 +274,32 @@ do
        path=/usr/opengrok/lib/${file}
 done
 
-
 # install man page
-PKG pkgsend add file dist/opengrok.1 mode=0444 owner=root group=bin path=/usr/opengrok/man/man1/opengrok.1
+PKG pkgsend add file dist/opengrok.1 mode=0444 owner=root group=bin \
+    path=/usr/opengrok/man/man1/opengrok.1
 
 # install default configuration
 PKG pkgsend add depend fmri=pkg:/runtime/java/jre-8 type=require
 PKG pkgsend add depend fmri=pkg:/web/java-servlet/tomcat-8 type=require
 
-# Following line gets commented by that the developer/tool/exuberant-ctags has been removed from IPS
-# This has to stay commented until the next release of Solaris will contain the exuberant ctags package
-#PKG pkgsend add depend fmri=pkg:/developer/tool/exuberant-ctags type=require
+PKG pkgsend add file dist/source.war \
+    mode=0444 owner=webservd group=webservd path=/usr/opengrok/lib/source.war
 
-PKG pkgsend add file dist/source.war mode=0444 owner=webservd group=webservd path=/usr/opengrok/lib/source.war
-
-PKG pkgsend add set name=description value="OpenGrok - wicked fast source browser"
+PKG pkgsend add set name=pkg.description value="OpenGrok - complete install"
+PKG pkgsend add set name=pkg.summary value="OpenGrok - wicked fast source browser"
 PKG pkgsend add set name=pkg.human-version value="${human_readable_version}"
 PKG pkgsend close
 
+PKG pkgrepo -s "$PKG_REPO_NAME" verify
+
+pkg_manifest=$( mktemp /tmp/pkg_manifest.XXXXXX )
+if [[ -z $pkg_manifest ]]; then
+	echo "cannot create temporary file for package manifest"
+	cleanup
+	exit 1
+fi
+PKG pkgrepo -s "$PKG_REPO_NAME" contents ${PKG_NAME} > $pkg_manifest
+PKG pkglint $pkg_manifest
 
 # checks whether the same file exists and updates it
 if [ -f "${PKG_NAME}-${human_readable_version}.p5p" ]
@@ -262,7 +314,7 @@ PKG pkgrecv -s "$PKG_REPO_NAME" -a -d "${outfile}" ${PKG_NAME}
 # cleanup
 if [ -d "$PKG_REPO_NAME" ]
 then
-   rm -rf "$PKG_REPO_NAME"
+	cleanup
 fi
 
 unset PKG_REPO
