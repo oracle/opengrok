@@ -37,6 +37,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import org.json.simple.parser.ParseException;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
@@ -73,6 +74,13 @@ public final class WebappListener
                 LOGGER.log(Level.WARNING, "OpenGrok Configuration error. Failed to read config file: ", ex);
             }
         }
+
+        /**
+         * Create a new instance of authorization framework. If the code above
+         * (reading the configuration) failed then the plugin directory is
+         * possibly {@code null} causing the framework to allow every request.
+         */
+        env.setAuthorizationFramework(new AuthorizationFramework(env.getPluginDirectory()));
 
         String address = context.getInitParameter("ConfigAddress");
         if (address != null && address.length() > 0) {
