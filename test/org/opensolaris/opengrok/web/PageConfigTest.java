@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -164,16 +165,16 @@ public class PageConfigTest {
 
         HttpServletRequest req = createRequest("/source", "/xref", "");
         PageConfig cfg = PageConfig.get(req);
-        List<String> files = cfg.getResourceFileList();
+        List<String> allFiles = new ArrayList<>(cfg.getResourceFileList());
 
         /**
          * Check if there are some files (the "5" here is just a sufficient
          * value for now which won't break any future repository tests) without
          * any authorization.
          */
-        assertTrue(files.size() > 5);
-        assertTrue(files.contains("git"));
-        assertTrue(files.contains("mercurial"));
+        assertTrue(allFiles.size() > 5);
+        assertTrue(allFiles.contains("git"));
+        assertTrue(allFiles.contains("mercurial"));
 
         /**
          * Now set up the same projects with authorization plugin enabling only
@@ -195,11 +196,13 @@ public class PageConfigTest {
 
         req = createRequest("/source", "/xref", "");
         cfg = PageConfig.get(req);
-        files = cfg.getResourceFileList();
+        List<String> filteredFiles = new ArrayList<>(cfg.getResourceFileList());
+        // list subtraction - retains only disabled files
+        allFiles.removeAll(filteredFiles);
 
-        assertTrue(files.size() > 5);
-        assertFalse(files.contains("git"));
-        assertFalse(files.contains("mercurial"));
+        assertEquals(2, allFiles.size());
+        assertTrue(allFiles.contains("git"));
+        assertTrue(allFiles.contains("mercurial"));
 
         // restore original values
         env.setAuthorizationFramework(oldAuthorizationFramework);
@@ -264,7 +267,6 @@ public class PageConfigTest {
             PageConfig.cleanup(req);
         }
     }
-
 
     @Test
     @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
