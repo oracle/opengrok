@@ -61,10 +61,17 @@ public class AuthorizationFilter implements Filter {
             } else {
                 LOGGER.log(Level.INFO, "Access denied for URI: {0}", httpReq.getRequestURI());
             }
-            config.getEnv().getStatistics().addRequest(httpReq);
-            config.getEnv().getStatistics().addRequest(httpReq, "requests_forbidden");
-            config.getEnv().getStatistics().addRequestTime(httpReq,
-                    "requests_forbidden",
+            /**
+             * Add the request to the statistics. This is called just once for a
+             * single request otherwise the next filter will count the same
+             * request twice ({@link StatisticsFilter#collectStats}).
+             *
+             * In this branch of the if statement the filter processing stopped
+             * and does not follow to the StatisticsFilter.
+             */
+            config.getEnv().getStatistics().addRequest();
+            config.getEnv().getStatistics().addRequest("requests_forbidden");
+            config.getEnv().getStatistics().addRequestTime("requests_forbidden",
                     System.currentTimeMillis() - processTime);
             if (!config.getEnv().getConfiguration().getForbiddenIncludeFileContent().isEmpty()) {
                 sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);

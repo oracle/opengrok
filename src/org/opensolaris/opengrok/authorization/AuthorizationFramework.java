@@ -156,10 +156,10 @@ public final class AuthorizationFramework {
                 "plugin_framework_project_cache",
                 project,
                 new AuthorizationEntity.PluginDecisionPredicate() {
-            @Override
-            public boolean decision(IAuthorizationPlugin plugin) {
-                return plugin.isAllowed(request, project);
-            }
+                    @Override
+                    public boolean decision(IAuthorizationPlugin plugin) {
+                        return plugin.isAllowed(request, project);
+                    }
         }, new AuthorizationEntity.PluginSkippingPredicate() {
             @Override
             public boolean shouldSkip(AuthorizationEntity authEntity) {
@@ -194,10 +194,10 @@ public final class AuthorizationFramework {
                 "plugin_framework_group_cache",
                 group,
                 new AuthorizationEntity.PluginDecisionPredicate() {
-            @Override
-            public boolean decision(IAuthorizationPlugin plugin) {
-                return plugin.isAllowed(request, group);
-            }
+                    @Override
+                    public boolean decision(IAuthorizationPlugin plugin) {
+                        return plugin.isAllowed(request, group);
+                    }
         }, new AuthorizationEntity.PluginSkippingPredicate() {
             @Override
             public boolean shouldSkip(AuthorizationEntity authEntity) {
@@ -667,11 +667,11 @@ public final class AuthorizationFramework {
             m = new TreeMap<>();
         } else if ((val = m.get(entity.getName())) != null) {
             // cache hit
-            stats.addRequest(request, "authorization_cache_hits");
+            stats.addRequest("authorization_cache_hits");
             return val;
         }
 
-        stats.addRequest(request, "authorization_cache_misses");
+        stats.addRequest("authorization_cache_misses");
 
         long time = System.currentTimeMillis();
 
@@ -679,14 +679,14 @@ public final class AuthorizationFramework {
 
         time = System.currentTimeMillis() - time;
 
-        stats.addRequestTime(request, "authorization", time);
-        stats.addRequestTime(request,
+        stats.addRequestTime("authorization", time);
+        stats.addRequestTime(
                 String.format("authorization_%s", overallDecision ? "positive" : "negative"),
                 time);
-        stats.addRequestTime(request,
+        stats.addRequestTime(
                 String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()),
                 time);
-        stats.addRequestTime(request,
+        stats.addRequestTime(
                 String.format("authorization_of_%s", entity.getName()),
                 time);
 

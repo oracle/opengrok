@@ -29,7 +29,9 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.Nameable;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.web.Statistics;
 
 /**
  * This is a subclass of {@link AuthorizationEntity} implementing the methods to
@@ -216,6 +218,10 @@ public class AuthorizationStack extends AuthorizationEntity {
     protected boolean processStack(Nameable entity,
             PluginDecisionPredicate pluginPredicate,
             PluginSkippingPredicate skippingPredicate) {
+
+        Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
+        long time = System.currentTimeMillis();
+
         boolean overallDecision = true;
         for (AuthorizationEntity authEntity : getStack()) {
 
@@ -269,6 +275,18 @@ public class AuthorizationStack extends AuthorizationEntity {
                 }
             }
         }
+        time = System.currentTimeMillis() - time;
+
+        stats.addRequestTime(
+                String.format("authorization_in_stack_%s_%s", getName(), overallDecision ? "positive" : "negative"),
+                time);
+        stats.addRequestTime(
+                String.format("authorization_in_stack_%s_%s_of_%s", getName(), overallDecision ? "positive" : "negative", entity.getName()),
+                time);
+        stats.addRequestTime(
+                String.format("authorization_in_stack_%s_of_%s", getName(), entity.getName()),
+                time);
+
         return overallDecision;
     }
 

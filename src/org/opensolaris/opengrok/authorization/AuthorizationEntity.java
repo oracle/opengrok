@@ -85,7 +85,6 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
          * @return true if plugin allows the action; false otherwise
          */
         public abstract boolean decision(IAuthorizationPlugin t);
-
     }
 
     /**
