@@ -284,4 +284,18 @@ public class Group implements Comparable<Group>, Nameable {
         }
         return ret;
     }
+
+    /**
+     * Reduce the group set to only those which match the given project based on
+     * the project's description.
+     *
+     * @param project the project
+     * @param groups set of groups
+     * @return set of groups matching the project
+     */
+    public static Set<Group> matching(Project project, Set<Group> groups) {
+        Set<Group> copy = new TreeSet<>(groups);
+        copy.removeIf((g) -> !g.match(project));
+        return copy;
+    }
 }
