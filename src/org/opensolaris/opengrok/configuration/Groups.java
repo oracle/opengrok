@@ -329,9 +329,10 @@ public final class Groups {
     private static boolean treeTraverseGroups(Set<Group> groups, Walker f) {
         LinkedList<Group> stack = new LinkedList<>();
         for (Group g : groups) {
+            // the flag here represents the group's depth in the group tree
             g.setFlag(0);
             if (g.getParent() == null) {
-                stack.add(g);
+                stack.addLast(g);
             }
         }
 
@@ -343,10 +344,9 @@ public final class Groups {
                 return true;
             }
 
-            for (Group x : g.getSubgroups()) {
-                x.setFlag(g.getFlag() + 1);
-                stack.addFirst(x);
-            }
+            g.getSubgroups().forEach((x) -> x.setFlag(g.getFlag() + 1));
+            // add all the subgroups respecting the sorted order
+            stack.addAll(0, g.getSubgroups());
         }
         return false;
     }

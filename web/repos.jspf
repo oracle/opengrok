@@ -21,10 +21,11 @@ CDDL HEADER END
 Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 
 --%>
+<%@page import="java.util.TreeSet"%>
+<%@page import="java.util.Iterator"%>
 <%@page import="org.opensolaris.opengrok.web.Scripts"%>
 <%@page import="org.json.simple.JSONArray"%>
 <%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
-<%@page import="java.util.SortedSet"%>
 <%@page import="java.util.SortedSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.text.ParseException"%>
@@ -80,6 +81,7 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
             LinkedList<Group> stack = new LinkedList<>();
             for ( Group x : groups ) {
                 if (x.getParent() == null && (pHelper.hasAllowedSubgroup(x) || cfg.isAllowed(x))) {
+                    // the flag here represents the state of the group - open/close
                     x.setFlag(0);
                     stack.addLast(x);
                 }
@@ -97,14 +99,19 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                 }
                 
                 stack.element().setFlag(1);
-                
-                for (Group x : pHelper.getSubgroups(group)) {
+
+                Set<Group> subgroups = new TreeSet<>(pHelper.getSubgroups(group));
+                for (Iterator<Group> it = subgroups.iterator(); it.hasNext();) {
+                    Group x = it.next();
                     if (cfg.isAllowed(x) || pHelper.hasAllowedSubgroup(x)) {
                         x.setFlag(0);
-                        stack.addFirst(x);
+                    } else {
+                        it.remove();
                     }
                 }
-                
+                // add all the subgroups to the beginning respecting the order
+                stack.addAll(0, subgroups);
+
                 %><div class="panel">
                     <div class="panel-heading-accordion">
                         
