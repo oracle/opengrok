@@ -246,7 +246,7 @@ public final class Groups {
                 for (int i = 0; i < g.getFlag() * 2; i++) {
                     out.print(" ");
                 }
-                out.println(g.getName() + " ~ \"" + g.getPattern() + "\"");
+                out.println(g.getName() + " ~ '" + g.getPattern() + "'");
                 return false;
             }
         });
