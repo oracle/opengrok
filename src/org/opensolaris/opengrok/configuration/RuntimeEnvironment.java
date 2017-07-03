@@ -1640,6 +1640,14 @@ public final class RuntimeEnvironment {
             config.refreshDateForLastIndexRun();
         }
 
+        // start/stop the watchdog if necessarry
+        if (isAuthorizationWatchdog() && config.getPluginDirectory() != null) {
+            startWatchDogService(new File(config.getPluginDirectory()));
+        } else {
+            stopWatchDogService();
+        }
+
+        // set the new plugin directory and reload the authorization framework
         getAuthorizationFramework().setPluginDirectory(config.getPluginDirectory());
         getAuthorizationFramework().reload();
     }
@@ -1766,10 +1774,12 @@ public final class RuntimeEnvironment {
      * @param directory root directory for plugins
      */
     public void startWatchDogService(File directory) {
+        stopWatchDogService();
         if (directory == null || !directory.isDirectory() || !directory.canRead()) {
             LOGGER.log(Level.INFO, "Watch dog cannot be started - invalid directory: {0}", directory);
             return;
         }
+        LOGGER.log(Level.INFO, "Starting watchdog in: {0}", directory);
         watchDogThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1781,11 +1791,12 @@ public final class RuntimeEnvironment {
                         @Override
                         public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
                             // attach monitor
+                            LOGGER.log(Level.FINEST, "Watchdog registering {0}", d);
                             d.register(watchDogWatcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
                             return CONTINUE;
                         }
                     });
-                    
+
                     LOGGER.log(Level.INFO, "Watch dog started {0}", directory);
                     while (!Thread.currentThread().isInterrupted()) {
                         final WatchKey key;
@@ -1815,9 +1826,10 @@ public final class RuntimeEnvironment {
                         }
                     }
                 } catch (InterruptedException | IOException ex) {
+                    LOGGER.log(Level.FINEST, "Watchdog finishing (exiting)", ex);
                     Thread.currentThread().interrupt();
                 }
-                LOGGER.log(Level.INFO, "Watchdog finishing (exiting)");
+                LOGGER.log(Level.FINER, "Watchdog finishing (exiting)");
             }
         }, "watchDogService");
         watchDogThread.start();
@@ -1831,7 +1843,7 @@ public final class RuntimeEnvironment {
             try {
                 watchDogWatcher.close();
             } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Cannot close WatchDogService: ", ex);
+                LOGGER.log(Level.WARNING, "Cannot close WatchDogService: ", ex);
             }
         }
         if (watchDogThread != null) {
@@ -1839,9 +1851,10 @@ public final class RuntimeEnvironment {
             try {
                 watchDogThread.join();
             } catch (InterruptedException ex) {
-                LOGGER.log(Level.INFO, "Cannot join WatchDogService thread: ", ex);
+                LOGGER.log(Level.WARNING, "Cannot join WatchDogService thread: ", ex);
             }
         }
+        LOGGER.log(Level.INFO, "Watchdog stoped");
     }
 
     public void startExpirationTimer() {
