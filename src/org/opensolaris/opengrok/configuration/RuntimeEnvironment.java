@@ -1234,13 +1234,7 @@ public final class RuntimeEnvironment {
         }
         for (Project project : projects) {
             // filterProjects only groups which match project's description
-            Set<Group> copy = new TreeSet<>(groups);
-            copy.removeIf(new Predicate<Group>() {
-                @Override
-                public boolean test(Group g) {
-                    return !g.match(project);
-                }
-            });
+            Set<Group> copy = Group.matching(project, groups);
 
             // add project to the groups
             for (Group group : copy) {
