@@ -164,7 +164,7 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                         for (String f : files) {
                             File file = new File(mydir, f);
                             try {
-                                entry.addFile(env.getPathRelativeToSourceRoot(file, 0));
+                                entry.addFile(env.getPathRelativeToSourceRoot(file));
                             } catch (FileNotFoundException e) { // NOPMD
                                 // If the file is not located under the source root, ignore it
                             }

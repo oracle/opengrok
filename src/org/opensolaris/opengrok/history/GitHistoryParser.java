@@ -128,7 +128,7 @@ class GitHistoryParser implements Executor.StreamHandler {
                 if (entry != null) {
                     try {
                         File f = new File(myDir, s);
-                        entry.addFile(env.getPathRelativeToSourceRoot(f, 0));
+                        entry.addFile(env.getPathRelativeToSourceRoot(f));
                     } catch (FileNotFoundException e) { //NOPMD
                         // If the file is not located under the source root,
                         // ignore it (bug #11664).

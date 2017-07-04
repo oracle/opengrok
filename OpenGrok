@@ -105,7 +105,7 @@ Usage()
 
     exec >&2
     echo ""
-    echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage|help>"
+    echo "Usage: ${progname} <bootstrap|deploy|derby|update|updateQuietly|usage|help>"
     echo "       ${progname} index [<directory>]"
     echo "       ${progname} indexpart <src_root> <directory1> [..]"
     echo "       ${progname} clearHistory <src_root> <repository_name>"
@@ -331,7 +331,7 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: JVM Options
     JAVA_OPTS="${JAVA_OPTS:--Xmx2048m}"
-    
+
     # OPTIONAL: Full Path to History Utilities
     BK="`Which bk`"
     HG="`Which hg`"
@@ -822,6 +822,8 @@ CommonInvocation()
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
         ${READ_XML_CONF}                                        	\
+        ${WEBAPP_CONFIG}						\
+        ${WEBAPP_CONTEXT}						\
         "${@}"
 }
 
@@ -831,8 +833,6 @@ StdInvocation()
         -W ${XML_CONFIGURATION}	\
 	${SCAN_FOR_REPOSITORY}	\
 	${ENABLE_PROJECTS}	\
-        ${WEBAPP_CONFIG}	\
-        ${WEBAPP_CONTEXT}	\
         -s "${SRC_ROOT}"	\
 	-d "${DATA_ROOT}"	\
 	"${@}"
@@ -1030,6 +1030,12 @@ case "${1}" in
         UpdateGeneratedData
         UpdateDescriptionCache
         ;;
+
+    bootstrap)
+        ValidateConfiguration
+        CreateRuntimeRequirements
+	StdInvocation "-y"
+	;;
 
     index)
 	if [ $# -gt 2 ]

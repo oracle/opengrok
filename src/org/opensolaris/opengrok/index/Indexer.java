@@ -126,6 +126,7 @@ public final class Indexer {
             int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
             String host = null;
             int port = 0;
+            boolean noindex = false;
 
             // Parse command line options:
             Getopt getopt = new Getopt(argv, cmdOptions.getCommandString());
@@ -330,6 +331,7 @@ public final class Indexer {
                             break;
                         case 'P':
                             addProjects = true;
+                            cfg.setProjectsEnabled(true);
                             break;
                         case 'p':
                             defaultProjects.add(getopt.getOptarg());
@@ -433,6 +435,9 @@ public final class Indexer {
                         case 'X':
                             cfg.setUserPageSuffix(getopt.getOptarg());
                             break;
+                        case 'y':
+                            noindex = true;
+                            break;
                         case 'z':
                             try {
                                 cfg.setScanningDepth(Integer.parseInt(getopt.getOptarg()));
@@ -452,6 +457,8 @@ public final class Indexer {
                     }
                 }
 
+                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
                 if (configHost != null) {
                     String[] configHostArray = configHost.split(":");
                     if (configHostArray.length == 2) {
@@ -469,6 +476,9 @@ public final class Indexer {
                         }
                         System.exit(1);
                     }
+
+                    env.setConfigHost(host);
+                    env.setConfigPort(port);
                 }
 
                 // Complete the configuration of repository types.
@@ -524,13 +534,18 @@ public final class Indexer {
                 }
 
                 // Set updated configuration in RuntimeEnvironment.
-                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 env.setConfiguration(cfg, subFilesList);
 
                 // Let repository types to add items to ignoredNames.
                 // This changes env so is called after the setConfiguration()
                 // call above.
                 RepositoryFactory.setIgnored(env);
+
+                if (noindex) {
+                    getInstance().sendToConfigHost(env, host, port);
+                    writeConfigToFile(env, configFilename);
+                    System.exit(0);
+                }
 
                 /*
                  * Add paths to directories under source root. If projects
@@ -568,7 +583,7 @@ public final class Indexer {
 
                 // Get history first.
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
-                        defaultProjects, configFilename, refreshHistory,
+                        defaultProjects, refreshHistory,
                         listFiles, createDict, subFiles, repositories,
                         zapCache, listRepos);
                 if (listRepos || !zapCache.isEmpty()) {
@@ -581,6 +596,8 @@ public final class Indexer {
                     getInstance().doIndexerExecution(update, noThreads, subFiles,
                             progress);
                 }
+
+                writeConfigToFile(env, configFilename);
 
                 // Finally ping webapp to refresh indexes in the case of partial reindex
                 // or send new configuration to the web application in the case of full reindex.
@@ -605,6 +622,19 @@ public final class Indexer {
         }
     }
 
+    /**
+     * Write configuration to a file
+     * @param env runtime environment
+     * @param filename file name to write the configuration to
+     */
+    public static void writeConfigToFile(RuntimeEnvironment env, String filename) throws IOException {
+        if (filename != null) {
+            LOGGER.log(Level.INFO, "Writing configuration to {0}", filename);
+            env.writeConfiguration(new File(filename));
+            LOGGER.info("Done...");
+        }
+    }
+
     /*
      * This is the first phase of the indexing where history cache is being
      * generated for repositories (at least for those which support getting
@@ -618,7 +648,6 @@ public final class Indexer {
             boolean searchRepositories,
             boolean addProjects,
             Set<String> defaultProjects,
-            String configFilename,
             boolean refreshHistory,
             boolean listFiles,
             boolean createDict,
@@ -745,12 +774,6 @@ public final class Indexer {
             }
         }
 
-        if (configFilename != null) {
-            LOGGER.log(Level.INFO, "Writing configuration to {0}", configFilename);
-            env.writeConfiguration(new File(configFilename));
-            LOGGER.info("Done...");
-        }
-
         if (refreshHistory) {
             if (repositories != null && !repositories.isEmpty()) {
                 LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
@@ -772,11 +795,16 @@ public final class Indexer {
         }
     }
 
-    /*
+    /**
      * This is the second phase of the indexer which generates Lucene index
-     * by passing source code files through Exuberant ctags, generating xrefs
+     * by passing source code files through ctags, generating xrefs
      * and storing data from the source files in the index (along with history,
      * if any).
+     * 
+     * @param update if set to true, index database is updated, otherwise optimized
+     * @param noThreads number of threads in the pool that participate in the indexing
+     * @param subFiles index just some subdirectories
+     * @param progress object to receive notifications as indexer progress is made
      */
     public void doIndexerExecution(final boolean update, int noThreads, List<String> subFiles,
             IndexChangedListener progress)

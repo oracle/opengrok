@@ -121,8 +121,8 @@ public class MercurialRepositoryTest {
         File root = new File(repository.getSourceRoot(), "mercurial");
 
         // Add a subdirectory with some history.
-        runHgCommand("import",
-            root, getClass().getResource("hg-export-subdir.txt").getPath());
+        runHgCommand(root, "import",
+            getClass().getResource("hg-export-subdir.txt").getPath());
 
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
@@ -164,14 +164,16 @@ public class MercurialRepositoryTest {
      * @param reposRoot directory of the repository root
      * @param arg argument to use for the command
      */
-    static void runHgCommand(String command, File reposRoot, String arg) {
-        String[] cmdargs = {
-            MercurialRepository.CMD_FALLBACK, command, arg
-        };
-        Executor exec = new Executor(Arrays.asList(cmdargs), reposRoot);
+    static public void runHgCommand(File reposRoot, String ... args) {
+        List<String> cmdargs = new ArrayList<>();
+        cmdargs.add(MercurialRepository.CMD_FALLBACK);
+        for (String arg: args) {
+            cmdargs.add(arg);
+        }
+        Executor exec = new Executor(cmdargs, reposRoot);
         int exitCode = exec.exec();
         if (exitCode != 0) {
-            fail("hg " + command + " failed."
+            fail("hg command '" + cmdargs.toString() + "' failed."
                     + "\nexit code: " + exitCode
                     + "\nstdout:\n" + exec.getOutputString()
                     + "\nstderr:\n" + exec.getErrorString());
@@ -190,10 +192,10 @@ public class MercurialRepositoryTest {
         File root = new File(repository.getSourceRoot(), "mercurial");
 
         // Branch the repo and add one changeset.
-        runHgCommand("unbundle",
-                root, getClass().getResource("hg-branch.bundle").getPath());
+        runHgCommand(root, "unbundle",
+                getClass().getResource("hg-branch.bundle").getPath());
         // Switch to the branch.
-        runHgCommand("update", root, "mybranch");
+        runHgCommand(root, "update", "mybranch");
 
         // Since the above hg commands change the active branch the repository
         // needs to be initialized here so that its branch matches.

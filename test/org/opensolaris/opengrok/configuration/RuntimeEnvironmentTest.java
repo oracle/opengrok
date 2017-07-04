@@ -133,6 +133,7 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testProjects() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        instance.setProjectsEnabled(true);
         assertFalse(instance.hasProjects());
         assertNotNull(instance.getProjects());
         assertEquals(0, instance.getProjects().size());

@@ -140,7 +140,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                     if (strings[ii].length() > 0) {
                         File f = new File(mydir, strings[ii]);
                         try {
-                            entry.addFile(env.getPathRelativeToSourceRoot(f, 0));
+                            entry.addFile(env.getPathRelativeToSourceRoot(f));
                         } catch (FileNotFoundException e) { // NOPMD
                             // If the file is not located under the source root,
                             // ignore it (bug #11664).
@@ -149,7 +149,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                 }
             } else if (s.startsWith(MercurialRepository.FILE_COPIES) &&
                 entry != null && isDir) {
-                /* 
+                /*
                  * 'file_copies:' should be present only for directories but
                  * we use isDir to be on the safe side.
                  */

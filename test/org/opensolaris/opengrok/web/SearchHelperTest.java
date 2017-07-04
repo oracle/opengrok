@@ -75,7 +75,7 @@ public class SearchHelperTest {
     private void reindex() throws Exception {
         System.out.println("Generating index by using the class methods");
 
-        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
+        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
                 false, false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, 1, null, null);
     }
@@ -102,6 +102,8 @@ public class SearchHelperTest {
     public void testSearchAfterReindex() {
         SortedSet<String> projects = new TreeSet<>();
         SearchHelper searchHelper;
+
+        env.setProjectsEnabled(true);
 
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (!env.validateExuberantCtags()) {

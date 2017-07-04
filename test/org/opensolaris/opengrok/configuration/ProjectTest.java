@@ -100,6 +100,7 @@ public class ProjectTest {
         projects.put("foo", foo);
         projects.put("bar", bar);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setProjectsEnabled(true);
         env.setProjects(projects);
 
         // The matching of project name to project should be exact.

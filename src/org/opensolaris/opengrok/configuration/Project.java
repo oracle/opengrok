@@ -49,6 +49,13 @@ public class Project implements Comparable<Project>, Nameable {
     private int tabSize;
 
     /**
+     * This marks the project as (not)ready before initial index is done.
+     * this is to avoid all/multi-project searches referencing this project
+     * from failing.
+     */
+    private boolean indexed = false;
+
+    /**
      * Set of groups which match this project.
      */
     private Set<Group> groups = new TreeSet<>();
@@ -83,6 +90,10 @@ public class Project implements Comparable<Project>, Nameable {
      */
     public String getPath() {
         return path;
+    }
+
+    public boolean isIndexed() {
+        return indexed;
     }
 
     /**
@@ -128,6 +139,10 @@ public class Project implements Comparable<Project>, Nameable {
      */
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public void setIndexed(boolean flag) {
+        this.indexed = flag;
     }
 
     /**
@@ -214,7 +229,7 @@ public class Project implements Comparable<Project>, Nameable {
     public static Project getProject(File file) {
         Project ret = null;
         try {
-            ret = getProject(RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file, 0));
+            ret = getProject(RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file));
         } catch (FileNotFoundException e) { // NOPMD
             // ignore if not under source root
         } catch (IOException e) { // NOPMD

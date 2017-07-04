@@ -143,6 +143,13 @@ Currently supported message types:
                  reloads all authorization plugins.
 5) RefreshMesssage (refresh)
     Sent at the end of partial reindex to trigger refresh of SearcherManagers.
+6) ProjectMessage
+    Used for adding/deleting projects and partial (per-project) reindex.
+    	- "add" adds project(s) and its repositories to the configuration.
+	  If the project already exists, refresh list of its repositories.
+	- "delete" removes project(s) and its repositores from the configuration
+	  Also deletes its data under data root (but not the source code).
+	- "indexed" mark the project(s) as indexed so it becomes visible in the UI
 
 4. OpenGrok install
 -----------------
@@ -314,27 +321,49 @@ projects to finish syncing before running the indexer. To overcome this
 limitation, the index of each project can be created just after the
 mirroring of this project finishes.
 
-Thus, the overall approach would be:
+Indexing of all projects (i.e. 'OpenGrok index /var/opengrok/src') in
+order to discover new and remove deleted projects from the configuration can be
+avoided. One can start with no index and no projects and then incrementally add
+them and index them.
 
-  1. create initial index of all the source code
+It basically works like this:
 
-     This will produce configuration.xml, optionally by combining the
-     discovered projects with read-only configuration (as specified
-     with OPENGROK_READ_XML_CONFIGURATION). This step has to be performed
-     only once - during the initial OpenGrok setup.
+  0. bootstrap initial configuration:
 
-  2. mirror and index all projects in parallel
+     OpenGrok bootstrap
 
-     This is done by running indexpart command of the OpenGrok script and
-     specifying the configuration.xml written in previous step as
-     OPENGROK_READ_XML_CONFIGURATION. The configuration will help the indexer
-     to discover source/data root and project to source path mapping.
+        - this will create /var/opengrok/etc/configuration.xml with basic set of
+ 	 properties. If more is needed use:
 
-  3. perform complete reindex (like in step 1)
+ 	   Messages -n config -t set "set propertyXY = valueFOO"
 
-     Once all the pre-existing projects are mirrored and indexed, run full
-     indexer to discover projects which have been added or deleted.
-     This will produce new configuration.xml.
+  1. add a new project "foo":
+
+     Messages -t foo -n project add
+
+     - the project foo is now visible in the configuration however is not yet
+       searchable. Store the config in a file so that indexer can see the project
+       and its repositories:
+
+         Messages -n config -t getconf > /var/opengrok/etc/configuration.xml
+
+  2. index the project. It will become searchable after that.
+
+     OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
+         OpenGrok indexpart /var/opengrok/src /foo
+
+  3. make the project "indexed" status of the project persistent so that if
+     webapp is redeployed the project will be still visible:
+
+     Messages -n config -t getconf > /var/opengrok/etc/configuration.xml
+
+
+If an add message is sent that matches existing project, the list of
+repositories for that project will be refreshed. This is handy when repositories
+are added/deleted.
+
+5.2.3.1 Logging when running partial reindex
+--------------------------------------------
 
 When running the indexer the logs are being written to single file. Since
 multiple indexers are being run in parallel in step 2, their logs have to
@@ -348,7 +377,7 @@ Note the path component 'myproj' which separates the logs for given
 project to this directory. The creation of the per-project directory and the
 logging.properties file can be easily done in a script.
 
-The command used in step 2 can look like this:
+The command used in step 2 can thus look like this:
 
   OPENGROK_LOGGER_CONFIG_PATH=/var/opengrok/myproj.logging \
      OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \

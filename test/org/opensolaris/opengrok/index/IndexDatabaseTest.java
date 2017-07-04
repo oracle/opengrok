@@ -62,7 +62,7 @@ public class IndexDatabaseTest {
 
         Indexer indexer = Indexer.getInstance();
         indexer.prepareIndexer(
-                env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
+                env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
                 false, false, false, null, null, new ArrayList<String>(), false);
         indexer.doIndexerExecution(true, 1, null, null);
     }

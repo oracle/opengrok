@@ -175,8 +175,8 @@ public class FileHistoryCacheTest {
         cache.store(historyToStore, repo);
 
         // Add bunch of changesets with file based changes and tags.
-        MercurialRepositoryTest.runHgCommand("import",
-                reposRoot, getClass().getResource("hg-export-tag.txt").getPath());
+        MercurialRepositoryTest.runHgCommand(reposRoot, "import",
+                getClass().getResource("hg-export-tag.txt").getPath());
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
@@ -300,8 +300,8 @@ public class FileHistoryCacheTest {
                 dirHistory.getHistoryEntries(), true);
 
         // test incremental update
-        MercurialRepositoryTest.runHgCommand("import",
-                reposRoot, getClass().getResource("hg-export.txt").getPath());
+        MercurialRepositoryTest.runHgCommand(reposRoot, "import",
+                getClass().getResource("hg-export.txt").getPath());
 
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
 
@@ -382,8 +382,8 @@ public class FileHistoryCacheTest {
         cache.store(historyToStore, repo);
 
         // Import changesets which rename one of the files in the repository.
-        MercurialRepositoryTest.runHgCommand("import",
-            reposRoot, getClass().getResource("hg-export-renamed.txt").getPath());
+        MercurialRepositoryTest.runHgCommand(reposRoot, "import",
+            getClass().getResource("hg-export-renamed.txt").getPath());
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
@@ -454,8 +454,8 @@ public class FileHistoryCacheTest {
             updatedHistory.getHistoryEntries(), false);
 
         // Add some changes and rename the file again.
-        MercurialRepositoryTest.runHgCommand("import",
-            reposRoot, getClass().getResource("hg-export-renamed-again.txt").getPath());
+        MercurialRepositoryTest.runHgCommand(reposRoot, "import",
+            getClass().getResource("hg-export-renamed-again.txt").getPath());
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
@@ -504,15 +504,15 @@ public class FileHistoryCacheTest {
         RuntimeEnvironment.getInstance().setTagsEnabled(true);
 
         // Branch the repo and add one changeset.
-        runHgCommand("unbundle",
-            reposRoot, getClass().getResource("hg-branch.bundle").getPath());
+        runHgCommand(reposRoot, "unbundle",
+            getClass().getResource("hg-branch.bundle").getPath());
 
         // Import changesets which rename one of the files in the default branch.
-        runHgCommand("import",
-            reposRoot, getClass().getResource("hg-export-renamed.txt").getPath());
+        runHgCommand(reposRoot, "import",
+            getClass().getResource("hg-export-renamed.txt").getPath());
 
         // Switch to the newly created branch.
-        runHgCommand("update", reposRoot, "mybranch");
+        runHgCommand(reposRoot, "update", "mybranch");
 
         // Generate history index.
         // It is necessary to call getRepository() only after tags were enabled
@@ -526,8 +526,8 @@ public class FileHistoryCacheTest {
         assertEquals(11, updatedHistory.getHistoryEntries().size());
 
         // Import changesets which rename the file in the new branch.
-        runHgCommand("import",
-            reposRoot, getClass().getResource("hg-export-renamed-branched.txt").getPath());
+        runHgCommand(reposRoot, "import",
+            getClass().getResource("hg-export-renamed-branched.txt").getPath());
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));

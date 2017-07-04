@@ -101,6 +101,7 @@ public class AuthorizationEntityTest {
         AuthorizationEntity authEntity;
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setProjectsEnabled(true);
 
         env.getProjects().put("project 1", new Project("project 1"));
         env.getProjects().put("project 2", new Project("project 2"));

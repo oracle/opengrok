@@ -143,7 +143,10 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                     </thead>
                     <tbody>
                     <%
-                    for ( Project project : pHelper.getRepositories(group)) {
+                    for (Project project : pHelper.getRepositories(group)) {
+                        if (!project.isIndexed()) {
+                            continue;
+                        }
                         List<RepositoryInfo> repos = pHelper.getRepositoryInfo(project);
                         String projDesc = project.getName();
                         Integer cnt = 0;
@@ -274,6 +277,9 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                             <tbody>
                         <%
                         for (Project proj : repositories) {
+                            if (!proj.isIndexed()) {
+                                continue;
+                            }
                             List<RepositoryInfo> repos = pHelper.getRepositoryInfo(proj);
                             String projDesc = proj.getName();
                             Integer cnt = 0;

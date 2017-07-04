@@ -878,7 +878,7 @@ public final class Util {
         printTableRow(out, "User page suffix", env.getUserPageSuffix());
         printTableRow(out, "Review page", env.getReviewPage());
         printTableRow(out, "Review pattern", env.getReviewPattern());
-        printTableRow(out, "Using projects", env.hasProjects());
+        printTableRow(out, "Using projects", env.isProjectsEnabled());
         out.append("<tr><td>Ignored files</td><td>");
         printUnorderedList(out, env.getIgnoredNames().getItems());
         out.append("</td></tr>");

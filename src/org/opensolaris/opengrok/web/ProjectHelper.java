@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.RepositoryInfo;
@@ -201,7 +202,7 @@ public final class ProjectHelper {
             p = filterProjects(original);
             cfg.setRequestAttribute(name, p);
         }
-        return p;
+        return p.stream().filter(proj -> proj.isIndexed()).collect(Collectors.toSet());
     }
 
     /**

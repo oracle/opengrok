@@ -72,6 +72,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -115,8 +116,9 @@ public class IndexDatabase {
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
     
-    //Directory where we store indexes
-    public static final String INDEX_DIR="index";
+    // Directory where we store indexes
+    public static final String INDEX_DIR = "index";
+    public static final String XREF_DIR = "xref";
 
     /**
      * Create a new instance of the Index Database. Use this constructor if you
@@ -274,7 +276,7 @@ public class IndexDatabase {
             includedNames = env.getIncludedNames();
             analyzerGuru = new AnalyzerGuru();
             if (env.isGenerateHtml()) {
-                xrefDir = new File(env.getDataRootFile(), "xref");
+                xrefDir = new File(env.getDataRootFile(), XREF_DIR);
             }
             listeners = new ArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
@@ -322,7 +324,8 @@ public class IndexDatabase {
             interrupted = false;
         }
 
-        String ctgs = RuntimeEnvironment.getInstance().getCtags();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String ctgs = env.getCtags();
         if (ctgs != null) {
             ctags = new Ctags();
             ctags.setBinary(ctgs);
@@ -342,7 +345,7 @@ public class IndexDatabase {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            iwc.setRAMBufferSizeMB(RuntimeEnvironment.getInstance().getRamBufferSize());
+            iwc.setRAMBufferSizeMB(env.getRamBufferSize());
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk            
 
@@ -357,9 +360,9 @@ public class IndexDatabase {
             for (String dir : directories) {
                 File sourceRoot;
                 if ("".equals(dir)) {
-                    sourceRoot = RuntimeEnvironment.getInstance().getSourceRootFile();
+                    sourceRoot = env.getSourceRootFile();
                 } else {
-                    sourceRoot = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), dir);
+                    sourceRoot = new File(env.getSourceRootFile(), dir);
                 }
 
                 HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
@@ -377,8 +380,8 @@ public class IndexDatabase {
                     if (numDocs > 0) {
                         uidIter = terms.iterator();
                         TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
-                        if (stat==TermsEnum.SeekStatus.END) {
-                            uidIter=null;
+                        if (stat == TermsEnum.SeekStatus.END) {
+                            uidIter = null;
                             LOGGER.log(Level.WARNING,
                                 "Couldn't find a start term for {0}, empty u field?",
                                 startuid);
@@ -386,7 +389,7 @@ public class IndexDatabase {
                     }
                     // The code below traverses the tree to get total count.
                     int file_cnt = 0;
-                    if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+                    if (env.isPrintProgress()) {
                         LOGGER.log(Level.INFO, "Counting files in {0} ...", dir);
                         file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
                         LOGGER.log(Level.INFO,
@@ -394,6 +397,7 @@ public class IndexDatabase {
                                 new Object[]{file_cnt, dir});
                     }
 
+                    // The actual indexing happens in indexDown().
                     indexDown(sourceRoot, dir, false, 0, file_cnt);
 
                     while (uidIter != null && uidIter.term() != null
@@ -404,6 +408,22 @@ public class IndexDatabase {
                         if (next==null) {
                             uidIter=null;
                         }
+                    }
+
+                    // Successfully indexed the directory. If this is a project
+                    // that has just been indexed for the first time mark it so
+                    // by sending special message to the webapp.
+                    if (project != null && !project.isIndexed()) {
+                        if (env.getConfigHost() != null && env.getConfigPort() > 0) {
+                            Message m = Message.createMessage("project");
+                            m.addTag(project.getName());
+                            m.setText("indexed");
+                            m.write(env.getConfigHost(), env.getConfigPort());
+                        }
+
+                        // Also need to store the correct value in configuration
+                        // when indexer writes it to a file.
+                        project.setIndexed(true);
                     }
                 } finally {
                     reader.close();
@@ -435,23 +455,10 @@ public class IndexDatabase {
         }
 
         if (!isInterrupted() && isDirty()) {
-            if (RuntimeEnvironment.getInstance().isOptimizeDatabase()) {
+            if (env.isOptimizeDatabase()) {
                 optimize();
-            }            
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            File timestamp = new File(env.getDataRootFile(), "timestamp");
-            String purpose = "used for timestamping the index database.";
-            if (timestamp.exists()) {
-                if (!timestamp.setLastModified(System.currentTimeMillis())) {
-                    LOGGER.log(Level.WARNING, "Failed to set last modified time on ''{0}'', {1}",
-                        new Object[]{timestamp.getAbsolutePath(), purpose});
-                }
-            } else {
-                if (!timestamp.createNewFile()) {
-                    LOGGER.log(Level.WARNING, "Failed to create file ''{0}'', {1}",
-                        new Object[]{timestamp.getAbsolutePath(), purpose});
-                }
             }
+            env.setIndexTimestamp();
         }
     }
 
@@ -559,6 +566,31 @@ public class IndexDatabase {
     }
 
     /**
+     * Remove xref file for given path
+     * @param path path to file under source root
+     */
+    private void removeXrefFile(String path) {
+        File xrefFile;
+        if (RuntimeEnvironment.getInstance().isCompressXref()) {
+            xrefFile = new File(xrefDir, path + ".gz");
+        } else {
+            xrefFile = new File(xrefDir, path);
+        }
+        File parent = xrefFile.getParentFile();
+
+        if (!xrefFile.delete() && xrefFile.exists()) {
+            LOGGER.log(Level.INFO, "Failed to remove obsolete xref-file: {0}",
+                xrefFile.getAbsolutePath());
+        }
+
+        // Remove the parent directory if it's empty.
+        if (parent.delete()) {
+            LOGGER.log(Level.FINE, "Removed empty xref dir:{0}",
+                parent.getAbsolutePath());
+        }
+    }
+
+    /**
      * Remove a stale file (uidIter.term().text()) from the index database (and
      * the xref file)
      *
@@ -570,26 +602,13 @@ public class IndexDatabase {
         for (IndexChangedListener listener : listeners) {
             listener.fileRemove(path);
         }
+
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));        
         writer.prepareCommit();
         writer.commit();
-        
-        File xrefFile;
-        if (RuntimeEnvironment.getInstance().isCompressXref()) {
-            xrefFile = new File(xrefDir, path + ".gz");
-        } else {
-            xrefFile = new File(xrefDir, path);
-        }
-        File parent = xrefFile.getParentFile();
 
-        if (!xrefFile.delete() && xrefFile.exists()) {
-            LOGGER.log(Level.INFO, "Failed to remove obsolete xref-file: {0}", xrefFile.getAbsolutePath());
-        }
+        removeXrefFile(path);
 
-        // Remove the parent directory if it's empty
-        if (parent.delete()) {
-            LOGGER.log(Level.FINE, "Removed empty xref dir:{0}", parent.getAbsolutePath());
-        }
         setDirty();
         for (IndexChangedListener listener : listeners) {
             listener.fileRemoved(path);
@@ -1118,7 +1137,7 @@ public class IndexDatabase {
     public static Definitions getDefinitions(File file)
             throws IOException, ParseException, ClassNotFoundException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String path = env.getPathRelativeToSourceRoot(file, 0);
+        String path = env.getPathRelativeToSourceRoot(file);
         //sanitize windows path delimiters
         //in order not to conflict with Lucene escape character
         path=path.replace("\\", "/");

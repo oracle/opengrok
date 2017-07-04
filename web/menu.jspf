@@ -93,11 +93,15 @@ org.opensolaris.opengrok.web.Util"
         name="project" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
         SortedSet<String> pRequested = cfg.getRequestedProjects();
-        for ( Group group : ph.getGroups() ) {
+        for (Group group : ph.getGroups()) {
             Set<Project> groupProjects = ph.getAllGrouped(group);
-            if ( groupProjects.size() > 0) {
+            if (groupProjects.size() > 0) {
                 %><optgroup label="<%= group.getName() %>"><%
                 for (Project p : groupProjects) {
+                    if (!p.isIndexed()) {
+                        continue;
+                    }
+
                 // TODO below "selected" has no effect if one refreshes the page
                 // with F5
 
@@ -117,7 +121,11 @@ org.opensolaris.opengrok.web.Util"
         if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
             %><optgroup label="Other"><%
         }
-        for ( Project p : ph.getAllUngrouped()) {
+        for (Project p : ph.getAllUngrouped()) {
+            if (!p.isIndexed()) {
+                continue;
+            }
+
         %><option value="<%= p.getName() %>"<%
             if (pRequested.contains(p.getName())) {
                 %> selected="selected"<%
