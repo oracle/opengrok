@@ -3,7 +3,7 @@ body {
     background-color: #ededd5;
     color: black;
     font-family: sans-serif;
-    margin: 1ex 1ex 0 1ex;
+    margin: 0;
 }
 
 a {
@@ -244,6 +244,18 @@ label {
 /* ############### start of header ############## */
 #whole_header { }
 
+html.xref #whole_header,
+html.history #whole_header,
+html.more #whole_header,
+html.diff #whole_header {
+    position: fixed;
+    top: 0;
+    background: #FFFFE5;
+    border-bottom: 5px solid #FFFFE5;
+    height: 85px;
+    width: 100%;
+}
+
 /* *** banner/deco above navbar *** */
 #header { }
 
@@ -270,6 +282,9 @@ label {
     font-family: monospace; /* ala <kbd> */
     clear: left;
     margin-bottom: 1ex;
+    margin-left: 1ex;
+    margin-top: 1ex;
+    margin-right: 1ex;
 }
 
 #Masthead tt { /* slashes in the xref: line */
@@ -277,11 +292,14 @@ label {
 }
 
 #sbar, #bar { /* full search and default navbar */
-    border-bottom: 1px solid #bba;
     border-top: 1px solid #bba;
     background-color: #FFFFE5;
     margin: 0;
     clear: both;
+}
+
+#sbar { /* full search */
+    border-bottom: 1px solid #bba;
 }
 
 /* *** full search navbar *** */
@@ -469,14 +487,13 @@ input.submit { /* start search button */
 
 
 /* ############### start of content ############## */
-#content {
-    position: fixed;
-    left: 0;
-    right: 0;
-    overflow: auto;
-    padding: 0 1ex 1ex 1ex; /* should be the same as body's margin */
-}
 
+html.xref #content,
+html.diff #content,
+html.more #content,
+html.history #content{
+    margin-top: 90px;
+}
 
 /* *** help page *** */
 #help h4 {
@@ -866,7 +883,7 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 }
 
 .window {
-    position: absolute;
+    position: fixed;
     font-size: 12px;
     font-family: monospace;
     overflow: auto;

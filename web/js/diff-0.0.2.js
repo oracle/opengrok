@@ -152,7 +152,7 @@
                  *  animationDuration: // duration of toggling the jumper window
                  * }
                  */
-                $parent: $("#difftable"),
+                $parent: $("#content"),
                 $content: $("#content"), // first scrollable div
                 chunkSelector: ".chunk",
                 addSelector: ".a",
@@ -186,8 +186,8 @@
                     if (this.options.scrollTop) {
                         this.options.scrollTop($el)
                     } else {
-                        $("#content").stop().animate({
-                            scrollTop: $el.offset().top - this.options.$parent.offset().top
+                        $('html, body').stop().animate({
+                            scrollTop: $el.position().top - this.options.$parent.offset().top
                         }, 500);
                     }
                     return this;
