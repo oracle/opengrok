@@ -57,7 +57,6 @@ include file="menu.jspf"
         </div>
         <div id="results">
             <%= PageConfig.get(request).getEnv().getConfiguration().getBodyIncludeFileContent() %>
-        </div>
         <%@
 
 include file="repos.jspf"
