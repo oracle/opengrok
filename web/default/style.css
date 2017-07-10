@@ -833,9 +833,19 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
     max-height: 400px;
 }
 
-.symbol-highlighted {
+.symbol-highlighted.hightlight-yellow {
     background-color: #ffd700;
     background-color: rgb(255, 215, 0);
+}
+
+.symbol-highlighted.hightlight-green {
+    background-color: #00ff00;
+    background-color: rgb(0, 255, 0);
+}
+
+.symbol-highlighted.hightlight-blue {
+    background-color: #00ccff;
+    background-color: rgb(0, 204, 255);
 }
 
 .messages-window {

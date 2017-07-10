@@ -202,10 +202,10 @@ Key "1" toggles <dfn>Intelligence Window</dfn>.  It gives the user many helper a
 
 <h5>Symbol Highlighting</h5>
 <p>
-Key "2" toggles highlighting of the last symbol pointed by the mouse cursor.  This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
+Keys "2", "3", "4" toggles highlighting of the last symbol pointed by the mouse cursor.  This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
 </p>
 <p>
-Key "3" toggles unhighlighting all symbols. This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
+Key "5" toggles unhighlighting all symbols. This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
 </p>
 <img src="<%= PageConfig.get(request).getCssDir() %>/img/symbol-highlighting.png"/>
 
@@ -216,7 +216,7 @@ Key "3" toggles unhighlighting all symbols. This functionality is also accessibl
 <h5>Symbol jumping</h5>
 <p>
 By 'n' for next and 'b' for back you can jump between the symbols easily only with keyboard. When there is no symbol highlighted then the jump
-is made to the next symbol in the file from the current one. If you have highlighted a specific symbol then the jump is done only among the highlighted symbols.
+is made to the next symbol in the file from the current one. If you have highlighted a specific symbol then the jump is done only among the highlighted symbols regardless the color of the symbol.
 </p>
 
 <h4>Diff jumper</h4>
