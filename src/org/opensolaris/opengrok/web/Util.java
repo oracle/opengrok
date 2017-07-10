@@ -887,7 +887,10 @@ public final class Util {
                 env.isAllowLeadingWildcard());
         printTableRow(out, "History cache", HistoryGuru.getInstance()
                 .getCacheInfo());
-        printTableRow(out, "Authorization", "<pre>" + env.getAuthorizationFramework().getStack().hierarchyToString() + "</pre>");
+        printTableRow(out, "Authorization plugin directory", env.getPluginDirectory());
+        printTableRow(out, "Authorization watchdog directory", env.getPluginDirectory());
+        printTableRow(out, "Authorization watchdog enabled", env.isAuthorizationWatchdog());
+        printTableRow(out, "Authorization stack", "<pre>" + env.getAuthorizationFramework().getStack().hierarchyToString() + "</pre>");
         out.append("</table>");
     }
 
