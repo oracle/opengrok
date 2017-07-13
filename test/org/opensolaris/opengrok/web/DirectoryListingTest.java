@@ -51,7 +51,15 @@ import static org.junit.Assert.*;
  */
 public class DirectoryListingTest {
 
-    private static int DIRECTORY_INTERNAL_SIZE = -2;
+    /**
+     * Indication of that the file was a directory and so that the size given by
+     * the FS is platform dependent.
+     */
+    private static final int DIRECTORY_INTERNAL_SIZE = -2;
+    /**
+     * Indication of unparseable file size.
+     */
+    private static final int INVALID_SIZE = -1;
 
     private File directory;
     private FileEntry[] entries;
@@ -62,6 +70,14 @@ public class DirectoryListingTest {
         String name;
         String href;
         long lastModified;
+        /**
+         * May be:
+         * <pre>
+         * positive integer - for a file
+         * -2 - for a directory
+         * -1 - for an unparseable size
+         * </pre>
+         */
         int size;
         List<FileEntry> subdirs;
 
@@ -69,12 +85,38 @@ public class DirectoryListingTest {
             dateFormatter = new SimpleDateFormat("dd-MMM-yyyy");
         }
 
-        FileEntry(String name, String href, long lastModified, int size, List<FileEntry> subdirs) {
+        private FileEntry(String name, String href, long lastModified, int size, List<FileEntry> subdirs) {
+            this();
             this.name = name;
             this.href = href;
             this.lastModified = lastModified;
             this.size = size;
             this.subdirs = subdirs;
+        }
+
+        /**
+         * Creating the directory entry.
+         *
+         * @param name name of the file
+         * @param href href to the file
+         * @param lastModified date of last modification
+         * @param subdirs list of sub entries (may be empty)
+         */
+        FileEntry(String name, String href, long lastModified, List<FileEntry> subdirs) {
+            this(name, href, lastModified, DIRECTORY_INTERNAL_SIZE, subdirs);
+            assertNotNull(subdirs);
+        }
+
+        /**
+         * Creating a regular file entry.
+         *
+         * @param name name of the file
+         * @param href href to the file
+         * @param lastModified date of last modification
+         * @param size the desired size of the file on the disc
+         */
+        FileEntry(String name, String href, long lastModified, int size) {
+            this(name, href, lastModified, size, null);
         }
 
         private void create() throws Exception {
@@ -88,9 +130,7 @@ public class DirectoryListingTest {
                     entry.create();
                 }
             } else {
-                if (!file.exists()) {
-                    assertTrue("Failed to create file", file.createNewFile());
-                }
+                assertTrue("Failed to create file", file.createNewFile());
             }
 
             long val = lastModified;
@@ -101,16 +141,15 @@ public class DirectoryListingTest {
             assertTrue("Failed to set modification time",
                     file.setLastModified(val));
 
-            if (subdirs == null) {
-                if (size > 0) {
-                    FileOutputStream out = new FileOutputStream(file);
+            if (subdirs == null && size > 0) {
+                try (FileOutputStream out = new FileOutputStream(file)) {
                     byte[] buffer = new byte[size];
                     out.write(buffer);
-                    out.close();
                 }
             }
         }
 
+        @Override
         public int compareTo(Object o) {
             int ret = -1;
 
@@ -120,7 +159,9 @@ public class DirectoryListingTest {
                 // @todo verify all attributes!
                 if (name.compareTo(fe.name) == 0
                         && href.compareTo(fe.href) == 0) {
-                    if ((subdirs == null && size == fe.size)
+                    if ( // this is a file so the size must be exact
+                            (subdirs == null && size == fe.size)
+                            // this is a directory so the size must have been "-" char
                             || (subdirs != null && size == DIRECTORY_INTERNAL_SIZE)) {
                         ret = 0;
                     }
@@ -147,16 +188,16 @@ public class DirectoryListingTest {
         directory = FileUtilities.createTemporaryDirectory("directory");
 
         entries = new FileEntry[3];
-        entries[0] = new FileEntry("foo.c", "foo.c", 0, 112, null);
-        entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0, null);
+        entries[0] = new FileEntry("foo.c", "foo.c", 0, 112);
+        entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0);
         // Will test getSimplifiedPath() behavior for ignored directories.
         // Use DIRECTORY_INTERNAL_SIZE value for length so it is checked as the directory
         // should contain "-" (DIRECTORY_SIZE_PLACEHOLDER) string.
-        entries[2] = new FileEntry("subdir", "subdir/", 0, DIRECTORY_INTERNAL_SIZE, Arrays.asList(
+        entries[2] = new FileEntry("subdir", "subdir/", 0, Arrays.asList(
                 new FileEntry[]{
-                    new FileEntry("SCCS", "SCCS", 0, DIRECTORY_INTERNAL_SIZE, Arrays.asList(
+                    new FileEntry("SCCS", "SCCS/", 0, Arrays.asList(
                             new FileEntry[]{
-                                new FileEntry("version", "version", 0, 312, null)
+                                new FileEntry("version", "version", 0, 312)
                             })
                     )}
         ));
@@ -166,7 +207,7 @@ public class DirectoryListingTest {
         }
 
         // Create the entry that will be ignored separately.
-        FileEntry hgtags = new FileEntry(".hgtags", ".hgtags", 0, 1, null);
+        FileEntry hgtags = new FileEntry(".hgtags", ".hgtags", 0, 1);
         hgtags.create();
 
         // Need to populate list of ignored entries for all repository types.
@@ -265,20 +306,22 @@ public class DirectoryListingTest {
      * Get the size from the: &lt;td&gt;&lt;tt&gt;size&lt;/tt&gt;&lt;/td&gt;
      *
      * @param item the node representing &lt;td&gt;
-     * @return The size
+     * @return positive integer if the record was a file<br>
+     * -1 if the size could not be parsed<br>
+     * -2 if the record was a directory<br>
      */
     private int getSize(Node item) throws NumberFormatException {
         Node val = item.getFirstChild();
         assertNotNull(val);
         assertEquals(Node.TEXT_NODE, val.getNodeType());
+        if (DirectoryListing.DIRECTORY_SIZE_PLACEHOLDER.equals(val.getNodeValue().trim())) {
+            // track that it had the DIRECTORY_SIZE_PLACEHOLDER character
+            return DIRECTORY_INTERNAL_SIZE;
+        }
         try {
             return Integer.parseInt(val.getNodeValue().trim());
         } catch (NumberFormatException ex) {
-            if (DirectoryListing.DIRECTORY_SIZE_PLACEHOLDER.equals(val.getNodeValue().trim())) {
-                // track that it had the DIRECTORY_SIZE_PLACEHOLDER character
-                return DIRECTORY_INTERNAL_SIZE;
-            }
-            return -1;
+            return INVALID_SIZE;
         }
     }
 
