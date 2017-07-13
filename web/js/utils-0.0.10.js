@@ -807,17 +807,17 @@
                                 break;
                             case 50: // 2
                                 if (that.symbol) {
-                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 'yellow');
+                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 1);
                                 }
                                 break;
                             case 51: // 3
                                 if (that.symbol) {
-                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 'green');
+                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 2);
                                 }
                                 break;
                             case 52: // 4
                                 if (that.symbol) {
-                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 'blue');
+                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 3);
                                 }
                                 break;
                             case 53: // 5
@@ -898,7 +898,7 @@
                     }
                     return this.getSymbols().filter(function () {
                         return $(this).text() === symbol;
-                    }).addClass('symbol-highlighted').addClass('hightlight-' + (color || 'yellow'))
+                    }).addClass('symbol-highlighted').addClass('hightlight-color-' + (color || 1))
                 },
                 unhighlight: function (symbol) {
                     if (this.$last_highlighted_current &&
@@ -910,17 +910,13 @@
                     return this.getSymbols().filter(".symbol-highlighted").filter(function () {
                         return $(this).text() === symbol;
                     }).removeClass('symbol-highlighted')
-                            .removeClass("hightlight-blue")
-                            .removeClass("hightlight-green")
-                            .removeClass("hightlight-yellow")
+                            .removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
                 },
                 unhighlightAll: function () {
                     this.$last_highlighted_current = undefined
                     return this.getSymbols().filter(".symbol-highlighted")
                             .removeClass("symbol-highlighted")
-                            .removeClass("hightlight-blue")
-                            .removeClass("hightlight-green")
-                            .removeClass("hightlight-yellow")
+                            .removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
                 },
                 scrollTop: function ($el) {
                     if (this.options.scrollTop) {

@@ -833,17 +833,20 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
     max-height: 400px;
 }
 
-.symbol-highlighted.hightlight-yellow {
+.symbol-highlighted.hightlight-color-1 {
+    /* yellow */
     background-color: #ffd700;
     background-color: rgb(255, 215, 0);
 }
 
-.symbol-highlighted.hightlight-green {
+.symbol-highlighted.hightlight-color-2 {
+    /* green */
     background-color: #00ff00;
     background-color: rgb(0, 255, 0);
 }
 
-.symbol-highlighted.hightlight-blue {
+.symbol-highlighted.hightlight-color-3 {
+    /* blue */
     background-color: #00ccff;
     background-color: rgb(0, 204, 255);
 }
