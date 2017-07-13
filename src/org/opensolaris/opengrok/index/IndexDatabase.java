@@ -339,12 +339,13 @@ public class IndexDatabase {
         }
 
         try {
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            iwc.setRAMBufferSizeMB(RuntimeEnvironment.getInstance().getRamBufferSize());
+            iwc.setRAMBufferSizeMB(env.getRamBufferSize());
             writer = new IndexWriter(indexDirectory, iwc);
-            writer.commit(); // to make sure index exists on the disk            
+            writer.commit(); // to make sure index exists on the disk
 
             if (directories.isEmpty()) {
                 if (project == null) {
@@ -357,12 +358,14 @@ public class IndexDatabase {
             for (String dir : directories) {
                 File sourceRoot;
                 if ("".equals(dir)) {
-                    sourceRoot = RuntimeEnvironment.getInstance().getSourceRootFile();
+                    sourceRoot = env.getSourceRootFile();
                 } else {
-                    sourceRoot = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), dir);
+                    sourceRoot = new File(env.getSourceRootFile(), dir);
                 }
 
-                HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
+                if (env.isHistoryEnabled()) {
+                    HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
+                }
 
                 String startuid = Util.path2uid(dir, "");
                 IndexReader reader = DirectoryReader.open(indexDirectory); // open existing index
@@ -386,7 +389,7 @@ public class IndexDatabase {
                     }
                     // The code below traverses the tree to get total count.
                     int file_cnt = 0;
-                    if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+                    if (env.isPrintProgress()) {
                         LOGGER.log(Level.INFO, "Counting files in {0} ...", dir);
                         file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
                         LOGGER.log(Level.INFO,

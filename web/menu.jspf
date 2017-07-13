@@ -173,11 +173,17 @@ org.opensolaris.opengrok.web.Util"
         <td colspan="2"><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
+    <%
+        if (cfg.getEnv().isHistoryEnabled()) {
+    %>
     <tr>
         <td><label for="s5" title="Search in log messages">History</label></td>
         <td colspan="2"><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
+    <%
+        }
+    %>
     <tr>
         <td><label for="s5">Type</label></td>
         <td><select class="q" tabindex="6" name="type" id="type"><%
