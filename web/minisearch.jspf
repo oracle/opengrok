@@ -39,11 +39,13 @@ org.opensolaris.opengrok.web.Util"%><%
 <div id="bar">
     <ul>
         <li><a href="<%= context %>/"><span id="home"></span>Home</a></li><%
-    if (!cfg.hasHistory()) {
-        %><li><span id="history"></span><span class="c">History</span></li><%
-    } else {
-        %><li><a href="<%= context + Prefix.HIST_L + cfg.getUriEncodedPath()
-            %>"><span id="history"></span>History</a></li><%
+    if (cfg.getEnv().isHistoryEnabled()) {
+        if (!cfg.hasHistory()) {
+            %><li><span id="history"></span><span class="c">History</span></li><%
+        } else {
+            %><li><a href="<%= context + Prefix.HIST_L + cfg.getUriEncodedPath()
+                %>"><span id="history"></span>History</a></li><%
+        }
     }
     if (!cfg.hasAnnotations() /* || cfg.getPrefix() == Prefix.HIST_S */ ) {
         %><li><span class="c"><span class="annotate"></span>Annotate</span></li><%

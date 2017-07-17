@@ -223,12 +223,12 @@ public class ProjectMessageTest {
         // of the -R option is present.
         HistoryGuru.getInstance().invalidateRepositories(
             env.getRepositories());
+        env.setHistoryEnabled(true);
         Indexer.getInstance().prepareIndexer(
                 env,
                 false, // don't search for repositories
                 false, // don't scan and add projects
                 null, // no default project
-                true, // refresh history
                 false, // don't list files
                 false, // don't create dictionary
                 subFiles, // subFiles - needed when refreshing history partially

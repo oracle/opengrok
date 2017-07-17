@@ -81,7 +81,7 @@ public class CommandLineOptions {
         options.add(new Option('D', null, "Disable generating history for renamed files. Makes indexing faster for repositories with lots of renamed files."));
         options.add(new Option('e', null, "Economical - consumes less disk space. It does not generate hyper text cross reference files offline, but will do so on demand - which could be sightly slow."));
         options.add(new Option('G', null, "Assign commit tags to all entries in history for all repositories."));
-        options.add(new Option('H', null, "Generate history cache for all repositories"));
+        options.add(new Option('H', null, "Get history for all repositories"));
         options.add(new Option('h', "/path/to/repository", "just generate history cache for the specified repos (absolute path from source root)"));
         options.add(new Option('I', "pattern", "Only files matching this pattern will be examined (supports wildcards, example: -I *.java -I *.c)"));
         options.add(new Option('i', "pattern", "Ignore the named files (prefix with 'f:') or directories (prefix with 'd:') (supports wildcards, example: -i *.so -i *.dll)"));

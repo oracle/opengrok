@@ -129,13 +129,7 @@ public final class ProjectHelper {
         groups.addAll(cfg.getEnv().getGroups());
         for (Project project : cfg.getEnv().getProjectList()) {
             // filterProjects only groups which match project's description
-            Set<Group> copy = new TreeSet<>(groups);
-            copy.removeIf(new Predicate<Group>() {
-                @Override
-                public boolean test(Group g) {
-                    return !g.match(project);
-                }
-            });
+            Set<Group> copy = Group.matching(project, groups);
 
             // if no group matches the project, add it to not-grouped projects
             if (copy.isEmpty()) {

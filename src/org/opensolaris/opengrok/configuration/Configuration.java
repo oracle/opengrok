@@ -103,7 +103,15 @@ public final class Configuration {
      * before its result is cached.
      */
     private int historyCacheTime;
-
+    /**
+     * flag to generate history. This is bigger hammer than @{code historyCache}
+     * above. If set to false, no history query will be ever made and the webapp
+     * will not display any history related links/allow any history queries.
+     */
+    private boolean historyEnabled;
+    /**
+     * maximum number of messages in webapp.
+     */
     private int messageLimit;
     /**
      * Directory with authorization plugins. Default value is
@@ -362,6 +370,7 @@ public final class Configuration {
         setHandleHistoryOfRenamedFiles(true);
         setHistoryCache(true);
         setHistoryCacheTime(30);
+        setHistoryEnabled(true);
         setHitsPerPage(25);
         setIgnoredNames(new IgnoredNames());
         setIncludedNames(new Filter());
@@ -516,6 +525,24 @@ public final class Configuration {
     }
 
     /**
+     * Should the history be enabled ?
+     *
+     * @return {@code true} if history is enabled, {@code false} otherwise
+     */
+    public boolean isHistoryEnabled() {
+        return historyEnabled;
+    }
+
+    /**
+     * Set whether history should be enabled.
+     *
+     * @param flag if {@code true} enable history
+     */
+    public void setHistoryEnabled(boolean flag) {
+        this.historyEnabled = flag;
+    }
+
+    /**
      * Should the history log be cached?
      *
      * @return {@code true} if a {@code HistoryCache} implementation should be
@@ -533,7 +560,7 @@ public final class Configuration {
     public void setHistoryCache(boolean historyCache) {
         this.historyCache = historyCache;
     }
-
+    
     /**
      * How long can a history request take before it's cached? If the time is
      * exceeded, the result is cached. This setting only affects

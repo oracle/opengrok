@@ -65,6 +65,7 @@ public class SearchHelperTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setVerbose(true);
+        env.setHistoryEnabled(false);
     }
 
     @After
@@ -75,8 +76,9 @@ public class SearchHelperTest {
     private void reindex() throws Exception {
         System.out.println("Generating index by using the class methods");
 
-        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
-                false, false, false, null, null, new ArrayList<>(), false);
+        Indexer.getInstance().prepareIndexer(env, true, true,
+            new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+            false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, 1, null, null);
     }
 

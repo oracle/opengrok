@@ -164,7 +164,6 @@
 })(window, window.jQuery);
 
 (function(window, $) {
-   
     var hash = function () {
         var inner = {
             self: this,
@@ -176,11 +175,9 @@
               clickSelector: '{parent} a.l, {parent} a.hl',
               parent: 'div#src',
               autoScroll: true,
-              autoScrollDuration: 500,
-              tooltip: true
+              autoScrollDuration: 500
             },
             options: {},
-            $tooltip: null,
             bindClickHandler: function() {
                 $(inner.format(inner.options.clickSelector, {parent: inner.options.parent})).click (function (e){
                     if(e.shiftKey) {
@@ -293,60 +290,19 @@
                     }
                 }
             },
-            tooltip: function() {
-                if(!inner.options.tooltip)
-                    return
-                
-                inner.$tooltip = inner.$tooltip ? 
-                                    inner.$tooltip :
-                                    $("<div>Did you know? You can select a range of lines<br /> by clicking on the other while holding shift key.</div>")
-                                    .appendTo($("body"))
-                                    .hide()
-                                    .addClass("tooltip")
-                                    .addClass("diff_navigation_style")
-                
-                
-                $(inner.format(inner.options.clickSelector, {parent: inner.options.parent}))
-                .click(function(e) {
-                    if(!inner.options.tooltip)
-                        return
-                   // show box
-                   var $el = $(this)
-                   setTimeout(function () {
-                    inner.$tooltip
-                            .show()
-                            .stop()
-                            .fadeIn()
-                            .fadeOut( 5000 )
-                            .offset({ 
-                                top: $el.offset().top + 20, 
-                                left: $el.offset().left + $el.width() + 5 
-                            });
-                   }, 300);
-                   inner.options.tooltip = false;
-                })
-            }
         } // inner
         
         this.init = function (options) {
-            if ( inner.initialized ) {
+            if (inner.initialized) {
                 return this;
             }
-
             inner.options = $.extend(inner.defaults, options, {})
-            
-            $(window).on("hashchange", inner.reload)
-            
-            inner.reload()
-            
-            inner.tooltip()
-            
-            inner.bindClickHandler()
-            
-            inner.scroll()
 
+            $(window).on("hashchange", inner.reload)
+            inner.reload()
+            inner.bindClickHandler()
+            inner.scroll()
             inner.initialized = true
-            
             return this;
         }
     }
@@ -807,10 +763,20 @@
                                 break;
                             case 50: // 2
                                 if (that.symbol) {
-                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol);
+                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 1);
                                 }
                                 break;
                             case 51: // 3
+                                if (that.symbol) {
+                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 2);
+                                }
+                                break;
+                            case 52: // 4
+                                if (that.symbol) {
+                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol, 3);
+                                }
+                                break;
+                            case 53: // 5
                                 that.unhighlightAll();
                                 break;
                             case 110: // n
@@ -882,13 +848,13 @@
                 getSymbols: function () {
                     return (this.$symbols = this.$symbols || $(this.options.selector));
                 },
-                highlight: function (symbol) {
+                highlight: function (symbol, color) {
                     if (this.$current.text() === symbol) {
                         this.$last_highlighted_current = this.$current;
                     }
                     return this.getSymbols().filter(function () {
                         return $(this).text() === symbol;
-                    }).addClass('symbol-highlighted')
+                    }).addClass('symbol-highlighted').addClass('hightlight-color-' + (color || 1))
                 },
                 unhighlight: function (symbol) {
                     if (this.$last_highlighted_current &&
@@ -900,11 +866,13 @@
                     return this.getSymbols().filter(".symbol-highlighted").filter(function () {
                         return $(this).text() === symbol;
                     }).removeClass('symbol-highlighted')
-
+                            .removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
                 },
                 unhighlightAll: function () {
                     this.$last_highlighted_current = undefined
-                    return this.getSymbols().filter(".symbol-highlighted").removeClass("symbol-highlighted")
+                    return this.getSymbols().filter(".symbol-highlighted")
+                            .removeClass("symbol-highlighted")
+                            .removeClass("hightlight-color-1 hightlight-color-2 hightlight-color-3");
                 },
                 scrollTop: function ($el) {
                     if (this.options.scrollTop) {

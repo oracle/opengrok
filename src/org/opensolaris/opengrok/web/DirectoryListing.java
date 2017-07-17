@@ -44,6 +44,7 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  */
 public class DirectoryListing {
 
+    protected final static String DIRECTORY_SIZE_PLACEHOLDER = "-";
     private final EftarFileReader desc;
     private final long now;
 
@@ -81,9 +82,11 @@ public class DirectoryListing {
             out.write(dateFormatter.format(lastm));
         }
         out.write("</td><td>");
-        // if (isDir) {
+        if (child.isDirectory()) {
+            out.write(DIRECTORY_SIZE_PLACEHOLDER);
+        } else {
             out.write(Util.readableSize(child.length()));
-        // }
+        }
         out.write("</td>");
     }
 

@@ -89,6 +89,7 @@ import org.opensolaris.opengrok.analysis.tcl.TclAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.uue.UuencodeAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.vb.VBAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -328,6 +329,7 @@ public class AnalyzerGuru {
     public void populateDocument(Document doc, File file, String path,
             FileAnalyzer fa, Writer xrefOut)
             throws IOException {
+
         String date = DateTools.timeToString(file.lastModified(),
                 DateTools.Resolution.MILLISECOND);
         doc.add(new Field(QueryBuilder.U, Util.path2uid(path, date),
@@ -336,14 +338,16 @@ public class AnalyzerGuru {
                 string_ft_nstored_nanalyzed_norms));
         doc.add(new SortedDocValuesField(QueryBuilder.FULLPATH, new BytesRef(file.getAbsolutePath())));
 
-        try {
-            HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
-            if (hr != null) {
-                doc.add(new TextField(QueryBuilder.HIST, hr));
-                // date = hr.getLastCommentDate() //RFE
+        if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
+            try {
+                HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
+                if (hr != null) {
+                    doc.add(new TextField(QueryBuilder.HIST, hr));
+                    // date = hr.getLastCommentDate() //RFE
+                }
+            } catch (HistoryException e) {
+                LOGGER.log(Level.WARNING, "An error occurred while reading history: ", e);
             }
-        } catch (HistoryException e) {
-            LOGGER.log(Level.WARNING, "An error occurred while reading history: ", e);
         }
         doc.add(new Field(QueryBuilder.DATE, date, string_ft_stored_nanalyzed_norms));
         doc.add(new SortedDocValuesField(QueryBuilder.DATE, new BytesRef(date)));

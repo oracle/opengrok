@@ -351,7 +351,14 @@ class FileHistoryCache implements HistoryCache {
     }
 
     private void finishStore(Repository repository, String latestRev) {
-        storeLatestCachedRevision(repository, latestRev);
+        File file = new File(getRepositoryHistDataDirname(repository));
+        // If the history was not created for some reason (e.g. temporary
+        // failure), do not create the CachedRevision file as this would
+        // create confusion (once it starts working again).
+        if (file.isDirectory()) {
+            storeLatestCachedRevision(repository, latestRev);
+        }
+
         LOGGER.log(Level.FINE,
             "Done storing history for repo {0}",
             new Object[] {repository.getDirectoryName()});

@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
@@ -26,15 +26,23 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.opensolaris.opengrok.authorization.AuthControlFlag;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
+import org.opensolaris.opengrok.authorization.AuthorizationPlugin;
+import org.opensolaris.opengrok.authorization.TestPlugin;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -135,6 +143,73 @@ public class PageConfigTest {
         assertCanProcess(null, "/source", "/xref", "/mercurial/xyz/");
     }
 
+    /**
+     * Testing the root of /xref for authorization filtering.
+     */
+    @Test
+    public void testGetResourceFileList() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // backup original values
+        String oldSourceRootPath = env.getSourceRootPath();
+        AuthorizationFramework oldAuthorizationFramework = env.getAuthorizationFramework();
+        Map<String, Project> oldProjects = env.getProjects();
+
+        // set up the source root directory containing some projects
+        env.setSourceRoot(repository.getSourceRoot());
+
+        // enable projects
+        for (String file : new File(repository.getSourceRoot()).list()) {
+            env.getProjects().put(file, new Project(file));
+        }
+
+        HttpServletRequest req = createRequest("/source", "/xref", "");
+        PageConfig cfg = PageConfig.get(req);
+        List<String> allFiles = new ArrayList<>(cfg.getResourceFileList());
+
+        /**
+         * Check if there are some files (the "5" here is just a sufficient
+         * value for now which won't break any future repository tests) without
+         * any authorization.
+         */
+        assertTrue(allFiles.size() > 5);
+        assertTrue(allFiles.contains("git"));
+        assertTrue(allFiles.contains("mercurial"));
+
+        /**
+         * Now set up the same projects with authorization plugin enabling only
+         * some of them.
+         * <pre>
+         *  - disabling "git"
+         *  - disabling "mercurial"
+         * </pre>
+         */
+        env.setAuthorizationFramework(new AuthorizationFramework(null));
+        env.getAuthorizationFramework().getStack()
+                .add(new AuthorizationPlugin(AuthControlFlag.REQUIRED, new TestPlugin() {
+                    @Override
+                    public boolean isAllowed(HttpServletRequest request, Project project) {
+                        return !project.getName().startsWith("git")
+                                && !project.getName().startsWith("mercurial");
+                    }
+                }));
+
+        req = createRequest("/source", "/xref", "");
+        cfg = PageConfig.get(req);
+        List<String> filteredFiles = new ArrayList<>(cfg.getResourceFileList());
+        // list subtraction - retains only disabled files
+        allFiles.removeAll(filteredFiles);
+
+        assertEquals(2, allFiles.size());
+        assertTrue(allFiles.contains("git"));
+        assertTrue(allFiles.contains("mercurial"));
+
+        // restore original values
+        env.setAuthorizationFramework(oldAuthorizationFramework);
+        env.setSourceRoot(oldSourceRootPath);
+        env.setProjects(oldProjects);
+    }
+
     @Test
     public void testGetIntParam() {
         String[] attrs = {"a", "b", "c", "d", "e", "f", "g", "h"};
@@ -192,7 +267,6 @@ public class PageConfigTest {
             PageConfig.cleanup(req);
         }
     }
-
 
     @Test
     @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)

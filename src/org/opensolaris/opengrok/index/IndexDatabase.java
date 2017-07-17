@@ -347,7 +347,7 @@ public class IndexDatabase {
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setRAMBufferSizeMB(env.getRamBufferSize());
             writer = new IndexWriter(indexDirectory, iwc);
-            writer.commit(); // to make sure index exists on the disk            
+            writer.commit(); // to make sure index exists on the disk
 
             if (directories.isEmpty()) {
                 if (project == null) {
@@ -365,7 +365,9 @@ public class IndexDatabase {
                     sourceRoot = new File(env.getSourceRootFile(), dir);
                 }
 
-                HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
+                if (env.isHistoryEnabled()) {
+                    HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
+                }
 
                 String startuid = Util.path2uid(dir, "");
                 IndexReader reader = DirectoryReader.open(indexDirectory); // open existing index

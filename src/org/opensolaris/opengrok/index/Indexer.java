@@ -118,7 +118,7 @@ public final class Indexer {
             String configFilename = null;
             String configHost = null;
             boolean addProjects = false;
-            boolean refreshHistory = false;
+            boolean getHistory = false;
             Set<String> defaultProjects = new TreeSet<>();
             boolean listFiles = false;
             boolean listRepos = false;
@@ -254,7 +254,7 @@ public final class Indexer {
                             cfg.setTagsEnabled(true);
                             break;
                         case 'H':
-                            refreshHistory = true;
+                            getHistory = true;
                             break;
                         case 'h':
                             repositories.add(getopt.getOptarg());
@@ -458,6 +458,7 @@ public final class Indexer {
                 }
 
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+                cfg.setHistoryEnabled(getHistory);
 
                 if (configHost != null) {
                     String[] configHostArray = configHost.split(":");
@@ -583,7 +584,7 @@ public final class Indexer {
 
                 // Get history first.
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
-                        defaultProjects, refreshHistory,
+                        defaultProjects,
                         listFiles, createDict, subFiles, repositories,
                         zapCache, listRepos);
                 if (listRepos || !zapCache.isEmpty()) {
@@ -648,7 +649,6 @@ public final class Indexer {
             boolean searchRepositories,
             boolean addProjects,
             Set<String> defaultProjects,
-            boolean refreshHistory,
             boolean listFiles,
             boolean createDict,
             List<String> subFiles,
@@ -674,7 +674,7 @@ public final class Indexer {
         if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
             long start = System.currentTimeMillis();
-            if (refreshHistory == true) {
+            if (env.isHistoryEnabled()) {
                 HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
             }
             long time = (System.currentTimeMillis() - start) / 1000;
@@ -774,7 +774,7 @@ public final class Indexer {
             }
         }
 
-        if (refreshHistory) {
+        if (env.isHistoryEnabled()) {
             if (repositories != null && !repositories.isEmpty()) {
                 LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
                     repositories.stream().collect(Collectors.joining(",")));

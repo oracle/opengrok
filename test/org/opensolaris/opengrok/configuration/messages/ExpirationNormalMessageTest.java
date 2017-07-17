@@ -22,13 +22,10 @@
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
-import java.util.Map;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
@@ -42,13 +39,6 @@ public class ExpirationNormalMessageTest {
 
     private Message[] makeArray(Message... messages) {
         return messages;
-    }
-
-    protected void sleep(long milis) {
-        try {
-            Thread.sleep(milis);
-        } catch (InterruptedException ex) {
-        }
     }
 
     @Before
@@ -68,22 +58,8 @@ public class ExpirationNormalMessageTest {
     }
 
     @Test
-    public void testExpirationSingleTimer() {
-        env.startExpirationTimer();
-        runSingle();
-        env.stopExpirationTimer();
-    }
-
-    @Test
     public void testExpirationMultiple() {
         runMultiple();
-    }
-
-    @Test
-    public void testExpirationMultipleTimer() {
-        env.startExpirationTimer();
-        runMultiple();
-        env.stopExpirationTimer();
     }
 
     /**
@@ -110,18 +86,17 @@ public class ExpirationNormalMessageTest {
         Assert.assertEquals(0, env.getMessagesInTheSystem());
         NormalMessage m1 = new NormalMessage();
         m1.addTag("main")
-                .setExpiration(new Date(System.currentTimeMillis() + 500));
+                .setExpiration(new Date(System.currentTimeMillis() + 2000000));
         m1.setText("text");
         env.addMessage(m1);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 50; i++) {
             Assert.assertEquals(1, env.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
             Assert.assertEquals(new TreeSet<Message>(Arrays.asList(makeArray(m1))), env.getMessages());
-            sleep(100);
         }
-        sleep(30);
+        m1.setExpiration(new Date(System.currentTimeMillis() - 2000000));
         Assert.assertEquals(0, env.getMessagesInTheSystem());
     }
 
@@ -129,36 +104,34 @@ public class ExpirationNormalMessageTest {
         Assert.assertEquals(0, env.getMessagesInTheSystem());
         NormalMessage m1 = new NormalMessage();
         m1.addTag("main")
-                .setExpiration(new Date(System.currentTimeMillis() + 300));
+                .setExpiration(new Date(System.currentTimeMillis() + 2000000));
         m1.setText("text");
         env.addMessage(m1);
 
         NormalMessage m2 = new NormalMessage();
         m2.addTag("main")
-                .setExpiration(new Date(System.currentTimeMillis() + 600));
-        m2.setText("text");
+                .setExpiration(new Date(System.currentTimeMillis() + 2000000));
+        m2.setText("other text");
         env.addMessage(m2);
 
         Assert.assertEquals(2, env.getMessagesInTheSystem());
         Assert.assertNotNull(env.getMessages());
         Assert.assertEquals(new TreeSet<Message>(Arrays.asList(makeArray(m1, m2))), env.getMessages());
 
-        // expire first
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 30; i++) {
             Assert.assertEquals(2, env.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
             Assert.assertEquals(new TreeSet<Message>(Arrays.asList(makeArray(m1, m2))), env.getMessages());
-            sleep(100);
         }
-        sleep(30);
-        // expire second
-        for (int i = 0; i < 3; i++) {
+        // expire first
+        m1.setExpiration(new Date(System.currentTimeMillis() - 2000000));
+        for (int i = 0; i < 30; i++) {
             Assert.assertEquals(1, env.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
             Assert.assertEquals(new TreeSet<Message>(Arrays.asList(makeArray(m2))), env.getMessages());
-            sleep(100);
         }
-        sleep(30);
+        // expire second
+        m2.setExpiration(new Date(System.currentTimeMillis() - 2000000));
         Assert.assertEquals(0, env.getMessagesInTheSystem());
     }
 
@@ -168,7 +141,7 @@ public class ExpirationNormalMessageTest {
             NormalMessage m = new NormalMessage();
             m.addTag("main");
             m.setText("text");
-            m.setExpiration(new Date(current + 50000));
+            m.setExpiration(new Date(current + 2000000));
             m.setCreated(new Date(current - 2000 - i));
             m.apply(env);
         }
@@ -195,8 +168,9 @@ public class ExpirationNormalMessageTest {
         Assert.assertEquals(500, env.getMessagesInTheSystem());
         Assert.assertEquals(500, env.getMessages("main").size());
 
+        // expire all
         for (Message m : env.getMessages("main")) {
-            m.setExpiration(new Date(current - 2000));
+            m.setExpiration(new Date(current - 2000000));
         }
 
         for (int i = 0; i < 500; i++) {
@@ -230,17 +204,5 @@ public class ExpirationNormalMessageTest {
         } catch (Exception ex) {
             Assert.fail("invokeRemoveAll should not throw an exception");
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Map<String, SortedSet<Message>> getTagMessages() {
-        try {
-            Field field = RuntimeEnvironment.class.getDeclaredField("tagMessages");
-            field.setAccessible(true);
-            return (Map<String, SortedSet<Message>>) field.get(env);
-        } catch (Throwable ex) {
-            Assert.fail("invoking getTagMessages should not throw an exception");
-        }
-        return null;
     }
 }
