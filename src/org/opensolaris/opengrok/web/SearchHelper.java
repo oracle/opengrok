@@ -260,7 +260,7 @@ public class SearchHelper {
                 // not matter given that MultiReader is just a cheap wrapper
                 // around set of IndexReader objects.
                 closeOnDestroy = false;
-                if (projects.stream().map(x -> Project.getByName(x)).
+                if (projects.stream().map(x -> Project.getProject(x)).
                     filter(proj -> !proj.isIndexed()).
                     collect(Collectors.toSet()).size() > 0) {
                         errorMsg = "Some of the projects to be searched are not indexed yet.";
