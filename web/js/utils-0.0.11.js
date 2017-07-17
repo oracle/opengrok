@@ -164,7 +164,6 @@
 })(window, window.jQuery);
 
 (function(window, $) {
-   
     var hash = function () {
         var inner = {
             self: this,
@@ -176,11 +175,9 @@
               clickSelector: '{parent} a.l, {parent} a.hl',
               parent: 'div#src',
               autoScroll: true,
-              autoScrollDuration: 500,
-              tooltip: true
+              autoScrollDuration: 500
             },
             options: {},
-            $tooltip: null,
             bindClickHandler: function() {
                 $(inner.format(inner.options.clickSelector, {parent: inner.options.parent})).click (function (e){
                     if(e.shiftKey) {
@@ -293,60 +290,19 @@
                     }
                 }
             },
-            tooltip: function() {
-                if(!inner.options.tooltip)
-                    return
-                
-                inner.$tooltip = inner.$tooltip ? 
-                                    inner.$tooltip :
-                                    $("<div>Did you know? You can select a range of lines<br /> by clicking on the other while holding shift key.</div>")
-                                    .appendTo($("body"))
-                                    .hide()
-                                    .addClass("tooltip")
-                                    .addClass("diff_navigation_style")
-                
-                
-                $(inner.format(inner.options.clickSelector, {parent: inner.options.parent}))
-                .click(function(e) {
-                    if(!inner.options.tooltip)
-                        return
-                   // show box
-                   var $el = $(this)
-                   setTimeout(function () {
-                    inner.$tooltip
-                            .show()
-                            .stop()
-                            .fadeIn()
-                            .fadeOut( 5000 )
-                            .offset({ 
-                                top: $el.offset().top + 20, 
-                                left: $el.offset().left + $el.width() + 5 
-                            });
-                   }, 300);
-                   inner.options.tooltip = false;
-                })
-            }
         } // inner
         
         this.init = function (options) {
-            if ( inner.initialized ) {
+            if (inner.initialized) {
                 return this;
             }
-
             inner.options = $.extend(inner.defaults, options, {})
-            
-            $(window).on("hashchange", inner.reload)
-            
-            inner.reload()
-            
-            inner.tooltip()
-            
-            inner.bindClickHandler()
-            
-            inner.scroll()
 
+            $(window).on("hashchange", inner.reload)
+            inner.reload()
+            inner.bindClickHandler()
+            inner.scroll()
             inner.initialized = true
-            
             return this;
         }
     }
