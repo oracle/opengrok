@@ -31,6 +31,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
@@ -76,6 +77,8 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
             lxref.reInit(in);
             lxref.annotation = annotation;
             lxref.project = project;
+            lxref.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
+            lxref.setFoldingEnabled(RuntimeEnvironment.getInstance().isFoldingEnabled());
             lxref.setDefs(defs);
             lxref.write(out);
         }
