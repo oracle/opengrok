@@ -34,6 +34,7 @@ import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -55,6 +56,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
 import org.opensolaris.opengrok.index.IndexDatabase;
@@ -238,6 +240,7 @@ public class SearchHelper {
         if (redirect != null || errorMsg != null) {
             return this;
         }
+
         // the Query created by the QueryBuilder
         try {
             indexDir = new File(dataRoot, IndexDatabase.INDEX_DIR);
@@ -257,12 +260,19 @@ public class SearchHelper {
                 // not matter given that MultiReader is just a cheap wrapper
                 // around set of IndexReader objects.
                 closeOnDestroy = false;
+                if (projects.stream().map(x -> Project.getByName(x)).
+                    filter(proj -> !proj.isIndexed()).
+                    collect(Collectors.toSet()).size() > 0) {
+                        errorMsg = "Some of the projects to be searched are not indexed yet.";
+                        return this;
+                }
                 MultiReader multireader = RuntimeEnvironment.getInstance().
                     getMultiReader(projects, searcherList);
                 if (multireader != null) {
                     searcher = new IndexSearcher(multireader);
                 } else {
                     errorMsg = "Failed to initialize search. Check the index.";
+                    return this;
                 }
             }
 
