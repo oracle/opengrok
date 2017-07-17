@@ -24,7 +24,6 @@ package org.opensolaris.opengrok.configuration.messages;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,19 +31,19 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRule;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.GitRepository;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.history.MercurialRepository;
 import org.opensolaris.opengrok.history.MercurialRepositoryTest;
 import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opensolaris.opengrok.history.SubversionRepository;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.index.Indexer;
 import static org.opensolaris.opengrok.util.IOUtils.removeRecursive;
@@ -55,12 +54,7 @@ import org.opensolaris.opengrok.util.TestRepository;
  *
  * @author Vladimir Kotal
  */
-@ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
-// XXX need svn + git
 public class ProjectMessageTest {
-    
-    @Rule
-    public ConditionalRunRule rule = new ConditionalRunRule();
     
     RuntimeEnvironment env;
 
@@ -81,6 +75,10 @@ public class ProjectMessageTest {
 
     @Before
     public void setUp() throws IOException {
+        Assume.assumeTrue(new MercurialRepository().isWorking());
+        Assume.assumeTrue(new SubversionRepository().isWorking());
+        Assume.assumeTrue(new GitRepository().isWorking());
+
         env = RuntimeEnvironment.getInstance();
         env.removeAllMessages();
         env.setSourceRoot(repository.getSourceRoot());
