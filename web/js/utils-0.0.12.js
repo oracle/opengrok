@@ -163,6 +163,100 @@
     $.spaces = new ($.extend(spaces, $.spaces ? $.spaces : {}));
 })(window, window.jQuery);
 
+/**
+ * Offseting the target anchors by the height of the fixed header.
+ * Code taken from http://jsfiddle.net/ianclark001/rkocah23/.
+ *
+ * If this is not used, clicking on a anchor
+ * with a hash target (href="#some-id") will
+ * lead to incorrect positioning at the top of the page.
+ */
+(function (document, history, location) {
+    var HISTORY_SUPPORT = !!(history && history.pushState);
+
+    var anchorScrolls = {
+        ANCHOR_REGEX: /^#[^ ]+$/,
+        OFFSET_HEIGHT_PX: 90,
+
+        /**
+         * Establish events, and fix initial scroll position if a hash is provided.
+         */
+        init: function () {
+            this.scrollToCurrent();
+            $(window).on('hashchange', $.proxy(this, 'scrollToCurrent'));
+            $('body').on('click', 'a', $.proxy(this, 'delegateAnchors'));
+        },
+
+        /**
+         * Return the offset amount to deduct from the normal scroll position.
+         * Modify as appropriate to allow for dynamic calculations
+         */
+        getFixedOffset: function () {
+            return this.OFFSET_HEIGHT_PX;
+        },
+
+        /**
+         * If the provided href is an anchor which resolves to an element on the
+         * page, scroll to it.
+         * @param  {String} href
+         * @return {Boolean} - Was the href an anchor.
+         */
+        scrollIfAnchor: function (href, pushToHistory) {
+            var match, anchorOffset;
+
+            if (!this.ANCHOR_REGEX.test(href)) {
+                return false;
+            }
+
+            match = document.getElementById(href.slice(1));
+            if (!match) {
+                /**
+                 * Match the elements with name="href", take the first match
+                 */
+                match = document.getElementsByName(href.slice(1));
+                match = match.length > 0 ? match[0] : null;
+            }
+
+            if (match) {
+                anchorOffset = $(match).offset().top - this.getFixedOffset();
+                $('html, body').animate({scrollTop: anchorOffset});
+
+                location.hash = href;
+
+                // Add the state to history as-per normal anchor links
+                if (HISTORY_SUPPORT && pushToHistory) {
+                    history.pushState({}, document.title, location.pathname + href);
+                }
+            }
+
+            return !!match;
+        },
+
+        /**
+         * Attempt to scroll to the current location's hash.
+         */
+        scrollToCurrent: function (e) {
+            if (this.scrollIfAnchor(window.location.hash) && e) {
+                e.preventDefault();
+            }
+        },
+
+        /**
+         * If the click event's target was an anchor, fix the scroll position.
+         */
+        delegateAnchors: function (e) {
+            var elem = e.target;
+
+            if (this.scrollIfAnchor(elem.getAttribute('href'), true)) {
+                e.preventDefault();
+            }
+        }
+    };
+
+
+    $(document).ready($.proxy(anchorScrolls, 'init'));
+})(window.document, window.history, window.location);
+
 (function(window, $) {
     var hash = function () {
         var inner = {
@@ -192,12 +286,12 @@
                         if(l.length == 2) {
                             window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(val, l[1])
                         } else if ( l.length == 1){
-                            window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(l[0], val) 
+                            window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(l[0], val)
                         }
                         return false
                     }
                     return true
-                })                    
+                })
             },
             
             getHashParts: function (hash) {
@@ -245,14 +339,13 @@
                     // not a case of line highlighting
                     return
                 }
-
                 for ( var i = 0; i < lines.length; i ++ ) {
                     // color
                     var slc = inner.format(inner.options.linkSelectorTemplate, { "parent": inner.options.parent,
                                                                                   "n": lines[i] } );
                     var el = $(slc).addClass(inner.options.highlightedClass)
                     inner.highlighted.push(el)
-                }                   
+                }
             },
             format: function(format) {
                 var args = Array.prototype.slice.call(arguments, 1);
@@ -270,7 +363,6 @@
             scroll: function (){
                 if(!inner.options.autoScroll)
                     return
-   
                 var lines = inner.getLinesParts(window.location.hash);
                 if (lines.length > 0) {
                     var line = lines[0]; // first line
@@ -281,7 +373,7 @@
                     if ($line.length > 0) {
                         // if there is such element identified with the line number
                         // we can scroll to it
-                        $("#content").animate({
+                        $('html, body').animate({
                             scrollTop: $(inner.format(inner.options.linkSelectorTemplate, {
                                 parent: inner.options.parent,
                                 n: line
@@ -464,12 +556,12 @@
                 var bw = {
                     height: $(browserWindow).outerHeight(true),
                     width: $(browserWindow).outerWidth(true),
-                    yOffset: browserWindow.pageYOffset,
-                    xOffset: browserWindow.pageXOffset
+                    yOffset: 0,
+                    xOffset: 0
                 }
                 position.top -= Math.max(0, position.top + w.height - bw.yOffset - bw.height + 20)
                 position.left -= Math.max(0, position.left + w.width - bw.xOffset - bw.width + 20)
-                return position
+                return position;
             }
 
             this.determinePosition = function () {
@@ -607,8 +699,8 @@
             this.addCallback('load', function ($window) {
                 var that = this
                 $(document).mousemove(function (e) {
-                    that.clientX = e.pageX;
-                    that.clientY = e.pageY;
+                    that.clientX = e.clientX;
+                    that.clientY = e.clientY;
                 })
                 $(document).keyup(function (e) {
                     var key = e.keyCode
@@ -876,9 +968,10 @@
                 },
                 scrollTop: function ($el) {
                     if (this.options.scrollTop) {
+
                         this.options.scrollTop($el)
                     } else {
-                        $("#content").stop().animate({
+                        $('html, body').stop().animate({
                             scrollTop: $el.offset().top - $("#src").offset().top
                         }, 500);
                     }
@@ -1035,7 +1128,7 @@
                             .append(this.$scopes = $("<div>"))
                 },
                 load: function ($window) {
-                    $window.hide().css('top', parseFloat($("#content").css('top').replace('px', '')) + 10 + 'px')
+                    $window.hide().css('top', $("#content").offset().top + 10 + 'px')
 
                     // override the hide and show to throw an event and run
                     // scope_on_scroll() for update
@@ -1157,7 +1250,7 @@
                     return $('<a>').attr('href', '#' + href).attr('title', this.escapeHtml(name)).addClass(c).html(this.escapeHtml(name)).click(lnshow)
                 },
                 getTopOffset: function () {
-                    return parseFloat($("#content").css('top'))
+                    return $("#content").offset().top
                 },
                 updatePosition: function ($w) {
                     if (!$w.is(':visible')) {
@@ -1175,7 +1268,7 @@
                     if ($.scopesWindow &&
                             $.scopesWindow.initialized &&
                             $.scopesWindow.is(':visible')) {
-                        a.top = $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20;
+                        a.top = $.scopesWindow.position().top + $.scopesWindow.outerHeight() + 20;
                     }
                     a.height = Math.min(parseFloat($w.css('max-height')) || 480, $(browserWindow).outerHeight() - a.top - ($w.outerHeight(true) - $w.height()) - 20);
 
@@ -1199,7 +1292,7 @@
 
 function init_scopes() {
     $.scopesWindow.init();
-    $("#content").scroll(scope_on_scroll);
+    $(window).scroll(scope_on_scroll);
 }
 
 function init_results_autohide() {
@@ -1474,17 +1567,6 @@ $(document).ready(function () {
 });
 
 /**
- * Resize the element with the ID 'content' so that it fills the whole browser
- * window (i.e. the space between the header and the bottom of the window) and
- * thus get rid off the scrollbar in the page header.
- */
-function resizeContent() {
-    if (document.adjustContent != 0) {
-        $('#content').css('top', $('body').outerHeight(true)).css('bottom', 0);
-    }
-}
-
-/**
  * Get a parameter value from the URL.
  *
  * @param p the name of the parameter
@@ -1578,22 +1660,9 @@ function domReadyMast() {
         $("#toggle-annotate-by-javascript").css('display', 'inline');
         $("#toggle-annotate").hide()
     }
-
-    // When we move to a version of XHTML that supports the onscroll
-    // attribute in the div element, we should add an onscroll attribute
-    // in the generated XHTML in mast.jsp. For now, set it with jQuery.
-    $("#content").scroll(scope_on_scroll);
 }
 
 function pageReadyMast() {
-    document.adjustContent = 0;
-    if ($('#whole_header').length > 0 && $('#content').length > 0) {
-        document.adjustContent = 1;
-        resizeContent();
-    }
-    $(window).resize(function () {
-        resizeContent();
-    });
 }
 
 function domReadyMenu() {
@@ -1841,8 +1910,7 @@ function scope_on_scroll() {
         scope_timeout = null
     }
     scope_timeout = setTimeout(function () {
-        var cnt = document.getElementById("content");
-        var y = cnt.getBoundingClientRect().top + 2;
+        var y = $('#whole_header').outerHeight() + 2;
         var c = document.elementFromPoint(15, y + 1);
 
         if ($(c).is('.l, .hl')) {

@@ -3,7 +3,7 @@ body {
     background-color: #d8dbd7;
     color: black;
     font-family: sans-serif;
-    margin: 1ex 1ex 0 1ex;
+    margin: 0;
 }
 
 a {
@@ -264,9 +264,20 @@ label {
     background-color: white;
 }
 
+html.xref #whole_header,
+html.history #whole_header,
+html.more #whole_header,
+html.diff #whole_header {
+    position: fixed;
+    top: 0;
+    background: #e9ede8;
+    border-bottom: 5px solid #e9ede8;
+    height: 85px;
+    width: 100%;
+}
+
 /* *** banner/deco above navbar *** */
 #header {
-    display: inline-block;
     width: 100%;
     background-image: -webkit-gradient(
         linear, left bottom, left top,
@@ -304,7 +315,9 @@ label {
     clear: left;
     background-color: #426477;
     border: 1px solid #bbb;
-    margin-bottom: 1ex;
+    margin-left: 1ex;
+    margin-right: 1ex;
+    margin-top: 1ex;
 }
 
 #Masthead tt { /* slashes in the xref: line */
@@ -316,12 +329,15 @@ label {
 }
 
 #sbar, #bar { /* full search and default navbar */
-    border-bottom: 1px solid #bba;
     border-top: 1px solid #bba;
     background-color: #e9ede8;
     margin: 0;
     padding: 1ex 0;
     clear: both;
+}
+
+#sbar { /* full search */
+    border-bottom: 1px solid #bba;
 }
 
 /* *** full search navbar *** */
@@ -415,7 +431,8 @@ label {
 
 /* *** default navbar *** */
 #bar {
-    padding: 0.2em 0.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
 }
 
 #bar ul { /* every list item is displayed as a "menu" item */
@@ -518,14 +535,13 @@ button.help {
 
 
 /* ############### start of content ############## */
-#content {
-    position: fixed;
-    left: 0;
-    right: 0;
-    overflow: auto;
-    padding: 0 1ex 1ex 1ex; /* should be the same as body's margin */
-}
 
+html.xref #content,
+html.diff #content,
+html.more #content,
+html.history #content{
+    margin-top: 90px;
+}
 
 /* *** help page *** */
 #help h4 {
@@ -921,7 +937,7 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
 }
 
 .window {
-    position: absolute;
+    position: fixed;
     font-size: 12px;
     font-family: monospace;
     overflow: auto;
