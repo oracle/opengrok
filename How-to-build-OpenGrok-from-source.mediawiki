@@ -20,6 +20,11 @@ The first thing you need to do is to check out the source code. You might do thi
 
 (or clone any of your forks)
 
+== Open correct project ==
+
+OpenGrok uses ant project as main one. Please select the top directory or the opengrok-web-nbproject as 2 possible netbeans projects.
+OpenGrok does have a maven pom.xml for its modules, but these are not really tested to work with IDEs (though feel free to improve them to get mvn work with IDEs in better way).
+
 == Prepare the source for compilation ==
 
 First build should download all needed dependencies, so don't get scared about missing jars.
