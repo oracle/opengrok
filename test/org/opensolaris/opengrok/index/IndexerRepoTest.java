@@ -69,7 +69,7 @@ public class IndexerRepoTest {
         Thread[] threads = new Thread[mainGroup.activeCount()];
         mainGroup.enumerate(threads);
         for (int i = 0; i < threads.length; i++) {
-            if (threads[i].getName() == null) {
+            if (threads[i] == null || threads[i].getName() == null) {
                 continue;
             }
             assertEquals(false, threads[i].getName().contains("renamed-handling"));
