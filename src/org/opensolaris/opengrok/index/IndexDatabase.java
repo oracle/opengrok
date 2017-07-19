@@ -35,7 +35,9 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -592,9 +594,13 @@ public class IndexDatabase {
         }
     }
 
+    private void removeHistoryFile(String path) {
+        HistoryGuru.getInstance().clearCacheFile(path);
+    }
+
     /**
-     * Remove a stale file (uidIter.term().text()) from the index database (and
-     * the xref file)
+     * Remove a stale file (uidIter.term().text()) from the index database,
+     * history cache and xref.
      *
      * @throws java.io.IOException if an error occurs
      */
@@ -610,6 +616,7 @@ public class IndexDatabase {
         writer.commit();
 
         removeXrefFile(path);
+        removeHistoryFile(path);
 
         setDirty();
         for (IndexChangedListener listener : listeners) {
@@ -951,28 +958,32 @@ public class IndexDatabase {
     }
 
     /**
-     * List all files in all of the index databases
+     * Get all files in all of the index databases.
      *
      * @throws IOException if an error occurs
+     * @return set of files
      */
-    public static void listAllFiles() throws IOException {
-        listAllFiles(null);
+    public static Set<String> getAllFiles() throws IOException {
+        return getAllFiles(null);
     }
 
     /**
-     * List all files in some of the index databases
+     * List all files in some of the index databases.
      *
      * @param subFiles Subdirectories for the various projects to list the files
      * for (or null or an empty list to dump all projects)
      * @throws IOException if an error occurs
+     * @return set of files in the index databases specified by the subFiles parameter
      */
-    public static void listAllFiles(List<String> subFiles) throws IOException {
+    public static Set<String> getAllFiles(List<String> subFiles) throws IOException {
+        Set<String> files = new HashSet<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
         if (env.hasProjects()) {
             if (subFiles == null || subFiles.isEmpty()) {
                 for (Project project : env.getProjectList()) {
                     IndexDatabase db = new IndexDatabase(project);
-                    db.listFiles();
+                    files.addAll(db.getFiles());
                 }
             } else {
                 for (String path : subFiles) {
@@ -981,25 +992,29 @@ public class IndexDatabase {
                         LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
-                        db.listFiles();
+                        files.addAll(db.getFiles());
                     }
                 }
             }
         } else {
             IndexDatabase db = new IndexDatabase();
-            db.listFiles();
+            files = db.getFiles();
         }
+
+        return files;
     }
 
     /**
-     * List all of the files in this index database
+     * Get all files in this index database.
      *
      * @throws IOException If an IO error occurs while reading from the database
+     * @return set of files in this index database
      */
-    public void listFiles() throws IOException {
+    public Set<String> getFiles() throws IOException {
         IndexReader ireader = null;
         TermsEnum iter;
         Terms terms = null;
+        Set<String> files = new HashSet<>();
 
         try {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
@@ -1010,12 +1025,13 @@ public class IndexDatabase {
             }
             iter = terms.iterator(); // init uid iterator
             while (iter != null && iter.term() != null) {
-                LOGGER.fine(Util.uid2url(iter.term().utf8ToString()));
-                BytesRef next=iter.next();
-                if (next==null) {iter=null;}
+                files.add(Util.uid2url(iter.term().utf8ToString()));
+                BytesRef next = iter.next();
+                if (next == null) {
+                    iter = null;
+                }
             }
         } finally {
-
             if (ireader != null) {
                 try {
                     ireader.close();
@@ -1024,6 +1040,32 @@ public class IndexDatabase {
                 }
             }
         }
+
+        return files;
+    }
+
+    /**
+     * Get number of documents in this index database.
+     * @return number of documents
+     */
+    public int getNumFiles() throws IOException {
+        IndexReader ireader = null;
+        int numDocs = 0;
+        
+        try {
+            ireader = DirectoryReader.open(indexDirectory); // open existing index
+            numDocs = ireader.numDocs();
+        } finally {
+            if (ireader != null) {
+                try {
+                    ireader.close();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "An error occured while closing index reader", e);
+                }
+            }
+        }
+        
+        return numDocs;
     }
 
     static void listFrequentTokens() throws IOException {

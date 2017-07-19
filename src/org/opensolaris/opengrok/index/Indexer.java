@@ -786,8 +786,11 @@ public final class Indexer {
                   LOGGER.info("Done...");
               }
         }
+
         if (listFiles) {
-            IndexDatabase.listAllFiles(subFiles);
+            for (String file : IndexDatabase.getAllFiles(subFiles)) {
+                LOGGER.fine(file);
+            }
         }
 
         if (createDict) {

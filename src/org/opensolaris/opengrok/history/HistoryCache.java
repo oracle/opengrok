@@ -126,6 +126,12 @@ interface HistoryCache {
     void clear(Repository repository) throws HistoryException;
 
     /**
+     * Clear entry for single file from history cache.
+     * @param file path to the file
+     */
+    void clearFile(String file);
+
+    /**
      * Get a string with information about the history cache.
      *
      * @return a free form text string describing the history cache instance

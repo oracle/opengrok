@@ -353,7 +353,7 @@ public class FileHistoryCacheTest {
      * rename+change file.
      * 
      * The scenario goes as follows:
-     * - create repo
+     * - create Mercurial repository
      * - perform full reindex
      * - add changesets which renamed and modify a file
      * - perform incremental reindex
