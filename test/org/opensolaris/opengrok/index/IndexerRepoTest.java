@@ -87,7 +87,7 @@ public class IndexerRepoTest {
             Indexer.main(argv);
             checkNumberOfThreads();
         } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
+            System.out.println("Skipping test. Could not find a ctags I could use.");
         }
     }
 
@@ -102,7 +102,7 @@ public class IndexerRepoTest {
             Indexer.main(argv);
             checkNumberOfThreads();
         } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
+            System.out.println("Skipping test. Could not find a ctags I could use.");
         }
     }
 }
