@@ -290,9 +290,10 @@ PKG pkgsend add set name=pkg.summary value="OpenGrok - wicked fast source browse
 PKG pkgsend add set name=pkg.human-version value="${human_readable_version}"
 PKG pkgsend close
 
+typeset solrev=$( uname -r )
 typeset solver=$( uname -v )
 integer minorver=$( print $solver | cut -d. -f2 )
-if [[ $solver == 11.* ]] && (( minorver >= 4 )); then
+if [[ $solrev == "5.12" ]] || [[ $solver == 11.* && $minorver -ge 4 ]]; then
 	extra_args="--disable dependency"
 fi
 PKG pkgrepo -s "$PKG_REPO_NAME" verify $extra_args
