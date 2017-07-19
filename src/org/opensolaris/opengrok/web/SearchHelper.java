@@ -218,20 +218,22 @@ public class SearchHelper {
     File indexDir;
 
     /**
-     * Create the searcher to use wrt. to currently set parameters and the given
+     * Create the searcher to use w.r.t. currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
      * nothing if {@link #redirect} or {@link #errorMsg} have a
      * none-{@code null} value.
      * <p>
-     * Parameters which should be populated/set at this time: <ul>
+     * Parameters which should be populated/set at this time:
+     * <ul>
      * <li>{@link #builder}</li> <li>{@link #dataRoot}</li>
      * <li>{@link #order} (falls back to relevance if unset)</li>
      * <li>{@link #parallel} (default: false)</li> </ul> Populates/sets: <ul>
      * <li>{@link #query}</li> <li>{@link #searcher}</li> <li>{@link #sort}</li>
      * <li>{@link #projects}</li> <li>{@link #errorMsg} if an error occurs</li>
      * </ul>
+     * </p>
      *
-     * @param projects project to use query. If empty, a no-project setup
+     * @param projects project paths. If empty, a no-project setup
      * is assumed (i.e. DATA_ROOT/index will be used instead of possible
      * multiple DATA_ROOT/$project/index).
      * @return this instance
@@ -256,16 +258,25 @@ public class SearchHelper {
                 searcher = new IndexSearcher(DirectoryReader.open(dir));
                 closeOnDestroy = true;
             } else {
-                // We use MultiReader even for single project. This should
-                // not matter given that MultiReader is just a cheap wrapper
-                // around set of IndexReader objects.
+                // Check list of project names first to make sure all of them
+                // are valid and indexed.
                 closeOnDestroy = false;
-                if (projects.stream().map(x -> Project.getProject(x)).
+                Set <Project> projectSet = projects.stream().
+                    map(x -> Project.getProject(x)).collect(Collectors.toSet());
+                if (projectSet.contains(null)) {
+                    errorMsg = "Project list contains invalid projects";
+                    return this;
+                }
+                if (projectSet.stream().
                     filter(proj -> !proj.isIndexed()).
                     collect(Collectors.toSet()).size() > 0) {
                         errorMsg = "Some of the projects to be searched are not indexed yet.";
                         return this;
                 }
+
+                // We use MultiReader even for single project. This should
+                // not matter given that MultiReader is just a cheap wrapper
+                // around set of IndexReader objects.
                 MultiReader multireader = RuntimeEnvironment.getInstance().
                     getMultiReader(projects, searcherList);
                 if (multireader != null) {
