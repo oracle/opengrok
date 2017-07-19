@@ -46,16 +46,6 @@ public class IndexerRepoTest {
     TestRepository repository;
     private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        assertTrue("No point in running indexer tests without valid ctags",
-                RuntimeEnvironment.getInstance().validateExuberantCtags());
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
     @Before
     public void setUp() throws IOException {
         repository = new TestRepository();
@@ -93,7 +83,7 @@ public class IndexerRepoTest {
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (env.validateExuberantCtags()) {
             String[] argv = {"-S", "-H", "-s", repository.getSourceRoot(),
-                "-d", repository.getDataRoot(), "-v"};
+                "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
             Indexer.main(argv);
             checkNumberOfThreads();
         } else {
@@ -108,7 +98,7 @@ public class IndexerRepoTest {
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (env.validateExuberantCtags()) {
             String[] argv = {"-S", "-P", "-s", repository.getSourceRoot(),
-                "-d", repository.getDataRoot(), "-v"};
+                "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
             Indexer.main(argv);
             checkNumberOfThreads();
         } else {
