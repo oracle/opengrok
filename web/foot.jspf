@@ -43,7 +43,7 @@ org.opensolaris.opengrok.web.Prefix"
 <p><a href="http://opengrok.github.com/OpenGrok/"
  title="Served by OpenGrok"><span id="fti"></span></a></p>
 <% if(dateForLastIndexRun != null) { %>
-<p>Indexes created <%= dateForLastIndexRun %></p>
+<p>Last Index update <%= dateForLastIndexRun %></p>
 <%}%>
     <%= cfg.getEnv().getConfiguration().getFooterIncludeFileContent() %>
     <%

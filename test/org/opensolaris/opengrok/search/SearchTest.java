@@ -70,7 +70,7 @@ public class SearchTest {
             env.setVerbose(false);
             env.setHistoryEnabled(false);
             Indexer.getInstance().prepareIndexer(env, true, true,
-                    new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
+                    new TreeSet<>(Arrays.asList(new String[]{"/c"})),
                     false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {

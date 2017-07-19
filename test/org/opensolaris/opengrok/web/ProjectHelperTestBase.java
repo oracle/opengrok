@@ -99,6 +99,7 @@ public class ProjectHelperTestBase {
                 + (repository ? "repository" : "project")
                 + "_" + index + "_" + number);
         prjs.put(p.getName(), p);
+        p.setIndexed(true);
         return p;
     }
 

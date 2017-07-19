@@ -78,12 +78,14 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
 
         // project
         Project p = new Project("some random name not in any group");
+        p.setIndexed(true);
 
         // group
         Group g = new Group("some random name of a group");
 
         // repository
         Project repo = new Project("some random name not in any other group");
+        repo.setIndexed(true);
 
         RepositoryInfo info = new RepoRepository();
         info.setParent(repo.getName());
@@ -129,6 +131,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
     @Test
     public void testUnAllowedGetRepositoryInfo() {
         Project p = new Project("repository_2_1");
+        p.setIndexed(true);
         List<RepositoryInfo> result = helper.getRepositoryInfo(p);
         Assert.assertEquals("this project is not allowed", 0, result.size());
     }
@@ -139,6 +142,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
     @Test
     public void testAllowedGetRepositoryInfo() {
         Project p = new Project("allowed_grouped_repository_0_1");
+        p.setIndexed(true);
         List<RepositoryInfo> result = helper.getRepositoryInfo(p);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals("allowed_grouped_repository_0_1_" + 0, result.get(0).getParent());

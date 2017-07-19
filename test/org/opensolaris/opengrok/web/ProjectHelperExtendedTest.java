@@ -81,6 +81,7 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
 
     protected static Project createProject(String name) {
         Project p = new Project(name);
+        p.setIndexed(true);
         return p;
     }
 

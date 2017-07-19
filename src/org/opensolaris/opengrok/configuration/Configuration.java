@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -177,6 +178,7 @@ public final class Configuration {
     private int commandTimeout; // in seconds
     private int indexRefreshPeriod; // in seconds
     private boolean scopesEnabled;
+    private boolean projectsEnabled;
     private boolean foldingEnabled;
     private String statisticsFilePath;
     /*
@@ -381,7 +383,7 @@ public final class Configuration {
         setPluginDirectory(null);
         setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
         setPrintProgress(false);
-        setProjects(new HashMap<>());
+        setProjects(new ConcurrentHashMap<>());
         setQuickContextScan(true);
         //below can cause an outofmemory error, since it is defaulting to NO LIMIT
         setRamBufferSize(defaultRamBufferSize); //MB
@@ -668,6 +670,10 @@ public final class Configuration {
         this.repositories = repositories;
     }
 
+    public void addRepositories(List<RepositoryInfo> repositories) {
+        this.repositories.addAll(repositories);
+    }
+
     public String getUrlPrefix() {
         return urlPrefix;
     }
@@ -911,27 +917,6 @@ public final class Configuration {
         this.currentIndexedCollapseThreshold = currentIndexedCollapseThreshold;
     }
 
-    private transient Date lastModified;
-
-    /**
-     * Get the date of the last index update.
-     *
-     * @return the time of the last index update.
-     */
-    public Date getDateForLastIndexRun() {
-        if (lastModified == null) {
-            File timestamp = new File(getDataRoot(), "timestamp");
-            if (timestamp.exists()) {
-                lastModified = new Date(timestamp.lastModified());
-            }
-        }
-        return lastModified;
-    }
-
-    public void refreshDateForLastIndexRun() {
-        lastModified = null;
-    }
-
     /**
      * Get the contents of a file or empty string if the file cannot be read.
      */
@@ -1136,6 +1121,14 @@ public final class Configuration {
 
     public void setMaxSearchThreadCount(int count) {
         this.MaxSearchThreadCount = count;
+    }
+    
+    public boolean isProjectsEnabled() {
+        return projectsEnabled;
+    }
+
+    public void setProjectsEnabled(boolean flag) {
+        this.projectsEnabled = flag;
     }
 
     /**

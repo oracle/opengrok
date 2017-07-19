@@ -155,12 +155,15 @@ public class PageConfigTest {
         AuthorizationFramework oldAuthorizationFramework = env.getAuthorizationFramework();
         Map<String, Project> oldProjects = env.getProjects();
 
-        // set up the source root directory containing some projects
+        // Set up the source root directory containing some projects.
         env.setSourceRoot(repository.getSourceRoot());
+        env.setProjectsEnabled(true);
 
-        // enable projects
+        // Enable projects.
         for (String file : new File(repository.getSourceRoot()).list()) {
-            env.getProjects().put(file, new Project(file));
+            Project proj = new Project(file);
+            proj.setIndexed(true);
+            env.getProjects().put(file, proj);
         }
 
         HttpServletRequest req = createRequest("/source", "/xref", "");

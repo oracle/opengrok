@@ -115,10 +115,13 @@ public final class RuntimeEnvironment {
     private static ExecutorService historyRenamedExecutor = null;
     private static ExecutorService searchExecutor = null;
 
-    private final Map<Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
+    private final Map<Project, List<RepositoryInfo>> repository_map = new ConcurrentHashMap<>();
     private final Map<Project, Set<Group>> project_group_map = new TreeMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
-    
+
+    private String configHost;
+    private int configPort;
+
     public static final String MESSAGES_MAIN_PAGE_TAG = "main";
     /*
     initial capacity - default 16
@@ -130,6 +133,8 @@ public final class RuntimeEnvironment {
     private int messagesInTheSystem = 0;
 
     private Statistics statistics = new Statistics();
+    
+    private static IndexTimestamp indexTime = new IndexTimestamp();
 
     /**
      * Instance of authorization framework.
@@ -372,6 +377,20 @@ public final class RuntimeEnvironment {
      * source root.
      *
      * @param file A file to resolve
+     * @throws IOException If an IO error occurs
+     * @throws FileNotFoundException If the file is not relative to source root
+     * @return Path relative to source root
+     */
+    public String getPathRelativeToSourceRoot(File file) throws IOException {
+        return getPathRelativeToSourceRoot(file, 0);
+    }
+
+    /**
+     * Returns a path relative to source root. This would just be a simple
+     * substring operation, except we need to support symlinks outside the
+     * source root.
+     *
+     * @param file A file to resolve
      * @param stripCount Number of characters past source root to strip
      * @throws IOException If an IO error occurs
      * @throws FileNotFoundException If the file is not relative to source root
@@ -405,7 +424,7 @@ public final class RuntimeEnvironment {
      * @return true if we have projects
      */
     public boolean hasProjects() {
-        return (getProjects().size() > 0);
+        return (this.isProjectsEnabled() && getProjects().size() > 0);
     }
 
     /**
@@ -695,6 +714,10 @@ public final class RuntimeEnvironment {
      */
     public void setRepositories(List<RepositoryInfo> repositories) {
         threadConfig.get().setRepositories(repositories);
+    }
+
+    public void addRepositories(List<RepositoryInfo> repositories) {
+        threadConfig.get().addRepositories(repositories);
     }
 
     /**
@@ -1024,6 +1047,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setScopesEnabled(scopesEnabled);
     }
 
+    public boolean isProjectsEnabled() {
+        return threadConfig.get().isProjectsEnabled();
+    }
+
+    public void setProjectsEnabled(boolean projectsEnabled) {
+        threadConfig.get().setProjectsEnabled(projectsEnabled);
+    }
+
     public boolean isFoldingEnabled() {
         return threadConfig.get().isFoldingEnabled();
     }
@@ -1033,7 +1064,7 @@ public final class RuntimeEnvironment {
     }
 
     public Date getDateForLastIndexRun() {
-        return threadConfig.get().getDateForLastIndexRun();
+        return indexTime.getDateForLastIndexRun();
     }
 
     public String getCTagsExtraOptionsFile() {
@@ -1130,6 +1161,25 @@ public final class RuntimeEnvironment {
 
     public int getGroupsCollapseThreshold() {
         return threadConfig.get().getGroupsCollapseThreshold();
+    }
+
+    // The config host/port are not necessary to be present in the configuration
+    // (so that when -U option of the indexer is omitted, the config will not
+    // be sent to the webapp) so store them only in the RuntimeEnvironment.
+    public void setConfigHost(String host) {
+        configHost = host;
+    }
+
+    public String getConfigHost() {
+        return configHost;
+    }
+
+    public void setConfigPort(int port) {
+        configPort = port;
+    }
+
+    public int getConfigPort() {
+        return configPort;
     }
 
     public boolean isHistoryEnabled() {
@@ -1639,7 +1689,7 @@ public final class RuntimeEnvironment {
             refreshSearcherManagerMap();
             maybeRefreshIndexSearchers();
             // Force timestamp to update itself upon new config arrival.
-            config.refreshDateForLastIndexRun();
+            refreshDateForLastIndexRun();
         }
 
         // start/stop the watchdog if necessarry
@@ -1652,6 +1702,14 @@ public final class RuntimeEnvironment {
         // set the new plugin directory and reload the authorization framework
         getAuthorizationFramework().setPluginDirectory(config.getPluginDirectory());
         getAuthorizationFramework().reload();
+    }
+
+    public void setIndexTimestamp() throws IOException {
+        indexTime.stamp();
+    }
+
+    public void refreshDateForLastIndexRun() {
+        indexTime.refreshDateForLastIndexRun();
     }
 
     /**
@@ -1985,7 +2043,7 @@ public final class RuntimeEnvironment {
      * change so we go through the SearcherManager objects and close those where
      * the corresponding project is no longer present.
      */
-    private void refreshSearcherManagerMap() {
+    public void refreshSearcherManagerMap() {
         ArrayList<String> toRemove = new ArrayList<>();
 
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
@@ -1998,7 +2056,7 @@ public final class RuntimeEnvironment {
                     entry.getValue().close();
                 } catch (IOException ex) {
                     LOGGER.log(Level.SEVERE,
-                        "cannot close IndexReader for project" + entry.getKey(), ex);
+                        "cannot close SearcherManager for project" + entry.getKey(), ex);
                 }
                 toRemove.add(entry.getKey());
             }

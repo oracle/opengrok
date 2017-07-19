@@ -309,7 +309,7 @@ public class AccuRevRepository extends Repository {
         String path = File.separator + "." + File.separator;
 
         try {
-            path = env.getPathRelativeToSourceRoot(file, 0);
+            path = env.getPathRelativeToSourceRoot(file);
 
             if (path.startsWith(File.separator)) {
                 path = File.separator + "." + path;

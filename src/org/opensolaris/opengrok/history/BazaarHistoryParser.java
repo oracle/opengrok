@@ -167,7 +167,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                         }
 
                         File f = new File(myDir, s);
-                        String name = env.getPathRelativeToSourceRoot(f, 0);
+                        String name = env.getPathRelativeToSourceRoot(f);
                         entry.addFile(name);
                     }
                     break;

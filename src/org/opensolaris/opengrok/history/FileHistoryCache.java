@@ -64,10 +64,10 @@ class FileHistoryCache implements HistoryCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileHistoryCache.class);
 
     private final Object lock = new Object();
-    private String historyCacheDirName = "historycache";
-    private String latestRevFileName = "OpenGroklatestRev";
+    private final static String historyCacheDirName = "historycache";
+    private final String latestRevFileName = "OpenGroklatestRev";
     private boolean historyIndexDone = false;
-    
+
     @Override
     public void setHistoryIndexDone() {
         historyIndexDone = true;
@@ -134,11 +134,11 @@ class FileHistoryCache implements HistoryCache {
     }
 
     private boolean isRenamedFile(String filename,
-            RuntimeEnvironment env, 
+            RuntimeEnvironment env,
             Repository repository, History history) throws IOException {
 
         String repodir = env.getPathRelativeToSourceRoot(
-            new File(repository.getDirectoryName()), 0);
+            new File(repository.getDirectoryName()));
         String shortestfile = filename.substring(repodir.length() + 1);
 
         return (history.isRenamed(shortestfile));
@@ -181,10 +181,10 @@ class FileHistoryCache implements HistoryCache {
         StringBuilder sb = new StringBuilder();
         sb.append(env.getDataRootPath());
         sb.append(File.separatorChar);
-        sb.append("historycache");
+        sb.append(historyCacheDirName);
 
         try {
-            String add = env.getPathRelativeToSourceRoot(file, 0);
+            String add = env.getPathRelativeToSourceRoot(file);
             if (add.length() == 0) {
                 add = File.separator;
             }
@@ -606,7 +606,7 @@ class FileHistoryCache implements HistoryCache {
         dir = new File(dir, this.historyCacheDirName);
         try {
             dir = new File(dir, env.getPathRelativeToSourceRoot(
-                new File(repos.getDirectoryName()), 0));
+                new File(repos.getDirectoryName())));
         } catch (IOException e) {
             throw new HistoryException("Could not resolve " +
                     repos.getDirectoryName()+" relative to source root", e);
@@ -620,7 +620,7 @@ class FileHistoryCache implements HistoryCache {
 
         try {
             repoDirBasename = env.getPathRelativeToSourceRoot(
-                    new File(repository.getDirectoryName()), 0);
+                    new File(repository.getDirectoryName()));
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Could not resolve " +
                 repository.getDirectoryName()+" relative to source root", ex);

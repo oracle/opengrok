@@ -34,6 +34,7 @@ import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -55,6 +56,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
 import org.opensolaris.opengrok.index.IndexDatabase;
@@ -216,12 +218,13 @@ public class SearchHelper {
     File indexDir;
 
     /**
-     * Create the searcher to use wrt. to currently set parameters and the given
+     * Create the searcher to use w.r.t. currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
      * nothing if {@link #redirect} or {@link #errorMsg} have a
      * none-{@code null} value.
      * <p>
-     * Parameters which should be populated/set at this time: <ul>
+     * Parameters which should be populated/set at this time:
+     * <ul>
      * <li>{@link #builder}</li> <li>{@link #dataRoot}</li>
      * <li>{@link #order} (falls back to relevance if unset)</li>
      * <li>{@link #parallel} (default: false)</li> </ul> Populates/sets: <ul>
@@ -229,7 +232,7 @@ public class SearchHelper {
      * <li>{@link #projects}</li> <li>{@link #errorMsg} if an error occurs</li>
      * </ul>
      *
-     * @param projects project to use query. If empty, a no-project setup
+     * @param projects project paths. If empty, a no-project setup
      * is assumed (i.e. DATA_ROOT/index will be used instead of possible
      * multiple DATA_ROOT/$project/index).
      * @return this instance
@@ -238,6 +241,7 @@ public class SearchHelper {
         if (redirect != null || errorMsg != null) {
             return this;
         }
+
         // the Query created by the QueryBuilder
         try {
             indexDir = new File(dataRoot, IndexDatabase.INDEX_DIR);
@@ -253,16 +257,32 @@ public class SearchHelper {
                 searcher = new IndexSearcher(DirectoryReader.open(dir));
                 closeOnDestroy = true;
             } else {
+                // Check list of project names first to make sure all of them
+                // are valid and indexed.
+                closeOnDestroy = false;
+                Set <Project> projectSet = projects.stream().
+                    map(x -> Project.getProject(x)).collect(Collectors.toSet());
+                if (projectSet.contains(null)) {
+                    errorMsg = "Project list contains invalid projects";
+                    return this;
+                }
+                if (projectSet.stream().
+                    filter(proj -> !proj.isIndexed()).
+                    collect(Collectors.toSet()).size() > 0) {
+                        errorMsg = "Some of the projects to be searched are not indexed yet.";
+                        return this;
+                }
+
                 // We use MultiReader even for single project. This should
                 // not matter given that MultiReader is just a cheap wrapper
                 // around set of IndexReader objects.
-                closeOnDestroy = false;
                 MultiReader multireader = RuntimeEnvironment.getInstance().
                     getMultiReader(projects, searcherList);
                 if (multireader != null) {
                     searcher = new IndexSearcher(multireader);
                 } else {
                     errorMsg = "Failed to initialize search. Check the index.";
+                    return this;
                 }
             }
 

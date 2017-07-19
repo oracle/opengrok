@@ -34,9 +34,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -67,8 +69,8 @@ public final class HistoryGuru {
      */
     private final HistoryCache historyCache;
 
-    private Map<String, Repository> repositories
-            = new HashMap<>();
+    private Map<String, Repository> repositories = new ConcurrentHashMap<>();
+
     private final int scanningDepth;
 
     /**
@@ -321,7 +323,7 @@ public final class HistoryGuru {
         return Collections.emptyMap();
     }
 
-    private void addRepositories(File[] files, Collection<RepositoryInfo> repos,
+    public void addRepositories(File[] files, Collection<RepositoryInfo> repos,
             IgnoredNames ignoredNames, int depth) {
         addRepositories(files, repos, ignoredNames, true, depth);
     }
@@ -618,7 +620,13 @@ public final class HistoryGuru {
         createCacheReal(getReposFromString(repositories));
     }
 
-    public void removeCache(Collection<String> repositories) throws HistoryException {
+    /**
+     * Remove history data for a list of repositories
+     * @param repositories list of repository paths
+     * @return list of repositories that were found and their history data removed
+     * @throws HistoryException 
+     */
+    public List<Repository> clearCache(Collection<String> repositories) throws HistoryException {
         List<Repository> repos = getReposFromString(repositories);
         HistoryCache cache = historyCache;
         if (cache == null) {
@@ -635,6 +643,18 @@ public final class HistoryGuru {
                         new Object[]{r.getDirectoryName(), e.getLocalizedMessage()});
             }
         }
+
+        return repos;
+    }
+
+    /**
+     * Remove history data for a list of repositories and invalidate the list
+     * of repositories accordingly.
+     * @param repositories list of repository paths
+     * @throws HistoryException 
+     */
+    public void removeCache(Collection<String> repositories) throws HistoryException {
+        List<Repository> repos = clearCache(repositories);
         invalidateRepositories(repos);
     }
 
@@ -725,6 +745,18 @@ public final class HistoryGuru {
     }
 
     /**
+     * remove list of repositories from the list maintained in the HistoryGuru.
+     * This is much less heavyweight than {@code invalidateRepositories()}
+     * since it just removes items from the map.
+     * @param repos RepositoryInfo objects to remove
+     */
+    public void removeRepositories(Collection<? extends RepositoryInfo> repos) {
+        for (RepositoryInfo repo : repos) {
+            repositories.remove(repo);
+        }
+    }
+
+    /**
      * Invalidate list of known repositories which match the list of
      * directories.
      *
@@ -764,7 +796,7 @@ public final class HistoryGuru {
             boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
 
             if (verbose) {
-                LOGGER.log(Level.FINE, "invalidating repositories");
+                LOGGER.log(Level.FINE, "invalidating {0} repositories", repos.size());
             }
 
             /*
@@ -816,7 +848,8 @@ public final class HistoryGuru {
             }
             executor.shutdown();
 
-            repositories = newrepos;
+            repositories.clear();
+            repositories.putAll(newrepos);
 
             if (verbose) {
                 elapsed.report(LOGGER, "done invalidating repositories");

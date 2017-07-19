@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.index.IndexerTest;
@@ -77,7 +78,7 @@ public class SearchHelperTest {
         System.out.println("Generating index by using the class methods");
 
         Indexer.getInstance().prepareIndexer(env, true, true,
-            new TreeSet<>(Arrays.asList(new String[]{"/c"})), null,
+            new TreeSet<>(Arrays.asList(new String[]{"/c"})),
             false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, 1, null, null);
     }
@@ -104,6 +105,8 @@ public class SearchHelperTest {
     public void testSearchAfterReindex() {
         SortedSet<String> projects = new TreeSet<>();
         SearchHelper searchHelper;
+
+        env.setProjectsEnabled(true);
 
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (!env.validateExuberantCtags()) {
@@ -167,6 +170,25 @@ public class SearchHelperTest {
         Assert.assertEquals(6, searchHelper.totalHits);
         searchHelper.destroy();
         repository.removeDummyFile("c");
+    }
+
+    @Test
+    public void testPrepareExecInvalidInput() {
+        SortedSet<String> projects = new TreeSet<>();
+        SearchHelper searchHelper;
+
+        env.setProjectsEnabled(true);
+
+        // Fake project addition to avoid reindex.
+        Project project = new Project("c", "/c");
+        env.getProjects().put("c", project);
+
+        // Try to prepare search for list that contains non-existing project.
+        projects.add("/c");
+        projects.add("/foobar");
+        searchHelper = this.getSearchHelper("foobar")
+            .prepareExec(projects);
+        Assert.assertTrue(searchHelper.errorMsg != null);
     }
 
     /**
