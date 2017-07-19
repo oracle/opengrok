@@ -231,7 +231,6 @@ public class SearchHelper {
      * <li>{@link #query}</li> <li>{@link #searcher}</li> <li>{@link #sort}</li>
      * <li>{@link #projects}</li> <li>{@link #errorMsg} if an error occurs</li>
      * </ul>
-     * </p>
      *
      * @param projects project paths. If empty, a no-project setup
      * is assumed (i.e. DATA_ROOT/index will be used instead of possible
