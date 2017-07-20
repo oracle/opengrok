@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.php;
 
@@ -32,7 +32,9 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import org.junit.Before;
 import org.junit.Test;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 import static org.junit.Assert.assertEquals;
 
@@ -42,6 +44,11 @@ import static org.junit.Assert.assertEquals;
  * @author Gustavo Lopes
  */
 public class PhpXrefTest {
+
+    @Before
+    public void setUp() {
+        RuntimeEnvironment.getInstance().setScopesEnabled(false);
+    }
 
     @Test
     public void basicTest() throws IOException {

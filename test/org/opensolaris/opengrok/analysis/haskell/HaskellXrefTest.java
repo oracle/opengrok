@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.haskell;
 
@@ -30,8 +30,10 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -42,6 +44,11 @@ import static org.junit.Assert.assertEquals;
  * @author Harry Pan
  */
 public class HaskellXrefTest {
+
+    @Before
+    public void setUp() {
+        RuntimeEnvironment.getInstance().setScopesEnabled(false);
+    }
 
     @Test
     public void basicTest() throws IOException {
@@ -85,6 +92,47 @@ public class HaskellXrefTest {
         // load expected xref
         InputStream expectedInputStream = getClass().getClassLoader().getResourceAsStream(
                 "org/opensolaris/opengrok/analysis/haskell/sampleXrefExpected.html");
+        ByteArrayOutputStream expectedOutputSteam = new ByteArrayOutputStream();
+        try {
+            byte buffer[] = new byte[8192];
+            int numBytesRead;
+            do {
+                numBytesRead = expectedInputStream.read(buffer, 0, buffer.length);
+                if (numBytesRead > 0) {
+                    expectedOutputSteam.write(buffer, 0, numBytesRead);
+                }
+            } while (numBytesRead >= 0);
+        } finally {
+            expectedInputStream.close();
+            expectedOutputSteam.close();
+        }
+
+        String actual[] = new String(sampleOutputStream.toByteArray(), "UTF-8").split("\n");
+        String expected[] = new String(expectedOutputSteam.toByteArray(), "UTF-8").split("\n");
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void sampleTestWithScopes() throws IOException {
+        // enable scopes
+        RuntimeEnvironment.getInstance().setScopesEnabled(true);
+        // load sample source
+        InputStream sampleInputStream = getClass().getClassLoader().getResourceAsStream(
+                "org/opensolaris/opengrok/analysis/haskell/sample.hs");
+        ByteArrayOutputStream sampleOutputStream = new ByteArrayOutputStream();
+
+        Definitions defs = new Definitions();
+        defs.addTag(6, "x'y'", "functions", "x'y' = let f' = 1; g'h = 2 in f' + g'h");
+        try {
+            writeHaskellXref(sampleInputStream, new PrintStream(sampleOutputStream), defs);
+        } finally {
+            sampleInputStream.close();
+            sampleOutputStream.close();
+        }
+
+        // load expected xref
+        InputStream expectedInputStream = getClass().getClassLoader().getResourceAsStream(
+                "org/opensolaris/opengrok/analysis/haskell/sampleXrefWithScopesExpected.html");
         ByteArrayOutputStream expectedOutputSteam = new ByteArrayOutputStream();
         try {
             byte buffer[] = new byte[8192];

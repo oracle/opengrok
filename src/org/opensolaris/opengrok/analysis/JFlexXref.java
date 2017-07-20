@@ -236,7 +236,7 @@ public abstract class JFlexXref {
     }
 
     protected void startScope() {
-        if (scopesEnabled && scope == null) {
+        if (scopesEnabled && scope == null && defs != null) {
             int line = getLineNumber();
             List<Tag> tags = defs.getTags(line);
             if (tags != null) {
