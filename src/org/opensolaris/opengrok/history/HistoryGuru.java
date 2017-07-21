@@ -620,15 +620,6 @@ public final class HistoryGuru {
         createCacheReal(getReposFromString(repositories));
     }
 
-    private HistoryCache getHistoryCache() {
-        HistoryCache cache = historyCache;
-        if (cache == null) {
-            cache = new FileHistoryCache();
-        }
-
-        return cache;
-    }
-
     /**
      * Remove history data for a list of repositories
      * @param repositories list of repository paths
@@ -637,7 +628,7 @@ public final class HistoryGuru {
      */
     public List<Repository> clearCache(Collection<String> repositories) throws HistoryException {
         List<Repository> repos = getReposFromString(repositories);
-        HistoryCache cache = getHistoryCache();
+        HistoryCache cache = historyCache;
 
         for (Repository r : repos) {
             try {
@@ -655,8 +646,7 @@ public final class HistoryGuru {
     }
 
     public void clearCacheFile(String path) {
-        HistoryCache cache = getHistoryCache();
-        cache.clearFile(path);
+        historyCache.clearFile(path);
     }
 
     /**
