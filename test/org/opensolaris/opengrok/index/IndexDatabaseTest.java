@@ -140,6 +140,7 @@ public class IndexDatabaseTest {
     @Test
     public void testCleanupAfterIndexRemoval() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        final int origNumFiles;
 
         String projectName = "git";
         String ppath = "/" + projectName;
@@ -157,7 +158,8 @@ public class IndexDatabaseTest {
 
         // Check that the file was indexed successfully in terms of generated data.
         checkDataExistence(projectName + File.separator + fileName, true);
-        Assert.assertEquals(6, idb.getNumFiles());
+        origNumFiles = idb.getNumFiles();
+        Assert.assertEquals(6, origNumFiles);
 
         // Remove the file and reindex using IndexDatabase directly.
         File file = new File(repository.getSourceRoot(), projectName + File.separator + fileName);
@@ -167,6 +169,6 @@ public class IndexDatabaseTest {
 
         // Check that the data for the file has been removed.
         checkDataExistence(projectName + File.separator + fileName, false);
-        Assert.assertEquals(5, idb.getNumFiles());
+        Assert.assertEquals(origNumFiles - 1, idb.getNumFiles());
     }
 }
