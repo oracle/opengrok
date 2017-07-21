@@ -71,6 +71,10 @@ public class IndexDatabaseTest {
         env.setProjectsEnabled(true);
         RepositoryFactory.setIgnored(env);
 
+        // Note that all tests in this class share the index created below.
+        // Ergo, if they need to modify it, this has to be done in such a way
+        // so that it does not affect other tests, no matter in which order
+        // the tests are run.
         Indexer indexer = Indexer.getInstance();
         indexer.prepareIndexer(
                 env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
