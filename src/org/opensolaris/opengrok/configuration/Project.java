@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.configuration;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -32,7 +33,9 @@ import java.util.TreeSet;
 /**
  * Placeholder for the information that builds up a project
  */
-public class Project implements Comparable<Project>, Nameable {
+public class Project implements Comparable<Project>, Nameable, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String path;
 
@@ -47,6 +50,12 @@ public class Project implements Comparable<Project>, Nameable {
      * projects with non-standard tab size.
      */
     private int tabSize;
+
+    /**
+     * A flag if the navigate window should be opened by default when browsing
+     * the source code of this project.
+     */
+    private boolean navigateWindowEnabled = false;
 
     /**
      * This marks the project as (not)ready before initial index is done.
@@ -163,6 +172,25 @@ public class Project implements Comparable<Project>, Nameable {
      */
     public boolean hasTabSizeSetting() {
         return tabSize > 0;
+    }
+
+    /**
+     * Indicate whether the navigate window should be opened by default when
+     * browsing a source code from this project.
+     *
+     * @return true if yes; false otherwise
+     */
+    public boolean isNavigateWindowEnabled() {
+        return navigateWindowEnabled;
+    }
+
+    /**
+     * Set the value of navigateWindowEnabled
+     *
+     * @param navigateWindowEnabled new value of navigateWindowEnabled
+     */
+    public void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
+        this.navigateWindowEnabled = navigateWindowEnabled;
     }
 
     /**
