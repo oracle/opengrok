@@ -50,7 +50,6 @@ import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.configuration.messages.NormalMessage;
 import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.web.DummyHttpServletRequest;
 import org.opensolaris.opengrok.web.Statistics;
 
 import static org.junit.Assert.assertEquals;
@@ -1026,9 +1025,9 @@ public class RuntimeEnvironmentTest {
     public void testSaveStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setStatistics(new Statistics());
-        env.getStatistics().addRequest(new DummyHttpServletRequest());
-        env.getStatistics().addRequest(new DummyHttpServletRequest(), "root");
-        env.getStatistics().addRequestTime(new DummyHttpServletRequest(), "root", 10L);
+        env.getStatistics().addRequest();
+        env.getStatistics().addRequest("root");
+        env.getStatistics().addRequestTime("root", 10L);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             env.saveStatistics(out);

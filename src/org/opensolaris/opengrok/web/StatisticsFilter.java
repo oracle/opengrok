@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -69,27 +69,31 @@ public class StatisticsFilter implements Filter {
         PageConfig config = PageConfig.get(req);
         Statistics stats = config.getEnv().getStatistics();
 
-        stats.addRequest(req);
+        /**
+         * Add the request to the statistics. Be aware of the colliding call in
+         * {@code AuthorizationFilter#doFilter}.
+         */
+        stats.addRequest();
 
         if ((o = config.getRequestAttribute(TIME_ATTRIBUTE)) != null) {
             processTime = System.currentTimeMillis() - (long) o;
 
-            stats.addRequestTime(req, "*", processTime); // add to all
-            stats.addRequestTime(req, category, processTime); // add this category
+            stats.addRequestTime("*", processTime); // add to all
+            stats.addRequestTime(category, processTime); // add this category
 
             /* supplementary categories */
             if (config.getProject() != null) {
-                stats.addRequestTime(req, "viewing_of_" + config.getProject().getName(), processTime);
+                stats.addRequestTime("viewing_of_" + config.getProject().getName(), processTime);
             }
 
             SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
             if (helper != null) {
                 if (helper.hits == null || helper.hits.length == 0) {
                     // empty search
-                    stats.addRequestTime(req, "empty_search", processTime);
+                    stats.addRequestTime("empty_search", processTime);
                 } else {
                     // successful search
-                    stats.addRequestTime(req, "successful_search", processTime);
+                    stats.addRequestTime("successful_search", processTime);
                 }
             }
         }

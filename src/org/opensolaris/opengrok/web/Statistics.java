@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -67,7 +66,7 @@ public class Statistics {
     /**
      * Adds a single request into all requests.
      */
-    synchronized public void addRequest(HttpServletRequest req) {
+    synchronized public void addRequest() {
         maybeRefresh();
 
         requestsPerMinute++;
@@ -99,10 +98,9 @@ public class Statistics {
     /**
      * Adds a request into the category
      *
-     * @param req the given request
      * @param category category
      */
-    synchronized public void addRequest(HttpServletRequest req, String category) {
+    synchronized public void addRequest(String category) {
         Long val = requestCategories.get(category);
         if (val == null) {
             val = new Long(0);
@@ -114,12 +112,11 @@ public class Statistics {
     /**
      * Adds a request's process time into given category.
      *
-     * @param req the given request
      * @param category category
      * @param v time spent on processing this request
      */
-    synchronized public void addRequestTime(HttpServletRequest req, String category, long v) {
-        addRequest(req, category);
+    synchronized public void addRequestTime(String category, long v) {
+        addRequest(category);
         Long val = timing.get(category);
         Long min = timingMin.get(category);
         Long max = timingMax.get(category);

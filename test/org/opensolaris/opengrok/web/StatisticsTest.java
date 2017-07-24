@@ -101,7 +101,7 @@ public class StatisticsTest {
         };
         for (String category : testCategories) {
             Statistics stat = new Statistics();
-            stat.addRequestTime(new DummyHttpServletRequest(), category, (long) (Math.random() * Long.MAX_VALUE));
+            stat.addRequestTime(category, (long) (Math.random() * Long.MAX_VALUE));
             Assert.assertEquals(1, stat.getRequestCategories().size());
             Assert.assertTrue(stat.getRequestCategories().containsKey(category));
             Assert.assertNotNull(stat.getRequestCategories().get(category));
@@ -139,7 +139,7 @@ public class StatisticsTest {
         Assert.assertEquals(testCategories.length, testSizes.length);
 
         for (int i = 0; i < testCategories.length; i++) {
-            stat.addRequestTime(new DummyHttpServletRequest(), testCategories[i], (long) (Math.random() * Long.MAX_VALUE));
+            stat.addRequestTime(testCategories[i], (long) (Math.random() * Long.MAX_VALUE));
             Assert.assertEquals(testSizes[i], stat.getRequestCategories().size());
             Assert.assertTrue(stat.getRequestCategories().containsKey(testCategories[i]));
             Assert.assertNotNull(stat.getRequestCategories().get(testCategories[i]));
@@ -172,7 +172,7 @@ public class StatisticsTest {
 
         for (int i = 0; i < testCategories.length; i++) {
             Statistics stat = new Statistics();
-            stat.addRequestTime(new DummyHttpServletRequest(), testCategories[i], testValues[i]);
+            stat.addRequestTime(testCategories[i], testValues[i]);
             Assert.assertEquals(testValues[i], stat.getTiming().get(testCategories[i]).longValue());
         }
     }
@@ -194,7 +194,7 @@ public class StatisticsTest {
         Assert.assertEquals(testCategories.length, testExpected.length);
 
         for (int i = 0; i < testCategories.length; i++) {
-            stat.addRequestTime(new DummyHttpServletRequest(), testCategories[i], testValues[i]);
+            stat.addRequestTime(testCategories[i], testValues[i]);
             Assert.assertEquals(testExpected[i], stat.getTiming().get(testCategories[i]).longValue());
         }
     }

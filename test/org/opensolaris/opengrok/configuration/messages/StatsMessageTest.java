@@ -31,7 +31,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.web.DummyHttpServletRequest;
 import org.opensolaris.opengrok.web.Statistics;
 
 /**
@@ -105,7 +104,7 @@ public class StatsMessageTest {
     @Test
     public void testGet() {
         testClean();
-        env.getStatistics().addRequest(new DummyHttpServletRequest());
+        env.getStatistics().addRequest();
         Message m = new StatsMessage();
         m.setText("get");
         byte[] out = null;
