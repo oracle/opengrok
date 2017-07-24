@@ -80,6 +80,9 @@ document.pageReady.push(function() { pageReadyList();});
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
 
+    String navigateWindowEnabled = cfg.getProject() != null
+                ? Boolean.toString(cfg.getProject().isNavigateWindowEnabled())
+                : "false";
     File resourceFile = cfg.getResourceFile();
     String path = cfg.getPath();
     String basename = resourceFile.getName();
@@ -236,7 +239,7 @@ Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a
         }
         if (xrefFile != null) {
 %>
-<div id="src">
+<div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
             Util.dump(out, xrefFile, xrefFile.getName().endsWith(".gz"));
     %></pre>
@@ -262,7 +265,7 @@ Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a
                     Util.dump(out, r);
                 } else if (g == Genre.PLAIN) {
 %>
-<div id="src">
+<div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
                     // We're generating xref for the latest revision, so we can
                     // find the definitions in the index.

@@ -1197,6 +1197,7 @@
                 load: function ($window) {
                     var that = this
                     $window.css('top', this.getTopOffset() + 10 + 'px')
+
                     if ($.scopesWindow && $.scopesWindow.initialized) {
                         $.scopesWindow.on('show', function () {
                             setTimeout(function () {
@@ -1213,6 +1214,10 @@
                                 that.updatePosition($window)
                             }, 100);
                         }
+                    }
+
+                    if ($('[data-navigate-window-enabled="true"]').length) {
+                        $window.show();
                     }
 
                     // override and show to throw an event and update position
@@ -1241,7 +1246,7 @@
                         for (var j = 0; j < data[i][2].length; j ++)
                             $ul.append($('<li>').append(this.buildLink(data[i][2][j][1], data[i][2][j][0], data[i][1])));
                     }
-
+                    this.updatePosition(this.$window)
                 }
             }, options || {
             }), $.extend({
