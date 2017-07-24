@@ -813,26 +813,7 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
     position: absolute;
 }
 
-/* "Navigate" Popup */
-.sym_list_style {
-    position: absolute;
-    top: 100px;
-    left: 100px;
-    width: 100px;
-    height: 100px;
-    overflow: auto;
-    z-index: 10;
-    border: solid 1px #c0c0c0;
-    background-color: rgba(255,255,204,0.75);
-    color: #000;
-    font-size: 12px;
-    font-family: monospace;
-    padding: 5px;
-}
-
-.sym_list_style_hide {
-    display: none;
-}
+/* Window plugins */
 
 .window {
     position: fixed;
