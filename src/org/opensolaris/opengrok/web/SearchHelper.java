@@ -234,7 +234,9 @@ public class SearchHelper {
      *
      * @param projects project names. If empty, a no-project setup
      * is assumed (i.e. DATA_ROOT/index will be used instead of possible
-     * multiple DATA_ROOT/$project/index).
+     * multiple DATA_ROOT/$project/index). If the set contains projects
+     * not known in the configuration or projects not yet indexed,
+     * an error will be returned in {@link #errorMsg}.
      * @return this instance
      */
     public SearchHelper prepareExec(SortedSet<String> projects) {
