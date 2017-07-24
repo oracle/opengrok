@@ -48,6 +48,7 @@ import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.Repository;
@@ -580,6 +581,18 @@ public final class Indexer {
                 if (!subFilesList.isEmpty() && subFiles.isEmpty()) {
                     System.err.println("None of the paths were added, exiting");
                     System.exit(1);
+                }
+
+                // If the webapp is running with a config that does not contain
+                // 'projectsEnabled' property (case of upgrade or transition
+                // from project-less config to one with projects), set the property
+                // using a message so that the 'project/indexed' messages
+                // emitted during indexing do not cause validation error.
+                if (addProjects && host != null && port > 0) {
+                    Message m = Message.createMessage("config");
+                    m.addTag("set");
+                    m.setText("projectsEnabled = true");
+                    m.write(host, port);
                 }
 
                 // Get history first.
