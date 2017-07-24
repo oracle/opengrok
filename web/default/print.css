@@ -421,11 +421,6 @@ a.xsr    { /* subroutine */         color: #00f; font-weight: bold;             
     margin-bottom: 1em;
 }
 
-/* "Navigate" Popup */
-.sym_list_style_hide, .sym_list_style {
-    display: none;
-}
-
 /* search result page */
 #results {
 }
