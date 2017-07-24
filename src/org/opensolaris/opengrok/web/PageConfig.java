@@ -757,7 +757,7 @@ public final class PageConfig {
      * NOTE: This method assumes, that project names do <b>not</b> contain a
      * comma (','), since this character is used as name separator!
      *
-     * @return a possible empty set of project names aka descriptions but never
+     * @return a possible empty set of project names but never
      * {@code null}. It is determined as follows: <ol> <li>If there is no
      * project in the runtime environment (RTE) an empty set is returned.
      * Otherwise:</li> <li>If there is only one project in the RTE, this one
@@ -844,7 +844,7 @@ public final class PageConfig {
      * contains the project list in question.
      * @param cookieName name of the cookie which possible contains project
      * lists used as fallback
-     * @return a possible empty set but never {@code null}.
+     * @return set of project names. Possibly empty set but never {@code null}.
      */
     protected SortedSet<String> getRequestedProjects(String paramName,
             String cookieName) {
