@@ -40,11 +40,15 @@ import org.opensolaris.opengrok.util.Getopt;
  */
 public final class Groups {
 
+    /**
+     * Interface used to perform an action to a single group.
+     */
     private interface Walker {
 
         /**
          * @param g group
-         * @return true if traversing should end, false otherwise
+         * @return true if traversing should stop just after this group, false
+         * otherwise
          */
         boolean call(Group g);
     }
@@ -326,7 +330,19 @@ public final class Groups {
         }
     }
 
-    private static boolean treeTraverseGroups(Set<Group> groups, Walker f) {
+    /**
+     * Traverse the set of groups starting in top level groups (groups without a
+     * parent group) and performing depth first search in the group's subgroups.
+     *
+     * @param groups set of groups (mixed top level and other groups)
+     * @param walker an instance of {@link Walker} which is used for every
+     * traversed group
+     * @return true if {@code walker} emits true for any of the groups; false
+     * otherwise
+     *
+     * @see Walker
+     */
+    private static boolean treeTraverseGroups(Set<Group> groups, Walker walker) {
         LinkedList<Group> stack = new LinkedList<>();
         for (Group g : groups) {
             // the flag here represents the group's depth in the group tree
@@ -340,7 +356,7 @@ public final class Groups {
             Group g = stack.getFirst();
             stack.removeFirst();
 
-            if (f.call(g)) {
+            if (walker.call(g)) {
                 return true;
             }
 
@@ -351,9 +367,17 @@ public final class Groups {
         return false;
     }
 
-    private static boolean linearTraverseGroups(Set<Group> groups, Walker f) {
+    /**
+     * Traverse the set of groups linearly based on the set's iterator.
+     *
+     * @param groups set of groups (mixed top level and other groups)
+     * @param walker an instance of {@link Walker} which is used for every
+     * traversed group
+     * @return true if {@code walker} emits true for any of the groups; false
+     */
+    private static boolean linearTraverseGroups(Set<Group> groups, Walker walker) {
         for (Group g : groups) {
-            if (f.call(g)) {
+            if (walker.call(g)) {
                 return true;
             }
         }
