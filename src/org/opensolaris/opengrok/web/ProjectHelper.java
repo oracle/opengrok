@@ -159,7 +159,7 @@ public final class ProjectHelper {
         repos.removeIf(new Predicate<Project>() {
             @Override
             public boolean test(Project t) {
-                return !cfg.isAllowed(t);
+                return !cfg.isAllowed(t) || !t.isIndexed();
             }
         });
         return repos;
@@ -196,7 +196,7 @@ public final class ProjectHelper {
             p = filterProjects(original);
             cfg.setRequestAttribute(name, p);
         }
-        return p.stream().filter(proj -> proj.isIndexed()).collect(Collectors.toSet());
+        return p;
     }
 
     /**
