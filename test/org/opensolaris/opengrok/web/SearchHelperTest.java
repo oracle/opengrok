@@ -183,6 +183,7 @@ public class SearchHelperTest {
         Project project = new Project("c", "/c");
         env.getProjects().put("c", project);
 
+        // Try to prepare search for project that is not yet indexed.
         projectNames.add("c");
         searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames);
