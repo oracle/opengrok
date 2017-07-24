@@ -149,7 +149,8 @@ public final class ProjectHelper {
     }
 
     /**
-     * Filters set of projects based on the authorizer options.
+     * Filters set of projects based on the authorizer options
+     * and whether the project is indexed.
      *
      * @param p set of projects
      * @return filtered set of projects
