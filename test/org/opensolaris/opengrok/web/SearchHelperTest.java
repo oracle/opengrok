@@ -103,7 +103,7 @@ public class SearchHelperTest {
 
     @Test
     public void testSearchAfterReindex() {
-        SortedSet<String> projects = new TreeSet<>();
+        SortedSet<String> projectNames = new TreeSet<>();
         SearchHelper searchHelper;
 
         env.setProjectsEnabled(true);
@@ -121,9 +121,9 @@ public class SearchHelperTest {
         }
 
         // Search for existing term in single project.
-        projects.add("/c");
+        projectNames.add("c");
         searchHelper = this.getSearchHelper("foobar")
-            .prepareExec(projects).executeQuery().prepareSummary();
+            .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("single project search returned " +
             Integer.toString(searchHelper.totalHits) + " hits");
@@ -131,9 +131,9 @@ public class SearchHelperTest {
         searchHelper.destroy();
 
         // Search for existing term in multiple projects.
-        projects.add("/document");
+        projectNames.add("document");
         searchHelper = this.getSearchHelper("foobar")
-            .prepareExec(projects).executeQuery().prepareSummary();
+            .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("multi-project search returned " +
             Integer.toString(searchHelper.totalHits) + " hits");
@@ -142,7 +142,7 @@ public class SearchHelperTest {
 
         // Search for non-existing term.
         searchHelper = this.getSearchHelper("CannotExistAnywhereForSure")
-            .prepareExec(projects).executeQuery().prepareSummary();
+            .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("multi-project search for non-existing term returned " +
             Integer.toString(searchHelper.totalHits) + " hits");
@@ -163,7 +163,7 @@ public class SearchHelperTest {
         }
         env.maybeRefreshIndexSearchers();
         searchHelper = this.getSearchHelper("foobar")
-            .prepareExec(projects).executeQuery().prepareSummary();
+            .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("multi-project search after reindex returned " +
             Integer.toString(searchHelper.totalHits) + " hits");
@@ -174,7 +174,7 @@ public class SearchHelperTest {
 
     @Test
     public void testPrepareExecInvalidInput() {
-        SortedSet<String> projects = new TreeSet<>();
+        SortedSet<String> projectNames = new TreeSet<>();
         SearchHelper searchHelper;
 
         env.setProjectsEnabled(true);
@@ -183,12 +183,19 @@ public class SearchHelperTest {
         Project project = new Project("c", "/c");
         env.getProjects().put("c", project);
 
-        // Try to prepare search for list that contains non-existing project.
-        projects.add("/c");
-        projects.add("/foobar");
+        // Try to prepare search for project that is not yet indexed.
+        projectNames.add("c");
         searchHelper = this.getSearchHelper("foobar")
-            .prepareExec(projects);
-        Assert.assertTrue(searchHelper.errorMsg != null);
+            .prepareExec(projectNames);
+        Assert.assertNotNull(searchHelper.errorMsg);
+        Assert.assertTrue(searchHelper.errorMsg.contains("not indexed"));
+
+        // Try to prepare search for list that contains non-existing project.
+        projectNames.add("totally_nonexistent_project");
+        searchHelper = this.getSearchHelper("foobar")
+            .prepareExec(projectNames);
+        Assert.assertNotNull(searchHelper.errorMsg);
+        Assert.assertTrue(searchHelper.errorMsg.contains("invalid projects"));
     }
 
     /**

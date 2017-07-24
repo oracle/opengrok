@@ -232,9 +232,11 @@ public class SearchHelper {
      * <li>{@link #projects}</li> <li>{@link #errorMsg} if an error occurs</li>
      * </ul>
      *
-     * @param projects project paths. If empty, a no-project setup
+     * @param projects project names. If empty, a no-project setup
      * is assumed (i.e. DATA_ROOT/index will be used instead of possible
-     * multiple DATA_ROOT/$project/index).
+     * multiple DATA_ROOT/$project/index). If the set contains projects
+     * not known in the configuration or projects not yet indexed,
+     * an error will be returned in {@link #errorMsg}.
      * @return this instance
      */
     public SearchHelper prepareExec(SortedSet<String> projects) {
@@ -261,7 +263,7 @@ public class SearchHelper {
                 // are valid and indexed.
                 closeOnDestroy = false;
                 Set <Project> projectSet = projects.stream().
-                    map(x -> Project.getProject(x)).collect(Collectors.toSet());
+                    map(x -> Project.getByName(x)).collect(Collectors.toSet());
                 if (projectSet.contains(null)) {
                     errorMsg = "Project list contains invalid projects";
                     return this;
