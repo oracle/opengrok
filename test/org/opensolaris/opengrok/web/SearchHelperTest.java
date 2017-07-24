@@ -174,7 +174,7 @@ public class SearchHelperTest {
 
     @Test
     public void testPrepareExecInvalidInput() {
-        SortedSet<String> projects = new TreeSet<>();
+        SortedSet<String> projectNames = new TreeSet<>();
         SearchHelper searchHelper;
 
         env.setProjectsEnabled(true);
@@ -183,16 +183,16 @@ public class SearchHelperTest {
         Project project = new Project("c", "/c");
         env.getProjects().put("c", project);
 
-        projects.add("c");
+        projectNames.add("c");
         searchHelper = this.getSearchHelper("foobar")
-            .prepareExec(projects);
+            .prepareExec(projectNames);
         Assert.assertNotNull(searchHelper.errorMsg);
         Assert.assertTrue(searchHelper.errorMsg.contains("not indexed"));
 
         // Try to prepare search for list that contains non-existing project.
-        projects.add("totally_nonexistent_project");
+        projectNames.add("totally_nonexistent_project");
         searchHelper = this.getSearchHelper("foobar")
-            .prepareExec(projects);
+            .prepareExec(projectNames);
         Assert.assertNotNull(searchHelper.errorMsg);
         Assert.assertTrue(searchHelper.errorMsg.contains("invalid projects"));
     }
