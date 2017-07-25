@@ -20,7 +20,13 @@ jars/dirs for tests
    ant clean
    ant # defaults to jar currently
 
-2) check all tests, tests code coverage:
+2) sanity check:
+
+   - index
+   - deploy webapp
+   - check serarch
+
+3) check all tests, tests code coverage:
    junit, pmd, findbugs, checkstyle, emma, jdepend
 
 They should be ok, currently only checkstyle has 8 warnings, the rest is
@@ -31,7 +37,7 @@ usually it's overall coverage above 80%)
 
 The release is OK, once above is fulfilled to our satisfaction.
 
-3) produce proper distributions
+4) produce proper distributions
 
 Check them before upload, always try to build on Solaris, since GNU tar might
 create a non-standard compliant .tgz version and tag from step 0) will be used
@@ -65,7 +71,7 @@ number (0.12))
 0.12.0.<k>    ~       0.12.0.1.<k>
 ...
 
-4) Create the release and upload the files via GitHub API:
+5) Create the release and upload the files via GitHub API:
 
    First, make sure these environment variables are set:
 
