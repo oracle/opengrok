@@ -18,11 +18,26 @@
  */
 
  /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.condition;
 
-public interface RunCondition {
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-    public boolean isSatisfied();
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+/**
+ * Annotation allowing the {@link ConditionalRun} to be repeatable annotation.
+ *
+ * @author Krystof Tulinger
+ */
+@Retention(value = RUNTIME)
+@Documented
+@Target(value = {ElementType.METHOD, ElementType.TYPE})
+public @interface ConditionalRunRepeatable {
+
+    ConditionalRun[] value();
 }

@@ -18,16 +18,19 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.condition;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import org.junit.Assume;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-
-import java.lang.reflect.Modifier;
 
 /**
  *
@@ -41,6 +44,7 @@ import java.lang.reflect.Modifier;
  * https://gist.github.com/yinzara/9980184
  * http://cwd.dhemery.com/2010/12/junit-rules/
  * http://stackoverflow.com/questions/28145735/androidjunit4-class-org-junit-assume-assumetrue-assumptionviolatedexception/
+ * https://docs.oracle.com/javase/tutorial/java/annotations/repeating.html
  */
 public class ConditionalRunRule implements TestRule {
 
@@ -64,34 +68,70 @@ public class ConditionalRunRule implements TestRule {
     }
 
     private static boolean hasConditionalIgnoreAnnotationOnClass(Description aDescription) {
-        return aDescription.getTestClass().getAnnotation(ConditionalRun.class) != null;
+        return aDescription.getTestClass().getAnnotationsByType(ConditionalRun.class).length > 0;
     }
 
     private static RunCondition getIgnoreConditionOnClass(Description aDescription) {
-        ConditionalRun annotation = aDescription.getTestClass().getAnnotation(ConditionalRun.class);
-        return new IgnoreConditionCreator(aDescription.getTestClass(), annotation).create();
+        ConditionalRun[] annotations = aDescription.getTestClass().getAnnotationsByType(ConditionalRun.class);
+        return new IgnoreConditionCreator(aDescription.getTestClass(), annotations).create();
     }
 
     private static boolean hasConditionalIgnoreAnnotationOnMethod(Description aDescription) {
-        return aDescription.getAnnotation(ConditionalRun.class) != null;
+        try {
+            // this is possible because test methods must not have any argument
+            Method testMethod = aDescription.getTestClass().getMethod(aDescription.getMethodName());
+            return testMethod.getAnnotationsByType(ConditionalRun.class).length > 0;
+        } catch (NoSuchMethodException | SecurityException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private static RunCondition getIgnoreConditionOnMethod(Description aDescription) {
-        ConditionalRun annotation = aDescription.getAnnotation(ConditionalRun.class);
-        return new IgnoreConditionCreator(aDescription.getTestClass(), annotation).create();
+        try {
+            // this is possible because test methods must not have any argument
+            ConditionalRun[] annotations = aDescription.getTestClass().getMethod(aDescription.getMethodName()).getAnnotationsByType(ConditionalRun.class);
+            return new IgnoreConditionCreator(aDescription.getTestClass(), annotations).create();
+        } catch (NoSuchMethodException | SecurityException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
-    private static class IgnoreConditionCreator {
+    /**
+     * Container for several conditions joined by an AND operator.
+     */
+    protected static class CompositeCondition implements RunCondition {
 
-        private final Class<?> mTestClass;
-        private final Class<? extends RunCondition> conditionType;
+        List<RunCondition> conditions = new LinkedList<>();
 
-        IgnoreConditionCreator(Class<?> aTestClass, ConditionalRun annotation) {
-            this.mTestClass = aTestClass;
-            this.conditionType = annotation.condition();
+        public boolean add(RunCondition e) {
+            return conditions.add(e);
         }
 
-        RunCondition create() {
+        @Override
+        public boolean isSatisfied() {
+            for (RunCondition condition : conditions) {
+                if (!condition.isSatisfied()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    protected static class IgnoreConditionCreator {
+
+        private final Class<?> mTestClass;
+        private final List<Class<? extends RunCondition>> conditionType;
+
+        public IgnoreConditionCreator(Class<?> aTestClass, ConditionalRun[] annotation) {
+            this.mTestClass = aTestClass;
+            this.conditionType = new ArrayList<>(annotation.length);
+            for (int i = 0; i < annotation.length; i++) {
+                this.conditionType.add(i, annotation[i].condition());
+            }
+        }
+
+        public RunCondition create() {
             checkConditionType();
             try {
                 return createCondition();
@@ -103,38 +143,49 @@ public class ConditionalRunRule implements TestRule {
         }
 
         private RunCondition createCondition() throws Exception {
-            RunCondition result;
-            if (isConditionTypeStandalone()) {
-                result = conditionType.newInstance();
-            } else {
-                result = conditionType.getDeclaredConstructor(mTestClass).newInstance(mTestClass);
+            CompositeCondition result = null;
+            /**
+             * Run through the list of classes implementing RunCondition and
+             * create a new class from it.
+             */
+            for (Class<? extends RunCondition> clazz : conditionType) {
+                if (result == null) {
+                    result = new CompositeCondition();
+                }
+                if (isConditionTypeStandalone(clazz)) {
+                    result.add(clazz.newInstance());
+                } else {
+                    result.add(clazz.getDeclaredConstructor(mTestClass).newInstance(mTestClass));
+                }
             }
             return result;
         }
 
         private void checkConditionType() {
-            if (!isConditionTypeStandalone() && !isConditionTypeDeclaredInTarget()) {
-                String msg
-                        = "Conditional class '%s' is a member class "
-                        + "but was not declared inside the test case using it.\n"
-                        + "Either make this class a static class, "
-                        + "standalone class (by declaring it in it's own file) "
-                        + "or move it inside the test case using it";
-                throw new IllegalArgumentException(String.format(msg, conditionType.getName()));
+            for (Class<? extends RunCondition> clazz : conditionType) {
+                if (!isConditionTypeStandalone(clazz) && !isConditionTypeDeclaredInTarget(clazz)) {
+                    String msg
+                            = "Conditional class '%s' is a member class "
+                            + "but was not declared inside the test case using it.\n"
+                            + "Either make this class a static class, "
+                            + "standalone class (by declaring it in it's own file) "
+                            + "or move it inside the test case using it";
+                    throw new IllegalArgumentException(String.format(msg, clazz.getName()));
+                }
             }
         }
 
-        private boolean isConditionTypeStandalone() {
-            return !conditionType.isMemberClass()
-                    || Modifier.isStatic(conditionType.getModifiers());
+        private boolean isConditionTypeStandalone(Class<? extends RunCondition> clazz) {
+            return !clazz.isMemberClass()
+                    || Modifier.isStatic(clazz.getModifiers());
         }
 
-        private boolean isConditionTypeDeclaredInTarget() {
-            return mTestClass.getClass().isAssignableFrom(conditionType.getDeclaringClass());
+        private boolean isConditionTypeDeclaredInTarget(Class<? extends RunCondition> clazz) {
+            return mTestClass.getClass().isAssignableFrom(clazz.getDeclaringClass());
         }
     }
 
-    private static class IgnoreStatement extends Statement {
+    protected static class IgnoreStatement extends Statement {
 
         private final RunCondition condition;
 
