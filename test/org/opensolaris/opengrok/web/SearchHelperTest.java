@@ -182,13 +182,18 @@ public class SearchHelperTest {
         // Fake project addition to avoid reindex.
         Project project = new Project("c", "/c");
         env.getProjects().put("c", project);
+        project = new Project("java", "/java");
+        project.setIndexed(true);
+        env.getProjects().put("java", project);
 
         // Try to prepare search for project that is not yet indexed.
         projectNames.add("c");
+        projectNames.add("java");
         searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames);
         Assert.assertNotNull(searchHelper.errorMsg);
         Assert.assertTrue(searchHelper.errorMsg.contains("not indexed"));
+        Assert.assertFalse(searchHelper.errorMsg.contains("java"));
 
         // Try to prepare search for list that contains non-existing project.
         projectNames.add("totally_nonexistent_project");

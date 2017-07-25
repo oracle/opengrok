@@ -262,17 +262,25 @@ public class SearchHelper {
                 // Check list of project names first to make sure all of them
                 // are valid and indexed.
                 closeOnDestroy = false;
-                Set <Project> projectSet = projects.stream().
-                    map(x -> Project.getByName(x)).collect(Collectors.toSet());
-                if (projectSet.contains(null)) {
-                    errorMsg = "Project list contains invalid projects";
+                Set<String> invalidProjects = projects.stream().
+                    filter(proj -> (Project.getByName(proj) == null)).
+                    collect(Collectors.toSet());
+                if (invalidProjects.size() > 0) {
+                    errorMsg = "Project list contains invalid projects: " +
+                        String.join(", ", invalidProjects);
                     return this;
                 }
-                if (projectSet.stream().
+                Set<Project> notIndexedProjects =
+                    projects.stream().
+                    map(x -> Project.getByName(x)).
                     filter(proj -> !proj.isIndexed()).
-                    collect(Collectors.toSet()).size() > 0) {
-                        errorMsg = "Some of the projects to be searched are not indexed yet.";
-                        return this;
+                    collect(Collectors.toSet());
+                if (notIndexedProjects.size() > 0) {
+                    errorMsg = "Some of the projects to be searched are not indexed yet: " +
+                        String.join(", ", notIndexedProjects.stream().
+                        map(proj -> proj.getName()).
+                        collect(Collectors.toSet()));
+                    return this;
                 }
 
                 // We use MultiReader even for single project. This should
