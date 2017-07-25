@@ -196,6 +196,9 @@ done
 
 PKG pkgsend add dir mode=0755 owner=webservd group=webservd path=/var/opengrok
 
+PKG pkgsend add dir mode=0755 owner=webservd group=webservd \
+    path=/var/.migrate/opengrok
+
 for dirname in data etc log src
 do
    #
