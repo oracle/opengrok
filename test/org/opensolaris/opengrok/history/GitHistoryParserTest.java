@@ -41,6 +41,7 @@ import static org.junit.Assert.*;
  */
 public class GitHistoryParserTest {
 
+    private final String gitISODatePattern = "yyyy-MM-dd'T'HH:mm:ssXXX";
     GitHistoryParser instance;
     private static TestRepository repository = new TestRepository();
 
@@ -89,8 +90,8 @@ public class GitHistoryParserTest {
         String commitId3 = "3asdfq234242871934g2sadfsa327894234sa2389";
         String author1 = "username <username@asfdsaf-23412-sadf-cxvdsfg3123-sfasdf>";
         String author2 = "username2 <username2@as345af-23412-sadf-cxvdsfg3123-sfasdf>";
-        String date1 = "Sat, 1 Apr 2008 15:12:51 +0000";
-        String date2 = "Wed, 22 Mar 2006 15:23:15 +0000";
+        String date1 = "2008-04-01T15:12:51+00:00";
+        String date2 = "2006-05-22T15:23:15+00:00";
         String output =
                 "commit " + commitId1 + "\n" +
                 "Author:     " + author1 + "\n" +
@@ -133,17 +134,17 @@ public class GitHistoryParserTest {
         HistoryEntry e0 = result.getHistoryEntries().get(0);
         assertEquals(commitId1, e0.getRevision());
         assertEquals(author1, e0.getAuthor());
-        assertEquals(new SimpleDateFormat("EE, d MMM yyyy HH:mm:ss Z").parse(date1), e0.getDate());
+        assertEquals(new SimpleDateFormat(gitISODatePattern).parse(date1), e0.getDate());
         assertEquals(0, e0.getFiles().size());
         HistoryEntry e1 = result.getHistoryEntries().get(1);
         assertEquals(commitId2, e1.getRevision());
         assertEquals(author2, e1.getAuthor());
-        assertEquals(new SimpleDateFormat("EE, d MMM yyyy HH:mm:ss Z").parse(date2), e1.getDate());
+        assertEquals(new SimpleDateFormat(gitISODatePattern).parse(date2), e1.getDate());
         assertEquals(0, e1.getFiles().size());
         HistoryEntry e2 = result.getHistoryEntries().get(2);
         assertEquals(commitId3, e2.getRevision());
         assertEquals(author1, e2.getAuthor());
-        assertEquals(new SimpleDateFormat("EE, d MMM yyyy HH:mm:ss Z").parse(date1), e2.getDate());
+        assertEquals(new SimpleDateFormat(gitISODatePattern).parse(date1), e2.getDate());
         assertEquals(0, e2.getFiles().size());
     }
 
@@ -158,7 +159,7 @@ public class GitHistoryParserTest {
         String commitId2 = "2a2323487092314kjsdafsad7829342kjhsdf3289";
         String author1 = "username <username@example.com>";
         String author2 = "username2 <username2@example.com>";
-        String date1 = "Sun, 13 Jan 2008 01:12:05 -0700";
+        String date1 = "2008-01-13T01:12:05-07:00";
         String filename = "filename.c";
 
         String output = "commit " + commitId1 + "\n" +
@@ -199,7 +200,7 @@ public class GitHistoryParserTest {
         HistoryEntry e0 = result.getHistoryEntries().get(0);
         assertEquals(commitId1, e0.getRevision());
         assertEquals(author1, e0.getAuthor());
-        assertEquals(new SimpleDateFormat("EE, d MMM yyyy HH:mm:ss Z").parse(date1), e0.getDate());
+        assertEquals(new SimpleDateFormat(gitISODatePattern).parse(date1), e0.getDate());
         assertEquals(1, e0.getFiles().size());
         assertEquals("/" + filename, e0.getFiles().first());
         assertTrue(e0.getMessage().contains("Some heading"));
@@ -207,7 +208,7 @@ public class GitHistoryParserTest {
         HistoryEntry e1 = result.getHistoryEntries().get(1);
         assertEquals(commitId2, e1.getRevision());
         assertEquals(author2, e1.getAuthor());
-        assertEquals(new SimpleDateFormat("EE, d MMM yyyy HH:mm:ss Z").parse(date1), e1.getDate());
+        assertEquals(new SimpleDateFormat(gitISODatePattern).parse(date1), e1.getDate());
         assertEquals(1, e1.getFiles().size());
         assertEquals("/" + filename, e1.getFiles().first());
         assertTrue(e1.getMessage().contains("paragraph of text"));
@@ -226,8 +227,8 @@ public class GitHistoryParserTest {
         String author1 = "username <username@example.com>";
         String author2 = "username2 <username2@example.com>";
         String committer = "committer <committer@example.com>";
-        String date1 = "Sun, 13 Jan 2008 01:12:05 -0700";
-        String date2 = "Mon, 14 Jan 2008 01:12:05 -0800";
+        String date1 = "2008-01-13T01:12:05-07:00";
+        String date2 = "2008-01-14T01:12:05-08:00";
         String filename1 = "directory/filename.c";
         String filename2 = "directory/filename.h";
 
@@ -286,7 +287,7 @@ public class GitHistoryParserTest {
         HistoryEntry e0 = result.getHistoryEntries().get(0);
         assertEquals(commitId1, e0.getRevision());
         assertEquals(author1, e0.getAuthor());
-        assertEquals(new SimpleDateFormat("EE, d MMM yyyy HH:mm:ss Z").parse(date1), e0.getDate());
+        assertEquals(new SimpleDateFormat(gitISODatePattern).parse(date1), e0.getDate());
         assertEquals(1, e0.getFiles().size());
         assertEquals("/" + filename1, e0.getFiles().first());
         assertTrue(e0.getMessage().contains("subject title"));
@@ -294,7 +295,7 @@ public class GitHistoryParserTest {
         HistoryEntry e1 = result.getHistoryEntries().get(1);
         assertEquals(commitId2, e1.getRevision());
         assertEquals(author2, e1.getAuthor());
-        assertEquals(new SimpleDateFormat("EE, d MMM yyyy HH:mm:ss Z").parse(date1), e1.getDate());
+        assertEquals(new SimpleDateFormat(gitISODatePattern).parse(date1), e1.getDate());
         assertEquals(2, e1.getFiles().size());
         assertEquals("/" + filename1, e1.getFiles().first());
         assertEquals("/" + filename2, e1.getFiles().last());
@@ -305,10 +306,8 @@ public class GitHistoryParserTest {
     @Test
     public void testDateFormats() {
         String[][] dates = new String[][]{
-            new String[]{"Sat, 1 Apr 2008 15:12:51 +0000", "EE, d MMM yyyy HH:mm:ss Z"},
-            new String[]{"Sun, 02 Apr 2008 15:12:51 +0730", "EE, d MMM yyyy HH:mm:ss Z"},
-            new String[]{"1 Apr 2008 15:12:51 +0300", "d MMM yyyy HH:mm:ss Z"},
-            new String[]{"2 Apr 2008 15:12:51 GMT", "d MMM yyyy HH:mm:ss Z"},};
+            new String[]{"2017-07-25T13:17:44+02:00", gitISODatePattern},
+            };
 
         for (int i = 0; i < dates.length; i++) {
             try {
@@ -340,9 +339,9 @@ public class GitHistoryParserTest {
                 assertEquals("The date " + parsedDate + " should be equal to the parsed date " + e0.getDate(), parsedDate, e0.getDate());
                 assertEquals(0, e0.getFiles().size());
             } catch (ParseException ex) {
-                fail("Should not throw a parse exception");
+                fail("Should not throw a parse exception" + ex);
             } catch (IOException ex) {
-                fail("Should not throw an IO exception");
+                fail("Should not throw an IO exception" + ex);
             }
         }
     }

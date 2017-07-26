@@ -87,14 +87,11 @@ public class GitRepository extends Repository {
     public GitRepository() {
         type = "git";
         /*
-         * Formatter which allows the optional day at the beginning as per
-         * RFC 2822 , section 3.3. Date and Time Specification:
-         *
-         * date-time = [ day-of-week "," ] date FWS time [CFWS]
+         * This should match the 'iso-strict' format used by
+         * {@code getHistoryLogExecutor}.
          */
-        datePatterns = new String[]{
-            "EE, d MMM yyyy HH:mm:ss Z",
-            "d MMM yyyy HH:mm:ss Z"
+        datePatterns = new String[] {
+            "yyyy-MM-dd'T'HH:mm:ssXXX"
         };
 
         ignoredDirs.add(".git");
@@ -126,7 +123,7 @@ public class GitRepository extends Repository {
         cmd.add(ABBREV_LOG);
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
-        cmd.add("--date=rfc");
+        cmd.add("--date=iso8601-strict");
 
         if (file.isFile() && RuntimeEnvironment.getInstance().isHandleHistoryOfRenamedFiles()) {
             cmd.add("--follow");
