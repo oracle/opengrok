@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.opensolaris.opengrok.util.ClassUtil;
 
 /**
  * Placeholder for the information about subgroups of projects and repositories.
@@ -37,6 +38,10 @@ import java.util.regex.PatternSyntaxException;
  * @version $Revision$
  */
 public class Group implements Comparable<Group>, Nameable {
+
+    static {
+        ClassUtil.remarkTransientFields(Group.class);
+    }
 
     private String name;
     /**
@@ -60,13 +65,13 @@ public class Group implements Comparable<Group>, Nameable {
      */
     private Pattern compiledPattern = Pattern.compile("()");
     private Group parent;
-    private int flag;
-
     private Set<Group> subgroups = new TreeSet<>();
-    private Set<Group> descendants = new TreeSet<>();
-    private Set<Project> projects = new TreeSet<>();
-    private Set<Project> repositories = new TreeSet<>();
-    private Set<Group> parents;
+
+    private transient int flag;
+    private transient Set<Group> descendants = new TreeSet<>();
+    private transient Set<Project> projects = new TreeSet<>();
+    private transient Set<Project> repositories = new TreeSet<>();
+    private transient Set<Group> parents;
 
     /**
      * No-arg constructor is needed for deserialization.
