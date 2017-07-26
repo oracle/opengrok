@@ -127,7 +127,7 @@ interface HistoryCache {
 
     /**
      * Clear entry for single file from history cache.
-     * @param file path to the file
+     * @param file path to the file relative to the source root
      */
     void clearFile(String file);
 
