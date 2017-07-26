@@ -417,12 +417,13 @@ public abstract class Repository extends RepositoryInfo {
 
     public DateFormat getDateFormat() {
         return new DateFormat() {
+            private final Locale locale = Locale.ENGLISH;
             private final SimpleDateFormat[] formatters = new SimpleDateFormat[datePatterns.length];
 
             {
                 // initialize date formatters
                 for (int i = 0; i < datePatterns.length; i++) {
-                    formatters[i] = new SimpleDateFormat(datePatterns[i]);
+                    formatters[i] = new SimpleDateFormat(datePatterns[i], locale);
                     /*
                      * TODO: the following would be nice - but currently it
                      * could break the compatibility with some repository dates
@@ -454,7 +455,7 @@ public abstract class Repository extends RepositoryInfo {
                                 String.format("%s with format \"%s\" and locale \"%s\"",
                                         ex1.getMessage(),
                                         formatter.toPattern(),
-                                        Locale.getDefault().toString()),
+                                        locale),
                                 ex1.getErrorOffset()
                         );
                         if (head == null || tail == null) {
