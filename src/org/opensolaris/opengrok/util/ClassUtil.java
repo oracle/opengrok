@@ -28,13 +28,18 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  *
  * @author Krystof Tulinger
  */
 public class ClassUtil {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClassUtil.class);
 
     /**
      * Mark all transient fields in {@code targetClass} as @Transient for the
@@ -61,6 +66,7 @@ public class ClassUtil {
                 }
             }
         } catch (IntrospectionException ex) {
+            LOGGER.log(Level.WARNING, "An exception ocurred during remarking transient fields:", ex);
         }
     }
 }

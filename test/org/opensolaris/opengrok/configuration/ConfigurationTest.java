@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import junit.framework.AssertionFailedError;
 import org.junit.Test;
+import org.opensolaris.opengrok.util.ClassUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -40,6 +41,21 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ConfigurationTest {
 
+    /**
+     * Test for a serialization bug in configuration. The problem is that with
+     * this scenario the output is written in a way that when deserializing the
+     * input later on, we get {@link NullPointerException} trying to use
+     * {@link Group#compareTo(Group)}. This exception is caused by wrong order
+     * of serialization of
+     * {@link Group#getDescendants()}, {@link Group#getParent()} and
+     * {@link Project#getGroups()} where the backpointers in a {@link Project}
+     * to several {@link Group}s shall be stored in a set while this
+     * {@link Group} does not have a name yet (= {@code null}).
+     *
+     * @throws IOException
+     * @see ClassUtil#remarkTransientFields(java.lang.Class)
+     * ClassUtil#remarkTransientFields() for suggested solution
+     */
     @Test
     public void serializationOrderTest() throws IOException {
         Project project = new Project("project");
@@ -79,7 +95,6 @@ public class ConfigurationTest {
 
             cfg = (Configuration) dec.readObject();
             assertNotNull(cfg);
-            dec.close();
 
             // verify that the read didn't fail
             if (!exceptions.isEmpty()) {
