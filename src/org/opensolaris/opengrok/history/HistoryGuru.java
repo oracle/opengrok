@@ -81,6 +81,7 @@ public final class HistoryGuru {
         HistoryCache cache = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         scanningDepth = env.getScanningDepth();
+
         if (env.useHistoryCache()) {
             cache = new FileHistoryCache();
 
@@ -627,14 +628,17 @@ public final class HistoryGuru {
      * @throws HistoryException 
      */
     public List<Repository> clearCache(Collection<String> repositories) throws HistoryException {
-        List<Repository> repos = getReposFromString(repositories);
+        List<Repository> repos = new ArrayList<>();
         HistoryCache cache = historyCache;
-        if (cache == null) {
-            cache = new FileHistoryCache();
+
+        if (!useCache()) {
+            return repos;
         }
-        for (Repository r : repos) {
+
+        for (Repository r : getReposFromString(repositories)) {
             try {
                 cache.clear(r);
+                repos.add(r);
                 LOGGER.log(Level.INFO,
                         "History cache for {0} cleared.", r.getDirectoryName());
             } catch (HistoryException e) {
@@ -647,6 +651,14 @@ public final class HistoryGuru {
         return repos;
     }
 
+    public void clearCacheFile(String path) {
+        if (!useCache()) {
+            return;
+        }
+
+        historyCache.clearFile(path);
+    }
+
     /**
      * Remove history data for a list of repositories and invalidate the list
      * of repositories accordingly.
@@ -654,6 +666,10 @@ public final class HistoryGuru {
      * @throws HistoryException 
      */
     public void removeCache(Collection<String> repositories) throws HistoryException {
+        if (!useCache()) {
+            return;
+        }
+
         List<Repository> repos = clearCache(repositories);
         invalidateRepositories(repos);
     }

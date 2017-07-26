@@ -716,6 +716,30 @@ class FileHistoryCache implements HistoryCache {
     }
 
     @Override
+    public void clearFile(String path) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        File historyFile;
+        try {
+            historyFile = getCachedFile(new File(env.getSourceRootPath() + path));
+        } catch (HistoryException ex) {
+            LOGGER.log(Level.WARNING, "cannot get history file for file " + path, ex);
+            return;
+        }
+        File parent = historyFile.getParentFile();
+
+        if (!historyFile.delete() && historyFile.exists()) {
+            LOGGER.log(Level.WARNING,
+                "Failed to remove obsolete history cache-file: {0}",
+                historyFile.getAbsolutePath());
+        }
+
+        if (parent.delete()) {
+            LOGGER.log(Level.FINE, "Removed empty history cache dir:{0}",
+                parent.getAbsolutePath());
+        }
+    }
+
+    @Override
     public String getInfo() {
         return getClass().getSimpleName();
     }

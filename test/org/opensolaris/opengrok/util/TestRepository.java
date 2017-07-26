@@ -89,10 +89,11 @@ public class TestRepository {
         return dataRoot.getAbsolutePath();
     }
 
-    private final static String dummyS = "dummy.txt";
+    private final static String dummyFilename = "dummy.txt";
 
     public File addDummyFile(String project) throws IOException {
-        File dummy = new File(getSourceRoot() + File.separator + project + File.separator + dummyS);
+        File dummy = new File(getSourceRoot() + File.separator + project +
+            File.separator + dummyFilename);
         if (!dummy.exists()) {
             dummy.createNewFile();
         }
@@ -105,8 +106,8 @@ public class TestRepository {
     }
 
     public void removeDummyFile(String project) {
-        File dummy = new File(getSourceRoot() + File.separator + project + File.separator + dummyS);
+        File dummy = new File(getSourceRoot() + File.separator + project +
+            File.separator + dummyFilename);
         dummy.delete();
     }
-
 }

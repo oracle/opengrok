@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -124,6 +124,12 @@ interface HistoryCache {
      * @throws HistoryException if the cache couldn't be cleared
      */
     void clear(Repository repository) throws HistoryException;
+
+    /**
+     * Clear entry for single file from history cache.
+     * @param file path to the file relative to the source root
+     */
+    void clearFile(String file);
 
     /**
      * Get a string with information about the history cache.

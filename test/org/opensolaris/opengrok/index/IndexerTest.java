@@ -36,6 +36,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -184,7 +185,8 @@ public class IndexerTest {
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (env.validateExuberantCtags()) {
             String[] argv = {"-S", "-P", "-H", "-Q", "off", "-s",
-                repository.getSourceRoot(), "-d", repository.getDataRoot(), "-v"};
+                repository.getSourceRoot(), "-d", repository.getDataRoot(),
+                "-v", "-c", env.getCtags()};
             Indexer.main(argv);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -224,8 +226,13 @@ public class IndexerTest {
         }
     }
 
+    /**
+     * Test indexing w.r.t. setIndexVersionedFilesOnly() setting,
+     * i.e. if this option is set to true, index only files tracked by SCM.
+     * @throws Exception 
+     */
     @Test
-    public void testRFE2575() throws Exception {
+    public void testIndexWithSetIndexVersionedFilesOnly() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
@@ -259,7 +266,8 @@ public class IndexerTest {
             assertEquals(1, listener.files.size());
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
         } else {
-            System.out.println("Skipping test. Repository for rfe2575 not found or could not find a ctags or an sccs I could use in path.");
+            System.out.println("Skipping test. Repository for rfe2575 not found" +
+                " or could not find a ctags or an sccs I could use in path.");
         }
     }
 
@@ -280,7 +288,8 @@ public class IndexerTest {
                 } catch (UnsupportedOperationException exp) {
                     // ignore
                 }
-            }            out.close();
+            }
+            out.close();
         }
     }
 
@@ -304,7 +313,11 @@ public class IndexerTest {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }
     }
-    
+
+    /**
+     * Test IndexChangedListener behavior in repository with invalid files.
+     * @throws Exception 
+     */
     @Test
     public void testIncrementalIndexAddRemoveFile() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -322,18 +335,22 @@ public class IndexerTest {
             idb.update();
             assertEquals(1, listener.files.size());
             listener.reset();
-            repository.addDummyFile(ppath);            
+            repository.addDummyFile(ppath);
             idb.update();
-            assertEquals("No new file added",1, listener.files.size());            
-            repository.removeDummyFile(ppath);            
+            assertEquals("No new file added", 1, listener.files.size());
+            repository.removeDummyFile(ppath);
             idb.update();
-            assertEquals("Didn't remove the dummy file",0, listener.files.size());
-            assertEquals("Didn't remove the dummy file",1, listener.removedFiles.size());
+            assertEquals("Didn't remove the dummy file", 0, listener.files.size());
+            assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }
     }
 
+    /**
+     * Test that named pipes are not indexed.
+     * @throws Exception 
+     */
     @Test
     public void testBug11896() throws Exception {
 
