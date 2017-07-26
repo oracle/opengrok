@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
+import org.opensolaris.opengrok.util.ClassUtil;
 
 /**
  * Placeholder for the information that builds up a project
@@ -36,6 +37,10 @@ import java.util.TreeSet;
 public class Project implements Comparable<Project>, Nameable, Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    static {
+        ClassUtil.remarkTransientFields(Project.class);
+    }
 
     private String path;
 
@@ -67,17 +72,17 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * Set of groups which match this project.
      */
-    private Set<Group> groups = new TreeSet<>();
+    private transient Set<Group> groups = new TreeSet<>();
 
     // This empty constructor is needed for serialization.
-    public Project () {
+    public Project() {
     }
 
-    public Project (String name) {
+    public Project(String name) {
         this.name = name;
     }
 
-    public Project (String name, String path) {
+    public Project(String name, String path) {
         this.name = name;
         this.path = path;
     }
@@ -128,8 +133,8 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * Set a textual name of this project, preferably don't use " , " in the
      * name, since it's used as delimiter for more projects
      *
-     * XXX we should not allow setting project name after it has been constructed
-     * because it is probably part of HashMap.
+     * XXX we should not allow setting project name after it has been
+     * constructed because it is probably part of HashMap.
      *
      * @param name a textual name of the project
      */
@@ -278,7 +283,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         if (env.hasProjects()) {
             Project proj;
             if ((proj = env.getProjects().get(name)) != null) {
-                    return (proj);
+                return (proj);
             }
         }
         return null;
