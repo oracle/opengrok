@@ -77,6 +77,15 @@ public class GitRepositoryTest {
         instance = null;
     }
 
+    @Test
+    public void testDetermineCurrentVersion() throws Exception {
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo
+                = (GitRepository) RepositoryFactory.getRepository(root);
+        String ver = gitrepo.determineCurrentVersion();
+        Assert.assertNotNull(ver);
+    }
+
     /**
      * Test of parseAnnotation method, of class GitRepository.
      * @throws java.lang.Exception
