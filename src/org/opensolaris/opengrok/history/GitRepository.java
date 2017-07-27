@@ -710,11 +710,16 @@ public class GitRepository extends Repository {
     String determineCurrentVersion() throws IOException {
         File directory = new File(directoryName);
         List<String> cmd = new ArrayList<>();
+        // The delimiter must not be contained in the date format emitted by
+        // {@code GIT_DATE_OPT}.
+        String delim = "#";
+
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+
         cmd.add(RepoCommand);
         cmd.add("log");
         cmd.add("-1");
-        cmd.add("--pretty=%cd# %h %an %s");
+        cmd.add("--pretty=%cd" + delim + "%h %an %s");
         cmd.add(GIT_DATE_OPT);
 
         Executor executor = new Executor(cmd, directory);
@@ -723,7 +728,7 @@ public class GitRepository extends Repository {
         }
 
         String output = executor.getOutputString().trim();
-        int indexOf = StringUtils.nthIndexOf(output, "#", 1);
+        int indexOf = StringUtils.nthIndexOf(output, delim, 1);
         if (indexOf < 0) {
             throw new IOException(
                     String.format("Couldn't extract date from \"%s\".",
