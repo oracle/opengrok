@@ -83,8 +83,7 @@ public class GitRepositoryTest {
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
         String ver = gitrepo.determineCurrentVersion();
-        Assert.assertTrue("'" + ver + "' should start with known date",
-            ver.startsWith("2017-01-26 14:51"));
+        Assert.assertNotNull(ver);
     }
 
     /**
