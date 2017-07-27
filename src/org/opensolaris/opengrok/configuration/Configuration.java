@@ -39,7 +39,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -358,6 +357,9 @@ public final class Configuration {
      * Creates a new instance of Configuration
      */
     public Configuration() {
+        /**
+         * This list of calls is sorted alphabetically so please keep it.
+         */
         // defaults for an opengrok instance configuration
         cmds = new HashMap<>();
         setAllowedSymlinks(new HashSet<>());

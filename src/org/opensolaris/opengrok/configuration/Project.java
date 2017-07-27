@@ -63,9 +63,9 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     private boolean navigateWindowEnabled = false;
 
     /**
-     * This marks the project as (not)ready before initial index is done.
-     * this is to avoid all/multi-project searches referencing this project
-     * from failing.
+     * This marks the project as (not)ready before initial index is done. this
+     * is to avoid all/multi-project searches referencing this project from
+     * failing.
      */
     private boolean indexed = false;
 
@@ -78,13 +78,38 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     public Project() {
     }
 
+    /**
+     * Create a project with given name.
+     *
+     * @param name the name of the project
+     */
     public Project(String name) {
         this.name = name;
     }
 
+    /**
+     * Create a project with given name and path
+     *
+     * @param name the name of the project
+     * @param path the path of the project relative to the source root
+     */
     public Project(String name, String path) {
         this.name = name;
         this.path = path;
+    }
+
+    /**
+     * Create a project with given name and path and default configuration
+     * values.
+     *
+     * @param name the name of the project
+     * @param path the path of the project relative to the source root
+     * @param cfg configuration containing the default values for project
+     * properties
+     */
+    public Project(String name, String path, Configuration cfg) {
+        this(name, path);
+        completeWithDefaults(cfg);
     }
 
     /**
@@ -220,6 +245,29 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         while (group != null) {
             this.groups.add(group);
             group = group.getParent();
+        }
+    }
+
+    /**
+     * Fill the project with the current configuration where the applicable
+     * project property has a default value.
+     *
+     * @param cfg configuration with default values if applicable
+     */
+    final public void completeWithDefaults(Configuration cfg) {
+        Configuration defaultCfg = new Configuration();
+        /**
+         * Choosing strategy for properties (tabSize here):
+         * <pre>
+         * this       cfg        defaultCfg
+         * ===========================================
+         *  |5|        4             0
+         *   0        |4|            0
+         *   0         0            |0|
+         * </pre>
+         */
+        if (getTabSize() == defaultCfg.getTabSize()) {
+            setTabSize(cfg.getTabSize());
         }
     }
 
