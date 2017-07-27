@@ -79,6 +79,12 @@ public class GitRepository extends Repository {
     private static final String ABBREV_BLAME = "--abbrev=" + (CSET_LEN - 1);
 
     /**
+     * All git commands that emit date that needs to be parsed by
+     * {@code getDateFormat()} should use this option.
+     */
+    private static final String GIT_DATE_OPT = "--date=iso8601-strict";
+
+    /**
      * Pattern used to extract author/revision from git blame.
      */
     private static final Pattern BLAME_PATTERN
@@ -123,7 +129,7 @@ public class GitRepository extends Repository {
         cmd.add(ABBREV_LOG);
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
-        cmd.add("--date=iso8601-strict");
+        cmd.add(GIT_DATE_OPT);
 
         if (file.isFile() && RuntimeEnvironment.getInstance().isHandleHistoryOfRenamedFiles()) {
             cmd.add("--follow");
@@ -708,8 +714,8 @@ public class GitRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("log");
         cmd.add("-1");
-        cmd.add("--pretty=%cd: %h %an %s");
-        cmd.add("--date=rfc");
+        cmd.add("--pretty=%cd# %h %an %s");
+        cmd.add(GIT_DATE_OPT);
 
         Executor executor = new Executor(cmd, directory);
         if (executor.exec(false) != 0) {
@@ -717,7 +723,7 @@ public class GitRepository extends Repository {
         }
 
         String output = executor.getOutputString().trim();
-        int indexOf = StringUtils.nthIndexOf(output, ":", 3);
+        int indexOf = StringUtils.nthIndexOf(output, "#", 1);
         if (indexOf < 0) {
             throw new IOException(
                     String.format("Couldn't extract date from \"%s\".",
