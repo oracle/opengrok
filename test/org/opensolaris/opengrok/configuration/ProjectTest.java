@@ -17,10 +17,9 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.configuration;
 
 import java.beans.ExceptionListener;
@@ -28,8 +27,6 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,9 +36,10 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ProjectTest {
+
     /**
-     * Test that a {@code Project} instance can be encoded and decoded
-     * without errors. Bug #3077.
+     * Test that a {@code Project} instance can be encoded and decoded without
+     * errors. Bug #3077.
      */
     @Test
     public void testEncodeDecode() {
@@ -96,7 +94,7 @@ public class ProjectTest {
         Project bar = new Project("Project foo-bar", "/foo-bar");
 
         // Make the runtime environment aware of these two projects.
-        HashMap<String,Project> projects = new HashMap<>();
+        HashMap<String, Project> projects = new HashMap<>();
         projects.put("foo", foo);
         projects.put("bar", bar);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -122,7 +120,7 @@ public class ProjectTest {
         Project bar = new Project("bar", "/bar");
 
         // Make the runtime environment aware of these two projects.
-        HashMap<String,Project> projects = new HashMap<>();
+        HashMap<String, Project> projects = new HashMap<>();
         projects.put("foo", foo);
         projects.put("bar", bar);
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -133,5 +131,53 @@ public class ProjectTest {
         assertTrue(descs.contains("bar"));
         assertFalse(descs.contains("foobar"));
         assertEquals(2, descs.size());
+    }
+
+    /**
+     * Insert the value from configuration.
+     */
+    @Test
+    public void testMergeProjects1() {
+        Configuration cfg = new Configuration();
+        cfg.setTabSize(8);
+
+        Project p1 = new Project();
+        p1.setNavigateWindowEnabled(true);
+
+        p1.completeWithDefaults(cfg);
+
+        assertNotNull(p1);
+        assertTrue("Navigate window should be turned on", p1.isNavigateWindowEnabled());
+        assertEquals(8, p1.getTabSize());
+    }
+
+    /**
+     * Do not overwrite customized project property.
+     */
+    @Test
+    public void testMergeProjects2() {
+        Configuration cfg = new Configuration();
+        cfg.setTabSize(4);
+
+        Project p1 = new Project();
+        p1.setTabSize(5);
+
+        p1.completeWithDefaults(cfg);
+
+        assertNotNull(p1);
+        assertEquals(5, p1.getTabSize());
+    }
+
+    /**
+     * Create a project fill with defaults from the configuration.
+     */
+    @Test
+    public void testCreateProjectWithConfiguration() {
+        Configuration cfg = new Configuration();
+        cfg.setTabSize(4);
+
+        Project p1 = new Project("a", "/a", cfg);
+
+        assertEquals(cfg.getTabSize(), p1.getTabSize());
     }
 }
