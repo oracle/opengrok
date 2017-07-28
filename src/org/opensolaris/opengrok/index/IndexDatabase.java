@@ -311,6 +311,39 @@ public class IndexDatabase {
         return false;
     }
 
+    private int getFileCount(File sourceRoot, String dir) throws IOException {
+        int file_cnt = 0;
+        if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+            LOGGER.log(Level.INFO, "Counting files in {0} ...", dir);
+            file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
+            LOGGER.log(Level.INFO,
+                    "Need to process: {0} files for {1}",
+                    new Object[]{file_cnt, dir});
+        }
+
+        return file_cnt;
+    }
+
+    private void markProjectIndexed(Project project) throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // Successfully indexed the directory. If this is a project
+        // that has just been indexed for the first time mark it so
+        // by sending special message to the webapp.
+        if (project != null && !project.isIndexed()) {
+            if (env.getConfigHost() != null && env.getConfigPort() > 0) {
+                Message m = Message.createMessage("project");
+                m.addTag(project.getName());
+                m.setText("indexed");
+                m.write(env.getConfigHost(), env.getConfigPort());
+            }
+
+            // Also need to store the correct value in configuration
+            // when indexer writes it to a file.
+            project.setIndexed(true);
+        }
+    }
+
     /**
      * Update the content of this index database
      *
@@ -337,7 +370,7 @@ public class IndexDatabase {
         }
 
         if (ctags != null) {
-            String filename = RuntimeEnvironment.getInstance().getCTagsExtraOptionsFile();
+            String filename = env.getCTagsExtraOptionsFile();
             if (filename != null) {
                 ctags.setCTagsExtraOptionsFile(filename);
             }
@@ -391,44 +424,22 @@ public class IndexDatabase {
                                 startuid);
                         }
                     }
-                    // The code below traverses the tree to get total count.
-                    int file_cnt = 0;
-                    if (env.isPrintProgress()) {
-                        LOGGER.log(Level.INFO, "Counting files in {0} ...", dir);
-                        file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
-                        LOGGER.log(Level.INFO,
-                                "Need to process: {0} files for {1}",
-                                new Object[]{file_cnt, dir});
-                    }
 
                     // The actual indexing happens in indexDown().
-                    indexDown(sourceRoot, dir, false, 0, file_cnt);
+                    indexDown(sourceRoot, dir, false, 0,
+                            getFileCount(sourceRoot, dir));
 
                     while (uidIter != null && uidIter.term() != null
                         && uidIter.term().utf8ToString().startsWith(startuid)) {
 
-                        removeFile();
+                        removeFile(true);
                         BytesRef next = uidIter.next();
-                        if (next==null) {
+                        if (next == null) {
                             uidIter=null;
                         }
                     }
 
-                    // Successfully indexed the directory. If this is a project
-                    // that has just been indexed for the first time mark it so
-                    // by sending special message to the webapp.
-                    if (project != null && !project.isIndexed()) {
-                        if (env.getConfigHost() != null && env.getConfigPort() > 0) {
-                            Message m = Message.createMessage("project");
-                            m.addTag(project.getName());
-                            m.setText("indexed");
-                            m.write(env.getConfigHost(), env.getConfigPort());
-                        }
-
-                        // Also need to store the correct value in configuration
-                        // when indexer writes it to a file.
-                        project.setIndexed(true);
-                    }
+                    markProjectIndexed(project);
                 } finally {
                     reader.close();
                 }
@@ -602,9 +613,10 @@ public class IndexDatabase {
      * Remove a stale file (uidIter.term().text()) from the index database,
      * history cache and xref.
      *
+     * @param removeHistory if false, do not remove history cache for this file
      * @throws java.io.IOException if an error occurs
      */
-    private void removeFile() throws IOException {
+    private void removeFile(boolean removeHistory) throws IOException {
         String path = Util.uid2url(uidIter.term().utf8ToString());
 
         for (IndexChangedListener listener : listeners) {
@@ -616,7 +628,9 @@ public class IndexDatabase {
         writer.commit();
 
         removeXrefFile(path);
-        removeHistoryFile(path);
+        if (removeHistory) {
+            removeHistoryFile(path);
+        }
 
         setDirty();
         for (IndexChangedListener listener : listeners) {
@@ -837,16 +851,25 @@ public class IndexDatabase {
         return local;
     }
 
+    private void printProgress(int currentCount, int totalCount) {
+        if (RuntimeEnvironment.getInstance().isPrintProgress()
+            && totalCount > 0 && LOGGER.isLoggable(Level.INFO)) {
+                LOGGER.log(Level.INFO, "Progress: {0} ({1}%)",
+                    new Object[]{currentCount,
+                    (currentCount * 100.0f / totalCount)});
+        }
+    }
+
     /**
      * Generate indexes recursively
      *
      * @param dir the root indexDirectory to generate indexes for
-     * @param path the path
+     * @param parent path to parent directory
      * @param count_only if true will just traverse the source root and count
      * files
-     * @param cur_count current count during the traversal of the tree
+     * @param cur_count current file count during the traversal of the tree
      * @param est_total estimate total files to process
-     *
+     * @return current file count
      */
     private int indexDown(File dir, String parent, boolean count_only,
         int cur_count, int est_total) throws IOException {
@@ -880,30 +903,31 @@ public class IndexDatabase {
                         continue;
                     }
 
-                    if (RuntimeEnvironment.getInstance().isPrintProgress()
-                        && est_total > 0 && LOGGER.isLoggable(Level.INFO)) {
-                            LOGGER.log(Level.INFO, "Progress: {0} ({1}%)",
-                                new Object[]{lcur_count,
-                                (lcur_count * 100.0f / est_total)});
-                    }
+                    printProgress(lcur_count, est_total);
 
                     if (uidIter != null) {
                         String uid = Util.path2uid(path,
                             DateTools.timeToString(file.lastModified(),
                             DateTools.Resolution.MILLISECOND)); // construct uid for doc
-                        BytesRef buid = new BytesRef(uid);                        
+                        BytesRef buid = new BytesRef(uid);
                         while (uidIter != null && uidIter.term() != null 
-                                && uidIter.term().compareTo(emptyBR) !=0
+                                && uidIter.term().compareTo(emptyBR) != 0
                                 && uidIter.term().compareTo(buid) < 0) {
-                            removeFile();
+
+                            String termPath = Util.uid2url(uidIter.term().utf8ToString());
+                            removeFile(!termPath.equals(path));
                             BytesRef next = uidIter.next();
-                            if (next==null) {uidIter=null;}
+                            if (next == null) {
+                                uidIter = null;
+                            }
                         }
 
                         if (uidIter != null && uidIter.term() != null
                                 && uidIter.term().bytesEquals(buid)) {
                             BytesRef next = uidIter.next(); // keep matching docs
-                            if (next==null) {uidIter=null;}
+                            if (next == null) {
+                                uidIter = null;
+                            }
                             continue;
                         }
                     }

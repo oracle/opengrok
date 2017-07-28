@@ -22,8 +22,10 @@
  */
 package org.opensolaris.opengrok.index;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -193,7 +195,7 @@ public class IndexerTest {
         }
     }
 
-    private class MyIndexChangeListener implements org.opensolaris.opengrok.index.IndexChangedListener {
+    private class MyIndexChangeListener implements IndexChangedListener {
 
         List<String> files = new ArrayList<>();
         List<String> removedFiles = new ArrayList<>();
@@ -269,6 +271,101 @@ public class IndexerTest {
             System.out.println("Skipping test. Repository for rfe2575 not found" +
                 " or could not find a ctags or an sccs I could use in path.");
         }
+    }
+
+    /**
+     * IndexChangedListener class used solely for {@code testRemoveFileOnFileChange()}.
+     */
+    private class RemoveIndexChangeListener implements IndexChangedListener {
+
+        List<String> filesToAdd = new ArrayList<>();
+        List<String> removedFiles = new ArrayList<>();
+
+        @Override
+        public void fileAdd(String path, String analyzer) {
+            filesToAdd.add(path);
+        }
+
+        @Override
+        public void fileAdded(String path, String analyzer) {
+        }
+
+        @Override
+        public void fileRemove(String path) {
+        }
+
+        @Override
+        public void fileUpdate(String path) {
+        }
+
+        @Override
+        public void fileRemoved(String path) {
+            // The test for the file existence needs to be performed here
+            // since the call to {@code removeFile()} will be eventually
+            // followed by {@code addFile()} that will create the file again.
+            if (path.equals("/mercurial/bar.txt")) {
+                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+                File f = new File(env.getDataRootPath(), "historycache" + path + ".gz");
+                Assert.assertTrue("history cache file should be preserved", f.exists());
+            }
+            removedFiles.add(path);
+        }
+
+        public void reset() {
+            this.filesToAdd = new ArrayList<>();
+            this.removedFiles = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Test that reindex after changing a file does not wipe out history index
+     * for this file. This is important for the incremental history indexing.
+     * @throws Exception 
+     */
+    @Test
+    public void testRemoveFileOnFileChange() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
+        if (!env.validateExuberantCtags()) {
+            System.out.println("Skipping test due to no ctags");
+        }
+
+        TestRepository testrepo = new TestRepository();
+        testrepo.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+
+        env.setSourceRoot(testrepo.getSourceRoot());
+        env.setDataRoot(testrepo.getDataRoot());
+        HistoryGuru.getInstance().addRepositories(testrepo.getSourceRoot());
+
+        // create index
+        Project project = new Project("mercurial", "/mercurial");
+        IndexDatabase idb = new IndexDatabase(project);
+        assertNotNull(idb);
+        RemoveIndexChangeListener listener = new RemoveIndexChangeListener();
+        idb.addIndexChangedListener(listener);
+        idb.update();
+        Assert.assertEquals(5, listener.filesToAdd.size());
+        listener.reset();
+
+        // Change a file so that it gets picked up by the indexer.
+        File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial",
+                "bar.txt");
+        Assert.assertTrue(bar.exists());
+        FileWriter fw = new FileWriter(bar, true);
+        BufferedWriter bw = new BufferedWriter(fw);
+        bw.write("foo\n");
+        bw.close();
+        fw.close();
+
+        // reindex
+        idb.update();
+        // Make sure that the file was actually processed.
+        assertEquals(1, listener.removedFiles.size());
+        assertEquals(1, listener.filesToAdd.size());
+        assertEquals("/mercurial/bar.txt", listener.removedFiles.get(0));
+
+        testrepo.destroy();
     }
 
     @Test
