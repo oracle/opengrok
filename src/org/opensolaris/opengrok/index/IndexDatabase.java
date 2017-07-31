@@ -431,7 +431,7 @@ public class IndexDatabase {
 
                     // Remove data for the trailing terms that indexDown()
                     // did not traverse. These correspond to files that have been
-                    // removed and have higher ordering that any present files.
+                    // removed and have higher ordering than any present files.
                     while (uidIter != null && uidIter.term() != null
                         && uidIter.term().utf8ToString().startsWith(startuid)) {
 
