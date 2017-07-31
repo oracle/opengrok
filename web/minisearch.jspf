@@ -101,7 +101,7 @@ org.opensolaris.opengrok.web.Util"%><%
     Project proj = cfg.getProject();
     String[] vals = cfg.getSearchOnlyIn();
         %><li><input type="checkbox" name="path" value='"<%= vals[0]
-            %>"' <%= vals[2] %>/> only in <b><%= vals[1] %></b></li>
+            %>"' <%= vals[2] %>/> current directory</li>
     </ul><%
     if (proj != null) {
     %>
