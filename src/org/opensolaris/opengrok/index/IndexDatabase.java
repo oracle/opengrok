@@ -430,9 +430,8 @@ public class IndexDatabase {
                             getFileCount(sourceRoot, dir));
 
                     // Remove data for the trailing terms that indexDown()
-                    // did not traverse. These correspond to files that have
-                    // been removed and have higher ordering that any terms
-                    // in the index.
+                    // did not traverse. These correspond to files that have been
+                    // removed and have higher ordering that any present files.
                     while (uidIter != null && uidIter.term() != null
                         && uidIter.term().utf8ToString().startsWith(startuid)) {
 
