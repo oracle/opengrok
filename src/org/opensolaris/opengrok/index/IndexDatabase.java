@@ -429,6 +429,10 @@ public class IndexDatabase {
                     indexDown(sourceRoot, dir, false, 0,
                             getFileCount(sourceRoot, dir));
 
+                    // Remove data for the trailing terms that indexDown()
+                    // did not traverse. These correspond to files that have
+                    // been removed and have higher ordering that any terms
+                    // in the index.
                     while (uidIter != null && uidIter.term() != null
                         && uidIter.term().utf8ToString().startsWith(startuid)) {
 
@@ -910,18 +914,29 @@ public class IndexDatabase {
                             DateTools.timeToString(file.lastModified(),
                             DateTools.Resolution.MILLISECOND)); // construct uid for doc
                         BytesRef buid = new BytesRef(uid);
+                        // Traverse terms that have smaller UID than the current
+                        // file, i.e. given the ordering they positioned before the file
+                        // or it is the file that has been modified.
                         while (uidIter != null && uidIter.term() != null 
                                 && uidIter.term().compareTo(emptyBR) != 0
                                 && uidIter.term().compareTo(buid) < 0) {
 
+                            // If the term's path matches path of currently processed file,
+                            // it is clear that the file has been modified and thus
+                            // removeFile() will be followed by call to addFile() below.
+                            // In such case, instruct removeFile() not to remove history
+                            // cache for the file so that incremental history cache
+                            // generation works.
                             String termPath = Util.uid2url(uidIter.term().utf8ToString());
                             removeFile(!termPath.equals(path));
+
                             BytesRef next = uidIter.next();
                             if (next == null) {
                                 uidIter = null;
                             }
                         }
 
+                        // If the file was not modified, skip to the next one.
                         if (uidIter != null && uidIter.term() != null
                                 && uidIter.term().bytesEquals(buid)) {
                             BytesRef next = uidIter.next(); // keep matching docs
