@@ -302,7 +302,7 @@ DefaultInstanceConfiguration()
     fi
 
     # OPTIONAL: Web Site Look & Feel
-    #           (Options: default, offwhite and polished.
+    #           (Options: default)
     #            Note the quoting requirements)
     #SKIN='-L default'
 
