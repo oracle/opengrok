@@ -51,10 +51,7 @@ public class ConfigurationTest {
 
     private static class Handler extends DefaultHandler2 {
 
-        StringBuilder sb;
-
         Handler() {
-            sb = new StringBuilder();
         }
 
         @Override
@@ -72,12 +69,6 @@ public class ConfigurationTest {
                     }
                 }
             }
-            sb.setLength(0);
-        }
-
-        @Override
-        public void characters(char[] arg0, int arg1, int arg2) {
-            sb.append(arg0, arg1, arg2);
         }
     }
 
