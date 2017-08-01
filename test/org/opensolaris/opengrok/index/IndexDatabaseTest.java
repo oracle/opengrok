@@ -67,7 +67,7 @@ public class IndexDatabaseTest {
         env.setDataRoot(repository.getDataRoot());
         env.setHistoryEnabled(true);
         env.setProjectsEnabled(true);
-        RepositoryFactory.setIgnored(env);
+        RepositoryFactory.initializeIgnoredNames(env);
 
         // Note that all tests in this class share the index created below.
         // Ergo, if they need to modify it, this has to be done in such a way

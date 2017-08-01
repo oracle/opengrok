@@ -73,7 +73,7 @@ public class IndexerTest {
     public static void setUpClass() throws Exception {
         assertTrue("No point in running indexer tests without valid ctags",
                 RuntimeEnvironment.getInstance().validateExuberantCtags());
-        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
+        RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
     }
 
     @AfterClass

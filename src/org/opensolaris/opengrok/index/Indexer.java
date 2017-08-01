@@ -541,7 +541,7 @@ public final class Indexer {
                 // Let repository types to add items to ignoredNames.
                 // This changes env so is called after the setConfiguration()
                 // call above.
-                RepositoryFactory.setIgnored(env);
+                RepositoryFactory.initializeIgnoredNames(env);
 
                 if (noindex) {
                     getInstance().sendToConfigHost(env, host, port);

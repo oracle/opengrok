@@ -212,7 +212,7 @@ public class DirectoryListingTest {
 
         // Need to populate list of ignored entries for all repository types.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        RepositoryFactory.setIgnored(env);
+        RepositoryFactory.initializeIgnoredNames(env);
     }
 
     @After

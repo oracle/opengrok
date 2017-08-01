@@ -65,7 +65,7 @@ public class IgnoredNamesTest {
                 "/org/opensolaris/opengrok/index/source.zip"));
 
         // Populate ignored lists with repository specific entries.
-        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
+        RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
     }
 
     /**
