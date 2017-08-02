@@ -46,6 +46,7 @@ public class JSONSearchServlet extends HttpServlet {
     private static final String PARAM_SYMBOL = "symbol";
     private static final String PARAM_PATH = "path";
     private static final String PARAM_HIST = "hist";
+    private static final String PARAM_START = "start";
     private static final String PARAM_MAXRESULTS = "maxresults";
     private static final String PARAM_PROJECT = "project";
     private static final String ATTRIBUTE_DIRECTORY = "directory";
@@ -120,6 +121,9 @@ public class JSONSearchServlet extends HttpServlet {
             } else {
                 numResults = engine.search(req, projects);
             }
+
+            int pageStart = getIntParameter(req, PARAM_START, 0);
+
             int maxResults = MAX_RESULTS;
             String maxResultsParam = req.getParameter(PARAM_MAXRESULTS);
             if (maxResultsParam != null) {
@@ -130,7 +134,7 @@ public class JSONSearchServlet extends HttpServlet {
                 }
             }
             List<Hit> results = new ArrayList<>(maxResults);
-            engine.results(0,
+            engine.results(pageStart,
                     numResults > maxResults ? maxResults : numResults, results);
             JSONArray resultsArray = new JSONArray();
             for (Hit hit : results) {
@@ -158,5 +162,29 @@ public class JSONSearchServlet extends HttpServlet {
         } finally {
             engine.destroy();
         }
+    }
+
+    /**
+     * Convenience utility for consistently getting and parsing an integer
+     * parameter from the provided {@link HttpServletRequest}.
+     *
+     * @param request The request to extract the parameter from
+     * @param paramName The name of the parameter on the request.
+     * @param defaultValue The default value to use when no value is
+     *                     provided or parsing fails.
+     * @return The integer value of the request param if present or the
+     *         defaultValue if none is present.
+     */
+    private static int getIntParameter(final HttpServletRequest request, final String paramName, final int defaultValue) {
+        final String paramValue = request.getParameter(paramName);
+        if (paramValue == null) {
+            return defaultValue;
+        }
+
+        try {
+            return Integer.valueOf(paramValue);
+        } catch (final NumberFormatException ignored) {}
+
+        return defaultValue;
     }
 }
