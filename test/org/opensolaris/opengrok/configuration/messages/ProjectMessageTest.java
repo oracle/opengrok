@@ -84,7 +84,7 @@ public class ProjectMessageTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
-        RepositoryFactory.setIgnored(env);
+        RepositoryFactory.initializeIgnoredNames(env);
     }
 
     @After

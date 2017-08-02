@@ -64,7 +64,7 @@ public class PerforceRepositoryTest {
             return;
         }
         files = new ArrayList<>();
-        RepositoryFactory.setIgnored(RuntimeEnvironment.getInstance());
+        RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
         FileUtilities.getAllFiles(root, files, false);
     }
 

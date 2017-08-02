@@ -177,7 +177,7 @@ public final class RepositoryFactory {
      * inside repository classes rather than globally in IgnoredFiles/Dirs.
      * Should be called after {@code setConfiguration()}.
      */
-    public static void setIgnored(RuntimeEnvironment env) {
+    public static void initializeIgnoredNames(RuntimeEnvironment env) {
         for (Repository repo : repositories) {
             for (String file : repo.getIgnoredFiles()) {
                 env.getIgnoredNames().add("f:" + file);
