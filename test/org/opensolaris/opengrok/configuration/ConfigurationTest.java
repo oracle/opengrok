@@ -24,22 +24,84 @@ package org.opensolaris.opengrok.configuration;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.LinkedList;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import junit.framework.AssertionFailedError;
+import org.junit.Assert;
 import org.junit.Test;
 import org.opensolaris.opengrok.util.ClassUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.xml.sax.Attributes;
+import org.xml.sax.ext.DefaultHandler2;
 
 /**
  *
  * @author Krystof Tulinger
  */
 public class ConfigurationTest {
+
+    private static class Handler extends DefaultHandler2 {
+
+        Handler() {
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qname, Attributes attr) {
+            if ("void".equals(qname)) {
+                String prop = null;
+                if ((prop = attr.getValue("property")) != null) {
+                    for (Field f : Group.class.getDeclaredFields()) {
+                        if (Modifier.isTransient(f.getModifiers())) {
+                            Assert.assertFalse("'" + f.getName() +
+                                "' field is transient and yet is present in XML " +
+                                "encoding of Group object",
+                                prop.equals(f.getName()));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Verify that encoding of Group class does  not contain transient members.
+     * @throws Exception 
+     */
+    @Test
+    public void testTransientKeywordGroups() throws Exception {
+        Group foo = new Group("foo", "foo.*");
+        Group bar = new Group("bar", "bar.*");
+
+        Configuration cfg = new Configuration();
+        cfg.addGroup(foo);
+        foo.addGroup(bar);
+        cfg.addGroup(bar);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try (XMLEncoder enc = new XMLEncoder(out)) {
+            enc.writeObject(cfg);
+        }
+
+        // In this test we are no so much interested in exceptions during the
+        // XML decoding as that is covered by the {@code serializationOrderTest}
+        // test.
+        try (ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray())) {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser saxParser = factory.newSAXParser();
+            Handler handler = new Handler();
+            saxParser.parse(new BufferedInputStream(in), handler);
+        }
+    }
 
     /**
      * Test for a serialization bug in configuration. The problem is that with

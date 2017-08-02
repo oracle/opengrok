@@ -56,7 +56,7 @@ public class ClassUtil {
             BeanInfo info;
             info = Introspector.getBeanInfo(targetClass);
             PropertyDescriptor[] propertyDescriptors = info.getPropertyDescriptors();
-            for (Field f : Project.class.getDeclaredFields()) {
+            for (Field f : targetClass.getDeclaredFields()) {
                 if (Modifier.isTransient(f.getModifiers())) {
                     for (int i = 0; i < propertyDescriptors.length; ++i) {
                         if (propertyDescriptors[i].getName().equals(f.getName())) {
