@@ -249,9 +249,8 @@ html.more #whole_header,
 html.diff #whole_header {
     position: fixed;
     top: 0;
-    background: #ddd;
-    border-bottom: 5px solid #ddd;
-    height: 85px;
+    background: #ffffff;
+    height: 70px;
     width: 100%;
 }
 
@@ -451,7 +450,7 @@ html.xref #content,
 html.diff #content,
 html.more #content,
 html.history #content{
-    margin-top: 90px;
+    margin-top: 70px;
 }
 
 /* *** help page *** */
