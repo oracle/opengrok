@@ -279,7 +279,7 @@ public final class Groups {
 
         out.println(matched.size() + " group(s) match(es) the \"" + match + "\"");
         for (Group g : matched) {
-            out.println(g.getName() + " \"" + g.getPattern() + "\"");
+            out.println(g.getName() + " '" + g.getPattern() + "'");
         }
     }
 
