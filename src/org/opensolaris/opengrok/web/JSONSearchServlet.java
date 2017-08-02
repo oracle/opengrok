@@ -124,15 +124,12 @@ public class JSONSearchServlet extends HttpServlet {
 
             int pageStart = getIntParameter(req, PARAM_START, 0);
 
-            int maxResults = MAX_RESULTS;
-            String maxResultsParam = req.getParameter(PARAM_MAXRESULTS);
+            Integer maxResultsParam = getIntParameter(req, PARAM_MAXRESULTS, null);
+            int maxResults = maxResultsParam == null ? MAX_RESULTS : maxResultsParam;
             if (maxResultsParam != null) {
-                try {
-                    maxResults = Integer.parseInt(maxResultsParam);
-                    result.put(PARAM_MAXRESULTS, maxResults);
-                } catch (NumberFormatException ex) {
-                }
+                result.put(PARAM_MAXRESULTS, maxResults);
             }
+
             List<Hit> results = new ArrayList<>(maxResults);
             engine.results(pageStart,
                     numResults > maxResults ? maxResults : numResults, results);
@@ -175,7 +172,7 @@ public class JSONSearchServlet extends HttpServlet {
      * @return The integer value of the request param if present or the
      *         defaultValue if none is present.
      */
-    private static int getIntParameter(final HttpServletRequest request, final String paramName, final int defaultValue) {
+    private static Integer getIntParameter(final HttpServletRequest request, final String paramName, final Integer defaultValue) {
         final String paramValue = request.getParameter(paramName);
         if (paramValue == null) {
             return defaultValue;
