@@ -964,11 +964,11 @@ https://github.com/hoytech/vmtouch
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
 
-Chandan B.N, (originally Sun Microsystems) http://blogs.oracle.com/chandan/
+Chandan B.N, (originally Sun Microsystems)
 Trond Norbye, norbye.org
 Knut Pape, eBriefkasten.de
 Martin Englund, (originally Sun Microsystems)
-Knut Anders Hatlen, Oracle. http://blogs.oracle.com/kah/
+Knut Anders Hatlen, Oracle.
 Lubos Kosco, Oracle. http://blogs.oracle.com/taz/
 Vladimir Kotal, Oracle. http://blogs.oracle.com/vlad/
 
