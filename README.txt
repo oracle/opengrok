@@ -971,6 +971,7 @@ Martin Englund, (originally Sun Microsystems)
 Knut Anders Hatlen, Oracle.
 Lubos Kosco, Oracle. http://blogs.oracle.com/taz/
 Vladimir Kotal, Oracle. http://blogs.oracle.com/vlad/
+Krystof Tulinger
 
 11. Contact us
 --------------
