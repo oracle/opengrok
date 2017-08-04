@@ -1190,6 +1190,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHistoryEnabled(flag);
     }
 
+    public boolean getDisplayRepositories() {
+        return threadConfig.get().getDisplayRepositories();
+    }
+
+    public void setDisplayRepositories(boolean flag) {
+        threadConfig.get().setDisplayRepositories(flag);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *

@@ -57,11 +57,11 @@ include file="menu.jspf"
         </div>
         <div id="results">
             <%= PageConfig.get(request).getEnv().getConfiguration().getBodyIncludeFileContent() %>
-        <%@
+            <% if (PageConfig.get(request).getEnv().getDisplayRepositories()) { %><%@
 
 include file="repos.jspf"
 
-        %>
+            %><% } %>
         </div>
 <%
 /* ---------------------- index.jsp end --------------------- */
