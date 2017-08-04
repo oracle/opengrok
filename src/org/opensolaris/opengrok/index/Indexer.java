@@ -27,6 +27,7 @@ package org.opensolaris.opengrok.index;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -532,7 +533,8 @@ public final class Indexer {
                 int optind = getopt.getOptind();
                 if (optind != -1) {
                     while (optind < argv.length) {
-                        subFilesList.add(cfg.getSourceRoot() + argv[optind++]);
+                        String path = Paths.get(cfg.getSourceRoot(), argv[optind++]).toString();
+                        subFilesList.add(path);
                     }
                 }
 
