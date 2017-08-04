@@ -73,6 +73,8 @@ public final class HistoryGuru {
 
     private final int scanningDepth;
 
+    private String ignoreRepositoryName = ".opengrok_skip_history";
+    
     /**
      * Creates a new instance of HistoryGuru, and try to set the default source
      * control system.
@@ -341,9 +343,11 @@ public final class HistoryGuru {
      */
     private void addRepositories(File[] files, Collection<RepositoryInfo> repos,
             IgnoredNames ignoredNames, boolean recursiveSearch, int depth) {
+
+        // This check for ignoring a repository only works for embedded
+        // source code control directories used by SCCS and the like.
         for (File file : files) {
-            Repository repository = null;
-            if (file.getName().equals(".opengrok_skip_history")) {
+            if (file.getName().equals(ignoreRepositoryName)) {
                 LOGGER.log(Level.INFO,
                         "Skipping history cache creation for {0} and its subdirectories",
                         file.getParentFile().getAbsolutePath());
@@ -351,59 +355,83 @@ public final class HistoryGuru {
             }
         }
         for (File file : files) {
-            Repository repository = null;
+            Boolean ignoreRepository = false;
             try {
-                repository = RepositoryFactory.getRepository(file);
-            } catch (InstantiationException ie) {
-                LOGGER.log(Level.WARNING, "Could not create repository for '"
-                        + file + "', could not instantiate the repository.", ie);
-            } catch (IllegalAccessException iae) {
-                LOGGER.log(Level.WARNING, "Could not create repository for '"
-                        + file + "', missing access rights.", iae);
-            }
-            if (repository == null) {
-                // Not a repository, search its sub-dirs
-                if (file.isDirectory() && !ignoredNames.ignore(file)) {
-                    File subFiles[] = file.listFiles();
-                    if (subFiles == null) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to get sub directories for ''{0}'', check access permissions.",
-                                file.getAbsolutePath());
-                    } else if (depth <= scanningDepth) {
-                        addRepositories(subFiles, repos, ignoredNames, depth + 1);
-                    }
-                }
-            } else {
-                try {
+                // This check for ignoring a repository is for the
+                // kind of repository, such as AccuRev, where the
+                // entire project folder layout (workspace) is
+                // considered as the repository. Here we need to
+                // look inside the folder for the magic file.
+                if( file.isDirectory() ) {
                     String path = file.getCanonicalPath();
-                    repository.setDirectoryName(path);
-                    if (RuntimeEnvironment.getInstance().isVerbose()) {
-                        LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
-                                new Object[]{repository.getClass().getName(), path});
-                    }
-
-                    repos.add(new RepositoryInfo(repository));
-
-                    // @TODO: Search only for one type of repository - the one found here
-                    if (recursiveSearch && repository.supportsSubRepositories()) {
+                    File skipRepository = new File(path, ignoreRepositoryName);
+                    ignoreRepository = skipRepository.exists();
+                }
+            } catch( IOException exp ) {
+                LOGGER.log(Level.WARNING,
+                    "Failed to get canonical path for {0}: {1}",
+                    new Object[]{file.getAbsolutePath(), exp.getMessage()});
+            }
+            
+            if( ignoreRepository ) {
+                LOGGER.log(Level.INFO,
+                    "Skipping history cache creation for {0} and its subdirectories",
+                    file.getAbsolutePath());
+            } else {
+                Repository repository = null;
+                try {
+                    repository = RepositoryFactory.getRepository(file);
+                } catch (InstantiationException ie) {
+                    LOGGER.log(Level.WARNING, "Could not create repository for '"
+                            + file + "', could not instantiate the repository.", ie);
+                } catch (IllegalAccessException iae) {
+                    LOGGER.log(Level.WARNING, "Could not create repository for '"
+                            + file + "', missing access rights.", iae);
+                }
+                if (repository == null) {
+                    // Not a repository, search its sub-dirs
+                    if (file.isDirectory() && !ignoredNames.ignore(file)) {
                         File subFiles[] = file.listFiles();
                         if (subFiles == null) {
                             LOGGER.log(Level.WARNING,
                                     "Failed to get sub directories for ''{0}'', check access permissions.",
                                     file.getAbsolutePath());
                         } else if (depth <= scanningDepth) {
-                            // Search only one level down - if not: too much
-                            // stat'ing for huge Mercurial repositories
-                            addRepositories(subFiles, repos, ignoredNames,
-                                    false, depth + 1);
+                            addRepositories(subFiles, repos, ignoredNames, depth + 1);
                         }
                     }
+                } else {
+                    try {
+                        String path = file.getCanonicalPath();
+                        repository.setDirectoryName(path);
+                        if (RuntimeEnvironment.getInstance().isVerbose()) {
+                            LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
+                                    new Object[]{repository.getClass().getName(), path});
+                        }
 
-                } catch (IOException exp) {
-                    LOGGER.log(Level.WARNING,
-                            "Failed to get canonical path for {0}: {1}",
-                            new Object[]{file.getAbsolutePath(), exp.getMessage()});
-                    LOGGER.log(Level.WARNING, "Repository will be ignored...", exp);
+                        repos.add(new RepositoryInfo(repository));
+
+                        // @TODO: Search only for one type of repository - the one found here
+                        if (recursiveSearch && repository.supportsSubRepositories()) {
+                            File subFiles[] = file.listFiles();
+                            if (subFiles == null) {
+                                LOGGER.log(Level.WARNING,
+                                        "Failed to get sub directories for ''{0}'', check access permissions.",
+                                        file.getAbsolutePath());
+                            } else if (depth <= scanningDepth) {
+                                // Search only one level down - if not: too much
+                                // stat'ing for huge Mercurial repositories
+                                addRepositories(subFiles, repos, ignoredNames,
+                                        false, depth + 1);
+                            }
+                        }
+
+                    } catch (IOException exp) {
+                        LOGGER.log(Level.WARNING,
+                                "Failed to get canonical path for {0}: {1}",
+                                new Object[]{file.getAbsolutePath(), exp.getMessage()});
+                        LOGGER.log(Level.WARNING, "Repository will be ignored...", exp);
+                    }
                 }
             }
         }
