@@ -217,9 +217,23 @@ label {
     margin-bottom: 0;
 }
 
+.panel-body > table {
+    table-layout: fixed;
+}
+
+/* These are wanted for all but the last child hence last child below resets these. */
+.panel-body > table tr td, .panel-body-accordion > table tr td {
+    word-wrap: break-word;
+    padding-right: 10px;
+}
+
+/* 'Current version' column */
 .panel-body > table tr td:last-child, .panel-body-accordion > table tr td:last-child {
     width: 400px;
+    word-wrap: normal;
+    padding-right: 0px;
 }
+
 /*
  * Changesets colorization
  * 1 is the most recent changeset
