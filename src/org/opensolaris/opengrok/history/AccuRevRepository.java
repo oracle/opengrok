@@ -80,7 +80,17 @@ public class AccuRevRepository extends Repository {
             = Pattern.compile("^\\s+(\\d+\\\\\\d+)\\s+(\\w+)\\s+.*");   // version, user, code line
     private static final Pattern depotPattern
             = Pattern.compile("^Depot:\\s+(\\w+)");
+    private static final Pattern parentPattern
+            = Pattern.compile("^Basis:\\s+(\\w+)");
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    private String depotName = null;
+    private String parent = null;
+    /**  
+     * This will be /./ on Unix and \.\ on Windows 
+     */
+    private static final String depotRoot 
+            = String.format( "%s.%s", File.separator, File.separator );
 
     public AccuRevRepository() {
         type = "AccuRev";
@@ -176,8 +186,7 @@ public class AccuRevRepository extends Repository {
         File directory = new File(parent);
 
         /*
-         * ----------------------------------------------------------------- The
-         * only way to guarantee getting the contents of a file is to fire off
+         * Only way to guarantee getting the contents of a file is to fire off
          * an AccuRev 'stat'us command to get the element ID number for the
          * subsequent 'cat' command. (Element ID's are unique for a file, unless
          * evil twins are present) This is because it is possible that the file
@@ -187,7 +196,6 @@ public class AccuRevRepository extends Repository {
          * <filePath> <elementID> <virtualVersion> (<realVersion>) (<status>)
          *
          *  /./myFile e:17715 CP.73_Depot/2 (3220/2) (backed)
-         *-----------------------------------------------------------------
          */
         cmd.add(RepoCommand);
         cmd.add("stat");
@@ -210,9 +218,7 @@ public class AccuRevRepository extends Repository {
 
         if (elementID != null) {
             /*
-             * ------------------------------------------ This really gets the
-             * contents of the file.
-             *------------------------------------------
+             *  This really gets the contents of the file.
              */
             cmd.clear();
             cmd.add(RepoCommand);
@@ -257,12 +263,79 @@ public class AccuRevRepository extends Repository {
     }
 
     /**
+     * Expecting data of the form:
+     *
+     *   Principal:      shaehn
+     *   Host:           waskly
+     *   Server name:    lean.machine.com
+     *   Port:           5050
+     *   DB Encoding:    Unicode
+     *   ACCUREV_BIN:    C:\Program Files (x86)\AccuRev\bin
+     *   Client time:    2017/08/02 13:30:31 Eastern Daylight Time (1501695031)
+     *   Server time:    2017/08/02 13:30:54 Eastern Daylight Time (1501695054)
+     *   Depot:          bread_and_butter
+     *   Workspace/ref:  BABS_2_shaehn
+     *   Basis:          BABS2 
+     *   Top:            C:\Users\shaehn\workspaces\BABS_2
+     *
+     *   Output would be similar on Unix boxes, but with '/' appearing
+     *   in path names instead of '\'. The 'Basis' (BABS2) is the parent
+     *   stream of the user workspace (BABS_2_shaehn). The 'Top' is the
+     *   path to the user workspace/repository. The elements below
+     *   'Server time' will be missing when current working directory
+     *   is not within a known AccuRev workspace/repository.
+     */
+    private void getAccuRevInfo( File wsPath ) {
+    
+        ArrayList<String> cmd = new ArrayList<>();
+
+        cmd.add(RepoCommand);
+        cmd.add("info");
+
+        // Desired AccuRev attributes
+        depotName = null;
+        parent = null;
+        
+        Executor executor = new Executor(cmd, wsPath);
+        executor.exec();
+
+        try (BufferedReader info = new BufferedReader(executor.getOutputReader())) {
+            String line;
+            while ((line = info.readLine()) != null) {
+
+                if (line.contains("not logged in")) {
+                    LOGGER.log(
+                            Level.SEVERE, "Not logged into AccuRev server");
+                    break;
+                }
+
+                if (line.startsWith("Depot")) {
+                    Matcher depotMatch  = depotPattern.matcher(line);
+                    if (depotMatch.find()) {
+                        depotName = depotMatch.group(1);
+                    }
+                }
+
+                if (line.startsWith("Basis")) {
+                    Matcher parentMatch = parentPattern.matcher(line);
+                    if (parentMatch.find()) {
+                        parent = parentMatch.group(1);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE,
+                    "Could not find AccuRev repository for {0}", wsPath);
+        }
+    }
+
+    /**
      * Check if a given path is associated with an AccuRev workspace
      *
      * The AccuRev 'info' command provides a Depot name when in a known
      * workspace. Otherwise, the Depot name will be missing.
      *
-     * @param path The presumed path to an AccuRev workspace directory.
+     * @param wsPath The presumed path to an AccuRev workspace directory.
      * @return true if the given path is in the depot, false otherwise
      */
     private boolean isInAccuRevDepot(File wsPath) {
@@ -270,35 +343,8 @@ public class AccuRevRepository extends Repository {
         boolean status = false;
 
         if (isWorking()) {
-            ArrayList<String> cmd = new ArrayList<>();
-
-            cmd.add(RepoCommand);
-            cmd.add("info");
-
-            Executor executor = new Executor(cmd, wsPath);
-            executor.exec(true);
-
-            try (BufferedReader info = new BufferedReader(executor.getOutputReader())) {
-                String line;
-                while ((line = info.readLine()) != null) {
-
-                    Matcher depotMatch = depotPattern.matcher(line);
-
-                    if (line.contains("not logged in")) {
-                        LOGGER.log(
-                                Level.SEVERE, "Not logged into AccuRev server");
-                        break;
-                    }
-
-                    if (depotMatch.find()) {
-                        status = true;
-                        break;
-                    }
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE,
-                        "Could not find AccuRev repository for {0}", wsPath);
-            }
+            getAccuRevInfo( wsPath );
+            status = (depotName != null);
         }
 
         return status;
@@ -306,15 +352,15 @@ public class AccuRevRepository extends Repository {
 
     public String getDepotRelativePath(File file) {
 
-        String path = File.separator + "." + File.separator;
+        String path = depotRoot;
 
         try {
-            path = env.getPathRelativeToSourceRoot(file);
+            path = env.getPathRelativeToSourceRoot(file, 0);
 
             if (path.startsWith(File.separator)) {
                 path = File.separator + "." + path;
             } else {
-                path = File.separator + "." + File.separator + path;
+                path = depotRoot + path;
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,
@@ -328,7 +374,11 @@ public class AccuRevRepository extends Repository {
     @Override
     boolean isRepositoryFor(File sourceHome) {
 
-        return isInAccuRevDepot(sourceHome);
+        if (sourceHome.isDirectory()) {
+            return isInAccuRevDepot(sourceHome);
+        }
+        
+        return false;
     }
 
     @Override
@@ -354,7 +404,8 @@ public class AccuRevRepository extends Repository {
 
     @Override
     String determineParent() throws IOException {
-        return null;
+        getAccuRevInfo(new File(directoryName));
+        return parent;
     }
 
     @Override
