@@ -232,6 +232,11 @@ public final class Configuration {
      */
     private int MaxSearchThreadCount;
 
+    /**
+     * If false, do not display listing or projects/repositories on the index page.
+     */
+    private boolean displayRepositories;
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -350,7 +355,7 @@ public final class Configuration {
      * Creates a new instance of Configuration
      */
     public Configuration() {
-        //defaults for an opengrok instance configuration
+        // defaults for an opengrok instance configuration
         cmds = new HashMap<>();
         setAllowedSymlinks(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
@@ -362,6 +367,7 @@ public final class Configuration {
         setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         setCurrentIndexedCollapseThreshold(27);
         setDataRoot(null);
+        setDisplayRepositories(true);
         setFetchHistoryWhenNotInCache(true);
         setFoldingEnabled(true);
         setGenerateHtml(true);
@@ -915,6 +921,14 @@ public final class Configuration {
 
     public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
         this.currentIndexedCollapseThreshold = currentIndexedCollapseThreshold;
+    }
+
+    public boolean getDisplayRepositories() {
+        return this.displayRepositories;
+    }
+
+    public void setDisplayRepositories(boolean flag) {
+        this.displayRepositories = flag;
     }
 
     /**
