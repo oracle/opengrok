@@ -134,8 +134,8 @@ else
 	exit 1
 fi
 
-SCRIPT_FILE=`readlink -f "${0}"`
-SCRIPT_DIRECTORY=`dirname "${SCRIPT_FILE}"`
+SCRIPT_DIRECTORY=`dirname "${0}"`
+export SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd -P`
 
 #
 # Default Instance Configuration
