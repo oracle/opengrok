@@ -341,16 +341,24 @@ public final class HistoryGuru {
      */
     private void addRepositories(File[] files, Collection<RepositoryInfo> repos,
             IgnoredNames ignoredNames, boolean recursiveSearch, int depth) {
+
         for (File file : files) {
-            Repository repository = null;
-            if (file.getName().equals(".opengrok_skip_history")) {
-                LOGGER.log(Level.INFO,
-                        "Skipping history cache creation for {0} and its subdirectories",
-                        file.getParentFile().getAbsolutePath());
-                return;
+            if (file.isDirectory()) {
+                String path;
+                try {
+                    path = file.getCanonicalPath();
+                    File skipRepository = new File(path, ".opengrok_skip_history");
+                    if (skipRepository.exists()) {
+                        LOGGER.log(Level.INFO,
+                            "Skipping history cache creation for {0} and its subdirectories",
+                            file.getAbsolutePath());
+                        continue;
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(HistoryGuru.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-        }
-        for (File file : files) {
+
             Repository repository = null;
             try {
                 repository = RepositoryFactory.getRepository(file);

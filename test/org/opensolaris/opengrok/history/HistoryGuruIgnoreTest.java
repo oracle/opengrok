@@ -86,7 +86,6 @@ public class HistoryGuruIgnoreTest {
         // Check that the history was not actually generated for the repository.
         File dataRoot = new File(repository.getDataRoot());
         File historyCache = new File(dataRoot, "historycache");
-        // The top-level directory can be present but should be empty.
-        Assert.assertEquals(0, new File(historyCache, "mercurial").list().length);
+        Assert.assertFalse(new File(historyCache, "mercurial").exists());
     }
 }
