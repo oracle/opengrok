@@ -169,7 +169,6 @@ def post_request(url, timeout, data, headers=[], proxy=None):
             raise MyError("server returned non-JSON output")
     except HTTPError as e:
         print e.code
-        # XXX print string representation of the code
         raise MyError("got HTTP error: {} ({})".format(e.code, e.reason))
 
 def upload_file(filepath, upload_url, headers, timeout, proxy=None):
@@ -235,8 +234,6 @@ def main():
             sys.exit(1)
 	_files.append(file)
 
-    # TODO: Check if the tag is not already present in the repo.
-
     try:
         password = os.environ["GITHUB_PASSWORD"]
     except:
@@ -249,6 +246,16 @@ def main():
 
     headers = {}
     headers['Authorization'] = _get_auth(user, password)
+
+    # Check if the tag is not already present in the repo.
+    _url = "https://api.github.com"
+    _path = '%s%s%s' % ("/repos/", repo, "/releases/tags/" + tag)
+    url = '%s%s' % (_url, _path)
+    output_json = post_request(url,
+        arguments.timeout, None, headers, proxy)
+    if output_json["tag_name"] == tag:
+        print "tag '" + tag + "' already present in the releases"
+        sys.exit(1)
 
     prerelease = False
     if arguments.prerelease:
