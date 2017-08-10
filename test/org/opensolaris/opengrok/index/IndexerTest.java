@@ -324,6 +324,7 @@ public class IndexerTest {
      */
     @Test
     public void testSkipHistory() throws Exception {
+        String ignoredRepoName = "mercurial";
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
@@ -342,7 +343,7 @@ public class IndexerTest {
         // Create special file to avoid creating history cache for the mercurial
         // repository.
         File srcRoot = new File(testrepo.getSourceRoot());
-        File mercurialRepo = new File(srcRoot, "mercurial");
+        File mercurialRepo = new File(srcRoot, ignoredRepoName);
         Assert.assertTrue(mercurialRepo.isDirectory());
         File ignoredFile = new File(mercurialRepo, ".opengrok_skip_history");
         Assert.assertTrue(ignoredFile.createNewFile());
@@ -368,22 +369,22 @@ public class IndexerTest {
         // should not be there.
         Assert.assertFalse(RuntimeEnvironment.getInstance().getRepositories().
                 stream().map(x -> x.getDirectoryName()).
-                collect(Collectors.toList()).contains("mercurial"));
+                collect(Collectors.toList()).contains(ignoredRepoName));
 
         // Check that the history cache was not actually generated for the
         // ignored repository.
         File dataRoot = new File(testrepo.getDataRoot());
         File historyCache = new File(dataRoot, "historycache");
-        Assert.assertFalse(new File(historyCache, "mercurial").exists());
+        Assert.assertFalse(new File(historyCache, ignoredRepoName).exists());
 
         // Create index and check that the repository was indexed.
         // Limit the scope of the index to 2 projects to save time.
         Indexer.getInstance().doIndexerExecution(true, 1,
-                new ArrayList<>(Arrays.asList(new String[]{"/mercurial", "/git"})),
+                new ArrayList<>(Arrays.asList(new String[]{"/" + ignoredRepoName, "/git"})),
                 null);
         File indexRoot = new File(dataRoot, IndexDatabase.INDEX_DIR);
         // XXX better check that the index was indeed created
-        Assert.assertTrue(new File(indexRoot, "mercurial").isDirectory());
+        Assert.assertTrue(new File(indexRoot, ignoredRepoName).isDirectory());
 
         testrepo.destroy();
     }
