@@ -348,12 +348,6 @@ public class IndexerTest {
         Assert.assertEquals(0,
                 RuntimeEnvironment.getInstance().getRepositories().size());
 
-        // addRepositories() adds the list to the RuntimeEnvironment so the
-        // ignored repository should not be there.
-        Assert.assertFalse(RuntimeEnvironment.getInstance().getRepositories().
-                stream().map(x -> x.getDirectoryName()).
-                collect(Collectors.toList()).contains("mercurial"));
-
         // Create history cache.
         Indexer.getInstance().prepareIndexer(
                 env,
@@ -366,6 +360,12 @@ public class IndexerTest {
                 null, // repositories - null to generate history for all repos
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
+
+        // addRepositories() adds the list to the RuntimeEnvironment so the
+        // ignored repository should not be there.
+        Assert.assertFalse(RuntimeEnvironment.getInstance().getRepositories().
+                stream().map(x -> x.getDirectoryName()).
+                collect(Collectors.toList()).contains("mercurial"));
 
         // Check that the history cache was not actually generated for the
         // ignored repository.
