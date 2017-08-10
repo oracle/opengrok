@@ -318,6 +318,74 @@ public class IndexerTest {
     }
 
     /**
+     * Test that history cache for a repository with ".opengrok_skip_history"
+     * file in its root is not created. XXX
+     * @throws Exception 
+     */
+    @Test
+    public void testSkipHistory() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
+        if (!env.validateExuberantCtags()) {
+            System.out.println("Skipping test due to no ctags");
+        }
+
+        TestRepository testrepo = new TestRepository();
+        testrepo.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+
+        env.setSourceRoot(testrepo.getSourceRoot());
+        env.setDataRoot(testrepo.getDataRoot());
+        env.setProjectsEnabled(true);
+        env.setHistoryEnabled(true);
+
+        File srcRoot = new File(testrepo.getSourceRoot());
+        File mercurialRepo = new File(srcRoot, "mercurial");
+        Assert.assertTrue(mercurialRepo.isDirectory());
+        File ignoredFile = new File(mercurialRepo, ".opengrok_skip_history");
+        Assert.assertTrue(ignoredFile.createNewFile());
+
+        Assert.assertEquals(0,
+                RuntimeEnvironment.getInstance().getRepositories().size());
+
+        // addRepositories() adds the list to the RuntimeEnvironment so the
+        // ignored repository should not be there.
+        Assert.assertFalse(RuntimeEnvironment.getInstance().getRepositories().
+                stream().map(x -> x.getDirectoryName()).
+                collect(Collectors.toList()).contains("mercurial"));
+
+        // Create history cache.
+        Indexer.getInstance().prepareIndexer(
+                env,
+                true, // don't search for repositories
+                true, // scan and add projects
+                null, // no default project
+                false, // don't list files
+                false, // don't create dictionary
+                null, // subFiles - not needed since we don't list files
+                null, // repositories - null to generate history for all repos
+                new ArrayList<>(), // don't zap cache
+                false); // don't list repos
+
+        // Check that the history cache was not actually generated for the
+        // ignored repository.
+        File dataRoot = new File(testrepo.getDataRoot());
+        File historyCache = new File(dataRoot, "historycache");
+        Assert.assertFalse(new File(historyCache, "mercurial").exists());
+
+        // Create index and check that the repository was indexed.
+        // Limit the scope of the index to 2 projects to save time.
+        Indexer.getInstance().doIndexerExecution(true, 1,
+                new ArrayList<>(Arrays.asList(new String[]{"/mercurial", "/git"})),
+                null);
+        File indexRoot = new File(dataRoot, IndexDatabase.INDEX_DIR);
+        // XXX better check that the index was indeed created
+        Assert.assertTrue(new File(indexRoot, "mercurial").isDirectory());
+
+        testrepo.destroy();
+    }
+
+    /**
      * Test that reindex after changing a file does not wipe out history index
      * for this file. This is important for the incremental history indexing.
      * @throws Exception 
