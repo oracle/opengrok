@@ -377,9 +377,9 @@ public class IndexerTest {
         File historyCache = new File(dataRoot, "historycache");
         Assert.assertFalse(new File(historyCache, ignoredRepoName).exists());
 
-        // Create index. Limit the scope of the index to 2 projects to save time.
+        // Create index. Limit the scope of the index to the repo to save time.
         Indexer.getInstance().doIndexerExecution(true, 1,
-                new ArrayList<>(Arrays.asList(new String[]{"/" + ignoredRepoName, "/git"})),
+                new ArrayList<>(Arrays.asList(new String[]{"/" + ignoredRepoName})),
                 new DefaultIndexChangedListener());
 
         // Check that the repository was indexed.
