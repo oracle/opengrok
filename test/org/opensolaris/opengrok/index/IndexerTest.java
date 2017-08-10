@@ -339,6 +339,8 @@ public class IndexerTest {
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(true);
 
+        // Create special file to avoid creating history cache for the mercurial
+        // repository.
         File srcRoot = new File(testrepo.getSourceRoot());
         File mercurialRepo = new File(srcRoot, "mercurial");
         Assert.assertTrue(mercurialRepo.isDirectory());
@@ -361,8 +363,9 @@ public class IndexerTest {
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
 
-        // addRepositories() adds the list to the RuntimeEnvironment so the
-        // ignored repository should not be there.
+        // addRepositories() called via prepareIndexer() sets the list of discovered
+        // repositories to the RuntimeEnvironment so the ignored repository
+        // should not be there.
         Assert.assertFalse(RuntimeEnvironment.getInstance().getRepositories().
                 stream().map(x -> x.getDirectoryName()).
                 collect(Collectors.toList()).contains("mercurial"));
