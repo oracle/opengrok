@@ -377,13 +377,12 @@ public class IndexerTest {
         File historyCache = new File(dataRoot, "historycache");
         Assert.assertFalse(new File(historyCache, ignoredRepoName).exists());
 
-        // Create index.
+        // Create index. Limit the scope of the index to 2 projects to save time.
         Indexer.getInstance().doIndexerExecution(true, 1,
                 new ArrayList<>(Arrays.asList(new String[]{"/" + ignoredRepoName, "/git"})),
                 new DefaultIndexChangedListener());
 
         // Check that the repository was indexed.
-        // Limit the scope of the index to 2 projects to save time.
         Project project = new Project(ignoredRepoName, File.separator + ignoredRepoName);
         IndexDatabase idb = new IndexDatabase(project);
         assertNotNull(idb);
