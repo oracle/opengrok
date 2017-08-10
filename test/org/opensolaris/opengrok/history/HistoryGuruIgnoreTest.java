@@ -71,8 +71,8 @@ public class HistoryGuruIgnoreTest {
         Assert.assertEquals(0,
                 RuntimeEnvironment.getInstance().getRepositories().size());
 
-        HistoryGuru instance = HistoryGuru.getInstance();
-        instance.addRepositories(repository.getSourceRoot());
+        HistoryGuru histguru = HistoryGuru.getInstance();
+        histguru.addRepositories(repository.getSourceRoot());
 
         // addRepositories() adds the list to the RuntimeEnvironment so the
         // ignored repository should not be there.
@@ -81,7 +81,7 @@ public class HistoryGuruIgnoreTest {
                 collect(Collectors.toList()).contains("mercurial"));
 
         // create cache with initial set of repos
-        instance.createCache();
+        histguru.createCache();
 
         // Check that the history was not actually generated for the repository.
         File dataRoot = new File(repository.getDataRoot());
