@@ -319,7 +319,7 @@ public class IndexerTest {
 
     /**
      * Test that history cache for a repository with ".opengrok_skip_history"
-     * file in its root is not created. XXX
+     * file in its root is not created however its index is.
      * @throws Exception 
      */
     @Test
