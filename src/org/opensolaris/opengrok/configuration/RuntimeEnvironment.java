@@ -281,14 +281,6 @@ public final class RuntimeEnvironment {
         threadConfig.get().setCommandTimeout(timeout);
     }
 
-    public int getIndexRefreshPeriod() {
-        return threadConfig.get().getIndexRefreshPeriod();
-    }
-
-    public void setIndexRefreshPeriod(int seconds) {
-        threadConfig.get().setIndexRefreshPeriod(seconds);
-    }
-
     public Statistics getStatistics() {
         return statistics;
     }
@@ -1959,42 +1951,6 @@ public final class RuntimeEnvironment {
     public void maybeRefreshIndexSearchers() {
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
             maybeRefreshSearcherManager(entry.getValue());
-        }
-    }
-
-    /**
-     * Call maybeRefresh() on each SearcherManager object from dedicated thread
-     * periodically.
-     * If the corresponding index has changed in the meantime, it will be safely
-     * reopened, i.e. without impacting existing IndexSearcher/IndexReader
-     * objects, thus not disrupting searches in progress.
-     */
-    public void startIndexReopenThread() {
-        indexReopenThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!Thread.currentThread().isInterrupted()) {
-                    try {
-                        maybeRefreshIndexSearchers();
-                        Thread.sleep(getIndexRefreshPeriod() * 1000);
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-        }, "indexReopenThread");
-
-        indexReopenThread.start();
-    }
-
-    public void stopIndexReopenThread() {
-        if (indexReopenThread != null) {
-            indexReopenThread.interrupt();
-            try {
-                indexReopenThread.join();
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.INFO, "Cannot join indexReopen thread: ", ex);
-            }
         }
     }
 

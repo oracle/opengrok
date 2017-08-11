@@ -176,7 +176,6 @@ public final class Configuration {
     private final Map<String, String> cmds;  // repository type -> command
     private int tabSize;
     private int commandTimeout; // in seconds
-    private int indexRefreshPeriod; // in seconds
     private boolean scopesEnabled;
     private boolean projectsEnabled;
     private boolean foldingEnabled;
@@ -304,14 +303,6 @@ public final class Configuration {
         this.commandTimeout = commandTimeout;
     }
 
-    public int getIndexRefreshPeriod() {
-        return indexRefreshPeriod;
-    }
-
-    public void setIndexRefreshPeriod(int seconds) {
-        this.indexRefreshPeriod = seconds;
-    }
-
     public String getStatisticsFilePath() {
         return statisticsFilePath;
     }
@@ -374,7 +365,6 @@ public final class Configuration {
         setHitsPerPage(25);
         setIgnoredNames(new IgnoredNames());
         setIncludedNames(new Filter());
-        setIndexRefreshPeriod(3600);
         setIndexVersionedFilesOnly(false);
         setLastEditedDisplayMode(true);
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
