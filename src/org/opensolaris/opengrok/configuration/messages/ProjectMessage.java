@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.history.Repository;
+import static org.opensolaris.opengrok.history.RepositoryFactory.getRepository;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -204,6 +206,19 @@ public class ProjectMessage extends Message {
                     Project project;
                     if ((project = env.getProjects().get(projectName)) != null) {
                         project.setIndexed(true);
+
+                        // Refresh current version of the project's repositories.
+                        for (RepositoryInfo ri : env.getProjectRepositoriesMap().get(project)) {
+                            Repository repo = getRepository(ri);
+
+                            if (repo != null && repo.getCurrentVersion() != null &&
+                                repo.getCurrentVersion().length() > 0) {
+                                    // getRepository() always creates fresh instance
+                                    // of the Repository object so there is no need
+                                    // to call setCurrentVersion() on it.
+                                    ri.setCurrentVersion(repo.determineCurrentVersion());
+                            }
+                        }
                     } else {
                         LOGGER.log(Level.WARNING, "cannot find project " +
                                projectName + " to mark as indexed");

@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.configuration.messages;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.After;
@@ -162,6 +163,10 @@ public class ProjectMessageTest {
         Assert.assertTrue(env.getProjects().containsKey("svn"));
     }
 
+    /**
+     * Test that if the "add" message is applied on already existing project,
+     * the repository list is refreshed.
+     */
     @Test
     public void testRepositoryRefresh() throws Exception {
         Message m = new ProjectMessage();
@@ -261,13 +266,45 @@ public class ProjectMessageTest {
 
     @Test
     public void testIndexed() throws Exception {
+        String projectName = "mercurial";
+
+        // When a project is added, it should be marked as not indexed.
         Message m = new ProjectMessage();
         m.setText("add");
-        m.addTag("mercurial");
+        m.addTag(projectName);
         m.apply(env);
-        Assert.assertFalse(env.getProjects().get("mercurial").isIndexed());
+        Assert.assertFalse(env.getProjects().get(projectName).isIndexed());
+
+        // Get repository info for the project.
+        Project project = env.getProjects().get(projectName);
+        Assert.assertNotNull(project);
+        List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+        Assert.assertNotNull(riList);
+        Assert.assertEquals("there should be just 1 repository", 1, riList.size());
+        RepositoryInfo ri = riList.get(0);
+        Assert.assertNotNull(ri);
+        Assert.assertTrue(ri.getCurrentVersion().contains("8b340409b3a8"));
+
+        // Add some changes to the repository.
+        File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
+        MercurialRepositoryTest.runHgCommand(mercurialRoot,
+            "import", HistoryGuru.getInstance().getClass().
+            getResource("hg-export-subdir.txt").getPath());
+
+        // Test that the project's indexed flag becomes true only after
+        // the message is applied.
         m.setText("indexed");
         m.apply(env);
-        Assert.assertTrue(env.getProjects().get("mercurial").isIndexed());
+        Assert.assertTrue("indexed flag should be set to true",
+                env.getProjects().get(projectName).isIndexed());
+
+        // Test that the "indexed" message triggers refresh of current version
+        // info in related repositories.
+        riList = env.getProjectRepositoriesMap().get(project);
+        Assert.assertNotNull(riList);
+        ri = riList.get(0);
+        Assert.assertNotNull(ri);
+        Assert.assertTrue("current version should be refreshed",
+                ri.getCurrentVersion().contains("c78fa757c524"));
     }
 }

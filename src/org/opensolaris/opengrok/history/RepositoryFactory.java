@@ -89,35 +89,34 @@ public final class RepositoryFactory {
      */
     public static Repository getRepository(File file) throws InstantiationException, IllegalAccessException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        Repository res = null;
+        Repository repo = null;
         for (Repository rep : repositories) {
             if (rep.isRepositoryFor(file)) {
-                res = rep.getClass().newInstance();
+                repo = rep.getClass().newInstance();
                 try {
-                    res.setDirectoryName(file.getCanonicalPath());
+                    repo.setDirectoryName(file.getCanonicalPath());
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE,
                             "Failed to get canonical path name for "
                             + file.getAbsolutePath(), e);
                 }
 
-                if (!res.isWorking()) {
-                    LOGGER.log(
-                            Level.WARNING,
+                if (!repo.isWorking()) {
+                    LOGGER.log(Level.WARNING,
                             "{0} not working (missing binaries?): {1}",
                             new Object[]{
-                                res.getClass().getSimpleName(),
+                                repo.getClass().getSimpleName(),
                                 file.getPath()
                             });
                 }
 
-                if (res.getType() == null || res.getType().length() == 0) {
-                    res.setType(res.getClass().getSimpleName());
+                if (repo.getType() == null || repo.getType().length() == 0) {
+                    repo.setType(repo.getClass().getSimpleName());
                 }
 
-                if (res.getParent() == null || res.getParent().length() == 0) {
+                if (repo.getParent() == null || repo.getParent().length() == 0) {
                     try {
-                        res.setParent(res.determineParent());
+                        repo.setParent(repo.determineParent());
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to get parent for {0}: {1}",
@@ -125,9 +124,9 @@ public final class RepositoryFactory {
                     }
                 }
 
-                if (res.getBranch() == null || res.getBranch().length() == 0) {
+                if (repo.getBranch() == null || repo.getBranch().length() == 0) {
                     try {
-                        res.setBranch(res.determineBranch());
+                        repo.setBranch(repo.determineBranch());
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to get branch for {0}: {1}",
@@ -135,9 +134,9 @@ public final class RepositoryFactory {
                     }
                 }
 
-                if (res.getCurrentVersion() == null || res.getCurrentVersion().length() == 0) {
+                if (repo.getCurrentVersion() == null || repo.getCurrentVersion().length() == 0) {
                     try {
-                        res.setCurrentVersion(res.determineCurrentVersion());
+                        repo.setCurrentVersion(repo.determineCurrentVersion());
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to determineCurrentVersion for {0}: {1}",
@@ -147,14 +146,14 @@ public final class RepositoryFactory {
 
                 // If this repository displays tags only for files changed by tagged
                 // revision, we need to prepare list of all tags in advance.
-                if (env.isTagsEnabled() && res.hasFileBasedTags()) {
-                    res.buildTagList(file);
+                if (env.isTagsEnabled() && repo.hasFileBasedTags()) {
+                    repo.buildTagList(file);
                 }
 
                 break;
             }
         }
-        return res;
+        return repo;
     }
 
     /**

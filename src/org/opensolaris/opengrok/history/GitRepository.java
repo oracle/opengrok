@@ -707,7 +707,7 @@ public class GitRepository extends Repository {
     private static final SimpleDateFormat outputDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm");
 
     @Override
-    String determineCurrentVersion() throws IOException {
+    public String determineCurrentVersion() throws IOException {
         File directory = new File(directoryName);
         List<String> cmd = new ArrayList<>();
         // The delimiter must not be contained in the date format emitted by
