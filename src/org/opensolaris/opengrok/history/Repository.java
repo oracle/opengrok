@@ -400,7 +400,7 @@ public abstract class Repository extends RepositoryInfo {
      *
      * @return the version
      */
-    String determineCurrentVersion() throws IOException {
+    public String determineCurrentVersion() throws IOException {
         return null;
     }
 

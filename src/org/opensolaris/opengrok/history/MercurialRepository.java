@@ -702,7 +702,7 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    String determineCurrentVersion() throws IOException {
+    public String determineCurrentVersion() throws IOException {
         String line = null;
         File directory = new File(directoryName);
 
