@@ -208,15 +208,18 @@ public class ProjectMessage extends Message {
                         project.setIndexed(true);
 
                         // Refresh current version of the project's repositories.
-                        for (RepositoryInfo ri : env.getProjectRepositoriesMap().get(project)) {
-                            Repository repo = getRepository(ri);
+                        List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+                        if (riList != null) {
+                            for (RepositoryInfo ri : riList) {
+                                Repository repo = getRepository(ri);
 
-                            if (repo != null && repo.getCurrentVersion() != null &&
-                                repo.getCurrentVersion().length() > 0) {
-                                    // getRepository() always creates fresh instance
-                                    // of the Repository object so there is no need
-                                    // to call setCurrentVersion() on it.
-                                    ri.setCurrentVersion(repo.determineCurrentVersion());
+                                if (repo != null && repo.getCurrentVersion() != null &&
+                                    repo.getCurrentVersion().length() > 0) {
+                                        // getRepository() always creates fresh instance
+                                        // of the Repository object so there is no need
+                                        // to call setCurrentVersion() on it.
+                                        ri.setCurrentVersion(repo.determineCurrentVersion());
+                                }
                             }
                         }
                     } else {
