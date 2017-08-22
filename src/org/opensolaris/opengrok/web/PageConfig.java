@@ -1233,8 +1233,15 @@ public final class PageConfig {
      * @return location to redirect to or null if failed
      */
     public String getLatestRevisionLocation() {
-        return new String(req.getContextPath() + Prefix.XREF_P +
-                path + "?r=" + getLatestRevision());
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(req.getContextPath());
+        sb.append(Prefix.XREF_P);
+        sb.append(path);
+        sb.append("?r=");
+        sb.append(Util.URIEncode(getLatestRevision()));
+
+        return sb.toString();
     }
 
     /**
