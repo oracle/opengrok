@@ -38,6 +38,7 @@ java.util.List,
 java.util.Set,
 java.util.logging.Level,
 java.util.zip.GZIPInputStream,
+javax.servlet.http.HttpServletResponse,
 
 org.opensolaris.opengrok.analysis.AnalyzerGuru,
 org.opensolaris.opengrok.analysis.Definitions,
@@ -147,95 +148,115 @@ document.pageReady.push(function() { pageReadyList();});
             }
         }
     } else if (rev.length() != 0) {
-        // requesting a previous revision
-        FileAnalyzerFactory a = AnalyzerGuru.find(basename);
-        Genre g = AnalyzerGuru.getGenre(a);
-        String error = null;
-        if (g == Genre.PLAIN|| g == Genre.HTML || g == null) {
-            InputStream in = null;
-            try {
-                in = HistoryGuru.getInstance()
-                    .getRevision(resourceFile.getParent(), basename, rev);
-            } catch (Exception e) {
-                // fall through to error message
-                error = e.getMessage();
-            }
-            if (in != null) {
-                try {
-                    if (g == null) {
-                        a = AnalyzerGuru.find(in);
-                        g = AnalyzerGuru.getGenre(a);
-                    }
-                    if (g == Genre.DATA || g == Genre.XREFABLE
-                        || g == null)
-                    {
+        // requesting a revision
+        if (cfg.isLatestRevision(rev)) {
+            File xrefFile = cfg.findDataFile();
+            if (xrefFile != null) {
 %>
-<div id="src">
-Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
-</div><%
-                    } else {
-%>
-<div id="src">
+<div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
-                        if (g == Genre.PLAIN) {
-                            // We don't have any way to get definitions
-                            // for old revisions currently.
-                            Definitions defs = null;
-                            Annotation annotation = cfg.getAnnotation();
-                            //not needed yet
-                            //annotation.writeTooltipMap(out);
-                            r = IOUtils.createBOMStrippedReader(in);
-                            AnalyzerGuru.writeXref(a, r, out, defs,
-                                annotation, Project.getProject(resourceFile));
-                        } else if (g == Genre.IMAGE) {
+                Util.dump(out, xrefFile, xrefFile.getName().endsWith(".gz"));
     %></pre>
-    <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
-    <pre><%
-                        } else if (g == Genre.HTML) {
-                            r = new InputStreamReader(in);
-                            Util.dump(out, r);
+</div><%
+            }
+        } else {
+            // requesting a previous revision
+            FileAnalyzerFactory a = AnalyzerGuru.find(basename);
+            Genre g = AnalyzerGuru.getGenre(a);
+            String error = null;
+            if (g == Genre.PLAIN|| g == Genre.HTML || g == null) {
+                InputStream in = null;
+                try {
+                    in = HistoryGuru.getInstance()
+                        .getRevision(resourceFile.getParent(), basename, rev);
+                } catch (Exception e) {
+                    // fall through to error message
+                    error = e.getMessage();
+                }
+                if (in != null) {
+                    try {
+                        if (g == null) {
+                            a = AnalyzerGuru.find(in);
+                            g = AnalyzerGuru.getGenre(a);
+                        }
+                        if (g == Genre.DATA || g == Genre.XREFABLE
+                            || g == null)
+                        {
+    %>
+    <div id="src">
+    Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
+    </div><%
                         } else {
-    %> Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">download <%= basename %></a><%
+    %>
+    <div id="src">
+        <pre><%
+                            if (g == Genre.PLAIN) {
+                                // We don't have any way to get definitions
+                                // for old revisions currently.
+                                Definitions defs = null;
+                                Annotation annotation = cfg.getAnnotation();
+                                //not needed yet
+                                //annotation.writeTooltipMap(out);
+                                r = IOUtils.createBOMStrippedReader(in);
+                                AnalyzerGuru.writeXref(a, r, out, defs,
+                                    annotation, Project.getProject(resourceFile));
+                            } else if (g == Genre.IMAGE) {
+        %></pre>
+        <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
+        <pre><%
+                            } else if (g == Genre.HTML) {
+                                r = new InputStreamReader(in);
+                                Util.dump(out, r);
+                            } else {
+        %> Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">download <%= basename %></a><%
+                            }
+                        }
+                    } catch (IOException e) {
+                        error = e.getMessage();
+                    } finally {
+                        if (r != null) {
+                            try { r.close(); in = null;}
+                            catch (Exception e) { /* ignore */ }
+                        }
+                        if (in != null) {
+                            try { in.close(); }
+                            catch (Exception e) { /* ignore */ }
                         }
                     }
-                } catch (IOException e) {
-                    error = e.getMessage();
-                } finally {
-                    if (r != null) {
-                        try { r.close(); in = null;}
-                        catch (Exception e) { /* ignore */ }
-                    }
-                    if (in != null) {
-                        try { in.close(); }
-                        catch (Exception e) { /* ignore */ }
+        %></pre>
+    </div><%
+                } else {
+    %>
+    <h3 class="error">Error reading file</h3><%
+                    if (error != null) {
+    %>
+    <p class="error"><%= error %></p><%
                     }
                 }
-    %></pre>
-</div><%
+            } else if (g == Genre.IMAGE) {
+    %>
+    <div id="src">
+        <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
+    </div><%
             } else {
-%>
-<h3 class="error">Error reading file</h3><%
-                if (error != null) {
-%>
-<p class="error"><%= error %></p><%
-                }
+    %>
+    <div id="src">
+    Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
+    </div><%
             }
-        } else if (g == Genre.IMAGE) {
-%>
-<div id="src">
-    <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
-</div><%
-        } else {
-%>
-<div id="src">
-Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
-</div><%
         }
     } else {
         // requesting cross referenced file
         File xrefFile = null;
         if (!cfg.annotate()) {
-            xrefFile = cfg.findDataFile();
+            // Get the latest revision and redirect so that the revision number
+            // appears in the URL.
+            String location = cfg.getLatestRevisionLocation();
+            if (location != null) {
+                response.sendRedirect(location);
+            } else {
+                xrefFile = cfg.findDataFile();
+            }
         }
         if (xrefFile != null) {
 %>
