@@ -1237,7 +1237,7 @@ public final class PageConfig {
 
         sb.append(req.getContextPath());
         sb.append(Prefix.XREF_P);
-        sb.append(path);
+        sb.append(Util.URIEncodePath(path));
         sb.append("?r=");
         sb.append(Util.URIEncode(getLatestRevision()));
 
