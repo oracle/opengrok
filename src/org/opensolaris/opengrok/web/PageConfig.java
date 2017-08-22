@@ -1193,12 +1193,7 @@ public final class PageConfig {
                 path, env.isCompressXref());
     }
 
-    /**
-     * Get the location of cross reference for given file containing the current
-     * revision.
-     * @return location to redirect to or null if failed
-     */
-    public String getLatestRevisionLocation() {
+    private String getLatestRevision() {
         if (!env.isHistoryEnabled()) {
             return null;
         }
@@ -1220,8 +1215,26 @@ public final class PageConfig {
             return null;
         }
 
+        return he.getRevision();
+    }
+
+    /**
+     * Is revision the latest revision ?
+     * @param rev revision string
+     * @return true if latest revision, false otherwise
+     */
+    public boolean isLatestRevision(String rev) {
+        return rev.equals(getLatestRevision());
+    }
+
+    /**
+     * Get the location of cross reference for given file containing the current
+     * revision.
+     * @return location to redirect to or null if failed
+     */
+    public String getLatestRevisionLocation() {
         return new String(req.getContextPath() + Prefix.XREF_P +
-                path + "?r=" + he.getRevision());
+                path + "?r=" + getLatestRevision());
     }
 
     /**
