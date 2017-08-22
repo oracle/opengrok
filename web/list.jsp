@@ -38,6 +38,7 @@ java.util.List,
 java.util.Set,
 java.util.logging.Level,
 java.util.zip.GZIPInputStream,
+javax.servlet.http.HttpServletResponse,
 
 org.opensolaris.opengrok.analysis.AnalyzerGuru,
 org.opensolaris.opengrok.analysis.Definitions,
@@ -235,7 +236,13 @@ Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a
         // requesting cross referenced file
         File xrefFile = null;
         if (!cfg.annotate()) {
-            xrefFile = cfg.findDataFile();
+            // Get the latest revision and redirect.
+            String location = cfg.getLatestRevisionLocation();
+            if (location != null) {
+                response.sendRedirect(location);
+            } else {
+                xrefFile = cfg.findDataFile();
+            }
         }
         if (xrefFile != null) {
 %>

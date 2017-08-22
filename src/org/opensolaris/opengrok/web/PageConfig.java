@@ -60,6 +60,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.history.History;
+import org.opensolaris.opengrok.history.HistoryEntry;
+import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -1191,6 +1194,33 @@ public final class PageConfig {
     }
 
     /**
+     * Get the location of cross reference for given file containing the current
+     * revision.
+     * @return location to redirect to or null if failed
+     */
+    public String getLatestRevisionLocation() {
+        History hist;
+        try {
+            hist = HistoryGuru.getInstance().
+                    getHistory(new File(env.getSourceRootFile(), path));
+        } catch (HistoryException ex) {
+            return null;
+        }
+
+        if (hist == null) {
+            return null;
+        }
+
+        HistoryEntry he = hist.getHistoryEntries().get(0);
+        if (he == null) {
+            return null;
+        }
+
+        return new String(req.getContextPath() + Prefix.XREF_P +
+                path + "?r=" + he.getRevision());
+    }
+
+    /**
      * Get the path the request should be redirected (if any).
      *
      * @return {@code null} if there is no reason to redirect, the URI encoded
@@ -1331,7 +1361,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get the config wrt. the given request. If there is none yet, a new config
+     * Get the config w.r.t. the given request. If there is none yet, a new config
      * gets created, attached to the request and returned.
      * <p>
      *
