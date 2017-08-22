@@ -254,6 +254,7 @@ document.pageReady.push(function() { pageReadyList();});
             String location = cfg.getLatestRevisionLocation();
             if (location != null) {
                 response.sendRedirect(location);
+                return;
             } else {
                 xrefFile = cfg.findDataFile();
             }
