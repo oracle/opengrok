@@ -1199,6 +1199,10 @@ public final class PageConfig {
      * @return location to redirect to or null if failed
      */
     public String getLatestRevisionLocation() {
+        if (!env.isHistoryEnabled()) {
+            return null;
+        }
+
         History hist;
         try {
             hist = HistoryGuru.getInstance().
