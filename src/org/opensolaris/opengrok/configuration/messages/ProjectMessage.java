@@ -91,7 +91,7 @@ public class ProjectMessage extends Message {
         // since addRepositories() calls getRepository() for each of
         // the repos.
         hg.addRepositories(new File[]{projDir}, repos,
-            env.getIgnoredNames(), env.getScanningDepth());
+            env.getIgnoredNames());
 
         return repos;
     }

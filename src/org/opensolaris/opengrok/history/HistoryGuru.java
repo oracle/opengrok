@@ -324,7 +324,7 @@ public final class HistoryGuru {
         return Collections.emptyMap();
     }
 
-    public void addRepositories(File[] files, Collection<RepositoryInfo> repos,
+    private void addRepositories(File[] files, Collection<RepositoryInfo> repos,
             IgnoredNames ignoredNames, int depth) {
         addRepositories(files, repos, ignoredNames, true, depth);
     }
@@ -410,6 +410,18 @@ public final class HistoryGuru {
     }
 
     /**
+     * recursively search for repositories in given directories.
+     *
+     * @param files list of files to check if they contain a repo
+     * @param repos list of found repos
+     * @param ignoredNames what files to ignore
+     */
+    public void addRepositories(File[] files, Collection<RepositoryInfo> repos,
+            IgnoredNames ignoredNames) {
+        addRepositories(files, repos, ignoredNames, true, 0);
+    }
+
+    /**
      * Search through the all of the directories and add all of the source
      * repositories found.
      *
@@ -418,7 +430,7 @@ public final class HistoryGuru {
     public void addRepositories(String dir) {
         List<RepositoryInfo> repos = new ArrayList<>();
         addRepositories(new File[]{new File(dir)}, repos,
-                RuntimeEnvironment.getInstance().getIgnoredNames(), 0);
+                RuntimeEnvironment.getInstance().getIgnoredNames());
         RuntimeEnvironment.getInstance().setRepositories(repos);
         invalidateRepositories(repos);
     }
