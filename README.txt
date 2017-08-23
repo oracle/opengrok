@@ -350,7 +350,7 @@ It basically works like this:
   2. index the project. It will become searchable after that.
 
      OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
-         OpenGrok indexpart /var/opengrok/src /foo
+         OpenGrok indexpart /foo
 
   3. make the project "indexed" status of the project persistent so that if
      webapp is redeployed the project will be still visible:
