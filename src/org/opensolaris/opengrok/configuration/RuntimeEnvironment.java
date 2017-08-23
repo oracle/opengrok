@@ -438,11 +438,11 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get descriptions of all projects.
+     * Get names of all projects.
      *
-     * @return a list containing descriptions of all projects.
+     * @return a list containing names of all projects.
      */
-    public List<String> getProjectDescriptions() {
+    public List<String> getProjectNames() {
         return getProjectList().stream().
             map(Project::getName).collect(Collectors.toList());
     }
@@ -2013,7 +2013,7 @@ public final class RuntimeEnvironment {
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
             // If a project is gone, close the corresponding SearcherManager
             // so that it cannot produce new IndexSearcher objects.
-            if (!getProjectDescriptions().contains(entry.getKey())) {
+            if (!getProjectNames().contains(entry.getKey())) {
                 try {
                     LOGGER.log(Level.FINE,
                         "closing SearcherManager for project" + entry.getKey());
