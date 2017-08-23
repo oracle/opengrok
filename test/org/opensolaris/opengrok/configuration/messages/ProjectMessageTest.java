@@ -62,23 +62,15 @@ public class ProjectMessageTest {
     private static TestRepository repository = new TestRepository();
     private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream(
-                "repositories.zip"));
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        repository.destroy();
-    }
-
     @Before
     public void setUp() throws IOException {
         Assume.assumeTrue(new MercurialRepository().isWorking());
         Assume.assumeTrue(new SubversionRepository().isWorking());
         Assume.assumeTrue(new GitRepository().isWorking());
+
+        repository = new TestRepository();
+        repository.create(HistoryGuru.class.getResourceAsStream(
+                "repositories.zip"));
 
         env = RuntimeEnvironment.getInstance();
         env.removeAllMessages();
@@ -96,6 +88,8 @@ public class ProjectMessageTest {
         env.setProjects(new ConcurrentHashMap<>());
         env.setRepositories(new ArrayList<RepositoryInfo>());
         env.getProjectRepositoriesMap().clear();
+
+        repository.destroy();
     }
 
     @Test
@@ -145,10 +139,20 @@ public class ProjectMessageTest {
         m.addTag("mercurial");
         Assert.assertTrue(env.getRepositories().isEmpty());
         Assert.assertTrue(env.getProjects().isEmpty());
+
+        // Add a sub-repository.
+        File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
+        File subDir = new File(mercurialRoot, "usr");
+        Assert.assertTrue(subDir.mkdir());
+        MercurialRepositoryTest.runHgCommand(mercurialRoot,
+            "clone", mercurialRoot.getAbsolutePath(),
+            mercurialRoot.getAbsolutePath() + File.separator + "usr" + File.separator + "closed");
+
+        env.setScanningDepth(3);
         m.apply(env);
         Assert.assertTrue(env.getProjects().containsKey("mercurial"));
         Assert.assertEquals(1, env.getProjects().size());
-        Assert.assertEquals(1, env.getRepositories().size());
+        Assert.assertEquals(2, env.getRepositories().size());
 
         // Add more projects and check that they have been added incrementally.
         // At the same time, it checks that multiple projects can be added
@@ -158,7 +162,7 @@ public class ProjectMessageTest {
         m.addTag("svn");
         m.apply(env);
         Assert.assertEquals(3, env.getProjects().size());
-        Assert.assertEquals(3, env.getRepositories().size());
+        Assert.assertEquals(4, env.getRepositories().size());
         Assert.assertTrue(env.getProjects().containsKey("git"));
         Assert.assertTrue(env.getProjects().containsKey("svn"));
     }

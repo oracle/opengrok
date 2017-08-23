@@ -195,6 +195,13 @@ public final class Configuration {
     private boolean handleHistoryOfRenamedFiles;
 
     public static final double defaultRamBufferSize = 16;
+
+    /**
+     * The directory hierarchy depth to limit the scanning for repositories.
+     * E.g. if the /mercurial/ directory (relative to source root) is a repository
+     * and /mercurial/usr/closed/ is sub-repository, the latter will be discovered
+     * only if the depth is set to 3 or greater.
+     */
     public static final int defaultScanningDepth = 3;
 
     /**
