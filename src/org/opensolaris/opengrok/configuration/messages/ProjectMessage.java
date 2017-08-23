@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -234,6 +235,11 @@ public class ProjectMessage extends Message {
 
                 env.refreshDateForLastIndexRun();
                 break;
+            case "list":
+                return (env.getProjectNames().stream().collect(Collectors.joining("\n")).getBytes());
+            case "list-indexed":
+                return (env.getProjectList().stream().filter(p -> p.isIndexed()).
+                        map(p -> p.getName()).collect(Collectors.joining("\n")).getBytes());
         }
 
         return ("command \"" + getText() + "\" for projects " +
@@ -247,19 +253,22 @@ public class ProjectMessage extends Message {
      */
     @Override
     public void validate() throws Exception {
-        if (getTags().isEmpty()) {
-            throw new Exception("The message must contain a tag (project name(s))");        
-        }
-
         String command = getText();
+
         // Text field carries the command.
         if (command == null) {
             throw new Exception("The message must contain a text - \"add\", \"delete\" or \"indexed\"");
         }
         if (command.compareTo("add") != 0 &&
             command.compareTo("delete") != 0 &&
+            command.compareTo("list") != 0 &&
+            command.compareTo("list-indexed") != 0 &&
             command.compareTo("indexed") != 0) {
             throw new Exception("The message must contain either 'add', 'delete' or 'indexed' text");
+        }
+
+        if (!command.contains("list") && getTags().isEmpty()) {
+            throw new Exception("The message must contain a tag (project name(s))");        
         }
 
         super.validate();

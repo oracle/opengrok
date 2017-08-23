@@ -29,12 +29,10 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -310,5 +308,34 @@ public class ProjectMessageTest {
         Assert.assertNotNull(ri);
         Assert.assertTrue("current version should be refreshed",
                 ri.getCurrentVersion().contains("c78fa757c524"));
+    }
+
+    @Test
+    public void testList() throws Exception {
+        // Add a project
+        Message m = new ProjectMessage();
+        m.setText("add");
+        m.addTag("mercurial");
+        m.apply(env);
+
+        // Mark it as indexed.
+        m.setText("indexed");
+        m.apply(env);
+
+        // Add another project.
+        m.setText("add");
+        m.addTag("git");
+        m.apply(env);
+
+        m.setTags(new TreeSet<String>());
+        m.setText("list");
+        String out = new String(m.apply(env));
+        Assert.assertTrue(out.contains("mercurial"));
+        Assert.assertTrue(out.contains("git"));
+
+        m.setText("list-indexed");
+        out = new String(m.apply(env));
+        Assert.assertTrue(out.contains("mercurial"));
+        Assert.assertFalse(out.contains("git"));
     }
 }
