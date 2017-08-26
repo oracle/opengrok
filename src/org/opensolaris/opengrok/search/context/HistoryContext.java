@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.search.context;
@@ -43,10 +43,11 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.Prefix;
+import org.opensolaris.opengrok.web.Util;
 
 /**
  * it is supposed to get the matching lines from history log files.
- * since lucene does not easily give the match context.
+ * since Lucene does not easily give the match context.
  */
 public class HistoryContext {
 
@@ -199,21 +200,28 @@ public class HistoryContext {
      * @param end position of the first char after the match
      * @param flatten should multi-line log entries be flattened to a single
      * @param path path to the file
-     * @param wcontext web context (begin of url)
+     * @param wcontext web context (begin of URL)
      * @param nrev old revision
      * @param rev current revision
      * line? If {@code true}, replace newline with space.
      */
-    private void writeMatch(Appendable out, String line,
-                            int start, int end, boolean flatten, String path, String wcontext, String nrev, String rev)
+    protected static void writeMatch(Appendable out, String line,
+                            int start, int end, boolean flatten, String path,
+                            String wcontext, String nrev, String rev)
             throws IOException {
+
         String prefix = line.substring(0, start);
         String match = line.substring(start, end);
         String suffix = line.substring(end);
 
-        if (wcontext!=null && nrev!=null && !wcontext.isEmpty() ) {
-            //does below need to be encoded? see bug 16985
-            out.append("<a href="+wcontext+Prefix.DIFF_P+path+"?r2="+path+"@"+rev+"&r1="+path+"@"+nrev+" title=\"diff to previous version\">diff</a> ");
+        if (wcontext != null && nrev != null && !wcontext.isEmpty()) {
+            out.append("<a href=\"");
+            printHTML(out, wcontext + Prefix.DIFF_P +
+                    Util.URIEncodePath(path) +
+                    "?r2=" + Util.URIEncodePath(path) + "@" + rev +
+                    "&r1=" + Util.URIEncodePath(path) + "@" + nrev +
+                    "\" title=\"diff to previous version\"", flatten);
+            out.append(">diff</a> ");
         }
 
         printHTML(out, prefix, flatten);
@@ -231,7 +239,7 @@ public class HistoryContext {
      * @param flatten should multi-line strings be flattened to a single
      * line? If {@code true}, replace newline with space.
      */
-    private void printHTML(Appendable out, String str, boolean flatten)
+    private static void printHTML(Appendable out, String str, boolean flatten)
             throws IOException {
         for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);

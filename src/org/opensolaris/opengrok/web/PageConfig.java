@@ -185,7 +185,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get all data required to create a diff view wrt. to this request in one
+     * Get all data required to create a diff view w.r.t. to this request in one
      * go.
      *
      * @return an instance with just enough information to render a sufficient
