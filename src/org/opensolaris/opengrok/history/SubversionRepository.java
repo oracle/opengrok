@@ -494,8 +494,9 @@ public class SubversionRepository extends Repository {
         try {
             History hist = getHistory(new File(getDirectoryName()), null, 1);
             HistoryEntry he = hist.getHistoryEntries().get(0);
-            curVersion = he.getDate() + ": " + he.getRevision() +
-                    " " + he.getAuthor() + " " + he.getMessage();
+            curVersion = outputDateFormat.format(he.getDate()) + " " +
+                    he.getRevision() + " " + he.getAuthor() + " " +
+                    he.getMessage();
         } catch (HistoryException ex) {
             LOGGER.log(Level.WARNING, "cannot get current version info for {0}",
                     getDirectoryName());

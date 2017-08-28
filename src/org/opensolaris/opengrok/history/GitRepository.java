@@ -704,8 +704,6 @@ public class GitRepository extends Repository {
         return branch;
     }
 
-    private static final SimpleDateFormat outputDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm");
-
     @Override
     public String determineCurrentVersion() throws IOException {
         File directory = new File(directoryName);
@@ -737,8 +735,8 @@ public class GitRepository extends Repository {
 
         try {
             Date date = getDateFormat().parse(output.substring(0, indexOf));
-            return String.format("%s%s",
-                    new Object[]{outputDateFormat.format(date), output.substring(indexOf)});
+            return String.format("%s %s",
+                    new Object[]{outputDateFormat.format(date), output.substring(indexOf + 1)});
         } catch (ParseException ex) {
             throw new IOException(ex);
         }
