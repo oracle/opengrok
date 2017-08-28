@@ -713,7 +713,7 @@ public class MercurialRepository extends Repository {
         cmd.add("-l");
         cmd.add("1");
         cmd.add("--template");
-        cmd.add("{date|isodate}: {node|short} {author} {desc|strip}");
+        cmd.add("{date|isodate} {node|short} {author} {desc|strip}");
 
         Executor executor = new Executor(cmd, directory);
         if (executor.exec(false) != 0) {

@@ -23,6 +23,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 
 /**
  * Class to contain the common info for a repository. This object will live on
@@ -43,6 +44,11 @@ public class RepositoryInfo implements Serializable {
     protected String parent;
     protected String branch;
     protected String currentVersion;
+
+    /**
+     * format used for printing the date in {@code currentVersion}
+     */
+    protected static final SimpleDateFormat outputDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm Z");
 
     /**
      * Empty constructor to support serialization.
