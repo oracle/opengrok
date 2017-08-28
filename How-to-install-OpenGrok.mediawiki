@@ -8,7 +8,7 @@ You need the following:
 
 * [http://www.oracle.com/technetwork/java/ JDK] 1.8 or higher
 * {OpenGrok '''binaries''' from https://github.com/OpenGrok/OpenGrok/releases (either the package for Solaris, or .tar.gz with binaries, NOT the src !)
-* [http://ctags.sourceforge.net Exuberant Ctags] for analysis (https://github.com/universal-ctags is recommended)
+* https://github.com/universal-ctags for analysis (Exuberant ctags can be used too however they are not as supported as Universal ctags)
 * A servlet container like [https://glassfish.dev.java.net/ GlassFish] or [http://tomcat.apache.org Tomcat] (8.x or later) also running with java at least 1.8
 * If history is needed, appropriate binary (in some cases also cvs/svn repository) must be present on the system (e.g. [http://subversion.tigris.org Subversion] or [http://www.selenic.com/mercurial/wiki/index.cgi Mercurial] or [http://dlc.sun.com/osol/devpro/downloads/current/ SCCS] or ... )
 * 2GB of memory for indexing process using OpenGrok script (can use less, this is scaled for bigger deployments)
@@ -20,11 +20,10 @@ You need the following:
 * [https://github.com/OpenGrok/OpenGrok/blob/master/OpenGrok Opengrok script trunk source]
 * [https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt Sample setup]
 * [https://github.com/OpenGrok/OpenGrok/blob/master/src/org/opensolaris/opengrok/index/CommandLineOptions.java#L71 development trunk usage info (CommandLineOptions class]]
-* [https://github.com/OpenGrok/OpenGrok/blob/master/README.txt#L384 manual javadb installation for historycache to be kept in derby instead of plain files]
 
 == INDEX and web application setup ==
 
-After installing the package (e.g. <code>pkgadd -d ./OSOLopengrok-0.?.pkg</code>) or untgzing the binaries in your target directory (e.g. <code>cd your_target_dir ; gzcat opengrok-0.?.tar.gz | tar xf - </code>), you just need to create the index and then you can use the command line interface to grok your sources.
+After installing the package or unpacking the binaries in your target directory (e.g. <code>cd your_target_dir ; gzcat opengrok-VERSION.tar.gz | tar xf - </code>), you just need to create the index and then you can use the command line interface to grok your sources.
 
 It is also necessary to install SCM environment accessible by OpenGrok for your repositories for the history indexing to work.
 
