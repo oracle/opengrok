@@ -170,9 +170,12 @@ public class SubversionRepository extends Repository {
      * @param sinceRevision the revision number immediately preceding the first
      *                      revision we want, or {@code null} to fetch the entire
      *                      history
+     * @param numEntries number of entries to return. If 0, return all.
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file, String sinceRevision) {
+    Executor getHistoryLogExecutor(final File file, String sinceRevision,
+            int numEntries) {
+
         String abs;
         try {
             abs = file.getCanonicalPath();
@@ -194,6 +197,9 @@ public class SubversionRepository extends Repository {
         cmd.addAll(getAuthCommandLineParams());
         cmd.add("--xml");
         cmd.add("-v");
+        if (numEntries > 0) {
+            cmd.add("-l" + numEntries);
+        }
         if (sinceRevision != null) {
             cmd.add("-r");
             // We would like to use sinceRevision+1 here, but if no new
@@ -252,9 +258,14 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file, String sinceRevision)
+    History getHistory(File file, String sinceRevision) throws HistoryException {
+        return getHistory(file, sinceRevision, 0);
+    }
+
+    private History getHistory(File file, String sinceRevision, int numEntries)
             throws HistoryException {
-        return new SubversionHistoryParser().parse(file, this, sinceRevision);
+        return new SubversionHistoryParser().parse(file, this, sinceRevision,
+                numEntries);
     }
 
     private String escapeFileName(String name) {
@@ -474,5 +485,22 @@ public class SubversionRepository extends Repository {
         }
 
         return branch;
+    }
+
+    @Override
+    public String determineCurrentVersion() throws IOException {
+        String curVersion = null;
+
+        try {
+            History hist = getHistory(new File(getDirectoryName()), null, 1);
+            HistoryEntry he = hist.getHistoryEntries().get(0);
+            curVersion = he.getDate() + ": " + he.getRevision() +
+                    " " + he.getAuthor() + " " + he.getMessage();
+        } catch (HistoryException ex) {
+            LOGGER.log(Level.WARNING, "cannot get current version info for {0}",
+                    getDirectoryName());
+        }
+
+        return curVersion;
     }
 }
