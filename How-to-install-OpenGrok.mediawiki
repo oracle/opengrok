@@ -21,7 +21,7 @@ You need the following:
 * [https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt Sample setup]
 * [https://github.com/OpenGrok/OpenGrok/blob/master/src/org/opensolaris/opengrok/index/CommandLineOptions.java#L71 development trunk usage info (CommandLineOptions class]]
 
-== INDEX and web application setup ==
+== Indexing and web application setup ==
 
 After installing the package or unpacking the binaries in your target directory (e.g. <code>cd your_target_dir ; gzcat opengrok-VERSION.tar.gz | tar xf - </code>), you just need to create the index and then you can use the command line interface to grok your sources.
 
