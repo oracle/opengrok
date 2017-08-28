@@ -168,8 +168,8 @@ def post_request(url, timeout, data, headers=[], proxy=None):
         else:
             raise MyError("server returned non-JSON output")
     except HTTPError as e:
-        print e.code
-        raise MyError("got HTTP error: {} ({})".format(e.code, e.reason))
+        # print "got HTTP error: {} ({})".format(e.code, e.reason)
+        raise e
 
 def upload_file(filepath, upload_url, headers, timeout, proxy=None):
     '''Upload file to given Github upload URL
@@ -248,15 +248,21 @@ def main():
     headers['Authorization'] = _get_auth(user, password)
 
     # Check if the tag is not already present in the repo.
+    print "Checking if tag " + tag + " is already present in releases"
     _url = "https://api.github.com"
     _path = '%s%s%s' % ("/repos/", repo, "/releases/tags/" + tag)
     url = '%s%s' % (_url, _path)
-    output_json = post_request(url,
-        arguments.timeout, None, headers, proxy)
-    if output_json["tag_name"] == tag:
-        print "tag '" + tag + "' already present in the releases"
-        sys.exit(1)
-
+    try:
+        output_json = post_request(url,
+            arguments.timeout, None, headers, proxy)
+        if output_json["tag_name"] == tag:
+            print "tag '" + tag + "' already present in the releases"
+            sys.exit(1)
+    except HTTPError as e:
+        if e.code != 404:
+            print "Got HTTP error: " + str(e.value)
+            sys.exit(1)
+ 
     prerelease = False
     if arguments.prerelease:
         prerelease = True
@@ -295,8 +301,8 @@ def main():
         release_json = post_request(url,
             arguments.timeout, payload, headers, proxy)
         upload_url = release_json["upload_url"]
-    except MyError as e:
-        print 'My exception occurred, value:', e.value
+    except HTTPError as e:
+        print 'HTTP exception occurred, value:', e.value
         sys.exit(1)
 
     if upload_url:
