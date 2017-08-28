@@ -72,6 +72,8 @@ public class SubversionRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "svn";
 
+    private static final String URLprefix = "URL:";
+
     protected String reposPath;
 
     public SubversionRepository() {
@@ -424,9 +426,8 @@ public class SubversionRepository extends Repository {
         return result;
     }
 
-    @Override
-    String determineParent() throws IOException {
-        String parent = null;
+    private String getInfoPart(String partName) throws IOException {
+        String part = null;
         File directory = new File(directoryName);
 
         List<String> cmd = new ArrayList<>();
@@ -441,23 +442,37 @@ public class SubversionRepository extends Repository {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = in.readLine()) != null) {
-                if (line.startsWith("URL:")) {
+                if (line.startsWith(partName)) {
                     String parts[] = line.split("\\s+");
                     if (parts.length != 2) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to get parent for {0}", directoryName);
                     }
-                    parent = parts[1];
+                    part = parts[1];
                     break;
                 }
             }
         }
 
-        return parent;
+        return part;
     }
 
     @Override
-    String determineBranch() {
-        return null;
+    String determineParent() throws IOException {
+        return getInfoPart(URLprefix);
+    }
+
+    @Override
+    String determineBranch() throws IOException {
+        String branch = null;
+
+        String url = getInfoPart(URLprefix);
+        int idx;
+        final String branchesStr = "branches/";
+        if ((idx = url.indexOf(branchesStr)) > 0) {
+            branch = url.substring(idx + branchesStr.length());
+        }
+
+        return branch;
     }
 }

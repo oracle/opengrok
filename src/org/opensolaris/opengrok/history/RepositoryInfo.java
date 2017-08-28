@@ -137,7 +137,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * get property type
+     * get property parent
      *
      * @return parent
      */
