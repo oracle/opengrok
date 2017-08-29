@@ -1210,7 +1210,16 @@ public final class PageConfig {
             return null;
         }
 
-        HistoryEntry he = hist.getHistoryEntries().get(0);
+        List<HistoryEntry> hlist = hist.getHistoryEntries();
+        if (hlist == null) {
+            return null;
+        }
+
+        if (hlist.size() == 0) {
+            return null;
+        }
+
+        HistoryEntry he = hlist.get(0);
         if (he == null) {
             return null;
         }
@@ -1234,12 +1243,17 @@ public final class PageConfig {
      */
     public String getLatestRevisionLocation() {
         StringBuilder sb = new StringBuilder();
+        String revStr;
+
+        if ((revStr = getLatestRevision()) == null) {
+            return null;
+        }
 
         sb.append(req.getContextPath());
         sb.append(Prefix.XREF_P);
         sb.append(Util.URIEncodePath(path));
         sb.append("?r=");
-        sb.append(Util.URIEncode(getLatestRevision()));
+        sb.append(Util.URIEncode(revStr));
 
         return sb.toString();
     }
