@@ -267,8 +267,10 @@ public class PageConfigTest {
 
         PageConfig cfg = PageConfig.get(req2);
         String rev = cfg.getLatestRevision();
-
         assertNull(rev);
+
+        String location = cfg.getLatestRevisionLocation();
+        assertNull(location);
     }
 
     @Test
