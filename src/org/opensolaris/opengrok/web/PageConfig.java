@@ -1193,15 +1193,15 @@ public final class PageConfig {
                 path, env.isCompressXref());
     }
 
-    private String getLatestRevision() {
-        if (!env.isHistoryEnabled()) {
+    protected String getLatestRevision() {
+        if (!getEnv().isHistoryEnabled()) {
             return null;
         }
 
         History hist;
         try {
             hist = HistoryGuru.getInstance().
-                    getHistory(new File(env.getSourceRootFile(), path));
+                    getHistory(new File(getEnv().getSourceRootFile(), getPath()));
         } catch (HistoryException ex) {
             return null;
         }
