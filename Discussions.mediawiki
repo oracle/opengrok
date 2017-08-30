@@ -4,9 +4,9 @@ IRC channel #opengrok on [http://www.freenode.net Freenode]
 
 === Slack ===
 
-http://opengrok.slack.com
-(ask for invite on below list)
-http://opengrok.slackarchive.com
+http://opengrok.slack.com <br>
+(ask for invite on below list) <br>
+http://opengrok.slackarchive.com <br>
 
 === Mailing lists ===
 
