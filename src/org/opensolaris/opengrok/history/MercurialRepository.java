@@ -132,7 +132,7 @@ public class MercurialRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("branch");
 
-        Executor executor = new Executor(cmd, new File(directoryName));
+        Executor executor = new Executor(cmd, new File(getDirectoryName()));
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
@@ -156,8 +156,8 @@ public class MercurialRepository extends Repository {
         String filename = "";
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        if (abs.length() > directoryName.length()) {
-            filename = abs.substring(directoryName.length() + 1);
+        if (abs.length() > getDirectoryName().length()) {
+            filename = abs.substring(getDirectoryName().length() + 1);
         }
 
         List<String> cmd = new ArrayList<>();
@@ -206,7 +206,7 @@ public class MercurialRepository extends Repository {
             cmd.add(filename);
         }
 
-        return new Executor(cmd, new File(directoryName), sinceRevision != null);
+        return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
     }
 
     /**
@@ -219,7 +219,7 @@ public class MercurialRepository extends Repository {
     private InputStream getHistoryRev(String fullpath, String rev) {
         InputStream ret = null;
 
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         Process process = null;
         String revision = rev;
@@ -229,7 +229,7 @@ public class MercurialRepository extends Repository {
         }
         try {
             String filename
-                    = fullpath.substring(directoryName.length() + 1);
+                    = fullpath.substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {RepoCommand, "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
@@ -284,7 +284,7 @@ public class MercurialRepository extends Repository {
     private String findOriginalName(String fullpath, String full_rev_to_find)
             throws IOException {
         Matcher matcher = LOG_COPIES_PATTERN.matcher("");
-        String file = fullpath.substring(directoryName.length() + 1);
+        String file = fullpath.substring(getDirectoryName().length() + 1);
         ArrayList<String> argv = new ArrayList<>();
 
         // Extract {rev} from the full revision specification string.
@@ -375,7 +375,7 @@ public class MercurialRepository extends Repository {
             }
         }
 
-        return (fullpath.substring(0, directoryName.length() + 1) + file);
+        return (fullpath.substring(0, getDirectoryName().length() + 1) + file);
     }
 
     @Override
@@ -514,7 +514,7 @@ public class MercurialRepository extends Repository {
 
     @Override
     public void update() throws IOException {
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -686,7 +686,7 @@ public class MercurialRepository extends Repository {
 
     @Override
     String determineParent() throws IOException {
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -704,7 +704,7 @@ public class MercurialRepository extends Repository {
     @Override
     public String determineCurrentVersion() throws IOException {
         String line = null;
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);

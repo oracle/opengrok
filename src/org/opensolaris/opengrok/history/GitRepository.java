@@ -118,8 +118,8 @@ public class GitRepository extends Repository {
 
         String abs = file.getCanonicalPath();
         String filename = "";
-        if (abs.length() > directoryName.length()) {
-            filename = abs.substring(directoryName.length() + 1);
+        if (abs.length() > getDirectoryName().length()) {
+            filename = abs.substring(getDirectoryName().length() + 1);
         }
 
         List<String> cmd = new ArrayList<>();
@@ -167,10 +167,10 @@ public class GitRepository extends Repository {
             cmd.add(sinceRevision + "..");
         }
 
-        if (file.getCanonicalPath().length() > directoryName.length() + 1) {
+        if (file.getCanonicalPath().length() > getDirectoryName().length() + 1) {
             // this is a file in the repository
             cmd.add("--");
-            cmd.add(file.getCanonicalPath().substring(directoryName.length() + 1));
+            cmd.add(file.getCanonicalPath().substring(getDirectoryName().length() + 1));
         }
 
         return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
@@ -201,11 +201,11 @@ public class GitRepository extends Repository {
      */
     private InputStream getHistoryRev(String fullpath, String rev) {
         InputStream ret = null;
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
         Process process = null;
 
         try {
-            String filename = fullpath.substring(directoryName.length() + 1);
+            String filename = fullpath.substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {
                 RepoCommand,
@@ -303,7 +303,7 @@ public class GitRepository extends Repository {
      */
     protected String findOriginalName(String fullpath, String changeset)
             throws IOException {
-        if (fullpath == null || fullpath.isEmpty() || fullpath.length() < directoryName.length()) {
+        if (fullpath == null || fullpath.isEmpty() || fullpath.length() < getDirectoryName().length()) {
             throw new IOException(String.format("Invalid file path string: %s", fullpath));
         }
 
@@ -311,7 +311,7 @@ public class GitRepository extends Repository {
             throw new IOException(String.format("Invalid changeset string for path %s: %s", fullpath, changeset));
         }
 
-        String file = fullpath.replace(directoryName + File.separator, "");
+        String file = fullpath.replace(getDirectoryName() + File.separator, "");
         /*
          * Get the list of file renames for given file to the specified
          * revision.
@@ -330,7 +330,7 @@ public class GitRepository extends Repository {
         };
 
         ProcessBuilder pb = new ProcessBuilder(argv);
-        Process process = Runtime.getRuntime().exec(argv, null, new File(directoryName));
+        Process process = Runtime.getRuntime().exec(argv, null, new File(getDirectoryName()));
 
         try {
             try (BufferedReader in = new BufferedReader(
@@ -365,7 +365,7 @@ public class GitRepository extends Repository {
             }
         }
 
-        return (fullpath.substring(0, directoryName.length() + 1) + file);
+        return (fullpath.substring(0, getDirectoryName().length() + 1) + file);
     }
 
     /**
@@ -405,7 +405,7 @@ public class GitRepository extends Repository {
             }
             cmd.add("--");
             cmd.add(findOriginalName(file.getAbsolutePath(), revision));
-            File directory = new File(directoryName);
+            File directory = new File(getDirectoryName());
             exec = new Executor(cmd, directory);
             status = exec.exec();
         }
@@ -648,7 +648,7 @@ public class GitRepository extends Repository {
     @Override
     String determineParent() throws IOException {
         String parent = null;
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -667,7 +667,7 @@ public class GitRepository extends Repository {
                     String parts[] = line.split("\\s+");
                     if (parts.length != 3) {
                         LOGGER.log(Level.WARNING,
-                                "Failed to get parent for {0}", directoryName);
+                                "Failed to get parent for {0}", getDirectoryName());
                     }
                     parent = parts[1];
                     break;
@@ -681,7 +681,7 @@ public class GitRepository extends Repository {
     @Override
     String determineBranch() throws IOException {
         String branch = null;
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -707,7 +707,7 @@ public class GitRepository extends Repository {
 
     @Override
     public String determineCurrentVersion() throws IOException {
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
         List<String> cmd = new ArrayList<>();
         // The delimiter must not be contained in the date format emitted by
         // {@code GIT_DATE_OPT}.

@@ -267,7 +267,7 @@ public class SCCSRepository extends Repository {
 
     @Override
     String determineParent() throws IOException {
-        File parentFile = new File(directoryName + File.separator
+        File parentFile = new File(getDirectoryName() + File.separator
                 + "Codemgr_wsdata" + File.separator + "parent");
         String parent = null;
 
@@ -276,15 +276,15 @@ public class SCCSRepository extends Repository {
             try (BufferedReader in = new BufferedReader(new FileReader(parentFile))) {
                 if ((line = in.readLine()) == null) {
                     LOGGER.log(Level.WARNING,
-                            "Failed to get parent for {0} (cannot read line)", directoryName);
+                            "Failed to get parent for {0} (cannot read line)", getDirectoryName());
                 }
                 if (!line.startsWith("VERSION")) {
                     LOGGER.log(Level.WARNING,
-                            "Failed to get parent for {0} (first line does not start with VERSION)", directoryName);
+                            "Failed to get parent for {0} (first line does not start with VERSION)", getDirectoryName());
                 }
                 if ((parent = in.readLine()) == null) {
                     LOGGER.log(Level.WARNING,
-                            "Failed to get parent for {0} (cannot read second line)", directoryName);
+                            "Failed to get parent for {0} (cannot read second line)", getDirectoryName());
                 }
             }
         }
