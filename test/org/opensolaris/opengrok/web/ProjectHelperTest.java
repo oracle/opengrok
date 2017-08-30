@@ -53,7 +53,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
      * Test if projects and groups are always reloaded fully from the env.
      *
      * This ensures that when the RuntimeEnvironment changes that it also
-     * updates the projects in the ui.
+     * updates the projects in the UI.
      */
     @Test
     public void testSynchronization() {
@@ -62,6 +62,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         Set<Group> oldGroups = new TreeSet<>(env.getGroups());
         Map<Project, List<RepositoryInfo>> oldMap = new TreeMap<>(getRepositoriesMap());
         env.getAuthorizationFramework().removeAll(env.getAuthorizationFramework().getStack());
+        env.setSourceRoot("/src"); // needed for setDirectoryName() below
 
         cfg = PageConfig.get(getRequest());
         helper = cfg.getProjectHelper();
@@ -89,7 +90,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
 
         RepositoryInfo info = new RepoRepository();
         info.setParent(repo.getName());
-        info.setDirectoryName(null);
+        info.setDirectoryName("/foo");
 
         List<RepositoryInfo> infos = getRepositoriesMap().get(repo);
         if (infos == null) {

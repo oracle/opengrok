@@ -71,7 +71,7 @@ public class ProjectHelperTestBase {
         for (int i = 0; i < cnt; i++) {
             RepositoryInfo info = new RepoRepository();
             info.setParent(p.getName() + "_" + i);
-            info.setDirectoryName(p.getPath());
+            info.setDirectoryNameRelative(p.getPath());
             rps.add(info);
             List<RepositoryInfo> infos = map.get(p);
             if (infos == null) {

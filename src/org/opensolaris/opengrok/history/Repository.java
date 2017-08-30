@@ -344,7 +344,7 @@ public abstract class Repository extends RepositoryInfo {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isTagsEnabled() && this.hasFileBasedTags()) {
-            this.buildTagList(new File(this.directoryName));
+            this.buildTagList(new File(this.getDirectoryName()));
         }
 
         if (history != null) {

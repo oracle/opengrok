@@ -95,8 +95,8 @@ public class ClearCaseRepository extends Repository {
     Executor getHistoryLogExecutor(final File file) throws IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
-        if (abs.length() > directoryName.length()) {
-            filename = abs.substring(directoryName.length() + 1);
+        if (abs.length() > getDirectoryName().length()) {
+            filename = abs.substring(getDirectoryName().length() + 1);
         }
 
         List<String> cmd = new ArrayList<>();
@@ -117,12 +117,12 @@ public class ClearCaseRepository extends Repository {
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         Process process = null;
         try {
             String filename = (new File(parent, basename)).getCanonicalPath()
-                    .substring(directoryName.length() + 1);
+                    .substring(getDirectoryName().length() + 1);
             final File tmp = File.createTempFile("opengrok", "tmp");
             String tmpName = tmp.getCanonicalPath();
 

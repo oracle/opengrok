@@ -197,8 +197,8 @@ public class CVSRepository extends RCSRepository {
     Executor getHistoryLogExecutor(final File file) throws IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
-        if (abs.length() > directoryName.length()) {
-            filename = abs.substring(directoryName.length() + 1);
+        if (abs.length() > getDirectoryName().length()) {
+            filename = abs.substring(getDirectoryName().length() + 1);
         }
 
         List<String> cmd = new ArrayList<>();
@@ -347,7 +347,7 @@ public class CVSRepository extends RCSRepository {
 
     @Override
     String determineParent() throws IOException {
-        File rootFile = new File(directoryName + File.separator + "CVS"
+        File rootFile = new File(getDirectoryName() + File.separator + "CVS"
                 + File.separator + "Root");
         String parent = null;
 

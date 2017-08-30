@@ -172,7 +172,7 @@ public class BitKeeperRepository extends Repository {
      */
     @Override
     String determineParent() throws IOException {
-        final File directory = new File(directoryName);
+        final File directory = new File(getDirectoryName());
 
         final ArrayList<String> argv = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
