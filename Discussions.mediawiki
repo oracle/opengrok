@@ -2,6 +2,12 @@
 
 IRC channel #opengrok on [http://www.freenode.net Freenode]
 
+=== Slack ===
+
+http://opengrok.slack.com
+(ask for invite on below list)
+http://opengrok.slackarchive.com
+
 === Mailing lists ===
 
 There are 2 mailing lists:
