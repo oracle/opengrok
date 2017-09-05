@@ -111,6 +111,8 @@ public class Ctags {
             command.add("--langmap=sql:+.pls"); // RFE #19208
             command.add("--langmap=sql:+.pld"); // RFE #19208
             command.add("--langmap=sql:+.pks"); // RFE #19208 ?
+            command.add("--langmap=sql:+.pkb"); // # 1763
+            command.add("--langmap=sql:+.pck"); // # 1763
 
             command.add("--langmap=javascript:+.ts");
             
