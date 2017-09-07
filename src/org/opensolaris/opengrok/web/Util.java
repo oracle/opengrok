@@ -590,7 +590,7 @@ public final class Util {
                 out.write("search\" href=\"" + env.getUrlPrefix());
                 out.write("defs=&amp;refs=&amp;path=");
                 out.write(project);
-                out.write("&amp;hist=" + URIEncode(r));
+                out.write("&amp;hist=&quot;" + URIEncode(r) + "&quot;");
                 out.write("&amp;type=\" title=\"Search history for this changeset");
                 out.write(closeQuotedTag);
                 out.write("S");

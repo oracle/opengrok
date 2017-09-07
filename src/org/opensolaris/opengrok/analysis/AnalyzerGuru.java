@@ -82,6 +82,7 @@ import org.opensolaris.opengrok.analysis.clojure.ClojureAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.json.JsonAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.kotlin.KotlinAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.posh.PoshAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sql.PLSQLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sql.SQLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.swift.SwiftAnalyzerFactory;
@@ -177,6 +178,7 @@ public class AnalyzerGuru {
             new CxxAnalyzerFactory(),
             new ErlangAnalyzerFactory(),
             new ShAnalyzerFactory(),
+            new PoshAnalyzerFactory(),
             PlainAnalyzerFactory.DEFAULT_INSTANCE,
             new UuencodeAnalyzerFactory(),
             new GZIPAnalyzerFactory(),
