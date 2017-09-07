@@ -102,7 +102,7 @@ The following table lists all supported formats and OpenGrok version in which th
 |-
 |PLSQL
 |0.12
-|"PLS","PKS","PLD","PLB",PKB","PCK"
+|"PLS","PKS","PLD","PLB","PKB","PCK"
 |-
 |tar
 |0.3.1
