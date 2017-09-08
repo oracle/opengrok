@@ -506,7 +506,7 @@ public class AccuRevRepository extends Repository {
 
     @Override
     String determineParent() throws IOException {
-        getAccuRevInfo(new File(directoryName));
+        getAccuRevInfo(new File(getDirectoryName()));
         return parent;
     }
 
