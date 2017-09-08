@@ -434,8 +434,8 @@ public class AccuRevRepository extends Repository {
      * for a given repository element path. For example,
      * when the repository root is "/home/shaehn/workspaces/BABS_2" then
      *
-     * given file path => /home/shaehn/workspaces/BABS_2/tools
-     * depot relative  => /./tools 
+     * given file path: /home/shaehn/workspaces/BABS_2/tools
+     * depot relative:  /./tools 
      * 
      * Using depot relative names instead of absolute file paths solves
      * the problems encountered when symbolic links are made for repository
@@ -444,8 +444,8 @@ public class AccuRevRepository extends Repository {
      *  /home/shaehn/active/src/BABS is a symbolic link to
      *  /home/shaehn/workspaces/BABS_2 then 
      * 
-     * given file path => /home/shaehn/active/src/BABS/tools
-     * depot relative  => /./tools 
+     * given file path: /home/shaehn/active/src/BABS/tools
+     * depot relative:  /./tools 
      * 
      * @param file path to repository element
      * @return a depot relative file element path
