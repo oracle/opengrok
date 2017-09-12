@@ -33,7 +33,7 @@ public class CtagsParserTest {
 
     @Test
     public void ctags_vs_universal_ctags() throws Exception {
-        String universal_ctags_c = "TEST\tsample.c\t/^#define TEST(/;\"\tmacro\tline:6\tsignature:(x)\n"
+        String universal_ctags_c = "TEST\tsample.c\t/^#define TEST($/;\"\tmacro\tline:6\tsignature:(x)\n"
                 + "foo\tsample.c\t/^int foo(int a, int b) {$/;\"\tfunction\tline:8\ttyperef:typename:int\tsignature:(int a, int b)\n"
                 + "c\tsample.c\t/^    int c;$/;\"\tlocal\tline:13\tfunction:foo\ttyperef:typename:int\n"
                 + "msg\tsample.c\t/^    const char *msg = \"this is } sample { string\";$/;\"\tlocal\tline:14\tfunction:foo\ttyperef:typename:const char *\n"
@@ -42,9 +42,8 @@ public class CtagsParserTest {
                 + "f\tsample.c\t/^    int f;$/;\"\tlocal\tline:28\tfunction:bar\ttyperef:typename:int\n"
                 + "main\tsample.c\t/^int main(int argc, char *argv[]) {$/;\"\tfunction\tline:41\ttyperef:typename:int\tsignature:(int argc, char *argv[])\n"
                 + "res\tsample.c\t/^    int res;$/;\"\tlocal\tline:42\tfunction:main\ttyperef:typename:int";
-        String ctags_c = "TEST\tsample.c\t6;\"\tmacro\tline:6\n"
-                + // this has wrong address so it shouldn't be detected
-                "foo\tsample.c\t/^int foo(int a, int b) {$/;\"\tfunction\tline:8\tsignature:(int a, int b)\n"
+        String ctags_c = "TEST\tsample.c\t6;\"\tmacro\tline:6\n" // this has wrong address so it shouldn't be detected
+                + "foo\tsample.c\t/^int foo(int a, int b) {$/;\"\tfunction\tline:8\tsignature:(int a, int b)\n"
                 + "c\tsample.c\t/^    int c;$/;\"\tlocal\tline:13\n"
                 + "msg\tsample.c\t/^    const char *msg = \"this is } sample { string\";$/;\"\tlocal\tline:14\n"
                 + "bar\tsample.c\t/^int bar(int x \\/* } *\\/)$/;\"\tfunction\tline:24\tsignature:(int x )\n"
@@ -57,10 +56,10 @@ public class CtagsParserTest {
 
         Definitions cDefs = lctags.testCtagsParser(ctags_c);
 
-        assertEquals(12, cDefs.getTags().size());
-        assertEquals(13, ucDefs.getTags().size());
+        assertEquals(13, cDefs.getTags().size());
+        assertEquals(15, ucDefs.getTags().size());
 
-        String uc_cxx = "TEST\tsample.cxx\t/^#define TEST(/;\"\tmacro\tline:7\tsignature:(x)\n"
+        String uc_cxx = "TEST\tsample.cxx\t/^#define TEST($/;\"\tmacro\tline:7\tsignature:(x)\n"
                 + "SomeClass\tsample.cxx\t/^class SomeClass {$/;\"\tclass\tline:9\n"
                 + "SomeClass\tsample.cxx\t/^    SomeClass() \\/* I'm constructor *\\/$/;\"\tfunction\tline:11\tclass:SomeClass\tsignature:()\n"
                 + "~SomeClass\tsample.cxx\t/^    ~SomeClass() \\/\\/ destructor$/;\"\tfunction\tline:17\tclass:SomeClass\tsignature:()\n"
@@ -114,8 +113,8 @@ public class CtagsParserTest {
 
         cDefs = lctags.testCtagsParser(c_cxx);
 
-        assertEquals(35, cDefs.getTags().size());
-        assertEquals(28, ucDefs.getTags().size());
+        assertEquals(37, cDefs.getTags().size());
+        assertEquals(31, ucDefs.getTags().size());
 
         String uc_java = "org.opensolaris.opengrok.analysis.java\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^package org.opensolaris.opengrok.analysis.java;$/;\"\tpackage\tline:23\n"
                 + "Sample\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^public class Sample {$/;\"\tclass\tline:25\n"
