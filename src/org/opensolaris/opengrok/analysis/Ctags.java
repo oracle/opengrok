@@ -241,8 +241,11 @@ public class Ctags {
             // PowerShell
             command.add("--langdef=Posh");
             command.add("--langmap=Posh:+.ps1,Posh:+.psm1");
-            command.add("--_fielddef-Posh=signature,signatures");
-            command.add("--fields-Posh=+{signature}");
+            
+            if (env.isUniversalCtags()) {
+                command.add("--_fielddef-Posh=signature,signatures");
+                command.add("--fields-Posh=+{signature}");
+            }
 
             // escaped variable markers
             command.add("--regex-Posh=/`\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
