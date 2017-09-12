@@ -238,13 +238,15 @@ public abstract class JFlexXref {
     protected void startScope() {
         if (scopesEnabled && scope == null) {
             int line = getLineNumber();
-            List<Tag> tags = defs.getTags(line);
-            if (tags != null) {
-                for (Tag tag : tags) {
-                    if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
-                        scope = new Scope(tag.line, tag.line, tag.symbol, tag.namespace, tag.signature);
-                        scopeLevel = 0;
-                        break;
+            if (defs != null) {
+                List<Tag> tags = defs.getTags(line);
+                if (tags != null) {
+                    for (Tag tag : tags) {
+                        if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
+                            scope = new Scope(tag.line, tag.line, tag.symbol, tag.namespace, tag.signature);
+                            scopeLevel = 0;
+                            break;
+                        }
                     }
                 }
             }
