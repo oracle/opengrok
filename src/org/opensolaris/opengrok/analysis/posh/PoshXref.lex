@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.posh;
@@ -54,17 +54,32 @@ import java.util.regex.Matcher;
   protected void setLineNumber(int x) { yyline = x; }
 
   private Pattern GoToLabel = Pattern.compile("(break|continue)(\\s+)(\\w+)");
-/*
-  private int countOf(char thisChar, String text) {
-    int count = 0;
-    for(int i = 0; i < text.length(); i++) {
-      if(text.charAt(i) == thisChar) {
-        count+=1;
-      }
+
+  private String getVariableName(String text) {
+    String name = text;
+    // Extract variable name from ${name} (complex variable)
+    if (text.startsWith("${")) {
+        name = text.substring(2,text.length()-1);
+    } else {
+        // Assuming extracting name from $name (simple variable)
+        name = text.substring(1);
     }
-    return count;
+    return name;
   }
-*/
+
+  private void emitComplexVariable() throws IOException {
+    String id = getVariableName(yytext());
+    out.write("${");
+    writeSymbol(id, Consts.poshkwd, yyline, false, true);
+    out.write("}");
+  }
+
+  private void emitSimpleVariable() throws IOException {
+    String id = getVariableName(yytext());
+    out.write("$");
+    writeSymbol(id, Consts.poshkwd, yyline, false, true);
+  }
+
   private void pushstate(int state, String style) throws IOException {
     if (!styleStack.empty()) {
       out.write("</span>");
@@ -98,12 +113,14 @@ import java.util.regex.Matcher;
 EOL = \r|\n|\r\n
 WhiteSpace = [ \t\f]
 Identifier = [a-zA-Z_] [a-zA-Z0-9_-]*
-SimpleVariable  = [\$] [a-zA-Z0-9_:-]*
+SimpleVariable  = [\$] [a-zA-Z_] [a-zA-Z0-9_:-]*
 ComplexVariable = [\$] "{" [^}]+  "}"
 Operator = "-" [a-zA-Z]+
 Label =  {WhiteSpace}* ":" {Identifier}
 Break = "break" {WhiteSpace}+ {Identifier}
 Continue = "continue" {WhiteSpace}+ {Identifier}
+DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
+
 
 /* The following should be matched by the 'Number' pattern below.
  * '\$ [0-9]+' :
@@ -140,7 +157,7 @@ Number = {RegExGroup} | (0[xX][0-9a-fA-F]+[lL]?|(\.[0-9]+|[0-9]+(\.[0-9]*)?)([eE
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z0-9]+)
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
+Path = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 /*
  * States:
@@ -200,9 +217,34 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
     out.write(label);
     out.write("</a>");
  }
- {SimpleVariable} | {ComplexVariable} {
-    String id = yytext();
-    writeSymbol(id, Consts.poshkwd, yyline, false, true);
+ {DataType} {
+    String dataType = yytext();
+
+    // strip off outer '[' and ']' and massage letter size
+    String id = dataType.substring(1, dataType.length()-1).toLowerCase();
+    
+    // Check for array data type indicator ([]) and strip off
+    int pos = id.indexOf("[]");
+    if (pos != -1) {
+        id = id.substring(0,pos);
+    }
+    // Dynamically add data type to constant
+    // list so they do not turn into links.
+    if (!Consts.poshkwd.contains(id)) {
+        Consts.poshkwd.add(id);
+    }
+    out.write("[");
+    writeSymbol(id, Consts.poshkwd, yyline, false, false);
+    if (pos != -1) {
+        out.write("[]");
+    }
+    out.write("]");
+ }
+ {ComplexVariable} {
+    emitComplexVariable();
+ }
+ {SimpleVariable} {
+    emitSimpleVariable();
  }
  {Identifier} | {Operator} {
     String id = yytext();
@@ -258,14 +300,16 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <HERESTRING> {
-  /* Match escaped dollar sign of variable 
-   * (eg. `$var) so it does not turn into web-link.
-   */
+  // Match escaped dollar sign of variable 
+  // (eg. `$var) so it does not turn into web-link.
+   
   \` ({SimpleVariable} | {ComplexVariable}) { out.write(yytext()); }
 
-  {SimpleVariable} | {ComplexVariable} {
-     String id = yytext();
-     writeSymbol(id, Consts.poshkwd, yyline, false, true);
+  {ComplexVariable} {
+     emitComplexVariable();
+  }
+  {SimpleVariable} {
+     emitSimpleVariable();
   }
   ^ \"\@  { out.write(yytext()); popstate(); }
   [^\r\n] { out.write(yytext()); }

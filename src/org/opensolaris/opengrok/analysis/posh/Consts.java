@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005, 2017 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2017 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 

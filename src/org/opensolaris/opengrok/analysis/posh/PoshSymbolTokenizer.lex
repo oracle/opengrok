@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.posh;
@@ -42,9 +42,10 @@ return false;
 EOL = \r|\n|\r\n
 WhiteSpace = [ \t\f]
 Identifier = [a-zA-Z_] [a-zA-Z0-9_-]*
-SimpleVariable  = [\$] [a-zA-Z0-9_:-]*
+SimpleVariable  = [\$] [a-zA-Z_] [a-zA-Z0-9_:-]*
 ComplexVariable = [\$] "{" [^}]+  "}"
 Label =  {WhiteSpace}* ":" {Identifier}
+DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
 
 %state STRING COMMENT SCOMMENT QSTRING HERESTRING HEREQSTRING
 
@@ -64,6 +65,8 @@ Label =  {WhiteSpace}* ":" {Identifier}
         return true; 
     }
  }
+ {DataType} { return true; }
+
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  \@\"   { yybegin(HERESTRING); }
