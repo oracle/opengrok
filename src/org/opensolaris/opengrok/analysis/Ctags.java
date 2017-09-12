@@ -241,23 +241,25 @@ public class Ctags {
             // PowerShell
             command.add("--langdef=Posh");
             command.add("--langmap=Posh:+.ps1,Posh:+.psm1");
-            
-            if (env.isUniversalCtags()) {
-                command.add("--_fielddef-Posh=signature,signatures");
-                command.add("--fields-Posh=+{signature}");
-            }
-
-            // escaped variable markers
-            command.add("--regex-Posh=/`\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
-            command.add("--regex-Posh=/`\\$(\\{[^}]+\\})/\\1//{exclusive}");
-            command.add("--regex-Posh=/#.*\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
-            command.add("--regex-Posh=/#.*\\$(\\{[^}]+\\})/\\1//{exclusive}");
-
             command.add("--regex-Posh=/\\$(\\{[^}]+\\})/\\1/v,variable/");
             command.add("--regex-Posh=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v,variable/");
-            command.add("--regex-Posh=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/{icase}{exclusive}{_field=signature:(\\4)}");
             command.add("--regex-Posh=/^[[:space:]]*(:[^[:space:]]+)/\\1/l,label/");
-            
+           
+            if (!env.isUniversalCtags()) {
+                command.add("--regex-Posh=/^[[:space:]]*([Ff]unction|[Ff]ilter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/");
+            } else {
+                command.add("--_fielddef-Posh=signature,signatures");
+                command.add("--fields-Posh=+{signature}");
+
+                // escaped variable markers
+                command.add("--regex-Posh=/`\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
+                command.add("--regex-Posh=/`\\$(\\{[^}]+\\})/\\1//{exclusive}");
+                command.add("--regex-Posh=/#.*\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
+                command.add("--regex-Posh=/#.*\\$(\\{[^}]+\\})/\\1//{exclusive}");
+                command.add("--regex-Posh=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/{icase}{exclusive}{_field=signature:(\\4)}");
+
+            }
+
             //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
 
             /* Add extra command line options for ctags. */
