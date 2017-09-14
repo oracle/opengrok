@@ -28,10 +28,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -41,6 +44,7 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.web.ProjectHelper;
 
 
 /**
@@ -123,11 +127,17 @@ public class ProjectMessage extends Message {
                         // Note that the project is inactive in the UI until it is indexed.
                         // See {@code isIndexed()}
                         env.getProjects().put(projectName, project);
+
+                        Set<Project> projectSet = new TreeSet<>(); 
+                        projectSet.add(project);
+                        env.populateGroups(env.getGroups(), projectSet);
                     } else {
                         Project project = env.getProjects().get(projectName);
                         Map<Project, List<RepositoryInfo>> map = env.getProjectRepositoriesMap();
 
-                        // Refresh the list of repositories.
+                        // Refresh the list of repositories of this project.
+                        // This is the goal of this action: if an existing project
+                        // is re-added, this means its list of repositories has changed.
                         List<RepositoryInfo> repos = getRepositoriesInDir(env, projDir);
                         List<RepositoryInfo> allrepos = env.getRepositories();
                         synchronized (allrepos) {
@@ -156,7 +166,13 @@ public class ProjectMessage extends Message {
                         throw new Exception("cannot get project \"" + projectName + "\"");
                     }
 
-                    LOGGER.log(Level.INFO, "deleting data for project " + projectName);
+                    LOGGER.log(Level.INFO, "deleting configuration for project " + projectName);
+
+                    // Remove the project from its groups.
+                    for (Group group : proj.getGroups()) {
+                        group.getRepositories().remove(proj);
+                        group.getProjects().remove(proj);
+                    }
 
                     // Now remove the repositories associated with this project.
                     List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(proj);
@@ -169,6 +185,7 @@ public class ProjectMessage extends Message {
                     env.refreshSearcherManagerMap();
 
                     // Lastly, remove data associated with the project.
+                    LOGGER.log(Level.INFO, "deleting data for project " + projectName);
                     for (String dirName: new String[]{
                         IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
 
