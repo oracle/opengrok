@@ -520,7 +520,7 @@ public abstract class JFlexXref {
 
         if (foldingEnabled && scopesEnabled) {
             if (iconId != null) {
-                out.write("<a href=\"#\" onclick='fold(this.parentNode.id)' id='");
+                out.write("<a style='cursor:pointer;' onclick='fold(this.parentNode.id)' id='");
                 out.write(iconId);
                 /* space inside span for IE support */
                 out.write("'><span class='fold-icon'>&nbsp;</span></a>");

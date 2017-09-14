@@ -22,7 +22,7 @@
  * Use is subject to license terms.
  */
 
-package org.opensolaris.opengrok.analysis.posh;
+package org.opensolaris.opengrok.analysis.powershell;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -101,10 +101,10 @@ public class Consts{
         poshkwd.add( "-f" );
         
         // constants
-        poshkwd.add( "$true" );
-        poshkwd.add( "$false" );
-        poshkwd.add( "$null" );
-        poshkwd.add( "$_" );
+        poshkwd.add( "true" );
+        poshkwd.add( "false" );
+        poshkwd.add( "null" );
+        poshkwd.add( "_" );    // $_ really
 
         // miscellaneous
         poshkwd.add( "any" );

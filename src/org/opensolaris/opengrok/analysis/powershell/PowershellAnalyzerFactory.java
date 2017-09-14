@@ -20,49 +20,40 @@
 /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.analysis.posh;
+package org.opensolaris.opengrok.analysis.powershell;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-/**
- * Analyzes PowerShell scripts Created on August 18, 2017
- *
- * @author Steven Haehn
- */
-public class PoshAnalyzer extends AbstractSourceCodeAnalyzer {
-
-    /**
-     * Creates a new instance of PoshAnalyzer
-     * @param factory name
-     */
-    protected PoshAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer=new PoshSymbolTokenizer(FileAnalyzer.dummyReader);    
-    }    
-
-    @Override
-    protected boolean supportsScopes() {
-        return true;
-    }
+public class PowershellAnalyzerFactory extends FileAnalyzerFactory {
     
-    @Override
-    protected JFlexXref newXref(Reader reader) {
-        return new PoshXref(reader);
+    private static final String name = "PowerShell script";
+    
+    private static final String[] SUFFIXES = {
+        "PS1",
+        "PSM1"
+    };
+
+    public PowershellAnalyzerFactory() {
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
     }
 
-    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
-        PoshXref xref = new PoshXref(in);
-        xref.setScopesEnabled(true);
-        xref.setFoldingEnabled(true);
-        AbstractSourceCodeAnalyzer.writeXref(xref, in, out, defs, annotation, project);
+    @Override
+    protected FileAnalyzer newAnalyzer() {
+        return new PowershellAnalyzer(this);
+    }
+
+    @Override
+    public void writeXref(Reader in, Writer out, Definitions defs,
+        Annotation annotation, Project project)
+        throws IOException {
+        PowershellAnalyzer.writeXref(in, out, defs, annotation, project);
     }
 }

@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.analysis.posh;
+package org.opensolaris.opengrok.analysis.powershell;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import java.io.IOException;
 import org.opensolaris.opengrok.web.Util;
