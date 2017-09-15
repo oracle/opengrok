@@ -42,14 +42,13 @@
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
-#   - OPENGROK_DISABLE_RENAMED_FILES_HISTORY Disable getting full history of
+#   - OPENGROK_RENAMED_FILES_HISTORY If set to "on", get full history of
 #                                 renamed files for SCMs that support it (Git,
 #                                 Mercurial).
-#                                 The default is handle the history which makes
-#                                 indexing slower, especially in the presence of
+#                                 The default is off.
+#                                 When set to on, the indexing is slower,
+#                                 especially in the presence of
 #                                 lots of renamed files in the repository.
-#                                 Set it to non-empty value to disable the
-#                                 renamed files history handling.
 #   - OPENGROK_GENERATE_HISTORY   Influence history cache generation
 #                                 Following values are recognized:
 #                                   on		- enabled (default)
@@ -286,9 +285,11 @@ DefaultInstanceConfiguration()
         GENERATE_HISTORY="${GENERATE_HISTORY} -H"
     fi
 
-    if [ -n "$OPENGROK_DISABLE_RENAMED_FILES_HISTORY" ]
+    if [ "$OPENGROK_RENAMED_FILES_HISTORY" != "on" ]
     then
-        DISABLE_RENAMED_FILES_HISTORY="-D"
+        RENAMED_FILES_HISTORY="-D off"
+    else
+        RENAMED_FILES_HISTORY="-D on"
     fi
 
     # OPTIONAL: override depth of scanning for repositories
@@ -819,7 +820,7 @@ CommonInvocation()
         ${IGNORE_PATTERNS}                    				\
         ${HISTORY_TAGS}							\
         ${GENERATE_HISTORY}           					\
-	${DISABLE_RENAMED_FILES_HISTORY}				\
+	${RENAMED_FILES_HISTORY}					\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
         ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\

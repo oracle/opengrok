@@ -371,7 +371,7 @@ public final class Configuration {
         setGenerateHtml(true);
         setGroups(new TreeSet<>());
         setGroupsCollapseThreshold(4);
-        setHandleHistoryOfRenamedFiles(true);
+        setHandleHistoryOfRenamedFiles(false);
         setHistoryCache(true);
         setHistoryCacheTime(30);
         setHistoryEnabled(true);

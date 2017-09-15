@@ -246,7 +246,8 @@ public final class Indexer {
                             break;
                         }
                         case 'D':
-                            cfg.setHandleHistoryOfRenamedFiles(false);
+                            cfg.setHandleHistoryOfRenamedFiles(getopt.getOptarg().
+                                    equals("on"));
                             break;
                         case 'e':
                             cfg.setGenerateHtml(false);

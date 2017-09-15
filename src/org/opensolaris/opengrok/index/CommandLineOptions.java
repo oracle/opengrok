@@ -78,7 +78,7 @@ public class CommandLineOptions {
         options.add(new Option('C', null, "Print per project percentage progress information(I/O extensive, since one read through dir structure is made before indexing, needs -v, otherwise it just goes to the log)"));
         options.add(new Option('c', "/path/to/ctags", "Path to Exuberant Ctags from http://ctags.sf.net by default takes the Exuberant Ctags in PATH."));
         options.add(new Option('d', "/path/to/data/root", "The directory where OpenGrok stores the generated data"));
-        options.add(new Option('D', null, "Disable generating history for renamed files. Makes indexing faster for repositories with lots of renamed files."));
+        options.add(new Option('D', ON_OFF, "Enable or disable generating history for renamed files. If set to on, makes history indexing slower for repositories with lots of renamed files."));
         options.add(new Option('e', null, "Economical - consumes less disk space. It does not generate hyper text cross reference files offline, but will do so on demand - which could be sightly slow."));
         options.add(new Option('G', null, "Assign commit tags to all entries in history for all repositories."));
         options.add(new Option('H', null, "Get history for all repositories"));
