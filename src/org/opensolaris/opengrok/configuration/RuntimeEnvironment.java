@@ -1285,8 +1285,10 @@ public final class RuntimeEnvironment {
 
     /**
      * Classifies projects and puts them in their groups.
+     * @param groups groups to update
+     * @param projects projects to classify
      */
-    private void populateGroups(Set<Group> groups, Set<Project> projects) {
+    public void populateGroups(Set<Group> groups, Set<Project> projects) {
         if (projects == null || groups == null) {
             return;
         }
@@ -1326,7 +1328,7 @@ public final class RuntimeEnvironment {
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
-        populateGroups(getGroups(), new TreeSet<Project>(getProjects().values()));
+        populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
         if (subFileList != null) {
             HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories(), subFileList);
