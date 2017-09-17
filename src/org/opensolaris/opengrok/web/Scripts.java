@@ -202,7 +202,7 @@ public class Scripts implements Iterable<Scripts.Script> {
      * @return true if script was added; false otherwise
      */
     public boolean addScript(String contextPath, String scriptName) {
-        contextPath = contextPath == null || contextPath.isEmpty() ? "" : contextPath + "/";
+        contextPath = contextPath == null || contextPath.isEmpty() ? "/" : contextPath + "/";
         if (SCRIPTS.containsKey(scriptName)) {
             this.addScript(
                     // put the context path end append the script path
