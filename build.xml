@@ -579,6 +579,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             </tarfileset>
             <tarfileset dir="doc" prefix="${distname}-${version}/doc">
                 <include name="EXAMPLE.txt"/>
+                <include name="ctags.config"/>
             </tarfileset>
             <tarfileset dir="${dist.dir}" prefix="${distname}-${version}/lib">
                 <include name="opengrok.jar"/>
