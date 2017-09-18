@@ -18,7 +18,13 @@ You can configure:
 
 1) Plugin directory
 
-    In web.xml for the webapp, there is a context parameter dedicated to this.
+    Can be specified in configuration with a property, e.g.:
+
+	<void property="pluginDirectory">
+	<string>/opengrok/auth/plugins</string>
+	</void>
+
+    Alternatively, in web.xml for the webapp, there is a context parameter dedicated to this.
 
       <context-param>
           <param-name>authorizationPluginDirectory</param-name>
@@ -32,8 +38,9 @@ You can configure:
     It is commented out by default so that the framework does not do anything.
     The OPENGROK_DATA_ROOT is the dataRoot directory set in configuration.xml.
 
-    Opengrok authorization expects plugin classes in that directory, it loads those classes in
-    memory as plugins and then perform the authorization for each request.
+    Opengrok authorization expects plugin classes in that directory, it loads
+    those classes into memory as plugins and then perform the authorization for
+    each request.
 
 2) Watchdog service
 
