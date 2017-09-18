@@ -41,7 +41,9 @@ public class PLSQLAnalyzerFactory extends FileAnalyzerFactory {
         "PLS",
         "PKS", //?
         "PLD",
-        "PLB"
+        "PLB",
+        "PKB",
+        "PCK"
     };
 
     public PLSQLAnalyzerFactory() {

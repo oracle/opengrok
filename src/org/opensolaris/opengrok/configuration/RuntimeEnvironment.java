@@ -281,14 +281,6 @@ public final class RuntimeEnvironment {
         threadConfig.get().setCommandTimeout(timeout);
     }
 
-    public int getIndexRefreshPeriod() {
-        return threadConfig.get().getIndexRefreshPeriod();
-    }
-
-    public void setIndexRefreshPeriod(int seconds) {
-        threadConfig.get().setIndexRefreshPeriod(seconds);
-    }
-
     public Statistics getStatistics() {
         return statistics;
     }
@@ -446,11 +438,11 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get descriptions of all projects.
+     * Get names of all projects.
      *
-     * @return a list containing descriptions of all projects.
+     * @return a list containing names of all projects.
      */
-    public List<String> getProjectDescriptions() {
+    public List<String> getProjectNames() {
         return getProjectList().stream().
             map(Project::getName).collect(Collectors.toList());
     }
@@ -1190,6 +1182,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHistoryEnabled(flag);
     }
 
+    public boolean getDisplayRepositories() {
+        return threadConfig.get().getDisplayRepositories();
+    }
+
+    public void setDisplayRepositories(boolean flag) {
+        threadConfig.get().setDisplayRepositories(flag);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *
@@ -1285,8 +1285,10 @@ public final class RuntimeEnvironment {
 
     /**
      * Classifies projects and puts them in their groups.
+     * @param groups groups to update
+     * @param projects projects to classify
      */
-    private void populateGroups(Set<Group> groups, Set<Project> projects) {
+    public void populateGroups(Set<Group> groups, Set<Project> projects) {
         if (projects == null || groups == null) {
             return;
         }
@@ -1326,7 +1328,7 @@ public final class RuntimeEnvironment {
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
-        populateGroups(getGroups(), new TreeSet<Project>(getProjects().values()));
+        populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
         if (subFileList != null) {
             HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories(), subFileList);
@@ -1963,42 +1965,6 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Call maybeRefresh() on each SearcherManager object from dedicated thread
-     * periodically.
-     * If the corresponding index has changed in the meantime, it will be safely
-     * reopened, i.e. without impacting existing IndexSearcher/IndexReader
-     * objects, thus not disrupting searches in progress.
-     */
-    public void startIndexReopenThread() {
-        indexReopenThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!Thread.currentThread().isInterrupted()) {
-                    try {
-                        maybeRefreshIndexSearchers();
-                        Thread.sleep(getIndexRefreshPeriod() * 1000);
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-        }, "indexReopenThread");
-
-        indexReopenThread.start();
-    }
-
-    public void stopIndexReopenThread() {
-        if (indexReopenThread != null) {
-            indexReopenThread.interrupt();
-            try {
-                indexReopenThread.join();
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.INFO, "Cannot join indexReopen thread: ", ex);
-            }
-        }
-    }
-
-    /**
      * Get IndexSearcher for given project.
      * Each IndexSearcher is born from a SearcherManager object. There is
      * one SearcherManager for every project.
@@ -2049,7 +2015,7 @@ public final class RuntimeEnvironment {
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
             // If a project is gone, close the corresponding SearcherManager
             // so that it cannot produce new IndexSearcher objects.
-            if (!getProjectDescriptions().contains(entry.getKey())) {
+            if (!getProjectNames().contains(entry.getKey())) {
                 try {
                     LOGGER.log(Level.FINE,
                         "closing SearcherManager for project" + entry.getKey());

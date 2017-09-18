@@ -209,10 +209,24 @@ public class HistoryEntry {
     }
 
     /**
-     * Remove "unneeded" info such as multiline history and files list
+     * Remove list of files and tags.
      */
     public void strip() {
+        stripFiles();
+        stripTags();
+    }
+
+    /**
+     * Remove list of files.
+     */
+    public void stripFiles() {
         files.clear();
+    }
+
+    /**
+     * Remove tags.
+     */
+    public void stripTags() {
         tags = null;
     }
 }

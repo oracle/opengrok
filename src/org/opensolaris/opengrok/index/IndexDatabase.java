@@ -327,10 +327,10 @@ public class IndexDatabase {
     private void markProjectIndexed(Project project) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        // Successfully indexed the directory. If this is a project
-        // that has just been indexed for the first time mark it so
-        // by sending special message to the webapp.
-        if (project != null && !project.isIndexed()) {
+        // Successfully indexed the project. The message is sent even if
+        // the project's isIndexed() is true because it triggers RepositoryInfo
+        // refresh.
+        if (project != null) {
             if (env.getConfigHost() != null && env.getConfigPort() > 0) {
                 Message m = Message.createMessage("project");
                 m.addTag(project.getName());

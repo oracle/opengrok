@@ -247,8 +247,8 @@ PKG pkgsend add file dist/opengrok.jar \
 
 PKG pkgsend add file logging.properties \
     mode=0444 owner=root group=sys path=/usr/opengrok/doc/logging.properties
-PKG pkgsend add file README.txt \
-    mode=0444 owner=root group=sys path=/usr/opengrok/doc/README.txt
+PKG pkgsend add file README.md \
+    mode=0444 owner=root group=sys path=/usr/opengrok/doc/README.md
 PKG pkgsend add file CHANGES.txt \
     mode=0444 owner=root group=sys path=/usr/opengrok/doc/CHANGES.txt
 PKG pkgsend add file LICENSE.txt \

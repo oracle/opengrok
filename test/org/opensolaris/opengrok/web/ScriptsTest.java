@@ -22,14 +22,15 @@
  */
 package org.opensolaris.opengrok.web;
 
-import java.util.Map.Entry;
-import org.junit.Before;
-import org.junit.Test;
-import org.opensolaris.opengrok.web.Scripts.Script;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.Map.Entry;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.opensolaris.opengrok.web.Scripts.Script;
 
 /**
  *
@@ -123,11 +124,11 @@ public class ScriptsTest {
                 continue;
             }
             assertTrue(scripts.toHtml() + " must contain <script type=\"text/javascript\""
-                    + " src=\"" + s.getValue().getScriptData() + "\""
+                    + " src=\"/" + s.getValue().getScriptData() + "\""
                     + " data-priority=\"" + s.getValue().getPriority() + "\"></script>",
                     scripts.toHtml()
                             .contains("<script type=\"text/javascript\""
-                                    + " src=\"" + s.getValue().getScriptData() + "\""
+                                    + " src=\"/" + s.getValue().getScriptData() + "\""
                                     + " data-priority=\"" + s.getValue().getPriority() + "\"></script>"));
         }
     }

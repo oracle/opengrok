@@ -128,10 +128,10 @@ public final class ProjectHelper {
     private void populateGroups() {
         groups.addAll(cfg.getEnv().getGroups());
         for (Project project : cfg.getEnv().getProjectList()) {
-            // filterProjects only groups which match project's description
+            // filterProjects() only adds groups which match project's name.
             Set<Group> copy = Group.matching(project, groups);
 
-            // if no group matches the project, add it to not-grouped projects
+            // If no group matches the project, add it to not-grouped projects.
             if (copy.isEmpty()) {
                 if (cfg.getEnv().getProjectRepositoriesMap().get(project) == null) {
                     ungroupedProjects.add(project);

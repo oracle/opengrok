@@ -29,10 +29,10 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
 
 /**
  *
- * @author kotal
+ * @author Tomas Kotal
  */
 public class ScopesTest {
-    
+
     /**
      * Test of getScope method, of class Scopes.
      */
@@ -47,7 +47,7 @@ public class ScopesTest {
         instance.addScope(new Scope(60, 70, "scope4", "ns"));
         instance.addScope(new Scope(80, 90, "scope5", "ns"));
         instance.addScope(new Scope(91, 100, "scope6", "ns"));
-        
+
         assertEquals(instance.size(), 6);
         assertEquals(instance.getScope(1), globalScope);
         assertEquals(instance.getScope(10).getName(), "scope1");
@@ -63,5 +63,4 @@ public class ScopesTest {
         assertEquals(instance.getScope(101), globalScope);
         assertEquals(instance.getScope(500), globalScope);
     }
-    
 }

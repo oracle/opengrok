@@ -377,7 +377,7 @@ public class AccuRevRepository extends Repository {
         if (sourceHome.isDirectory()) {
             return isInAccuRevDepot(sourceHome);
         }
-        
+
         return false;
     }
 
@@ -404,7 +404,7 @@ public class AccuRevRepository extends Repository {
 
     @Override
     String determineParent() throws IOException {
-        getAccuRevInfo(new File(directoryName));
+        getAccuRevInfo(new File(getDirectoryName()));
         return parent;
     }
 

@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.util.TestRepository;
 
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  *
@@ -351,6 +352,7 @@ public class GitRepositoryTest {
 
     @Test
     public void testRenamedHistory() throws Exception {
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
@@ -381,6 +383,7 @@ public class GitRepositoryTest {
 
     @Test
     public void testRenamedSingleHistory() throws Exception {
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);

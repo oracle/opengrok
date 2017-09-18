@@ -32,7 +32,7 @@ import java.util.TreeSet;
 
 /**
  *
- * @author kotal
+ * @author Tomas Kotal
  */
 public class Scopes implements Serializable {
 

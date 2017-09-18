@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.search.context;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import org.apache.lucene.index.Term;
@@ -32,6 +33,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.TermQuery;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -167,4 +169,17 @@ public class HistoryContextTest {
                 "Created a <b>small</b> dummy program"));
     }
 
+    /**
+     * Test URI and HTML encoding of {@code writeMatch()}.
+     * @throws IOException
+     */
+    @Test
+    public void testWriteMatch() throws IOException {
+        StringBuilder sb = new StringBuilder();
+        HistoryContext.writeMatch(sb, "foo", 0, 3, true, "/foo bar/haf+haf",
+                "ctx", "1", "2");
+        Assert.assertEquals("<a href=\"ctx/diff/foo%20bar/haf%2Bhaf?r2=/foo%20bar/haf%2Bhaf@2&amp;" +
+                "r1=/foo%20bar/haf%2Bhaf@1\" title=\"diff to previous version\">diff</a> <b>foo</b>",
+                sb.toString());
+    }
 }

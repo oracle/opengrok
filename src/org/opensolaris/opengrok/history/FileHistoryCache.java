@@ -64,8 +64,11 @@ class FileHistoryCache implements HistoryCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileHistoryCache.class);
 
     private final Object lock = new Object();
+
     private final static String historyCacheDirName = "historycache";
-    private final String latestRevFileName = "OpenGroklatestRev";
+    private final static String latestRevFileName = "OpenGroklatestRev";
+    private final static String DIRECTORY_FILE_PREFIX = "OpenGrokDirHist";
+
     private boolean historyIndexDone = false;
 
     @Override
@@ -105,13 +108,19 @@ class FileHistoryCache implements HistoryCache {
             hist = repository.getHistory(srcFile);
         }
 
+        File file = new File(root, filename);
+
         if (hist == null) {
             hist = new History();
 
             // File based history cache does not store files for individual
-            // changesets so strip them.
+            // changesets so strip them unless it is history for the repository.
             for (HistoryEntry ent : historyEntries) {
-                ent.strip();
+                if (file.isDirectory() && filename.equals(repository.getDirectoryName())) {
+                    ent.stripTags();
+                } else {
+                    ent.strip();
+                }
             }
 
             // add all history entries
@@ -127,8 +136,8 @@ class FileHistoryCache implements HistoryCache {
             repository.assignTagsInHistory(hist);
         }
 
-        File file = new File(root, filename);
-        if (!file.isDirectory()) {
+        // Only store directory history for the top-level.
+        if (!file.isDirectory() || filename.equals(repository.getDirectoryName())) {
             storeFile(hist, file, repository, !renamed);
         }
     }
@@ -189,6 +198,10 @@ class FileHistoryCache implements HistoryCache {
                 add = File.separator;
             }
             sb.append(add);
+            if (file.isDirectory()) {
+                sb.append(File.separator);
+                sb.append(DIRECTORY_FILE_PREFIX);
+            }
             sb.append(".gz");
         } catch (IOException e) {
             throw new HistoryException("Failed to get path relative to " +
@@ -390,6 +403,10 @@ class FileHistoryCache implements HistoryCache {
         LOGGER.log(Level.FINE,
             "Storing history for repo {0}",
             new Object[] {repository.getDirectoryName()});
+
+        // Firstly store the history for the top-level directory.
+        doFileHistory(repository.getDirectoryName(), history.getHistoryEntries(),
+                env, repository, env.getSourceRootFile(), null, false);
 
         HashMap<String, List<HistoryEntry>> map =
                 new HashMap<>();

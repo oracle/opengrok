@@ -5,13 +5,13 @@
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>opengrok-web</artifactId>
     <packaging>war</packaging>
-    <version>0.13-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <name>OpenGrok Web</name>
 
     <parent>
         <groupId>org.opensolaris.opengrok</groupId>
         <artifactId>opengrok</artifactId>
-        <version>0.13-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <build>

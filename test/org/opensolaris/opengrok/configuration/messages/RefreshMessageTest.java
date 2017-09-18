@@ -31,7 +31,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  *
- * @author kotal
+ * @author Vladimir Kotal
  */
 public class RefreshMessageTest {
     RuntimeEnvironment env;

@@ -27,13 +27,13 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>opengrok-indexer</artifactId>
     <packaging>jar</packaging>
-    <version>0.13-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <name>OpenGrok Indexer</name>
 
     <parent>
         <groupId>org.opensolaris.opengrok</groupId>
         <artifactId>opengrok</artifactId>
-        <version>0.13-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <build>

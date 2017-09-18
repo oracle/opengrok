@@ -25,16 +25,18 @@ package org.opensolaris.opengrok.configuration.messages;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.GitRepository;
@@ -61,23 +63,15 @@ public class ProjectMessageTest {
     private static TestRepository repository = new TestRepository();
     private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream(
-                "repositories.zip"));
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        repository.destroy();
-    }
-
     @Before
     public void setUp() throws IOException {
         Assume.assumeTrue(new MercurialRepository().isWorking());
         Assume.assumeTrue(new SubversionRepository().isWorking());
         Assume.assumeTrue(new GitRepository().isWorking());
+
+        repository = new TestRepository();
+        repository.create(HistoryGuru.class.getResourceAsStream(
+                "repositories.zip"));
 
         env = RuntimeEnvironment.getInstance();
         env.removeAllMessages();
@@ -95,6 +89,8 @@ public class ProjectMessageTest {
         env.setProjects(new ConcurrentHashMap<>());
         env.setRepositories(new ArrayList<RepositoryInfo>());
         env.getProjectRepositoriesMap().clear();
+
+        repository.destroy();
     }
 
     @Test
@@ -138,30 +134,64 @@ public class ProjectMessageTest {
 
     @Test
     public void testAdd() throws Exception {
-        // Add one project.
+        Assert.assertTrue(env.getRepositories().isEmpty());
+        Assert.assertTrue(env.getProjects().isEmpty());
+
+        // Add a group matching the project to be added.
+        String groupName = "mercurialgroup";
+        Group group = new Group(groupName, "mercurial.*");
+        env.getGroups().add(group);
+        Assert.assertTrue(env.hasGroups());
+        Assert.assertEquals(1, env.getGroups().stream().
+                filter(g -> g.getName().equals(groupName)).
+                collect(Collectors.toSet()).size());
+        Assert.assertEquals(0, group.getRepositories().size());
+        Assert.assertEquals(0, group.getProjects().size());
+
+        // Prepare project addition.
         Message m = new ProjectMessage();
         m.setText("add");
         m.addTag("mercurial");
-        Assert.assertTrue(env.getRepositories().isEmpty());
-        Assert.assertTrue(env.getProjects().isEmpty());
+
+        // Add a sub-repository.
+        File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
+        File subDir = new File(mercurialRoot, "usr");
+        Assert.assertTrue(subDir.mkdir());
+        MercurialRepositoryTest.runHgCommand(mercurialRoot,
+            "clone", mercurialRoot.getAbsolutePath(),
+            mercurialRoot.getAbsolutePath() + File.separator + "usr" + File.separator + "closed");
+
+        // Add the project.
+        env.setScanningDepth(3);
         m.apply(env);
+
+        // Check that the project was added properly.
         Assert.assertTrue(env.getProjects().containsKey("mercurial"));
         Assert.assertEquals(1, env.getProjects().size());
-        Assert.assertEquals(1, env.getRepositories().size());
+        Assert.assertEquals(2, env.getRepositories().size());
+        Assert.assertEquals(1, group.getRepositories().size());
+        Assert.assertEquals(0, group.getProjects().size());
+        Assert.assertEquals(1, group.getRepositories().stream().
+                filter(p -> p.getName().equals("mercurial")).
+                collect(Collectors.toSet()).size());
 
         // Add more projects and check that they have been added incrementally.
         // At the same time, it checks that multiple projects can be added
         // with single message.
-        m.setTags(new TreeSet<String>());
+        m.setTags(new TreeSet<>());
         m.addTag("git");
         m.addTag("svn");
         m.apply(env);
         Assert.assertEquals(3, env.getProjects().size());
-        Assert.assertEquals(3, env.getRepositories().size());
+        Assert.assertEquals(4, env.getRepositories().size());
         Assert.assertTrue(env.getProjects().containsKey("git"));
         Assert.assertTrue(env.getProjects().containsKey("svn"));
     }
 
+    /**
+     * Test that if the "add" message is applied on already existing project,
+     * the repository list is refreshed.
+     */
     @Test
     public void testRepositoryRefresh() throws Exception {
         Message m = new ProjectMessage();
@@ -188,12 +218,30 @@ public class ProjectMessageTest {
         Assert.assertEquals(1, env.getProjectRepositoriesMap().get(Project.getProject(mercurialRoot)).size());
     }
 
+    /**
+     * This test needs to perform indexing so that it can be verified that
+     * the delete message handling performs removal of the index data.
+     * @throws Exception 
+     */
     @Test
     public void testDelete() throws Exception {
+        String projectsToDelete[] = { "git", "svn" };
+
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
 
         assertTrue("No point in running indexer tests without valid ctags",
                 RuntimeEnvironment.getInstance().validateExuberantCtags());
+
+        // Add a group matching the project to be added.
+        String groupName = "gitgroup";
+        Group group = new Group(groupName, "git.*");
+        env.getGroups().add(group);
+        Assert.assertTrue(env.hasGroups());
+        Assert.assertEquals(1, env.getGroups().stream().
+                filter(g -> g.getName().equals(groupName)).
+                collect(Collectors.toSet()).size());
+        Assert.assertEquals(0, group.getRepositories().size());
+        Assert.assertEquals(0, group.getProjects().size());
 
         // Firstly add some projects.
         Message m = new ProjectMessage();
@@ -208,6 +256,13 @@ public class ProjectMessageTest {
         Assert.assertEquals(3, env.getProjects().size());
         Assert.assertEquals(3, env.getRepositories().size());
         Assert.assertEquals(3, env.getProjectRepositoriesMap().size());
+
+        // Check the group was populated properly.
+        Assert.assertEquals(1, group.getRepositories().size());
+        Assert.assertEquals(0, group.getProjects().size());
+        Assert.assertEquals(1, group.getRepositories().stream().
+                filter(p -> p.getName().equals("git")).
+                collect(Collectors.toSet()).size());
 
         // Run the indexer (ala 'indexpart') so that data directory is populated.
         ArrayList<String> subFiles = new ArrayList<>();
@@ -240,8 +295,9 @@ public class ProjectMessageTest {
         // Then remove multiple projects.
         m.setText("delete");
         m.setTags(new TreeSet<String>());
-        m.addTag("git");
-        m.addTag("svn");
+        for (String p : projectsToDelete) {
+            m.addTag(p);
+        }
         m.apply(env);
         Assert.assertEquals(1, env.getProjects().size());
         Assert.assertEquals(1, env.getRepositories().size());
@@ -249,7 +305,7 @@ public class ProjectMessageTest {
 
         // Test data removal.
         File dataRoot = env.getDataRootFile();
-        for (String projectName : new String[]{"git", "svn"}) {
+        for (String projectName : projectsToDelete) {
             for (String dirName : new String[]{"historycache",
                 IndexDatabase.XREF_DIR, IndexDatabase.INDEX_DIR}) {
                     File dir = new File(env.getDataRootFile(),
@@ -257,17 +313,82 @@ public class ProjectMessageTest {
                     Assert.assertFalse(dir.exists());
             }
         }
+
+        // Check the group no longer contains the removed project.
+        Assert.assertEquals(0, group.getRepositories().size());
+        Assert.assertEquals(0, group.getProjects().size());
     }
 
     @Test
     public void testIndexed() throws Exception {
+        String projectName = "mercurial";
+
+        // When a project is added, it should be marked as not indexed.
+        Message m = new ProjectMessage();
+        m.setText("add");
+        m.addTag(projectName);
+        m.apply(env);
+        Assert.assertFalse(env.getProjects().get(projectName).isIndexed());
+
+        // Get repository info for the project.
+        Project project = env.getProjects().get(projectName);
+        Assert.assertNotNull(project);
+        List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+        Assert.assertNotNull(riList);
+        Assert.assertEquals("there should be just 1 repository", 1, riList.size());
+        RepositoryInfo ri = riList.get(0);
+        Assert.assertNotNull(ri);
+        Assert.assertTrue(ri.getCurrentVersion().contains("8b340409b3a8"));
+
+        // Add some changes to the repository.
+        File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
+        MercurialRepositoryTest.runHgCommand(mercurialRoot,
+            "import", HistoryGuru.getInstance().getClass().
+            getResource("hg-export-subdir.txt").getPath());
+
+        // Test that the project's indexed flag becomes true only after
+        // the message is applied.
+        m.setText("indexed");
+        m.apply(env);
+        Assert.assertTrue("indexed flag should be set to true",
+                env.getProjects().get(projectName).isIndexed());
+
+        // Test that the "indexed" message triggers refresh of current version
+        // info in related repositories.
+        riList = env.getProjectRepositoriesMap().get(project);
+        Assert.assertNotNull(riList);
+        ri = riList.get(0);
+        Assert.assertNotNull(ri);
+        Assert.assertTrue("current version should be refreshed",
+                ri.getCurrentVersion().contains("c78fa757c524"));
+    }
+
+    @Test
+    public void testList() throws Exception {
+        // Add a project
         Message m = new ProjectMessage();
         m.setText("add");
         m.addTag("mercurial");
         m.apply(env);
-        Assert.assertFalse(env.getProjects().get("mercurial").isIndexed());
+
+        // Mark it as indexed.
         m.setText("indexed");
         m.apply(env);
-        Assert.assertTrue(env.getProjects().get("mercurial").isIndexed());
+
+        // Add another project.
+        m.setText("add");
+        m.addTag("git");
+        m.apply(env);
+
+        m.setTags(new TreeSet<String>());
+        m.setText("list");
+        String out = new String(m.apply(env));
+        Assert.assertTrue(out.contains("mercurial"));
+        Assert.assertTrue(out.contains("git"));
+
+        m.setText("list-indexed");
+        out = new String(m.apply(env));
+        Assert.assertTrue(out.contains("mercurial"));
+        Assert.assertFalse(out.contains("git"));
     }
 }

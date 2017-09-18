@@ -27,13 +27,13 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>plugins</artifactId>
     <packaging>jar</packaging>
-    <version>0.13-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <name>OpenGrok Sample Plugins</name>
 
     <parent>
         <groupId>org.opensolaris.opengrok</groupId>
         <artifactId>opengrok</artifactId>
-        <version>0.13-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <dependencies>

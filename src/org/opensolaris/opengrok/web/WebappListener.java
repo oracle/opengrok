@@ -115,7 +115,6 @@ public final class WebappListener
             RuntimeEnvironment.getInstance().startWatchDogService(new File(env.getConfiguration().getPluginDirectory()));
         }
 
-        RuntimeEnvironment.getInstance().startIndexReopenThread();
         RuntimeEnvironment.getInstance().startExpirationTimer();
 
         try {
@@ -134,7 +133,6 @@ public final class WebappListener
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
         RuntimeEnvironment.getInstance().stopWatchDogService();
-        RuntimeEnvironment.getInstance().stopIndexReopenThread();
         RuntimeEnvironment.getInstance().stopExpirationTimer();
         try {
             RuntimeEnvironment.getInstance().saveStatistics();
