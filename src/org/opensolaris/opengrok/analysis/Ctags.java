@@ -215,7 +215,8 @@ public class Ctags {
 
             command.add("--langdef=rust");
             command.add("--langmap=rust:+.rs");
-            command.add("--regex-rust=/^[[:space:]]*(#\\[[^\\]]\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\"[^\"]+\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/h,functions,function definitions/");
+          //command.add("--regex-rust=/^[[:space:]]*(#\\[[^\\]]\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\"[^\"]+\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/h,functions,function definitions/");
+            command.add("--regex-rust=/^[[:space:]]*(#\\[[^]]+\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\\\"[^\\\"]+\\\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/h,functions,function definitions/");
             command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?type[[:space:]]+([[:alnum:]_]+)/\\2/T,types,type definitions/");
             command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?enum[[:space:]]+([[:alnum:]_]+)/\\2/g,enum,enumeration names/");
             command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?struct[[:space:]]+([[:alnum:]_]+)/\\2/S,structure names/");
@@ -239,6 +240,28 @@ public class Ctags {
             command.add("--regex-pascal=/^(uses|interface|implementation)$/\\1/s,Section/");
             command.add("--regex-pascal=/^unit[[:space:]]+([a-zA-Z0-9_<>, ]+)[;(]/\\1/u,unit/");
             
+            // PowerShell
+            command.add("--langdef=Posh");
+            command.add("--langmap=Posh:+.ps1,Posh:+.psm1");
+            command.add("--regex-Posh=/\\$(\\{[^}]+\\})/\\1/v,variable/");
+            command.add("--regex-Posh=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v,variable/");
+            command.add("--regex-Posh=/^[[:space:]]*(:[^[:space:]]+)/\\1/l,label/");
+           
+            if (!env.isUniversalCtags()) {
+                command.add("--regex-Posh=/^[[:space:]]*([Ff]unction|[Ff]ilter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/");
+            } else {
+                command.add("--_fielddef-Posh=signature,signatures");
+                command.add("--fields-Posh=+{signature}");
+
+                // escaped variable markers
+                command.add("--regex-Posh=/`\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
+                command.add("--regex-Posh=/`\\$(\\{[^}]+\\})/\\1//{exclusive}");
+                command.add("--regex-Posh=/#.*\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
+                command.add("--regex-Posh=/#.*\\$(\\{[^}]+\\})/\\1//{exclusive}");
+                command.add("--regex-Posh=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/{icase}{exclusive}{_field=signature:(\\4)}");
+
+            }
+
             //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
 
             /* Add extra command line options for ctags. */
@@ -518,19 +541,43 @@ public class Ctags {
                     //TODO if some languages use different character for separating arguments, below needs to be adjusted
                     String[] args = signature.split(",");
                     for (String arg : args) {
-                        //log.fine("Param = "+ arg);
-                        int space = arg.lastIndexOf(' ');//TODO this is not the best way, but works to find the last string(name) in the argument, hence skipping type
-                        if (space > 0 && space < arg.length()) {
-                            String afters = arg.substring(space + 1);
-                            //FIXME this will not work for typeless languages such as python or assignments inside signature ... but since ctags doesn't provide signatures for python yet and assigning stuff in signature is not the case for c or java, we don't care ...
-                            String[] names = afters.split("[\\W]"); //this should just parse out variables, we assume first non empty text is the argument name
-                            for (String name : names) {
-                                if (name.length() > 0) {
-                                    //log.fine("Param Def = "+ string);
-                                    addTag(defs, seenSymbols, lnum, name, "argument",
+                        //TODO this algorithm assumes that data types occur to
+                        //     the left of the argument name, so it will not
+                        //     work for languages like rust, kotlin, etc. which
+                        //     place the data type to the right of the argument name.
+                        //     Need an attribute from ctags to indicate data type location.
+                        // ----------------------------------------------------------------
+                        // When no assignment of default values,
+                        // expecting: <type> <name>, or <name>
+                        //
+                        // When default value assignment applied to parameter,
+                        // expecting: <type> <name> = <value> or
+                        //            <name> = <value>
+                        // (Note whitespace content made irrelevant)
+
+                        // Need to ditch the default assignment value
+                        // so that the extraction loop below will work.
+                        // This assumes all languages use '=' to assign value.
+                        
+                        if (arg.indexOf("=") != -1) {
+                            String[] a = arg.split("=");
+                            arg = a[0];  // throws away assigned value
+                        }
+                        
+                        // Strip out all non 'word' class symbols
+                        // which leaves just names intact.
+                        String [] names = arg.trim().split("[\\W]");  
+                        String name;
+                        
+                        // Walk the array backwards from the end and
+                        // the parameter name should always be the first
+                        // non-empty element encountered.
+                        for (int ii=names.length-1; ii >= 0; ii--) {
+                            name = names[ii];
+                            if (name.length() > 0) {
+                                addTag(defs, seenSymbols, lnum, name, "argument",
                                             def.trim() + signature.trim(), null, signature);
                                     break;
-                                }
                             }
                         }
                     }

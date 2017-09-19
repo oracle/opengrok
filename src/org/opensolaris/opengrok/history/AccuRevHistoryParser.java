@@ -92,13 +92,6 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
                 Executor executor = repository.getHistoryLogExecutor(file);
                 executor.exec(true, this);
 
-                /*
-                 * Try again because there was no 'keep' history.
-                 */
-                if (!foundHistory) {
-                    executor = repository.getHistoryLogExecutor(file);
-                    executor.exec(true, this);
-                }
             } catch (IOException e) {
                 throw new HistoryException(
                         "Failed to get history for: \""

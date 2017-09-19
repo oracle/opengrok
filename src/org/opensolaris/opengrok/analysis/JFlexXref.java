@@ -238,13 +238,15 @@ public abstract class JFlexXref {
     protected void startScope() {
         if (scopesEnabled && scope == null) {
             int line = getLineNumber();
-            List<Tag> tags = defs.getTags(line);
-            if (tags != null) {
-                for (Tag tag : tags) {
-                    if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
-                        scope = new Scope(tag.line, tag.line, tag.symbol, tag.namespace, tag.signature);
-                        scopeLevel = 0;
-                        break;
+            if (defs != null) {
+                List<Tag> tags = defs.getTags(line);
+                if (tags != null) {
+                    for (Tag tag : tags) {
+                        if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
+                            scope = new Scope(tag.line, tag.line, tag.symbol, tag.namespace, tag.signature);
+                            scopeLevel = 0;
+                            break;
+                        }
                     }
                 }
             }
@@ -518,7 +520,8 @@ public abstract class JFlexXref {
 
         if (foldingEnabled && scopesEnabled) {
             if (iconId != null) {
-                out.write("<a href=\"#\" onclick='fold(this.parentNode.id)' id='");
+                // Fix for #1764 remove line below and add this -> out.write("<a style='cursor:pointer;' onclick='fold(this.parentNode.id)' id='");
+                out.write("<a href='#' onclick='fold(this.parentNode.id)' id='");
                 out.write(iconId);
                 /* space inside span for IE support */
                 out.write("'><span class='fold-icon'>&nbsp;</span></a>");
@@ -539,10 +542,10 @@ public abstract class JFlexXref {
      */
     protected void writeSymbol(String symbol, Set<String> keywords, int line)
             throws IOException {
-        writeSymbol(symbol, keywords, line, true);
+        writeSymbol(symbol, keywords, line, true, false);
     }
 
-    /**
+        /**
      * Write a symbol and generate links as appropriate.
      *
      * @param symbol the symbol to write
@@ -555,9 +558,27 @@ public abstract class JFlexXref {
     protected void writeSymbol(
             String symbol, Set<String> keywords, int line, boolean caseSensitive)
             throws IOException {
+        writeSymbol(symbol, keywords, line, caseSensitive, false);
+    }
+    
+    /**
+     * Write a symbol and generate links as appropriate.
+     *
+     * @param symbol the symbol to write
+     * @param keywords a set of keywords recognized by this analyzer (no links
+     * will be generated if the symbol is a keyword)
+     * @param line the line number on which the symbol appears
+     * @param caseSensitive Whether the keyword list is case sensitive
+     * @param quote Whether the symbol gets quoted in links or not
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected void writeSymbol(
+            String symbol, Set<String> keywords, int line, boolean caseSensitive, boolean quote)
+            throws IOException {
         String[] strs = new String[1];
         strs[0] = "";
         String jsEscapedSymbol = symbol.replace("'", "\\'");
+        String qt = (quote) ? "&quot;" : "";
 
         String check = caseSensitive ? symbol : symbol.toLowerCase();
         if (keywords != null && keywords.contains( check )) {
@@ -596,7 +617,7 @@ public abstract class JFlexXref {
             out.append("<a href=\"");
             out.append(urlPrefix);
             out.append("refs=");
-            out.append(symbol);
+            out.append(qt+symbol+qt);
             appendProject();
             out.append("\" class=\"");
             out.append(style_class);
@@ -629,7 +650,7 @@ public abstract class JFlexXref {
             out.append("<a href=\"");
             out.append(urlPrefix);
             out.append("defs=");
-            out.append(symbol);
+            out.append(qt+symbol+qt);
             appendProject();
             out.append("\"");
             out.append(" class=\"intelliWindow-symbol\"");
