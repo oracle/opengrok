@@ -770,7 +770,8 @@ div[id^='src'] .b  { /* heading/title/bold */ color: #000;       font-weight: bo
 div[id^='src'] .k  { /* block display      */ color: #000;       font-family: monospace;                }
 div[id^='src'] a.d { /* symbol definition  */ color: #909;       font-weight: bold;                     }
 
-a.xm               { /* macro              */ color: #c66;       font-weight: bold;                     }
+a.xlbl           { /* label              */ color: red;       font-weight: bold; background-color: yellow }
+a.xm              { /* macro              */ color: #c66;       font-weight: bold;                     }
 a.xa               { /* argument           */ color: #60c;       font-weight: bold;                     }
 a.xl               { /* local              */ color: #963;       font-weight: bold;                     }
 a.xv               { /* variable           */ color: #c30;       font-weight: bold;                     }

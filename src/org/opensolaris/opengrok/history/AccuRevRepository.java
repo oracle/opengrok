@@ -27,6 +27,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -77,15 +80,20 @@ public class AccuRevRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "accurev";
     private static final Pattern annotationPattern
-            = Pattern.compile("^\\s+(\\d+\\\\\\d+)\\s+(\\w+)\\s+.*");   // version, user, code line
+            = Pattern.compile("^\\s+(\\d+.\\d+)\\s+(\\w+)");   // version, user
     private static final Pattern depotPattern
             = Pattern.compile("^Depot:\\s+(\\w+)");
     private static final Pattern parentPattern
             = Pattern.compile("^Basis:\\s+(\\w+)");
+    private static final Pattern workspaceRootPattern
+            = Pattern.compile("Top:\\s+(.+)$");
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private String depotName = null;
     private String parent = null;
+    private String wsRoot = null;
+    private String relRoot = "";
+    
     /**  
      * This will be /./ on Unix and \.\ on Windows 
      */
@@ -107,7 +115,8 @@ public class AccuRevRepository extends Repository {
 
         ArrayList<String> cmd = new ArrayList<>();
 
-        String path = file.getAbsolutePath();
+        // Do not use absolute paths because symbolic links will cause havoc.
+        String path = getDepotRelativePath( file );
 
         cmd.add(RepoCommand);
         cmd.add("annotate");
@@ -132,8 +141,12 @@ public class AccuRevRepository extends Repository {
                     Matcher matcher = annotationPattern.matcher(line);
 
                     if (matcher.find()) {
-                        String version = matcher.group(1);
-                        String author = matcher.group(2);
+                        // On Windows machines version shows up as
+                        // <number>\<number>. To get search annotation
+                        // to work properly, need to flip '\' to '/'.
+                        // This is a noop on Unix boxes.
+                        String version = matcher.group(1).replace('\\', '/');
+                        String author  = matcher.group(2);
                         a.addLine(version, author, true);
                     } else {
                         LOGGER.log(Level.SEVERE,
@@ -159,8 +172,9 @@ public class AccuRevRepository extends Repository {
      */
     Executor getHistoryLogExecutor(File file) throws IOException {
 
-        String path = file.getAbsolutePath();
-
+        // Do not use absolute paths because symbolic links will cause havoc.
+        String path = getDepotRelativePath( file );
+        
         ArrayList<String> cmd = new ArrayList<>();
 
         cmd.add(RepoCommand);
@@ -281,22 +295,32 @@ public class AccuRevRepository extends Repository {
      *   Output would be similar on Unix boxes, but with '/' appearing
      *   in path names instead of '\'. The 'Basis' (BABS2) is the parent
      *   stream of the user workspace (BABS_2_shaehn). The 'Top' is the
-     *   path to the user workspace/repository. The elements below
-     *   'Server time' will be missing when current working directory
+     *   path to the root of the user workspace/repository. The elements
+     *   below 'Server time' will be missing when current working directory
      *   is not within a known AccuRev workspace/repository.
      */
-    private void getAccuRevInfo( File wsPath ) {
+    private boolean getAccuRevInfo( File wsPath ) {
     
         ArrayList<String> cmd = new ArrayList<>();
-
+        boolean status  = false;
+        Path given = Paths.get(wsPath.toString());
+        Path realWsPath = null;
+        
+        try {
+            // This helps overcome symbolic link issues so that
+            // Accurev will report the desired information.
+            // Otherwise it claims:
+            // "You are not in a directory associated with a workspace"
+            realWsPath = given.toRealPath();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE,
+                    "Could not determine real path for {0}", wsPath);
+        }
+        
         cmd.add(RepoCommand);
         cmd.add("info");
 
-        // Desired AccuRev attributes
-        depotName = null;
-        parent = null;
-        
-        Executor executor = new Executor(cmd, wsPath);
+        Executor executor = new Executor(cmd, realWsPath.toFile());
         executor.exec();
 
         try (BufferedReader info = new BufferedReader(executor.getOutputReader())) {
@@ -313,13 +337,66 @@ public class AccuRevRepository extends Repository {
                     Matcher depotMatch  = depotPattern.matcher(line);
                     if (depotMatch.find()) {
                         depotName = depotMatch.group(1);
+                        status = true;
                     }
                 }
 
-                if (line.startsWith("Basis")) {
+                else if (line.startsWith("Basis")) {
                     Matcher parentMatch = parentPattern.matcher(line);
                     if (parentMatch.find()) {
                         parent = parentMatch.group(1);
+                    }
+                }
+                
+                else if (line.startsWith("Top")) {
+                    Matcher workspaceRoot = workspaceRootPattern.matcher(line);
+                    if (workspaceRoot.find()) {
+                        wsRoot = workspaceRoot.group(1);
+                        // Normally, the source root path and the workspace root
+                        // are the same, but if the source root has been extended
+                        // into the actual AccuRev workspace, there is going to
+                        // be a residual relative path needed to construct
+                        // depot relative names.
+                        //
+                        //  Rare but possible:
+                        //   srcRoot: C:\Users\shaehn\workspaces\BABS_2\tools -
+                        //   wsRoot:  C:\Users\shaehn\workspaces\BABS_2
+                        //
+                        //  Gives: \tools for relRoot
+                        //
+                        // Assuming that the given name is to the root of the
+                        // AccuRev workspace, check to see if it happens to be
+                        // a symbolic link (which means its path name will differ
+                        // from the path known by Accurev)
+ 
+                        if (Files.isSymbolicLink(given)) {
+                            LOGGER.log(Level.INFO,"{0} is symbolic link.", wsPath);
+                            
+                            // When we know that the two paths DO NOT point to the
+                            // same place (that is, the given path is deeper into
+                            // the repository workspace), then need to get the
+                            // real path pointed to by the symbolic link so that
+                            // the relative root fragment can be extracted.
+                            if (! Files.isSameFile(given, Paths.get(wsRoot))) {
+                                String linkedTo = Files.readSymbolicLink(given).toRealPath().toString();
+                                if (linkedTo.regionMatches(0, wsRoot, 0, wsRoot.length())) {
+                                    relRoot = linkedTo.substring(wsRoot.length());
+                                }
+                            }
+                        } else {
+                            // The source root and the workspace root will both
+                            // be canonical paths. There will be a non-empty
+                            // relative root whenever the source root is longer
+                            // than the workspace root known to AccuRev.
+                            String srcRoot = env.getSourceRootPath();
+                            if (srcRoot.length() > wsRoot.length()) {
+                                relRoot = srcRoot.substring(wsRoot.length());
+                            }
+                        }
+                        
+                        if (relRoot.length() > 0) {
+                            LOGGER.log(Level.INFO,"Source root relative to workspace root by: {0}", relRoot);
+                        }
                     }
                 }
             }
@@ -327,6 +404,8 @@ public class AccuRevRepository extends Repository {
             LOGGER.log(Level.SEVERE,
                     "Could not find AccuRev repository for {0}", wsPath);
         }
+        
+        return status;
     }
 
     /**
@@ -340,28 +419,51 @@ public class AccuRevRepository extends Repository {
      */
     private boolean isInAccuRevDepot(File wsPath) {
 
-        boolean status = false;
+        // Once depot name is determined, always assume inside depot.
+        boolean status = (depotName != null);
 
-        if (isWorking()) {
-            getAccuRevInfo( wsPath );
-            status = (depotName != null);
+        if (! status && isWorking()) {
+            status = getAccuRevInfo( wsPath );
         }
 
         return status;
     }
 
+    /**
+     * Obtain a depot relative name
+     * for a given repository element path. For example,
+     * when the repository root is "/home/shaehn/workspaces/BABS_2" then
+     *
+     * given file path: /home/shaehn/workspaces/BABS_2/tools
+     * depot relative:  /./tools 
+     * 
+     * Using depot relative names instead of absolute file paths solves
+     * the problems encountered when symbolic links are made for repository
+     * root paths. For example, when the following path
+     * 
+     *  /home/shaehn/active/src/BABS is a symbolic link to
+     *  /home/shaehn/workspaces/BABS_2 then 
+     * 
+     * given file path: /home/shaehn/active/src/BABS/tools
+     * depot relative:  /./tools 
+     * 
+     * @param file path to repository element
+     * @return a depot relative file element path
+     */
     public String getDepotRelativePath(File file) {
 
         String path = depotRoot;
-
         try {
-            path = env.getPathRelativeToSourceRoot(file, 0);
-
-            if (path.startsWith(File.separator)) {
-                path = File.separator + "." + path;
-            } else {
-                path = depotRoot + path;
+            // This should turn any symbolically linked paths into the real thing...
+            Path realPath = Paths.get(file.toString()).toRealPath();
+            // ... so that removing the workspace root will give the depot relative path
+            //     (Note realPath should always be starting with wsRoot.)
+            String relativePath = realPath.toString().substring(wsRoot.length());
+            
+            if (relativePath.length() > 0) {
+                path = Paths.get(depotRoot, relativePath).toString();
             }
+            
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,
                     "Unable to determine depot relative path for {0}",
