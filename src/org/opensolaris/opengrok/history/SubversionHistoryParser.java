@@ -150,7 +150,8 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * revision we want, or {@code null} to fetch the entire history
      * @return object representing the file's history
      */
-    History parse(File file, SubversionRepository repos, String sinceRevision)
+    History parse(File file, SubversionRepository repos, String sinceRevision,
+            int numEntries)
             throws HistoryException {
 
         initSaxParser();
@@ -158,7 +159,8 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 RuntimeEnvironment.getInstance().getSourceRootPath().length(),
                 repos.getDateFormat());
 
-        Executor executor = repos.getHistoryLogExecutor(file, sinceRevision);
+        Executor executor = repos.getHistoryLogExecutor(file, sinceRevision,
+                numEntries);
         int status = executor.exec(true, this);
 
         if (status != 0) {

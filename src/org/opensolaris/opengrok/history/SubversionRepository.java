@@ -72,6 +72,8 @@ public class SubversionRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "svn";
 
+    private static final String URLattr = "url";
+
     protected String reposPath;
 
     public SubversionRepository() {
@@ -101,6 +103,56 @@ public class SubversionRepository extends Repository {
         return sb.toString();
     }
 
+    /**
+     * Get {@code Document} corresponding to the parsed XML output from 
+     * 'svn info' command.
+     * @return document with data from {@code info} or null if the {@code svn}
+     * command failed
+     */
+    private Document getInfoDocument() {
+        Document document = null;
+        List<String> cmd = new ArrayList<>();
+
+        cmd.add(RepoCommand);
+        cmd.add("info");
+        cmd.add("--xml");
+        File directory = new File(getDirectoryName());
+
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() == 0) {
+            try {
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                document = builder.parse(executor.getOutputStream());
+            } catch (SAXException saxe) {
+                LOGGER.log(Level.WARNING,
+                        "Parser error parsing svn output", saxe);
+            } catch (ParserConfigurationException pce) {
+                LOGGER.log(Level.WARNING,
+                        "Parser configuration error parsing svn output", pce);
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING,
+                        "IOException reading from svn process", ioe);
+            }
+        } else {
+            LOGGER.log(Level.WARNING,
+                            "Failed to execute svn info for [{0}]. Repository disabled.",
+                            getDirectoryName());
+        }
+
+        return document;
+    }
+
+    /**
+     * Get value of given tag in 'svn info' document.
+     * @param document document object containing {@code info} contents
+     * @param tagName name of the tag to return value for
+     * @return value string
+     */
+    private String getInfoPart(Document document, String tagName) {
+        return getValue(document.getElementsByTagName(tagName).item(0));
+    }
+
     @Override
     public void setDirectoryName(String directoryName) {
         super.setDirectoryName(directoryName);
@@ -109,53 +161,27 @@ public class SubversionRepository extends Repository {
             // set to true if we manage to find the root directory
             Boolean rootFound = Boolean.FALSE;
 
-            List<String> cmd = new ArrayList<>();
-            cmd.add(RepoCommand);
-            cmd.add("info");
-            cmd.add("--xml");
-            File directory = new File(getDirectoryName());
-
-            Executor executor = new Executor(cmd, directory);
-            if (executor.exec() == 0) {
-                try {
-                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                    DocumentBuilder builder = factory.newDocumentBuilder();
-                    Document document = builder.parse(executor.getOutputStream());
-
-                    String url
-                            = getValue(document.getElementsByTagName("url").item(0));
-                    if (url == null) {
-                        LOGGER.log(Level.WARNING,
-                                        "svn info did not contain an URL for [{0}]. Assuming remote repository.",
-                                        directoryName);
+            Document document = getInfoDocument();
+            if (document != null) {
+                String url = getInfoPart(document, URLattr);
+                if (url == null) {
+                    LOGGER.log(Level.WARNING,
+                            "svn info did not contain an URL for [{0}]. Assuming remote repository.",
+                            getDirectoryName());
+                    setRemote(true);
+                } else {
+                    if (!url.startsWith("file")) {
                         setRemote(true);
-                    } else {
-                        if (!url.startsWith("file")) {
-                            setRemote(true);
-                        }
                     }
-                    String root
-                            = getValue(document.getElementsByTagName("root").item(0));
-                    if (url != null && root != null) {
-                        reposPath = url.substring(root.length());
-                        rootFound = Boolean.TRUE;
-                    }
-                } catch (SAXException saxe) {
-                    LOGGER.log(Level.WARNING,
-                            "Parser error parsing svn output", saxe);
-                } catch (ParserConfigurationException pce) {
-                    LOGGER.log(Level.WARNING,
-                            "Parser configuration error parsing svn output", pce);
-                } catch (IOException ioe) {
-                    LOGGER.log(Level.WARNING,
-                            "IOException reading from svn process", ioe);
                 }
-            } else {
-                LOGGER.log(Level.WARNING,
-                                "Failed to execute svn info for [{0}]. Repository disabled.",
-                                directoryName);
-            }
 
+                String root
+                        = getValue(document.getElementsByTagName("root").item(0));
+                if (url != null && root != null) {
+                    reposPath = url.substring(root.length());
+                    rootFound = Boolean.TRUE;
+                }
+            }
             setWorking(rootFound);
         }
     }
@@ -168,9 +194,12 @@ public class SubversionRepository extends Repository {
      * @param sinceRevision the revision number immediately preceding the first
      *                      revision we want, or {@code null} to fetch the entire
      *                      history
+     * @param numEntries number of entries to return. If 0, return all.
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file, String sinceRevision) {
+    Executor getHistoryLogExecutor(final File file, String sinceRevision,
+            int numEntries) {
+
         String abs;
         try {
             abs = file.getCanonicalPath();
@@ -180,8 +209,8 @@ public class SubversionRepository extends Repository {
             return null;
         }
         String filename = "";
-        if (abs.length() > directoryName.length()) {
-            filename = abs.substring(directoryName.length() + 1);
+        if (abs.length() > getDirectoryName().length()) {
+            filename = abs.substring(getDirectoryName().length() + 1);
         }
 
         List<String> cmd = new ArrayList<>();
@@ -192,6 +221,9 @@ public class SubversionRepository extends Repository {
         cmd.addAll(getAuthCommandLineParams());
         cmd.add("--xml");
         cmd.add("-v");
+        if (numEntries > 0) {
+            cmd.add("-l" + numEntries);
+        }
         if (sinceRevision != null) {
             cmd.add("-r");
             // We would like to use sinceRevision+1 here, but if no new
@@ -204,14 +236,14 @@ public class SubversionRepository extends Repository {
             cmd.add(escapeFileName(filename));
         }
 
-        return new Executor(cmd, new File(directoryName), sinceRevision != null);
+        return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
     }
 
     @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         String filepath;
         try {
@@ -221,7 +253,7 @@ public class SubversionRepository extends Repository {
                     "Failed to get canonical path: {0}", exp.getClass().toString());
             return null;
         }
-        String filename = filepath.substring(directoryName.length() + 1);
+        String filename = filepath.substring(getDirectoryName().length() + 1);
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -250,9 +282,14 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file, String sinceRevision)
+    History getHistory(File file, String sinceRevision) throws HistoryException {
+        return getHistory(file, sinceRevision, 0);
+    }
+
+    private History getHistory(File file, String sinceRevision, int numEntries)
             throws HistoryException {
-        return new SubversionHistoryParser().parse(file, this, sinceRevision);
+        return new SubversionHistoryParser().parse(file, this, sinceRevision,
+                numEntries);
     }
 
     private String escapeFileName(String name) {
@@ -425,39 +462,54 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
-        String parent = null;
-        File directory = new File(directoryName);
+    String determineParent() {
+        String part = null;
+        Document document = getInfoDocument();
 
-        List<String> cmd = new ArrayList<>();
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(RepoCommand);
-        cmd.add("info");
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.directory(directory);
-        Process process;
-        process = pb.start();
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("URL:")) {
-                    String parts[] = line.split("\\s+");
-                    if (parts.length != 2) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to get parent for {0}", directoryName);
-                    }
-                    parent = parts[1];
-                    break;
-                }
-            }
+        if (document != null) {
+            part = getInfoPart(document, URLattr);
         }
 
-        return parent;
+        return part;
     }
 
     @Override
-    String determineBranch() {
-        return null;
+    String determineBranch() throws IOException {
+        String branch = null;
+        Document document = getInfoDocument();
+
+        if (document != null) {
+            String url = getInfoPart(document, URLattr);
+            int idx;
+            final String branchesStr = "branches/";
+            if ((idx = url.indexOf(branchesStr)) > 0) {
+                branch = url.substring(idx + branchesStr.length());
+            }
+        }
+
+        return branch;
+    }
+
+    @Override
+    public String determineCurrentVersion() throws IOException {
+        String curVersion = null;
+
+        try {
+            History hist = getHistory(new File(getDirectoryName()), null, 1);
+            if (hist != null) {
+                List<HistoryEntry> hlist = hist.getHistoryEntries();
+                if (hlist != null && hlist.size() > 0) {
+                    HistoryEntry he = hlist.get(0);
+                    curVersion = outputDateFormat.format(he.getDate()) + " " +
+                            he.getRevision() + " " + he.getAuthor() + " " +
+                            he.getMessage();
+                }
+            }
+        } catch (HistoryException ex) {
+            LOGGER.log(Level.WARNING, "cannot get current version info for {0}",
+                    getDirectoryName());
+        }
+
+        return curVersion;
     }
 }

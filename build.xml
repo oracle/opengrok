@@ -91,7 +91,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
     -->
 
-    <property name="version" value="1.1-rc10"/>
+    <property name="version" value="1.1-rc14"/>
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
@@ -519,16 +519,46 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         </java>
     </target>
 
-    <target name="package" depends="jar">
+    <target name="-check-svr4-package" description="Check that Solaris SVR4 package exists">
+        <!-- XXX dist should be ${dist.dir} -->
+        <available file="dist/OSOLopengrok-${version}.pkg" type="file"
+	    property="svr4_package_exists">
+        </available>
+        <condition property="svr4_package_missing">
+            <not>
+                <isset property="svr4_package_exists"/>
+            </not>
+        </condition>
+    </target>
+
+    <target name="package-svr4" depends="-check-svr4-package,jar" if="svr4_package_missing">
         <exec os="SunOS" executable="/usr/bin/pkgmk" failonerror="true">
             <arg line="-o -d build -r . -v ${version} -f platform/solaris/pkgdef/prototype"/>
         </exec>
         <exec os="SunOS" executable="/usr/bin/pkgtrans" failonerror="true">
             <arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
         </exec>
+    </target>
+
+    <target name="-check-ips-package" description="Check that Solaris IPS package exists">
+        <!-- XXX dist should be ${dist.dir} -->
+        <available file="dist/opengrok-${version}.p5p" type="file"
+	    property="ips_package_exists">
+        </available>
+        <condition property="ips_package_missing">
+            <not>
+                <isset property="ips_package_exists"/>
+            </not>
+        </condition>
+    </target>
+
+    <target name="package-ips" depends="-check-ips-package,jar" if="ips_package_missing">
         <exec os="SunOS" executable="platform/solaris/ips/create.sh" failonerror="true">
             <arg line="-v ${version}"/>
         </exec>
+    </target>
+
+    <target name="package" depends="package-svr4,package-ips">
     </target>
 
     <target name="dist" depends="jar">
@@ -758,7 +788,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             </not>
         </condition>
     </target>
-    
+
     <target name="check_plugins_jar" description="check if plugins.jar was generated">
         <available
             file="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/plugins.jar"

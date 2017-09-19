@@ -377,16 +377,13 @@ public class IndexerTest {
             if (factory == null) {
                 continue;
             }
-            StringWriter out;
-            try (FileReader in = new FileReader(f)) {
-                out = new StringWriter();
+            try (FileReader in = new FileReader(f); StringWriter out = new StringWriter()) {
                 try {
                     AnalyzerGuru.writeXref(factory, in, out, null, null, null);
                 } catch (UnsupportedOperationException exp) {
                     // ignore
                 }
             }
-            out.close();
         }
     }
 

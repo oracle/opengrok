@@ -70,14 +70,14 @@ public class MonotoneRepository extends Repository {
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         Process process = null;
         String revision = rev;
 
         try {
             String filename = (new File(parent, basename)).getCanonicalPath()
-                    .substring(directoryName.length() + 1);
+                    .substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {RepoCommand, "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
@@ -126,8 +126,8 @@ public class MonotoneRepository extends Repository {
             throws IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
-        if (abs.length() > directoryName.length()) {
-            filename = abs.substring(directoryName.length() + 1);
+        if (abs.length() > getDirectoryName().length()) {
+            filename = abs.substring(getDirectoryName().length() + 1);
         }
 
         List<String> cmd = new ArrayList<>();
@@ -145,7 +145,7 @@ public class MonotoneRepository extends Repository {
         cmd.add("--no-format-dates");
         cmd.add(filename);
 
-        return new Executor(cmd, new File(directoryName), sinceRevision != null);
+        return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
     }
     /**
      * Pattern used to extract author/revision from hg annotate.
@@ -173,7 +173,7 @@ public class MonotoneRepository extends Repository {
             cmd.add(revision);
         }
         cmd.add(file.getName());
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
@@ -207,7 +207,7 @@ public class MonotoneRepository extends Repository {
 
     @Override
     public void update() throws IOException {
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
 
         List<String> cmd = new ArrayList<>();
@@ -283,7 +283,7 @@ public class MonotoneRepository extends Repository {
     @Override
     String determineParent() throws IOException {
         String parent = null;
-        File directory = new File(directoryName);
+        File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -303,7 +303,7 @@ public class MonotoneRepository extends Repository {
                     String parts[] = line.split("\\s+");
                     if (parts.length != 3) {
                         LOGGER.log(Level.WARNING,
-                                "Failed to get parent for {0}", directoryName);
+                                "Failed to get parent for {0}", getDirectoryName());
                     }
                     parent = parts[2];
                     break;

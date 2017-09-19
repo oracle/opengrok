@@ -125,7 +125,7 @@ public class Scripts implements Iterable<Scripts.Script> {
         SCRIPTS.put("jquery-tablesorter", new FileScript("js/jquery-tablesorter-2.26.6.min.js", 12));
         SCRIPTS.put("tablesorter-parsers", new FileScript("js/tablesorter-parsers-0.0.1.js", 13));
         SCRIPTS.put("searchable-option-list", new FileScript("js/searchable-option-list-2.0.3.min.js", 14));
-        SCRIPTS.put("utils", new FileScript("js/utils-0.0.13.js", 15));
+        SCRIPTS.put("utils", new FileScript("js/utils-0.0.14.js", 15));
         SCRIPTS.put("repos", new FileScript("js/repos-0.0.1.js", 20));
         SCRIPTS.put("diff", new FileScript("js/diff-0.0.2.js", 20));
     }
@@ -202,7 +202,7 @@ public class Scripts implements Iterable<Scripts.Script> {
      * @return true if script was added; false otherwise
      */
     public boolean addScript(String contextPath, String scriptName) {
-        contextPath = contextPath == null || contextPath.isEmpty() ? "" : contextPath + "/";
+        contextPath = contextPath == null || contextPath.isEmpty() ? "/" : contextPath + "/";
         if (SCRIPTS.containsKey(scriptName)) {
             this.addScript(
                     // put the context path end append the script path

@@ -60,6 +60,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.history.History;
+import org.opensolaris.opengrok.history.HistoryEntry;
+import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -182,7 +185,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get all data required to create a diff view wrt. to this request in one
+     * Get all data required to create a diff view w.r.t. to this request in one
      * go.
      *
      * @return an instance with just enough information to render a sufficient
@@ -1190,6 +1193,71 @@ public final class PageConfig {
                 path, env.isCompressXref());
     }
 
+    protected String getLatestRevision() {
+        if (!getEnv().isHistoryEnabled()) {
+            return null;
+        }
+
+        History hist;
+        try {
+            hist = HistoryGuru.getInstance().
+                    getHistory(new File(getEnv().getSourceRootFile(), getPath()));
+        } catch (HistoryException ex) {
+            return null;
+        }
+
+        if (hist == null) {
+            return null;
+        }
+
+        List<HistoryEntry> hlist = hist.getHistoryEntries();
+        if (hlist == null) {
+            return null;
+        }
+
+        if (hlist.size() == 0) {
+            return null;
+        }
+
+        HistoryEntry he = hlist.get(0);
+        if (he == null) {
+            return null;
+        }
+
+        return he.getRevision();
+    }
+
+    /**
+     * Is revision the latest revision ?
+     * @param rev revision string
+     * @return true if latest revision, false otherwise
+     */
+    public boolean isLatestRevision(String rev) {
+        return rev.equals(getLatestRevision());
+    }
+
+    /**
+     * Get the location of cross reference for given file containing the current
+     * revision.
+     * @return location to redirect to or null if failed
+     */
+    public String getLatestRevisionLocation() {
+        StringBuilder sb = new StringBuilder();
+        String revStr;
+
+        if ((revStr = getLatestRevision()) == null) {
+            return null;
+        }
+
+        sb.append(req.getContextPath());
+        sb.append(Prefix.XREF_P);
+        sb.append(Util.URIEncodePath(path));
+        sb.append("?r=");
+        sb.append(Util.URIEncode(revStr));
+
+        return sb.toString();
+    }
+
     /**
      * Get the path the request should be redirected (if any).
      *
@@ -1331,7 +1399,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get the config wrt. the given request. If there is none yet, a new config
+     * Get the config w.r.t. the given request. If there is none yet, a new config
      * gets created, attached to the request and returned.
      * <p>
      *

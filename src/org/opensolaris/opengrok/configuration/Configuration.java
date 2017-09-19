@@ -176,7 +176,6 @@ public final class Configuration {
     private final Map<String, String> cmds;  // repository type -> command
     private int tabSize;
     private int commandTimeout; // in seconds
-    private int indexRefreshPeriod; // in seconds
     private boolean scopesEnabled;
     private boolean projectsEnabled;
     private boolean foldingEnabled;
@@ -196,6 +195,13 @@ public final class Configuration {
     private boolean handleHistoryOfRenamedFiles;
 
     public static final double defaultRamBufferSize = 16;
+
+    /**
+     * The directory hierarchy depth to limit the scanning for repositories.
+     * E.g. if the /mercurial/ directory (relative to source root) is a repository
+     * and /mercurial/usr/closed/ is sub-repository, the latter will be discovered
+     * only if the depth is set to 3 or greater.
+     */
     public static final int defaultScanningDepth = 3;
 
     /**
@@ -231,6 +237,11 @@ public final class Configuration {
      * searches. This is total for the whole webapp/CLI utility.
      */
     private int MaxSearchThreadCount;
+
+    /**
+     * If false, do not display listing or projects/repositories on the index page.
+     */
+    private boolean displayRepositories;
 
     /*
      * types of handling history for remote SCM repositories:
@@ -304,14 +315,6 @@ public final class Configuration {
         this.commandTimeout = commandTimeout;
     }
 
-    public int getIndexRefreshPeriod() {
-        return indexRefreshPeriod;
-    }
-
-    public void setIndexRefreshPeriod(int seconds) {
-        this.indexRefreshPeriod = seconds;
-    }
-
     public String getStatisticsFilePath() {
         return statisticsFilePath;
     }
@@ -350,7 +353,7 @@ public final class Configuration {
      * Creates a new instance of Configuration
      */
     public Configuration() {
-        //defaults for an opengrok instance configuration
+        // defaults for an opengrok instance configuration
         cmds = new HashMap<>();
         setAllowedSymlinks(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
@@ -362,19 +365,19 @@ public final class Configuration {
         setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         setCurrentIndexedCollapseThreshold(27);
         setDataRoot(null);
+        setDisplayRepositories(true);
         setFetchHistoryWhenNotInCache(true);
         setFoldingEnabled(true);
         setGenerateHtml(true);
         setGroups(new TreeSet<>());
         setGroupsCollapseThreshold(4);
-        setHandleHistoryOfRenamedFiles(true);
+        setHandleHistoryOfRenamedFiles(false);
         setHistoryCache(true);
         setHistoryCacheTime(30);
         setHistoryEnabled(true);
         setHitsPerPage(25);
         setIgnoredNames(new IgnoredNames());
         setIncludedNames(new Filter());
-        setIndexRefreshPeriod(3600);
         setIndexVersionedFilesOnly(false);
         setLastEditedDisplayMode(true);
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
@@ -915,6 +918,14 @@ public final class Configuration {
 
     public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
         this.currentIndexedCollapseThreshold = currentIndexedCollapseThreshold;
+    }
+
+    public boolean getDisplayRepositories() {
+        return this.displayRepositories;
+    }
+
+    public void setDisplayRepositories(boolean flag) {
+        this.displayRepositories = flag;
     }
 
     /**

@@ -225,7 +225,7 @@
 
                 // Add the state to history as-per normal anchor links
                 if (HISTORY_SUPPORT && pushToHistory) {
-                    history.pushState({}, document.title, location.pathname + href);
+                    history.pushState({}, document.title, location.pathname + location.search + href);
                 }
             }
 

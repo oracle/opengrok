@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -364,8 +364,8 @@ public class AnalyzerGuru {
         if (fa != null) {
             Genre g = fa.getGenre();
             if (g == Genre.PLAIN || g == Genre.XREFABLE || g == Genre.HTML) {
-                doc.add(new Field(QueryBuilder.T, g.typeName(), string_ft_stored_nanalyzed_norms
-                ));
+                doc.add(new Field(QueryBuilder.T, g.typeName(),
+		        string_ft_stored_nanalyzed_norms));
             }
             fa.analyze(doc, StreamSource.fromFile(file), xrefOut);
 

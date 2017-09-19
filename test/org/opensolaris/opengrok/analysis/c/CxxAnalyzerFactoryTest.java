@@ -51,7 +51,7 @@ import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  *
- * @author kotal
+ * @author Tomas Kotal
  */
 public class CxxAnalyzerFactoryTest {
 

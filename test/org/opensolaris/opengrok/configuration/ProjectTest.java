@@ -128,7 +128,7 @@ public class ProjectTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setProjects(projects);
 
-        List<String> descs = env.getProjectDescriptions();
+        List<String> descs = env.getProjectNames();
         assertTrue(descs.contains("foo"));
         assertTrue(descs.contains("bar"));
         assertFalse(descs.contains("foobar"));

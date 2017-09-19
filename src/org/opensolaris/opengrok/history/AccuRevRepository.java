@@ -479,7 +479,7 @@ public class AccuRevRepository extends Repository {
         if (sourceHome.isDirectory()) {
             return isInAccuRevDepot(sourceHome);
         }
-        
+
         return false;
     }
 

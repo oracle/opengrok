@@ -242,6 +242,38 @@ public class PageConfigTest {
     }
 
     @Test
+    public void testGetLatestRevisionValid() {
+        DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
+            @Override
+                public String getPathInfo() {
+                    return "/git/main.c";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req1);
+        String rev = cfg.getLatestRevision();
+
+        assertEquals("aa35c258", rev);
+    }
+
+    @Test
+    public void testGetLatestRevisionNotValid() {
+        DummyHttpServletRequest req2 = new DummyHttpServletRequest() {
+            @Override
+                public String getPathInfo() {
+                    return "/git/nonexistent_file";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req2);
+        String rev = cfg.getLatestRevision();
+        assertNull(rev);
+
+        String location = cfg.getLatestRevisionLocation();
+        assertNull(location);
+    }
+
+    @Test
     public void testGetRequestedRevision() {
         final String[] params = {"r", "h", "r", "r", "r"};
         final String[] revisions = {

@@ -23,6 +23,9 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.util.ClassUtil;
 
 /**
  * Class to contain the common info for a repository. This object will live on
@@ -33,9 +36,15 @@ import java.io.Serializable;
  */
 public class RepositoryInfo implements Serializable {
 
-    private static final long serialVersionUID = 2L;
+    static {
+        ClassUtil.remarkTransientFields(RepositoryInfo.class);
+    }
 
-    protected String directoryName; // absolute path
+    private static final long serialVersionUID = 3L;
+
+    // dummy to avoid storing absolute path in XML encoded configuration
+    private transient String directoryName;
+    private String directoryNameRelative;
     protected Boolean working;
     protected String type;
     protected boolean remote;
@@ -45,6 +54,11 @@ public class RepositoryInfo implements Serializable {
     protected String currentVersion;
 
     /**
+     * format used for printing the date in {@code currentVersion}
+     */
+    protected static final SimpleDateFormat outputDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm Z");
+
+    /**
      * Empty constructor to support serialization.
      */
     public RepositoryInfo() {
@@ -52,7 +66,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     public RepositoryInfo(RepositoryInfo orig) {
-        this.directoryName = orig.directoryName;
+        this.directoryNameRelative = orig.directoryNameRelative;
         this.type = orig.type;
         this.working = orig.isWorking();
         this.remote = orig.isRemote();
@@ -63,21 +77,43 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
+     * @return relative path to source root
+     */
+    public String getDirectoryNameRelative() {
+        return directoryNameRelative;
+    }
+
+    /**
+     * Set relative path to source root
+     * @param dir directory
+     */
+    public void setDirectoryNameRelative(String dir) {
+        this.directoryNameRelative = dir;
+    }
+
+    /**
      * Get the name of the root directory for this repository.
      *
      * @return the name of the root directory
      */
     public String getDirectoryName() {
-        return directoryName;
+        return RuntimeEnvironment.getInstance().getSourceRootPath() +
+                directoryNameRelative;
     }
 
     /**
      * Specify the name of the root directory for this repository.
      *
-     * @param directoryName the new name of the root directory
+     * @param dir the new name of the root directory. Can be absolute
+     * path or relative to source root.
      */
-    public void setDirectoryName(String directoryName) {
-        this.directoryName = directoryName;
+    public void setDirectoryName(String dir) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (dir.startsWith(env.getSourceRootPath())) {
+            this.directoryNameRelative = dir.substring(env.getSourceRootPath().length());
+        } else {
+            this.directoryNameRelative = dir;
+        }
     }
 
     /**
@@ -137,7 +173,7 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * get property type
+     * get property parent
      *
      * @return parent
      */

@@ -42,14 +42,13 @@
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
-#   - OPENGROK_DISABLE_RENAMED_FILES_HISTORY Disable getting full history of
+#   - OPENGROK_RENAMED_FILES_HISTORY If set to "on", get full history of
 #                                 renamed files for SCMs that support it (Git,
 #                                 Mercurial).
-#                                 The default is handle the history which makes
-#                                 indexing slower, especially in the presence of
+#                                 The default is off.
+#                                 When set to on, the indexing is slower,
+#                                 especially in the presence of
 #                                 lots of renamed files in the repository.
-#                                 Set it to non-empty value to disable the
-#                                 renamed files history handling.
 #   - OPENGROK_GENERATE_HISTORY   Influence history cache generation
 #                                 Following values are recognized:
 #                                   on		- enabled (default)
@@ -107,8 +106,12 @@ Usage()
     echo ""
     echo "Usage: ${progname} <bootstrap|deploy|derby|update|updateQuietly|usage|help>"
     echo "       ${progname} index [<directory>]"
-    echo "       ${progname} indexpart <src_root> <directory1> [..]"
+    echo "       ${progname} indexpart <directory_1> [<directory_2> ..]"
     echo "       ${progname} clearHistory <src_root> <repository_name>"
+    echo ""
+    echo "       The \"indexpart\" assumes that it will be run with configuration"
+    echo "       pointed to via the OPENGROK_READ_XML_CONFIGURATION environment"
+    echo "       variable."
     echo ""
     echo "  Optional environment variables:"
     echo "    OPENGROK_CONFIGURATION - location of your configuration"
@@ -134,8 +137,8 @@ else
 	exit 1
 fi
 
-SCRIPT_FILE=`readlink -f "${0}"`
-SCRIPT_DIRECTORY=`dirname "${SCRIPT_FILE}"`
+SCRIPT_DIRECTORY=`dirname "${0}"`
+export SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd -P`
 
 #
 # Default Instance Configuration
@@ -282,9 +285,11 @@ DefaultInstanceConfiguration()
         GENERATE_HISTORY="${GENERATE_HISTORY} -H"
     fi
 
-    if [ -n "$OPENGROK_DISABLE_RENAMED_FILES_HISTORY" ]
+    if [ "$OPENGROK_RENAMED_FILES_HISTORY" != "on" ]
     then
-        DISABLE_RENAMED_FILES_HISTORY="-D"
+        RENAMED_FILES_HISTORY="-D off"
+    else
+        RENAMED_FILES_HISTORY="-D on"
     fi
 
     # OPTIONAL: override depth of scanning for repositories
@@ -815,7 +820,7 @@ CommonInvocation()
         ${IGNORE_PATTERNS}                    				\
         ${HISTORY_TAGS}							\
         ${GENERATE_HISTORY}           					\
-	${DISABLE_RENAMED_FILES_HISTORY}				\
+	${RENAMED_FILES_HISTORY}					\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
         ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\
@@ -1053,12 +1058,14 @@ case "${1}" in
         ;;
 
     indexpart)
-        if [ $# -ne 3 ]
+        if [ $# -ne 2 ]
         then
             Usage
         fi
-        SRC_ROOT="${2}"
-        shift 2
+	shift
+	if [ -z "$OPENGROK_READ_XML_CONFIGURATION" ]; then
+	    FatalError "need configuration via OPENGROK_READ_XML_CONFIGURATION"
+	fi
         ValidateConfiguration
         CreateRuntimeRequirements
         UpdateDataPartial $@

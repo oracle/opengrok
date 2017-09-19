@@ -1,5 +1,5 @@
 Using OpenGrok authorization
-------------------------
+----------------------------
 
 This howto provides information about opengrok authorization with authorization framework.
 You can use this package along with project groupings (merged before) which allows
@@ -15,8 +15,16 @@ Configuration
 --------------
 
 You can configure:
+
 1) Plugin directory
-    In web.xml for the webapp, there is a context parameter dedicated to this.
+
+    Can be specified in configuration with a property, e.g.:
+
+	<void property="pluginDirectory">
+	<string>/opengrok/auth/plugins</string>
+	</void>
+
+    Alternatively, in web.xml for the webapp, there is a context parameter dedicated to this.
 
       <context-param>
           <param-name>authorizationPluginDirectory</param-name>
@@ -26,14 +34,16 @@ You can configure:
               Default value is OPENGROK_DATA_ROOT/plugins
           </description>
       </context-param>
-  
+
     It is commented out by default so that the framework does not do anything.
     The OPENGROK_DATA_ROOT is the dataRoot directory set in configuration.xml.
 
-    Opengrok authorization expects plugin classes in that directory, it loads those classes in
-    memory as plugins and then perform the authorization for each request.
+    Opengrok authorization expects plugin classes in that directory, it loads
+    those classes into memory as plugins and then perform the authorization for
+    each request.
 
 2) Watchdog service
+
     For easier development there is another context parameter in web.xml.
 
       <context-param>
@@ -51,7 +61,8 @@ You can configure:
     plugin directory are loaded.
 
 3) Provide a plugin
-    You can provide your own plugin by putting the compiled 
+
+    You can provide your own plugin by putting the compiled
     plugin class (.class or in .jar) into plugin directory.
 
 
@@ -116,8 +127,8 @@ Also JVM can forbid you to extend some packages which are not meant to be extend
 Set up
 ------
 
-The plugin class must be compiled to the .class file (and the it can be packaged into .jar file).
-The frameworks supports both .class and .jar files.
+The plugin class must be compiled to the .class file (and then it can be packaged into .jar file).
+The framework supports both .class and .jar files.
 For compiling you have to provide opengrok.jar in the classpath
 
 Example (for the SampleAuthorizationPlugin which is included):
@@ -127,12 +138,12 @@ Then you can just drop the compiled .class file into plugin directory and deploy
 If the plugin is a part of a package. Then you have to copy the full directory path which is made
 by the compiler relatively to the source file.
 
-If anything goes wrong, you should find information in the logs.
+If anything goes wrong, you will find information in the logs.
 
 Running
 -------
 
-The framework consists of three parts
+The framework consists of three parts:
 
 1) PluginFramework
     Plugin container
