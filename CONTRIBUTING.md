@@ -7,7 +7,7 @@ Asking questions via creating new Issue is fine also.
 
 When submitting a new Issue for what seems is a bug, please note the version you're running and ideally steps to reproduce.
 
-Make sure to add a comment line line to the changeset saying which Issue it is is fixing, e.g. 'fixes #XYZ' so that the issue can be automatically closed when the accosicated pull request is merged.
+Make sure to add a comment line line to the changeset saying which Issue it is is fixing, e.g. 'fixes #XYZ' so that the issue can be automatically closed when the assosicated pull request is merged.
 
 For a pull request to be merged, we need the contributor to sign Oracle Contributor Agreement first.
 See http://www.oracle.com/technetwork/community/oca-486395.html for details.
