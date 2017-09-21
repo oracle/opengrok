@@ -915,12 +915,10 @@ DeployWar()
         FatalError "Web Application Installation FAILED"
     fi
 
-    # Fix for opengrok issue https://github.com/OpenGrok/OpenGrok/issues/863
     # If user does not use default OPENGROK_INSTANCE_BASE or default
     # WEBAPP_CONFIG_ADDRESS, then attempt to extract WEB-INF/web.xml from
     # source.war using jar or zip utility, update the hardcoded values and
     # then update source.war with the new WEB-INF/web.xml
-
     if [ "${OPENGROK_INSTANCE_BASE}" != '/var/opengrok' ] || [ "${WEBAPP_CONFIG_ADDRESS}" != 'localhost:2424' ]
     then
         EXTRACT_COMMAND=""
@@ -941,11 +939,19 @@ DeployWar()
             eval "${EXTRACT_COMMAND} ${warTarget}/source.war WEB-INF/web.xml"
             if [ "${OPENGROK_INSTANCE_BASE}" != '/var/opengrok' ]
             then
-                sed -i -e 's:/var/opengrok/etc/configuration.xml:'"$XML_CONFIGURATION"':g' "${warTarget}/WEB-INF/web.xml"
+                sed -e 's:/var/opengrok/etc/configuration.xml:'"$XML_CONFIGURATION"':g' \
+		    "${warTarget}/WEB-INF/web.xml" \
+		    > "${warTarget}/WEB-INF/web.xml.tmp"
+		mv "${warTarget}/WEB-INF/web.xml.tmp" \
+		    "${warTarget}/WEB-INF/web.xml"
             fi
             if [ "${WEBAPP_CONFIG_ADDRESS}" != 'localhost:2424' ]
             then
-                sed -i -e 's/localhost:2424/'"$WEBAPP_CONFIG_ADDRESS"'/g' "${warTarget}/WEB-INF/web.xml"
+                sed -e 's/localhost:2424/'"$WEBAPP_CONFIG_ADDRESS"'/g' \
+		    "${warTarget}/WEB-INF/web.xml" \
+		    > "${warTarget}/WEB-INF/web.xml.tmp"
+		mv "${warTarget}/WEB-INF/web.xml.tmp" \
+		    "${warTarget}/WEB-INF/web.xml"
             fi
             eval "${COMPRESS_COMMAND} ${warTarget}/source.war WEB-INF/web.xml"
             rm -rf "${warTarget}/WEB-INF"
