@@ -225,12 +225,7 @@ public final class Indexer {
 
                             break;
                         case 'B':
-                            String optArg = getopt.getOptarg();
-                            // To make it easier to disable URL of information provider...
-                            if (optArg.equals("none")) {
-                                optArg = null;
-                            }
-                            cfg.setUserPage(optArg);
+                            cfg.setUserPage(getopt.getOptarg());
                             break;
                         case 'C':
                             cfg.setPrintProgress(true);
