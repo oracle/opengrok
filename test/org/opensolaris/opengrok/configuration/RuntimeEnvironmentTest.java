@@ -298,7 +298,8 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testUserPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String page = "http://www.myserver.org/viewProfile.jspa?username=";
+        //String page = "http://www.myserver.org/viewProfile.jspa?username=";
+        String page = null;
         assertEquals(page, instance.getUserPage());
         instance.setUserPage(page.substring(5));
         assertEquals(page.substring(5), instance.getUserPage());
@@ -307,7 +308,8 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testBugPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String page = "http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=";
+        //String page = "http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=";
+        String page = null;
         assertEquals(page, instance.getBugPage());
         instance.setBugPage(page.substring(5));
         assertEquals(page.substring(5), instance.getBugPage());
@@ -356,7 +358,8 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testReviewPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String page = "http://arc.myserver.org/caselog/PSARC/";
+        //String page = "http://arc.myserver.org/caselog/PSARC/";
+        String page = null;
         assertEquals(page, instance.getReviewPage());
         instance.setReviewPage(page.substring(5));
         assertEquals(page.substring(5), instance.getReviewPage());
