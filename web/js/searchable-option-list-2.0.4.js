@@ -1041,7 +1041,12 @@
                             $changedItem
                                 .prop('checked', false)
                                 .trigger('change');
-                            $('#sbox').submit();
+                            /*
+                             * Modified 2017
+                             */
+                            if (isOnSearchPage()) {
+                                $('#sbox').submit();
+                            }
                         })
                         .prependTo($existingDisplayItem);
                 }
