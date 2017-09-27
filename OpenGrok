@@ -105,7 +105,7 @@ Usage()
 
     exec >&2
     echo ""
-    echo "Usage: ${progname} <bootstrap|deploy|derby|update|updateQuietly|usage|help>"
+    echo "Usage: ${progname} <bootstrap|deploy|update|updateQuietly|usage|help>"
     echo "       ${progname} index [<directory>]"
     echo "       ${progname} indexpart <directory_1> [<directory_2> ..]"
     echo "       ${progname} clearHistory <src_root> <repository_name>"
@@ -974,30 +974,6 @@ DeployWar()
     Progress
 }
 
-DerbyServer()
-{
-    case "${OS_NAME}:${OS_VERSION}" in
-        SunOS:5.10) Error "unsupported OS" ;;
-        SunOS:5.11)
-                    /sbin/svcadm enable javadb
-                     ;;
-        SunOS:5.12)
-                    echo "Below might need your socket permission setup"
-                    echo "see JDK1.7_51 release notes"
-                    set -x
-                    mkdir -p $DATA_ROOT/derby
-                    java -Dderby.system.home=$DATA_ROOT/derby \
-		        -jar /usr/jdk/instances/jdk1.7.0/db/lib/derbynet.jar start
-                     ;;
-        Linux:*)
-                    mkdir -p $DATA_ROOT/derby
-                    java -Dderby.system.home=$DATA_ROOT/derby \
-		        -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
-                     ;;
-        *)          Error "unsupported OS" ;;
-    esac
-}
-
 #
 # Clear history index for given project.
 #
@@ -1023,12 +999,6 @@ LoadInstanceConfiguration
 case "${1}" in
     deploy)
         DeployWar
-        ;;
-
-    derby)
-        ValidateConfiguration
-        CreateRuntimeRequirements
-        DerbyServer
         ;;
 
     update)
