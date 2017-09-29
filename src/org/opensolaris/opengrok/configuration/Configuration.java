@@ -243,6 +243,11 @@ public final class Configuration {
      */
     private boolean displayRepositories;
 
+    /**
+     * If true, list directories first in xref directory listing.
+     */
+    private boolean listDirsFirst = true;
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -926,6 +931,14 @@ public final class Configuration {
 
     public void setDisplayRepositories(boolean flag) {
         this.displayRepositories = flag;
+    }
+
+    public boolean getListDirsFirst() {
+        return listDirsFirst;
+    }
+
+    public void setListDirsFirst(boolean flag) {
+        listDirsFirst = flag;
     }
 
     /**
