@@ -1937,3 +1937,11 @@ function scope_on_scroll() {
         scope_timeout = null;
     }, 150);
 }
+
+/**
+ * Determines whether current page is search page = list with queried documents.
+ * @returns true if on search page, false otherwise
+ */
+function isOnSearchPage() {
+    return $(document.documentElement).hasClass('search');
+}

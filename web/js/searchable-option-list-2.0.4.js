@@ -1037,10 +1037,16 @@
                 if ((this.config.multiple || this.config.allowNullSelection) && !$changedItem.prop('disabled')) {
                     $('<span class="sol-quick-delete"/>')
                         .html(this.config.texts.quickDelete)
-                        .click(function () {
+                        .click(function () { // deselect the project and refresh the search
                             $changedItem
                                 .prop('checked', false)
                                 .trigger('change');
+                            /*
+                             * Modified 2017
+                             */
+                            if (isOnSearchPage()) {
+                                $('#sbox').submit();
+                            }
                         })
                         .prependTo($existingDisplayItem);
                 }

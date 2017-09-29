@@ -357,7 +357,7 @@ public final class Configuration {
         cmds = new HashMap<>();
         setAllowedSymlinks(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
-        setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
+        //setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
         setCachePages(5);
         setCommandTimeout(600); // 10 minutes
@@ -392,7 +392,7 @@ public final class Configuration {
         setRamBufferSize(defaultRamBufferSize); //MB
         setRemoteScmSupported(RemoteSCM.OFF);
         setRepositories(new ArrayList<>());
-        setReviewPage("http://arc.myserver.org/caselog/PSARC/");
+        //setReviewPage("http://arc.myserver.org/caselog/PSARC/");
         setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
         setRevisionMessageCollapseThreshold(200);
         setScanningDepth(defaultScanningDepth); // default depth of scanning for repositories
@@ -403,7 +403,7 @@ public final class Configuration {
         setTagsEnabled(false);
         setUrlPrefix("/source/s?");
         //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
-        setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
+        //setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
         // Set to empty string so we can append it to the URL
         // unconditionally later.
         setUserPageSuffix("");
