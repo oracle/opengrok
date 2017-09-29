@@ -301,8 +301,8 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String page = "http://www.myserver.org/viewProfile.jspa?username=";
         assertNull(instance.getUserPage());   // default value is null
-        instance.setUserPage(page.substring(5));
-        assertEquals(page.substring(5), instance.getUserPage());
+        instance.setUserPage(page);
+        assertEquals(page, instance.getUserPage());
     }
 
     @Test
@@ -310,8 +310,8 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String page = "http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=";
         assertNull(instance.getBugPage());   // default value is null
-        instance.setBugPage(page.substring(5));
-        assertEquals(page.substring(5), instance.getBugPage());
+        instance.setBugPage(page);
+        assertEquals(page, instance.getBugPage());
     }
 
     @Test
@@ -359,8 +359,8 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String page = "http://arc.myserver.org/caselog/PSARC/";
         assertNull(instance.getReviewPage());   // default value is null
-        instance.setReviewPage(page.substring(5));
-        assertEquals(page.substring(5), instance.getReviewPage());
+        instance.setReviewPage(page);
+        assertEquals(page, instance.getReviewPage());
     }
 
     @Test
