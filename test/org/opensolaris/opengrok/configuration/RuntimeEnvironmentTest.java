@@ -299,21 +299,19 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testUserPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        //String page = "http://www.myserver.org/viewProfile.jspa?username=";
-        String page = null;
-        assertNull(instance.getUserPage());
-        //instance.setUserPage(page.substring(5));
-        //assertEquals(page.substring(5), instance.getUserPage());
+        String page = "http://www.myserver.org/viewProfile.jspa?username=";
+        assertNull(instance.getUserPage());   // default value is null
+        instance.setUserPage(page.substring(5));
+        assertEquals(page.substring(5), instance.getUserPage());
     }
 
     @Test
     public void testBugPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        //String page = "http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=";
-        String page = null;
-        assertNull(instance.getBugPage());
-        //instance.setBugPage(page.substring(5));
-        //assertEquals(page.substring(5), instance.getBugPage());
+        String page = "http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=";
+        assertNull(instance.getBugPage());   // default value is null
+        instance.setBugPage(page.substring(5));
+        assertEquals(page.substring(5), instance.getBugPage());
     }
 
     @Test
@@ -359,11 +357,10 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testReviewPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        //String page = "http://arc.myserver.org/caselog/PSARC/";
-        String page = null;
-        assertNull(instance.getReviewPage());
-        //instance.setReviewPage(page.substring(5));
-        //assertEquals(page.substring(5), instance.getReviewPage());
+        String page = "http://arc.myserver.org/caselog/PSARC/";
+        assertNull(instance.getReviewPage());   // default value is null
+        instance.setReviewPage(page.substring(5));
+        assertEquals(page.substring(5), instance.getReviewPage());
     }
 
     @Test
