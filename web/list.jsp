@@ -147,6 +147,52 @@ document.pageReady.push(function() { pageReadyList();});
 
             }
         }
+    } else if (cfg.annotate()) {
+            // annotate
+            BufferedInputStream bin =
+                new BufferedInputStream(new FileInputStream(resourceFile));
+            try {
+                FileAnalyzerFactory a = AnalyzerGuru.find(basename);
+                Genre g = AnalyzerGuru.getGenre(a);
+                if (g == null) {
+                    a = AnalyzerGuru.find(bin);
+                    g = AnalyzerGuru.getGenre(a);
+                }
+                if (g == Genre.IMAGE) {
+%>
+<div id="src">
+    <img src="<%= rawPath %>"/>
+</div><%
+                } else if ( g == Genre.HTML) {
+                    r = new InputStreamReader(bin);
+                    Util.dump(out, r);
+                } else if (g == Genre.PLAIN) {
+%>
+<div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
+    <pre><%
+                    // We're generating xref for the latest revision, so we can
+                    // find the definitions in the index.
+                    Definitions defs = IndexDatabase.getDefinitions(resourceFile);
+                    Annotation annotation = cfg.getAnnotation();
+                    r = IOUtils.createBOMStrippedReader(bin);
+                    AnalyzerGuru.writeXref(a, r, out, defs, annotation,
+                        Project.getProject(resourceFile));
+    %></pre>
+</div><%
+                } else {
+%>
+Click <a href="<%= rawPath %>">download <%= basename %></a><%
+                }
+            } finally {
+                if (r != null) {
+                    try { r.close(); bin = null; }
+                    catch (Exception e) { /* ignore */ }
+                }
+                if (bin != null) {
+                    try { bin.close(); }
+                    catch (Exception e) { /* ignore */ }
+                }
+            }
     } else if (rev.length() != 0) {
         // requesting a revision
         if (cfg.isLatestRevision(rev)) {
@@ -248,17 +294,17 @@ document.pageReady.push(function() { pageReadyList();});
     } else {
         // requesting cross referenced file
         File xrefFile = null;
-        if (!cfg.annotate()) {
-            // Get the latest revision and redirect so that the revision number
-            // appears in the URL.
-            String location = cfg.getLatestRevisionLocation();
-            if (location != null) {
-                response.sendRedirect(location);
-                return;
-            } else {
-                xrefFile = cfg.findDataFile();
-            }
+
+        // Get the latest revision and redirect so that the revision number
+        // appears in the URL.
+        String location = cfg.getLatestRevisionLocation();
+        if (location != null) {
+            response.sendRedirect(location);
+            return;
+        } else {
+            xrefFile = cfg.findDataFile();
         }
+
         if (xrefFile != null) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
@@ -266,52 +312,6 @@ document.pageReady.push(function() { pageReadyList();});
             Util.dump(out, xrefFile, xrefFile.getName().endsWith(".gz"));
     %></pre>
 </div><%
-        } else {
-            // annotate
-            BufferedInputStream bin =
-                new BufferedInputStream(new FileInputStream(resourceFile));
-            try {
-                FileAnalyzerFactory a = AnalyzerGuru.find(basename);
-                Genre g = AnalyzerGuru.getGenre(a);
-                if (g == null) {
-                    a = AnalyzerGuru.find(bin);
-                    g = AnalyzerGuru.getGenre(a);
-                }
-                if (g == Genre.IMAGE) {
-%>
-<div id="src">
-    <img src="<%= rawPath %>"/>
-</div><%
-                } else if ( g == Genre.HTML) {
-                    r = new InputStreamReader(bin);
-                    Util.dump(out, r);
-                } else if (g == Genre.PLAIN) {
-%>
-<div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
-    <pre><%
-                    // We're generating xref for the latest revision, so we can
-                    // find the definitions in the index.
-                    Definitions defs = IndexDatabase.getDefinitions(resourceFile);
-                    Annotation annotation = cfg.getAnnotation();
-                    r = IOUtils.createBOMStrippedReader(bin);
-                    AnalyzerGuru.writeXref(a, r, out, defs, annotation,
-                        Project.getProject(resourceFile));
-    %></pre>
-</div><%
-                } else {
-%>
-Click <a href="<%= rawPath %>">download <%= basename %></a><%
-                }
-            } finally {
-                if (r != null) {
-                    try { r.close(); bin = null; }
-                    catch (Exception e) { /* ignore */ }
-                }
-                if (bin != null) {
-                    try { bin.close(); }
-                    catch (Exception e) { /* ignore */ }
-                }
-            }
         }
     }
 }
