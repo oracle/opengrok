@@ -139,7 +139,8 @@ public class RuntimeEnvironmentTest {
         assertNull(instance.getDefaultProjects());
 
         File file = new File("/opengrok_automatic_test/foo/bar");
-        instance.setSourceRoot("/opengrok_automatic_test/foo");
+        File folder = new File("/opengrok_automatic_test/foo");
+        instance.setSourceRoot(folder.getCanonicalPath());
         Project p = new Project("bar");
         p.setPath("/bar");
         assertEquals("/bar", p.getId());
@@ -299,18 +300,18 @@ public class RuntimeEnvironmentTest {
     public void testUserPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String page = "http://www.myserver.org/viewProfile.jspa?username=";
+        assertNull(instance.getUserPage());   // default value is null
+        instance.setUserPage(page);
         assertEquals(page, instance.getUserPage());
-        instance.setUserPage(page.substring(5));
-        assertEquals(page.substring(5), instance.getUserPage());
     }
 
     @Test
     public void testBugPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String page = "http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=";
+        assertNull(instance.getBugPage());   // default value is null
+        instance.setBugPage(page);
         assertEquals(page, instance.getBugPage());
-        instance.setBugPage(page.substring(5));
-        assertEquals(page.substring(5), instance.getBugPage());
     }
 
     @Test
@@ -357,9 +358,9 @@ public class RuntimeEnvironmentTest {
     public void testReviewPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String page = "http://arc.myserver.org/caselog/PSARC/";
+        assertNull(instance.getReviewPage());   // default value is null
+        instance.setReviewPage(page);
         assertEquals(page, instance.getReviewPage());
-        instance.setReviewPage(page.substring(5));
-        assertEquals(page.substring(5), instance.getReviewPage());
     }
 
     @Test

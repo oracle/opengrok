@@ -74,7 +74,7 @@ public class CommandLineOptions {
         options.add(new Option('?', null, "Help"));
         options.add(new Option('A', ".ext|prefix.:analyzer", "Files with the named prefix/extension should be analyzed with the specified class"));
         options.add(new Option('a', ON_OFF, "Allow or disallow leading wildcards in a search"));
-        options.add(new Option('B', "url", "Base URL of the user Information provider. Default: \"http://www.myserver.org/viewProfile.jspa?username=\""));
+        options.add(new Option('B', "url", "Base URL of the user Information provider. Example: \"http://www.myserver.org/viewProfile.jspa?username=\". Use \"none\" to disable link."));
         options.add(new Option('C', null, "Print per project percentage progress information(I/O extensive, since one read through dir structure is made before indexing, needs -v, otherwise it just goes to the log)"));
         options.add(new Option('c', "/path/to/ctags", "Path to Exuberant Ctags from http://ctags.sf.net by default takes the Exuberant Ctags in PATH."));
         options.add(new Option('d', "/path/to/data/root", "The directory where OpenGrok stores the generated data"));
