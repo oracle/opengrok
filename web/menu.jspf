@@ -85,7 +85,7 @@ org.opensolaris.opengrok.web.Util"
     %>
     <tbody id="ptbl">
     <tr>
-    <td>
+    <td id="projectLabelTd">
     <label for="project">Project(s)</label>
     </td>
     <td colspan="2">
@@ -193,7 +193,7 @@ org.opensolaris.opengrok.web.Util"
         }
     %>
     <tr>
-        <td><label for="s5">Type</label></td>
+        <td id="typeLabelTd"><label for="s5">Type</label></td>
         <td><select class="q" tabindex="6" name="type" id="type"><%
                 String selection = queryParams.getType();
                 %>
