@@ -12,12 +12,9 @@ Similarly for any of your forks, ev. use ssh.
 
 === Distribution ===
 
-Current distribution is available on http://java.net/projects/opengrok/downloads/directory/
+See https://github.com/OpenGrok/OpenGrok/releases
 
 === User scripts ===
 
 * Firefox Greasemonkey [http://userscripts.org/scripts/show/4758 auto-complete script] for opengrok - courtesy of Jim Wilson
 * VIM plugin from Jacobo de Vera - [https://github.com/jdevera/vim-opengrok-search github jdevera]
-
-
-Old binary & source releases can be downloaded from http://java.net/projects/opengrok/downloads/directory/archive
