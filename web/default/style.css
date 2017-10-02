@@ -1242,6 +1242,22 @@ h6.message-group-caption {
     *zoom: 1;
 }
 
+/** --------------- sol workaround ------------ */
+
+select#project, select#type {
+    height: 20px;
+    width: 30px;
+    visibility: hidden;
+}
+
+td#projectLabelTd {
+    height: 24px;
+}
+
+td#typeLabelTd {
+    height: 26px;
+}
+
 /** ---------------- markdown readme format ----- */
 
 .markdown {
