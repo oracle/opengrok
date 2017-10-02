@@ -37,6 +37,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -391,15 +392,37 @@ public final class PageConfig {
      */
     public List<String> getResourceFileList() {
         if (dirFileList == null) {
-            String[] files = null;
+            File[] files = null;
             if (isDir() && getResourcePath().length() > 1) {
-                files = getResourceFile().list();
+                files = getResourceFile().listFiles();
             }
             if (files == null) {
                 dirFileList = Collections.emptyList();
             } else {
-                Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
-                List<String> listOfFiles = Arrays.asList(files);
+                List<String> listOfFiles;
+                if (env.getListDirsFirst()) {
+                    Arrays.sort(files, new Comparator<File>() {
+                            @Override
+                            public int compare(File f1, File f2) {
+                                if (f1.isDirectory() && f2.isDirectory()) {
+                                    return f1.getName().compareTo(f2.getName());
+                                } else if (f1.isFile() && f2.isFile()) {
+                                    return f1.getName().compareTo(f2.getName());
+                                } else {
+                                    if (f1.isFile() && f2.isDirectory())
+                                        return 1;
+                                    else
+                                        return -1;
+                                }
+                            }
+                        });
+                } else {
+                    Arrays.sort(files,
+                            (File f1, File f2) -> f1.getName().compareTo(f2.getName()));
+                }
+                listOfFiles = Arrays.asList(files).stream().
+                            map(f -> f.getName()).collect(Collectors.toList());
+
                 if (env.hasProjects() && getPath().isEmpty()) {
                     /**
                      * This denotes the source root directory, we need to filter
@@ -421,6 +444,7 @@ public final class PageConfig {
                     });
                     return dirFileList = Collections.unmodifiableList(modifiableListOfFiles);
                 }
+
                 dirFileList = Collections.unmodifiableList(listOfFiles);
             }
         }

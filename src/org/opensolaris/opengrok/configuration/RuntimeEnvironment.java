@@ -1190,6 +1190,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setDisplayRepositories(flag);
     }
 
+    public boolean getListDirsFirst() {
+        return threadConfig.get().getListDirsFirst();
+    }
+
+    public void setListDirsFirst(boolean flag) {
+        threadConfig.get().setListDirsFirst(flag);
+    }
+    
     /**
      * Read an configuration file and set it as the current configuration.
      *
