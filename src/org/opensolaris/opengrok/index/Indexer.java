@@ -328,8 +328,6 @@ public final class Indexer {
                                         + "' not found for the -o option");
                                 System.exit(1);
                             }
-                            System.err.println("INFO: file with extra "
-                                    + "options for ctags: " + CTagsExtraOptionsFile);
                             cfg.setCTagsExtraOptionsFile(CTagsExtraOptionsFile);
                             break;
                         case 'P':
