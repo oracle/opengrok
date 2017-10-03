@@ -257,6 +257,24 @@ public class ProjectMessage extends Message {
             case "list-indexed":
                 return (env.getProjectList().stream().filter(p -> p.isIndexed()).
                         map(p -> p.getName()).collect(Collectors.joining("\n")).getBytes());
+            case "get-repos":
+                List<String> repos = new ArrayList<>();
+
+                for (String projectName : getTags()) {
+                    Project project;
+                    if ((project = env.getProjects().get(projectName)) == null) {
+                        continue;
+                    }
+                    List<RepositoryInfo> infos = env.getProjectRepositoriesMap().
+                            get(project);
+                    if (infos != null) {
+                        repos.addAll(infos.stream().
+                                map(ri -> ri.getDirectoryNameRelative()).
+                                collect(Collectors.toList()));
+                    }
+                }
+
+                return repos.stream().collect(Collectors.joining("\n")).getBytes();
         }
 
         return ("command \"" + getText() + "\" for projects " +
@@ -280,8 +298,10 @@ public class ProjectMessage extends Message {
             command.compareTo("delete") != 0 &&
             command.compareTo("list") != 0 &&
             command.compareTo("list-indexed") != 0 &&
+            command.compareTo("get-repos") != 0 &&
             command.compareTo("indexed") != 0) {
-            throw new Exception("The message must contain either 'add', 'delete' or 'indexed' text");
+            throw new Exception("The message must contain either 'add', " +
+                    "'delete', 'indexed', 'list', 'list-indexed' or 'get-repos' text");
         }
 
         if (!command.contains("list") && getTags().isEmpty()) {

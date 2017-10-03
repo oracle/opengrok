@@ -391,4 +391,31 @@ public class ProjectMessageTest {
         Assert.assertTrue(out.contains("mercurial"));
         Assert.assertFalse(out.contains("git"));
     }
+
+    @Test
+    public void testGetRepos() throws Exception {
+        // Create subrepository.
+        File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
+        MercurialRepositoryTest.runHgCommand(mercurialRoot,
+            "clone", mercurialRoot.getAbsolutePath(),
+            mercurialRoot.getAbsolutePath() + File.separator + "closed");
+
+        // Add a project
+        Message m = new ProjectMessage();
+        m.setText("add");
+        m.addTag("mercurial");
+        m.apply(env);
+
+        // Get repositories of the project.
+        m.setText("get-repos");
+        String out = new String(m.apply(env));
+
+        // Perform cleanup of the subrepository in order not to interefere
+        // with other tests.
+        removeRecursive(new File(mercurialRoot.getAbsolutePath() +
+                File.separator + "closed").toPath());
+
+        // test
+        Assert.assertEquals("/mercurial\n/mercurial/closed", out);
+    }
 }
