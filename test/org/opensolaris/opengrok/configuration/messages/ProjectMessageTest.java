@@ -394,6 +394,13 @@ public class ProjectMessageTest {
 
     @Test
     public void testGetRepos() throws Exception {
+        // Try to get repos for non-existent project first.
+        Message m = new ProjectMessage();
+        m.setText("get-repos");
+        m.addTag("totally-nonexistent-project");
+        String out = new String(m.apply(env));
+        Assert.assertEquals("", out);
+
         // Create subrepository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
         MercurialRepositoryTest.runHgCommand(mercurialRoot,
@@ -401,14 +408,14 @@ public class ProjectMessageTest {
             mercurialRoot.getAbsolutePath() + File.separator + "closed");
 
         // Add a project
-        Message m = new ProjectMessage();
+        m = new ProjectMessage();
         m.setText("add");
         m.addTag("mercurial");
         m.apply(env);
 
         // Get repositories of the project.
         m.setText("get-repos");
-        String out = new String(m.apply(env));
+        out = new String(m.apply(env));
 
         // Perform cleanup of the subrepository in order not to interefere
         // with other tests.
