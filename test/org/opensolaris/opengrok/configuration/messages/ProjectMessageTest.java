@@ -424,5 +424,11 @@ public class ProjectMessageTest {
 
         // test
         Assert.assertEquals("/mercurial\n/mercurial/closed", out);
+
+        // Test the types. There should be only one type for project with
+        // multiple nested Mercurial repositories.
+        m.setText("get-repos-type");
+        out = new String(m.apply(env));
+        Assert.assertEquals("Mercurial", out);
     }
 }

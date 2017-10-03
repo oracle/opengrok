@@ -139,6 +139,8 @@ Currently supported message types:
   * **delete** – removes project(s) and its repositores from the configuration.
     Also deletes its data under data root (but not the source code).
   * **indexed** – mark the project(s) as indexed so it becomes visible in the UI
+  * **get-repos** – get list of repositories in the form of relative paths to source root for given project(s)
+  * **get-repos-type** – get repository type(s) for given project(s)
 
 ## 4. OpenGrok install
 
