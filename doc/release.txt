@@ -1,3 +1,15 @@
+Release criteria
+----------------
+
+Ideally, the following minimum criteria should be fulfilled before a new version
+is released:
+
+  - The code coverage for blocks must be at least 80%
+  - No findbugs warnings
+  - No stoppers
+  - All bugs and enhancements must be evaluated
+
+
 Checklist for releasing OpenGrok:
 ---------------------------------
 
