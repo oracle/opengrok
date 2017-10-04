@@ -1970,11 +1970,9 @@ function searchSubmit(form) {
  * @see #searchSubmit
  */
 function restoreFocusAfterSearchSubmit() {
-    var siParam = $.grep(window.location.href.split('&'), function (queryParam) {
-        return queryParam && queryParam.indexOf('si=') === 0;
-    });
-    if (siParam.length === 1) {
-        var $input = $('input[type=text][id="' + siParam[0].split('=')[1] + '"]');
+    var siParam = getParameter('si');
+    if (siParam) {
+        var $input = $('input[type=text][id="' + siParam + '"]');
         if ($input.length === 1) {
             $input[0].selectionStart = $input.val().length;
             $input[0].selectionEnd = $input[0].selectionStart;
