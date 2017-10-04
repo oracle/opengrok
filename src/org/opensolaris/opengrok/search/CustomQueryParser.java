@@ -45,7 +45,21 @@ class CustomQueryParser extends QueryParser {
                 RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
         // Convert terms to lower case manually to prevent changing the case
         // if the field is case sensitive.
-        setLowercaseExpandedTerms(false);
+        //TODO verify below
+        /*
+        +## AnalyzingQueryParser removed (LUCENE-7355)
++
++The functionality of AnalyzingQueryParser has been folded into the classic
++QueryParser, which now passes terms through Analyzer#normalize when generating
++queries.
++
++## CommonQueryParserConfiguration.setLowerCaseExpandedTerms removed (LUCENE-7355)
++
++This option has been removed as expanded terms are now normalized through
++Analyzer#normalize.
+        */
+     //   setLowercaseExpandedTerms(false);
+        
     }
 
     /**

@@ -165,7 +165,7 @@ public class SearchHelper {
     /**
      * total number of hits
      */
-    public int totalHits;
+    public long totalHits;
     /**
      * the query created by the used {@link QueryBuilder} via
      * {@link #prepareExec(SortedSet)}.

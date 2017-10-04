@@ -33,6 +33,10 @@ public class Consts {
     public static final Set<String> kwd = new HashSet<String>();
 
     static {
+        
+        //TODO
+        // it is a keyword for lambdas with 1 param
+        
         kwd.add("abstract");
         kwd.add("annotation");
         kwd.add("as");

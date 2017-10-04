@@ -126,7 +126,7 @@ public class SearchHelperTest {
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("single project search returned " +
-            Integer.toString(searchHelper.totalHits) + " hits");
+            Long.toString(searchHelper.totalHits) + " hits");
         Assert.assertEquals(4, searchHelper.totalHits);
         searchHelper.destroy();
 
@@ -136,7 +136,7 @@ public class SearchHelperTest {
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("multi-project search returned " +
-            Integer.toString(searchHelper.totalHits) + " hits");
+            Long.toString(searchHelper.totalHits) + " hits");
         Assert.assertEquals(5, searchHelper.totalHits);
         searchHelper.destroy();
 
@@ -145,7 +145,7 @@ public class SearchHelperTest {
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("multi-project search for non-existing term returned " +
-            Integer.toString(searchHelper.totalHits) + " hits");
+            Long.toString(searchHelper.totalHits) + " hits");
         Assert.assertEquals(0, searchHelper.totalHits);
         searchHelper.destroy();
 
@@ -166,7 +166,7 @@ public class SearchHelperTest {
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("multi-project search after reindex returned " +
-            Integer.toString(searchHelper.totalHits) + " hits");
+            Long.toString(searchHelper.totalHits) + " hits");
         Assert.assertEquals(6, searchHelper.totalHits);
         searchHelper.destroy();
         repository.removeDummyFile("c");
