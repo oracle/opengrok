@@ -75,6 +75,8 @@ Usage()
     echo "       - \"indexed\" - mark the project(s) as indexed so it becomes visible in the UI"
     echo "       - \"list\" - list all projects (both indexed and not indexed)"
     echo "       - \"list-indexed\" - list indexed projects"
+    echo "       - \"get-repos\" - get list of repositories in the form of relative paths to source root for given project(s)"
+    echo "       - \"get-repos-type\" - get repository type(s) for given project(s)"
     echo "    normal:"
     echo "     - assign a <text> to the main page or a project"
     echo "     - can be more precise with <tags> (for specific project)"

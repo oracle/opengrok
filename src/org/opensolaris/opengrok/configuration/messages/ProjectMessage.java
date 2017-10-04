@@ -26,13 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
@@ -44,7 +44,6 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.web.ProjectHelper;
 
 
 /**
@@ -257,6 +256,42 @@ public class ProjectMessage extends Message {
             case "list-indexed":
                 return (env.getProjectList().stream().filter(p -> p.isIndexed()).
                         map(p -> p.getName()).collect(Collectors.joining("\n")).getBytes());
+            case "get-repos":
+                List<String> repos = new ArrayList<>();
+
+                for (String projectName : getTags()) {
+                    Project project;
+                    if ((project = env.getProjects().get(projectName)) == null) {
+                        continue;
+                    }
+                    List<RepositoryInfo> infos = env.getProjectRepositoriesMap().
+                            get(project);
+                    if (infos != null) {
+                        repos.addAll(infos.stream().
+                                map(ri -> ri.getDirectoryNameRelative()).
+                                collect(Collectors.toList()));
+                    }
+                }
+
+                return repos.stream().collect(Collectors.joining("\n")).getBytes();
+            case "get-repos-type":
+                Set<String> types = new TreeSet<>();
+
+                for (String projectName : getTags()) {
+                    Project project;
+                    if ((project = env.getProjects().get(projectName)) == null) {
+                        continue;
+                    }
+                    List<RepositoryInfo> infos = env.getProjectRepositoriesMap().
+                            get(project);
+                    if (infos != null) {
+                        types.addAll(infos.stream().
+                                map(ri -> ri.getType()).
+                                collect(Collectors.toList()));
+                    }
+                }
+
+                return types.stream().collect(Collectors.joining("\n")).getBytes();
         }
 
         return ("command \"" + getText() + "\" for projects " +
@@ -271,20 +306,20 @@ public class ProjectMessage extends Message {
     @Override
     public void validate() throws Exception {
         String command = getText();
+        Set<String> allowedText = new TreeSet<>(Arrays.asList("add", "delete",
+                "list", "list-indexed", "indexed", "get-repos",
+                "get-repos-type"));
 
         // Text field carries the command.
         if (command == null) {
             throw new Exception("The message must contain a text - \"add\", \"delete\" or \"indexed\"");
         }
-        if (command.compareTo("add") != 0 &&
-            command.compareTo("delete") != 0 &&
-            command.compareTo("list") != 0 &&
-            command.compareTo("list-indexed") != 0 &&
-            command.compareTo("indexed") != 0) {
-            throw new Exception("The message must contain either 'add', 'delete' or 'indexed' text");
+        if (!allowedText.contains(command)) {
+            throw new Exception("The message must contain either 'add', " +
+                    "'delete', 'indexed', 'list', 'list-indexed' or 'get-repos' text");
         }
 
-        if (!command.contains("list") && getTags().isEmpty()) {
+        if (!command.startsWith("list") && getTags().isEmpty()) {
             throw new Exception("The message must contain a tag (project name(s))");        
         }
 
