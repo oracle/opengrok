@@ -43,7 +43,9 @@ public class RepositoryInfo implements Serializable {
     private static final long serialVersionUID = 3L;
 
     // dummy to avoid storing absolute path in XML encoded configuration
+    // Do not use this member.
     private transient String directoryName;
+    
     private String directoryNameRelative;
     protected Boolean working;
     protected String type;

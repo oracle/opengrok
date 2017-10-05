@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -154,12 +153,13 @@ public class ProjectMessageTest {
         m.addTag("mercurial");
 
         // Add a sub-repository.
-        File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
+        String repoPath = repository.getSourceRoot() + File.separator + "mercurial";
+        File mercurialRoot = new File(repoPath);
         File subDir = new File(mercurialRoot, "usr");
         Assert.assertTrue(subDir.mkdir());
+        String subRepoPath = repoPath + File.separator + "usr" + File.separator + "closed";
         MercurialRepositoryTest.runHgCommand(mercurialRoot,
-            "clone", mercurialRoot.getAbsolutePath(),
-            mercurialRoot.getAbsolutePath() + File.separator + "usr" + File.separator + "closed");
+            "clone", mercurialRoot.getAbsolutePath(), subRepoPath);
 
         // Add the project.
         env.setScanningDepth(3);
@@ -175,6 +175,14 @@ public class ProjectMessageTest {
                 filter(p -> p.getName().equals("mercurial")).
                 collect(Collectors.toSet()).size());
 
+        // Check that HistoryGuru now includes the project in its list.
+        Assert.assertTrue(HistoryGuru.getInstance().getRepositories().stream().
+                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                contains(repoPath));
+        Assert.assertTrue(HistoryGuru.getInstance().getRepositories().stream().
+                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                contains(subRepoPath));
+        
         // Add more projects and check that they have been added incrementally.
         // At the same time, it checks that multiple projects can be added
         // with single message.
@@ -186,6 +194,13 @@ public class ProjectMessageTest {
         Assert.assertEquals(4, env.getRepositories().size());
         Assert.assertTrue(env.getProjects().containsKey("git"));
         Assert.assertTrue(env.getProjects().containsKey("svn"));
+        
+        Assert.assertFalse(HistoryGuru.getInstance().getRepositories().stream().
+                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                contains("git"));
+        Assert.assertFalse(HistoryGuru.getInstance().getRepositories().stream().
+                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                contains("svn"));
     }
 
     /**
@@ -314,6 +329,13 @@ public class ProjectMessageTest {
             }
         }
 
+        // Check that HistoryGuru no longer maintains the removed projects.
+        for (String p : projectsToDelete) {
+            Assert.assertFalse(HistoryGuru.getInstance().getRepositories().stream().
+                    map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                    contains(repository.getSourceRoot() + File.separator + p));
+        }
+        
         // Check the group no longer contains the removed project.
         Assert.assertEquals(0, group.getRepositories().size());
         Assert.assertEquals(0, group.getProjects().size());

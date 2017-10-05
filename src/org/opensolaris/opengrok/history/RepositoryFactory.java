@@ -73,12 +73,18 @@ public final class RepositoryFactory {
         for (int i = repositories.length - 1; i >= 0; i--) {
             list.add(repositories[i].getClass());
         }
+        
         return list;
     }
 
     /**
      * Returns a repository for the given file, or null if no repository was
      * found.
+     *
+     * Note that the operations performed by this method take quite a long time
+     * thanks to external commands being executed. For that reason, when run
+     * on multiple files, it should be parallelized, e.g. like it is done in
+     * {@code invalidateRepositories()}.
      *
      * @param file File that might contain a repository
      * @return Correct repository for the given file
@@ -90,6 +96,7 @@ public final class RepositoryFactory {
     public static Repository getRepository(File file) throws InstantiationException, IllegalAccessException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Repository repo = null;
+
         for (Repository rep : repositories) {
             if (rep.isRepositoryFor(file)) {
                 repo = rep.getClass().newInstance();
@@ -153,6 +160,7 @@ public final class RepositoryFactory {
                 break;
             }
         }
+        
         return repo;
     }
 
@@ -163,8 +171,8 @@ public final class RepositoryFactory {
      * @param info Information about the repository
      * @return Correct repository for the given file
      * @throws java.lang.InstantiationException in case we cannot create the
-     * repo object
-     * @throws java.lang.IllegalAccessException in case no permissions to repo
+     * repository object
+     * @throws java.lang.IllegalAccessException in case no permissions to repository
      */
     public static Repository getRepository(RepositoryInfo info) throws InstantiationException, IllegalAccessException {
         return getRepository(new File(info.getDirectoryName()));
@@ -175,6 +183,8 @@ public final class RepositoryFactory {
      * files/directories. This way per-repository ignored entries are set
      * inside repository classes rather than globally in IgnoredFiles/Dirs.
      * Should be called after {@code setConfiguration()}.
+     * 
+     * @param env runtime environment
      */
     public static void initializeIgnoredNames(RuntimeEnvironment env) {
         for (Repository repo : repositories) {

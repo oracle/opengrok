@@ -689,7 +689,7 @@ public final class Indexer {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
             long start = System.currentTimeMillis();
             if (env.isHistoryEnabled()) {
-                HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
+                env.setRepositories(env.getSourceRootPath());
             }
             long time = (System.currentTimeMillis() - start) / 1000;
             LOGGER.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
@@ -730,7 +730,8 @@ public final class Indexer {
                     try {
                         HistoryGuru.getInstance().removeCache(toZap);
                     } catch (HistoryException e) {
-                        LOGGER.log(Level.WARNING, "Clearing history cache failed: {0}", e.getLocalizedMessage());
+                        LOGGER.log(Level.WARNING, "Clearing history cache failed: {0}",
+                                e.getLocalizedMessage());
                     }
                 }
                 return;
