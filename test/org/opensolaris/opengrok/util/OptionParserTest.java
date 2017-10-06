@@ -30,6 +30,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.text.ParseException;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -402,7 +403,8 @@ public class OptionParserTest {
             
             parser.on("--help").Do(v -> { 
                 String summary = parser.getUsage();
-                assertTrue(summary.startsWith("Usage: JUnitTestRunner [options]"));
+                // assertTrue(summary.startsWith("Usage: JUnitTestRunner [options]"));  // fails on travis
+                assertTrue(summary.matches("(?s)Usage: \\w+ \\[options\\].*"));
             });
         });
         
