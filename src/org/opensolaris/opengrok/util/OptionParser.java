@@ -211,7 +211,7 @@ public class OptionParser {
      *     .
      *   parser.prologue = "Usage: program [options] [file [...]]
      *      
-     *   parser.on("-?", "--help", "Display this usage.").Do( v -> {
+     *   parser.on("-?", "--help", "Display this usage.").Do( v -&gt; {
      *       parser.help();
      *   });
      */
@@ -246,7 +246,7 @@ public class OptionParser {
      * Supply parser with data conversion mechanism for option value.
      * The following is an example usage used internally:
      * 
-     *    accept(Integer.class, s -> { return Integer.parseInt(s); });
+     *    accept(Integer.class, s -&gt; { return Integer.parseInt(s); });
      * 
      * @param type is the internal data class to which an option
      * value should be converted.
@@ -263,12 +263,12 @@ public class OptionParser {
      * 
      * As an example:
      * 
-     *   OptionParser opts = OptionParser.Do(parser -> {
+     *   OptionParser opts = OptionParser.Do(parser -&gt; {
      *
      *      parser.prologue = 
      *          String.format("\nUsage: %s [options] [subDir1 [...]]\n", program);
      *      
-     *      parser.on("-?", "--help", "Display this usage.").Do( v -> {
+     *      parser.on("-?", "--help", "Display this usage.").Do( v -&gt; {
      *          parser.help();
      *      });
      * 
@@ -646,12 +646,12 @@ public class OptionParser {
      * @param text to be inserted into option summary.
      * 
      * Example usage:
-     *  OptionParser opts = OptionParser.Do( parser -> {
+     *  OptionParser opts = OptionParser.Do( parser -&gt; {
      *   
      *    parser.prologue = String.format("Usage: %s [options] bubba smith", program);
      *    parser.separator("");
      * 
-     *    parser.on("-y value", "--why me", "This is a description").Do( v -> {
+     *    parser.on("-y value", "--why me", "This is a description").Do( v -&gt; {
      *        System.out.println("got " + v);
      *    });
      *       
