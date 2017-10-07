@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.perl;
 
@@ -32,11 +33,18 @@ public class Consts{
     public static final Set<String> kwd = new HashSet<String>() ;
     static {
         //Note that keywords with 1 letter will be ignored since we need at least 2 chars per identifier
+        kwd.add("__DATA__");
+        kwd.add("__END__");
+        kwd.add("__FILE__");
+        kwd.add("__LINE__");
+        kwd.add("__PACKAGE__");
+        kwd.add("__SUB__");
         kwd.add("abs");
         kwd.add("accept");
         kwd.add("alarm");
         kwd.add("and");
         kwd.add("atan2");
+        kwd.add("AUTOLOAD");
         kwd.add("base");
         kwd.add("BEGIN");
         kwd.add("bind");
@@ -60,18 +68,22 @@ public class Consts{
         kwd.add("confess");
         kwd.add("connect");
         kwd.add("continue");
+        kwd.add("CORE");
         kwd.add("cos");
         kwd.add("croak");
         kwd.add("crypt");
         kwd.add("dbmclose");
         kwd.add("dbmopen");
+        kwd.add("default");
         kwd.add("defined");
         kwd.add("delete");
+        kwd.add("DESTROY");
         kwd.add("die");
         kwd.add("do");
         kwd.add("dump");
         kwd.add("each");
         kwd.add("else");
+        kwd.add("elseif");	/* parsed "but only to warn you ..." */
         kwd.add("elsif");
         kwd.add("END");
         kwd.add("endgrent");
@@ -84,10 +96,12 @@ public class Consts{
         kwd.add("eq");
         kwd.add("err");
         kwd.add("eval");
+        kwd.add("evalbytes");
         kwd.add("exec");
         kwd.add("exists");
         kwd.add("exit");
         kwd.add("exp");
+        kwd.add("fc");
         kwd.add("fcntl");
         kwd.add("fields");
         kwd.add("fileno");
@@ -95,6 +109,7 @@ public class Consts{
         kwd.add("for");
         kwd.add("foreach");
         kwd.add("fork");
+        kwd.add("format");
         kwd.add("formline");
         kwd.add("ge");
         kwd.add("getc");
@@ -154,6 +169,7 @@ public class Consts{
         kwd.add("log");
         kwd.add("lstat");
         kwd.add("lt");
+        kwd.add("m");
         kwd.add("map");
         kwd.add("mkdir");
         kwd.add("msgctl");
@@ -204,6 +220,8 @@ public class Consts{
         kwd.add("rewinddir");
         kwd.add("rindex");
         kwd.add("rmdir");
+        kwd.add("s");
+        kwd.add("say");
         kwd.add("scalar");
         kwd.add("seek");
         kwd.add("seekdir");
@@ -239,6 +257,7 @@ public class Consts{
         kwd.add("sqrt");
         kwd.add("srand");
         kwd.add("stat");
+        kwd.add("state");
         kwd.add("strict");
         kwd.add("study");
         kwd.add("sub");
@@ -264,6 +283,7 @@ public class Consts{
         kwd.add("ucfirst");
         kwd.add("umask");
         kwd.add("undef");
+        kwd.add("UNITCHECK");
         kwd.add("unless");
         kwd.add("unlink");
         kwd.add("unpack");
@@ -281,8 +301,10 @@ public class Consts{
         kwd.add("wantarray");
         kwd.add("warn");
         kwd.add("warnings");
+        kwd.add("when");
         kwd.add("while");
         kwd.add("write");
+        kwd.add("x");
         kwd.add("xor");
         kwd.add("y");
     }
