@@ -36,7 +36,6 @@ public class Consts{
         kwd.add("accept");
         kwd.add("alarm");
         kwd.add("and");
-        kwd.add("and");
         kwd.add("atan2");
         kwd.add("base");
         kwd.add("BEGIN");
@@ -68,7 +67,6 @@ public class Consts{
         kwd.add("dbmopen");
         kwd.add("defined");
         kwd.add("delete");
-        kwd.add("die");
         kwd.add("die");
         kwd.add("do");
         kwd.add("dump");
@@ -168,15 +166,12 @@ public class Consts{
         kwd.add("next");
         kwd.add("no");
         kwd.add("not");
-        kwd.add("not");
         kwd.add("oct");
         kwd.add("open");
         kwd.add("opendir");
         kwd.add("or");
-        kwd.add("or");
         kwd.add("ord");
         kwd.add("our");
-        kwd.add("pack");
         kwd.add("pack");
         kwd.add("package");
         kwd.add("pipe");
@@ -205,7 +200,6 @@ public class Consts{
         kwd.add("require");
         kwd.add("reset");
         kwd.add("return");
-        kwd.add("reverse");
         kwd.add("reverse");
         kwd.add("rewinddir");
         kwd.add("rindex");
@@ -241,7 +235,6 @@ public class Consts{
         kwd.add("sort");
         kwd.add("splice");
         kwd.add("split");
-        kwd.add("split");
         kwd.add("sprintf");
         kwd.add("sqrt");
         kwd.add("srand");
@@ -264,7 +257,6 @@ public class Consts{
         kwd.add("tie");
         kwd.add("tied");
         kwd.add("time");
-        kwd.add("times");
         kwd.add("times");
         kwd.add("tr");
         kwd.add("truncate");
