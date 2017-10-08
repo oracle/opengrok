@@ -32,7 +32,9 @@ import java.util.Set;
 public class Consts{
     public static final Set<String> kwd = new HashSet<String>() ;
     static {
-        //Note that keywords with 1 letter will be ignored since we need at least 2 chars per identifier
+        // Note that keywords with 1 letter will be ignored for {Identifier}
+        // since that macro needs at least 2 chars. Single character quote-like
+        // operators -- e.g., m//, s/// -- will not be ignored.
         kwd.add("__DATA__");
         kwd.add("__END__");
         kwd.add("__FILE__");
