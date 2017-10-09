@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
@@ -45,18 +45,19 @@ class CustomQueryParser extends QueryParser {
                 RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
         // Convert terms to lower case manually to prevent changing the case
         // if the field is case sensitive.
-        //TODO verify below
+        // since lucene 7.0.0 below is in place so every class that 
+        // extends Analyser must normalize the text by itself
         /*
-        +## AnalyzingQueryParser removed (LUCENE-7355)
-+
-+The functionality of AnalyzingQueryParser has been folded into the classic
-+QueryParser, which now passes terms through Analyzer#normalize when generating
-+queries.
-+
-+## CommonQueryParserConfiguration.setLowerCaseExpandedTerms removed (LUCENE-7355)
-+
-+This option has been removed as expanded terms are now normalized through
-+Analyzer#normalize.
+## AnalyzingQueryParser removed (LUCENE-7355)
+
+The functionality of AnalyzingQueryParser has been folded into the classic
+QueryParser, which now passes terms through Analyzer#normalize when generating
+queries.
+
+## CommonQueryParserConfiguration.setLowerCaseExpandedTerms removed (LUCENE-7355)
+
+This option has been removed as expanded terms are now normalized through
+Analyzer#normalize.
         */
      //   setLowercaseExpandedTerms(false);
         
