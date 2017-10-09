@@ -152,6 +152,12 @@ if (1 && /pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./) { print; }
 if (0 || /pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./) { print; }
 print if /pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./;
 
+my @o = $contents =~
+    /^(?>\S+) \s* := \s* LINKSRC \s* = \s* \S+/mxg;
+foreach my $v (@o) { # This loop shouldn't mistakenly be inside the previous m//
+	print $v;
+}
+
 #
 # The following table is from
 # https://perldoc.perl.org/perlop.html#Quote-and-Quote-like-Operators .

@@ -111,7 +111,6 @@ import org.opensolaris.opengrok.web.Util;
     char opc = ltpostop.charAt(0);
     setEndQuoteChar(opc);
     setState(ltpostop, nointerp);
-    //return htmlize(boundary + opname) + Ss + htmlize(postop);
 
     if (doWrite) {
         out.write(htmlize(boundary));
@@ -260,6 +259,22 @@ import org.opensolaris.opengrok.web.Util;
     return trimmed.equals(hereTerminator);
   }
 
+  // Splits `capture' on {EOL} and sets value1 to the left-side and value2 to
+  // the right-side, dropping the {EOL}.
+  void splitEol(String capture)
+  {
+    int i;
+    if ((i = capture.indexOf("\n")) == -1) {
+        value1 = capture;
+        value2 = "";
+        return;
+    }
+    value1 = capture.substring(0, i);
+    if (value1.endsWith("\r"))
+        value1 = value1.substring(0, value1.length() - 1);
+    value2 = capture.substring(i + 1);
+  }
+
   final static String Sc = "<span class=\"c\">";
   final static String Sn = "<span class=\"n\">";
   final static String Ss = "<span class=\"s\">";
@@ -357,6 +372,9 @@ Mwords_1 = ("eq" | "ne" | "le" | "ge" | "lt" | "gt" | "cmp")
 Mwords_2 = ("if" | "unless" | "or" | "and" | "not")
 Mwords_3 = ("split")
 Mwords = ({Mwords_1} | {Mwords_2} | {Mwords_3})
+
+Mpunc1YYIN = [\(\!]
+Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 
 //
 // There are two dimensions to quoting: "link"-or-not and "interpolate"-or-not.
@@ -508,16 +526,26 @@ Mwords = ({Mwords_1} | {Mwords_2} | {Mwords_3})
     // first slash cannot always be distinguished from division (/) without
     // true parsing.
 
-    [\(\!] {MaybeWhsp} "/"    { hqop(yytext()); }
+    {Mpunc1YYIN} {MaybeWhsp} "/"    { hqop(yytext()); }
+
+    {Mpunc1YYIN} {MaybeWhsp}{EOL}{MaybeWhsp} "/"    {
+        splitEol(yytext());
+        out.write(htmlize(value1));
+        startNewLine();
+        hqop(value2);
+    }
 }
 
 <INTRA> {
     // Continue with more punctuation heuristics
 
-    [!=]"~" {MaybeWhsp} "/" |
-    [\:\?\=\+\-\<\>] {MaybeWhsp} "/" |
-    ("==" | "!=" | "<=" | ">=" | "<=>" | "&&" | "||") {MaybeWhsp} "/"    {
-        hqop(yytext());
+    {Mpunc2IN} {MaybeWhsp} "/"    { hqop(yytext()); }
+
+    {Mpunc2IN} {MaybeWhsp}{EOL}{MaybeWhsp} "/"    {
+        splitEol(yytext());
+        out.write(htmlize(value1));
+        startNewLine();
+        hqop(value2);
     }
 }
 
