@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  */
@@ -31,6 +31,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
@@ -42,13 +44,13 @@ import org.opensolaris.opengrok.search.QueryBuilder;
  * Base class for all different File Analyzers
  *
  * An Analyzer for a filetype provides
- *<ol>
+ * <ol>
  * <li>the file extentions and magic numbers it analyzes</li>
  * <li>a lucene document listing the fields it can support</li>
  * <li>TokenStreams for each of the field it said requires tokenizing in 2</li>
  * <li>cross reference in HTML format</li>
  * <li>The type of file data, plain text etc</li>
- *</ol>
+ * </ol>
  *
  * Created on September 21, 2005
  *
@@ -67,24 +69,35 @@ public class FileAnalyzer extends Analyzer {
      * What kind of file is this?
      */
     public static enum Genre {
-        /** xrefed - line numbered context */
+        /**
+         * xrefed - line numbered context
+         */
         PLAIN("p"),
-        /** xrefed - summarizer context */
+        /**
+         * xrefed - summarizer context
+         */
         XREFABLE("x"),
-        /** not xrefed - no context - used by diff/list */
+        /**
+         * not xrefed - no context - used by diff/list
+         */
         IMAGE("i"),
-        /** not xrefed - no context */
+        /**
+         * not xrefed - no context
+         */
         DATA("d"),
-        /** not xrefed - summarizer context from original file */
-        HTML("h")
-        ;
+        /**
+         * not xrefed - summarizer context from original file
+         */
+        HTML("h");
         private final String typeName;
+
         private Genre(String typename) {
             this.typeName = typename;
         }
 
         /**
          * Get the type name value used to tag lucene documents.
+         *
          * @return a none-null string.
          */
         public String typeName() {
@@ -93,8 +106,10 @@ public class FileAnalyzer extends Analyzer {
 
         /**
          * Get the Genre for the given type name.
+         *
          * @param typeName name to check
-         * @return {@code null} if it doesn't match any genre, the genre otherwise.
+         * @return {@code null} if it doesn't match any genre, the genre
+         * otherwise.
          * @see #typeName()
          */
         public static Genre get(String typeName) {
@@ -118,21 +133,22 @@ public class FileAnalyzer extends Analyzer {
     public void setProject(Project project) {
         this.project = project;
     }
-    
+
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = supportsScopes() && scopesEnabled;
     }
-    
+
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = supportsScopes() && foldingEnabled;
     }
-    
+
     protected boolean supportsScopes() {
         return false;
     }
 
     /**
      * Get the factory which created this analyzer.
+     *
      * @return the {@code FileAnalyzerFactory} which created this analyzer
      */
     public final FileAnalyzerFactory getFactory() {
@@ -141,33 +157,36 @@ public class FileAnalyzer extends Analyzer {
 
     public Genre getGenre() {
         return factory.getGenre();
-    }    
+    }
 
-    public static Reader dummyReader=new StringReader("");
-    
-    /** Creates a new instance of FileAnalyzer
-     * @param factory name of factory to be used 
+    public static Reader dummyReader = new StringReader("");
+
+    /**
+     * Creates a new instance of FileAnalyzer
+     *
+     * @param factory name of factory to be used
      */
     public FileAnalyzer(FileAnalyzerFactory factory) {
         super(Analyzer.PER_FIELD_REUSE_STRATEGY);
-        this.factory = factory;        
-        SymbolTokenizer=new PlainSymbolTokenizer(dummyReader);
+        this.factory = factory;
+        SymbolTokenizer = new PlainSymbolTokenizer(dummyReader);
     }
-    
+
     /**
-     * Returns the normalized name of the analyzer,
-     * which should corresponds to the file type.
-     * Example: The analyzer for the C language (CAnalyzer) would return “c”.
+     * Returns the normalized name of the analyzer, which should corresponds to
+     * the file type. Example: The analyzer for the C language (CAnalyzer) would
+     * return “c”.
+     *
      * @return Normalized name of the analyzer.
      */
     public String getFileTypeName() {
         String name = this.getClass().getSimpleName().toLowerCase();
         String suffix = "analyzer";
-        
+
         if (name.endsWith(suffix)) {
             return name.substring(0, name.length() - suffix.length());
         }
-        
+
         return name.toLowerCase();
     }
 
@@ -175,6 +194,7 @@ public class FileAnalyzer extends Analyzer {
      * Analyze the contents of a source file. This includes populating the
      * Lucene document with fields to add to the index, and writing the
      * cross-referenced data to the specified destination.
+     *
      * @param doc the Lucene document
      * @param src the input data source
      * @param xrefOut where to write the xref (may be {@code null})
@@ -183,10 +203,10 @@ public class FileAnalyzer extends Analyzer {
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         // not used
     }
-    
+
     // you analyzer HAS to override this to get proper symbols in results
     protected JFlexTokenizer SymbolTokenizer;
-    
+
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
@@ -197,9 +217,9 @@ public class FileAnalyzer extends Analyzer {
                 return new TokenStreamComponents(new PathTokenizer());
             case QueryBuilder.HIST:
                 return new HistoryAnalyzer().createComponents(fieldName);
-                //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search 
-            case QueryBuilder.REFS: {                
-                    return new TokenStreamComponents(SymbolTokenizer);
+            //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search 
+            case QueryBuilder.REFS: {
+                return new TokenStreamComponents(SymbolTokenizer);
             }
             case QueryBuilder.DEFS:
                 return new TokenStreamComponents(new PlainSymbolTokenizer(dummyReader));
@@ -209,4 +229,16 @@ public class FileAnalyzer extends Analyzer {
                 return null;
         }
     }
+
+    @Override
+    protected TokenStream normalize(String fieldName, TokenStream in) {
+        switch (fieldName) {
+            case QueryBuilder.DEFS:
+            case QueryBuilder.REFS:
+                return in;
+            default:
+                return new LowerCaseFilter(in);
+        }
+    }
+
 }

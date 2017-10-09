@@ -25,9 +25,6 @@ package org.opensolaris.opengrok.analysis;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import org.apache.lucene.analysis.LowerCaseFilter;
-import org.apache.lucene.analysis.TokenStream;
-import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.IOUtils;
 
 public abstract class TextAnalyzer extends FileAnalyzer {
@@ -38,17 +35,6 @@ public abstract class TextAnalyzer extends FileAnalyzer {
 
     protected Reader getReader(InputStream stream) throws IOException {
         return IOUtils.createBOMStrippedReader(stream);
-    }
-
-    @Override
-    protected TokenStream normalize(String fieldName, TokenStream in) {
-        switch (fieldName) {
-        case QueryBuilder.DEFS:        
-        case QueryBuilder.REFS:
-            return in;
-        default:
-        return new LowerCaseFilter(in);
-        }
     }
 
 }
