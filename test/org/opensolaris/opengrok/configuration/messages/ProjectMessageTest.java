@@ -391,4 +391,44 @@ public class ProjectMessageTest {
         Assert.assertTrue(out.contains("mercurial"));
         Assert.assertFalse(out.contains("git"));
     }
+
+    @Test
+    public void testGetRepos() throws Exception {
+        // Try to get repos for non-existent project first.
+        Message m = new ProjectMessage();
+        m.setText("get-repos");
+        m.addTag("totally-nonexistent-project");
+        String out = new String(m.apply(env));
+        Assert.assertEquals("", out);
+
+        // Create subrepository.
+        File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
+        MercurialRepositoryTest.runHgCommand(mercurialRoot,
+            "clone", mercurialRoot.getAbsolutePath(),
+            mercurialRoot.getAbsolutePath() + File.separator + "closed");
+
+        // Add a project
+        m = new ProjectMessage();
+        m.setText("add");
+        m.addTag("mercurial");
+        m.apply(env);
+
+        // Get repositories of the project.
+        m.setText("get-repos");
+        out = new String(m.apply(env));
+
+        // Perform cleanup of the subrepository in order not to interefere
+        // with other tests.
+        removeRecursive(new File(mercurialRoot.getAbsolutePath() +
+                File.separator + "closed").toPath());
+
+        // test
+        Assert.assertEquals("/mercurial\n/mercurial/closed", out);
+
+        // Test the types. There should be only one type for project with
+        // multiple nested Mercurial repositories.
+        m.setText("get-repos-type");
+        out = new String(m.apply(env));
+        Assert.assertEquals("Mercurial", out);
+    }
 }

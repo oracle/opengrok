@@ -77,7 +77,7 @@ org.opensolaris.opengrok.web.Util"
 </script><%
     }
 %>
-<form action="<%= request.getContextPath() %>/search" id="sbox">
+<form action="<%= request.getContextPath() %>/search" id="sbox" onsubmit="searchSubmit(this)">
 <div id="qtbl">
     <table>
     <%

@@ -9,7 +9,7 @@
 # language governing permissions and limitations under the License.
 #
 # When distributing Covered Code, include this CDDL HEADER in each
-# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# file and include the License file at LICENSE.txt.
 # If applicable, add the following below this CDDL HEADER, with the
 # fields enclosed by brackets "[]" replaced with your own identifying
 # information: Portions Copyright [yyyy] [name of copyright owner]
@@ -31,13 +31,13 @@ JAVA_HOME=/usr/jdk/latest; export JAVA_HOME
 # The path needed
 PATH=/usr/bin; export PATH
 
-# The name of the various SCM tools to use 
+# The name of the various SCM tools to use
 # CVS=/usr/bin/cvs; export CVS
 # SUBVERSION=/usr/bin/svn; export SUBVERSION
 # MERCURIAL=/usr/bin/hg; export MERCURIAL
 
 # The name of the web servers that should be notified with the information
-# of the active configuration to use. Specify them with hostname:port and 
+# of the active configuration to use. Specify them with hostname:port and
 # separate multiple hosts by space.
 # WEBSERVERS="server1:2424 server2:2424"
 # WEBSERVERS="localhost:2424"
@@ -49,7 +49,7 @@ ADMINISTRATOR=root@localhost; export ADMINISTRATOR
 # The current version of the Mercurial log parser expects C date format.
 LC_ALL=C; export LC_ALL
 
-# Additional directories to look for libraries in. 
+# Additional directories to look for libraries in.
 # (Subversions java binding etc)
 
 case "$1" in
@@ -58,9 +58,9 @@ case "$1" in
         ;;
 
     stop)
-        pkill -u opengrok -x indexer.sh    
+        pkill -u opengrok -x indexer.sh
         ;;
- 
+
     *)
         echo "Usage: $0 {start|stop}"
         exit 1
