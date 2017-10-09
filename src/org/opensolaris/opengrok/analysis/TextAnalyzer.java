@@ -17,17 +17,17 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.Charset;
+import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.TokenStream;
+import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.IOUtils;
 
 public abstract class TextAnalyzer extends FileAnalyzer {
@@ -39,4 +39,16 @@ public abstract class TextAnalyzer extends FileAnalyzer {
     protected Reader getReader(InputStream stream) throws IOException {
         return IOUtils.createBOMStrippedReader(stream);
     }
+
+    @Override
+    protected TokenStream normalize(String fieldName, TokenStream in) {
+        switch (fieldName) {
+        case QueryBuilder.DEFS:        
+        case QueryBuilder.REFS:
+            return in;
+        default:
+        return new LowerCaseFilter(in);
+        }
+    }
+
 }

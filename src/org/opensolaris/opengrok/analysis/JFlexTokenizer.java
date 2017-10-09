@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
@@ -52,26 +52,27 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     abstract public void yybegin(int newState);
 
-    abstract public int yystate();    
-        
+    abstract public int yystate();
+
     //TODO can be removed once we figure out jflex generation of empty constructor
     protected JFlexTokenizer(Reader in) {
         super();
         setReader(in);
     }
-            
+
     /**
      * Reinitialize the tokenizer with new reader.
+     *
      * @throws java.io.IOException in case of I/O error
      */
     @Override
     public void reset() throws IOException {
         super.reset();
-        stack.clear();        
+        stack.clear();
         this.yyreset(input);
         clearAttributes();
     }
-        
+
     @Override
     public final void close() throws IOException {
         super.close();
@@ -90,7 +91,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
      * @throws IOException in case of I/O error
      */
     @Override
-    public final boolean incrementToken() throws IOException {        
+    public final boolean incrementToken() throws IOException {
         clearAttributes();
         return this.yylex();
     }
@@ -99,12 +100,12 @@ public abstract class JFlexTokenizer extends Tokenizer {
         clearAttributes();
         //FIXME increasing below by one(default) might be tricky, need more analysis
         // after lucene upgrade to 3.5 below is most probably not even needed        
-        this.posIncrAtt.setPositionIncrement(1);        
+        this.posIncrAtt.setPositionIncrement(1);
         this.termAtt.setEmpty();
         this.termAtt.append(str);
         this.offsetAtt.setOffset(start, end);
     }
-
+    
     public void yypush(int newState) {
         this.stack.push(yystate());
         this.yybegin(newState);

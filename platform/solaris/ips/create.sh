@@ -262,7 +262,7 @@ PKG pkgsend add file doc/ctags.config \
 
 
 # install libs
-LV=6.6.0
+LV=7.0.1
 for file in ant.jar \
     bcel-6.0.jar \
     lucene-analyzers-common-${LV}.jar \

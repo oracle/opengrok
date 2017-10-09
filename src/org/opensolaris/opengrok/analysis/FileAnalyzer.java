@@ -36,6 +36,7 @@ import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  * Base class for all different File Analyzers
@@ -189,18 +190,18 @@ public class FileAnalyzer extends Analyzer {
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
-            case "full":
+            case QueryBuilder.FULL:
                 return new TokenStreamComponents(new PlainFullTokenizer(dummyReader));
-            case "path":
-            case "project":
+            case QueryBuilder.PATH:
+            case QueryBuilder.PROJECT:
                 return new TokenStreamComponents(new PathTokenizer());
-            case "hist":
+            case QueryBuilder.HIST:
                 return new HistoryAnalyzer().createComponents(fieldName);
                 //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search 
-            case "refs": {                
+            case QueryBuilder.REFS: {                
                     return new TokenStreamComponents(SymbolTokenizer);
             }
-            case "defs":
+            case QueryBuilder.DEFS:
                 return new TokenStreamComponents(new PlainSymbolTokenizer(dummyReader));
             default:
                 LOGGER.log(
