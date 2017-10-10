@@ -19,17 +19,21 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -110,6 +114,18 @@ import org.opensolaris.opengrok.web.Util;
  */
 public class AnalyzerGuru {
 
+    /**
+     * The maximum number of characters (multi-byte if a BOM is identified) to
+     * read from the input stream to be used for magic string matching
+     */
+    private static final int OPENING_MAX_CHARS = 100;
+
+    /**
+     * Define very close to OPENING_MAX_CHARS so the input stream stays easily
+     * in the <code>mark</code> limit
+     */
+    private static final int OPENING_BUF_SIZE = 102;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzerGuru.class);
 
     /**
@@ -132,11 +148,28 @@ public class AnalyzerGuru {
      */
     private static final Map<String, FileAnalyzerFactory> pre = new HashMap<>();
 
-    // @TODO: have a comparator
+    /**
+     * Descending string length comparator for magics
+     */
+    private static Comparator<String> descStrlenComparator =
+        new Comparator<String>() {
+        @Override public int compare(String s1, String s2) {
+            // DESC: s2 length <=> s1 length
+            int cmp = Integer.compare(s2.length(), s1.length());
+            if (cmp != 0) return cmp;
+
+            // the Comparator must also be "consistent with equals", so check
+            // string contents too when (length)cmp == 0. (ASC: s1 <=> s2.)
+            cmp = s1.compareTo(s2);
+            return cmp;
+        }
+    };
+
     /**
      * Map from magic strings to analyzer factories.
      */
-    private static final SortedMap<String, FileAnalyzerFactory> magics = new TreeMap<>();
+    private static final SortedMap<String, FileAnalyzerFactory> magics =
+        new TreeMap<>(descStrlenComparator);
 
     /**
      * List of matcher objects which can be used to determine which analyzer
@@ -318,7 +351,13 @@ public class AnalyzerGuru {
     public static FileAnalyzer getAnalyzer(InputStream in, String file) throws IOException {
         FileAnalyzerFactory factory = find(in, file);
         if (factory == null) {
-            return getAnalyzer();
+            FileAnalyzer defaultAnalyzer = getAnalyzer();
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "{0}: fallback {1}",
+                    new Object[]{ file,
+                    defaultAnalyzer.getClass().getSimpleName() });
+            }
+            return defaultAnalyzer;
         }
         return factory.getAnalyzer();
     }
@@ -589,7 +628,7 @@ public class AnalyzerGuru {
         if (factory != null) {
             return factory;
         }
-        return find(in);
+        return findForStream(in, file);
     }
 
     /**
@@ -617,6 +656,11 @@ public class AnalyzerGuru {
                 factory
                         = pre.get(path.substring(0, dotpos).toUpperCase(Locale.getDefault()));
                 if (factory != null) {
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.log(Level.FINER, "{0}: chosen by prefix: {1}",
+                            new Object[]{ file,
+                            factory.getClass().getSimpleName() });
+                    }
                     return factory;
                 }
             }
@@ -627,6 +671,11 @@ public class AnalyzerGuru {
             factory
                     = ext.get(path.substring(dotpos + 1).toUpperCase(Locale.getDefault()));
             if (factory != null) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "{0}: chosen by suffix: {1}",
+                        new Object[]{ file,
+                        factory.getClass().getSimpleName() });
+                }
                 return factory;
             }
         }
@@ -644,6 +693,22 @@ public class AnalyzerGuru {
      * the stream
      */
     public static FileAnalyzerFactory find(InputStream in) throws IOException {
+        return findForStream(in, "<anonymous>");
+    }
+
+    /**
+     * Finds a suitable analyzer class for the data in this stream
+     * corresponding to a file of the specified name
+     *
+     * @param in The stream containing the data to analyze
+     * @param file The file name to get the analyzer for
+     * @return the analyzer factory to use
+     * @throws java.io.IOException if an error occurs while reading data from
+     * the stream
+     */
+    private static FileAnalyzerFactory findForStream(InputStream in,
+        String file) throws IOException {
+
         in.mark(8);
         byte[] content = new byte[8];
         int len = in.read(content);
@@ -659,14 +724,88 @@ public class AnalyzerGuru {
             content = Arrays.copyOf(content, len);
         }
 
-        FileAnalyzerFactory factory = find(content);
-        if (factory != null) {
-            return factory;
+        FileAnalyzerFactory fac;
+
+        // First, do precise-magic Matcher matching
+        for (FileAnalyzerFactory.Matcher matcher : matchers) {
+            if (matcher.getIsPreciseMagic()) {
+                fac = matcher.isMagic(content, in);
+                if (fac != null) {
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.log(Level.FINER,
+                            "{0}: chosen by precise magic: {1}", new Object[]{
+                            file, fac.getClass().getSimpleName() });
+                    }
+                    return fac;
+                }
+            }
         }
 
+        // Next, look for magic strings
+        String opening = readOpening(in, content);
+        fac = findMagicString(opening, file);
+        if (fac != null) {
+            return fac;
+        }
+
+        // Last, do imprecise-magic Matcher matching
         for (FileAnalyzerFactory.Matcher matcher : matchers) {
-            FileAnalyzerFactory fac = matcher.isMagic(content, in);
-            if (fac != null) {
+            if (!matcher.getIsPreciseMagic()) {
+                fac = matcher.isMagic(content, in);
+                if (fac != null) {
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.log(Level.FINER,
+                            "{0}: chosen by imprecise magic: {1}",
+                            new Object[]{ file,
+                            fac.getClass().getSimpleName() });
+                    }
+                    return fac;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static FileAnalyzerFactory findMagicString(String opening,
+        String file)
+            throws IOException {
+
+        // first, try to look up two words in magics
+        String fragment = getWords(opening, 2);
+        FileAnalyzerFactory fac = magics.get(fragment);
+        if (fac != null) {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "{0}: chosen by magic {2}: {1}",
+                    new Object[]{ file, fac.getClass().getSimpleName(),
+                    fragment});
+            }
+            return fac;
+        }
+
+        // second, try to look up one word in magics
+        fragment = getWords(opening, 1);
+        fac = magics.get(fragment);
+        if (fac != null) {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "{0}: chosen by magic {2}: {1}",
+                    new Object[]{ file, fac.getClass().getSimpleName(),
+                    fragment});
+            }
+            return fac;
+        }
+
+        // try to match initial substrings (DESC strlen)
+        for (Map.Entry<String, FileAnalyzerFactory> entry :
+            magics.entrySet()) {
+            String magic = entry.getKey();
+            if (opening.startsWith(magic)) {
+                fac = entry.getValue();
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER,
+                        "{0}: chosen by magic(substr) {2}: {1}", new Object[]{
+                        file, fac.getClass().getSimpleName(), magic});
+                }
                 return fac;
             }
         }
@@ -675,41 +814,96 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Finds a suitable analyzer class for a magic signature
+     * Extract initial words from a String, or take the entire
+     * <code>value</code> if not enough words can be identified. (If
+     * <code>n</code> is not 1 or more, returns an empty String.) (A "word"
+     * ends at each and every space character.)
      *
-     * @param signature the magic signature look up
-     * @return the analyzer factory to use
+     * @param value The source from which words are cut
+     * @param n The number of words to try to extract
+     * @return The extracted words or <code>""</code>
      */
-    private static FileAnalyzerFactory find(byte[] signature)
-            throws IOException {
-        // XXX this assumes ISO-8859-1 encoding (and should work in most cases
-        // for US-ASCII, UTF-8 and other ISO-8859-* encodings, but not always),
-        // we should try to be smarter than this...
-        char[] chars = new char[signature.length > 8 ? 8 : signature.length];
-        for (int i = 0; i < chars.length; i++) {
-            chars[i] = (char) (0xFF & signature[i]);
+    private static String getWords(String value, int n) {
+        if (n < 1) return "";
+        int l = 0;
+        while (n-- > 0) {
+            int o = l > 0 ? l + 1 : l;
+            int i = value.indexOf(' ', o);
+            if (i == -1) return value;
+            l = i;
+        }
+        return value.substring(0, l);
+    }
+
+    /**
+     * Extract an opening string from the input stream, past any BOM, and past
+     * any initial whitespace, but only up to <code>OPENING_MAX_CHARS</code> or
+     * to the first <code>\n</code> after any non-whitespace. (Hashbang, #!,
+     * openings will have superfluous space removed.)
+     *
+     * @param in The input stream containing the data
+     * @param sig The initial sequence of bytes in the input stream
+     * @return The extracted string or <code>""</code>
+     * @throws java.io.IOException in case of any read error
+     */
+    private static String readOpening(InputStream in, byte[] sig)
+        throws IOException {
+
+        in.mark(512);
+
+        String encoding = findBOMEncoding(sig);
+        if (encoding == null) {
+            encoding = "UTF-8";
+        } else {
+            byte[] bom = BOMS.get(encoding);
+            if (in.skip(bom.length) < bom.length) {
+                in.reset();
+                return "";
+            }
         }
 
-        String sig = new String(chars);
+        int nRead = 0;
+        boolean sawNonWhitespace = false;
+        boolean lastWhitespace = false;
+        boolean postHashbang = false;
+        int r;
 
-        FileAnalyzerFactory a = magics.get(sig);
-        if (a == null) {
-            String sigWithoutBOM = stripBOM(signature);
-            for (Map.Entry<String, FileAnalyzerFactory> entry
-                    : magics.entrySet()) {
-                if (sig.startsWith(entry.getKey())) {
-                    return entry.getValue();
-                }
-                // See if text files have the magic sequence if we remove the
-                // byte-order marker
-                if (sigWithoutBOM != null
-                        && entry.getValue().getGenre() == Genre.PLAIN
-                        && sigWithoutBOM.startsWith(entry.getKey())) {
-                    return entry.getValue();
+        StringBuilder opening = new StringBuilder();
+        BufferedReader readr = new BufferedReader(
+            new InputStreamReader(in, encoding), OPENING_BUF_SIZE);
+        while ((r = readr.read()) != -1)
+        {
+            if (++nRead > OPENING_MAX_CHARS) break;
+            char c = (char)r;
+            boolean isWhitespace = Character.isWhitespace(c);
+            if (!sawNonWhitespace) {
+                if (isWhitespace) continue;
+                sawNonWhitespace = true;
+            }
+            if (c == '\n') break;
+
+            if (isWhitespace) {
+                // Track `lastWhitespace' to condense stretches of whitespace,
+                // and use ' ' regardless of actual whitespace character to
+                // accord with magic string definitions.
+                if (!lastWhitespace && !postHashbang) opening.append(' ');
+            } else {
+                opening.append(c);
+                postHashbang = false;
+            }
+            lastWhitespace = isWhitespace;
+
+            // If the opening starts with "#!", then track so that any
+            // trailing whitespace after the hashbang is ignored.
+            if (opening.length() == 2) {
+                if (opening.charAt(0) == '#' && opening.charAt(1) == '!') {
+                    postHashbang = true;
                 }
             }
         }
-        return a;
+
+        in.reset();
+        return opening.toString();
     }
 
     /**
@@ -725,14 +919,13 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Strip away the byte-order marker from the string, if it has one.
+     * Gets a value indicating a UTF encoding if the array starts with a
+     * known byte sequence
      *
-     * @param sig a sequence of bytes from which to remove the BOM
-     * @return a string without the byte-order marker, or <code>null</code> if
-     * the string doesn't start with a BOM
-     * @throws java.io.IOException in case of any read error
+     * @param sig a sequence of bytes to inspect for a BOM
+     * @return null if no BOM was identified; otherwise a defined charset name
      */
-    public static String stripBOM(byte[] sig) throws IOException {
+    private static String findBOMEncoding(byte[] sig) {
         for (Map.Entry<String, byte[]> entry : BOMS.entrySet()) {
             String encoding = entry.getKey();
             byte[] bom = entry.getValue();
@@ -741,16 +934,26 @@ public class AnalyzerGuru {
                 while (i < bom.length && sig[i] == bom[i]) {
                     i++;
                 }
-                if (i == bom.length) {
-                    // BOM matched beginning of signature
-                    return new String(
-                            sig,
-                            bom.length, // offset
-                            sig.length - bom.length, // length
-                            encoding);
-                }
+                if (i == bom.length) return encoding;
             }
         }
         return null;
+    }
+
+    /**
+     * Gets a value indicating the number of UTF BOM bytes at the start of an
+     * array
+     *
+     * @param sig a sequence of bytes to inspect for a BOM
+     * @return 0 if the array doesn't start with a BOM; otherwise the number of
+     * BOM bytes
+     */
+    public static int skipForBOM(byte[] sig) {
+        String encoding = findBOMEncoding(sig);
+        if (encoding != null) {
+            byte[] bom = BOMS.get(encoding);
+            return bom.length;
+        }
+        return 0;
     }
 }
