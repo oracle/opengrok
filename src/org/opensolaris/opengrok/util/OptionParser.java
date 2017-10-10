@@ -111,7 +111,7 @@ public class OptionParser {
         }
     }
     
-    class Option {
+    public class Option {
         
         List<String> names;          // option names/aliases
         String argument;             // argument name for summary
