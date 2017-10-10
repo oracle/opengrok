@@ -34,9 +34,12 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
@@ -45,40 +48,45 @@ import org.opensolaris.opengrok.util.TestRepository;
  * Test the functionality provided by the HistoryGuru (with friends)
  *
  * @author Trond Norbye
+ * @author Vladimir Kotal
  */
 public class HistoryGuruTest {
 
     private static TestRepository repository = new TestRepository();
-    private static final List<File> files = new ArrayList<>();
+    private static final List<File> FILES = new ArrayList<>();
 
     public HistoryGuruTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
                 "repositories.zip"));
-        RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
+        RepositoryFactory.initializeIgnoredNames(env);
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
-                files, true);
-        RuntimeEnvironment.getInstance().setVerbose(true);
+                FILES, true);
+        Assert.assertNotEquals(0, FILES.size());
+        
+        env.setVerbose(true);
 
-        HistoryGuru instance = HistoryGuru.getInstance();
-        instance.addRepositories(repository.getSourceRoot());
-
-        // create cache with initial set of repos
-        instance.createCache();
-
-        // now create cache for more repos
-        Collection<String> repos = new ArrayList<>();
-        repos.add("git");
-        repos.add("bazaar");
-        repos.add("mercurial");
-        repos.add("teamware");
-        repos.add("rcs_test");
-        repos.add("nonexistent");
-        instance.createCache(repos);
+        HistoryGuru histGuru = HistoryGuru.getInstance();
+        assertNotNull(histGuru);
+        Assert.assertEquals(0, histGuru.getRepositories().size());
+        
+        // Add initial set of repositories to HistoryGuru and RuntimeEnvironment.
+        // This is a test in itself. While this makes the structure of the tests
+        // a bit incomprehensible, it does not make sense to run the rest of tests
+        // if the basic functionality does not work.
+        env.setRepositories(repository.getSourceRoot());
+        Assert.assertTrue(histGuru.getRepositories().size() > 0);
+        Assert.assertEquals(histGuru.getRepositories().size(),
+                env.getRepositories().size());
+        
+        // Create cache with initial set of repositories.
+        histGuru.createCache();
     }
 
     @AfterClass
@@ -95,20 +103,16 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void testGetInstance() {
-        assertNotNull(HistoryGuru.getInstance());
-    }
-
-    @Test
     public void testUpdateRepositories() {
         HistoryGuru instance = HistoryGuru.getInstance();
         instance.updateRepositories();
     }
 
     @Test
-    public void getRevision() throws HistoryException, IOException {
+    public void testGetRevision() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
-        for (File f : files) {
+
+        for (File f : FILES) {
             if (f.isFile() && instance.hasHistory(f)) {
                 for (HistoryEntry entry
                         : instance.getHistory(f).getHistoryEntries()) {
@@ -126,7 +130,7 @@ public class HistoryGuruTest {
     @Test
     public void testBug16465() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
-        for (File f : files) {
+        for (File f : FILES) {
             if (f.getName().equals("bugreport16465@")) {
                 assertNotNull(instance.getHistory(f));
                 assertNotNull(instance.annotate(f, null));
@@ -137,7 +141,7 @@ public class HistoryGuruTest {
     @Test
     public void annotation() throws Exception {
         HistoryGuru instance = HistoryGuru.getInstance();
-        for (File f : files) {
+        for (File f : FILES) {
             if (instance.hasAnnotation(f)) {
                 instance.annotate(f, null);
             }
@@ -149,5 +153,32 @@ public class HistoryGuruTest {
         // FileHistoryCache is used by default
         assertEquals("FileHistoryCache",
                 HistoryGuru.getInstance().getCacheInfo());
+    }
+    
+    @Test
+    @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
+    public void testAddRemoveRepositories() {
+        HistoryGuru instance = HistoryGuru.getInstance();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        final int numReposOrig = instance.getRepositories().size();
+        
+        // Try to add non-existent repository.
+        Collection<String> repos = new ArrayList<>();
+        repos.add("totally-nonexistent-repository");
+        Collection<RepositoryInfo> added = instance.addRepositories(repos,
+                env.getIgnoredNames());
+        Assert.assertEquals(0, added.size());
+        Assert.assertEquals(numReposOrig, instance.getRepositories().size());
+        
+        // Remove one repository.
+        repos = new ArrayList<>();
+        repos.add(env.getSourceRootPath() + File.separator + "git");
+        instance.removeRepositories(repos);
+        Assert.assertEquals(numReposOrig - 1, instance.getRepositories().size());
+        
+        // Add the repository back.
+        added = instance.addRepositories(repos, env.getIgnoredNames());
+        Assert.assertEquals(1, added.size());
+        Assert.assertEquals(numReposOrig, instance.getRepositories().size());
     }
 }

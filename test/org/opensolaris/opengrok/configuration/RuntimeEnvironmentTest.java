@@ -257,7 +257,7 @@ public class RuntimeEnvironmentTest {
     public void testRepositories() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertNotNull(instance.getRepositories());
-        instance.setRepositories(null);
+        instance.removeRepositories();
         assertNull(instance.getRepositories());
         List<RepositoryInfo> reps = new ArrayList<>();
         instance.setRepositories(reps);

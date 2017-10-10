@@ -114,13 +114,13 @@ public final class Configuration {
      */
     private int messageLimit;
     /**
-     * Directory with authorization plugins. Default value is
-     * dataRoot/../plugins (can be /var/opengrok/plugins if dataRoot is
-     * /var/opengrok/data).
+     * Directory with authorization plug-ins. Default value is
+     * {@code dataRoot/../plugins} (can be {@code /var/opengrok/plugins} if dataRoot is
+     * {@code /var/opengrok/data}).
      */
     private String pluginDirectory;
     /**
-     * Enable watching the plugin directory for changes in real time. Suitable
+     * Enable watching the plug-in directory for changes in real time. Suitable
      * for development.
      */
     private boolean authorizationWatchdogEnabled;
@@ -658,7 +658,7 @@ public final class Configuration {
      * @see #setPluginDirectory(java.lang.String)
      * @see #setStatisticsFilePath(java.lang.String)
      *
-     * @param dataRoot
+     * @param dataRoot data root path
      */
     public void setDataRoot(String dataRoot) {
         if (dataRoot != null && getPluginDirectory() == null) {
