@@ -102,7 +102,8 @@ public class HistoryContextTest {
         // Construct a query equivalent to hist:dummy
         TermQuery q1 = new TermQuery(new Term("hist", "dummy"));
         ArrayList<Hit> hits = new ArrayList<>();
-        assertTrue(new HistoryContext(q1).getContext(filename, path, hits));
+        boolean gotCtx = new HistoryContext(q1).getContext(filename, path, hits);
+        assertTrue(gotCtx);
         assertEquals(1, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Created a small <b>dummy</b> program"));
@@ -112,7 +113,8 @@ public class HistoryContextTest {
         q2.add(new Term("hist", "dummy"));
         q2.add(new Term("hist", "program"));
         hits.clear();
-        assertTrue(new HistoryContext(q2.build()).getContext(filename, path, hits));
+        gotCtx = new HistoryContext(q2.build()).getContext(filename, path, hits);
+        assertTrue(gotCtx);
         assertEquals(1, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Created a small <b>dummy program</b>"));
@@ -120,7 +122,8 @@ public class HistoryContextTest {
         // Search for a term that doesn't exist
         TermQuery q3 = new TermQuery(new Term("hist", "term_does_not_exist"));
         hits.clear();
-        assertFalse(new HistoryContext(q3).getContext(filename, path, hits));
+        gotCtx = new HistoryContext(q3).getContext(filename, path, hits);
+        assertFalse(gotCtx);
         assertEquals(0, hits.size());
 
         // Search for term with multiple hits - hist:small OR hist:target
@@ -128,7 +131,8 @@ public class HistoryContextTest {
         q4.add(new TermQuery(new Term("hist", "small")), Occur.SHOULD);
         q4.add(new TermQuery(new Term("hist", "target")), Occur.SHOULD);
         hits.clear();
-        assertTrue(new HistoryContext(q4.build()).getContext(filename, path, hits));
+        gotCtx = new HistoryContext(q4.build()).getContext(filename, path, hits);
+        assertTrue(gotCtx);
         assertEquals(2, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Add lint make <b>target</b> and fix lint warnings"));
