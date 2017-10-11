@@ -82,9 +82,11 @@ public class HistoryContext {
             return false;
         }
         File f = new File(filename);
-        return getHistoryContext(HistoryGuru.getInstance().getHistory(f),
-                                 path, null, hits,null);
-
+        History hist = HistoryGuru.getInstance().getHistory(f);
+        if (hist == null) {
+            throw new HistoryException("Could not get History for " + filename);
+        }
+        return getHistoryContext(hist, path, null, hits, null);
     }
 
     public boolean getContext(
@@ -114,7 +116,10 @@ public class HistoryContext {
             return false;
         }
         History hist = HistoryGuru.getInstance().getHistory(src);
-        return getHistoryContext(hist, path, out, null,context);
+        if (hist == null) {
+            throw new HistoryException("Could not get History for " + src);
+        }
+        return getHistoryContext(hist, path, out, null, context);
     }
 
     /**
