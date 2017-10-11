@@ -41,9 +41,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -68,8 +72,8 @@ public class IndexerTest {
     TestRepository repository;
     private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
-    public IndexerTest() {
-    }
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -323,6 +327,7 @@ public class IndexerTest {
      * @throws Exception 
      */
     @Test
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
     public void testRemoveFileOnFileChange() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

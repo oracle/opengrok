@@ -35,6 +35,7 @@ import org.apache.lucene.search.TermQuery;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.Hit;
@@ -43,6 +44,9 @@ import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -51,6 +55,9 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 public class HistoryContextTest {
 
     private static TestRepository repositories;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -87,6 +94,7 @@ public class HistoryContextTest {
     }
 
     @Test
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_3args() throws Exception {
         String path = "/mercurial/Makefile";
         String filename = repositories.getSourceRoot() + path;
@@ -129,6 +137,7 @@ public class HistoryContextTest {
     }
 
     @Test
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_4args() throws Exception {
         String path = "/mercurial/Makefile";
         File file = new File(repositories.getSourceRoot() + path);
