@@ -199,7 +199,11 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testCtags() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertEquals("ctags", instance.getCtags());
+        String instanceCtags = instance.getCtags();
+        assertNotNull(instanceCtags);
+        assertTrue("instance ctags should equals 'ctags' or the sys property",
+            instanceCtags.equals("ctags") || instanceCtags.equals(
+            System.getProperty("org.opensolaris.opengrok.analysis.Ctags")));
         String path = "/usr/bin/ctags";
         instance.setCtags(path);
         assertEquals(path, instance.getCtags());
