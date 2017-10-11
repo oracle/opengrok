@@ -82,12 +82,14 @@ public class ProjectMessageTest {
 
     @After
     public void tearDown() {
-        env.removeAllMessages();
-        
-        // This should match Configuration constructor.
-        env.setProjects(new ConcurrentHashMap<>());
-        env.setRepositories(new ArrayList<RepositoryInfo>());
-        env.getProjectRepositoriesMap().clear();
+        if (env != null) {
+            env.removeAllMessages();
+
+            // This should match Configuration constructor.
+            env.setProjects(new ConcurrentHashMap<>());
+            env.setRepositories(new ArrayList<RepositoryInfo>());
+            env.getProjectRepositoriesMap().clear();
+        }
 
         repository.destroy();
     }
