@@ -84,11 +84,11 @@ public class OptionParser {
 
     // Supported internal data type converters.
     static {
-        accept(Integer.class, s -> { return Integer.parseInt(s); });
-        accept(Boolean.class, s -> { return parseVerity(s); });
-        accept(Float.class,   s -> { return Float.parseFloat(s); });
-        accept(Double.class,  s -> { return Double.parseDouble(s); });
-        accept(String[].class,s -> { return s.split(",");});
+        accept(Integer.class,  s -> { return Integer.parseInt(s); });
+        accept(Boolean.class,  s -> { return parseVerity(s); });
+        accept(Float.class,    s -> { return Float.parseFloat(s); });
+        accept(Double.class,   s -> { return Double.parseDouble(s); });
+        accept(String[].class, s -> { return s.split(",");});
     }
     
     // Option object referenced by its name(s)
@@ -124,43 +124,42 @@ public class OptionParser {
         Consumer<Object> action;     // code to execute when option encountered
         
         public Option() {
-            names = new ArrayList<String>();
+            names = new ArrayList<>();
         }
                 
-        public void set(String option, String arg) throws IllegalArgumentException {
+        void addOption(String option, String arg) throws IllegalArgumentException {
             addAlias(option);
             setArgument(arg);
         }
         
-        public void addAlias(String alias) throws IllegalArgumentException {
+        void addAlias(String alias) throws IllegalArgumentException {
             names.add(alias);
             
             if (options.containsKey(alias)) {
-                Option aka = options.get(alias);
                 throw new IllegalArgumentException("** Programmer error! Option " + alias + " already defined");
             }
             
             options.put(alias, this);
         }
         
-        public void setAllowedValues(String[] allowed) {
+        void setAllowedValues(String[] allowed) {
             allowedValues = Arrays.asList(allowed);
         }
         
-        public void setValueType(Class<?> type){
+        void setValueType(Class<?> type){
             valueType = type;
         }
         
-        public void setArgument(String arg) {
+        void setArgument(String arg) {
             argument = arg.trim();
             mandatory = !argument.startsWith("[");
         }
         
-        public void setPattern(String pattern) {
+        void setPattern(String pattern) {
             valuePattern = Pattern.compile(pattern);
         }
         
-        public void addDescription(String descrip) {
+        void addDescription(String descrip) {
             if (description == null) {
                 description = new StringBuilder();
             }
@@ -169,14 +168,17 @@ public class OptionParser {
         }
         
         /**
-         * Store user defined action with option object
-         * @param action 
+         * Code to be activated when option encountered.
+         * 
+         * @param action is the code that will be called when the
+         * parser encounters the associated named option in its
+         * argument list.
          */
         public void Do(Consumer<Object> action) {
             this.action = action;
         }
         
-        public String getUsage() {
+        String getUsage() {
             StringBuilder line = new StringBuilder();
             String separator = "";
             for (String name : names) {
@@ -216,23 +218,23 @@ public class OptionParser {
      *   });
      */
     public OptionParser() {
-        optionList = new ArrayList<Option>();
-        options = new HashMap<String,Option>();
-        usageSummary = new ArrayList<Object>();
+        optionList = new ArrayList<>();
+        options = new HashMap<>();
+        usageSummary = new ArrayList<>();
     }
     
     // Allowable text values for Boolean.class, with case insensitivity.
-    private static Pattern verity = Pattern.compile("(?i)(true|yes|on)");
-    private static Pattern falsehood = Pattern.compile("(?i)(false|no|off)");
+    final private static Pattern VERITY = Pattern.compile("(?i)(true|yes|on)");
+    final private static Pattern FALSEHOOD = Pattern.compile("(?i)(false|no|off)");
     
     private static Boolean parseVerity(String text) {
-        Matcher m = verity.matcher(text);
+        Matcher m = VERITY.matcher(text);
         Boolean veracity = false;
         
         if (m.matches()) {
             veracity = true;
         } else {
-            m = falsehood.matcher(text);
+            m = FALSEHOOD.matcher(text);
             if (m.matches()) {
                 veracity = false;
             } else {
@@ -254,7 +256,7 @@ public class OptionParser {
      * @param parser is the conversion code that will take the given
      * option value string and produce the named data type.
      */
-    public static void accept(Class type,Function<String,Object> parser) {
+    public static void accept(Class type, Function<String,Object> parser) {
         converters.put(type, new DataParser(type, parser));
     }
     
@@ -293,7 +295,7 @@ public class OptionParser {
      * the normal option parser would.
      * 
      * @param parser
-     * @return 
+     * @return OptionParser object
      */
     public static OptionParser scan(Consumer<OptionParser> parser) {
         OptionParser me = new OptionParser();
@@ -387,24 +389,24 @@ public class OptionParser {
                     if (parts.length == 1) {
                         opt.addAlias(parts[0]);
                     } else {
-                        opt.set(parts[0], parts[1]);
+                        opt.addOption(parts[0], parts[1]);
                     }
                 } else if (argument.startsWith("-")) {
                     // handle -x -xARG -x=ARG -x[OPT] -x[=OPT] -x PLACE
-                    String optName = argument.substring(0,2);
+                    String optName = argument.substring(0, 2);
                     String remainder = argument.substring(2);
-                    opt.set(optName, remainder);
+                    opt.addOption(optName, remainder);
                     
                 } else if (argument.startsWith("=")) {
                     opt.setArgument(argument.substring(1));
                 } else if (argument.startsWith("/")) {
                     // regular expression (sans '/'s)
-                    opt.setPattern(argument.substring(1,argument.length()-1));
+                    opt.setPattern(argument.substring(1, argument.length()-1));
                 } else {
                     // this is description
                     opt.addDescription(argument);
                 }
-            // This is indicator for a set of specific allowable option values
+            // This is indicator for a addOption of specific allowable option values
             } else if (arg instanceof String[]) {
                 opt.setAllowedValues((String[])arg);
             // This is indicator for option value data type 
@@ -429,7 +431,7 @@ public class OptionParser {
         Boolean isOption = value.startsWith("-");
         
         if (mandatory) {
-            if(isOption ) {
+            if (isOption ) {
                 value = null;
             }
         } else if (isOption) {
@@ -438,14 +440,18 @@ public class OptionParser {
         return value;
     }
     
-    private String getOption(String arg) {
+    private String getOption(String arg, int index) throws ParseException {
         String option = null;
+        
+        if ( arg.equals("-")) {
+            throw new ParseException("Stand alone '-' found in arguments, not allowed", index);
+        }
         
         if (arg.startsWith("-")) {
             if (arg.startsWith("--")) {
                 option = arg;                 // long name option (--longOption)
             } else if (arg.length() > 2) {
-                option = arg.substring(0,2);  // short name option (-xValue)
+                option = arg.substring(0, 2); // short name option (-xValue)
             } else {
                 option = arg;                 // short name option (-x)
             }
@@ -453,12 +459,22 @@ public class OptionParser {
         return option;
     }
 
-    // Allows user to enter initial substring of a long option name.
-    private boolean unknown(String option, int index) throws ParseException {
+    /**
+     * Discover full name of partial option name.
+     * 
+     * @param option is the initial substring of a long option name.
+     * @param index into original argument list (only used by ParseException)
+     * @return full name of given option substring, or null when not found.
+     * @throws ParseException when more than one candidate name is found.
+     */
+    protected String candidate(String option, int index) throws ParseException {
         boolean found = options.containsKey(option);
-        List<String> candidates = new ArrayList<String>();
+        List<String> candidates = new ArrayList<>();
+        String candidate = null;
         
-        if (!found) {
+        if (found) {
+            candidate = option;
+        } else {
             // Now check to see if initial substring was entered.
             for (String key: options.keySet()) {
                 if (key.startsWith(option)) {
@@ -466,13 +482,13 @@ public class OptionParser {
                 }
             }
             if (candidates.size() == 1 ) {
-                found = true;
+                candidate = candidates.get(0);
             } else if (candidates.size() > 1) {
                 throw new ParseException(
                     "Ambiguous option " + option + " matches " + candidates, index);
             }
         }
-        return !found;
+        return candidate;
     }
         
     /**
@@ -497,31 +513,35 @@ public class OptionParser {
         int optind = -1;
         String option;
         while (ii < args.length) {
-            option = getOption(args[ii]);
+            option = getOption(args[ii], ii);
             
             // When scanning for specific options...
             if (scanning) {
-                if (option == null || unknown(option,ii)) {
+                if (option == null || (option = candidate(option, ii)) == null) {
                     optind = ++ii;  // skip over everything else
                     continue;
                 }
             }
 
-            if (!option.startsWith("-")) {
+            if (option == null) {  // no more options? we be done.
+                break;
+            } else if (option.equals("--")) {  // parsing escape found? we be done.
+                optind = ii + 1;
                 break;
             } else {
-                if (option.equals("--")) {
-                    optind = ii + 1;
-                    break;
-                }
 
-                if (unknown(option, ii)) {
-                    throw new ParseException("Unknown option: " + option, ii);
+                if ( !scanning ) {
+                    String candidate = candidate(option, ii);
+                    if (candidate != null) {
+                        option = candidate;
+                    } else {
+                        throw new ParseException("Unknown option: " + option, ii);
+                    }
                 }
                 Option opt = options.get(option);
                 opt.value = null;
                 
-                if (!option.equals(args[ii])) {  // catches -xValue
+                if (option.length() == 2 && !option.equals(args[ii])) {  // catches -xValue
                     opt.value = args[ii].substring(2);
                 }
                 
@@ -668,12 +688,12 @@ public class OptionParser {
     
     /**
      * Obtain option summary
-     * @return option summary
+     * @param indent a string to be used as the option summary initial indent.
+     * @return 
      */
-    public String getUsage() {
+    public String getUsage(String indent) {
         
         StringWriter wrt = new StringWriter();
-        String indent = "  ";
         try (PrintWriter out = new PrintWriter(wrt)) {
             out.println(getPrologue());
             for (Object o : usageSummary) {
@@ -690,6 +710,14 @@ public class OptionParser {
             out.flush();
         }
         return wrt.toString();
+    }
+    
+    /**
+     * Obtain option summary
+     * @return option summary
+     */
+    public String getUsage() {
+        return getUsage("  ");
     }
     
     /**

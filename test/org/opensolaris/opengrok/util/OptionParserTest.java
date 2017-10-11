@@ -262,8 +262,8 @@ public class OptionParserTest {
         }
     }
     
-    // Make sure that option can take specific set of values
-    // and when an unknown values is seen, an exception is given.
+    // Make sure that option can take specific addOption of values
+    // and when an candidate values is seen, an exception is given.
     @Test
     public void specificOptionValues() {
         
@@ -442,6 +442,49 @@ public class OptionParserTest {
         }
     }
     
+    // Allow user to enter an initial substring to long option names
+    @Test
+    public void allowInitialSubstringOptionNames() {
+        
+         OptionParser opts = OptionParser.Do( parser -> {
+            
+            parser.on("--help-me-out").Do( v-> {
+                actionCounter++;
+            });
+        });
+        
+        try {
+            
+            String[] args = {"--help"};
+            opts.parse(args);
+            assertEquals(actionCounter,1);
+
+        } catch (ParseException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    // Specific test to evalutate the internal option candidate method
+    @Test
+    public void testInitialSubstringOptionNames() {
+        
+         OptionParser opts = OptionParser.Do( parser -> {
+            
+            parser.on("--help-me-out");
+            parser.on("--longOption");
+        });
+        
+        try {
+            
+            assertEquals(opts.candidate("--l", 0),"--longOption");
+            assertEquals(opts.candidate("--h", 0),"--help-me-out");
+            assertNull(opts.candidate("--thisIsUnknownOption", 0));
+
+        } catch (ParseException e) {
+            fail(e.getMessage());
+        }
+    }
+    
     // Catch duplicate option names in parser construction.
     @Test
     public void catchDuplicateOptionNames() {
@@ -459,5 +502,24 @@ public class OptionParserTest {
         }
     }
     
+    // Catch single '-' in argument list
+    @Test
+    public void catchNamelessOption() {
+        
+        OptionParser opts = OptionParser.Do( parser -> {
+            
+            parser.on("--help-me-out");
+        });
+        
+        try {
+            
+            String[] args = {"-","data"};
+            opts.parse(args);
+
+        } catch (ParseException e) {
+            String msg = e.getMessage();
+            assertEquals(msg,"Stand alone '-' found in arguments, not allowed");
+        }
+    }
 }
 
