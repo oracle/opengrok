@@ -196,12 +196,17 @@ def main():
     else:
         user = arguments.user[0]
 
-    if arguments.debug or os.environ["OPENGROK_RELEASE_DEBUG"]:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="%(asctime)s [%(levelname)-7s] [line %(lineno)d] %(name)s: %(message)s",
-            stream=sys.stderr)
-        logger.setLevel(logging.DEBUG)
+    try:
+        os.environ["OPENGROK_RELEASE_DEBUG"]
+        debug = True
+    except:
+        debug = False
+    finally:
+        if arguments.debug or debug:
+            logging.basicConfig(level=logging.DEBUG,
+                format="%(asctime)s [%(levelname)-7s] [line %(lineno)d] " \
+                    "%(name)s: %(message)s", stream=sys.stderr)
+            logger.setLevel(logging.DEBUG)
 
     # There is exactly 1 item in the list.
     # TODO: there should be better way how to achieve this.
