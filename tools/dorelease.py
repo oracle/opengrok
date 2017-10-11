@@ -258,9 +258,9 @@ def main():
             sys.exit(1)
     except HTTPError as e:
         if e.code != 404:
-            print "Got HTTP error: " + str(e.value)
+            print "Got HTTP error: {} ({})".format(e.code, str(e.reason))
             sys.exit(1)
- 
+
     prerelease = False
     if arguments.prerelease:
         prerelease = True
@@ -300,7 +300,7 @@ def main():
             arguments.timeout, payload, headers, proxy)
         upload_url = release_json["upload_url"]
     except HTTPError as e:
-        print 'HTTP exception occurred, value:', e.value
+        print 'HTTP exception occurred, value:', e.reason
         sys.exit(1)
 
     if upload_url:
