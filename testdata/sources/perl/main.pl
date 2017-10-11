@@ -145,15 +145,24 @@ THAT
 #
 
 $var =~ /pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./ && print;
+$var !~/pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./ && print;
 /pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./ && print;
 (/pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./) && print;
 if (/pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./) { print; }
 if (1 && /pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./) { print; }
 if (0 || /pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./) { print; }
+print or/pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./;
 print if /pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./;
+print unless
+
+
+	/pP \"\'\(\)\<\>\{\}\[\]\/\# et $var./;
 
 my @o = $contents =~
+
+
     /^(?>\S+) \s* := \s* LINKSRC \s* = \s* \S+/mxg;
+
 foreach my $v (@o) { # This loop shouldn't mistakenly be inside the previous m//
 	print $v;
 }
