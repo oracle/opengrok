@@ -54,7 +54,6 @@ from pprint import pprint
 from string import split
 
 _files = []
-debug = False
 logger = logging.getLogger("release")
 
 class MyError(Exception):
@@ -197,13 +196,12 @@ def main():
     else:
         user = arguments.user[0]
 
-    if arguments.debug:
+    if arguments.debug or os.environ["OPENGROK_RELEASE_DEBUG"]:
         logging.basicConfig(
             level=logging.DEBUG,
             format="%(asctime)s [%(levelname)-7s] [line %(lineno)d] %(name)s: %(message)s",
             stream=sys.stderr)
         logger.setLevel(logging.DEBUG)
-        debug = True
 
     # There is exactly 1 item in the list.
     # TODO: there should be better way how to achieve this.
