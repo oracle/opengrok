@@ -176,25 +176,56 @@ import org.opensolaris.opengrok.web.Util;
   }
 
   // Begins a quote-like state for a heuristic match of the shorthand // of m//
-  // where the capture ends with "/", and writes the `capture' to output.
-  void hqop(String capture) throws IOException
+  // where the `capture' ends with "/", begins with punctuation, and the
+  // intervening whitespace may contain LFs -- and writes the parts to output.
+  void hqopPunc(String capture) throws IOException
   {
+    // `preceding' is everything before the '/'; 'lede' is the initial part
+    // before any whitespace; and `intervening' is any whitespace.
     String preceding = capture.substring(0, capture.length() - 1);
-    qop(false, "/", 0, false);
+    String lede = preceding.replaceAll("\\s+$", "");
+    String intervening = preceding.substring(lede.length());
 
-    out.write(htmlize(preceding));
+    qop(false, "/", 0, false);
+    out.write(htmlize(lede));
+    writeWhitespace(intervening);
     out.write(Ss);
     out.write("/");
   }
 
   // Begins a quote-like state for a heuristic match of the shorthand // of m//
-  // where the `capture' ends with "/", and sets (value1, value2) from
-  // splitting an initial word from the rest. (No write to output is done.)
-  void hqopsplit(String capture) throws IOException
+  // where the `capture' ends with "/", begins with an initial symbol, and the
+  // intervening whitespace may contain LFs -- and writes the parts to output.
+  void hqopSymbol(String capture) throws IOException
   {
-    value2 = capture.replaceAll("^\\w+", "");
-    value1 = capture.substring(0, capture.length() - value2.length());
+    // `preceding' is everything before the '/'; 'lede' is the initial part
+    // before any whitespace; and `intervening' is any whitespace.
+    String preceding = capture.substring(0, capture.length() - 1);
+    String lede = preceding.replaceAll("\\s+$", "");
+    String intervening = preceding.substring(lede.length());
+
     qop(false, "/", 0, false);
+    writeSymbol(lede, Consts.kwd, yyline);
+    writeWhitespace(intervening);
+    out.write(Ss);
+    out.write("/");
+  }
+
+  // Write `whsp' to output -- if it does not contain any LFs then the full
+  // String is written; otherwise, pre-LF spaces are condensed as usual.
+  void writeWhitespace(String whsp) throws IOException {
+    int i;
+    if ((i = whsp.indexOf("\n")) == -1) {
+        out.write(whsp);
+    } else {
+        int numlf = 1, off = i + 1;
+        while ((i = whsp.indexOf("\n", off)) != -1) {
+            ++numlf;
+            off = i + 1;
+        }
+        while (numlf-- > 0) startNewLine();
+        if (off < whsp.length()) out.write(whsp.substring(off));
+    }
   }
 
   // Saves the yystate(), and begins `state'.
@@ -259,22 +290,6 @@ import org.opensolaris.opengrok.web.Util;
     return trimmed.equals(hereTerminator);
   }
 
-  // Splits `capture' on {EOL} and sets value1 to the left-side and value2 to
-  // the right-side, dropping the {EOL}.
-  void splitEol(String capture)
-  {
-    int i;
-    if ((i = capture.indexOf("\n")) == -1) {
-        value1 = capture;
-        value2 = "";
-        return;
-    }
-    value1 = capture.substring(0, i);
-    if (value1.endsWith("\r"))
-        value1 = value1.substring(0, value1.length() - 1);
-    value2 = capture.substring(i + 1);
-  }
-
   final static String Sc = "<span class=\"c\">";
   final static String Sn = "<span class=\"n\">";
   final static String Ss = "<span class=\"s\">";
@@ -308,11 +323,6 @@ import org.opensolaris.opengrok.web.Util;
 
   // Stores the terminating identifier for For Here-documents
   String hereTerminator;
-
-  // For some rules where it is convenient to split a capture into values,
-  // store the values in lieu of the availability of a Java tuple.
-  String value1;
-  String value2;
 %}
 
 WhiteSpace     = [ \t\f]+
@@ -526,44 +536,26 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
     // first slash cannot always be distinguished from division (/) without
     // true parsing.
 
-    {Mpunc1YYIN} {MaybeWhsp} "/"    { hqop(yytext()); }
-
-    {Mpunc1YYIN} {MaybeWhsp}{EOL}{MaybeWhsp} "/"    {
-        splitEol(yytext());
-        out.write(htmlize(value1));
-        startNewLine();
-        hqop(value2);
-    }
+    {Mpunc1YYIN} \s* "/"    { hqopPunc(yytext()); }
 }
 
 <INTRA> {
     // Continue with more punctuation heuristics
 
-    {Mpunc2IN} {MaybeWhsp} "/"    { hqop(yytext()); }
-
-    {Mpunc2IN} {MaybeWhsp}{EOL}{MaybeWhsp} "/"    {
-        splitEol(yytext());
-        out.write(htmlize(value1));
-        startNewLine();
-        hqop(value2);
-    }
+    {Mpunc2IN} \s* "/"    { hqopPunc(yytext()); }
 }
 
 <YYINITIAL, INTRA> {
     // Define keyword heuristics
 
-    ^ {Mwords} {MaybeWhsp} "/"    {
-        hqopsplit(yytext());
-        writeSymbol(value1, Consts.kwd, yyline);
-        out.write(value2);
+    ^ {Mwords} \s* "/"    {
+        hqopSymbol(yytext());
     }
-    {WxSigils}{Mwords} {MaybeWhsp} "/"    {
+    {WxSigils}{Mwords} \s* "/"    {
         String capture = yytext();
-        String preceding = capture.substring(0, 1);
-        out.write(htmlize(preceding));
-        hqopsplit(capture.substring(1));
-        writeSymbol(value1, Consts.kwd, yyline);
-        out.write(value2);
+        String boundary = capture.substring(0, 1);
+        out.write(htmlize(boundary));
+        hqopSymbol(capture.substring(1));
     }
 }
 
