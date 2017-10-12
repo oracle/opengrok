@@ -35,6 +35,7 @@ import java.io.Writer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests the {@link PerlXref} class.
@@ -44,7 +45,8 @@ public class PerlXrefTest {
     @Test
     public void sampleTest() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/perl/sample.pl");
+            "org/opensolaris/opengrok/analysis/perl/sample.pl");
+        assertNotNull(res);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
 
@@ -52,7 +54,8 @@ public class PerlXrefTest {
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/perl/samplePerlXrefRes.html");
+            "org/opensolaris/opengrok/analysis/perl/samplexrefres.html");
+        assertNotNull(exp);
         copyStream(exp, baosExp);
         exp.close();
         baosExp.close();
@@ -73,7 +76,8 @@ public class PerlXrefTest {
 
     private void writePerlXref(InputStream iss, PrintStream oss) throws IOException {
         InputStream begin = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/perl/samplePerlXrefBeginHtmlfrag.txt");
+            "org/opensolaris/opengrok/analysis/perl/samplebeginhtml.txt");
+        assertNotNull(begin);
         copyStream(begin, oss);
 
         Writer sw = new StringWriter();
@@ -82,17 +86,18 @@ public class PerlXrefTest {
         oss.print(sw.toString());
 
         InputStream end = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/perl/samplePerlXrefEndHtmlfrag.txt");
+            "org/opensolaris/opengrok/analysis/perl/sampleendhtml.txt");
+        assertNotNull(end);
         copyStream(end, oss);
     }
 
-    private void copyStream(InputStream is, OutputStream os) throws IOException {
+    private void copyStream(InputStream iss, OutputStream oss) throws IOException {
         byte buffer[] = new byte[8192];
         int read;
         do {
-            read = is.read(buffer, 0, buffer.length);
+            read = iss.read(buffer, 0, buffer.length);
             if (read > 0) {
-                os.write(buffer, 0, read);
+                oss.write(buffer, 0, read);
             }
         } while (read >= 0);
     }
