@@ -22,6 +22,7 @@
  */
 package org.opensolaris.opengrok.util;
 
+import java.io.File;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -30,7 +31,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.index.Indexer;
 
 /**
  *
@@ -521,5 +524,20 @@ public class OptionParserTest {
             assertEquals(msg,"Stand alone '-' found in arguments, not allowed");
         }
     }
+    
+    // Fail options put into Indexer.java that do not have a description.
+//    @Test
+//    public void catchOptionsWithoutDescription() {
+//        String optionFile = System.getProperty("java.io.tmpdir")+File.separator+"openGrokOptions.xml";
+//        String[] argv = {"---unitTest", optionFile};
+//        Indexer.main(argv);
+//        List<String> options = OptionParser.getUnitTestResults(optionFile);
+//        // For a passing test, there is no file created
+//        File f = new File(optionFile);
+//        if (f.exists()){
+//            f.delete();
+//        }
+//        assertNull(options); // failure note will show which options missing description
+//    }
 }
 

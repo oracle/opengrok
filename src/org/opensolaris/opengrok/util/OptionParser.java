@@ -22,15 +22,29 @@
  */
 package org.opensolaris.opengrok.util;
 
+import java.beans.XMLEncoder;
+import java.beans.XMLDecoder;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -373,6 +387,10 @@ public class OptionParser {
      * description for the option in the summary. Multiple descriptions may
      * be given; they will be shown on additional lines.
      * 
+     * For programmers:  If a switch starts with 3 dashes (---) it will
+     * be hidden from the usage summary and manual generation. It is meant
+     * for unit testing access.
+     * 
      * @return Option
      */
     public Option on(Object ... args) {
@@ -415,8 +433,14 @@ public class OptionParser {
                 opt.setValueType((Class<?>)arg);
             }
         }
-        optionList.add(opt);
-        usageSummary.add(opt);
+        
+        // options starting with 3 dashes are to be hidden from usage.
+        // (the idea here is to hide any unit test entries from general user)
+        if (!opt.names.get(0).startsWith("---")) {
+            optionList.add(opt);
+            usageSummary.add(opt);
+        }
+        
         return opt;
     }
     
@@ -639,6 +663,8 @@ public class OptionParser {
             remainingArgs = args;
         } else if (optind < args.length) {
             remainingArgs = Arrays.copyOfRange(args, optind, args.length);
+        } else {
+            remainingArgs = new String[0];  // all args used up, send back empty.
         }
         
         return remainingArgs;
@@ -725,5 +751,119 @@ public class OptionParser {
      */
     public void help() {
         System.out.println(getUsage());
+    }
+    
+    private void spool(BufferedReader reader, PrintWriter out, String tag) throws IOException {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.equals(tag)) {
+                return;
+            }
+            out.println(line);
+        }
+    }
+    
+    /**
+     * Generate XML manual page
+     * This requires the template file opengrok.xml as input.
+     * @return String containing generated XML manual page
+     * @throws IOException 
+     */
+    public String getManPage() throws IOException {
+        StringWriter wrt = new StringWriter();
+        PrintWriter out = new PrintWriter(wrt);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                     getClass().getResourceAsStream("/org/opensolaris/opengrok/index/opengrok.xml"), "US-ASCII"))) {
+            spool(reader, out, "___INSERT_DATE___");
+            out.print("<refmiscinfo class=\"date\">");
+            out.print(DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date()));
+            out.println("</refmiscinfo>");
+
+            spool(reader, out, "___INSERT_USAGE___");
+            for (Option o: optionList) {
+                String sep = "";
+                out.println("<optional><option>");
+                for (String option : o.names) {
+                    out.print(sep + option);
+                    sep = ", ";
+                }
+                if (o.argument != null) {
+                    out.print(" <replaceable>");
+                    out.print(o.argument);
+                    out.print("</replaceable>");
+                }
+                out.println("</option></optional>");
+            }
+
+            spool(reader, out, "___INSERT_OPTIONS___");
+            for (Option o: optionList) {
+                String sep = "";
+                out.print("<varlistentry><term><option>");
+                for (String option : o.names) {
+                    out.print(sep + option);
+                    sep = ", ";
+                }
+                out.print("</option></term><listitem><para>");
+                out.print(o.description);
+                out.println("</para></listitem></varlistentry>");
+            }
+
+            spool(reader, out, "___END_OF_FILE___");
+            out.flush();
+        }
+
+        return wrt.toString();
+    }
+    
+    /**
+     * Used to validate options for unit test
+     */
+    public void validateOptions(String file) {
+        List<String> result = new ArrayList<>();
+        for (OptionParser.Option o : optionList) {
+            // so far the only thing cared about is empty descriptions
+            if (o.description == null) {
+                result.add(o.names.get(0));
+            }
+        }
+        if (!result.isEmpty()) {
+            saveOptions(file, result);
+        }
+    }
+    /**
+     * Get list of parsed options from given file.
+     * This interface is mainly meant for unit testing.
+     * @param file produced by a call to saveOptions.
+     * @return list of options
+     */
+    protected static List<String> getUnitTestResults(String file) {
+        List<String> result = null;
+        try {
+            XMLDecoder d = 
+                new XMLDecoder(new BufferedInputStream(new FileInputStream(file)));
+            result = (List<String>)d.readObject();
+            d.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(OptionParser.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Save list of options with problems.
+     * This interface is mainly meant for unit testing.
+     * @param file 
+     */
+    protected void saveOptions(String file, List<String>result) {
+        try {
+            XMLEncoder e = 
+                new XMLEncoder(new BufferedOutputStream(new FileOutputStream(file)));
+            
+            e.writeObject(result);
+            e.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(OptionParser.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
