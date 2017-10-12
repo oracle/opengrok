@@ -44,18 +44,18 @@ public class PerlXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/perl/sample.pl");
-        assertNotNull(res);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
 
+        InputStream res = getClass().getClassLoader().getResourceAsStream(
+            "org/opensolaris/opengrok/analysis/perl/sample.pl");
+        assertNotNull("sample.pl should get-as-stream", res);
         writePerlXref(res, new PrintStream(baos));
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
             "org/opensolaris/opengrok/analysis/perl/samplexrefres.html");
-        assertNotNull(exp);
+        assertNotNull("samplexrefres.html should get-as-stream", exp);
         copyStream(exp, baosExp);
         exp.close();
         baosExp.close();
@@ -77,7 +77,7 @@ public class PerlXrefTest {
     private void writePerlXref(InputStream iss, PrintStream oss) throws IOException {
         InputStream begin = getClass().getClassLoader().getResourceAsStream(
             "org/opensolaris/opengrok/analysis/perl/samplebeginhtml.txt");
-        assertNotNull(begin);
+        assertNotNull("samplebeginhtml.txt should get-as-stream", begin);
         copyStream(begin, oss);
 
         Writer sw = new StringWriter();
@@ -87,7 +87,7 @@ public class PerlXrefTest {
 
         InputStream end = getClass().getClassLoader().getResourceAsStream(
             "org/opensolaris/opengrok/analysis/perl/sampleendhtml.txt");
-        assertNotNull(end);
+        assertNotNull("sampleendhtml.txt should get-as-stream", end);
         copyStream(end, oss);
     }
 
