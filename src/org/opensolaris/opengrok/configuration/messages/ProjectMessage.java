@@ -26,13 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
@@ -44,7 +44,6 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.web.ProjectHelper;
 
 
 /**
@@ -88,19 +87,18 @@ public class ProjectMessage extends Message {
         }
     }
 
-    private List<RepositoryInfo> getRepositoriesInDir(RuntimeEnvironment env, File projDir) {
-        List<RepositoryInfo> repos = new ArrayList<>();
-        HistoryGuru hg = HistoryGuru.getInstance();
+    private List<RepositoryInfo> getRepositoriesInDir(RuntimeEnvironment env,
+            File projDir) {
+
+        HistoryGuru histGuru = HistoryGuru.getInstance();
 
         // There is no need to perform the work of invalidateRepositories(),
         // since addRepositories() calls getRepository() for each of
         // the repos.
-        hg.addRepositories(new File[]{projDir}, repos,
-            env.getIgnoredNames());
-
-        return repos;
+        return new ArrayList<>(histGuru.addRepositories(new File[]{projDir},
+            env.getIgnoredNames()));
     }
-    
+
     @Override
     protected byte[] applyMessage(RuntimeEnvironment env) throws Exception {
         String command = getText();
@@ -194,11 +192,7 @@ public class ProjectMessage extends Message {
                                 File.separator + projectName));
                     }
                     HistoryGuru guru = HistoryGuru.getInstance();
-                    // removeCache() for single repository would call
-                    // {@code invalidateRepositories()} on it which
-                    // would corrupt HistoryGuru's view of all repositories
-                    // so call clearCache() to avoid it.
-                    guru.clearCache(repos.stream().
+                    guru.removeCache(repos.stream().
                         map((x) -> {
                             try {
                                 return env.getPathRelativeToSourceRoot(
@@ -214,9 +208,6 @@ public class ProjectMessage extends Message {
                                 return "";
                             }
                         }).collect(Collectors.toSet()));
-
-                    // Remove the repositories in the HistoryGuru.
-                    guru.removeRepositories(repos);
                 }
                 break;
             case "indexed":
@@ -246,7 +237,7 @@ public class ProjectMessage extends Message {
                     }
                 }
 
-                // In case this project has just been incremetally indexed,
+                // In case this project has just been incrementally indexed,
                 // its IndexSearcher needs a poke.
                 env.maybeRefreshIndexSearchers(getTags());
 
@@ -257,6 +248,42 @@ public class ProjectMessage extends Message {
             case "list-indexed":
                 return (env.getProjectList().stream().filter(p -> p.isIndexed()).
                         map(p -> p.getName()).collect(Collectors.joining("\n")).getBytes());
+            case "get-repos":
+                List<String> repos = new ArrayList<>();
+
+                for (String projectName : getTags()) {
+                    Project project;
+                    if ((project = env.getProjects().get(projectName)) == null) {
+                        continue;
+                    }
+                    List<RepositoryInfo> infos = env.getProjectRepositoriesMap().
+                            get(project);
+                    if (infos != null) {
+                        repos.addAll(infos.stream().
+                                map(ri -> ri.getDirectoryNameRelative()).
+                                collect(Collectors.toList()));
+                    }
+                }
+
+                return repos.stream().collect(Collectors.joining("\n")).getBytes();
+            case "get-repos-type":
+                Set<String> types = new TreeSet<>();
+
+                for (String projectName : getTags()) {
+                    Project project;
+                    if ((project = env.getProjects().get(projectName)) == null) {
+                        continue;
+                    }
+                    List<RepositoryInfo> infos = env.getProjectRepositoriesMap().
+                            get(project);
+                    if (infos != null) {
+                        types.addAll(infos.stream().
+                                map(ri -> ri.getType()).
+                                collect(Collectors.toList()));
+                    }
+                }
+
+                return types.stream().collect(Collectors.joining("\n")).getBytes();
         }
 
         return ("command \"" + getText() + "\" for projects " +
@@ -271,20 +298,20 @@ public class ProjectMessage extends Message {
     @Override
     public void validate() throws Exception {
         String command = getText();
+        Set<String> allowedText = new TreeSet<>(Arrays.asList("add", "delete",
+                "list", "list-indexed", "indexed", "get-repos",
+                "get-repos-type"));
 
         // Text field carries the command.
         if (command == null) {
             throw new Exception("The message must contain a text - \"add\", \"delete\" or \"indexed\"");
         }
-        if (command.compareTo("add") != 0 &&
-            command.compareTo("delete") != 0 &&
-            command.compareTo("list") != 0 &&
-            command.compareTo("list-indexed") != 0 &&
-            command.compareTo("indexed") != 0) {
-            throw new Exception("The message must contain either 'add', 'delete' or 'indexed' text");
+        if (!allowedText.contains(command)) {
+            throw new Exception("The message must contain either 'add', " +
+                    "'delete', 'indexed', 'list', 'list-indexed' or 'get-repos' text");
         }
 
-        if (!command.contains("list") && getTags().isEmpty()) {
+        if (!command.startsWith("list") && getTags().isEmpty()) {
             throw new Exception("The message must contain a tag (project name(s))");        
         }
 

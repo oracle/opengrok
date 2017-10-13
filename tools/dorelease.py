@@ -6,13 +6,11 @@
 # Common Development and Distribution License (the "License").
 # You may not use this file except in compliance with the License.
 #
-# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
-# or http://www.opensolaris.org/os/licensing.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# See LICENSE.txt included in this distribution for the specific
+# language governing permissions and limitations under the License.
 #
 # When distributing Covered Code, include this CDDL HEADER in each
-# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# file and include the License file at LICENSE.txt.
 # If applicable, add the following below this CDDL HEADER, with the
 # fields enclosed by brackets "[]" replaced with your own identifying
 # information: Portions Copyright [yyyy] [name of copyright owner]
@@ -56,7 +54,6 @@ from pprint import pprint
 from string import split
 
 _files = []
-debug = False
 logger = logging.getLogger("release")
 
 class MyError(Exception):
@@ -199,13 +196,17 @@ def main():
     else:
         user = arguments.user[0]
 
-    if arguments.debug:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="%(asctime)s [%(levelname)-7s] [line %(lineno)d] %(name)s: %(message)s",
-            stream=sys.stderr)
-        logger.setLevel(logging.DEBUG)
+    try:
+        os.environ["OPENGROK_RELEASE_DEBUG"]
         debug = True
+    except:
+        debug = False
+    finally:
+        if arguments.debug or debug:
+            logging.basicConfig(level=logging.DEBUG,
+                format="%(asctime)s [%(levelname)-7s] [line %(lineno)d] " \
+                    "%(name)s: %(message)s", stream=sys.stderr)
+            logger.setLevel(logging.DEBUG)
 
     # There is exactly 1 item in the list.
     # TODO: there should be better way how to achieve this.
@@ -260,9 +261,9 @@ def main():
             sys.exit(1)
     except HTTPError as e:
         if e.code != 404:
-            print "Got HTTP error: " + str(e.value)
+            print "Got HTTP error: {} ({})".format(e.code, str(e.reason))
             sys.exit(1)
- 
+
     prerelease = False
     if arguments.prerelease:
         prerelease = True
@@ -302,7 +303,7 @@ def main():
             arguments.timeout, payload, headers, proxy)
         upload_url = release_json["upload_url"]
     except HTTPError as e:
-        print 'HTTP exception occurred, value:', e.value
+        print 'HTTP exception occurred, value:', e.reason
         sys.exit(1)
 
     if upload_url:

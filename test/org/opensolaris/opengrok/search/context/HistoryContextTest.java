@@ -43,6 +43,7 @@ import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Unit tests for the {@code HistoryContext} class.
@@ -56,7 +57,7 @@ public class HistoryContextTest {
         repositories = new TestRepository();
         repositories.create(HistoryContextTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/history/repositories.zip"));
-        HistoryGuru.getInstance().addRepositories(repositories.getSourceRoot());
+        RuntimeEnvironment.getInstance().setRepositories(repositories.getSourceRoot());
     }
 
     @AfterClass

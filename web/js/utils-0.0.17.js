@@ -1565,6 +1565,7 @@ $(document).ready(function () {
      */
     init_markdown_converter();
 
+    restoreFocusAfterSearchSubmit();
 });
 
 /**
@@ -1940,4 +1941,42 @@ function scope_on_scroll() {
  */
 function isOnSearchPage() {
     return $(document.documentElement).hasClass('search');
+}
+
+/**
+ * Handles submit on search form.
+ *
+ * If submit was initiated by pressing the return key when focus was
+ * in a text field then `si` attribute will be added to the form.
+ *
+ * @param {HTMLFormElement} form
+ */
+function searchSubmit(form) {
+    var submitInitiator = '';
+    if (document.activeElement && document.activeElement.nodeName === 'INPUT') {
+        submitInitiator = document.activeElement.getAttribute('id');
+    }
+    if (submitInitiator) {
+        var input = document.createElement('INPUT');
+        input.setAttribute('name', 'si');
+        input.value = submitInitiator;
+        form.appendChild(input);
+    }
+}
+
+/**
+ * Restores focus on page load
+ *
+ * @see #searchSubmit
+ */
+function restoreFocusAfterSearchSubmit() {
+    var siParam = getParameter('si');
+    if (siParam) {
+        var $input = $('input[type=text][id="' + siParam + '"]');
+        if ($input.length === 1) {
+            $input[0].selectionStart = $input.val().length;
+            $input[0].selectionEnd = $input[0].selectionStart;
+            $input.focus();
+        }
+    }
 }
