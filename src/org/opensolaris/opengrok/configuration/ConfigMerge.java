@@ -31,8 +31,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.ParseException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.opensolaris.opengrok.util.Getopt;
 
 /**
@@ -49,6 +47,7 @@ public class ConfigMerge {
      * Merge base and new configuration.
      * @param cfgBase base configuration
      * @param cfgNew new configuration, will receive properties from the base configuration
+     * @throws Exception
      */
     public static void merge(Configuration cfgBase, Configuration cfgNew) throws Exception {
         Configuration cfgDefault = new Configuration();

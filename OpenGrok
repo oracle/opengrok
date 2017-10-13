@@ -105,7 +105,7 @@ Usage()
 
     exec >&2
     echo ""
-    echo "Usage: ${progname} <bootstrap|deploy|update|updateQuietly|usage|help>"
+    echo "Usage: ${progname} <bootstrap|deploy|update|updateQuietly|updateDesc|usage|help>"
     echo "       ${progname} index [<directory>]"
     echo "       ${progname} indexpart <directory_1> [<directory_2> ..]"
     echo "       ${progname} clearHistory <src_root> <repository_name>"
@@ -1016,6 +1016,10 @@ case "${1}" in
         UpdateGeneratedData
         UpdateDescriptionCache
         ;;
+
+    updateDesc)
+        UpdateDescriptionCache
+	;;
 
     bootstrap)
         ValidateConfiguration

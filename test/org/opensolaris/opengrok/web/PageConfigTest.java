@@ -64,7 +64,7 @@ public class PageConfigTest {
         repository = new TestRepository();
         repository.create(
                 HistoryGuru.class.getResourceAsStream("repositories.zip"));
-        HistoryGuru.getInstance().addRepositories(repository.getSourceRoot());
+        RuntimeEnvironment.getInstance().setRepositories(repository.getSourceRoot());
     }
 
     @AfterClass

@@ -239,7 +239,7 @@ public class IndexerTest {
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
-        HistoryGuru.getInstance().addRepositories(repository.getSourceRoot());
+        env.setRepositories(repository.getSourceRoot());
 
         List<RepositoryInfo> repos = env.getRepositories();
         Repository r = null;
@@ -336,7 +336,7 @@ public class IndexerTest {
 
         env.setSourceRoot(testrepo.getSourceRoot());
         env.setDataRoot(testrepo.getDataRoot());
-        HistoryGuru.getInstance().addRepositories(testrepo.getSourceRoot());
+        env.setRepositories(testrepo.getSourceRoot());
 
         // create index
         Project project = new Project("mercurial", "/mercurial");

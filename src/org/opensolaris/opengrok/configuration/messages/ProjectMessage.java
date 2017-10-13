@@ -87,19 +87,18 @@ public class ProjectMessage extends Message {
         }
     }
 
-    private List<RepositoryInfo> getRepositoriesInDir(RuntimeEnvironment env, File projDir) {
-        List<RepositoryInfo> repos = new ArrayList<>();
-        HistoryGuru hg = HistoryGuru.getInstance();
+    private List<RepositoryInfo> getRepositoriesInDir(RuntimeEnvironment env,
+            File projDir) {
+
+        HistoryGuru histGuru = HistoryGuru.getInstance();
 
         // There is no need to perform the work of invalidateRepositories(),
         // since addRepositories() calls getRepository() for each of
         // the repos.
-        hg.addRepositories(new File[]{projDir}, repos,
-            env.getIgnoredNames());
-
-        return repos;
+        return new ArrayList<>(histGuru.addRepositories(new File[]{projDir},
+            env.getIgnoredNames()));
     }
-    
+
     @Override
     protected byte[] applyMessage(RuntimeEnvironment env) throws Exception {
         String command = getText();
@@ -193,11 +192,7 @@ public class ProjectMessage extends Message {
                                 File.separator + projectName));
                     }
                     HistoryGuru guru = HistoryGuru.getInstance();
-                    // removeCache() for single repository would call
-                    // {@code invalidateRepositories()} on it which
-                    // would corrupt HistoryGuru's view of all repositories
-                    // so call clearCache() to avoid it.
-                    guru.clearCache(repos.stream().
+                    guru.removeCache(repos.stream().
                         map((x) -> {
                             try {
                                 return env.getPathRelativeToSourceRoot(
@@ -213,9 +208,6 @@ public class ProjectMessage extends Message {
                                 return "";
                             }
                         }).collect(Collectors.toSet()));
-
-                    // Remove the repositories in the HistoryGuru.
-                    guru.removeRepositories(repos);
                 }
                 break;
             case "indexed":
@@ -245,7 +237,7 @@ public class ProjectMessage extends Message {
                     }
                 }
 
-                // In case this project has just been incremetally indexed,
+                // In case this project has just been incrementally indexed,
                 // its IndexSearcher needs a poke.
                 env.maybeRefreshIndexSearchers(getTags());
 

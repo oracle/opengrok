@@ -54,7 +54,6 @@ from pprint import pprint
 from string import split
 
 _files = []
-debug = False
 logger = logging.getLogger("release")
 
 class MyError(Exception):
@@ -197,13 +196,17 @@ def main():
     else:
         user = arguments.user[0]
 
-    if arguments.debug:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="%(asctime)s [%(levelname)-7s] [line %(lineno)d] %(name)s: %(message)s",
-            stream=sys.stderr)
-        logger.setLevel(logging.DEBUG)
+    try:
+        os.environ["OPENGROK_RELEASE_DEBUG"]
         debug = True
+    except:
+        debug = False
+    finally:
+        if arguments.debug or debug:
+            logging.basicConfig(level=logging.DEBUG,
+                format="%(asctime)s [%(levelname)-7s] [line %(lineno)d] " \
+                    "%(name)s: %(message)s", stream=sys.stderr)
+            logger.setLevel(logging.DEBUG)
 
     # There is exactly 1 item in the list.
     # TODO: there should be better way how to achieve this.
@@ -258,9 +261,9 @@ def main():
             sys.exit(1)
     except HTTPError as e:
         if e.code != 404:
-            print "Got HTTP error: " + str(e.value)
+            print "Got HTTP error: {} ({})".format(e.code, str(e.reason))
             sys.exit(1)
- 
+
     prerelease = False
     if arguments.prerelease:
         prerelease = True
@@ -300,7 +303,7 @@ def main():
             arguments.timeout, payload, headers, proxy)
         upload_url = release_json["upload_url"]
     except HTTPError as e:
-        print 'HTTP exception occurred, value:', e.value
+        print 'HTTP exception occurred, value:', e.reason
         sys.exit(1)
 
     if upload_url:
