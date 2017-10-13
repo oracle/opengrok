@@ -22,7 +22,6 @@
  */
 package org.opensolaris.opengrok.util;
 
-import java.io.File;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -31,8 +30,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.text.ParseException;
-import java.util.List;
-import java.util.regex.Pattern;
 import org.opensolaris.opengrok.index.Indexer;
 
 /**
@@ -526,33 +523,33 @@ public class OptionParserTest {
     }
     
     // Fail options put into Indexer.java that do not have a description.
-//    @Test
-//    public void catchIndexerOptionsWithoutDescription() {
-//        String[] argv = {"---unitTest"};
-//        try {
-//            Indexer.parseOptions(argv);
-//            OptionParser op = Indexer.openGrok;
-//            
-//            for (OptionParser.Option o : op.getOptionList()) {
-//                if (o.description == null) {
-//                    fail("'"+o.names.get(0) + "' option needs description");
-//                } else if (o.description.equals("")) {
-//                    fail("'"+o.names.get(0) + "' option needs non-empty description");
-//                }
-//            }
-//            
-//            // This just tests that the description is actually null.
-//            op = OptionParser.Do( parser -> {
-//                parser.on("--help-me-out");
-//            });
-//            
-//            for (OptionParser.Option o : op.getOptionList()) {
-//                assertNull(o.description);
-//            }
-//            
-//        } catch(ParseException e) {
-//            fail(e.getMessage());
-//        }
-//    }
+    @Test
+    public void catchIndexerOptionsWithoutDescription() {
+        String[] argv = {"---unitTest"};
+        try {
+            Indexer.parseOptions(argv);
+            OptionParser op = Indexer.openGrok;
+            
+            for (OptionParser.Option o : op.getOptionList()) {
+                if (o.description == null) {
+                    fail("'"+o.names.get(0) + "' option needs description");
+                } else if (o.description.equals("")) {
+                    fail("'"+o.names.get(0) + "' option needs non-empty description");
+                }
+            }
+            
+            // This just tests that the description is actually null.
+            op = OptionParser.Do( parser -> {
+                parser.on("--help-me-out");
+            });
+            
+            for (OptionParser.Option o : op.getOptionList()) {
+                assertNull(o.description);
+            }
+            
+        } catch(ParseException e) {
+            fail(e.getMessage());
+        }
+    }
 }
 
