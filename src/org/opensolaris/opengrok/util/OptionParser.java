@@ -642,6 +642,7 @@ public class OptionParser {
                         value = data.converter.apply(opt.value);
                         
                     } catch (Exception e) {
+                        System.err.println("** "+e.getMessage());
                         throw new ParseException(
                            "Failed to parse ("+opt.value+") as value of " + opt.names, ii);
                     }
@@ -672,6 +673,9 @@ public class OptionParser {
     
     private String program() {
         // Locate main program name from stack trace.
+        // The last element in the stack is where the 'main' entry point
+        // is located. The simple class name of this entry will be
+        // returned as the program name.
         StackTraceElement[] stack = Thread.currentThread ().getStackTrace ();
         StackTraceElement main = stack[stack.length - 1];
         String[] name = main.getClassName().split("\\.");
