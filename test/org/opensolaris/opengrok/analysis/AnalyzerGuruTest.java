@@ -96,7 +96,7 @@ public class AnalyzerGuruTest {
     @Test
     public void testUTF16BigByteOrderMarkPlusCopyrightSymbol() throws Exception {
         byte[] doc = {(byte) 0xFE, (byte) 0xFF, // UTF-16BE BOM
-                       '/', '/', ' ', (byte) 0xC2, (byte) 0xA9};
+                       0, '#', 0, ' ', (byte) 0xC2, (byte) 0xA9};
         ByteArrayInputStream in = new ByteArrayInputStream(doc);
         FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite BOM as precise match,", PlainAnalyzer.class,
@@ -106,7 +106,7 @@ public class AnalyzerGuruTest {
     @Test
     public void testUTF16LittleByteOrderMarkPlusCopyrightSymbol() throws Exception {
         byte[] doc = {(byte) 0xFF, (byte) 0xFE, // UTF-16BE BOM
-                       '/', '/', ' ', (byte) 0xA9, (byte) 0xC2};
+                       '#', 0, ' ', 0, (byte) 0xA9, (byte) 0xC2};
         ByteArrayInputStream in = new ByteArrayInputStream(doc);
         FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite BOM as precise match,", PlainAnalyzer.class,
