@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -710,5 +711,15 @@ public abstract class JFlexXref {
         if (popString != null) {
             out.write(popString);
         }
+    }
+
+    /**
+     * reset current yy state, and clear stack
+     * @param newState state id
+     */
+    public void yyjump(int newState) {
+        yybegin(newState);
+        this.stack.clear();
+        this.stackPopString.clear();
     }
 }

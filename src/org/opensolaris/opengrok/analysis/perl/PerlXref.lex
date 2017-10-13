@@ -144,7 +144,7 @@ import org.opensolaris.opengrok.web.Util;
     } else {
         state = nolink ? QUOxL : QUO;
     }
-    saveAndBegin(state);
+    yypush(state, null);
   }
 
   // Sets a special `endqchar' if appropriate for `opener' or just tracks
@@ -228,20 +228,6 @@ import org.opensolaris.opengrok.web.Util;
     }
   }
 
-  // Saves the yystate(), and begins `state'.
-  void saveAndBegin(int state)
-  {
-    prestate = yystate();
-    yybegin(state);
-  }
-
-  // Restores the state from saveAndBegin().
-  void restoreState()
-  {
-    yybegin(prestate);
-    prestate = 0;
-  }
-
   // If the state is YYINITIAL, then transitions to INTRA; otherwise does
   // nothing, because other transitions would have saved the state.
   void maybeIntraState()
@@ -264,7 +250,7 @@ import org.opensolaris.opengrok.web.Util;
     } else {
         state = indented ? HEREin : HERE;
     }
-    saveAndBegin(state);
+    yypush(state, null);
 
     out.write(htmlize(capture));
     out.write(Ss);
@@ -277,7 +263,7 @@ import org.opensolaris.opengrok.web.Util;
     if (!isHereEnding(capture)) {
         out.write(htmlize(capture));
     } else {
-        restoreState();
+        yypop();
         out.write(_S);
         out.write(htmlize(capture));
     }
@@ -316,10 +302,6 @@ import org.opensolaris.opengrok.web.Util;
   // first end separator, `waitingqchar' is set to TRUE so that nesting is not
   // active.
   boolean waitq;
-
-  // When matching a quote-like operator, the previous yystate() is stored to
-  // be restored at the end of the quote
-  int prestate;
 
   // Stores the terminating identifier for For Here-documents
   String hereTerminator;
@@ -422,8 +404,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 <YYINITIAL, INTRA>{
 
     [;\{\}]    {
-        yybegin(YYINITIAL);
-        prestate = YYINITIAL;
+        yyjump(YYINITIAL);
         out.write(yytext());
     }
 
@@ -475,7 +456,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 
  [\"\`] { qop(yytext(), 0, false); }
  \'     { qop(yytext(), 0, true); }
- \#     { saveAndBegin(SCOMMENT); out.write(Sc + "#"); }
+ \#     { yypush(SCOMMENT, null); out.write(Sc + "#"); }
 
  // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
  ^ {QXRapos} |
@@ -519,7 +500,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
  ^ {QYword} |
  {WxSigils}{QYword}  { qop(yytext(), 1, true); }
 
- ^ {Pods}   { saveAndBegin(POD); out.write(Sc + yytext()); }
+ ^ {Pods}   { yypush(POD, null); out.write(Sc + yytext()); }
 }
 
 <YYINITIAL> {
@@ -577,7 +558,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
         String capture = yytext();
         out.write(htmlize(capture));
         if (isQuoteEnding(capture)) {
-            restoreState();
+            yypop();
             out.write(_S);
         }
     }
@@ -594,7 +575,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 
 <POD> {
 ^ {PodEND} [^\n]* / {EOL} {
-    restoreState();
+    yypop();
     out.write(yytext() + _S);
   }
 }
@@ -602,7 +583,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 <SCOMMENT> {
   {WhiteSpace}{EOL} |
   {EOL} {
-    restoreState();
+    yypop();
     out.write(_S);
     startNewLine();
   }
