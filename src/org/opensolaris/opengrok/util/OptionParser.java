@@ -815,55 +815,7 @@ public class OptionParser {
         return wrt.toString();
     }
     
-    /**
-     * Used to validate options for unit test
-     */
-    public void validateOptions(String file) {
-        List<String> result = new ArrayList<>();
-        for (OptionParser.Option o : optionList) {
-            // so far the only thing cared about is empty descriptions
-            if (o.description == null) {
-                result.add(o.names.get(0));
-            }
-        }
-        if (!result.isEmpty()) {
-            saveOptions(file, result);
-        }
-    }
-    /**
-     * Get list of parsed options from given file.
-     * This interface is mainly meant for unit testing.
-     * @param file produced by a call to saveOptions.
-     * @return list of options
-     */
-    protected static List<String> getUnitTestResults(String file) {
-        List<String> result = null;
-        try {
-            XMLDecoder d = 
-                new XMLDecoder(new BufferedInputStream(new FileInputStream(file)));
-            result = (List<String>)d.readObject();
-            d.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(OptionParser.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return result;
-    }
-    
-    /**
-     * Save list of options with problems.
-     * This interface is mainly meant for unit testing.
-     * @param file 
-     */
-    protected void saveOptions(String file, List<String>result) {
-        try {
-            XMLEncoder e = 
-                new XMLEncoder(new BufferedOutputStream(new FileOutputStream(file)));
-            
-            e.writeObject(result);
-            e.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(OptionParser.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    protected List<Option> getOptionList() {
+        return optionList;
     }
 }

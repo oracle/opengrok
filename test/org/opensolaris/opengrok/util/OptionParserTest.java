@@ -527,17 +527,32 @@ public class OptionParserTest {
     
     // Fail options put into Indexer.java that do not have a description.
 //    @Test
-//    public void catchOptionsWithoutDescription() {
-//        String optionFile = System.getProperty("java.io.tmpdir")+File.separator+"openGrokOptions.xml";
-//        String[] argv = {"---unitTest", optionFile};
-//        Indexer.main(argv);
-//        List<String> options = OptionParser.getUnitTestResults(optionFile);
-//        // For a passing test, there is no file created
-//        File f = new File(optionFile);
-//        if (f.exists()){
-//            f.delete();
+//    public void catchIndexerOptionsWithoutDescription() {
+//        String[] argv = {"---unitTest"};
+//        try {
+//            Indexer.parseOptions(argv);
+//            OptionParser op = Indexer.openGrok;
+//            
+//            for (OptionParser.Option o : op.getOptionList()) {
+//                if (o.description == null) {
+//                    fail("'"+o.names.get(0) + "' option needs description");
+//                } else if (o.description.equals("")) {
+//                    fail("'"+o.names.get(0) + "' option needs non-empty description");
+//                }
+//            }
+//            
+//            // This just tests that the description is actually null.
+//            op = OptionParser.Do( parser -> {
+//                parser.on("--help-me-out");
+//            });
+//            
+//            for (OptionParser.Option o : op.getOptionList()) {
+//                assertNull(o.description);
+//            }
+//            
+//        } catch(ParseException e) {
+//            fail(e.getMessage());
 //        }
-//        assertNull(options); // failure note will show which options missing description
 //    }
 }
 
