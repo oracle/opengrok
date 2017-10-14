@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -107,10 +108,10 @@ public class JFlexTokenizerTest {
         while (tokenizer.incrementToken()) {
             assertTrue("too many tokens", count < expectedTokens.length);
             String expected = expectedTokens[count];
-            assertEquals("term", expected, term.toString());
-            assertEquals("start",
+            assertEquals("term" + count, expected, term.toString());
+            assertEquals("start" + count,
                     inputText.indexOf(expected), offset.startOffset());
-            assertEquals("end",
+            assertEquals("end" + count,
                     inputText.indexOf(expected) + expected.length(),
                     offset.endOffset());
             count++;
@@ -136,6 +137,14 @@ public class JFlexTokenizerTest {
         // variables.
         String[] expectedTokens = {"VARIABLE", "abc"};
         testOffsetAttribute(ShSymbolTokenizer.class, inputText, expectedTokens);
+    }
+
+    @Test
+    public void testPerlVariableInBraces() throws Exception {
+        // Perl command to tokenize
+        String inputText = "$ {abc} = 1; '$gh'; \"$ { VARIABLE  } $def xyz\";";
+        String[] expectedTokens = {"abc", "VARIABLE", "def"};
+        testOffsetAttribute(PerlSymbolTokenizer.class, inputText, expectedTokens);
     }
 
     /**

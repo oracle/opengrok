@@ -33,7 +33,17 @@ interface PerlLexListener {
     void popState() throws IOException;
     void write(String value) throws IOException;
     void writeHtmlized(String value) throws IOException;
-    void writeSymbol(String value) throws IOException;
+
+    /**
+     * Passes a text fragment that is syntactically a symbol for write
+     * processing
+     * @param value the excised symbol
+     * @param captureOffset the offset from yychar where {@link value} began
+     * @param ignoreKwd a value indicating whether keywords should be ignored
+     */
+    void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
+            throws IOException;
+
     void doStartNewLine() throws IOException;
 }
 
@@ -71,9 +81,12 @@ class PerlLexHelper {
         this.HERE = hERE;        
     }
 
-    // Gets a value indicating if the quote should be ended. Also, recognize
-    // quote-like operators which allow nesting to increase the nesting level
-    // if appropriate.
+    /**
+     * Gets a value indicating if the quote should be ended, recognizing
+     * quote-like operators which allow nesting to increase the nesting level
+     * if appropriate.
+     * @return true if the quote state should end
+     */
     public boolean isQuoteEnding(String match)
     {
         char c = match.charAt(0);
@@ -93,17 +106,21 @@ class PerlLexHelper {
         return false;
     }
 
-    // Starts a quote-like operator as specified in a syntax fragment, `op',
-    // and write the operator to output.
+    /**
+     * Starts a quote-like operator as specified in a syntax fragment, `op',
+     * and write the operator to output.
+     */
     public void qop(String op, int namelength, boolean nointerp)
         throws IOException
     {
         qop(true, op, namelength, nointerp);
     }
 
-    // Starts a quote-like operator as specified in a syntax fragment, `op',
-    // and write the operator to output if `doWrite` is true.
-    public void qop(boolean doWrite, String op, int namelength,
+    /**
+     * Starts a quote-like operator as specified in a syntax fragment, `op',
+     * and write the operator to output if `doWrite` is true.
+     */
+    public void qop(boolean doWrite, String capture, int namelength,
         boolean nointerp) throws IOException
     {
         // If namelength is positive, allow that a non-zero-width word boundary
@@ -111,12 +128,14 @@ class PerlLexHelper {
         // with \b as a zero-width simple word boundary. Excise it into
         // `boundary'.
         String boundary = "";
+        String postboundary = capture;
+        String opname = "";
         if (namelength > 0) {
-            boundary = op;
-            op = op.replaceAll("^\\W+", "");
-            boundary = boundary.substring(0, boundary.length() - op.length());
+            postboundary = capture.replaceFirst("^\\W+", "");
+            boundary = capture.substring(0, capture.length() -
+                postboundary.length());
+            opname = postboundary.substring(0, namelength);
         }
-        String opname = op.substring(0, namelength);
         waitq = false;
 
         switch (opname) {
@@ -130,21 +149,21 @@ class PerlLexHelper {
                 break;
         }
 
-        String postop = op.substring(opname.length());
-        String ltpostop = postop.replaceAll("^\\s+", "");
+        String postop = postboundary.substring(opname.length());
+        String ltpostop = postop.replaceFirst("^\\s+", "");
         char opc = ltpostop.charAt(0);
         setEndQuoteChar(opc);
         setState(ltpostop, nointerp);
 
         if (doWrite) {
             listener.writeHtmlized(boundary);
-            listener.writeSymbol(opname);
+            listener.writeSymbol(opname, boundary.length(), false);
             listener.write(Consts.SS);
             listener.writeHtmlized(postop);
         }
     }
 
-    // Sets the jflex state reflecting `ltpostop' and `nointerp'.
+    /** Sets the jflex state reflecting `ltpostop' and `nointerp'. */
     public void setState(String ltpostop, boolean nointerp)
     {
         int state;
@@ -172,8 +191,10 @@ class PerlLexHelper {
         listener.pushState(state);
     }
 
-    // Sets a special `endqchar' if appropriate for `opener' or just tracks
-    // `opener'
+    /**
+     * Sets a special `endqchar' if appropriate for `opener' or just tracks
+     * `opener'.
+     */
     private void setEndQuoteChar(char opener)
     {
         switch (opener) {
@@ -200,15 +221,17 @@ class PerlLexHelper {
         }
     }
 
-    // Begins a quote-like state for a heuristic match of the shorthand // of
-    // m// where the `capture' ends with "/", begins with punctuation, and the
-    // intervening whitespace may contain LFs -- and writes the parts to output.
+    /**
+     * Begins a quote-like state for a heuristic match of the shorthand // of
+     * m// where the `capture' ends with "/", begins with punctuation, and the
+     * intervening whitespace may contain LFs -- and writes the parts to output.
+     */
     public void hqopPunc(String capture) throws IOException
     {
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
-        String lede = preceding.replaceAll("\\s+$", "");
+        String lede = preceding.replaceFirst("\\s+$", "");
         String intervening = preceding.substring(lede.length());
 
         qop(false, "/", 0, false);
@@ -218,27 +241,31 @@ class PerlLexHelper {
         listener.write("/");
     }
 
-    // Begins a quote-like state for a heuristic match of the shorthand // of
-    // m// where the `capture' ends with "/", begins with an initial symbol,
-    // and the intervening whitespace may contain LFs -- and writes the parts
-    // to output.
+    /**
+     * Begins a quote-like state for a heuristic match of the shorthand // of
+     * m// where the `capture' ends with "/", begins with an initial symbol,
+     * and the intervening whitespace may contain LFs -- and writes the parts
+     * to output.
+     */
     public void hqopSymbol(String capture) throws IOException
     {
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
-        String lede = preceding.replaceAll("\\s+$", "");
+        String lede = preceding.replaceFirst("\\s+$", "");
         String intervening = preceding.substring(lede.length());
 
         qop(false, "/", 0, false);
-        listener.writeSymbol(lede);
+        listener.writeSymbol(lede, 0, false);
         writeWhitespace(intervening);
         listener.write(Consts.SS);
         listener.write("/");
     }
 
-    // Write `whsp' to output -- if it does not contain any LFs then the full
-    // String is written; otherwise, pre-LF spaces are condensed as usual.
+    /**
+     * Write `whsp' to output -- if it does not contain any LFs then the full
+     * String is written; otherwise, pre-LF spaces are condensed as usual.
+     */
     private void writeWhitespace(String whsp) throws IOException {
         int i;
         if ((i = whsp.indexOf("\n")) == -1) {
@@ -254,7 +281,7 @@ class PerlLexHelper {
         }
     }
 
-    // Begins a Here-document state, and writes the `capture' to output.
+    /** Begins a Here-document state, and writes the `capture' to output. */
     public void hop(String capture, boolean nointerp, boolean indented)
         throws IOException {
 
@@ -275,8 +302,10 @@ class PerlLexHelper {
         listener.write(Consts.SS);
     }
 
-    // Writes the `capture' to output, possibly ending the Here-document state
-    // just beforehand.
+    /**
+     * Writes the `capture' to output, possibly ending the Here-document state
+     * just beforehand.
+     */
     public void maybeEndHere(String capture) throws IOException {
         if (!isHereEnding(capture)) {
             listener.writeHtmlized(capture);
@@ -287,11 +316,71 @@ class PerlLexHelper {
         }
     }
 
-    // Gets a value indicating if the Here-document should be ended.
+    /**
+     * Gets a value indicating if the Here-document should be ended.
+     * @return true if the quote state should end
+     */
     public boolean isHereEnding(String capture)
     {
-        String trimmed = capture.replaceAll("^\\s+", "");
+        String trimmed = capture.replaceFirst("^\\s+", "");
         return trimmed.equals(hereTerminator);
+    }
+
+    /**
+     * Splits a sigil identifier -- where the `capture' starts with
+     * a sigil and ends in an identifier and where Perl allows whitespace after
+     * the sigil -- and write the parts to output.
+     */
+    public void sigilID(String capture) throws IOException {
+        String sigil = capture.substring(0, 1);
+        String postsigil = capture.substring(1);
+        String id = postsigil.replaceFirst("^\\s+", "");
+        String s0 = postsigil.substring(0, postsigil.length() - id.length());
+
+        listener.writeHtmlized(sigil);
+        listener.write(s0);
+        listener.writeSymbol(id, sigil.length() + s0.length(), true);
+    }
+
+    /**
+     * Splits a braced sigil identifier -- where the `capture' starts with
+     * a sigil and ends with a '}' and where Perl allows whitespace after the
+     * sigil and around the identifier -- and write the parts to output.
+     */
+    public void bracedSigilID(String capture) throws IOException {
+        // $      {      identifier      }
+        //
+        // S|_________interior0_________|r
+        //        |_____ltinterior0_____|r
+        //        l|_____interior1______|r
+        //               |_ltinterior1__|r
+        // S|_s0_|l|_s1_||---id---||_s2_|r
+
+        String sigil = capture.substring(0, 1);
+        String rpunc = capture.substring(capture.length() - 1);
+        String interior0 = capture.substring(1, capture.length() - 1);
+        String ltinterior0 = interior0.replaceFirst("^\\s+", "");
+        String s0 = interior0.substring(0, interior0.length() -
+            ltinterior0.length());
+
+        String lpunc = ltinterior0.substring(0, 1);
+        String interior1 = ltinterior0.substring(1);
+        String ltinterior1 = interior1.replaceFirst("^\\s+", "");
+        String s1 = interior1.substring(0, interior1.length() -
+            ltinterior1.length());
+
+        String s2 = ltinterior1.replaceFirst("^\\S+", "");
+        String id = ltinterior1.substring(0, ltinterior1.length() -
+            s2.length());
+
+        listener.writeHtmlized(sigil);
+        listener.write(s0);
+        listener.writeHtmlized(lpunc);
+        listener.write(s1);
+        listener.writeSymbol(id, sigil.length() + s0.length() +
+            lpunc.length() + s1.length(), true);
+        listener.write(s2);
+        listener.writeHtmlized(rpunc);
     }
 
     private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(

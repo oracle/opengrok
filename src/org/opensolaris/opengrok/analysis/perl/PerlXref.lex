@@ -64,8 +64,12 @@ import org.opensolaris.opengrok.web.Util;
         out.write(htmlize(value));
     }
 
-    public void writeSymbol(String value) throws IOException {
-        writeSymbol(value, Consts.kwd, yyline);
+    public void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
+            throws IOException {
+        if (ignoreKwd)
+            writeSymbol(value, null, yyline);
+        else
+            writeSymbol(value, Consts.kwd, yyline);
     }
 
     public void doStartNewLine() throws IOException { startNewLine(); }
@@ -199,9 +203,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
  }
 
 {Identifier} {
+    maybeIntraState();
     String id = yytext();
     writeSymbol(id, Consts.kwd, yyline);
-    maybeIntraState();
 }
 
 "<" ({File}|{Path}) ">" {
@@ -313,11 +317,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 
 <YYINITIAL, INTRA, QUO, QUOxL, HERE, HEREin> {
     {Sigils} {Identifier} {
-        //we ignore keywords if the identifier starts with a sigil ...
-        String id = yytext().substring(1);
-        out.write(yytext().substring(0,1));
-        writeSymbol(id, null, yyline);
         maybeIntraState();
+        //we ignore keywords if the identifier starts with a sigil ...
+        h.sigilID(yytext());
+    }
+    {Sigils} {MaybeWhsp} "{" {MaybeWhsp} {Identifier} {MaybeWhsp} "}" {
+        maybeIntraState();
+        //we ignore keywords if the identifier starts with a sigil ...
+        h.bracedSigilID(yytext());
     }
 }
 

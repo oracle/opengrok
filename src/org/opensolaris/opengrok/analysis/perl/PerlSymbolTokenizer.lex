@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -34,50 +35,323 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %public
 %class PerlSymbolTokenizer
 %extends JFlexTokenizer
+%implements PerlLexListener
 %unicode
 %init{
 super(in);
+
+        h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
+            HERE, HERExN, HEREin, HEREinxN);
 %init}
+%{
+    private final PerlLexHelper h;
+
+    private String lastSymbol;
+
+    private int lastSymbolOffset;
+
+    public void pushState(int state) { yypush(state); }
+
+    public void popState() throws IOException { yypop(); }
+
+    public void write(String value) throws IOException { /*noop*/ }
+
+    public void writeHtmlized(String value) throws IOException { /*noop*/ }
+
+    public void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
+            throws IOException {
+        lastSymbol = value;
+        lastSymbolOffset = captureOffset;
+    }
+
+    public void doStartNewLine() throws IOException { /*noop*/ }
+
+    // If the state is YYINITIAL, then transitions to INTRA; otherwise does
+    // nothing, because other transitions would have saved the state.
+    void maybeIntraState() {
+        if (yystate() == YYINITIAL) yybegin(INTRA);
+    }
+%}
 %type boolean
 %eofval{
+this.finalOffset =  zzEndRead;
 return false;
 %eofval}
 %char
 
+WhiteSpace     = [ \t\f]+
+MaybeWhsp     = [ \t\f]*
+EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+Sigils = ("$" | "@" | "%" | "&" | "*")
+WxSigils = [[\W]--[\$\@\%\&\*]]
 
-%state STRING SCOMMENT QSTRING
+FNameChar = [a-zA-Z0-9_\-\.]
+FileExt = ("pl"|"perl"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch")
+File = [a-zA-Z]{FNameChar}* "." {FileExt}
+Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
+
+Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
+
+Pods = "=back" | "=begin" | "=end" | "=for" | "=head1" | "=head2" | "=item" | "=over" | "=pod"
+PodEND = "=cut"
+
+Quo0 =           [[\`\(\)\<\>\[\]\{\}\p{P}]]
+Quo0xHash =      [[\`\(\)\<\>\[\]\{\}\p{P}]--\#]
+Quo0xHashxApos = [[\`\(\)\<\>\[\]\{\}\p{P}]--[\#\']]
+
+MSapos = [ms] {MaybeWhsp} \'
+MShash = [ms]\#
+MSpunc = [ms] {MaybeWhsp} {Quo0xHashxApos}
+MSword = [ms] {WhiteSpace} \w
+QYhash = [qy]\#
+QYpunc = [qy] {MaybeWhsp} {Quo0xHash}
+QYword = [qy] {WhiteSpace} \w
+
+QXRapos  = "q"[xr] {MaybeWhsp} \'
+QQXRhash = "q"[qxr]\#
+QQXRPunc = "q"[qxr] {MaybeWhsp} {Quo0xHash}
+QQXRword = "q"[qxr] {WhiteSpace} \w
+
+QWhash = "qw"\#
+QWpunc = "qw" {MaybeWhsp} {Quo0xHash}
+QWword = "qw" {WhiteSpace} \w
+TRhash = "tr"\#
+TRpunc = "tr" {MaybeWhsp} {Quo0xHash}
+TRword = "tr" {WhiteSpace} \w
+
+HereContinuation = \,{MaybeWhsp} "<<"\~? {MaybeWhsp}
+MaybeHereMarkers = ([\"\'\`\\]?{Identifier} [^\n]* {HereContinuation})?
+
+//
+// Track some keywords that can be used to identify heuristically a possible
+// beginning of the shortcut syntax, //, for m//. Also include any perlfunc
+// that takes /PATTERN/ -- which is just "split". Heuristics using punctuation
+// are defined inline later in some rules.
+//
+Mwords_1 = ("eq" | "ne" | "le" | "ge" | "lt" | "gt" | "cmp")
+Mwords_2 = ("if" | "unless" | "or" | "and" | "not")
+Mwords_3 = ("split")
+Mwords = ({Mwords_1} | {Mwords_2} | {Mwords_3})
+
+Mpunc1YYIN = [\(\!]
+Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
+
+//
+// There are two dimensions to quoting: "link"-or-not and "interpolate"-or-not.
+// Unfortunately, we cannot control the %state values, so we have to declare
+// a cross-product of states. (Technically, state values are not guaranteed to
+// be unique by jflex, but states that do not have identical rules will have
+// different values. The following four "QUO" states satisfy this difference
+// criterion. Likewise with the four "HERE" states.)
+//
+// YYINITIAL : nothing yet parsed or just after a non-quoted [;{}]
+// INTRA : saw content from YYINITIAL but not yet other state or [;{}]
+// SCOMMENT : single-line comment
+// POD : Perl Plain-Old-Documentation
+// QUO : quote-like that is OK to match paths|files|URLs|e-mails
+// QUOxN : "" but with no interpolation
+// QUOxL : quote-like that is not OK to match paths|files|URLs|e-mails
+//      because a non-traditional character is used as the quote-like delimiter
+// QUOxLxN : "" but with no interpolation
+// HERE : Here-docs
+// HERExN : Here-docs with no interpolation
+// HEREin : Indented Here-docs
+// HEREinxN : Indented Here-docs with no interpolation
+//
+%state  INTRA SCOMMENT POD QUO QUOxN QUOxL QUOxLxN HERE HERExN HEREin HEREinxN
 
 %%
-
-<YYINITIAL> {
-{Identifier} {String id = yytext();
-                if(!Consts.kwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
-                        return true; }
-              }
- \"     { yybegin(STRING); }
- \'     { yybegin(QSTRING); }
- "#"   { yybegin(SCOMMENT); }
- }
-
-<STRING> {
- \"     { yybegin(YYINITIAL); }
- \\\"    {}
- \n     { yybegin(YYINITIAL); }
+<HERE, HERExN> {
+    ^ {Identifier} / {MaybeWhsp}{EOL}  { h.maybeEndHere(yytext()); }
 }
 
-<QSTRING> {
- \'     { yybegin(YYINITIAL); }
- \\\'   {}
- \n     { yybegin(YYINITIAL); }
+<HEREin, HEREinxN> {
+    ^ {MaybeWhsp} {Identifier} / {MaybeWhsp}{EOL} { h.maybeEndHere(yytext()); }
+}
+
+<YYINITIAL, INTRA>{
+
+    [;\{\}]    {
+        yyjump(YYINITIAL);
+    }
+
+ // Following are rules for Here-documents. Stacked multiple here-docs are
+ // recognized, but not fully supported, as only the interpolation setting
+ // of the first marker will apply to all sections. (The final, second HERE
+ // quoting character is not demanded, as it is superfluous for the needs of
+ // xref lexing; and leaving it off simplifies parsing.)
+
+ "<<"  {MaybeWhsp} {MaybeHereMarkers} [\"\`]?{Identifier}    {
+    h.hop(yytext(), false/*nointerp*/, false/*indented*/);
+ }
+ "<<~" {MaybeWhsp} {MaybeHereMarkers} [\"\`]?{Identifier}    {
+    h.hop(yytext(), false/*nointerp*/, true/*indented*/);
+ }
+ "<<"  {MaybeWhsp} {MaybeHereMarkers} [\'\\]{Identifier}    {
+    h.hop(yytext(), true/*nointerp*/, false/*indented*/);
+ }
+ "<<~" {MaybeWhsp} {MaybeHereMarkers} [\'\\]{Identifier}    {
+    h.hop(yytext(), true/*nointerp*/, true/*indented*/);
+ }
+
+{Identifier} {
+    maybeIntraState();
+    String id = yytext();
+    if (!Consts.kwd.contains(id)){
+        setAttribs(id, yychar, yychar + yylength());
+        return true;
+    }
+}
+
+"<" ({File}|{Path}) ">" {
+        maybeIntraState();
+}
+
+{Number}        {
+    maybeIntraState();
+}
+
+ [\"\`] { h.qop(yytext(), 0, false); }
+ \'     { h.qop(yytext(), 0, true); }
+ \#     { yypush(SCOMMENT); }
+
+ // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
+ ^ {QXRapos} |
+ {WxSigils}{QXRapos}   { h.qop(yytext(), 2, true); } // qx'' qr''
+ ^ {QQXRhash} |
+ {WxSigils}{QQXRhash}  { h.qop(yytext(), 2, false); }
+ ^ {QQXRPunc} |
+ {WxSigils}{QQXRPunc}  { h.qop(yytext(), 2, false); }
+ ^ {QQXRword} |
+ {WxSigils}{QQXRword}  { h.qop(yytext(), 2, false); }
+
+// In Perl these do not actually "interpolate," but "interpolate" for OpenGrok
+// xref just means to cross-reference, which is appropriate for qw//.
+ ^ {QWhash} |
+ {WxSigils}{QWhash}  { h.qop(yytext(), 2, false); }
+ ^ {QWpunc} |
+ {WxSigils}{QWpunc}  { h.qop(yytext(), 2, false); }
+ ^ {QWword} |
+ {WxSigils}{QWword}  { h.qop(yytext(), 2, false); }
+
+ ^ {TRhash} |
+ {WxSigils}{TRhash}  { h.qop(yytext(), 2, true); }
+ ^ {TRpunc} |
+ {WxSigils}{TRpunc}  { h.qop(yytext(), 2, true); }
+ ^ {TRword} |
+ {WxSigils}{TRword}  { h.qop(yytext(), 2, true); }
+
+ // q//, m//, s//, y// and variants -- all with 1 character names
+ ^ {MSapos} |
+ {WxSigils}{MSapos}  { h.qop(yytext(), 1, true); } // m'' s''
+ ^ {MShash} |
+ {WxSigils}{MShash}  { h.qop(yytext(), 1, false); }
+ ^ {MSpunc} |
+ {WxSigils}{MSpunc}  { h.qop(yytext(), 1, false); }
+ ^ {MSword} |
+ {WxSigils}{MSword}  { h.qop(yytext(), 1, false); }
+ ^ {QYhash} |
+ {WxSigils}{QYhash}  { h.qop(yytext(), 1, true); }
+ ^ {QYpunc} |
+ {WxSigils}{QYpunc}  { h.qop(yytext(), 1, true); }
+ ^ {QYword} |
+ {WxSigils}{QYword}  { h.qop(yytext(), 1, true); }
+
+ ^ {Pods}   { yypush(POD); }
+}
+
+<YYINITIAL> {
+    "/"    {
+        h.qop(false, "/", 0, false);
+    }
+}
+
+<YYINITIAL, INTRA> {
+    // Use some heuristics to identify double-slash syntax for the m//
+    // operator. We can't handle all possible appearances of `//', because the
+    // first slash cannot always be distinguished from division (/) without
+    // true parsing.
+
+    {Mpunc1YYIN} \s* "/"    { h.hqopPunc(yytext()); }
+}
+
+<INTRA> {
+    // Continue with more punctuation heuristics
+
+    {Mpunc2IN} \s* "/"      { h.hqopPunc(yytext()); }
+}
+
+<YYINITIAL, INTRA> {
+    // Define keyword heuristics
+
+    ^ {Mwords} \s* "/"    {
+        h.hqopSymbol(yytext());
+    }
+    {WxSigils}{Mwords} \s* "/"    {
+        String capture = yytext();
+        h.hqopSymbol(capture.substring(1));
+    }
+}
+
+<YYINITIAL, INTRA, QUO, QUOxL, HERE, HEREin> {
+    {Sigils} {Identifier} {
+        maybeIntraState();
+        //we ignore keywords if the identifier starts with a sigil ...
+        h.sigilID(yytext());
+        setAttribs(lastSymbol, yychar + lastSymbolOffset, yychar +
+            lastSymbolOffset + lastSymbol.length());
+        return true;
+    }
+    {Sigils} {MaybeWhsp} "{" {MaybeWhsp} {Identifier} {MaybeWhsp} "}" {
+        maybeIntraState();
+        //we ignore keywords if the identifier starts with a sigil ...
+        h.bracedSigilID(yytext());
+        setAttribs(lastSymbol, yychar + lastSymbolOffset, yychar +
+            lastSymbolOffset + lastSymbol.length());
+        return true;
+    }
+}
+<QUO, QUOxN, QUOxL, QUOxLxN> {
+    \\[\&\<\>\"\']    { }
+    \\ \S    { }
+    {Quo0} |
+    \w    {
+        String capture = yytext();
+        if (h.isQuoteEnding(capture)) {
+            yypop();
+        }
+    }
+}
+
+<QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
+    {WhiteSpace}{EOL} |
+    {EOL} {
+    }
+}
+
+<POD> {
+^ {PodEND} [^\n]* / {EOL} {
+    yypop();
+  }
 }
 
 <SCOMMENT> {
- \n    { yybegin(YYINITIAL);}
+  {WhiteSpace}{EOL} |
+  {EOL} {
+    yypop();
+  }
 }
 
-<YYINITIAL, STRING, SCOMMENT, QSTRING> {
-<<EOF>>   { return false;}
-[^]    {}
+<YYINITIAL, INTRA, SCOMMENT, POD, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
+<<EOF>>   { this.finalOffset =  zzEndRead; return false;}
+ [&<>\"\']      { maybeIntraState(); }
+ {WhiteSpace}{EOL} |
+ {EOL}          { }
+
+ {WhiteSpace}   { }
+ [!-~]          { maybeIntraState(); }
+ [^\n]          { maybeIntraState(); }
 }
+
+// "string links" and "comment links" are not processed specially
