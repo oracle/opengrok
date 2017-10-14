@@ -31,17 +31,20 @@ import org.opensolaris.opengrok.analysis.JFlexXref;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.Reader;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
 %class PerlXref
 %extends JFlexXref
+%implements PerlLexListener
 %unicode
 %ignorecase
 %int
+%init{
+        h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
+            HERE, HERExN, HEREin, HEREinxN);
+%init}
 %{
   // TODO move this into an include file when bug #16053 is fixed
   @Override
@@ -49,184 +52,23 @@ import org.opensolaris.opengrok.web.Util;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
 
-  // Gets a value indicating if the quote should be ended. Also, recognize
-  // quote-like operators which allow nesting to increase the nesting level
-  // if appropriate.
-  boolean isQuoteEnding(String match)
-  {
-    char c = match.charAt(0);
-    if (c == endqchar) {
-        if (--nqchar <= 0) {
-            return true;
-        } else if (nestqchar != '\0') {
-            waitq = true;
-        }
-    } else if (nestqchar != '\0' && c == nestqchar) {
-        if (waitq) {
-            waitq = false;
-        } else {
-            ++nqchar;
-        }
-    }
-    return false;
-  }
+    private final PerlLexHelper h;
 
-  // Starts a quote-like operator as specified in a syntax fragment, `op',
-  // and write the operator to output.
-  void qop(String op, int namelength, boolean nointerp) throws IOException
-  {
-    qop(true, op, namelength, nointerp);
-  }
+    public void pushState(int state) { yypush(state, null); }
 
-  // Starts a quote-like operator as specified in a syntax fragment, `op',
-  // and write the operator to output if `doWrite` is true.
-  void qop(boolean doWrite, String op, int namelength,
-    boolean nointerp) throws IOException
-  {
-    // If namelength is positive, allow that a non-zero-width word boundary
-    // character may have needed to be matched since jflex does not conform
-    // with \b as a zero-width simple word boundary. Excise it into `boundary'.
-    String boundary = "";
-    if (namelength > 0) {
-        boundary = op;
-        op = op.replaceAll("^\\W+", "");
-        boundary = boundary.substring(0, boundary.length() - op.length());
-    }
-    String opname = op.substring(0, namelength);
-    waitq = false;
+    public void popState() throws IOException { yypop(); }
 
-    switch (opname) {
-        case "tr":
-        case "s":
-        case "y":
-            nqchar = 2;
-            break;
-        default:
-            nqchar = 1;
-            break;
+    public void write(String value) throws IOException { out.write(value); }
+
+    public void writeHtmlized(String value) throws IOException {
+        out.write(htmlize(value));
     }
 
-    String postop = op.substring(opname.length());
-    String ltpostop = postop.replaceAll("^\\s+", "");
-    char opc = ltpostop.charAt(0);
-    setEndQuoteChar(opc);
-    setState(ltpostop, nointerp);
-
-    if (doWrite) {
-        out.write(htmlize(boundary));
-        writeSymbol(opname, Consts.kwd, yyline);
-        out.write(Ss);
-        out.write(htmlize(postop));
-    }
-  }
-
-  // Sets the jflex state reflecting `ltpostop' and `nointerp'.
-  void setState(String ltpostop, boolean nointerp)
-  {
-    int state;
-    boolean nolink = false;
-
-    // "no link" for {FNameChar} or {URIChar}, which covers everything in the
-    // rule for "string links" below
-    if (ltpostop.matches("^[a-zA-Z0-9_]")) {
-        nolink = true;
-
-        // it's impossible to have a dynamic pattern in jflex, which would be
-        // required to continue to "interpolate OpenGrok links" but exclude the
-        // initial character from `ltpostop' -- so just disable it entirely.
-        nointerp = true; // override
-    } else if (ltpostop.matches("^[\\?\\#\\+%&:/\\.@_;=\\$,\\-!~\\*\\\\]")) {
-        nolink = true;
+    public void writeSymbol(String value) throws IOException {
+        writeSymbol(value, Consts.kwd, yyline);
     }
 
-    if (nointerp) {
-        state = nolink ? QUOxLxN : QUOxN;
-    } else {
-        state = nolink ? QUOxL : QUO;
-    }
-    yypush(state, null);
-  }
-
-  // Sets a special `endqchar' if appropriate for `opener' or just tracks
-  // `opener'
-  void setEndQuoteChar(char opener)
-  {
-    switch (opener) {
-        case '[':
-            nestqchar = opener;
-            endqchar = ']';
-            break;
-        case '<':
-            nestqchar = opener;
-            endqchar = '>';
-            break;
-        case '(':
-            nestqchar = opener;
-            endqchar = ')';
-            break;
-        case '{':
-            nestqchar = opener;
-            endqchar = '}';
-            break;
-        default:
-            nestqchar = '\0';
-            endqchar = opener;
-            break;
-    }
-  }
-
-  // Begins a quote-like state for a heuristic match of the shorthand // of m//
-  // where the `capture' ends with "/", begins with punctuation, and the
-  // intervening whitespace may contain LFs -- and writes the parts to output.
-  void hqopPunc(String capture) throws IOException
-  {
-    // `preceding' is everything before the '/'; 'lede' is the initial part
-    // before any whitespace; and `intervening' is any whitespace.
-    String preceding = capture.substring(0, capture.length() - 1);
-    String lede = preceding.replaceAll("\\s+$", "");
-    String intervening = preceding.substring(lede.length());
-
-    qop(false, "/", 0, false);
-    out.write(htmlize(lede));
-    writeWhitespace(intervening);
-    out.write(Ss);
-    out.write("/");
-  }
-
-  // Begins a quote-like state for a heuristic match of the shorthand // of m//
-  // where the `capture' ends with "/", begins with an initial symbol, and the
-  // intervening whitespace may contain LFs -- and writes the parts to output.
-  void hqopSymbol(String capture) throws IOException
-  {
-    // `preceding' is everything before the '/'; 'lede' is the initial part
-    // before any whitespace; and `intervening' is any whitespace.
-    String preceding = capture.substring(0, capture.length() - 1);
-    String lede = preceding.replaceAll("\\s+$", "");
-    String intervening = preceding.substring(lede.length());
-
-    qop(false, "/", 0, false);
-    writeSymbol(lede, Consts.kwd, yyline);
-    writeWhitespace(intervening);
-    out.write(Ss);
-    out.write("/");
-  }
-
-  // Write `whsp' to output -- if it does not contain any LFs then the full
-  // String is written; otherwise, pre-LF spaces are condensed as usual.
-  void writeWhitespace(String whsp) throws IOException {
-    int i;
-    if ((i = whsp.indexOf("\n")) == -1) {
-        out.write(whsp);
-    } else {
-        int numlf = 1, off = i + 1;
-        while ((i = whsp.indexOf("\n", off)) != -1) {
-            ++numlf;
-            off = i + 1;
-        }
-        while (numlf-- > 0) startNewLine();
-        if (off < whsp.length()) out.write(whsp.substring(off));
-    }
-  }
+    public void doStartNewLine() throws IOException { startNewLine(); }
 
   // If the state is YYINITIAL, then transitions to INTRA; otherwise does
   // nothing, because other transitions would have saved the state.
@@ -234,77 +76,6 @@ import org.opensolaris.opengrok.web.Util;
   {
     if (yystate() == YYINITIAL) yybegin(INTRA);
   }
-
-  // Begins a Here-document state, and writes the `capture' to output.
-  void hop(String capture, boolean nointerp,
-    boolean indented) throws IOException
-  {
-    int state;
-
-    hereTerminator = null;
-    Matcher m = hereTerminatorMatch.matcher(capture);
-    if (m.find()) hereTerminator = m.group(0);
-
-    if (nointerp) {
-        state = indented ? HEREinxN : HERExN;
-    } else {
-        state = indented ? HEREin : HERE;
-    }
-    yypush(state, null);
-
-    out.write(htmlize(capture));
-    out.write(Ss);
-  }
-
-  // Writes the `capture' to output, possibly ending the Here-document state
-  // just beforehand.
-  void maybeEndHere(String capture) throws IOException
-  {
-    if (!isHereEnding(capture)) {
-        out.write(htmlize(capture));
-    } else {
-        yypop();
-        out.write(_S);
-        out.write(htmlize(capture));
-    }
-  }
-
-  // Gets a value indicating if the Here-document should be ended.
-  boolean isHereEnding(String capture)
-  {
-    String trimmed = capture.replaceAll("^\\s+", "");
-    return trimmed.equals(hereTerminator);
-  }
-
-  final static String Sc = "<span class=\"c\">";
-  final static String Sn = "<span class=\"n\">";
-  final static String Ss = "<span class=\"s\">";
-  final static String _S = "</span>";
-
-  final static Pattern hereTerminatorMatch = Pattern.compile("[a-zA-Z0-9_]+$");
-
-  // When matching a quoting construct like qq[], q(), m//, s```, etc., the
-  // terminating character is stored
-  char endqchar;
-
-  // When matching a quoting construct like qq[], q(), m<>, s{}{} that nest,
-  // the begin character ('[', '<', '(', or '{') is stored so that nesting
-  // is tracked and nqchar is incremented appropriately. Otherwise, `nestqchar'
-  // is set to '\0' if no nesting occurs.
-  char nestqchar;
-
-  // When matching a quoting construct like qq//, m//, or s```, etc., the
-  // number of remaining end separators in the operator is stored. E.g., for
-  // m//, it is 1; for tr/// it is 2. Nesting increases the value when seen.
-  int nqchar;
-
-  // When matching a two part construct like tr/// or s```, etc., after the
-  // first end separator, `waitingqchar' is set to TRUE so that nesting is not
-  // active.
-  boolean waitq;
-
-  // Stores the terminating identifier for For Here-documents
-  String hereTerminator;
 %}
 
 WhiteSpace     = [ \t\f]+
@@ -314,7 +85,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 Sigils = ("$" | "@" | "%" | "&" | "*")
 WxSigils = [[\W]--[\$\@\%\&\*]]
 
-// see also: setState() which mirrors this regex
+// see also: PerlLexHelper.setState() which mirrors this regex
 URIChar = [\?\#\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 
 FNameChar = [a-zA-Z0-9_\-\.]
@@ -394,11 +165,11 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 
 %%
 <HERE, HERExN> {
-    ^ {Identifier} / {MaybeWhsp}{EOL}  { maybeEndHere(yytext()); }
+    ^ {Identifier} / {MaybeWhsp}{EOL}  { h.maybeEndHere(yytext()); }
 }
 
 <HEREin, HEREinxN> {
-    ^ {MaybeWhsp} {Identifier} / {MaybeWhsp}{EOL}   { maybeEndHere(yytext()); }
+    ^ {MaybeWhsp} {Identifier} / {MaybeWhsp}{EOL} { h.maybeEndHere(yytext()); }
 }
 
 <YYINITIAL, INTRA>{
@@ -415,16 +186,16 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
  // xref lexing; and leaving it off simplifies parsing.)
 
  "<<"  {MaybeWhsp} {MaybeHereMarkers} [\"\`]?{Identifier}    {
-    hop(yytext(), false/*nointerp*/, false/*indented*/);
+    h.hop(yytext(), false/*nointerp*/, false/*indented*/);
  }
  "<<~" {MaybeWhsp} {MaybeHereMarkers} [\"\`]?{Identifier}    {
-    hop(yytext(), false/*nointerp*/, true/*indented*/);
+    h.hop(yytext(), false/*nointerp*/, true/*indented*/);
  }
  "<<"  {MaybeWhsp} {MaybeHereMarkers} [\'\\]{Identifier}    {
-    hop(yytext(), true/*nointerp*/, false/*indented*/);
+    h.hop(yytext(), true/*nointerp*/, false/*indented*/);
  }
  "<<~" {MaybeWhsp} {MaybeHereMarkers} [\'\\]{Identifier}    {
-    hop(yytext(), true/*nointerp*/, true/*indented*/);
+    h.hop(yytext(), true/*nointerp*/, true/*indented*/);
  }
 
 {Identifier} {
@@ -448,65 +219,65 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 }
 
 {Number}        {
-    out.write(Sn);
+    out.write(Consts.SN);
     out.write(yytext());
     out.write("</span>");
     maybeIntraState();
 }
 
- [\"\`] { qop(yytext(), 0, false); }
- \'     { qop(yytext(), 0, true); }
- \#     { yypush(SCOMMENT, null); out.write(Sc + "#"); }
+ [\"\`] { h.qop(yytext(), 0, false); }
+ \'     { h.qop(yytext(), 0, true); }
+ \#     { yypush(SCOMMENT, null); out.write(Consts.SC + "#"); }
 
  // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
  ^ {QXRapos} |
- {WxSigils}{QXRapos}   { qop(yytext(), 2, true); } // qx'' qr''
+ {WxSigils}{QXRapos}   { h.qop(yytext(), 2, true); } // qx'' qr''
  ^ {QQXRhash} |
- {WxSigils}{QQXRhash}  { qop(yytext(), 2, false); }
+ {WxSigils}{QQXRhash}  { h.qop(yytext(), 2, false); }
  ^ {QQXRPunc} |
- {WxSigils}{QQXRPunc}  { qop(yytext(), 2, false); }
+ {WxSigils}{QQXRPunc}  { h.qop(yytext(), 2, false); }
  ^ {QQXRword} |
- {WxSigils}{QQXRword}  { qop(yytext(), 2, false); }
+ {WxSigils}{QQXRword}  { h.qop(yytext(), 2, false); }
 
 // In Perl these do not actually "interpolate," but "interpolate" for OpenGrok
 // xref just means to cross-reference, which is appropriate for qw//.
  ^ {QWhash} |
- {WxSigils}{QWhash}  { qop(yytext(), 2, false); }
+ {WxSigils}{QWhash}  { h.qop(yytext(), 2, false); }
  ^ {QWpunc} |
- {WxSigils}{QWpunc}  { qop(yytext(), 2, false); }
+ {WxSigils}{QWpunc}  { h.qop(yytext(), 2, false); }
  ^ {QWword} |
- {WxSigils}{QWword}  { qop(yytext(), 2, false); }
+ {WxSigils}{QWword}  { h.qop(yytext(), 2, false); }
 
  ^ {TRhash} |
- {WxSigils}{TRhash}  { qop(yytext(), 2, true); }
+ {WxSigils}{TRhash}  { h.qop(yytext(), 2, true); }
  ^ {TRpunc} |
- {WxSigils}{TRpunc}  { qop(yytext(), 2, true); }
+ {WxSigils}{TRpunc}  { h.qop(yytext(), 2, true); }
  ^ {TRword} |
- {WxSigils}{TRword}  { qop(yytext(), 2, true); }
+ {WxSigils}{TRword}  { h.qop(yytext(), 2, true); }
 
  // q//, m//, s//, y// and variants -- all with 1 character names
  ^ {MSapos} |
- {WxSigils}{MSapos}  { qop(yytext(), 1, true); } // m'' s''
+ {WxSigils}{MSapos}  { h.qop(yytext(), 1, true); } // m'' s''
  ^ {MShash} |
- {WxSigils}{MShash}  { qop(yytext(), 1, false); }
+ {WxSigils}{MShash}  { h.qop(yytext(), 1, false); }
  ^ {MSpunc} |
- {WxSigils}{MSpunc}  { qop(yytext(), 1, false); }
+ {WxSigils}{MSpunc}  { h.qop(yytext(), 1, false); }
  ^ {MSword} |
- {WxSigils}{MSword}  { qop(yytext(), 1, false); }
+ {WxSigils}{MSword}  { h.qop(yytext(), 1, false); }
  ^ {QYhash} |
- {WxSigils}{QYhash}  { qop(yytext(), 1, true); }
+ {WxSigils}{QYhash}  { h.qop(yytext(), 1, true); }
  ^ {QYpunc} |
- {WxSigils}{QYpunc}  { qop(yytext(), 1, true); }
+ {WxSigils}{QYpunc}  { h.qop(yytext(), 1, true); }
  ^ {QYword} |
- {WxSigils}{QYword}  { qop(yytext(), 1, true); }
+ {WxSigils}{QYword}  { h.qop(yytext(), 1, true); }
 
- ^ {Pods}   { yypush(POD, null); out.write(Sc + yytext()); }
+ ^ {Pods}   { yypush(POD, null); out.write(Consts.SC + yytext()); }
 }
 
 <YYINITIAL> {
     "/"    {
-        qop(false, "/", 0, false);
-        out.write(Ss);
+        h.qop(false, "/", 0, false);
+        out.write(Consts.SS);
         out.write(yytext());
     }
 }
@@ -517,26 +288,26 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
     // first slash cannot always be distinguished from division (/) without
     // true parsing.
 
-    {Mpunc1YYIN} \s* "/"    { hqopPunc(yytext()); }
+    {Mpunc1YYIN} \s* "/"    { h.hqopPunc(yytext()); }
 }
 
 <INTRA> {
     // Continue with more punctuation heuristics
 
-    {Mpunc2IN} \s* "/"    { hqopPunc(yytext()); }
+    {Mpunc2IN} \s* "/"      { h.hqopPunc(yytext()); }
 }
 
 <YYINITIAL, INTRA> {
     // Define keyword heuristics
 
     ^ {Mwords} \s* "/"    {
-        hqopSymbol(yytext());
+        h.hqopSymbol(yytext());
     }
     {WxSigils}{Mwords} \s* "/"    {
         String capture = yytext();
         String boundary = capture.substring(0, 1);
         out.write(htmlize(boundary));
-        hqopSymbol(capture.substring(1));
+        h.hqopSymbol(capture.substring(1));
     }
 }
 
@@ -557,9 +328,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
     \w    {
         String capture = yytext();
         out.write(htmlize(capture));
-        if (isQuoteEnding(capture)) {
+        if (h.isQuoteEnding(capture)) {
             yypop();
-            out.write(_S);
+            out.write(Consts.ZS);
         }
     }
 }
@@ -567,16 +338,16 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 <QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
     {WhiteSpace}{EOL} |
     {EOL} {
-        out.write(_S);
+        out.write(Consts.ZS);
         startNewLine();
-        out.write(Ss);
+        out.write(Consts.SS);
     }
 }
 
 <POD> {
 ^ {PodEND} [^\n]* / {EOL} {
     yypop();
-    out.write(yytext() + _S);
+    out.write(yytext() + Consts.ZS);
   }
 }
 
@@ -584,7 +355,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
   {WhiteSpace}{EOL} |
   {EOL} {
     yypop();
-    out.write(_S);
+    out.write(Consts.ZS);
     startNewLine();
   }
 }

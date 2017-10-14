@@ -30,6 +30,11 @@ import java.util.Set;
   * Holds static hash set containing the Perl keywords
   */
 public class Consts{
+    public static final String SC = "<span class=\"c\">";
+    public static final String SN = "<span class=\"n\">";
+    public static final String SS = "<span class=\"s\">";
+    public static final String ZS = "</span>";
+
     public static final Set<String> kwd = new HashSet<String>() ;
     static {
         // Note that keywords with 1 letter will be ignored for {Identifier}
