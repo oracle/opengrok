@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
 import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
+import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer;
 import org.opensolaris.opengrok.analysis.perl.PerlAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
@@ -251,5 +252,21 @@ public class AnalyzerGuruTest {
                 "#!/usr/bin/env\nperl".getBytes("US-ASCII"));
         assertNotSame("despite env hashbang LF,", PerlAnalyzer.class,
             AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+    }
+
+    @Test
+    public void shouldMatchJavaClassMagic() throws Exception {
+        String oldMagic = "\312\376\272\276";      // cafebabe?
+        String newMagic = new String(new byte[] {(byte) 0xCA, (byte) 0xFE,
+            (byte) 0xBA, (byte) 0xBE});
+        assertNotEquals("despite octal escape as unicode,", oldMagic, newMagic);
+
+        // 0xCAFEBABE (4), minor (2), major (2)
+        byte[] dotclass = {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE,
+            (byte) 0, (byte) 1, (byte) 0, (byte) 0x34};
+        ByteArrayInputStream in = new ByteArrayInputStream(dotclass);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        assertSame("despite 0xCAFEBABE magic,", JavaClassAnalyzer.class,
+            fa.getClass());
     }
 }
