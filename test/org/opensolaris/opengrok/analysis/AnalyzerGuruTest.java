@@ -36,6 +36,7 @@ import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
 import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.executables.ELFAnalyzer;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
 import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer;
 import org.opensolaris.opengrok.analysis.perl.PerlAnalyzer;
@@ -252,6 +253,16 @@ public class AnalyzerGuruTest {
                 "#!/usr/bin/env\nperl".getBytes("US-ASCII"));
         assertNotSame("despite env hashbang LF,", PerlAnalyzer.class,
             AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+    }
+
+    @Test
+    public void shouldMatchELFMagic() throws Exception {
+        byte[] elfmt = {(byte)0x7F, 'E', 'L', 'F', (byte) 2, (byte) 2, (byte) 1,
+            (byte) 0x06};
+        ByteArrayInputStream in = new ByteArrayInputStream(elfmt);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        assertSame("despite \\177ELF magic,", ELFAnalyzer.class,
+            fa.getClass());
     }
 
     @Test
