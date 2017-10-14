@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2015 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -65,7 +66,7 @@ public abstract class TagEntry implements Comparable {
 
     public TagEntry(Date date, String tags) {
         if (date == null) {
-            throw new NullPointerException("Can't create TagEntry using date==null");
+            throw new IllegalArgumentException("`date' is null");
         }
         this.revision = NOREV;
         this.date = date;
