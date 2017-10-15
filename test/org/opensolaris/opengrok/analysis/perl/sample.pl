@@ -284,3 +284,6 @@ print "$abc\n${abc}\n", '$abc\n${abc}\n', "\n";
 $s = $ {var};
 $s = ${ var };
 print qr z$abczix, "\n";
+print $0 if $!;
+print $^V;
+print "${^GLOBAL_PHASE} is what?";

@@ -575,13 +575,33 @@ public abstract class JFlexXref {
     protected void writeSymbol(
             String symbol, Set<String> keywords, int line, boolean caseSensitive, boolean quote)
             throws IOException {
+        writeSymbol(symbol, keywords, line, caseSensitive, quote, false);
+    }
+
+    /**
+     * Write a symbol and generate links as appropriate.
+     *
+     * @param symbol the symbol to write
+     * @param keywords a set of keywords recognized by this analyzer (no links
+     * will be generated if the symbol is a keyword)
+     * @param line the line number on which the symbol appears
+     * @param caseSensitive Whether the keyword list is case sensitive
+     * @param quote Whether the symbol gets quoted in links or not
+     * @param isKeyword Whether the symbol is certainly a keyword without
+     * bothering to look up in a defined {@code keywords}
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected void writeSymbol(
+            String symbol, Set<String> keywords, int line, boolean caseSensitive,
+            boolean quote, boolean isKeyword)
+            throws IOException {
         String[] strs = new String[1];
         strs[0] = "";
         String jsEscapedSymbol = symbol.replace("'", "\\'");
         String qt = (quote) ? "&quot;" : "";
 
         String check = caseSensitive ? symbol : symbol.toLowerCase();
-        if (keywords != null && keywords.contains( check )) {
+        if (isKeyword || (keywords != null && keywords.contains( check ))) {
             // This is a keyword, so we don't create a link.
             out.append("<b>").append(symbol).append("</b>");
 
@@ -659,6 +679,17 @@ public abstract class JFlexXref {
             out.append(symbol);
             out.append("</a>");
         }
+    }
+
+    /**
+     * Write an {@code htmlize()}d keyword symbol
+     *
+     * @param symbol the symbol to write
+     * @param line the line number on which the symbol appears
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected void writeKeyword(String symbol, int line) throws IOException {
+        writeSymbol(htmlize(symbol), null, line, false, false, true);
     }
 
     /**

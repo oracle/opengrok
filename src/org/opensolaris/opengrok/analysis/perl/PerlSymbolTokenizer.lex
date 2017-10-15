@@ -102,6 +102,31 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Sigils = ("$" | "@" | "%" | "&" | "*")
 WxSigils = [[\W]--[\$\@\%\&\*]]
 
+// Perl special identifiers (four of six from
+// https://perldoc.perl.org/perldata.html#Identifier-parsing):
+//
+// 1. A sigil, followed solely by digits matching \p{POSIX_Digit} , like $0 ,
+// $1 , or $10000 .
+SPIdentifier1 = "$" \d+
+
+// 2. A sigil followed by a single character matching the \p{POSIX_Punct}
+// property, like $! or %+ , except the character "{" doesn't work.
+SPIdentifier2 = [\$\%] [[\p{P}--{]]
+
+// 3. A sigil, followed by a caret and any one of the characters [][A-Z^_?\\] ,
+// like $^V or $^] .
+SPIdentifier3 = "$^" ( "]" | "[" | [A-Z\^_?\\] )
+
+// 4. Similar to the above, a sigil, followed by bareword text in braces, where
+// the first character is a caret. The next character is any one of the
+// characters [][A-Z^_?\\] , followed by ASCII word characters. An example is
+// ${^GLOBAL_PHASE} . ASCII \w matches the 63 characters: [a-zA-Z0-9_].
+SPIdentifier4 = "${^" ( "]" | "[" | [A-Z\^_?\\] ) [a-zA-Z0-9_]* "}"
+
+// prototype attribute must be recognized explicitly or else "($)" can be
+// mistaken for an SPIdentifier2
+ProtoAttr = "(" ( [\\]? {Sigils} | ";" | {WhiteSpace} )* ")"
+
 FNameChar = [a-zA-Z0-9_\-\.]
 FileExt = ("pl"|"perl"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch")
 File = [a-zA-Z]{FNameChar}* "." {FileExt}
@@ -188,7 +213,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 
 <YYINITIAL, INTRA>{
 
-    [;\{\}]    {
+    [;\{\}] |
+    {ProtoAttr}    {
         yyjump(YYINITIAL);
     }
 
@@ -331,6 +357,13 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
         setAttribs(lastSymbol, yychar + lastSymbolOffset, yychar +
             lastSymbolOffset + lastSymbol.length());
         return true;
+    }
+
+    {SPIdentifier1} |
+    {SPIdentifier2} |
+    {SPIdentifier3} |
+    {SPIdentifier4} {
+        // noop
     }
 }
 
