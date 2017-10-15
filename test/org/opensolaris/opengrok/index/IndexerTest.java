@@ -355,6 +355,7 @@ public class IndexerTest {
         listener.reset();
 
         // Change a file so that it gets picked up by the indexer.
+        Thread.sleep(1100);
         File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial",
                 "bar.txt");
         Assert.assertTrue(bar.exists());
