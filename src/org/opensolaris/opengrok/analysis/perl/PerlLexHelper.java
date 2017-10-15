@@ -44,7 +44,20 @@ interface PerlLexListener {
     void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException;
 
+    /**
+     * Indicates that something unusual happened where normally a symbol would
+     * have been written.
+     */
+    void skipSymbol();
+
     void doStartNewLine() throws IOException;
+
+    /**
+     * Indicates that a premature end of quoting occurred. Everything up to the
+     * causal character has been written, and everything following will be
+     * written subsequently.
+     */
+    void abortQuote() throws IOException;
 }
 
 /**
@@ -85,13 +98,15 @@ class PerlLexHelper {
      * Gets a value indicating if the quote should be ended, recognizing
      * quote-like operators which allow nesting to increase the nesting level
      * if appropriate.
-     * @return true if the quote state should end
+     * @return true if the quote state should end (and NUL out
+     * {@link endqchar})
      */
     public boolean isQuoteEnding(String match)
     {
         char c = match.charAt(0);
         if (c == endqchar) {
             if (--nqchar <= 0) {
+                endqchar = '\0';
                 return true;
             } else if (nestqchar != '\0') {
                 waitq = true;
@@ -171,15 +186,8 @@ class PerlLexHelper {
 
         // "no link" for {FNameChar} or {URIChar}, which covers everything in
         // the rule for "string links" below
-        if (ltpostop.matches("^[a-zA-Z0-9_]")) {
-            nolink = true;
-
-            // it's impossible to have a dynamic pattern in jflex, which would
-            // be required to continue to "interpolate OpenGrok links" but
-            // exclude the initial character from `ltpostop' -- so just disable
-            // it entirely.
-            nointerp = true; // override
-        } else if (ltpostop.matches("^[\\?\\#\\+%&:/\\.@_;=\\$,\\-!~\\*\\\\]")) {
+        if (ltpostop.matches("^[a-zA-Z0-9_]") ||
+            ltpostop.matches("^[\\?\\#\\+%&:/\\.@_;=\\$,\\-!~\\*\\\\]")) {
             nolink = true;
         }
 
@@ -330,6 +338,9 @@ class PerlLexHelper {
      * Splits a sigil identifier -- where the `capture' starts with
      * a sigil and ends in an identifier and where Perl allows whitespace after
      * the sigil -- and write the parts to output.
+     * <p>
+     * Seeing the {@link endqchar} in the identifier will abort an active
+     * quote-like operator.
      */
     public void sigilID(String capture) throws IOException {
         String sigil = capture.substring(0, 1);
@@ -337,9 +348,37 @@ class PerlLexHelper {
         String id = postsigil.replaceFirst("^\\s+", "");
         String s0 = postsigil.substring(0, postsigil.length() - id.length());
 
-        listener.writeHtmlized(sigil);
-        listener.write(s0);
-        listener.writeSymbol(id, sigil.length() + s0.length(), true);
+        int ohnooo;
+        if ((ohnooo = id.indexOf(endqchar)) == -1) {
+            listener.writeHtmlized(sigil);
+            listener.write(s0);
+            listener.writeSymbol(id, sigil.length() + s0.length(), true);
+        } else {
+            // If the identifier contains the end quoting character, then it
+            // may or may not parse in Perl. Treat everything before the first
+            // instance of the `endqchar' as inside the quote -- and possibly
+            // as real identifier -- and abort the quote early.
+            // e.g.: qr z$abcz;
+            //     OK
+            // e.g.: qr z$abziz;
+            //     Unknown regexp modifier "/z" at -e line 1, near "= "
+            //     Global symbol "$ab" requires explicit package name ...
+            // e.g.: qr i$abixi;
+            //     OK
+            String w0 = id.substring(0, ohnooo);
+            String w1 = id.substring(ohnooo + 1);
+            listener.writeHtmlized(sigil);
+            listener.write(s0);
+            if (w0.length() > 0) {
+                listener.writeSymbol(w0, sigil.length() + s0.length(), true);
+            } else {
+                listener.skipSymbol();
+            }
+            listener.writeHtmlized(new String(new char[] {endqchar}));
+            listener.abortQuote();
+            listener.write(w1);
+            endqchar = '\0';
+        }
     }
 
     /**

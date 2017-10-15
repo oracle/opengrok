@@ -72,14 +72,22 @@ import org.opensolaris.opengrok.web.Util;
             writeSymbol(value, Consts.kwd, yyline);
     }
 
+    public void skipSymbol() {
+        // noop
+    }
+
     public void doStartNewLine() throws IOException { startNewLine(); }
 
-  // If the state is YYINITIAL, then transitions to INTRA; otherwise does
-  // nothing, because other transitions would have saved the state.
-  void maybeIntraState()
-  {
-    if (yystate() == YYINITIAL) yybegin(INTRA);
-  }
+    public void abortQuote() throws IOException {
+        out.write(Consts.ZS);
+        yypop();
+    }
+
+    // If the state is YYINITIAL, then transitions to INTRA; otherwise does
+    // nothing, because other transitions would have saved the state.
+    void maybeIntraState() {
+        if (yystate() == YYINITIAL) yybegin(INTRA);
+    }
 %}
 
 WhiteSpace     = [ \t\f]+
@@ -315,16 +323,26 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
     }
 }
 
-<YYINITIAL, INTRA, QUO, QUOxL, HERE, HEREin> {
+<YYINITIAL, INTRA> {
     {Sigils} {Identifier} {
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
         h.sigilID(yytext());
     }
+}
+
+<YYINITIAL, INTRA, QUO, QUOxL, HERE, HEREin> {
     {Sigils} {MaybeWhsp} "{" {MaybeWhsp} {Identifier} {MaybeWhsp} "}" {
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
         h.bracedSigilID(yytext());
+    }
+}
+
+<QUO, QUOxL, HERE, HEREin> {
+    {Sigils} {Identifier} {
+        //we ignore keywords if the identifier starts with a sigil ...
+        h.sigilID(yytext());
     }
 }
 

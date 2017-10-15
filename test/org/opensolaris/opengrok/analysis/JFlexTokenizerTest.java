@@ -147,6 +147,15 @@ public class JFlexTokenizerTest {
         testOffsetAttribute(PerlSymbolTokenizer.class, inputText, expectedTokens);
     }
 
+    @Test
+    public void testPerlWordCharDelimiters() throws Exception {
+        // Perl command to tokenize
+        String inputText = "qr z$abcz; qr z$defziz; qr i$ghixi;";
+
+        String[] expectedTokens = {"abc", "def", "gh"};
+        testOffsetAttribute(PerlSymbolTokenizer.class, inputText, expectedTokens);
+    }
+
     /**
      * Truncated uuencoded files used to cause infinite loops. Verify that they
      * work now.

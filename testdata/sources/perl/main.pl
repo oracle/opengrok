@@ -283,3 +283,4 @@ $s = y"pP \"\'\(\)\<\>\{\}\[\]\/\# fin."pP \"\'\(\)\<\>\{\}\[\]\/\# fin.";
 print "$abc\n${abc}\n", '$abc\n${abc}\n', "\n";
 $s = $ {var};
 $s = ${ var };
+print qr z$abczix, "\n";

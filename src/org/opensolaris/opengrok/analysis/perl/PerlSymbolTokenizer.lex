@@ -54,17 +54,33 @@ super(in);
 
     public void popState() throws IOException { yypop(); }
 
-    public void write(String value) throws IOException { /*noop*/ }
+    public void write(String value) throws IOException { /* noop */ }
 
-    public void writeHtmlized(String value) throws IOException { /*noop*/ }
+    public void writeHtmlized(String value) throws IOException {
+        // noop
+    }
 
     public void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException {
-        lastSymbol = value;
-        lastSymbolOffset = captureOffset;
+        if (ignoreKwd || !Consts.kwd.contains(value)) {
+            lastSymbol = value;
+            lastSymbolOffset = captureOffset;
+        } else {
+            lastSymbol = null;
+            lastSymbolOffset = 0;
+        }
     }
 
-    public void doStartNewLine() throws IOException { /*noop*/ }
+    public void skipSymbol() {
+        lastSymbol = null;
+        lastSymbolOffset = 0;
+    }
+
+    public void doStartNewLine() throws IOException { /* noop */ }
+
+    public void abortQuote() throws IOException {
+        yypop();
+    }
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does
     // nothing, because other transitions would have saved the state.
@@ -294,15 +310,20 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
     }
 }
 
-<YYINITIAL, INTRA, QUO, QUOxL, HERE, HEREin> {
+<YYINITIAL, INTRA> {
     {Sigils} {Identifier} {
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
         h.sigilID(yytext());
-        setAttribs(lastSymbol, yychar + lastSymbolOffset, yychar +
-            lastSymbolOffset + lastSymbol.length());
-        return true;
+        if (lastSymbol != null) {
+            setAttribs(lastSymbol, yychar + lastSymbolOffset, yychar +
+                lastSymbolOffset + lastSymbol.length());
+            return true;
+        }
     }
+}
+
+<YYINITIAL, INTRA, QUO, QUOxL, HERE, HEREin> {
     {Sigils} {MaybeWhsp} "{" {MaybeWhsp} {Identifier} {MaybeWhsp} "}" {
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
@@ -310,6 +331,18 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
         setAttribs(lastSymbol, yychar + lastSymbolOffset, yychar +
             lastSymbolOffset + lastSymbol.length());
         return true;
+    }
+}
+
+<QUO, QUOxL, HERE, HEREin> {
+    {Sigils} {Identifier} {
+        //we ignore keywords if the identifier starts with a sigil ...
+        h.sigilID(yytext());
+        if (lastSymbol != null) {
+            setAttribs(lastSymbol, yychar + lastSymbolOffset, yychar +
+                lastSymbolOffset + lastSymbol.length());
+            return true;
+        }
     }
 }
 <QUO, QUOxN, QUOxL, QUOxLxN> {
