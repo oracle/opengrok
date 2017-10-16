@@ -1,5 +1,6 @@
 *~
 nbproject/*~
+/nbproject/configs/*.properties
 opengrok-web-nbproject/nbproject/*~
 opengrok-web-nbproject/nbproject/build-impl.xml~
 tags

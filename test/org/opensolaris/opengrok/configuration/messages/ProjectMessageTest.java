@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -26,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -82,12 +84,14 @@ public class ProjectMessageTest {
 
     @After
     public void tearDown() {
-        env.removeAllMessages();
-        
-        // This should match Configuration constructor.
-        env.setProjects(new ConcurrentHashMap<>());
-        env.setRepositories(new ArrayList<RepositoryInfo>());
-        env.getProjectRepositoriesMap().clear();
+        if (env != null) {
+            env.removeAllMessages();
+
+            // This should match Configuration constructor.
+            env.setProjects(new ConcurrentHashMap<>());
+            env.setRepositories(new ArrayList<RepositoryInfo>());
+            env.getProjectRepositoriesMap().clear();
+        }
 
         repository.destroy();
     }
@@ -158,6 +162,7 @@ public class ProjectMessageTest {
         File subDir = new File(mercurialRoot, "usr");
         Assert.assertTrue(subDir.mkdir());
         String subRepoPath = repoPath + File.separator + "usr" + File.separator + "closed";
+        File mercurialSubRoot = new File(subRepoPath);
         MercurialRepositoryTest.runHgCommand(mercurialRoot,
             "clone", mercurialRoot.getAbsolutePath(), subRepoPath);
 
@@ -176,12 +181,15 @@ public class ProjectMessageTest {
                 collect(Collectors.toSet()).size());
 
         // Check that HistoryGuru now includes the project in its list.
-        Assert.assertTrue(HistoryGuru.getInstance().getRepositories().stream().
-                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
-                contains(repoPath));
-        Assert.assertTrue(HistoryGuru.getInstance().getRepositories().stream().
-                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
-                contains(subRepoPath));
+        Set<String> directoryNames = HistoryGuru.getInstance().
+            getRepositories().stream().map(ri -> ri.getDirectoryName()).
+            collect(Collectors.toSet());
+        Assert.assertTrue("though it should contain the top root,",
+            directoryNames.contains(repoPath) || directoryNames.contains(
+            mercurialRoot.getCanonicalPath()));
+        Assert.assertTrue("though it should contain the sub-root,",
+            directoryNames.contains(subRepoPath) || directoryNames.contains(
+            mercurialSubRoot.getCanonicalPath()));
         
         // Add more projects and check that they have been added incrementally.
         // At the same time, it checks that multiple projects can be added
