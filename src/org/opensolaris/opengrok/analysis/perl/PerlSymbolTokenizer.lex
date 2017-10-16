@@ -76,6 +76,11 @@ super(in);
         lastSymbolOffset = 0;
     }
 
+    public void writeKeyword(String value) throws IOException {
+        lastSymbol = value;
+        lastSymbolOffset = 0;
+    }
+
     public void doStartNewLine() throws IOException { /* noop */ }
 
     public void abortQuote() throws IOException {
@@ -369,6 +374,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
     {SPIdentifier3} |
     {SPIdentifier4} {
         maybeIntraState();
+        h.specialID(yytext());
     }
 }
 

@@ -127,7 +127,8 @@ public class PerlSymbolTokenizerTest {
 
         int count = 0;
         while (tokenizer.incrementToken()) {
-            assertTrue("too many tokens", count < expectedTokens.size());
+            assertTrue("too many tokens at term" + (1 + count) + ": " +
+                term.toString(), count < expectedTokens.size());
             String expected = expectedTokens.get(count);
             // 1-based offset to accord with line #
             assertEquals("term" + (1 + count), expected, term.toString());

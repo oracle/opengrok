@@ -50,6 +50,13 @@ interface PerlLexListener {
      */
     void skipSymbol();
 
+    /**
+     * Passes a text fragment that is syntactically a keyword symbol for write
+     * processing
+     * @param value the excised symbol
+     */
+    void writeKeyword(String value) throws IOException;
+
     void doStartNewLine() throws IOException;
 
     /**
@@ -101,8 +108,7 @@ class PerlLexHelper {
      * @return true if the quote state should end (and NUL out
      * {@link endqchar})
      */
-    public boolean isQuoteEnding(String match)
-    {
+    public boolean isQuoteEnding(String match) {
         char c = match.charAt(0);
         if (c == endqchar) {
             if (--nqchar <= 0) {
@@ -126,8 +132,7 @@ class PerlLexHelper {
      * and write the operator to output.
      */
     public void qop(String op, int namelength, boolean nointerp)
-        throws IOException
-    {
+        throws IOException {
         qop(true, op, namelength, nointerp);
     }
 
@@ -136,8 +141,7 @@ class PerlLexHelper {
      * and write the operator to output if `doWrite` is true.
      */
     public void qop(boolean doWrite, String capture, int namelength,
-        boolean nointerp) throws IOException
-    {
+        boolean nointerp) throws IOException {
         // If namelength is positive, allow that a non-zero-width word boundary
         // character may have needed to be matched since jflex does not conform
         // with \b as a zero-width simple word boundary. Excise it into
@@ -179,8 +183,7 @@ class PerlLexHelper {
     }
 
     /** Sets the jflex state reflecting `ltpostop' and `nointerp'. */
-    public void setState(String ltpostop, boolean nointerp)
-    {
+    public void setState(String ltpostop, boolean nointerp) {
         int state;
         boolean nolink = false;
 
@@ -203,8 +206,7 @@ class PerlLexHelper {
      * Sets a special `endqchar' if appropriate for `opener' or just tracks
      * `opener'.
      */
-    private void setEndQuoteChar(char opener)
-    {
+    private void setEndQuoteChar(char opener) {
         switch (opener) {
             case '[':
                 nestqchar = opener;
@@ -234,8 +236,7 @@ class PerlLexHelper {
      * m// where the `capture' ends with "/", begins with punctuation, and the
      * intervening whitespace may contain LFs -- and writes the parts to output.
      */
-    public void hqopPunc(String capture) throws IOException
-    {
+    public void hqopPunc(String capture) throws IOException {
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
@@ -255,8 +256,7 @@ class PerlLexHelper {
      * and the intervening whitespace may contain LFs -- and writes the parts
      * to output.
      */
-    public void hqopSymbol(String capture) throws IOException
-    {
+    public void hqopSymbol(String capture) throws IOException {
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
@@ -328,8 +328,7 @@ class PerlLexHelper {
      * Gets a value indicating if the Here-document should be ended.
      * @return true if the quote state should end
      */
-    public boolean isHereEnding(String capture)
-    {
+    public boolean isHereEnding(String capture) {
         String trimmed = capture.replaceFirst("^\\s+", "");
         return trimmed.equals(hereTerminator);
     }
@@ -420,6 +419,25 @@ class PerlLexHelper {
             lpunc.length() + s1.length(), true);
         listener.write(s2);
         listener.writeHtmlized(rpunc);
+    }
+
+    /**
+     * Write a special identifier as a keyword -- unless {@link endqchar} is in
+     * the {@code capture}, which will abort an active quote-like operator
+     * instead.
+     */
+    public void specialID(String capture) throws IOException {
+        int ohnooo;
+        if ((ohnooo = capture.indexOf(endqchar)) == -1) {
+            listener.writeKeyword(capture);
+        } else {
+            String p0 = capture.substring(0, ohnooo + 1);
+            String p1 = capture.substring(ohnooo + 1);
+            listener.writeHtmlized(p0);
+            listener.abortQuote();
+            listener.writeHtmlized(p1);
+            endqchar = '\0';
+        }
     }
 
     private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(

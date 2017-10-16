@@ -287,3 +287,6 @@ print qr z$abczix, "\n";
 print $0 if $!;
 print $^V;
 print "${^GLOBAL_PHASE} is what?";
+
+# more quote-like tests
+qr{\.[a-z]+$}i;

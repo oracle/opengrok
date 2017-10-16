@@ -76,6 +76,10 @@ import org.opensolaris.opengrok.web.Util;
         // noop
     }
 
+    public void writeKeyword(String value) throws IOException {
+        writeKeyword(value, yyline);
+    }
+
     public void doStartNewLine() throws IOException { startNewLine(); }
 
     public void abortQuote() throws IOException {
@@ -376,7 +380,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
     {SPIdentifier3} |
     {SPIdentifier4} {
         maybeIntraState();
-        writeKeyword(yytext(), yyline);
+        h.specialID(yytext());
     }
 }
 
