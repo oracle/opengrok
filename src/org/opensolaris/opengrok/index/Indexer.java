@@ -82,7 +82,6 @@ public final class Indexer {
     private static boolean addProjects = false;
     private static boolean searchRepositories = false;
     private static boolean noindex = false;
-    private static boolean escape = false;
 
     private static int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
     private static String configFilename = null;
@@ -351,8 +350,8 @@ public final class Indexer {
 
         openGrok = OptionParser.Do(parser -> {
 
-            parser.prologue =
-                String.format("\nUsage: %s [options] [subDir1 [...]]\n", program);
+            parser.setPrologue(
+                String.format("\nUsage: %s [options] [subDir1 [...]]\n", program));
 
             parser.on("-?", "-h", "--help", "Display this usage.").Do( v -> {
                 parser.help();

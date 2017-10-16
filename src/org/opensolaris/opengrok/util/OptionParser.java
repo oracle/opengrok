@@ -22,18 +22,12 @@
  */
 package org.opensolaris.opengrok.util;
 
-import java.beans.XMLEncoder;
-import java.beans.XMLDecoder;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.List;
@@ -43,8 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -116,8 +108,8 @@ public class OptionParser {
     
     private boolean scanning = false;
     
-    public String prologue;  // text emitted before option summary
-    public String epilogue;  // text emitted after options summary
+    private String prologue;  // text emitted before option summary
+    private String epilogue;  // text emitted after options summary
     
     class DuplicateOptionName extends Exception {
         public DuplicateOptionName(String message) {
@@ -691,6 +683,24 @@ public class OptionParser {
         return prologue;
     }
     
+        
+    /**
+     * Define the prologue to be presented before the options summary.
+     * Example: Usage programName [options]
+     * @param text that makes up the prologue.
+     */
+    public void setPrologue(String text) {
+        prologue = text;
+    }
+    
+    /**
+     * Define the epilogue to be presented after the options summary.
+     * @param text that makes up the epilogue.
+     */
+    public void setEpilogue(String text) {
+        epilogue = text;
+    }
+    
     /**
      * Place text in option summary
      * @param text to be inserted into option summary.
@@ -755,6 +765,14 @@ public class OptionParser {
      */
     public void help() {
         System.out.println(getUsage());
+    }
+
+    /**
+     * Print out option summary on provided output stream
+     * @param out 
+     */
+    public void help(PrintStream out) {
+        out.println(getUsage());
     }
     
     private void spool(BufferedReader reader, PrintWriter out, String tag) throws IOException {
