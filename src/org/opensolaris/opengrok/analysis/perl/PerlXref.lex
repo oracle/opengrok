@@ -90,8 +90,9 @@ import org.opensolaris.opengrok.web.Util;
     }
 %}
 
-WhiteSpace     = [ \t\f]+
-MaybeWhsp     = [ \t\f]*
+WhspChar      = [ \t\f]
+WhiteSpace    = {WhspChar}+
+MaybeWhsp     = {WhspChar}*
 EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 Sigils = ("$" | "@" | "%" | "&" | "*")
@@ -243,6 +244,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 }
 
 "<" ({File}|{Path}) ">" {
+        maybeIntraState();
         out.write("&lt;");
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -253,19 +255,21 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
         out.write(path);
         out.write("</a>");
         out.write("&gt;");
-        maybeIntraState();
 }
 
 {Number}        {
+    maybeIntraState();
     out.write(Consts.SN);
     out.write(yytext());
     out.write("</span>");
-    maybeIntraState();
 }
 
  [\"\`] { h.qop(yytext(), 0, false); }
  \'     { h.qop(yytext(), 0, true); }
- \#     { yypush(SCOMMENT, null); out.write(Consts.SC + "#"); }
+ \#     {
+        yypush(SCOMMENT, null);
+        out.write(Consts.SC + "#");
+ }
 
  // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
  ^ {QXRapos} |
@@ -309,7 +313,10 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
  ^ {QYword} |
  {WxSigils}{QYword}  { h.qop(yytext(), 1, true); }
 
- ^ {Pods}   { yypush(POD, null); out.write(Consts.SC + yytext()); }
+ ^ {Pods}   {
+        yypush(POD, null);
+        out.write(Consts.SC + yytext());
+ }
 }
 
 <YYINITIAL> {
@@ -420,13 +427,27 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 }
 
 <YYINITIAL, INTRA, SCOMMENT, POD, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
- [&<>\"\']    { out.write(htmlize(yytext())); maybeIntraState(); }
+ [&<>\"\']      {
+        maybeIntraState();
+        out.write(htmlize(yytext()));
+ }
  {WhiteSpace}{EOL} |
- {EOL}          { startNewLine(); }
+ {EOL}          {
+        startNewLine();
+ }
 
- {WhiteSpace}   { out.write(yytext()); }
- [!-~]          { out.write(yycharat(0)); maybeIntraState(); }
- [^\n]          { writeUnicodeChar(yycharat(0)); maybeIntraState(); }
+ // Only one whitespace char at a time or else {WxSigils} can be broken
+ {WhspChar}     {
+        out.write(yytext());
+ }
+ [!-~]          {
+        maybeIntraState();
+        out.write(yycharat(0));
+ }
+ [^\n]          {
+        maybeIntraState();
+        writeUnicodeChar(yycharat(0));
+ }
 }
 
 // "string links" and "comment links"

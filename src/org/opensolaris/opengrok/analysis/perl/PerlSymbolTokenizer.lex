@@ -95,8 +95,9 @@ return false;
 %eofval}
 %char
 
-WhiteSpace     = [ \t\f]+
-MaybeWhsp     = [ \t\f]*
+WhspChar      = [ \t\f]
+WhiteSpace    = {WhspChar}+
+MaybeWhsp     = {WhspChar}*
 EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Sigils = ("$" | "@" | "%" | "&" | "*")
@@ -256,7 +257,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 
  [\"\`] { h.qop(yytext(), 0, false); }
  \'     { h.qop(yytext(), 0, true); }
- \#     { yypush(SCOMMENT); }
+ \#     {
+        yypush(SCOMMENT);
+ }
 
  // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
  ^ {QXRapos} |
@@ -300,7 +303,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
  ^ {QYword} |
  {WxSigils}{QYword}  { h.qop(yytext(), 1, true); }
 
- ^ {Pods}   { yypush(POD); }
+ ^ {Pods}   {
+        yypush(POD);
+ }
 }
 
 <YYINITIAL> {
@@ -363,7 +368,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
     {SPIdentifier2} |
     {SPIdentifier3} |
     {SPIdentifier4} {
-        // noop
+        maybeIntraState();
     }
 }
 
@@ -393,6 +398,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 <QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
     {WhiteSpace}{EOL} |
     {EOL} {
+        // noop
     }
 }
 
@@ -411,13 +417,24 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 
 <YYINITIAL, INTRA, SCOMMENT, POD, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
 <<EOF>>   { this.finalOffset =  zzEndRead; return false;}
- [&<>\"\']      { maybeIntraState(); }
+ [&<>\"\']      {
+        maybeIntraState();
+ }
  {WhiteSpace}{EOL} |
- {EOL}          { }
+ {EOL}          {
+        // noop
+ }
 
- {WhiteSpace}   { }
- [!-~]          { maybeIntraState(); }
- [^\n]          { maybeIntraState(); }
+ // Only one whitespace char at a time or else {WxSigils} can be broken
+ {WhspChar}     {
+        // noop
+ }
+ [!-~]          {
+        maybeIntraState();
+ }
+ [^\n]          {
+        maybeIntraState();
+ }
 }
 
 // "string links" and "comment links" are not processed specially
