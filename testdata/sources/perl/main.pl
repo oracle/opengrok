@@ -302,3 +302,4 @@ $ svar = 1;
 
 # more quote-like tests
 s{\.[a-z]+$}{no}i;
+my $a = qr$abc$ix;

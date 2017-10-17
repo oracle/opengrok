@@ -168,7 +168,7 @@
 <a class="l" name="161" href="#161">161</a><b>my</b> @o = $<a href="/source/s?defs=contents" class="intelliWindow-symbol" data-definition-place="undefined-in-file">contents</a> =~
 <a class="l" name="162" href="#162">162</a>
 <a class="l" name="163" href="#163">163</a>
-<a class="l" name="164" href="#164">164</a>    <span class="s">/^(?&gt;\S+) \s* := \s* LINKSRC \s* = \s* \S+/</span><a href="/source/s?defs=mxg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">mxg</a>;
+<a class="l" name="164" href="#164">164</a>    <span class="s">/^(?&gt;\S+) \s* := \s* LINKSRC \s* = \s* \S+/</span>mxg;
 <a class="l" name="165" href="#165">165</a>
 <a class="l" name="166" href="#166">166</a><b>foreach</b> <b>my</b> $v (@o) { <span class="c"># This loop shouldn&apos;t mistakenly be inside the previous m//</span>
 <a class="l" name="167" href="#167">167</a>	<b>print</b> $v;
@@ -309,5 +309,6 @@
 <a class="l" name="302" href="#302">302</a>
 <a class="l" name="303" href="#303">303</a><span class="c"># more quote-like tests</span>
 <a class="l" name="304" href="#304">304</a><b>s</b><span class="s">{\.[a-z]+$}{no}</span>i;
-<a class="l" name="305" href="#305">305</a></body>
+<a class="l" name="305" href="#305">305</a><b>my</b> $a = <b>qr</b><span class="s">$abc$</span>ix;
+<a class="l" name="306" href="#306">306</a></body>
 </html>

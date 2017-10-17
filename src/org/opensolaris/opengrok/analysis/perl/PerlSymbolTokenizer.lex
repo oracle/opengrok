@@ -85,6 +85,11 @@ super(in);
 
     public void abortQuote() throws IOException {
         yypop();
+        if (h.areModifiersOK()) yypush(QM);
+    }
+
+    public void pushback(int numChars) {
+        yypushback(numChars);
     }
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does
@@ -201,12 +206,13 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 // QUOxL : quote-like that is not OK to match paths|files|URLs|e-mails
 //      because a non-traditional character is used as the quote-like delimiter
 // QUOxLxN : "" but with no interpolation
+// QM : a quote-like has ended, and quote modifier chars are awaited
 // HERE : Here-docs
 // HERExN : Here-docs with no interpolation
 // HEREin : Indented Here-docs
 // HEREinxN : Indented Here-docs with no interpolation
 //
-%state  INTRA SCOMMENT POD QUO QUOxN QUOxL QUOxLxN HERE HERExN HEREin HEREinxN
+%state INTRA SCOMMENT POD QUO QUOxN QUOxL QUOxLxN QM HERE HERExN HEREin HEREinxN
 
 %%
 <HERE, HERExN> {
@@ -321,7 +327,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 
 <YYINITIAL> {
     "/"    {
-        h.qop(false, "/", 0, false);
+        // OK to pass a fake "m/" with doWrite=false
+        h.qop(false, "m/", 1, false);
     }
 }
 
@@ -406,6 +413,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
         String capture = yytext();
         if (h.isQuoteEnding(capture)) {
             yypop();
+            if (h.areModifiersOK()) yypush(QM);
         }
     }
 }
@@ -414,6 +422,21 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     {WhiteSpace}{EOL} |
     {EOL} {
         // noop
+    }
+}
+
+<QM> {
+    // m/PATTERN/msixpodualngc and /PATTERN/msixpodualngc
+    // qr/STRING/msixpodualn
+    // s/PATTERN/REPLACEMENT/msixpodualngcer
+    // tr/SEARCHLIST/REPLACEMENTLIST/cdsr
+    // y/SEARCHLIST/REPLACEMENTLIST/cdsr
+    [a-z]    {
+        // noop
+    }
+    [^]    {
+        yypop();
+        yypushback(1);
     }
 }
 

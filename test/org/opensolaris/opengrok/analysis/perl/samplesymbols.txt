@@ -69,7 +69,6 @@ var
 var
 o		# 161:my @o = ...
 contents
-mxg
 v
 o
 v
@@ -262,6 +261,5 @@ var
 s
 var
 abc
-i		# 292:qr{
 svar		# 301:$ svar
-i
+a
