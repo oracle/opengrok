@@ -296,3 +296,6 @@ print <<EOF;
 	Some text
 EOF
 /\b sentinel \b/ && print; # This should heuristically match as m//
+
+# spaced sigil
+$ svar = 1;

@@ -182,7 +182,7 @@ Mwords_3 = ("split")
 Mwords = ({Mwords_1} | {Mwords_2} | {Mwords_3})
 
 Mpunc1YYIN = [\(\!]
-Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
+Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 
 //
 // There are two dimensions to quoting: "link"-or-not and "interpolate"-or-not.
@@ -224,6 +224,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 <YYINITIAL, INTRA>{
 
     [;\{\}] |
+    "&&" |
+    "||" |
     {ProtoAttr}    {
         yyjump(YYINITIAL);
     }
@@ -351,7 +353,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 }
 
 <YYINITIAL, INTRA> {
-    {Sigils} {Identifier} {
+    {Sigils} {MaybeWhsp} {Identifier} {
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
         h.sigilID(yytext());
@@ -393,9 +395,12 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
         }
     }
 }
+
 <QUO, QUOxN, QUOxL, QUOxLxN> {
-    \\[\&\<\>\"\']    { }
-    \\ \S    { }
+    \\[\&\<\>\"\']    {
+    }
+    \\ \S    {
+    }
     {Quo0} |
     \w    {
         String capture = yytext();
