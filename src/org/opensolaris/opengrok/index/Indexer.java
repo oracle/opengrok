@@ -411,8 +411,8 @@ public final class Indexer {
             });
 
             parser.on("--depth", "=number", Integer.class,
-                "Scanning depth for repositories in directory structure relative to source root.",
-                "Default is " + Configuration.defaultScanningDepth + ".").Do( depth -> {
+                "Scanning depth for repositories in directory structure relative to",
+                "source root. Default is " + Configuration.defaultScanningDepth + ".").Do( depth -> {
                 cfg.setScanningDepth((Integer)depth);
             });
 
@@ -470,8 +470,8 @@ public final class Indexer {
             });
 
             parser.on("-m", "--memory", "=number", Double.class,
-                "Amount of memory that may be used for buffering added documents",
-                "and deletions before they are flushed to the directory (default "+Configuration.defaultRamBufferSize+"MB).",
+                "Amount of memory that may be used for buffering added documents and",
+                "deletions before they are flushed to the directory (default "+Configuration.defaultRamBufferSize+"MB).",
                 "Please increase JVM heap accordingly, too.").Do( memSize -> {
                 cfg.setRamBufferSize((Double)memSize);
             });
@@ -617,7 +617,8 @@ public final class Indexer {
 
             parser.on("--symlink", "=/path/to/symlink", 
                 "Allow this symlink to be followed. Option may be repeated.",
-                "By default only symlinks directly under source root directory are allowed.").Do( symlink -> {
+                "By default only symlinks directly under source root directory",
+                "are allowed.").Do( symlink -> {
                 allowedSymlinks.add((String)symlink);
             });
 
@@ -684,9 +685,9 @@ public final class Indexer {
             });
 
             parser.on("-w", "--web", "=webapp-context", 
-                "Context of webapp. Default is /source. If you specify a different name,",
-                "make sure to rename source.war to that name. Also FULL reindex is needed",
-                "if this is changed.").
+                "Context of webapp. Default is /source. If you specify a different",
+                "name, make sure to rename source.war to that name. Also FULL reindex",
+                "is needed if this is changed.").
                 Do( webContext -> {
                     String webapp = (String)webContext;
                     if (webapp.charAt(0) != '/' && !webapp.startsWith("http")) {
