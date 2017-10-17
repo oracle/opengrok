@@ -351,9 +351,9 @@ public final class Indexer {
         openGrok = OptionParser.Do(parser -> {
 
             parser.setPrologue(
-                String.format("\nUsage: %s [options] [subDir1 [...]]\n", program));
+                String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
-            parser.on("-?", "-h", "--help", "Display this usage.").Do( v -> {
+            parser.on("-?", "-h", "--help", "Display this usage summary.").Do( v -> {
                 parser.help();
                 System.exit(status);
             });
@@ -369,7 +369,7 @@ public final class Indexer {
                     "  Ex: -A bar.:C",
                     "      will use the C analyzer for all files starting with bar.",
                     "  Ex: -A .c:-",
-                    "      will disable the c-analyzer for for all files ending with .c").
+                    "      will disable the C analyzer for for all files ending with .c").
                 Do( analyzerSpec -> {
                     String[] arg = ((String)analyzerSpec).split(":");
                     String fileSpec = arg[0];
@@ -378,41 +378,13 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-a", "--leadingWildCards", "=on/off", onOff, Boolean.class, 
-                "Allow or disallow leading wildcards in a search.").Do( v -> {
-                cfg.setAllowLeadingWildcard((Boolean)v);
-            });
-
-            parser.on("-B", "--infoProvider", "=URL",
-                "Base URL of the user Information provider.",
-                "Example: \"http://www.myserver.org/viewProfile.jspa?username=\".",
-                "Use \"none\" to disable link.").Do( v -> {
-                cfg.setUserPage((String)v);
-            });
-
-            parser.on("-C", "--progress",
-                "Print per project percentage progress information",
-                "(I/O extensive, since one read through directory structure is",
-                "made before indexing, needs -v, otherwise it just goes to the log)").
-                Do( v -> {
-                    cfg.setPrintProgress(true);
-                }
-            );
-
             parser.on("-c", "--ctags","=/path/to/ctags", 
-                "Path to Exuberant Ctags from http://ctags.sf.net",
+                "Path to Exuberant or Universal Ctags",
                 "By default takes the Exuberant Ctags in PATH.").
                 Do( ctagsPath -> {
                     cfg.setCtags((String)ctagsPath);
                 }
             );
-
-            parser.on("-D", "--renamedHistory", "=on/off", onOff, Boolean.class,
-                "Enable or disable generating history for renamed files.",
-                "If set to on, makes history indexing slower for repositories",
-                "with lots of renamed files.").Do( v -> {
-                    cfg.setHandleHistoryOfRenamedFiles((Boolean)v);
-            });
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root", 
                 "The directory where OpenGrok stores the generated data.").
@@ -431,6 +403,18 @@ public final class Indexer {
                     }
                 }
             );
+
+            parser.on("--deleteHistory", "=/path/to/repository", 
+                "Delete the history cache for the given repository and exit.",
+                "Use '*' to delete the cache for all repositories.").Do( repo -> {
+                zapCache.add((String)repo);
+            });
+
+            parser.on("--depth", "=number", Integer.class,
+                "Scanning depth for repositories in directory structure relative to source root.",
+                "Default is " + Configuration.defaultScanningDepth + ".").Do( depth -> {
+                cfg.setScanningDepth((Integer)depth);
+            });
 
             parser.on("-e", "--economical",
                 "Economical, consumes less disk space.",
@@ -471,27 +455,18 @@ public final class Indexer {
                 cfg.getIgnoredNames().add((String)pattern);
             });
 
-            parser.on("-K", "--listRepos", "List all repository paths and exit.").Do( v -> {
-                listRepos = true;
-            });
-
-            parser.on("-k", "--deleteHistory", "=/path/to/repository", 
-                "Delete the history cache for the given repository and exit.",
-                "Use '*' to delete the cache for all repositories.").Do( repo -> {
-                zapCache.add((String)repo);
-            });
-
-            parser.on("-L", "--style", "=path", 
-                "Path to the subdirectory in the web-application containing the",
-                "requested stylesheet. The factory-setting is: \"default\"").
-                Do( stylePath -> {
-                    cfg.setWebappLAF((String)stylePath);
-                }
-            );
-
             parser.on("-l", "--lock", "=on/off", onOff, Boolean.class,
                 "Turn on/off locking of the Lucene database during index generation.").Do( v -> {
                 cfg.setUsingLuceneLocking((Boolean)v);
+            });
+
+            parser.on("--leadingWildCards", "=on/off", onOff, Boolean.class, 
+                "Allow or disallow leading wildcards in a search.").Do( v -> {
+                cfg.setAllowLeadingWildcard((Boolean)v);
+            });
+
+            parser.on("--listRepos", "List all repository paths and exit.").Do( v -> {
+                listRepos = true;
             });
 
             parser.on("-m", "--memory", "=number", Double.class,
@@ -509,12 +484,6 @@ public final class Indexer {
                     status = 1;
                 }
                 System.exit(status);
-            });
-
-            parser.on("-N", "--symlink", "=/path/to/symlink", 
-                "Allow this symlink to be followed. Option may be repeated.",
-                "By default only symlinks directly under source root directory are allowed.").Do( symlink -> {
-                allowedSymlinks.add((String)symlink);
             });
 
             parser.on("-n", "--noIndex", 
@@ -540,7 +509,7 @@ public final class Indexer {
                     String CTagsExtraOptionsFile = (String)path;
                     File CTagsFile = new File(CTagsExtraOptionsFile);
                     if (!(CTagsFile.isFile() && CTagsFile.canRead())) {
-                        die("File '"+ CTagsExtraOptionsFile+ "' not found for the -o option");
+                        die("File '" + CTagsExtraOptionsFile + "' not found for the -o option");
                     }
                     System.err.println("INFO: file with extra "
                         + "options for ctags: " + CTagsExtraOptionsFile);
@@ -562,6 +531,15 @@ public final class Indexer {
                 "You should strip off the source root.").Do( v -> {
                 defaultProjects.add((String)v);
             });
+
+            parser.on("--progress",
+                "Print per project percentage progress information",
+                "(I/O extensive, since one read through directory structure is",
+                "made before indexing, needs -v, otherwise it just goes to the log)").
+                Do( v -> {
+                    cfg.setPrintProgress(true);
+                }
+            );
 
             parser.on("-Q", "--quickScan",  "=on/off", onOff, Boolean.class,
                 "Turn on/off quick context scan. By default, only the first",
@@ -602,6 +580,13 @@ public final class Indexer {
                 }
             );
 
+            parser.on("--renamedHistory", "=on/off", onOff, Boolean.class,
+                "Enable or disable generating history for renamed files.",
+                "If set to on, makes history indexing slower for repositories",
+                "with lots of renamed files.").Do( v -> {
+                    cfg.setHandleHistoryOfRenamedFiles((Boolean)v);
+            });
+
             parser.on("-S", "--search", 
                 "Search for \"external\" source repositories and add them").Do( v -> {
                 searchRepositories = true;
@@ -622,6 +607,20 @@ public final class Indexer {
                 }
             );
 
+            parser.on("--style", "=path", 
+                "Path to the subdirectory in the web-application containing the",
+                "requested stylesheet. The factory-setting is: \"default\"").
+                Do( stylePath -> {
+                    cfg.setWebappLAF((String)stylePath);
+                }
+            );
+
+            parser.on("--symlink", "=/path/to/symlink", 
+                "Allow this symlink to be followed. Option may be repeated.",
+                "By default only symlinks directly under source root directory are allowed.").Do( symlink -> {
+                allowedSymlinks.add((String)symlink);
+            });
+
             parser.on("-T", "--threads", "=number", Integer.class,
                 "The number of threads to use for index generation.",
                 "By default the number of threads will be set to the",
@@ -629,7 +628,7 @@ public final class Indexer {
                 noThreads = (Integer)threadCount;
             });
 
-            parser.on("-t", "", "=number", Integer.class,
+            parser.on("-t", "--tabSize", "=number", Integer.class,
                 "Default tab size to use (number of spaces per tab character).").Do( tabSize -> {
                 cfg.setTabSize((Integer)tabSize);
             });
@@ -650,6 +649,23 @@ public final class Indexer {
             );
 
             parser.on("---unitTest");  // For unit test only, will not appear in help
+
+            parser.on("--updateConfig", 
+                "Populate the webapp with bare configuration and exit.").Do( v -> {
+                noindex = true;
+            });
+
+            parser.on("--userPage", "=URL",
+                "Base URL of the user Information provider.",
+                "Example: \"http://www.myserver.org/viewProfile.jspa?username=\".",
+                "Use \"none\" to disable link.").Do( v -> {
+                cfg.setUserPage((String)v);
+            });
+
+            parser.on("--userPageSuffix", "=URL-suffix", 
+                "URL Suffix for the user Information provider. Default: \"\"").Do( suffix -> {
+                cfg.setUserPageSuffix((String)suffix);
+            });
 
             parser.on("-V", "--version", "Print version and quit.").Do( v -> {
                 System.out.println(Info.getFullVersion());
@@ -676,28 +692,12 @@ public final class Indexer {
                     if (webapp.charAt(0) != '/' && !webapp.startsWith("http")) {
                         webapp = "/" + webapp;
                     }
-                    if (webapp.endsWith("/")) {
-                        cfg.setUrlPrefix(webapp + "s?");
-                    } else {
-                        cfg.setUrlPrefix(webapp + "/s?");
+                    if (!webapp.endsWith("/")) {
+                        webapp += "/";
                     }
+                    cfg.setUrlPrefix(webapp + "s?");
                 }
             );
-
-            parser.on("-X", "=url:suffix", 
-                "URL Suffix for the user Information provider. Default: \"\"").Do( suffix -> {
-                cfg.setUserPageSuffix((String)suffix);
-            });
-
-            parser.on("-y", "Populate the webapp with bare configuration and exit.").Do( v -> {
-                noindex = true;
-            });
-
-            parser.on("-z", "--depth", "=number", Integer.class,
-                "Scanning depth for repositories in directory structure relative to source root.",
-                "Default is "+Configuration.defaultScanningDepth+".").Do( depth -> {
-                cfg.setScanningDepth((Integer)depth);
-            });
         });
 
         // Need to read the configuration file first

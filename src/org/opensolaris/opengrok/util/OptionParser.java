@@ -663,21 +663,10 @@ public class OptionParser {
         return remainingArgs;
     }
     
-    private String program() {
-        // Locate main program name from stack trace.
-        // The last element in the stack is where the 'main' entry point
-        // is located. The simple class name of this entry will be
-        // returned as the program name.
-        StackTraceElement[] stack = Thread.currentThread ().getStackTrace ();
-        StackTraceElement main = stack[stack.length - 1];
-        String[] name = main.getClassName().split("\\.");
-        return name[name.length-1];
-    }
-    
     private String getPrologue() {
         // Assign default prologue statement when none given.
         if (prologue == null) {
-            prologue = "Usage: " + program() + " [options]";
+            prologue = "Usage: MyProgram [options]";
         }
         
         return prologue;
