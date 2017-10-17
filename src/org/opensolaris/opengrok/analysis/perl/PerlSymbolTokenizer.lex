@@ -210,11 +210,15 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"&&" | "||")
 
 %%
 <HERE, HERExN> {
-    ^ {Identifier} / {MaybeWhsp}{EOL}  { h.maybeEndHere(yytext()); }
+    ^ {Identifier} / {MaybeWhsp}{EOL}    {
+        if (h.maybeEndHere(yytext())) yyjump(YYINITIAL);
+    }
 }
 
 <HEREin, HEREinxN> {
-    ^ {MaybeWhsp} {Identifier} / {MaybeWhsp}{EOL} { h.maybeEndHere(yytext()); }
+    ^ {MaybeWhsp} {Identifier} / {MaybeWhsp}{EOL}    {
+        if (h.maybeEndHere(yytext())) yyjump(YYINITIAL);
+    }
 }
 
 <YYINITIAL, INTRA>{

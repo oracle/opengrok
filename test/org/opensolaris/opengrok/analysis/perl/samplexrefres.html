@@ -297,5 +297,11 @@
 <a class="hl" name="290" href="#290">290</a>
 <a class="l" name="291" href="#291">291</a><span class="c"># more quote-like tests</span>
 <a class="l" name="292" href="#292">292</a><b>qr</b><span class="s">{\.[a-z]+$}</span>i;
-<a class="l" name="293" href="#293">293</a></body>
+<a class="l" name="293" href="#293">293</a>
+<a class="l" name="294" href="#294">294</a><span class="c"># should back to YYINITIAL after HERE document</span>
+<a class="l" name="295" href="#295">295</a><b>print</b> &lt;&lt;EOF<span class="s">;</span>
+<a class="l" name="296" href="#296">296</a><span class="s">	Some text</span>
+<a class="l" name="297" href="#297">297</a><span class="s"></span>EOF
+<a class="l" name="298" href="#298">298</a><span class="s">/\b sentinel \b/</span> &amp;&amp; <b>print</b>; <span class="c"># This should heuristically match as m//</span>
+<a class="l" name="299" href="#299">299</a></body>
 </html>

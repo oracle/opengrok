@@ -105,8 +105,10 @@ class PerlLexHelper {
      * Gets a value indicating if the quote should be ended, recognizing
      * quote-like operators which allow nesting to increase the nesting level
      * if appropriate.
-     * @return true if the quote state should end (and NUL out
-     * {@link endqchar})
+     * <p>
+     * Calling this method has side effects to possibly modify {@code nqchar},
+     * {@code waitq}, or {@code endqchar}.
+     * @return true if the quote state should end
      */
     public boolean isQuoteEnding(String match) {
         char c = match.charAt(0);
@@ -313,14 +315,17 @@ class PerlLexHelper {
     /**
      * Writes the `capture' to output, possibly ending the Here-document state
      * just beforehand.
+     * @return true if the quote state ended
      */
-    public void maybeEndHere(String capture) throws IOException {
+    public boolean maybeEndHere(String capture) throws IOException {
         if (!isHereEnding(capture)) {
             listener.writeHtmlized(capture);
+            return false;
         } else {
             listener.popState();
             listener.write(Consts.ZS);
             listener.writeHtmlized(capture);
+            return true;
         }
     }
 

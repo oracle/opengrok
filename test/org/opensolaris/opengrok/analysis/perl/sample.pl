@@ -290,3 +290,9 @@ print "${^GLOBAL_PHASE} is what?";
 
 # more quote-like tests
 qr{\.[a-z]+$}i;
+
+# should back to YYINITIAL after HERE document
+print <<EOF;
+	Some text
+EOF
+/\b sentinel \b/ && print; # This should heuristically match as m//
