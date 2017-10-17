@@ -66,10 +66,11 @@ import org.opensolaris.opengrok.web.Util;
 
     public void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException {
-        if (ignoreKwd)
+        if (ignoreKwd) {
             writeSymbol(value, null, yyline);
-        else
+        } else {
             writeSymbol(value, Consts.kwd, yyline);
+        }
     }
 
     public void skipSymbol() {

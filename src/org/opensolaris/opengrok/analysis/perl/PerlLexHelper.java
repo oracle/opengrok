@@ -178,7 +178,11 @@ class PerlLexHelper {
 
         if (doWrite) {
             listener.writeHtmlized(boundary);
-            listener.writeSymbol(opname, boundary.length(), false);
+            if (opname.length() > 0) {
+                listener.writeSymbol(opname, boundary.length(), false);
+            } else {
+                listener.skipSymbol();
+            }
             listener.write(Consts.SS);
             listener.writeHtmlized(postop);
         }
