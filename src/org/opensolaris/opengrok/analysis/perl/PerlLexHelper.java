@@ -365,7 +365,7 @@ class PerlLexHelper {
             // If the identifier contains the end quoting character, then it
             // may or may not parse in Perl. Treat everything before the first
             // instance of the `endqchar' as inside the quote -- and possibly
-            // as real identifier -- and abort the quote early.
+            // as real identifier -- and possibly abort the quote early.
             // e.g.: qr z$abcz;
             //     OK
             // e.g.: qr z$abziz;
@@ -374,6 +374,7 @@ class PerlLexHelper {
             // e.g.: qr i$abixi;
             //     OK
             String w0 = id.substring(0, ohnooo);
+            String p0 = new String(new char[] {endqchar});
             String w1 = id.substring(ohnooo + 1);
             listener.writeHtmlized(sigil);
             listener.write(s0);
@@ -382,10 +383,9 @@ class PerlLexHelper {
             } else {
                 listener.skipSymbol();
             }
-            listener.writeHtmlized(new String(new char[] {endqchar}));
-            listener.abortQuote();
+            listener.writeHtmlized(p0);
+            if (isQuoteEnding(p0)) listener.abortQuote();
             listener.write(w1);
-            endqchar = '\0';
         }
     }
 
@@ -432,7 +432,7 @@ class PerlLexHelper {
 
     /**
      * Write a special identifier as a keyword -- unless {@link endqchar} is in
-     * the {@code capture}, which will abort an active quote-like operator
+     * the {@code capture}, which may abort an active quote-like operator
      * instead.
      */
     public void specialID(String capture) throws IOException {
@@ -440,12 +440,11 @@ class PerlLexHelper {
         if ((ohnooo = capture.indexOf(endqchar)) == -1) {
             listener.writeKeyword(capture);
         } else {
-            String p0 = capture.substring(0, ohnooo + 1);
-            String p1 = capture.substring(ohnooo + 1);
-            listener.writeHtmlized(p0);
-            listener.abortQuote();
-            listener.writeHtmlized(p1);
-            endqchar = '\0';
+            for(char c : capture.toCharArray()) {
+                String p0 = new String(new char[] {c});
+                listener.writeHtmlized(p0);
+                if (isQuoteEnding(p0)) listener.abortQuote();
+            }
         }
     }
 
