@@ -143,9 +143,9 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 Pods = "=back" | "=begin" | "=end" | "=for" | "=head1" | "=head2" | "=item" | "=over" | "=pod"
 PodEND = "=cut"
 
-Quo0 =           [[\`\(\)\<\>\[\]\{\}\p{P}]]
-Quo0xHash =      [[\`\(\)\<\>\[\]\{\}\p{P}]--\#]
-Quo0xHashxApos = [[\`\(\)\<\>\[\]\{\}\p{P}]--[\#\']]
+Quo0 =           [[\`\(\)\<\>\[\]\{\}\p{P}\p{S}]]
+Quo0xHash =      [[\`\(\)\<\>\[\]\{\}\p{P}\p{S}]--\#]
+Quo0xHashxApos = [[\`\(\)\<\>\[\]\{\}\p{P}\p{S}]--[\#\']]
 
 MSapos = [ms] {MaybeWhsp} \'
 MShash = [ms]\#
