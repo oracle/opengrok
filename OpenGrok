@@ -310,15 +310,15 @@ DefaultInstanceConfiguration()
 
     if [ "$OPENGROK_RENAMED_FILES_HISTORY" != "on" ]
     then
-        RENAMED_FILES_HISTORY="-D off"
+        RENAMED_FILES_HISTORY="--renamedHistory off"
     else
-        RENAMED_FILES_HISTORY="-D on"
+        RENAMED_FILES_HISTORY="--renamedHistory on"
     fi
 
     # OPTIONAL: override depth of scanning for repositories
     if [ -n "${OPENGROK_SCAN_DEPTH}" ]
     then
-        SCAN_DEPTH="-z${OPENGROK_SCAN_DEPTH}"
+        SCAN_DEPTH="--depth ${OPENGROK_SCAN_DEPTH}"
     fi
 
     # OPTIONAL: Allow Leading Wildcard Searches
@@ -417,7 +417,7 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
 
     if [ -n "${OPENGROK_PROGRESS}" ]
     then
-        PROGRESS="-C"
+        PROGRESS="--progress"
     fi
 }
 

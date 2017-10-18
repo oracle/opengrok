@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.analysis;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
@@ -41,6 +42,8 @@ import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzer;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
 import static org.junit.Assert.*;
+    import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Tests for the functionality provided by the AnalyzerGuru class.
@@ -175,9 +178,34 @@ public class AnalyzerGuruTest {
      */
     @Test
     public void matchesFullName() {
-        FileAnalyzerFactory faf = AnalyzerGuru.find("/path/to/Makefile");
+        String s = File.separator;  // so test works on Unix and Windows
+        String path = s+"path"+s+"to"+s+"Makefile";
+        FileAnalyzerFactory faf = AnalyzerGuru.find(path);
+        Class c = faf.getClass();
         assertSame(ShAnalyzerFactory.class, faf.getClass());
         faf = AnalyzerGuru.find("GNUMakefile");
         assertSame(ShAnalyzerFactory.class, faf.getClass());
+    }
+    
+    /**
+     * Test for obtaining a language analyzer's factory class.
+     * This should not fail even if package names change.
+     * The only assumptions made is that all the language analyzer 
+     * and factory names follow the pattern:
+     * 
+     *  language + "Analyzer",  and 
+     *  language + "AnalyzerFactory"
+     */
+    @Test
+    public void getAnalyzerFactoryClass() {
+        Class fc_forSh = AnalyzerGuru.getFactoryClass("Sh");
+        Class fc_forShAnalyzer = AnalyzerGuru.getFactoryClass("ShAnalyzer");
+        Class fc_simpleName = AnalyzerGuru.getFactoryClass("ShAnalyzerFactory");
+        assertEquals(ShAnalyzerFactory.class, fc_forSh);
+        assertEquals(ShAnalyzerFactory.class,fc_forShAnalyzer);
+        assertEquals(ShAnalyzerFactory.class,fc_simpleName);
+        
+        Class fc = AnalyzerGuru.getFactoryClass("UnknownAnalyzerFactory");
+        assertNull(fc);
     }
 }
