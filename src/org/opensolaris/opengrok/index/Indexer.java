@@ -533,7 +533,7 @@ public final class Indexer {
             });
 
             parser.on("--progress",
-                "Print per project percentage progress information",
+                "Print per project percentage progress information.",
                 "(I/O extensive, since one read through directory structure is",
                 "made before indexing, needs -v, otherwise it just goes to the log)").
                 Do( v -> {
@@ -588,7 +588,7 @@ public final class Indexer {
             });
 
             parser.on("-S", "--search", 
-                "Search for \"external\" source repositories and add them").Do( v -> {
+                "Search for \"external\" source repositories and add them.").Do( v -> {
                 searchRepositories = true;
             });
 
@@ -609,7 +609,7 @@ public final class Indexer {
 
             parser.on("--style", "=path", 
                 "Path to the subdirectory in the web-application containing the",
-                "requested stylesheet. The factory-setting is: \"default\"").
+                "requested stylesheet. The factory-setting is: \"default\".").
                 Do( stylePath -> {
                     cfg.setWebappLAF((String)stylePath);
                 }
@@ -625,7 +625,7 @@ public final class Indexer {
             parser.on("-T", "--threads", "=number", Integer.class,
                 "The number of threads to use for index generation.",
                 "By default the number of threads will be set to the",
-                "number of available CPUs").Do( threadCount -> {
+                "number of available CPUs.").Do( threadCount -> {
                 noThreads = (Integer)threadCount;
             });
 
@@ -664,7 +664,7 @@ public final class Indexer {
             });
 
             parser.on("--userPageSuffix", "=URL-suffix", 
-                "URL Suffix for the user Information provider. Default: \"\"").Do( suffix -> {
+                "URL Suffix for the user Information provider. Default: \"\"".).Do( suffix -> {
                 cfg.setUserPageSuffix((String)suffix);
             });
 
@@ -680,7 +680,7 @@ public final class Indexer {
 
             parser.on("-W", "--writeConfig", "=/path/to/configuration", 
                 "Write the current configuration to the specified file",
-                "(so that the web application can use the same configuration").Do( configFile -> {
+                "(so that the web application can use the same configuration)").Do( configFile -> {
                 configFilename = (String)configFile;
             });
 
