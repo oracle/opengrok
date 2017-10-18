@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -50,18 +51,18 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
             }
 
             /**
-             * Check whether the byte array contains plain text. First, check
-             * assuming US-ASCII encoding. Then, if unsuccessful, try to
-             * strip away Unicode byte-order marks and try again.
+             * Check whether the byte array contains plain text. First, look
+             * for a UTF BOM; otherwise, inspect as if US-ASCII.
              */
             private boolean isPlainText(byte[] content) throws IOException {
+                int lengthBOM = AnalyzerGuru.skipForBOM(content);
+                if (lengthBOM > 0) return true;
                 String ascii = new String(content, "US-ASCII");
                 if (isPlainText(ascii)) {
                     return true;
                 }
 
-                String noBOM = AnalyzerGuru.stripBOM(content);
-                return (noBOM != null) && isPlainText(noBOM);
+                return false;
             }
 
             /**
