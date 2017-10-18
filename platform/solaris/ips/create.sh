@@ -242,6 +242,17 @@ PKG pkgsend add file tools/ConfigMerge \
 PKG pkgsend add file tools/Messages \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/Messages
 
+PKG pkgsend add file tools/sync/sync.py \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/sync.py
+PKG pkgsend add file tools/sync/command.py \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/command.py
+PKG pkgsend add file tools/sync/commands.py \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/commands.py
+PKG pkgsend add file tools/sync/filelock.py \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/filelock.py
+PKG pkgsend add file tools/sync/reindex-project.ksh \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/reindex-project.ksh
+
 PKG pkgsend add file dist/opengrok.jar \
     mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
 
