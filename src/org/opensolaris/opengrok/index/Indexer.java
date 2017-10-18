@@ -664,7 +664,7 @@ public final class Indexer {
             });
 
             parser.on("--userPageSuffix", "=URL-suffix", 
-                "URL Suffix for the user Information provider. Default: \"\"".).Do( suffix -> {
+                "URL Suffix for the user Information provider. Default: \"\".").Do( suffix -> {
                 cfg.setUserPageSuffix((String)suffix);
             });
 
