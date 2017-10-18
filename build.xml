@@ -513,8 +513,9 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <lib dir="${dist.dir}/lib" includes="*.jar" excludes="${servlet-api.jar}"/>
         </war>
         <echo message="Generating man page.."/>
-        <java classname="org.opensolaris.opengrok.index.CommandLineOptions"
+        <java classname="org.opensolaris.opengrok.index.Indexer"
               output="${dist.dir}/opengrok.1" failonerror="true" fork="true">
+            <arg value="--man" />
             <classpath>
                 <pathelement location="dist/opengrok.jar"/>
                 <pathelement path="${java.class.path}"/>
@@ -581,6 +582,12 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <tarfileset dir="tools" prefix="${distname}-${version}/bin/" mode="555">
                 <include name="Messages"/>
                 <include name="Groups"/>
+            </tarfileset>
+            <tarfileset dir="tools/sync" prefix="${distname}-${version}/bin/" mode="555">
+                <include name="sync.py"/>
+                <include name="command.py"/>
+                <include name="commands.py"/>
+                <include name="reindex-project.ksh"/>
             </tarfileset>
             <tarfileset dir="doc" prefix="${distname}-${version}/doc">
                 <include name="EXAMPLE.txt"/>

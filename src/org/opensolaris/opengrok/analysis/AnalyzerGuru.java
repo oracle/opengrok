@@ -148,6 +148,11 @@ public class AnalyzerGuru {
      * List of all registered {@code FileAnalyzerFactory} instances.
      */
     private static final List<FileAnalyzerFactory> factories = new ArrayList<>();
+    
+    /**
+     * Names of all analysis packages.
+     */
+    private static final List<String> analysisPkgNames = new ArrayList<>();
 
     public static final Reader dummyR = new StringReader("");
     public static final String dummyS = "";
@@ -454,7 +459,9 @@ public class AnalyzerGuru {
 
     /**
      * Find a {@code FileAnalyzerFactory} with the specified class name. If one
-     * doesn't exist, create one and register it.
+     * doesn't exist, create one and register it. Allow specification of either
+     * the complete class name (which includes the package name) or the simple
+     * name of the class.
      *
      * @param factoryClassName name of the factory class
      * @return a file analyzer factory
@@ -468,9 +475,72 @@ public class AnalyzerGuru {
     public static FileAnalyzerFactory findFactory(String factoryClassName)
             throws ClassNotFoundException, IllegalAccessException,
             InstantiationException {
-        return findFactory(Class.forName(factoryClassName));
+        Class fcn = null;
+        try {
+            fcn = Class.forName(factoryClassName);
+            
+        } catch (ClassNotFoundException e) {
+            fcn  = getFactoryClass(factoryClassName);
+            
+            if (fcn == null) {
+                throw new ClassNotFoundException("Unable to locate class " + factoryClassName);
+            }
+        }
+        
+        return findFactory(fcn);
     }
 
+    /**
+     * Get Analyzer factory class using class simple name.
+     * 
+     * @param simpleName which may be either the factory class
+     * simple name (eg. CAnalyzerFactory), the analyzer name
+     * (eg. CAnalyzer), or the language name (eg. C)
+     * 
+     * @return the analyzer factory class, or null when not found.
+     */
+    public static Class getFactoryClass(String simpleName) {
+        //return new AnalyzerGuru().getClass().getPackage().getName();
+        Class factoryClass = null;
+        
+        // Build analysis package name list first time only
+        if (analysisPkgNames.isEmpty()) {
+            Package[] p = Package.getPackages();
+            for(Package pp : p){
+                String pname = pp.getName();
+                if (pname.indexOf(".analysis.") != -1) {
+                    analysisPkgNames.add(pname);
+                }
+            }
+        }
+        
+        // This allows user to enter the language or analyzer name
+        // (eg. C or CAnalyzer vs. CAnalyzerFactory)
+        // Note that this assumes a regular naming scheme of
+        // all language parsers: 
+        //      <language>Analyzer, <language>AnalyzerFactory
+        
+        if (simpleName.indexOf("Analyzer") == -1) {
+            simpleName += "Analyzer";
+        }
+        
+        if (simpleName.indexOf("Factory") == -1) {
+            simpleName += "Factory";
+        }
+
+        for (String aPackage : analysisPkgNames) {
+            try {
+                String fqn = aPackage + "." + simpleName;
+                factoryClass = Class.forName(fqn);
+                break;
+            } catch (ClassNotFoundException e) {
+                // Ignore
+            }
+        }
+        
+        return factoryClass;
+    }
+    
     /**
      * Find a {@code FileAnalyzerFactory} which is an instance of the specified
      * class. If one doesn't exist, create one and register it.

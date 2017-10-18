@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.authorization;
 
@@ -33,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.opensolaris.opengrok.condition.DeliberateRuntimeException;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
 import org.opensolaris.opengrok.configuration.Project;
@@ -741,7 +743,7 @@ public class AuthorizationFrameworkTest {
         return new TestPlugin() {
             @Override
             public void load(Map<String, Object> parameters) {
-                throw new NullPointerException("This plugin failed while loading.");
+                throw new DeliberateRuntimeException("This plugin failed while loading.");
             }
 
             @Override
@@ -766,12 +768,12 @@ public class AuthorizationFrameworkTest {
         return new TestPlugin() {
             @Override
             public boolean isAllowed(HttpServletRequest request, Project project) {
-                throw new NullPointerException("This plugin failed while checking.");
+                throw new DeliberateRuntimeException("This plugin failed while checking.");
             }
 
             @Override
             public boolean isAllowed(HttpServletRequest request, Group group) {
-                throw new NullPointerException("This plugin failed while checking.");
+                throw new DeliberateRuntimeException("This plugin failed while checking.");
             }
 
             @Override

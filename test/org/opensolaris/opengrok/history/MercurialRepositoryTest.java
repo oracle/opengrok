@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -166,7 +167,8 @@ public class MercurialRepositoryTest {
      */
     static public void runHgCommand(File reposRoot, String ... args) {
         List<String> cmdargs = new ArrayList<>();
-        cmdargs.add(MercurialRepository.CMD_FALLBACK);
+        MercurialRepository repo = new MercurialRepository();
+        cmdargs.add(repo.getRepoCommand());
         for (String arg: args) {
             cmdargs.add(arg);
         }

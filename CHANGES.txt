@@ -310,8 +310,6 @@ Bug fixes
     Bug #19161: Solaris package should not deliver source.war to /var/tomcat6 in any form
     Bug #19110: Tab expansion problems in 0.11-rctemp - disable of default tabs to mitigate
 
-For bug details refer to Bugzilla -
-https://defect.opensolaris.org/bz/buglist.cgi?product=opengrok&query_format=advanced&target_milestone=0.11&order=bug_id%20DESC
 
 Contributors
 
@@ -420,9 +418,6 @@ Bug #17554: Empty "Navigate" window in Perl code
 Bug #17582: context shown in hits doesn't show symbol type for non lowercased symbols
 Bug #17631: Cookie name "OpenGrok/project" is a reserved token
 
-For bug details refer to:
-http://defect.opensolaris.org/bz/buglist.cgi?bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&target_milestone=0.10&product=opengrok
-
 Contributors:
 
 We'd like to thank all the people who report bugs, send us ideas for
@@ -511,8 +506,6 @@ Bug #15690: css browser caching breaks UI
 Bug #15858: String index out of range: -8161 from Summarizer
 Bug #15859: html analyzer doesn't escape forms
 
-For bug details refer to:
-http://defect.opensolaris.org/bz/buglist.cgi?bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&target_milestone=0.9&product=opengrok
 
 Contributors:
 
@@ -586,9 +579,6 @@ BUG FIXES
 
 THE ROAD AHEAD
 
-A tentative roadmap for OpenGrok can be found here:
-http://www.opensolaris.org/os/project/opengrok/Roadmap/
-
 As of OpenGrok 0.8 we will change the release model to the train model and
 start with quarterly releases.
 
@@ -651,9 +641,7 @@ April 2008 update 0.6.1
 -------------------------------------------------
 This is a bugfix release.
 
-Please see http://src.opensolaris.org/source/history/opengrok/trunk/ for
-full history information, and for the list of contributors. The following is
-just a summary.
+The following is just a summary.
 
 Bug #67: Duplicate magics in the analyzers
 Bug #546: IOException when viewing history for xref root in multi-project installation
@@ -669,9 +657,7 @@ Bug #1057: double-colon in search pattern throws an error
 
 March 2008 update 0.6
 -------------------------------------------------
-Please see http://src.opensolaris.org/source/history/opengrok/trunk/ for
-full history information, and for the list of contributors. The following is
-just a summary.
+The following is just a summary.
 
 New Features:
    Analyzer-support for Tcl/Tk
@@ -680,13 +666,11 @@ New Features:
    Use multiple index databases
 
 Bug fixes:
-   A lot.. See http://src.opensolaris.org/source/history/opengrok/trunk/
+   A lot..
 
 August 2007 update 0.5
 -------------------------------------------------
-Please see http://cvs.opensolaris.org/source/history/opengrok/trunk/ for
-full history information, and for the list of contributors. The following is
-just a summary.
+The following is just a summary.
 
 New Features:
    Annotate support for Subversion and Mercurial

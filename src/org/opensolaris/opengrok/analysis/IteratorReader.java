@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -36,12 +37,19 @@ public final class IteratorReader extends Reader {
     private StringReader current;
 
     public IteratorReader(Iterable<String> iterable) {
-        this(iterable.iterator());
+        if (iterable == null) {
+            throw new IllegalArgumentException("`iterable' is null");
+        }
+        Iterator<String> iter = iterable.iterator();
+        if (iter == null) {
+            throw new IllegalArgumentException("`iterable' did not produce iterator");
+        }
+        this.iterator = iter;
     }
 
     public IteratorReader(Iterator<String> iterator) {
         if (iterator == null) {
-            throw new NullPointerException();
+            throw new IllegalArgumentException("`iterator' is null");
         }
         this.iterator = iterator;
     }
