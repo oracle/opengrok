@@ -310,5 +310,16 @@
 <a class="l" name="303" href="#303">303</a><span class="c"># more quote-like tests</span>
 <a class="l" name="304" href="#304">304</a><b>s</b><span class="s">{\.[a-z]+$}{no}</span>i;
 <a class="l" name="305" href="#305">305</a><b>my</b> $a = <b>qr</b><span class="s">$abc$</span>ix;
-<a class="l" name="306" href="#306">306</a></body>
+<a class="l" name="306" href="#306">306</a>
+<a class="l" name="307" href="#307">307</a><span class="c"># more POD tests</span>
+<a class="l" name="308" href="#308">308</a>=cut for no purpose
+<a class="l" name="309" href="#309">309</a><b>print</b> <span class="s">&quot;1\n&quot;</span>;
+<a class="hl" name="310" href="#310">310</a>
+<a class="l" name="311" href="#311">311</a><span class="c"># POD odd case</span>
+<a class="l" name="312" href="#312">312</a><span class="c">=ITEM fubar($)
+<a class="l" name="313" href="#313">313</a>=CUT back -- not really though
+<a class="l" name="314" href="#314">314</a>n0n{(sense]
+<a class="l" name="315" href="#315">315</a>=cut back really</span>
+<a class="l" name="316" href="#316">316</a><b>print</b> <span class="s">&quot;1\n&quot;</span>;
+<a class="l" name="317" href="#317">317</a></body>
 </html>

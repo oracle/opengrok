@@ -303,3 +303,14 @@ $ svar = 1;
 # more quote-like tests
 s{\.[a-z]+$}{no}i;
 my $a = qr$abc$ix;
+
+# more POD tests
+=cut for no purpose
+print "1\n";
+
+# POD odd case
+=ITEM fubar($)
+=CUT back -- not really though
+n0n{(sense]
+=cut back really
+print "1\n";

@@ -39,7 +39,6 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexXref
 %implements PerlLexListener
 %unicode
-%ignorecase
 %int
 %init{
         h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
@@ -137,13 +136,13 @@ ProtoAttr = "(" ( [\\]? {Sigils} | ";" | {WhiteSpace} )* ")"
 URIChar = [\?\#\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 
 FNameChar = [a-zA-Z0-9_\-\.]
-FileExt = ("pl"|"perl"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch")
+FileExt = ("pl"|"perl"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch"|
+           "PL"|"PERL"|"PM"|"CONF"|"TXT"|"HTM"|"HTML"|"XML"|"INI"|"DIFF"|"PATCH")
 File = [a-zA-Z]{FNameChar}* "." {FileExt}
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 
-Pods = "=back" | "=begin" | "=end" | "=for" | "=head1" | "=head2" | "=item" | "=over" | "=pod"
 PodEND = "=cut"
 
 Quo0 =           [[\`\(\)\<\>\[\]\{\}\p{P}\p{S}]]
@@ -330,7 +329,12 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ {QYword} |
  {WxSigils}{QYword}  { h.qop(yytext(), 1, true); }
 
- ^ {Pods}   {
+ ^ {PodEND} [^\n]*    {
+        out.write(htmlize(yytext()));
+ }
+
+ // POD start
+ ^ "=" [a-zA-Z_] [a-zA-Z0-9_]*    {
         yypush(POD, null);
         out.write(Consts.SC + yytext());
  }
@@ -449,9 +453,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 }
 
 <POD> {
-^ {PodEND} [^\n]* / {EOL} {
+^ {PodEND} [^\n]*    {
     yypop();
-    out.write(yytext() + Consts.ZS);
+    out.write(htmlize(yytext()) + Consts.ZS);
   }
 }
 
