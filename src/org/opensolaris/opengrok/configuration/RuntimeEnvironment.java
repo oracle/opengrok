@@ -700,14 +700,35 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Set the map of external SCM repositories
+     * Set the list of repositories.
      *
      * @param repositories the repositories to use
      */
     public void setRepositories(List<RepositoryInfo> repositories) {
         threadConfig.get().setRepositories(repositories);
     }
+    
+    public void removeRepositories() {
+        threadConfig.get().setRepositories(null);
+    }
+    
+    /**
+     * Search through the directory for repositories and use the result to replace
+     * the lists of repositories in both RuntimeEnvironment/Configuration and HistoryGuru.
+     *
+     * @param dir the root directory to start the search in
+     */
+    public void setRepositories(String dir) {
+        List<RepositoryInfo> repos = new ArrayList<>(HistoryGuru.getInstance().
+                addRepositories(new File[]{new File(dir)},
+                RuntimeEnvironment.getInstance().getIgnoredNames()));
+        RuntimeEnvironment.getInstance().setRepositories(repos);
+    }
 
+    /**
+     * Add repositories to the list.
+     * @param repositories 
+     */
     public void addRepositories(List<RepositoryInfo> repositories) {
         threadConfig.get().addRepositories(repositories);
     }
@@ -1330,20 +1351,29 @@ public final class RuntimeEnvironment {
 
     public void setConfiguration(Configuration configuration, List<String> subFileList) {
         this.configuration = configuration;
+        HistoryGuru histGuru = HistoryGuru.getInstance();
+                
         register();
+        
         try {
             generateProjectRepositoriesMap();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
+        
         populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
+        
+        // Set the working repositories in HistoryGuru.
         if (subFileList != null) {
-            HistoryGuru.getInstance().invalidateRepositories(
+            histGuru.invalidateRepositories(
                 configuration.getRepositories(), subFileList);
         } else {
-            HistoryGuru.getInstance().invalidateRepositories(
+            histGuru.invalidateRepositories(
                 configuration.getRepositories());
         }
+        // The invalidation of repositories above might have excluded some
+        // repositories in HistoryGuru so the configuration needs to reflect that.
+        configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
     }
 
     public Configuration getConfiguration() {

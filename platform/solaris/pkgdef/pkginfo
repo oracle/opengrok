@@ -1,4 +1,3 @@
-#
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -9,12 +8,13 @@
 # language governing permissions and limitations under the License.
 #
 # When distributing Covered Code, include this CDDL HEADER in each
-# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# file and include the License file at LICENSE.txt.
 # If applicable, add the following below this CDDL HEADER, with the
 # fields enclosed by brackets "[]" replaced with your own identifying
 # information: Portions Copyright [yyyy] [name of copyright owner]
 #
 # CDDL HEADER END
+
 #
 # Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
 #

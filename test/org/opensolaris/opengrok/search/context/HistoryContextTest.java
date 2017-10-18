@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.search.context;
@@ -35,6 +36,7 @@ import org.apache.lucene.search.TermQuery;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.Hit;
@@ -43,6 +45,10 @@ import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Unit tests for the {@code HistoryContext} class.
@@ -51,12 +57,15 @@ public class HistoryContextTest {
 
     private static TestRepository repositories;
 
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
+
     @BeforeClass
     public static void setUpClass() throws Exception {
         repositories = new TestRepository();
         repositories.create(HistoryContextTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/history/repositories.zip"));
-        HistoryGuru.getInstance().addRepositories(repositories.getSourceRoot());
+        RuntimeEnvironment.getInstance().setRepositories(repositories.getSourceRoot());
     }
 
     @AfterClass
@@ -86,6 +95,7 @@ public class HistoryContextTest {
     }
 
     @Test
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_3args() throws Exception {
         String path = "/mercurial/Makefile";
         String filename = repositories.getSourceRoot() + path;
@@ -93,7 +103,8 @@ public class HistoryContextTest {
         // Construct a query equivalent to hist:dummy
         TermQuery q1 = new TermQuery(new Term("hist", "dummy"));
         ArrayList<Hit> hits = new ArrayList<>();
-        assertTrue(new HistoryContext(q1).getContext(filename, path, hits));
+        boolean gotCtx = new HistoryContext(q1).getContext(filename, path, hits);
+        assertTrue(gotCtx);
         assertEquals(1, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Created a small <b>dummy</b> program"));
@@ -103,7 +114,8 @@ public class HistoryContextTest {
         q2.add(new Term("hist", "dummy"));
         q2.add(new Term("hist", "program"));
         hits.clear();
-        assertTrue(new HistoryContext(q2.build()).getContext(filename, path, hits));
+        gotCtx = new HistoryContext(q2.build()).getContext(filename, path, hits);
+        assertTrue(gotCtx);
         assertEquals(1, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Created a small <b>dummy program</b>"));
@@ -111,7 +123,8 @@ public class HistoryContextTest {
         // Search for a term that doesn't exist
         TermQuery q3 = new TermQuery(new Term("hist", "term_does_not_exist"));
         hits.clear();
-        assertFalse(new HistoryContext(q3).getContext(filename, path, hits));
+        gotCtx = new HistoryContext(q3).getContext(filename, path, hits);
+        assertFalse(gotCtx);
         assertEquals(0, hits.size());
 
         // Search for term with multiple hits - hist:small OR hist:target
@@ -119,7 +132,8 @@ public class HistoryContextTest {
         q4.add(new TermQuery(new Term("hist", "small")), Occur.SHOULD);
         q4.add(new TermQuery(new Term("hist", "target")), Occur.SHOULD);
         hits.clear();
-        assertTrue(new HistoryContext(q4.build()).getContext(filename, path, hits));
+        gotCtx = new HistoryContext(q4.build()).getContext(filename, path, hits);
+        assertTrue(gotCtx);
         assertEquals(2, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Add lint make <b>target</b> and fix lint warnings"));
@@ -128,6 +142,7 @@ public class HistoryContextTest {
     }
 
     @Test
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_4args() throws Exception {
         String path = "/mercurial/Makefile";
         File file = new File(repositories.getSourceRoot() + path);

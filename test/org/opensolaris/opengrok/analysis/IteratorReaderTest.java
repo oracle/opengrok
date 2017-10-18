@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -54,16 +55,16 @@ public class IteratorReaderTest {
      * Test that we get an error immediately when constructing a token stream
      * where the list is {@code null}.
      */
-    @Test(expected= NullPointerException.class)
+    @Test(expected= IllegalArgumentException.class)
     public void testFailfastOnNull() {
         new IteratorReader((List<String>) null);
     }
 
     /**
-     * Test that a {@code NullPointerException} is thrown immediately also
+     * Test that an {@code IllegalArgumentException} is thrown immediately also
      * when using the constructor that takes an {@code Iterator}.
      */
-    @Test(expected= NullPointerException.class)
+    @Test(expected= IllegalArgumentException.class)
     public void testFailfastOnNullIterator() {
         new IteratorReader((Iterator<String>) null);
     }

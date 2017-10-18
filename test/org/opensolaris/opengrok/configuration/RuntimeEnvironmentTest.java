@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -199,7 +200,11 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testCtags() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertEquals("ctags", instance.getCtags());
+        String instanceCtags = instance.getCtags();
+        assertNotNull(instanceCtags);
+        assertTrue("instance ctags should equals 'ctags' or the sys property",
+            instanceCtags.equals("ctags") || instanceCtags.equals(
+            System.getProperty("org.opensolaris.opengrok.analysis.Ctags")));
         String path = "/usr/bin/ctags";
         instance.setCtags(path);
         assertEquals(path, instance.getCtags());
@@ -257,7 +262,7 @@ public class RuntimeEnvironmentTest {
     public void testRepositories() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertNotNull(instance.getRepositories());
-        instance.setRepositories(null);
+        instance.removeRepositories();
         assertNull(instance.getRepositories());
         List<RepositoryInfo> reps = new ArrayList<>();
         instance.setRepositories(reps);

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -91,6 +92,15 @@ public abstract class Repository extends RepositoryInfo {
         super();
         ignoredFiles = new ArrayList<String>();
         ignoredDirs = new ArrayList<String>();
+    }
+
+    /**
+     * Gets the instance's repository command, primarily for testing purposes.
+     * @return null if not {@link isWorking}, or otherwise a defined command
+     */
+    public String getRepoCommand() {
+        isWorking();
+        return RepoCommand;
     }
 
     /**

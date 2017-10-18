@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -83,12 +84,14 @@ public class ProjectMessageTest {
 
     @After
     public void tearDown() {
-        env.removeAllMessages();
-        
-        // This should match Configuration constructor.
-        env.setProjects(new ConcurrentHashMap<>());
-        env.setRepositories(new ArrayList<RepositoryInfo>());
-        env.getProjectRepositoriesMap().clear();
+        if (env != null) {
+            env.removeAllMessages();
+
+            // This should match Configuration constructor.
+            env.setProjects(new ConcurrentHashMap<>());
+            env.setRepositories(new ArrayList<RepositoryInfo>());
+            env.getProjectRepositoriesMap().clear();
+        }
 
         repository.destroy();
     }
@@ -154,12 +157,14 @@ public class ProjectMessageTest {
         m.addTag("mercurial");
 
         // Add a sub-repository.
-        File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
+        String repoPath = repository.getSourceRoot() + File.separator + "mercurial";
+        File mercurialRoot = new File(repoPath);
         File subDir = new File(mercurialRoot, "usr");
         Assert.assertTrue(subDir.mkdir());
+        String subRepoPath = repoPath + File.separator + "usr" + File.separator + "closed";
+        File mercurialSubRoot = new File(subRepoPath);
         MercurialRepositoryTest.runHgCommand(mercurialRoot,
-            "clone", mercurialRoot.getAbsolutePath(),
-            mercurialRoot.getAbsolutePath() + File.separator + "usr" + File.separator + "closed");
+            "clone", mercurialRoot.getAbsolutePath(), subRepoPath);
 
         // Add the project.
         env.setScanningDepth(3);
@@ -175,6 +180,17 @@ public class ProjectMessageTest {
                 filter(p -> p.getName().equals("mercurial")).
                 collect(Collectors.toSet()).size());
 
+        // Check that HistoryGuru now includes the project in its list.
+        Set<String> directoryNames = HistoryGuru.getInstance().
+            getRepositories().stream().map(ri -> ri.getDirectoryName()).
+            collect(Collectors.toSet());
+        Assert.assertTrue("though it should contain the top root,",
+            directoryNames.contains(repoPath) || directoryNames.contains(
+            mercurialRoot.getCanonicalPath()));
+        Assert.assertTrue("though it should contain the sub-root,",
+            directoryNames.contains(subRepoPath) || directoryNames.contains(
+            mercurialSubRoot.getCanonicalPath()));
+        
         // Add more projects and check that they have been added incrementally.
         // At the same time, it checks that multiple projects can be added
         // with single message.
@@ -186,6 +202,13 @@ public class ProjectMessageTest {
         Assert.assertEquals(4, env.getRepositories().size());
         Assert.assertTrue(env.getProjects().containsKey("git"));
         Assert.assertTrue(env.getProjects().containsKey("svn"));
+        
+        Assert.assertFalse(HistoryGuru.getInstance().getRepositories().stream().
+                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                contains("git"));
+        Assert.assertFalse(HistoryGuru.getInstance().getRepositories().stream().
+                map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                contains("svn"));
     }
 
     /**
@@ -314,6 +337,13 @@ public class ProjectMessageTest {
             }
         }
 
+        // Check that HistoryGuru no longer maintains the removed projects.
+        for (String p : projectsToDelete) {
+            Assert.assertFalse(HistoryGuru.getInstance().getRepositories().stream().
+                    map(ri -> ri.getDirectoryName()).collect(Collectors.toSet()).
+                    contains(repository.getSourceRoot() + File.separator + p));
+        }
+        
         // Check the group no longer contains the removed project.
         Assert.assertEquals(0, group.getRepositories().size());
         Assert.assertEquals(0, group.getProjects().size());

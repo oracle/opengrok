@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -41,9 +42,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -68,8 +73,8 @@ public class IndexerTest {
     TestRepository repository;
     private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
-    public IndexerTest() {
-    }
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -239,7 +244,7 @@ public class IndexerTest {
         env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
-        HistoryGuru.getInstance().addRepositories(repository.getSourceRoot());
+        env.setRepositories(repository.getSourceRoot());
 
         List<RepositoryInfo> repos = env.getRepositories();
         Repository r = null;
@@ -323,6 +328,7 @@ public class IndexerTest {
      * @throws Exception 
      */
     @Test
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
     public void testRemoveFileOnFileChange() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -336,7 +342,7 @@ public class IndexerTest {
 
         env.setSourceRoot(testrepo.getSourceRoot());
         env.setDataRoot(testrepo.getDataRoot());
-        HistoryGuru.getInstance().addRepositories(testrepo.getSourceRoot());
+        env.setRepositories(testrepo.getSourceRoot());
 
         // create index
         Project project = new Project("mercurial", "/mercurial");
@@ -349,6 +355,7 @@ public class IndexerTest {
         listener.reset();
 
         // Change a file so that it gets picked up by the indexer.
+        Thread.sleep(1100);
         File bar = new File(testrepo.getSourceRoot() + File.separator + "mercurial",
                 "bar.txt");
         Assert.assertTrue(bar.exists());

@@ -1,0 +1,18 @@
+
+Set of scripts to facilitate parallel project synchronization and mirroring
+
+Use e.g. like this:
+
+  # sync.py -c /scripts/sync.conf -d /ws-local/ -p
+
+where the sync.conf file contents might look like this:
+
+  {
+     "commands": [["/usr/opengrok/bin/Messages", "-c", "info", "-e", "+1 hour",
+                   "-n", "normal", "-t", "ARG", "resync + reindex in progress"],
+                  ["sudo", "-u", "wsmirror", "/scripts/mirror-project.ksh"],
+                  ["sudo", "-u", "webservd", "/scripts/reindex-project.ksh"],
+                  ["/usr/opengrok/bin/Messages", "-n", "abort", "-t"],
+                  ["/scripts/check-indexer-logs.ksh"]]
+  }
+
