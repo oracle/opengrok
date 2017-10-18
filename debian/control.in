@@ -12,11 +12,9 @@ Depends: sun-java7-jre | java2-runtime, exuberant-ctags (>= 1:5.6-1), ant, liblu
 Recommends: tomcat7
 Description: Wicked fast source code indexing and search software
  OpenGrok is a fast and usable source code search and cross reference
- engine, written in Java on top of lucene. It helps you search, 
- cross-reference and navigate your source tree. It can understand 
- various program file formats and version control histories like 
+ engine, written in Java on top of lucene. It helps you search,
+ cross-reference and navigate your source tree. It can understand
+ various program file formats and version control histories like
  Mercurial, SCCS, RCS, CVS and Subversion
- .
- OpenGrok is the tool used for the OpenSolaris Source Browser.
  .
 

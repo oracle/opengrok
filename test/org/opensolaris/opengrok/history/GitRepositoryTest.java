@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -181,11 +182,12 @@ public class GitRepositoryTest {
                 = (GitRepository) RepositoryFactory.getRepository(root);
         int i = 0;
         for (String[] test : tests) {
-            String file = root.getAbsolutePath() + File.separator + test[0];
+            String file = root.getCanonicalPath() + File.separator + test[0];
             String changeset = test[1];
-            String expected = root.getAbsolutePath() + File.separator + test[2];
+            String expected = root.getCanonicalPath() + File.separator + test[2];
             try {
-                Assert.assertEquals(expected, gitrepo.findOriginalName(file, changeset));
+                String originalName = gitrepo.findOriginalName(file, changeset);
+                Assert.assertEquals(expected, originalName);
             } catch (IOException ex) {
                 Assert.fail(String.format("Looking for original name of {} in {} shouldn't fail", file, changeset));
             }
