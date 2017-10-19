@@ -41,6 +41,7 @@ class Command:
 
         self.logger = logger or logging.getLogger(__name__)
         logging.basicConfig()
+        
         if args_subst or args_append:
             self.fill_arg(args_append, args_subst)
 
