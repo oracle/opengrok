@@ -46,7 +46,7 @@ import logging
 import tempfile
 import json
 import commands
-from commands import Commands
+from commands import Commands, CommandsBase
 
 
 major_version = sys.version_info[0]
@@ -57,14 +57,17 @@ if (major_version < 3):
 __version__ = "0.2.1"
 
 
-def worker(x):
-    """ Process (resync + reindex) one project by calling external script.
+def worker(base):
+    """
+    Process one project by calling set of commands.
     """
 
+    x = Commands(base)
     logger.debug(str(os.getpid()) + " " + str(x))
     x.run()
+    base.fill(x.retcodes, x.outputs, x.failed)
 
-    return x
+    return base
 
 if __name__ == '__main__':
     output = []
@@ -163,7 +166,7 @@ if __name__ == '__main__':
 
             projects = []
             for d in dirs_to_process:
-                proj = Commands(name=d, commands=config["commands"])
+                proj = CommandsBase(d, config["commands"])
                 projects.append(proj)
 
             try:
@@ -177,7 +180,7 @@ if __name__ == '__main__':
                 for proj in projects:
                     logger.debug("Output from {}:".format(proj.name))
                     for cmd in proj.outputs.keys():
-                        if len(proj.outputs[cmd]) > 0:
+                        if proj.outputs[cmd] and len(proj.outputs[cmd]) > 0:
                             logger.debug("{}: {}".
                                          format(cmd, proj.outputs[cmd]))
 

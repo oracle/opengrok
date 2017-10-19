@@ -75,6 +75,7 @@ class Command:
 
             self.state = "finished"
             self.returncode = int(p.returncode)
+            self.logger.debug("{} -> {}".format(self.cmd, self.getretcode()))
             self.out = out
             p.stdout.close()
 

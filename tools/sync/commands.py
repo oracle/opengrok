@@ -22,53 +22,66 @@
 #
 
 import logging
+import os
 import command
 from command import Command
-import os
 
 
-class Commands:
+class CommandsBase:
     """
     Wrap the run of a set of Command instances.
+
+    This class intentionally does not contain any logging
+    so that it can be passed through Pool.map().
     """
 
-    def __init__(self, name, commands, logger=None):
+    def __init__(self, name, commands):
         self.name = name
         self.commands = commands
         self.failed = False
         self.retcodes = {}
         self.outputs = {}
-        # XXX still does not work even in Python 3
-        # self.logger = logger or logging.getLogger(__name__)
-        # logging.basicConfig()
 
     def __str__(self):
         return str(self.name)
 
     def get_cmd_output(self, cmd, indent=""):
         str = ""
-        # logger.debug("getting output for command {}".format(cmd))
-        for line in self.outputs[cmd]:
-            # logger.error('{}{}'.format(indent, line.rstrip(os.linesep)))
-            str += '{}{}'.format(indent, line)
+        if self.outputs[cmd]:
+            for line in self.outputs[cmd]:
+                str += '{}{}'.format(indent, line)
 
         return str
+
+    def fill(self, retcodes, outputs, failed):
+        self.retcodes = retcodes
+        self.outputs = outputs
+        self.failed = failed
+
+
+class Commands(CommandsBase):
+    def __init__(self, base):
+        super().__init__(base.name, base.commands)
+
+        self.logger = logging.getLogger(__name__)
+        logging.basicConfig()
 
     def run(self):
         """
         Run the sequence of commands and capture their output and return code.
         First command that returns code other than 0 terminates the sequence.
         """
+
         for command in self.commands:
             cmd = Command(command,
                           args_subst={"ARG": self.name},
                           args_append=[self.name], excl_subst=True)
             cmd.execute()
-            # logger.debug("{} -> {}".format(command, cmd.getretcode()))
             self.retcodes[str(cmd)] = cmd.getretcode()
             self.outputs[str(cmd)] = cmd.getoutput()
 
             # If a command fails, terminate the sequence of commands.
             if cmd.getretcode() != 0:
+                self.logger.debug("command {} failed, breaking".format(cmd))
                 self.failed = True
                 break
