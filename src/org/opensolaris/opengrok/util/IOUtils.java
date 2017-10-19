@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2011 Trond Norbye 
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.util;
 
@@ -40,7 +41,9 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -218,5 +221,55 @@ public final class IOUtils {
         }
 
         return new InputStreamReader(in, charset);
+    }
+
+    /**
+     * Byte-order markers.
+     */
+    private static final Map<String, byte[]> BOMS = new HashMap<>();
+
+    static {
+        BOMS.put("UTF-8", new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
+        BOMS.put("UTF-16BE", new byte[]{(byte) 0xFE, (byte) 0xFF});
+        BOMS.put("UTF-16LE", new byte[]{(byte) 0xFF, (byte) 0xFE});
+    }
+
+    /**
+     * Gets a value indicating a UTF encoding if the array starts with a
+     * known byte sequence.
+     *
+     * @param sig a sequence of bytes to inspect for a BOM
+     * @return null if no BOM was identified; otherwise a defined charset name
+     */
+    public static String findBOMEncoding(byte[] sig) {
+        for (Map.Entry<String, byte[]> entry : BOMS.entrySet()) {
+            String encoding = entry.getKey();
+            byte[] bom = entry.getValue();
+            if (sig.length > bom.length) {
+                int i = 0;
+                while (i < bom.length && sig[i] == bom[i]) {
+                    i++;
+                }
+                if (i == bom.length) return encoding;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets a value indicating the number of UTF BOM bytes at the start of an
+     * array.
+     *
+     * @param sig a sequence of bytes to inspect for a BOM
+     * @return 0 if the array doesn't start with a BOM; otherwise the number of
+     * BOM bytes
+     */
+    public static int skipForBOM(byte[] sig) {
+        String encoding = findBOMEncoding(sig);
+        if (encoding != null) {
+            byte[] bom = BOMS.get(encoding);
+            return bom.length;
+        }
+        return 0;
     }
 }

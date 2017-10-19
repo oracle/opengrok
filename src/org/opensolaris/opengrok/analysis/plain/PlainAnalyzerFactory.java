@@ -35,6 +35,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.util.IOUtils;
 
 public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
 
@@ -55,7 +56,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
              * for a UTF BOM; otherwise, inspect as if US-ASCII.
              */
             private boolean isPlainText(byte[] content) throws IOException {
-                int lengthBOM = AnalyzerGuru.skipForBOM(content);
+                int lengthBOM = IOUtils.skipForBOM(content);
                 if (lengthBOM > 0) return true;
                 String ascii = new String(content, "US-ASCII");
                 if (isPlainText(ascii)) {
