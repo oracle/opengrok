@@ -85,7 +85,9 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
      * @param project project where this xref belongs to
      * @throws IOException when any I/O error occurs
      */
-    static protected void writeXref(JFlexXref lxref, Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
+    static protected void writeXref(JFlexXref lxref, Reader in, Writer out,
+        Definitions defs, Annotation annotation, Project project)
+            throws IOException {
         if (lxref != null) {
             lxref.reInit(in);
             lxref.annotation = annotation;
