@@ -36,7 +36,7 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     private static final String[] MAGICS = {
-        "\312\376\272\276"      // cafebabe
+        new String(new byte[] {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE})
     };
 
     public JavaClassAnalyzerFactory() {

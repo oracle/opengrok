@@ -20,6 +20,7 @@
 /*
  * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -36,7 +37,10 @@ import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
 import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.executables.ELFAnalyzer;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
+import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer;
+import org.opensolaris.opengrok.analysis.perl.PerlAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzer;
@@ -74,6 +78,16 @@ public class AnalyzerGuruTest {
     }
 
     @Test
+    public void testUTF8ByteOrderMarkPlusCopyrightSymbol() throws Exception {
+        byte[] doc = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF, // UTF-8 BOM
+                       '/', '/', ' ', (byte) 0xC2, (byte)0xA9};
+        ByteArrayInputStream in = new ByteArrayInputStream(doc);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        assertSame("despite BOM as precise match,", PlainAnalyzer.class,
+            fa.getClass());
+    }
+
+    @Test
     public void testUTF8ByteOrderMarkPlainFile() throws Exception {
         byte[] bytes = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF, // UTF-8 BOM
                        'h', 'e', 'l', 'l', 'o', ' ',
@@ -82,6 +96,26 @@ public class AnalyzerGuruTest {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame(PlainAnalyzer.class, fa.getClass());
+    }
+
+    @Test
+    public void testUTF16BigByteOrderMarkPlusCopyrightSymbol() throws Exception {
+        byte[] doc = {(byte) 0xFE, (byte) 0xFF, // UTF-16BE BOM
+                       0, '#', 0, ' ', (byte) 0xC2, (byte) 0xA9};
+        ByteArrayInputStream in = new ByteArrayInputStream(doc);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        assertSame("despite BOM as precise match,", PlainAnalyzer.class,
+            fa.getClass());
+    }
+
+    @Test
+    public void testUTF16LittleByteOrderMarkPlusCopyrightSymbol() throws Exception {
+        byte[] doc = {(byte) 0xFF, (byte) 0xFE, // UTF-16BE BOM
+                       '#', 0, ' ', 0, (byte) 0xA9, (byte) 0xC2};
+        ByteArrayInputStream in = new ByteArrayInputStream(doc);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        assertSame("despite BOM as precise match,", PlainAnalyzer.class,
+            fa.getClass());
     }
 
     @Test
@@ -207,5 +241,71 @@ public class AnalyzerGuruTest {
         
         Class fc = AnalyzerGuru.getFactoryClass("UnknownAnalyzerFactory");
         assertNull(fc);
+    }
+
+    @Test
+    public void shouldMatchPerlHashbang() throws IOException {
+        ByteArrayInputStream in = new ByteArrayInputStream(
+                "#!/usr/bin/perl -w".getBytes("US-ASCII"));
+        assertSame("despite Perl hashbang,", PerlAnalyzer.class,
+            AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+    }
+
+    @Test
+    public void shouldMatchPerlHashbangSpaced() throws IOException {
+        ByteArrayInputStream in = new ByteArrayInputStream(
+                "\n\t #!  /usr/bin/perl -w".getBytes("US-ASCII"));
+        assertSame("despite Perl hashbang,", PerlAnalyzer.class,
+            AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+    }
+
+    @Test
+    public void shouldMatchEnvPerlHashbang() throws IOException {
+        ByteArrayInputStream in = new ByteArrayInputStream(
+                "#!/usr/bin/env perl -w".getBytes("US-ASCII"));
+        assertSame("despite env hashbang with perl,", PerlAnalyzer.class,
+            AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+    }
+
+    @Test
+    public void shouldMatchEnvPerlHashbangSpaced() throws IOException {
+        ByteArrayInputStream in = new ByteArrayInputStream(
+                "\n\t #!  /usr/bin/env\t perl -w".getBytes("US-ASCII"));
+        assertSame("despite env hashbang with perl,", PerlAnalyzer.class,
+            AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+    }
+
+    @Test
+    public void shouldNotMatchEnvLFPerlHashbang() throws IOException {
+        ByteArrayInputStream in = new ByteArrayInputStream(
+                "#!/usr/bin/env\nperl".getBytes("US-ASCII"));
+        assertNotSame("despite env hashbang LF,", PerlAnalyzer.class,
+            AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+    }
+
+    @Test
+    public void shouldMatchELFMagic() throws Exception {
+        byte[] elfmt = {(byte)0x7F, 'E', 'L', 'F', (byte) 2, (byte) 2, (byte) 1,
+            (byte) 0x06};
+        ByteArrayInputStream in = new ByteArrayInputStream(elfmt);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        assertSame("despite \\177ELF magic,", ELFAnalyzer.class,
+            fa.getClass());
+    }
+
+    @Test
+    public void shouldMatchJavaClassMagic() throws Exception {
+        String oldMagic = "\312\376\272\276";      // cafebabe?
+        String newMagic = new String(new byte[] {(byte) 0xCA, (byte) 0xFE,
+            (byte) 0xBA, (byte) 0xBE});
+        assertNotEquals("despite octal escape as unicode,", oldMagic, newMagic);
+
+        // 0xCAFEBABE (4), minor (2), major (2)
+        byte[] dotclass = {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE,
+            (byte) 0, (byte) 1, (byte) 0, (byte) 0x34};
+        ByteArrayInputStream in = new ByteArrayInputStream(dotclass);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        assertSame("despite 0xCAFEBABE magic,", JavaClassAnalyzer.class,
+            fa.getClass());
     }
 }
