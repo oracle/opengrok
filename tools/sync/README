@@ -16,3 +16,5 @@ where the sync.conf file contents might look like this:
                   ["/scripts/check-indexer-logs.ksh"]]
   }
 
+The commands got appended project name unless one of their arguments is equal to 'ARG',
+in which case it is substituted with project name and no append is done.
