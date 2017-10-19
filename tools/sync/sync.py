@@ -30,7 +30,6 @@
 
 """
 
-# TODO: make sure it works on both Python 2 and 3
 
 from multiprocessing import Pool, TimeoutError
 import argparse
@@ -49,6 +48,11 @@ import json
 import commands
 from commands import Commands
 
+
+major_version = sys.version_info[0]
+if (major_version < 3):
+    print("Need Python 3, you are running {}".format(major_version))
+    sys.exit(1)
 
 __version__ = "0.2.1"
 
@@ -105,12 +109,12 @@ if __name__ == '__main__':
         with open(args.config) as json_data_file:
             try:
                 config = json.load(json_data_file)
-            except ValueError, e:
+            except ValueError as e:
                 logger.error("cannot decode {}".format(args.config))
                 sys.exit(1)
             else:
                 logger.debug("config: {}".format(config))
-    except IOError, e:
+    except IOError as e:
         logger.error("cannot open '{}'".format(args.config))
         sys.exit(1)
 
@@ -186,7 +190,7 @@ if __name__ == '__main__':
                         indent = "  "
                         logger.error("{}failed commands:".format(indent))
                         failed_cmds = {k: v for k, v in
-                                       proj.retcodes.iteritems() if v != 0}
+                                       proj.retcodes.items() if v != 0}
                         indent = "    "
                         for cmd in failed_cmds.keys():
                             logger.error("{}'{}': {}".
@@ -197,7 +201,7 @@ if __name__ == '__main__':
                                 logger.error(out)
                         logger.error("")
 
-                    errored_cmds = {k: v for k, v in proj.outputs.iteritems()
+                    errored_cmds = {k: v for k, v in proj.outputs.items()
                                     if "error" in str(v).lower()}
                     if len(errored_cmds) > 0:
                         logger.error("Command output in project {}"

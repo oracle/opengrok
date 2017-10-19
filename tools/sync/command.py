@@ -24,7 +24,7 @@
 import os
 import logging
 import subprocess
-from string import join
+import string
 
 
 class Command:
@@ -41,12 +41,12 @@ class Command:
 
         self.logger = logger or logging.getLogger(__name__)
         logging.basicConfig()
-        
+
         if args_subst or args_append:
             self.fill_arg(args_append, args_subst)
 
     def __str__(self):
-        return join(self.cmd)
+        return " ".join(self.cmd)
 
     def execute(self):
         """
@@ -70,12 +70,13 @@ class Command:
             if p.stdout is not None:
                 self.logger.debug("Program output:")
                 for line in p.stdout:
-                    self.logger.debug(line.rstrip(os.linesep))
+                    self.logger.debug(line.rstrip(os.linesep.encode("ascii")))
                     out.append(line)
 
             self.state = "finished"
             self.returncode = int(p.returncode)
             self.out = out
+            p.stdout.close()
 
     def fill_arg(self, args_append=None, args_subst=None):
         """

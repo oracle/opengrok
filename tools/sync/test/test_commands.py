@@ -21,7 +21,7 @@ class TestApp(unittest.TestCase):
         p = Commands(name="opengrok-master",
                     commands=[["/bin/echo"], ["foo"]])
         p.run()
-	self.assertEqual({'/bin/echo opengrok-master': 0,
+        self.assertEqual({'/bin/echo opengrok-master': 0,
 	                  'foo opengrok-master': None}, p.retcodes)
 
     # def test_outputs(self):

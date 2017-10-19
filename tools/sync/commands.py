@@ -38,17 +38,16 @@ class Commands:
         self.failed = False
         self.retcodes = {}
         self.outputs = {}
-        # XXX this will not work in Python 2.x since logging contains
-        # threading stuff that does not work with multiprocessing
-        #self.logger = logger or logging.getLogger(__name__)
-        #logging.basicConfig()
+        # XXX still does not work even in Python 3
+        # self.logger = logger or logging.getLogger(__name__)
+        # logging.basicConfig()
 
     def __str__(self):
         return str(self.name)
 
     def get_cmd_output(self, cmd, indent=""):
         str = ""
-        #logger.debug("getting output for command {}".format(cmd))
+        # logger.debug("getting output for command {}".format(cmd))
         for line in self.outputs[cmd]:
             # logger.error('{}{}'.format(indent, line.rstrip(os.linesep)))
             str += '{}{}'.format(indent, line)
@@ -65,10 +64,11 @@ class Commands:
                           args_subst={"ARG": self.name},
                           args_append=[self.name], excl_subst=True)
             cmd.execute()
-            # XXX logger.debug("{} -> {}".format(command, cmd.getretcode()))
-            # If a command fails, terminate the sequence of commands.
+            # logger.debug("{} -> {}".format(command, cmd.getretcode()))
             self.retcodes[str(cmd)] = cmd.getretcode()
             self.outputs[str(cmd)] = cmd.getoutput()
+
+            # If a command fails, terminate the sequence of commands.
             if cmd.getretcode() != 0:
                 self.failed = True
                 break
