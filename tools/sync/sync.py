@@ -150,9 +150,9 @@ if __name__ == '__main__':
                     logger.error("cannot get list of projects")
                     sys.exit(1)
             else:
-                dir = args.directory
-                for entry in os.listdir(args.directory):
-                    if path.isdir(path.join(dir, entry)):
+                directory = args.directory
+                for entry in os.listdir(directory):
+                    if path.isdir(path.join(directory, entry)):
                         dirs_to_process.append(entry)
 
             logger.debug("to process: {}".format(dirs_to_process))
