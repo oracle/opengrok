@@ -41,6 +41,7 @@
 #   - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
 #                                 options for CTags program (for its --options
 #                                 switch), default is DATA_ROOT/etc/ctags.config
+#   - OPENGROK_MANDOC             Full path to mandoc(1) binary
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
@@ -853,6 +854,7 @@ CommonInvocation()
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
         ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\
+        ${OPENGROK_MANDOC:+--mandoc} ${OPENGROK_MANDOC}			\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
         ${READ_XML_CONF}                                        	\

@@ -24,24 +24,44 @@
 
 package org.opensolaris.opengrok.analysis.document;
 
+import java.io.InputStream;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 public class TroffAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Troff";
-    
-    private static final String[] MAGICS = {
-        "'\\\"", ".so", ".\\\"", ".TH"
-    };
 
-    public TroffAnalyzerFactory() {
-        super(null, null, null, MAGICS, null, "text/plain", Genre.PLAIN, name);
+    private static final String name = "Troff";
+
+    public static final Matcher MATCHER = (byte[] contents, InputStream in) ->
+        getTrueMatcher().isMagic(contents, in);
+
+    public static final TroffAnalyzerFactory DEFAULT_INSTANCE =
+        new TroffAnalyzerFactory();
+
+    protected TroffAnalyzerFactory() {
+        super(null, null, null, null, MATCHER, "text/plain", Genre.PLAIN, name);
     }
 
     @Override
     protected FileAnalyzer newAnalyzer() {
         return new TroffAnalyzer(this);
+    }
+
+    // Because DEFAULT_INSTANCE during its initialization uses the MATCHER,
+    // while at the same time the DocumentMatcher in its initialization takes
+    // a FileAnalyzerFactory, and because we want the instances to be the same
+    // instance, then defer initialization of the DocumentMatcher using the
+    // "16.6 Lazy initialization holder class idiom," written by Brian Goetz
+    // and Tim Peierls with assistance from members of JCP JSR-166 Expert Group
+    // and released to the public domain, as explained at
+    // http://creativecommons.org/licenses/publicdomain .
+    private static class TrueMatcherHolder {
+        public static final DocumentMatcher MATCHER = new DocumentMatcher(
+            DEFAULT_INSTANCE, new String[] {"'\\\"", ".so", ".\\\"", ".TH"});
+    }
+
+    private static DocumentMatcher getTrueMatcher() {
+        return TrueMatcherHolder.MATCHER;
     }
 }

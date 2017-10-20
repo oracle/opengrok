@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -93,6 +94,13 @@ public final class Configuration {
     private static final String NEGATIVE_NUMBER_ERROR = "Invalid value for \"%s\" - \"%s\". Expected value greater or equal than 0";
 
     private String ctags;
+
+    /**
+     * A defined value to specify the mandoc binary or else null so that mandoc
+     * will be cross-referenced using {@code PlainXref}.
+     */
+    private String mandoc;
+
     /**
      * Should the history log be cached?
      */
@@ -387,6 +395,7 @@ public final class Configuration {
         setIncludedNames(new Filter());
         setIndexVersionedFilesOnly(false);
         setLastEditedDisplayMode(true);
+        setMandoc(System.getProperty("org.opensolaris.opengrok.analysis.Mandoc", null));
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMessageLimit(500);
         setOptimizeDatabase(true);
@@ -490,12 +499,41 @@ public final class Configuration {
         this.cmds.putAll(cmds);
     }
 
+    /**
+     * Gets the configuration's ctags command. Default is the system property
+     * for {@code "org.opensolaris.opengrok.analysis.Ctags"} or else the value
+     * {@code "ctags"}.
+     * @return the configured value
+     */
     public String getCtags() {
         return ctags;
     }
 
+    /**
+     * Sets the configuration's ctags command.
+     * @param ctags A program name (full-path if necessary)
+     */
     public void setCtags(String ctags) {
         this.ctags = ctags;
+    }
+
+    /**
+     * Gets the configuration's mandoc command. Default is the system property
+     * for {@code "org.opensolaris.opengrok.analysis.Mandoc"} or else
+     * {@code null}.
+     * @return the configured value
+     */
+    public String getMandoc() {
+        return mandoc;
+    }
+
+    /**
+     * Sets the configuration's mandoc command.
+     * @param value A program name (full-path if necessary) or {@code null} to
+     * disable mandoc rendering.
+     */
+    public void setMandoc(String value) {
+        this.mandoc = value;
     }
 
     public int getCachePages() {

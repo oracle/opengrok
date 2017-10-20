@@ -545,6 +545,24 @@ public final class RuntimeEnvironment {
         threadConfig.get().setCtags(ctags);
     }
 
+    /**
+     * Get the name of the mandoc program in use
+     *
+     * @return the name of the mandoc program in use or {@code null}
+     */
+    public String getMandoc() {
+        return threadConfig.get().getMandoc();
+    }
+
+    /**
+     * Specify the mandoc program to use
+     *
+     * @param ctags the mandoc program to use or {@code null}
+     */
+    public void setMandoc(String value) {
+        threadConfig.get().setMandoc(value);
+    }
+
     public int getCachePages() {
         return threadConfig.get().getCachePages();
     }

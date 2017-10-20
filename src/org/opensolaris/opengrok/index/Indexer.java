@@ -498,6 +498,13 @@ public final class Indexer {
                 System.exit(status);
             });
 
+            parser.on("--mandoc","=/path/to/mandoc",
+                "Path to mandoc(1) binary.").
+                Do(mandocPath -> {
+                    cfg.setMandoc((String)mandocPath);
+                }
+            );
+
             parser.on("-n", "--noIndex", 
                 "Do not generate indexes, but process all other command line options.").Do( v -> {
                 runIndex = false;

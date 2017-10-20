@@ -43,6 +43,13 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
         <resources>
             <resource>
+                <targetPath>org/opensolaris/opengrok/analysis/document/</targetPath>
+                <directory>../src/org/opensolaris/opengrok/analysis/document/</directory>
+                <includes>
+                    <include>*.1m</include>
+                </includes>
+            </resource>
+            <resource>
                 <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/analysis/sql/</directory>
                 <includes>

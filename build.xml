@@ -19,6 +19,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
 -->
 <project name="OpenGrok" default="jar" basedir="." xmlns:jacoco="antlib:org.jacoco.ant"
@@ -320,6 +321,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
                         
         <run-jflex dir="${gen.analysis.dir}/sql" name="SQLXref"/>
         <run-jflex dir="${gen.analysis.dir}/sql" name="PLSQLXref"/>
+        <run-jflex dir="${gen.analysis.dir}/document" name="MandocXref"/>
         <run-jflex dir="${gen.analysis.dir}/document" name="TroffXref"/>
         <run-jflex dir="${gen.analysis.dir}/document" name="TroffFullTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/sh" name="ShSymbolTokenizer"/>
