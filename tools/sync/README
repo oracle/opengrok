@@ -16,5 +16,10 @@ where the sync.conf file contents might look like this:
                   ["/scripts/check-indexer-logs.ksh"]]
   }
 
-The commands got appended project name unless one of their arguments is equal to 'ARG',
-in which case it is substituted with project name and no append is done.
+The commands got appended project name unless one of their arguments is equal
+to 'ARG', in which case it is substituted with project name and no append is
+done.
+
+For per-project reindexing to work properly, reindex-project.ksh uses
+the logging.properties.template to make sure each project has its own
+log directory.
