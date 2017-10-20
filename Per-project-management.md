@@ -9,6 +9,8 @@ with incompatible Lucene indexes.
 
 The following is assuming that the commands `Messages`, `Groups` and `ConfigMerge` tools are in `PATH`.
 
+Combine these procedures with the parallel processing tools under the [tools/sync](https://github.com/OpenGrok/OpenGrok/tree/master/tools/sync) directory and you have per-project management with parallel processing.
+
 ## Adding project
 
 - backup current config (this could be done by copying the `configuration.xml` file aside, taking file-system snapshot etc.)
