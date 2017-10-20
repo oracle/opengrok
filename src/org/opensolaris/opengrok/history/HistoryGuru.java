@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -369,9 +370,9 @@ public final class HistoryGuru {
                 Repository repository = null;
                 try {
                     repository = RepositoryFactory.getRepository(file);
-                } catch (InstantiationException ie) {
+                } catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                     LOGGER.log(Level.WARNING, "Could not create repository for '"
-                            + file + "', could not instantiate the repository.", ie);
+                            + file + "', could not instantiate the repository.", e);
                 } catch (IllegalAccessException iae) {
                     LOGGER.log(Level.WARNING, "Could not create repository for '"
                             + file + "', missing access rights.", iae);

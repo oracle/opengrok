@@ -24,6 +24,7 @@ package org.opensolaris.opengrok.authorization;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -395,20 +396,24 @@ public final class AuthorizationFramework {
      * instance of that class
      * @throws IllegalAccessException when the constructor of the class is not
      * accessible
+     * @throws NoSuchMethodException when the class does not have no-argument constructor
+     * @throws InvocationTargetException if the underlying constructor of the class throws an exception
      */
     private IAuthorizationPlugin loadClass(String classname) throws ClassNotFoundException,
             SecurityException,
             InstantiationException,
-            IllegalAccessException {
+            IllegalAccessException,
+            NoSuchMethodException,
+            InvocationTargetException {
 
-        Class c = loader.loadClass(classname);
+        Class<?> c = loader.loadClass(classname);
 
         // check for implemented interfaces
         for (Class intf1 : getInterfaces(c)) {
             if (intf1.getCanonicalName().equals(IAuthorizationPlugin.class.getCanonicalName())
                     && !Modifier.isAbstract(c.getModifiers())) {
                 // call to non-parametric constructor
-                return (IAuthorizationPlugin) c.newInstance();
+                return (IAuthorizationPlugin) c.getDeclaredConstructor().newInstance();
             }
         }
         LOGGER.log(Level.FINEST, "Plugin class \"{0}\" does not implement IAuthorizationPlugin interface.", classname);

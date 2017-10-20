@@ -24,6 +24,7 @@ package org.opensolaris.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -88,18 +89,19 @@ public final class RepositoryFactory {
      *
      * @param file File that might contain a repository
      * @return Correct repository for the given file
-     * @throws java.lang.InstantiationException in case we cannot create the
-     * repository object
-     * @throws java.lang.IllegalAccessException in case no permissions
-     * to repository file
+     * @throws InstantiationException in case we cannot create the repository object
+     * @throws IllegalAccessException in case no permissions to repository file
+     * @throws NoSuchMethodException in case we cannot create the repository object
+     * @throws InvocationTargetException in case we cannot create the repository object
      */
-    public static Repository getRepository(File file) throws InstantiationException, IllegalAccessException {
+    public static Repository getRepository(File file) throws InstantiationException, IllegalAccessException, 
+            NoSuchMethodException, InvocationTargetException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Repository repo = null;
 
         for (Repository rep : repositories) {
             if (rep.isRepositoryFor(file)) {
-                repo = rep.getClass().newInstance();
+                repo = rep.getClass().getDeclaredConstructor().newInstance();
                 try {
                     repo.setDirectoryName(file.getCanonicalPath());
                 } catch (IOException e) {
@@ -170,11 +172,13 @@ public final class RepositoryFactory {
      *
      * @param info Information about the repository
      * @return Correct repository for the given file
-     * @throws java.lang.InstantiationException in case we cannot create the
-     * repository object
-     * @throws java.lang.IllegalAccessException in case no permissions to repository
+     * @throws InstantiationException in case we cannot create the repository object
+     * @throws IllegalAccessException in case no permissions to repository
+     * @throws NoSuchMethodException in case we cannot create the repository object
+     * @throws InvocationTargetException in case we cannot create the repository object
      */
-    public static Repository getRepository(RepositoryInfo info) throws InstantiationException, IllegalAccessException {
+    public static Repository getRepository(RepositoryInfo info) throws InstantiationException, IllegalAccessException, 
+            NoSuchMethodException, InvocationTargetException {
         return getRepository(new File(info.getDirectoryName()));
     }
 

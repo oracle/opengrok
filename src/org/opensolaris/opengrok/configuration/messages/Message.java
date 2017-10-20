@@ -119,8 +119,8 @@ public abstract class Message implements Comparable<Message> {
         classname += type.substring(1) + "Message";
 
         try {
-            Class concreteClass = Class.forName(classname);
-            return (Message) concreteClass.newInstance();
+            Class<?> concreteClass = Class.forName(classname);
+            return (Message) concreteClass.getDeclaredConstructor().newInstance();
         } catch (Throwable ex) {
             LOGGER.log(Level.WARNING, "Couldn't create message object of type \"{0}\".", type);
         }
