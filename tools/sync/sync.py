@@ -54,7 +54,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.2.2"
+__version__ = "0.3"
 
 
 def worker(base):
@@ -175,48 +175,9 @@ if __name__ == '__main__':
                 # XXX lock.release() or return 1 ?
                 sys.exit(1)
             else:
-                # XXX move the code below to Commands once it can work with
-                # logger
                 for proj in projects:
-                    logger.debug("Output from {}:".format(proj.name))
-                    for cmd in proj.outputs.keys():
-                        if proj.outputs[cmd] and len(proj.outputs[cmd]) > 0:
-                            logger.debug("{}: {}".
-                                         format(cmd, proj.outputs[cmd]))
-
-                    if proj.name in ignore_errors:
-                        continue
-
-                    if any(rv != 0 for rv in proj.retcodes.values()):
-                        logger.error("processing of project {} failed".
-                                     format(proj))
-                        indent = "  "
-                        logger.error("{}failed commands:".format(indent))
-                        failed_cmds = {k: v for k, v in
-                                       proj.retcodes.items() if v != 0}
-                        indent = "    "
-                        for cmd in failed_cmds.keys():
-                            logger.error("{}'{}': {}".
-                                         format(indent, cmd, failed_cmds[cmd]))
-                            out = proj.get_cmd_output(cmd,
-                                                      indent=indent + "  ")
-                            if out:
-                                logger.error(out)
-                        logger.error("")
-
-                    errored_cmds = {k: v for k, v in proj.outputs.items()
-                                    if "error" in str(v).lower()}
-                    if len(errored_cmds) > 0:
-                        logger.error("Command output in project {}"
-                                     " contains errors:".format(proj.name))
-                        indent = "  "
-                        for cmd in errored_cmds.keys():
-                            logger.error("{}{}".format(indent, cmd))
-                            out = proj.get_cmd_output(cmd,
-                                                      indent=indent + "  ")
-                            if out:
-                                logger.error(out)
-                            logger.error("")
+                    cmds = Commands(proj)
+                    cmds.check(ignore_errors)
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)
