@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.4
 #
 # CDDL HEADER START
 #
@@ -54,7 +54,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 
 def worker(base):
