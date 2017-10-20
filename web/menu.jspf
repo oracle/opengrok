@@ -219,7 +219,8 @@ org.opensolaris.opengrok.web.Util"
     <input tabindex="9" class="submit btn" type="submit" value="Search"/>
     <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
            type="button" value="Clear"/>
-    <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
+    <input tabindex="11" class="submit btn" onclick="window.open('help.jsp', '_blank');"
+           type="button" value="Help"/>
 </div>
 </div>
 <div id="ltbl">
