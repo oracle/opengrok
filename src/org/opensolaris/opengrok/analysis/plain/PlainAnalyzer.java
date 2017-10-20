@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -37,8 +38,7 @@ import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.NullWriter;
 
@@ -49,9 +49,6 @@ import org.opensolaris.opengrok.util.NullWriter;
  */
 public class PlainAnalyzer extends TextAnalyzer {
 
-    private JFlexXref xref;
-    private Definitions defs;
-
     /**
      * Creates a new instance of PlainAnalyzer
      * @param factory name of factory
@@ -61,10 +58,11 @@ public class PlainAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create an xref for the language supported by this analyzer.
+     * Create an {@see PlainXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
+    @Override
     protected JFlexXref newXref(Reader reader) {
         return new PlainXref(reader);
     }
@@ -76,6 +74,8 @@ public class PlainAnalyzer extends TextAnalyzer {
     
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        Definitions defs = null;
+
         doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
         String fullpath = doc.get(QueryBuilder.FULLPATH);
         if (fullpath != null && ctags != null) {
@@ -102,49 +102,17 @@ public class PlainAnalyzer extends TextAnalyzer {
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
-                writeXref(in, xrefOut);
-            }
+                WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
+                args.setDefs(defs);
+                JFlexXref xref = writeXref(args);
             
-            Scopes scopes = xref.getScopes();
-            if (scopes.size() > 0) {
-                byte[] scopesSerialized = scopes.serialize();
-                doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
+                Scopes scopes = xref.getScopes();
+                if (scopes.size() > 0) {
+                    byte[] scopesSerialized = scopes.serialize();
+                    doc.add(new StoredField(QueryBuilder.SCOPES,
+                        scopesSerialized));
+                }
             }
         }
-    }
-
-    /**
-     * Write a cross referenced HTML file.
-     *
-     * @param in Input source
-     * @param out Writer to write HTML cross-reference
-     */
-    private void writeXref(Reader in, Writer out) throws IOException {
-        if (xref == null) {
-            xref = newXref(in);
-        } else {
-            xref.reInit(in);
-        }
-        xref.setDefs(defs);
-        xref.setScopesEnabled(scopesEnabled);
-        xref.setFoldingEnabled(foldingEnabled);
-        xref.project = project;
-        xref.write(out);
-    }
-
-    /**
-     * Write a cross referenced HTML file reads the source from in
-     *
-     * @param in Input source
-     * @param out Output xref writer
-     * @param defs definitions for the file (could be null)
-     * @param annotation annotation for the file (could be null)
-     */
-    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
-        PlainXref xref = new PlainXref(in);
-        xref.annotation = annotation;
-        xref.project = project;
-        xref.setDefs(defs);
-        xref.write(out);
     }
 }

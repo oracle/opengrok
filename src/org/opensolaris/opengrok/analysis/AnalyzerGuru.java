@@ -460,7 +460,14 @@ public class AnalyzerGuru {
             // spaces to match the project's tab settings.
             input = ExpandTabsReader.wrap(in, project);
         }
-        factory.writeXref(input, out, defs, annotation, project);
+
+        WriteXrefArgs args = new WriteXrefArgs(input, out);
+        args.setDefs(defs);
+        args.setAnnotation(annotation);
+        args.setProject(project);
+
+        FileAnalyzer analyzer = factory.getAnalyzer();
+        analyzer.writeXref(args);
     }
 
     /**

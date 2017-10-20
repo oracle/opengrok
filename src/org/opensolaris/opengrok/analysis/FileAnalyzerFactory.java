@@ -25,14 +25,10 @@ package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
 
 /**
  * Factory class which creates a {@code FileAnalyzer} object and
@@ -240,19 +236,5 @@ public class FileAnalyzerFactory {
          */
         FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
                 throws IOException;
-    }
-
-    /**
-     * Write a cross referenced HTML file. Reads the source from {@code in}.
-     * @param in input source
-     * @param out output xref writer
-     * @param defs definitions for the file (could be {@code null})
-     * @param annotation annotation for the file (could be {@code null})
-     * @param project project the file belongs to (could be {@code null})
-     * @throws java.io.IOException if an error occurs
-     */
-    public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
-            throws IOException {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

@@ -22,16 +22,11 @@
  */
 package org.opensolaris.opengrok.analysis.python;
 
-import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
-import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
 
 /**
  *
@@ -51,10 +46,5 @@ public class PythonAnalyzer extends AbstractSourceCodeAnalyzer {
     @Override
     protected JFlexXref newXref(Reader reader) {
         return new PythonXref(reader);
-    }
-
-    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
-        PythonXref xref = new PythonXref(in);
-        AbstractSourceCodeAnalyzer.writeXref(xref, in, out, defs, annotation, project);
     }
 }

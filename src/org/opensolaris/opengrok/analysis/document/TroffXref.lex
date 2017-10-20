@@ -19,8 +19,8 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- *
  * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.document;
@@ -48,8 +48,11 @@ import org.opensolaris.opengrok.web.Util;
         div = 0;
         yyline++;
         this.out = out;
+
+        out.write("</pre><div id=\"man\">");
         while(yylex() != YYEOF) {
         }
+        out.write("</div><pre>");
   }
 
   // TODO move this into an include file when bug #16053 is fixed

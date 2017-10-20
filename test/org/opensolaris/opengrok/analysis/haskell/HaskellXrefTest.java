@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.haskell;
 
@@ -35,6 +36,8 @@ import org.opensolaris.opengrok.analysis.Definitions;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 
 /**
  * Tests the {@link HaskellXref} class.
@@ -47,7 +50,9 @@ public class HaskellXrefTest {
     public void basicTest() throws IOException {
         String s = "putStrLn \"Hello, world!\"";
         Writer w = new StringWriter();
-        HaskellAnalyzer.writeXref(new StringReader(s), w, null, null, null);
+        HaskellAnalyzerFactory fac = new HaskellAnalyzerFactory();
+        FileAnalyzer analyzer = fac.getAnalyzer();
+        analyzer.writeXref(new WriteXrefArgs(new StringReader(s), w));
         assertEquals(
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
                 + "<a href=\"/source/s?defs=putStrLn\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">putStrLn</a>"
@@ -61,7 +66,12 @@ public class HaskellXrefTest {
                 + "href=\"http://localhost:8080/source/default/style.css\" /><title>Haskell Xref Test</title></head>");
         os.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
-        HaskellAnalyzer.writeXref(new InputStreamReader(is, "UTF-8"), w, defs, null, null);
+        HaskellAnalyzerFactory fac = new HaskellAnalyzerFactory();
+        FileAnalyzer analyzer = fac.getAnalyzer();
+        WriteXrefArgs args = new WriteXrefArgs(
+            new InputStreamReader(is, "UTF-8"), w);
+        args.setDefs(defs);
+        analyzer.writeXref(args);
         os.print(w.toString());
         os.println("</pre></div></body></html>");
     }

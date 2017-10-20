@@ -23,15 +23,9 @@
 
 package org.opensolaris.opengrok.analysis.csharp;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
 
 public class CSharpAnalyzerFactory extends FileAnalyzerFactory {
     
@@ -51,11 +45,5 @@ public class CSharpAnalyzerFactory extends FileAnalyzerFactory {
     @Override
     protected FileAnalyzer newAnalyzer() {
         return new CSharpAnalyzer(this);
-    }
-
-    @Override
-    public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
-        throws IOException {
-        CSharpAnalyzer.writeXref(in, out, defs, annotation, project);
     }
 }
