@@ -1447,7 +1447,7 @@ function init_markdown_converter() {
         $.script.loadScript('js/xss-0.2.16.min.js').done(function () {
             $.script.loadScript('js/showdown-1.4.2.min.js').done(function () {
                 $that.find('.markdown-content[data-markdown-download]').each(function () {
-                    var $that = $(this)
+                    var $dataMarkdownDownloadEl = $(this)
                     if (converter === null) {
                         converter = new showdown.Converter();
                     }
@@ -1458,7 +1458,7 @@ function init_markdown_converter() {
                         timeout: 5000,
                         mimeType: 'text/plain',
                     }).done(function (payload) {
-                        $that.html(filterXSS(converter.makeHtml(payload)))
+                        $dataMarkdownDownloadEl.html(filterXSS(converter.makeHtml(payload)))
                                 .show()
                         $that.addClass('markdown')
                                 .find('[data-markdown-original]')
