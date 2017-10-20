@@ -40,7 +40,7 @@ class TestApp(unittest.TestCase):
         """
         cmd = Command(['/bin/ls', '/etc/passwd'])
         cmd.execute()
-        self.assertEqual([b'/etc/passwd\n'], cmd.getoutput())
+        self.assertEqual(['/etc/passwd\n'], cmd.getoutput())
 
     def test_retcode(self):
         """

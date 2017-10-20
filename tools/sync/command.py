@@ -71,7 +71,7 @@ class Command:
                 self.logger.debug("Program output:")
                 for line in p.stdout:
                     self.logger.debug(line.rstrip(os.linesep.encode("ascii")))
-                    out.append(line)
+                    out.append(line.decode())
 
             self.state = "finished"
             self.returncode = int(p.returncode)
