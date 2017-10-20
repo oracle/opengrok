@@ -62,7 +62,7 @@ org.opensolaris.opengrok.web.PageConfig"
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.0-custom.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tooltip.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tablesorter.css" />
-<link rel="stylesheet" type="text/css" href="<%=styleDir%>/searchable-option-list-2.0.2.min.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/searchable-option-list-2.0.3.min.css" />
 <%-- TODO  Bug 11749
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.autocomplete.css" />
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.combo.css%>" />

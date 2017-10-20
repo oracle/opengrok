@@ -302,6 +302,7 @@
     padding: 3px 5px;
     display: table-cell;
     vertical-align: top;
+    cursor: default; /* modified 2017 */
 }
 
 .sol-quick-delete {

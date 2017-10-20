@@ -1031,7 +1031,10 @@
                     .append($displayItemText)
                     .attr('title', solOptionItem.tooltip)
                     .data('label', solOptionItem.label)
-                    .appendTo(this.$showSelectionContainer);
+                    .appendTo(this.$showSelectionContainer)
+                    .dblclick(function () { // modified 2017
+                        $changedItem.dblclick();
+                    });
 
                 // show remove button on display items if not disabled and null selection allowed
                 if ((this.config.multiple || this.config.allowNullSelection) && !$changedItem.prop('disabled')) {
