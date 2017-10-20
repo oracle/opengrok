@@ -38,7 +38,7 @@ interface PerlLexListener {
      * Passes a text fragment that is syntactically a symbol for write
      * processing
      * @param value the excised symbol
-     * @param captureOffset the offset from yychar where {@link value} began
+     * @param captureOffset the offset from yychar where {@code value} began
      * @param ignoreKwd a value indicating whether keywords should be ignored
      */
     void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
@@ -68,7 +68,7 @@ interface PerlLexListener {
 
     /**
      * Pushes back to the scanner a specified number of characters
-     * @param numChars 
+     * @param numChars
      */
     void pushback(int numChars);
 }
@@ -104,7 +104,7 @@ class PerlLexHelper {
         this.HEREinxN = hEREinxN;
         this.HERExN = hERExN;
         this.HEREin = hEREin;
-        this.HERE = hERE;        
+        this.HERE = hERE;
     }
 
     /**
