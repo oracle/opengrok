@@ -259,12 +259,15 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         /**
          * Choosing strategy for properties (tabSize here):
          * <pre>
-         * this       cfg        defaultCfg
-         * ===========================================
-         *  |5|        4             0
-         *   0        |4|            0
-         *   0         0            |0|
+         * this       cfg        defaultCfg   chosen value
+         * ===============================================
+         *  |5|        4             0             5
+         *   0        |4|            0             4
          * </pre>
+         *
+         * The strategy is:
+         * 1) if the project has some non-default value; use that
+         * 2) if the project has a default value; use the provided configuration
          */
         if (getTabSize() == defaultCfg.getTabSize()) {
             setTabSize(cfg.getTabSize());
