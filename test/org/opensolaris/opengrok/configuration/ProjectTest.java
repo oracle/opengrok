@@ -139,7 +139,7 @@ public class ProjectTest {
     @Test
     public void testMergeProjects1() {
         Configuration cfg = new Configuration();
-        cfg.setTabSize(8);
+        cfg.setTabSize(new Configuration().getTabSize() + 3731);
 
         Project p1 = new Project();
         p1.setNavigateWindowEnabled(true);
@@ -148,7 +148,7 @@ public class ProjectTest {
 
         assertNotNull(p1);
         assertTrue("Navigate window should be turned on", p1.isNavigateWindowEnabled());
-        assertEquals(8, p1.getTabSize());
+        assertEquals(new Configuration().getTabSize() + 3731, p1.getTabSize());
     }
 
     /**
@@ -157,15 +157,15 @@ public class ProjectTest {
     @Test
     public void testMergeProjects2() {
         Configuration cfg = new Configuration();
-        cfg.setTabSize(4);
+        cfg.setTabSize(new Configuration().getTabSize() + 3731);
 
         Project p1 = new Project();
-        p1.setTabSize(5);
+        p1.setTabSize(new Project().getTabSize() + 9737);
 
         p1.completeWithDefaults(cfg);
 
         assertNotNull(p1);
-        assertEquals(5, p1.getTabSize());
+        assertEquals(new Project().getTabSize() + 9737, p1.getTabSize());
     }
 
     /**
