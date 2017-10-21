@@ -31,6 +31,36 @@
         <filter-name>StatisticsFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    <filter>
+        <filter-name>ExpiresHalfHourFilter</filter-name>
+        <filter-class>org.opensolaris.opengrok.web.ResponseHeaderFilter</filter-class>
+        <init-param>
+            <param-name>Cache-Control</param-name>
+            <param-value>max-age=1800</param-value>
+        </init-param>
+    </filter>
+    <filter>
+        <filter-name>ExpiresOneDayFilter</filter-name>
+        <filter-class>org.opensolaris.opengrok.web.ResponseHeaderFilter</filter-class>
+        <init-param>
+            <param-name>Cache-Control</param-name>
+            <param-value>max-age=86400</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>ExpiresHalfHourFilter</filter-name>
+        <url-pattern>/download/*</url-pattern>
+        <url-pattern>/history/*</url-pattern>
+        <url-pattern>/xref/*</url-pattern>
+        <url-pattern>/raw/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>ExpiresOneDayFilter</filter-name>
+        <url-pattern>/default/*</url-pattern>
+        <url-pattern>/js/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
     <servlet>
         <display-name>Source Finder</display-name>
         <servlet-name>search</servlet-name>
