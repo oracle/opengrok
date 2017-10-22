@@ -46,8 +46,6 @@ import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzer;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
 import static org.junit.Assert.*;
-    import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Tests for the functionality provided by the AnalyzerGuru class.
@@ -241,6 +239,15 @@ public class AnalyzerGuruTest {
         
         Class fc = AnalyzerGuru.getFactoryClass("UnknownAnalyzerFactory");
         assertNull(fc);
+    }
+
+    @Test
+    public void shouldNotThrowGettingCsprojOpening() throws IOException {
+        InputStream res = getClass().getClassLoader().getResourceAsStream(
+            "org/opensolaris/opengrok/analysis/a.csproj");
+        assertNotNull("despite embedded a.csproj,", res);
+        assertSame("despite normal a.csproj,", XMLAnalyzer.class,
+            AnalyzerGuru.getAnalyzer(res, "dummy").getClass());
     }
 
     @Test
