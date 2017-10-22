@@ -104,6 +104,7 @@ public class PlainAnalyzer extends TextAnalyzer {
             try (Reader in = getReader(src.getStream())) {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setDefs(defs);
+                args.setProject(project);
                 JFlexXref xref = writeXref(args);
             
                 Scopes scopes = xref.getScopes();

@@ -28,16 +28,12 @@ import java.io.Reader;
 import java.io.Writer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
-import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
-import org.opensolaris.opengrok.analysis.plain.XMLXref;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
@@ -66,6 +62,7 @@ public class UuencodeAnalyzer extends TextAnalyzer {
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
+                args.setProject(project);
                 writeXref(args);
             }
         }

@@ -56,6 +56,7 @@ public class XMLAnalyzer extends TextAnalyzer {
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
+                args.setProject(project);
                 writeXref(args);
             }
         }
