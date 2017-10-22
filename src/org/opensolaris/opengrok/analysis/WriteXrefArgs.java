@@ -28,7 +28,8 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
- * Represents the arguments for the {@link FileAnalyzerFactory.writeXref}
+ * Represents the arguments for the
+ * {@link org.opensolaris.opengrok.analysis.FileAnalyzer#writeXref(org.opensolaris.opengrok.analysis.WriteXrefArgs)}
  * method.
  */
 public class WriteXrefArgs {

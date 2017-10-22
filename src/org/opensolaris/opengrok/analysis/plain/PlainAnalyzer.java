@@ -58,7 +58,7 @@ public class PlainAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create an {@see PlainXref} instance.
+     * Create a {@link PlainXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */

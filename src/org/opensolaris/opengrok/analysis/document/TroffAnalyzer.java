@@ -68,7 +68,7 @@ public class TroffAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create an {@see TroffXref} instance.
+     * Create a {@link TroffXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */

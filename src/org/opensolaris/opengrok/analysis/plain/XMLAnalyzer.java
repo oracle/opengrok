@@ -62,7 +62,7 @@ public class XMLAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create an {@see XMLXref} instance.
+     * Create an {@link XMLXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */

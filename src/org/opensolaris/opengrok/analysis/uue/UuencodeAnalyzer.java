@@ -72,7 +72,7 @@ public class UuencodeAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create an {@see UuencodeXref} instance.
+     * Create a {@link UuencodeXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
