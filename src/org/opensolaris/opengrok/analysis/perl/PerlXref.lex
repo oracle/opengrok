@@ -170,7 +170,7 @@ TRpunc = "tr" {MaybeWhsp} {Quo0xHash}
 TRword = "tr" {WhiteSpace} \w
 
 HereContinuation = \,{MaybeWhsp} "<<"\~? {MaybeWhsp}
-MaybeHereMarkers = ([\"\'\`\\]?{Identifier} [^\n]* {HereContinuation})?
+MaybeHereMarkers = ([\"\'\`\\]?{Identifier} [^\n\r]* {HereContinuation})?
 
 //
 // Track some keywords that can be used to identify heuristically a possible
@@ -208,8 +208,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 // HERExN : Here-docs with no interpolation
 // HEREin : Indented Here-docs
 // HEREinxN : Indented Here-docs with no interpolation
+// FMT : an output record format
 //
-%state INTRA SCOMMENT POD QUO QUOxN QUOxL QUOxLxN QM HERE HERExN HEREin HEREinxN
+%state INTRA SCOMMENT POD FMT QUO QUOxN QUOxL QUOxLxN QM HERE HERExN HEREin HEREinxN
 
 %%
 <HERE, HERExN> {
@@ -329,7 +330,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ {QYword} |
  {WxSigils}{QYword}  { h.qop(yytext(), 1, true); }
 
- ^ {PodEND} [^\n]*    {
+ ^ {PodEND} [^\n\r]*    {
         out.write(htmlize(yytext()));
  }
 
@@ -337,6 +338,22 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ "=" [a-zA-Z_] [a-zA-Z0-9_]*    {
         yypush(POD, null);
         out.write(Consts.SC + yytext());
+ }
+
+ // FORMAT start
+ ^ {MaybeWhsp} "format" ({WhiteSpace} {Identifier})? {MaybeWhsp} "="    {
+    yypush(FMT, null);
+    // split off the "  format" as `initial' for keyword processing
+    String capture = yytext();
+    String following = capture.replaceFirst("^\\s+", "").
+        substring("format".length());
+    String initial = capture.substring(0, capture.length() -
+        following.length());
+
+    writeKeyword(initial);
+    out.write(htmlize(following));
+    // start a pseudo-"string"
+    out.write(Consts.SS);
  }
 }
 
@@ -370,6 +387,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     ^ {Mwords} \s* "/"    {
         h.hqopSymbol(yytext());
     }
+
     {WxSigils}{Mwords} \s* "/"    {
         String capture = yytext();
         String boundary = capture.substring(0, 1);
@@ -386,7 +404,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     }
 }
 
-<YYINITIAL, INTRA, QUO, QUOxL, HERE, HEREin> {
+<YYINITIAL, INTRA, FMT, QUO, QUOxL, HERE, HEREin> {
     {Sigils} {MaybeWhsp} "{" {MaybeWhsp} {Identifier} {MaybeWhsp} "}" {
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
@@ -402,7 +420,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     }
 }
 
-<QUO, QUOxL, HERE, HEREin> {
+<FMT, QUO, QUOxL, HERE, HEREin> {
     {Sigils} {Identifier} {
         //we ignore keywords if the identifier starts with a sigil ...
         h.sigilID(yytext());
@@ -428,7 +446,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     }
 }
 
-<QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
+<FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
     {WhiteSpace}{EOL} |
     {EOL} {
         out.write(Consts.ZS);
@@ -453,10 +471,28 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 }
 
 <POD> {
-^ {PodEND} [^\n]*    {
+^ {PodEND} [^\n\r]*    {
     yypop();
     out.write(htmlize(yytext()) + Consts.ZS);
   }
+}
+
+<FMT> {
+    // terminate a format
+    ^ "." / {MaybeWhsp} {EOL}    {
+        yypop();
+        out.write(htmlize(yytext()) + Consts.ZS);
+    }
+
+    // "A comment, indicated by putting a '#' in the first column."
+    ^ "#" [^\n\r]*    {
+        out.write(Consts.SC + htmlize(yytext()) + Consts.ZS);
+    }
+
+    // The other two types of line in a format FORMLIST -- "a 'picture' line
+    // giving the format for one output line" and "an argument line supplying
+    // values to plug into the previous picture line" -- are not handled
+    // in a particular way by this lexer.
 }
 
 <SCOMMENT> {
@@ -468,7 +504,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
   }
 }
 
-<YYINITIAL, INTRA, SCOMMENT, POD, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
+<YYINITIAL, INTRA, SCOMMENT, POD, FMT, QUO, QUOxN, QUOxL, QUOxLxN,
+    HERE, HERExN, HEREin, HEREinxN> {
  [&<>\"\']      {
         maybeIntraState();
         out.write(htmlize(yytext()));
@@ -486,34 +523,37 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
         maybeIntraState();
         out.write(yycharat(0));
  }
- [^\n]          {
+ [^\n\r]          {
         maybeIntraState();
         writeUnicodeChar(yycharat(0));
  }
 }
 
 // "string links" and "comment links"
-<SCOMMENT, POD, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
-{Path}
-        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+<SCOMMENT, POD, FMT, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
+    {Path}    {
+        maybeIntraState();
+        out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));
+    }
 
-{File}
-        {
+    {File}    {
+        maybeIntraState();
         String path = yytext();
         out.write("<a href=\""+urlPrefix+"path=");
         out.write(path);
         appendProject();
         out.write("\">");
         out.write(path);
-        out.write("</a>");}
+        out.write("</a>");
+    }
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
-          appendLink(yytext());
-        }
+    ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]    {
+        maybeIntraState();
+        appendLink(yytext());
+    }
 
-{FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
-        {
-          writeEMailAddress(yytext());
-        }
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        maybeIntraState();
+        writeEMailAddress(yytext());
+    }
 }

@@ -263,3 +263,4 @@ var
 abc
 svar		# 301:$ svar
 a
+var

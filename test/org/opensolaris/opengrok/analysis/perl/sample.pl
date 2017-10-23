@@ -314,3 +314,13 @@ print "1\n";
 n0n{(sense]
 =cut back really
 print "1\n";
+
+# format FORMLIST tests
+ format STDOUT =
+@<<<<<<   @||||||   @>>>>>>
+# comment <args to follow>
+"left",  substr($var, 0, 2), "right"
+ ...
+ print
+.
+print "1\n";

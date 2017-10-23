@@ -173,7 +173,7 @@ TRpunc = "tr" {MaybeWhsp} {Quo0xHash}
 TRword = "tr" {WhiteSpace} \w
 
 HereContinuation = \,{MaybeWhsp} "<<"\~? {MaybeWhsp}
-MaybeHereMarkers = ([\"\'\`\\]?{Identifier} [^\n]* {HereContinuation})?
+MaybeHereMarkers = ([\"\'\`\\]?{Identifier} [^\n\r]* {HereContinuation})?
 
 //
 // Track some keywords that can be used to identify heuristically a possible
@@ -211,8 +211,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 // HERExN : Here-docs with no interpolation
 // HEREin : Indented Here-docs
 // HEREinxN : Indented Here-docs with no interpolation
+// FMT : an output record format
 //
-%state INTRA SCOMMENT POD QUO QUOxN QUOxL QUOxLxN QM HERE HERExN HEREin HEREinxN
+%state INTRA SCOMMENT POD FMT QUO QUOxN QUOxL QUOxLxN QM HERE HERExN HEREin HEREinxN
 
 %%
 <HERE, HERExN> {
@@ -320,12 +321,17 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ {QYword} |
  {WxSigils}{QYword}  { h.qop(yytext(), 1, true); }
 
- ^ {PodEND} [^\n]*    {
+ ^ {PodEND} [^\n\r]*    {
  }
 
  // POD start
  ^ "=" [a-zA-Z_] [a-zA-Z0-9_]*    {
         yypush(POD);
+ }
+
+ // FORMAT start
+ ^ {MaybeWhsp} "format" ({WhiteSpace} {Identifier})? {MaybeWhsp} "="    {
+    yypush(FMT);
  }
 }
 
@@ -357,6 +363,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     ^ {Mwords} \s* "/"    {
         h.hqopSymbol(yytext());
     }
+
     {WxSigils}{Mwords} \s* "/"    {
         String capture = yytext();
         h.hqopSymbol(capture.substring(1));
@@ -376,7 +383,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     }
 }
 
-<YYINITIAL, INTRA, QUO, QUOxL, HERE, HEREin> {
+<YYINITIAL, INTRA, FMT, QUO, QUOxL, HERE, HEREin> {
     {Sigils} {MaybeWhsp} "{" {MaybeWhsp} {Identifier} {MaybeWhsp} "}" {
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
@@ -395,7 +402,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     }
 }
 
-<QUO, QUOxL, HERE, HEREin> {
+<FMT, QUO, QUOxL, HERE, HEREin> {
     {Sigils} {Identifier} {
         //we ignore keywords if the identifier starts with a sigil ...
         h.sigilID(yytext());
@@ -422,7 +429,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     }
 }
 
-<QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
+<FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
     {WhiteSpace}{EOL} |
     {EOL} {
         // noop
@@ -445,9 +452,26 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 }
 
 <POD> {
-^ {PodEND} [^\n]*    {
+^ {PodEND} [^\n\r]*    {
     yypop();
   }
+}
+
+<FMT> {
+    // terminate a format
+    ^ "." / {MaybeWhsp} {EOL}    {
+        yypop();
+    }
+
+    // "A comment, indicated by putting a '#' in the first column."
+    ^ "#" [^\n\r]*    {
+        /* noop */
+    }
+
+    // The other two types of line in a format FORMLIST -- "a 'picture' line
+    // giving the format for one output line" and "an argument line supplying
+    // values to plug into the previous picture line" -- are not handled
+    // in a particular way by this lexer.
 }
 
 <SCOMMENT> {
@@ -457,7 +481,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
   }
 }
 
-<YYINITIAL, INTRA, SCOMMENT, POD, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
+<YYINITIAL, INTRA, SCOMMENT, POD, FMT, QUO, QUOxN, QUOxL, QUOxLxN,
+    HERE, HERExN, HEREin, HEREinxN> {
 <<EOF>>   { this.finalOffset =  zzEndRead; return false;}
  [&<>\"\']      {
         maybeIntraState();
@@ -474,7 +499,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  [!-~]          {
         maybeIntraState();
  }
- [^\n]          {
+ [^\n\r]          {
         maybeIntraState();
  }
 }
