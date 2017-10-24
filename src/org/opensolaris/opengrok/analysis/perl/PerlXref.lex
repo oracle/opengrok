@@ -314,6 +314,13 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ {TRword} |
  {WxSigils}{TRword}  { h.qop(yytext(), 2, true); }
 
+ // capture hyphen plus [qmsy] to prevent that combination from being mistaken
+ // for q//, m//, s//, y// and variants
+ ^ "-" [qmsy] |
+ {WxSigils} "-" [qmsy]    {
+    maybeIntraState();
+    out.write(htmlize(yytext()));
+ }
  // q//, m//, s//, y// and variants -- all with 1 character names
  ^ {MSapos} |
  {WxSigils}{MSapos}  { h.qop(yytext(), 1, true); } // m'' s''

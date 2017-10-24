@@ -331,5 +331,13 @@
 <a class="l" name="324" href="#324">324</a><span class="s"> print</span>
 <a class="l" name="325" href="#325">325</a><span class="s">.</span>
 <a class="l" name="326" href="#326">326</a><b>print</b> <span class="s">&quot;1\n&quot;</span>;
-<a class="l" name="327" href="#327">327</a></body>
+<a class="l" name="327" href="#327">327</a>
+<a class="l" name="328" href="#328">328</a><span class="c"># some tests for syntax near &quot;s&quot; characters</span>
+<a class="l" name="329" href="#329">329</a><b>my</b> $<a href="/source/s?defs=this" class="intelliWindow-symbol" data-definition-place="undefined-in-file">this</a> = {};
+<a class="hl" name="330" href="#330">330</a><b>if</b> (! -s $<a href="/source/s?defs=this" class="intelliWindow-symbol" data-definition-place="undefined-in-file">this</a>-&gt;{<a href="/source/s?defs=filename" class="intelliWindow-symbol" data-definition-place="undefined-in-file">filename</a>}) {
+<a class="l" name="331" href="#331">331</a>	<b>open</b> <a href="/source/s?defs=UCFILE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">UCFILE</a>, <span class="s">&quot;create_file -s $<a href="/source/s?defs=this" class="intelliWindow-symbol" data-definition-place="undefined-in-file">this</a>-&gt;{start} -e $<a href="/source/s?defs=this" class="intelliWindow-symbol" data-definition-place="undefined-in-file">this</a>-&gt;{end} |&quot;</span> <b>or</b> <b>exit</b> <span class="n">0</span>;
+<a class="l" name="332" href="#332">332</a>} <b>else</b> {
+<a class="l" name="333" href="#333">333</a>	<b>open</b> <a href="/source/s?defs=UCFILE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">UCFILE</a>, <span class="s">&quot;$<a href="/source/s?defs=this" class="intelliWindow-symbol" data-definition-place="undefined-in-file">this</a>-&gt;{filename}&quot;</span> <b>or</b> <b>exit</b> <span class="n">0</span>;
+<a class="l" name="334" href="#334">334</a>}
+<a class="l" name="335" href="#335">335</a></body>
 </html>

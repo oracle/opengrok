@@ -324,3 +324,11 @@ print "1\n";
  print
 .
 print "1\n";
+
+# some tests for syntax near "s" characters
+my $this = {};
+if (! -s $this->{filename}) {
+	open UCFILE, "create_file -s $this->{start} -e $this->{end} |" or exit 0;
+} else {
+	open UCFILE, "$this->{filename}" or exit 0;
+}

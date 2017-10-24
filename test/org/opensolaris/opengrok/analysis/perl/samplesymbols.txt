@@ -264,3 +264,11 @@ abc
 svar		# 301:$ svar
 a
 var
+this		# 329:my $this
+this
+filename
+UCFILE
+this
+this
+UCFILE
+this
