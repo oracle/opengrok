@@ -291,3 +291,10 @@ a_rate
 bref		# 342:$bref->{"int"}
 bref
 bref
+var		# 343:$var =
+table
+k
+r
+s
+t
+u

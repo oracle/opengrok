@@ -120,17 +120,23 @@ class PerlLexHelper {
     public boolean isQuoteEnding(String match) {
         char c = match.charAt(0);
         if (c == endqchar) {
-            if (--nqchar <= 0) {
-                endqchar = '\0';
-                return true;
-            } else if (nestqchar != '\0') {
-                waitq = true;
+            if (--nendqchar <= 0) {
+                if (--nsections <= 0) {
+                    endqchar = '\0';
+                    nestqchar = '\0';
+                    return true;
+                } else if (nestqchar != '\0') {
+                    waitq = true;
+                } else {
+                    nendqchar = 1;
+                }
             }
         } else if (nestqchar != '\0' && c == nestqchar) {
             if (waitq) {
                 waitq = false;
+                nendqchar = 1;
             } else {
-                ++nqchar;
+                ++nendqchar;
             }
         }
         return false;
@@ -183,15 +189,16 @@ class PerlLexHelper {
             qopname = postboundary.substring(0, namelength);
         }
         waitq = false;
+        nendqchar = 1;
 
         switch (qopname) {
             case "tr":
             case "s":
             case "y":
-                nqchar = 2;
+                nsections = 2;
                 break;
             default:
-                nqchar = 1;
+                nsections = 1;
                 break;
         }
 
@@ -510,22 +517,29 @@ class PerlLexHelper {
     /**
      * When matching a quoting construct like qq[], q(), m&lt;&gt;, s{}{} that
      * nest, the begin character ('[', '&lt;', '(', or '{') is stored so that
-     * nesting is tracked and nqchar is incremented appropriately. Otherwise,
-     * {@code nestqchar} is set to '\0' if no nesting occurs.
+     * nesting is tracked and {@code nendqchar} is incremented appropriately.
+     * Otherwise, {@code nestqchar} is set to '\0' if no nesting occurs.
      */
     private char nestqchar;
 
     /**
      * When matching a quoting construct like qq//, m//, or s```, etc., the
-     * number of remaining end separators in the operator is stored. E.g., for
-     * m//, it is 1; for tr/// it is 2. Nesting increases the value when seen.
+     * number of remaining end separators in an operator section is stored.
+     * It starts at 1, and nesting increases the value when seen.
      */
-    private int nqchar;
+    private int nendqchar;
+
+    /**
+     * When matching a quoting construct like qq//, m//, or s```, etc., the
+     * number of sections for the operator is stored. E.g., for m//, it is 1;
+     * for tr/// it is 2.
+     */
+    private int nsections;
 
     /**
      * When matching a two part construct like tr/// or s```, etc., after the
-     * first end separator, {@code waitingqchar} is set to TRUE so that nesting
-     * is not active.
+     * first end separator, {@code waitq} is set to TRUE so that nesting is not
+     * active.
      */
     private boolean waitq;
 

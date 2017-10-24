@@ -340,3 +340,11 @@ $bref = {'b' => 5};
 { print $bref -> {$KK} / $bhash { $KK }, "$bref->{$KK} $bhash{$KK} $b {\n"; }
 $bref->{int} = -1 * $bref->{int} / $bref->{a_rate}; # do not infer a m//
 $bref->{"int"} = -1 * $bref->{"int"} / $bref->{"a_rate"}; # do not infer a m//
+$var = qq[select t.col
+	from $table
+	where key = $k
+	and k1 = "$r->[0]->[0]"
+	and k2 = "$s->{ code }->{ v }"
+	and k3 = "$t ->[ 0 ]->{ v }"
+	and k4 = "$u ->{ k }->[ 0 ]"
+	order by value_date DESC];
