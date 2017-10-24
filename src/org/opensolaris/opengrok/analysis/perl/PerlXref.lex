@@ -94,7 +94,7 @@ import org.opensolaris.opengrok.web.Util;
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does
     // nothing, because other transitions would have saved the state.
-    void maybeIntraState() {
+    public void maybeIntraState() {
         if (yystate() == YYINITIAL) yybegin(INTRA);
     }
 %}
@@ -226,11 +226,18 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 }
 
 <YYINITIAL, INTRA>{
-
-    [;\{\}] |
+    // Part 1 of syntax that jumps back to YYINITIAL
+    [;\{] |
     "&&" |
     "||" |
     {ProtoAttr}    {
+        yyjump(YYINITIAL);
+        out.write(htmlize(yytext()));
+    }
+    // Part 2 of syntax that jumps back to YYINITIAL. Since this does a
+    // look-ahead, keep it apart from "part 1" which uses OR-syntax ("|") --
+    // as it seems the look-ahead would apply to all cases.
+    "}" / {MaybeWhsp} {EOL}    {
         yyjump(YYINITIAL);
         out.write(htmlize(yytext()));
     }

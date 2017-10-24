@@ -272,3 +272,22 @@ this
 this
 UCFILE
 this
+KK		# 337:my $KK
+bref
+bhash
+bref		# 340:{ print $bref
+KK
+bhash
+KK
+bref
+KK
+bhash
+KK
+b
+bref		# 341:$bref->{int}
+bref
+bref
+a_rate
+bref		# 342:$bref->{"int"}
+bref
+bref

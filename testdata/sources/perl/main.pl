@@ -332,3 +332,11 @@ if (! -s $this->{filename}) {
 } else {
 	open UCFILE, "$this->{filename}" or exit 0;
 }
+
+# more quote-like tests
+my $KK = "b";
+$bref = {'b' => 5};
+%bhash = ('b' => 6);
+{ print $bref -> {$KK} / $bhash { $KK }, "$bref->{$KK} $bhash{$KK} $b {\n"; }
+$bref->{int} = -1 * $bref->{int} / $bref->{a_rate}; # do not infer a m//
+$bref->{"int"} = -1 * $bref->{"int"} / $bref->{"a_rate"}; # do not infer a m//

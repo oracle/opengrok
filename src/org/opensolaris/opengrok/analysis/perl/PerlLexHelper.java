@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 interface PerlLexListener {
     void pushState(int state);
     void popState() throws IOException;
+    void maybeIntraState();
     void write(String value) throws IOException;
     void writeHtmlized(String value) throws IOException;
 
@@ -229,6 +230,7 @@ class PerlLexHelper {
         } else {
             state = nolink ? QUOxL : QUO;
         }
+        listener.maybeIntraState();
         listener.pushState(state);
     }
 
@@ -338,6 +340,7 @@ class PerlLexHelper {
         } else {
             state = indented ? HEREin : HERE;
         }
+        listener.maybeIntraState();
         listener.pushState(state);
         listener.write(Consts.SS);
     }
