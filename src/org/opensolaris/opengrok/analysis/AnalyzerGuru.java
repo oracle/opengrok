@@ -122,12 +122,6 @@ public class AnalyzerGuru {
     private static final int OPENING_MAX_CHARS = 100;
 
     /**
-     * Define very close to OPENING_MAX_CHARS so the input stream stays easily
-     * in the <code>mark</code> limit
-     */
-    private static final int OPENING_BUF_SIZE = 128;
-
-    /**
      * Set to 16K -- though debugging shows it would do with only 8K+3
      * (standard buffer for Java BufferedInputStream plus 3 bytes for largest
      * UTF BOM) 
@@ -878,7 +872,7 @@ public class AnalyzerGuru {
 
         StringBuilder opening = new StringBuilder();
         BufferedReader readr = new BufferedReader(
-            new InputStreamReader(in, encoding), OPENING_BUF_SIZE);
+            new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
         while ((r = readr.read()) != -1) {
             if (++nRead > OPENING_MAX_CHARS) break;
             char c = (char)r;
