@@ -111,7 +111,7 @@ MaybeWhsp     = {WhspChar}*
 EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Sigils = ("$" | "@" | "%" | "&" | "*")
-WxSigils = [[\W]--[\$\@\%\&\*]]
+WxSigils = [[\W]--[\$\@\%\&\*\"\'\`\#]]
 
 // Perl special identifiers (four of six from
 // https://perldoc.perl.org/perldata.html#Identifier-parsing):

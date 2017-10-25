@@ -351,3 +351,5 @@ $var = qq[select t.col
 push @$html, "<TD width=\"20%\">";
 print "%\abc\n", %\, "abc\n";
 # some comment
+push @arr, "'$key'=>" . 'q[' . $val . '],';
+#qq[$var]
