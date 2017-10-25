@@ -57,10 +57,6 @@
         <!-- Place this mapping last, so /* wildcard is only a fallback -->
         <filter-name>ExpiresHalfHourFilter</filter-name>
         <url-pattern>/*</url-pattern>
-        <url-pattern>/download/*</url-pattern>
-        <url-pattern>/history/*</url-pattern>
-        <url-pattern>/xref/*</url-pattern>
-        <url-pattern>/raw/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
     <servlet>
