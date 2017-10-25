@@ -348,3 +348,6 @@ $var = qq[select t.col
 	and k3 = "$t ->[ 0 ]->{ v }"
 	and k4 = "$u ->{ k }->[ 0 ]"
 	order by value_date DESC];
+push @$html, "<TD width=\"20%\">";
+print "%\abc\n", %\, "abc\n";
+# some comment

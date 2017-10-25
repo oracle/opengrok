@@ -120,9 +120,13 @@ WxSigils = [[\W]--[\$\@\%\&\*]]
 // $1 , or $10000 .
 SPIdentifier1 = "$" \d+
 
-// 2. A sigil followed by a single character matching the \p{POSIX_Punct}
+// 2(a). A sigil followed by a single character matching the \p{POSIX_Punct}
 // property, like $! or %+ , except the character "{" doesn't work.
-SPIdentifier2 = [\$\%] [[\p{P}--{]]
+SPIdentifier2Xquo = [\$\%] [[\p{P}--{]]
+
+// 2(b). A sigil followed by a single character matching the \p{POSIX_Punct}
+// property, like $! or %+ , except the characters "{" and "\" don't work.
+SPIdentifier2Quo = [\$\%] [[\p{P}--[{\\]]]
 
 // 3. A sigil, followed by a caret and any one of the characters [][A-Z^_?\\] ,
 // like $^V or $^] .
@@ -407,9 +411,22 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     }
 
     {SPIdentifier1} |
-    {SPIdentifier2} |
     {SPIdentifier3} |
     {SPIdentifier4} {
+        maybeIntraState();
+        h.specialID(yytext());
+    }
+}
+
+<YYINITIAL, INTRA, FMT, HERE, HEREin> {
+    {SPIdentifier2Xquo}    {
+        maybeIntraState();
+        h.specialID(yytext());
+    }
+}
+
+<QUO, QUOxL> {
+    {SPIdentifier2Quo}    {
         maybeIntraState();
         h.specialID(yytext());
     }
