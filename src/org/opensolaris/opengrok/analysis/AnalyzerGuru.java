@@ -122,10 +122,11 @@ public class AnalyzerGuru {
     private static final int OPENING_MAX_CHARS = 100;
 
     /**
-     * Define very close to OPENING_MAX_CHARS so the input stream stays easily
-     * in the <code>mark</code> limit
+     * Set to 16K -- though debugging shows it would do with only 8K+3
+     * (standard buffer for Java BufferedInputStream plus 3 bytes for largest
+     * UTF BOM) 
      */
-    private static final int OPENING_BUF_SIZE = 102;
+    private static final int MARK_READ_LIMIT = 1024 * 16;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzerGuru.class);
 
@@ -850,7 +851,7 @@ public class AnalyzerGuru {
     private static String readOpening(InputStream in, byte[] sig)
         throws IOException {
 
-        in.mark(512);
+        in.mark(MARK_READ_LIMIT);
 
         String encoding = IOUtils.findBOMEncoding(sig);
         if (encoding == null) {
@@ -871,9 +872,8 @@ public class AnalyzerGuru {
 
         StringBuilder opening = new StringBuilder();
         BufferedReader readr = new BufferedReader(
-            new InputStreamReader(in, encoding), OPENING_BUF_SIZE);
-        while ((r = readr.read()) != -1)
-        {
+            new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
+        while ((r = readr.read()) != -1) {
             if (++nRead > OPENING_MAX_CHARS) break;
             char c = (char)r;
             boolean isWhitespace = Character.isWhitespace(c);
