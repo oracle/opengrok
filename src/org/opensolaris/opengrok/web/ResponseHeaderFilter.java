@@ -5,6 +5,7 @@
  * is also freely available. With the exception of Sun's Java Development Kit,
  * everything the book relies on is also open-source. You are encouraged to
  * look at, learn from, and use everything!"
+ * Copyright © 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.web;
@@ -32,7 +33,8 @@ public class ResponseHeaderFilter implements Filter {
         // set the provided HTTP response parameters
         for (Enumeration e = fc.getInitParameterNames(); e.hasMoreElements();) {
             String headerName = (String)e.nextElement();
-            response.addHeader(headerName, fc.getInitParameter(headerName));
+            if (!response.containsHeader(headerName))
+                response.addHeader(headerName, fc.getInitParameter(headerName));
         }
 
         // pass the request/response on
