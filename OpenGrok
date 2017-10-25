@@ -323,7 +323,7 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: Allow Leading Wildcard Searches
     #           (default: on)
-    LEADING_WILDCARD="-a on"
+    LEADING_WILDCARD="--leadingWildCards on"
     if [ -n "${OPENGROK_WPREFIX}" ]
     then
         LEADING_WILDCARD=""
@@ -332,7 +332,7 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Web Site Look & Feel
     #           (Options: default)
     #            Note the quoting requirements)
-    #SKIN='-L default'
+    #SKIN='--style default'
 
     # OPTIONAL: Configuration Address (host:port)
     #           (conf/web.xml default is localhost:2424)
@@ -998,7 +998,7 @@ DeployWar()
 ClearHistory()
 {
 	Progress "Removing history index data for repository ${1}"
-	MinimalInvocation -s "${SRC_ROOT}" -d "${DATA_ROOT}" -k "${1}"
+	MinimalInvocation -s "${SRC_ROOT}" -d "${DATA_ROOT}" --deleteHistory "${1}"
 }
 
 #
@@ -1042,7 +1042,7 @@ case "${1}" in
     bootstrap)
         ValidateConfiguration
         CreateRuntimeRequirements
-	StdInvocation "-y"
+	StdInvocation "--updateConfig"
 	;;
 
     index)

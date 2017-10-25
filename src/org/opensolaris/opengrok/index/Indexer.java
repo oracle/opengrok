@@ -229,7 +229,7 @@ public final class Indexer {
             // emitted during indexing do not cause validation error.
             if (addProjects && host != null && port > 0) {
                 Message m = Message.createMessage("config");
-                m.addTag("addOption");
+                m.addTag("set");
                 m.setText("projectsEnabled = true");
                 m.write(host, port);
             }
@@ -664,7 +664,7 @@ public final class Indexer {
             });
 
             parser.on("--userPageSuffix", "=URL-suffix", 
-                "URL Suffix for the user Information provider. Default: \"\"".).Do( suffix -> {
+                "URL Suffix for the user Information provider. Default: \"\".").Do( suffix -> {
                 cfg.setUserPageSuffix((String)suffix);
             });
 

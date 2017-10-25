@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.archive;
@@ -62,6 +63,9 @@ public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
         }
 
         private static final int XFHSIZ = 4;
+
+        @Override
+        public boolean getIsPreciseMagic() { return true; }
 
         @Override
         public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)

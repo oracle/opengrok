@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.php;
 
@@ -130,7 +131,7 @@ public class PhpXrefTest {
         assertEquals(expected.length, gotten.length);
 
         for (int i = 0; i < gotten.length; i++) {
-            assertEquals(gotten[i].trim(), expected[i].trim());
+            assertEquals(expected[i], gotten[i]);
         }
     }
 }

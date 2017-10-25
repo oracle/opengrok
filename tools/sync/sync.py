@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.4
 #
 # CDDL HEADER START
 #
@@ -30,7 +30,6 @@
 
 """
 
-# TODO: make sure it works on both Python 2 and 3
 
 from multiprocessing import Pool, TimeoutError
 import argparse
@@ -47,20 +46,28 @@ import logging
 import tempfile
 import json
 import commands
-from commands import Commands
+from commands import Commands, CommandsBase
 
 
-__version__ = "0.2.1"
+major_version = sys.version_info[0]
+if (major_version < 3):
+    print("Need Python 3, you are running {}".format(major_version))
+    sys.exit(1)
+
+__version__ = "0.3"
 
 
-def worker(x):
-    """ Process (resync + reindex) one project by calling external script.
+def worker(base):
+    """
+    Process one project by calling set of commands.
     """
 
+    x = Commands(base)
     logger.debug(str(os.getpid()) + " " + str(x))
     x.run()
+    base.fill(x.retcodes, x.outputs, x.failed)
 
-    return x
+    return base
 
 if __name__ == '__main__':
     output = []
@@ -105,12 +112,12 @@ if __name__ == '__main__':
         with open(args.config) as json_data_file:
             try:
                 config = json.load(json_data_file)
-            except ValueError, e:
+            except ValueError as e:
                 logger.error("cannot decode {}".format(args.config))
                 sys.exit(1)
             else:
                 logger.debug("config: {}".format(config))
-    except IOError, e:
+    except IOError as e:
         logger.error("cannot open '{}'".format(args.config))
         sys.exit(1)
 
@@ -150,16 +157,16 @@ if __name__ == '__main__':
                     logger.error("cannot get list of projects")
                     sys.exit(1)
             else:
-                dir = args.directory
-                for entry in os.listdir(args.directory):
-                    if path.isdir(path.join(dir, entry)):
+                directory = args.directory
+                for entry in os.listdir(directory):
+                    if path.isdir(path.join(directory, entry)):
                         dirs_to_process.append(entry)
 
             logger.debug("to process: {}".format(dirs_to_process))
 
             projects = []
             for d in dirs_to_process:
-                proj = Commands(name=d, commands=config["commands"])
+                proj = CommandsBase(d, config["commands"])
                 projects.append(proj)
 
             try:
@@ -168,48 +175,9 @@ if __name__ == '__main__':
                 # XXX lock.release() or return 1 ?
                 sys.exit(1)
             else:
-                # XXX move the code below to Commands once it can work with
-                # logger
                 for proj in projects:
-                    logger.debug("Output from {}:".format(proj.name))
-                    for cmd in proj.outputs.keys():
-                        if len(proj.outputs[cmd]) > 0:
-                            logger.debug("{}: {}".
-                                         format(cmd, proj.outputs[cmd]))
-
-                    if proj.name in ignore_errors:
-                        continue
-
-                    if any(rv != 0 for rv in proj.retcodes.values()):
-                        logger.error("processing of project {} failed".
-                                     format(proj))
-                        indent = "  "
-                        logger.error("{}failed commands:".format(indent))
-                        failed_cmds = {k: v for k, v in
-                                       proj.retcodes.iteritems() if v != 0}
-                        indent = "    "
-                        for cmd in failed_cmds.keys():
-                            logger.error("{}'{}': {}".
-                                         format(indent, cmd, failed_cmds[cmd]))
-                            out = proj.get_cmd_output(cmd,
-                                                      indent=indent + "  ")
-                            if out:
-                                logger.error(out)
-                        logger.error("")
-
-                    errored_cmds = {k: v for k, v in proj.outputs.iteritems()
-                                    if "error" in str(v).lower()}
-                    if len(errored_cmds) > 0:
-                        logger.error("Command output in project {}"
-                                     " contains errors:".format(proj.name))
-                        indent = "  "
-                        for cmd in errored_cmds.keys():
-                            logger.error("{}{}".format(indent, cmd))
-                            out = proj.get_cmd_output(cmd,
-                                                      indent=indent + "  ")
-                            if out:
-                                logger.error(out)
-                            logger.error("")
+                    cmds = Commands(proj)
+                    cmds.check(ignore_errors)
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)

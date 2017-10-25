@@ -1314,6 +1314,23 @@ function init_results_autohide() {
 }
 
 function init_searchable_option_list() {
+    function init_sol_on_type_combobox() {
+        /**
+         * Has to be here because otherwise the offset()
+         * takes the original long &lt;select&gt; box and the max-height
+         * does not work then.
+         */
+        $('#type').searchableOptionList({
+            texts: {
+                searchplaceholder: 'Click here to restrict the file type'
+            },
+            maxHeight: $('#type').offset().top + 'px',
+            /**
+             * Defined in menu.jsp just next to the original &lt;select&gt;
+             */
+            resultsContainer: $("#type-select-container")
+        });
+    }
     var searchableOptionListOptions = {
         maxHeight: '300px',
         showSelectionBelowList: false,
@@ -1361,27 +1378,16 @@ function init_searchable_option_list() {
                         .css('left', Math.floor(this.$container.offset().left))
                         .css('width', selectionContainerWidth);
             },
-            onRendered: function () {
-                /**
-                 * Has to be here because otherwise the offset()
-                 * takes the original long &lt;select&gt; box and the max-height
-                 * does not work then.
-                 */
-                $('#type').searchableOptionList({
-                    texts: {
-                        searchplaceholder: 'Click here to restrict the file type'
-                    },
-                    maxHeight: $('#type').offset().top + 'px',
-                    /**
-                     * Defined in menu.jsp just next to the original &lt;select&gt;
-                     */
-                    resultsContainer: $("#type-select-container"),
-                });
-            }
+            onRendered: init_sol_on_type_combobox
         }
     };
 
-    $('#project').searchableOptionList(searchableOptionListOptions);
+    var $project = $('#project');
+    if ($project.length === 1) {
+        $project.searchableOptionList(searchableOptionListOptions);
+    } else {
+        init_sol_on_type_combobox();
+    }
 }
 
 function init_history_input() {
@@ -1447,7 +1453,7 @@ function init_markdown_converter() {
         $.script.loadScript('js/xss-0.2.16.min.js').done(function () {
             $.script.loadScript('js/showdown-1.4.2.min.js').done(function () {
                 $that.find('.markdown-content[data-markdown-download]').each(function () {
-                    var $that = $(this)
+                    var $dataMarkdownDownloadEl = $(this)
                     if (converter === null) {
                         converter = new showdown.Converter();
                     }
@@ -1458,7 +1464,7 @@ function init_markdown_converter() {
                         timeout: 5000,
                         mimeType: 'text/plain',
                     }).done(function (payload) {
-                        $that.html(filterXSS(converter.makeHtml(payload)))
+                        $dataMarkdownDownloadEl.html(filterXSS(converter.makeHtml(payload)))
                                 .show()
                         $that.addClass('markdown')
                                 .find('[data-markdown-original]')

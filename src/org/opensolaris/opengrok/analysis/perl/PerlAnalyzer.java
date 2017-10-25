@@ -53,7 +53,8 @@ public class PerlAnalyzer extends AbstractSourceCodeAnalyzer {
         return new PerlXref(reader);
     }
 
-    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
+    static void writeXref(Reader in, Writer out, Definitions defs,
+        Annotation annotation, Project project) throws IOException {
         PerlXref xref = new PerlXref(in);
         AbstractSourceCodeAnalyzer.writeXref(xref, in, out, defs, annotation, project);
     }

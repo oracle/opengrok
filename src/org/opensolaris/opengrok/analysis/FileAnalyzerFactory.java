@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -148,7 +149,7 @@ public class FileAnalyzerFactory {
      * should be used to analyze it.
      *
      * <p><b>Note:</b> Currently this assumes that the file is encoded with
-     * ISO-8859-1.
+     * UTF-8 unless a BOM is detected.
      *
      * @return list of magic strings
      */
@@ -220,6 +221,11 @@ public class FileAnalyzerFactory {
      * Interface for matchers which map file contents to analyzer factories.
      */
     protected interface Matcher {
+
+        /**
+         * Get a value indicating if the magic is byte-precise.
+         */
+        default boolean getIsPreciseMagic() { return false; }
 
         /**
          * Try to match the file contents with an analyzer factory.
