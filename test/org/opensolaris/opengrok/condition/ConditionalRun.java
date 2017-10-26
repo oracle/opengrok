@@ -24,6 +24,7 @@ package org.opensolaris.opengrok.condition;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -33,8 +34,9 @@ import java.lang.annotation.Target;
  * Repeatable annotation for automatic test skipping.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Target(value = {ElementType.METHOD, ElementType.TYPE, ElementType.PACKAGE})
 @Repeatable(ConditionalRunRepeatable.class)
+@Inherited
 @Documented
 public @interface ConditionalRun {
 

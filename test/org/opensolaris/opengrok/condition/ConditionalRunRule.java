@@ -121,13 +121,13 @@ public class ConditionalRunRule implements TestRule {
     protected static class IgnoreConditionCreator {
 
         private final Class<?> mTestClass;
-        private final List<Class<? extends RunCondition>> conditionType;
+        private final List<Class<? extends RunCondition>> conditionTypes;
 
         public IgnoreConditionCreator(Class<?> aTestClass, ConditionalRun[] annotation) {
             this.mTestClass = aTestClass;
-            this.conditionType = new ArrayList<>(annotation.length);
+            this.conditionTypes = new ArrayList<>(annotation.length);
             for (int i = 0; i < annotation.length; i++) {
-                this.conditionType.add(i, annotation[i].condition());
+                this.conditionTypes.add(i, annotation[i].condition());
             }
         }
 
@@ -148,7 +148,7 @@ public class ConditionalRunRule implements TestRule {
              * Run through the list of classes implementing RunCondition and
              * create a new class from it.
              */
-            for (Class<? extends RunCondition> clazz : conditionType) {
+            for (Class<? extends RunCondition> clazz : conditionTypes) {
                 if (result == null) {
                     result = new CompositeCondition();
                 }
@@ -162,7 +162,7 @@ public class ConditionalRunRule implements TestRule {
         }
 
         private void checkConditionType() {
-            for (Class<? extends RunCondition> clazz : conditionType) {
+            for (Class<? extends RunCondition> clazz : conditionTypes) {
                 if (!isConditionTypeStandalone(clazz) && !isConditionTypeDeclaredInTarget(clazz)) {
                     String msg
                             = "Conditional class '%s' is a member class "

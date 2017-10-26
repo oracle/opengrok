@@ -24,6 +24,7 @@ package org.opensolaris.opengrok.condition;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -36,7 +37,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Retention(value = RUNTIME)
 @Documented
-@Target(value = {ElementType.METHOD, ElementType.TYPE})
+@Inherited
+@Target(value = {ElementType.METHOD, ElementType.TYPE, ElementType.PACKAGE})
 public @interface ConditionalRunRepeatable {
 
     ConditionalRun[] value();
