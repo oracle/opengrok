@@ -24,7 +24,7 @@ Combine these procedures with the parallel processing tools under the [tools/syn
    Messages -n config -t getconf > /opengrok/etc/configuration.xml
 ```
 - reindex
-  - Use `OpenGrok indexpart` or `/scripts/reindex-project.ksh` (in the latter case the previous step is not necessary since the script downloads fresh configuration from the webapp)
+  - Use `OpenGrok indexpart` or `reindex-project.ksh` (in the latter case the previous step is not necessary since the script downloads fresh configuration from the webapp)
 - save the configuration (this is necessary so that the indexed flag of the project is persistent) 
 ```
    Messages -n config -t getconf > /opengrok/etc/configuration.xml
