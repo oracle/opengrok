@@ -25,7 +25,6 @@
 package org.opensolaris.opengrok.util;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FilenameFilter;
