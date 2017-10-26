@@ -56,7 +56,7 @@ public class RunningRepeatableConditionTest {
         Assert.assertTrue("This test must be skipped", false);
     }
 
-    public static class TrueRunCondition implements RunCondition {
+    protected static class TrueRunCondition implements RunCondition {
 
         @Override
         public boolean isSatisfied() {
@@ -64,7 +64,7 @@ public class RunningRepeatableConditionTest {
         }
     }
 
-    public static class FalseRunCondition implements RunCondition {
+    protected static class FalseRunCondition implements RunCondition {
 
         @Override
         public boolean isSatisfied() {
