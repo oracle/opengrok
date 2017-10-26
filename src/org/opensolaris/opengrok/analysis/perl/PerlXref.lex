@@ -27,10 +27,11 @@
  */
 
 package org.opensolaris.opengrok.analysis.perl;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.io.Reader;
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.web.Util;
 
 %%
@@ -265,13 +266,13 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     h.hop(yytext(), true/*nointerp*/, true/*indented*/);
  }
 
-{Identifier} {
+ {Identifier}    {
     maybeIntraState();
     String id = yytext();
     writeSymbol(id, Consts.kwd, yyline);
-}
+ }
 
-"<" ({File}|{Path}) ">" {
+ "<" ({File}|{Path}) ">"    {
         maybeIntraState();
         out.write("&lt;");
         String path = yytext();
@@ -283,14 +284,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
         out.write(path);
         out.write("</a>");
         out.write("&gt;");
-}
+ }
 
-{Number}        {
+ {Number}    {
     maybeIntraState();
     out.write(Consts.SN);
     out.write(yytext());
     out.write("</span>");
-}
+ }
 
  [\"\`] { h.qop(yytext(), 0, false); }
  \'     { h.qop(yytext(), 0, true); }
@@ -309,8 +310,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ {QQXRword} |
  {WxSigils}{QQXRword}  { h.qop(yytext(), 2, false); }
 
-// In Perl these do not actually "interpolate," but "interpolate" for OpenGrok
-// xref just means to cross-reference, which is appropriate for qw//.
+ // In Perl these do not actually "interpolate," but "interpolate" for OpenGrok
+ // xref just means to cross-reference, which is appropriate for qw//.
  ^ {QWhash} |
  {WxSigils}{QWhash}  { h.qop(yytext(), 2, false); }
  ^ {QWpunc} |
@@ -348,6 +349,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ {QYword} |
  {WxSigils}{QYword}  { h.qop(yytext(), 1, true); }
 
+ // seeing POD-end without having seen POD-start is akin to a one-line comment
  ^ {PodEND} [^\n\r]*    {
         out.write(htmlize(yytext()));
  }
@@ -462,9 +464,11 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     \\[\&\<\>\"\']    {
         out.write(htmlize(yytext()));
     }
+
     \\ \S    {
         out.write(yytext());
     }
+
     {Quo0} |
     \w    {
         String capture = yytext();
@@ -495,6 +499,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     [a-z]    {
         out.write(yytext());
     }
+
+    // anything else ends the quote-modifiers state
     [^]    {
         yypop();
         yypushback(1);
@@ -502,7 +508,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 }
 
 <POD> {
-^ {PodEND} [^\n\r]*    {
+  ^ {PodEND} [^\n\r]*    {
     yypop();
     out.write(htmlize(yytext()) + Consts.ZS);
   }
@@ -541,6 +547,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
         maybeIntraState();
         out.write(htmlize(yytext()));
  }
+
  {WhiteSpace}{EOL} |
  {EOL}          {
         startNewLine();
@@ -550,10 +557,12 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  {WhspChar}     {
         out.write(yytext());
  }
+
  [!-~]          {
         maybeIntraState();
         out.write(yycharat(0));
  }
+
  [^\n\r]          {
         maybeIntraState();
         writeUnicodeChar(yycharat(0));

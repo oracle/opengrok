@@ -27,6 +27,7 @@
  */
 
 package org.opensolaris.opengrok.analysis.perl;
+
 import java.io.IOException;
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
@@ -266,22 +267,22 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     h.hop(yytext(), true/*nointerp*/, true/*indented*/);
  }
 
-{Identifier} {
+ {Identifier}    {
     maybeIntraState();
     String id = yytext();
     if (!Consts.kwd.contains(id)){
         setAttribs(id, yychar, yychar + yylength());
         return true;
     }
-}
+ }
 
-"<" ({File}|{Path}) ">" {
+ "<" ({File}|{Path}) ">"    {
         maybeIntraState();
-}
+ }
 
-{Number}        {
+ {Number}    {
     maybeIntraState();
-}
+ }
 
  [\"\`] { h.qop(yytext(), 0, false); }
  \'     { h.qop(yytext(), 0, true); }
@@ -299,8 +300,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ {QQXRword} |
  {WxSigils}{QQXRword}  { h.qop(yytext(), 2, false); }
 
-// In Perl these do not actually "interpolate," but "interpolate" for OpenGrok
-// xref just means to cross-reference, which is appropriate for qw//.
+ // In Perl these do not actually "interpolate," but "interpolate" for OpenGrok
+ // xref just means to cross-reference, which is appropriate for qw//.
  ^ {QWhash} |
  {WxSigils}{QWhash}  { h.qop(yytext(), 2, false); }
  ^ {QWpunc} |
@@ -320,7 +321,6 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ "-" [qmsy] |
  {WxSigils} "-" [qmsy]    {
     maybeIntraState();
-    /* noop */
  }
  // q//, m//, s//, y// and variants -- all with 1 character names
  ^ {MSapos} |
@@ -338,7 +338,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ {QYword} |
  {WxSigils}{QYword}  { h.qop(yytext(), 1, true); }
 
+ // seeing POD-end without having seen POD-start is akin to a one-line comment
  ^ {PodEND} [^\n\r]*    {
+        // noop
  }
 
  // POD start
@@ -446,9 +448,13 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 
 <QUO, QUOxN, QUOxL, QUOxLxN> {
     \\[\&\<\>\"\']    {
+        // noop
     }
+
     \\ \S    {
+        // noop
     }
+
     {Quo0} |
     \w    {
         String capture = yytext();
@@ -475,6 +481,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     [a-z]    {
         // noop
     }
+
+    // anything else ends the quote-modifiers state
     [^]    {
         yypop();
         yypushback(1);
@@ -482,7 +490,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 }
 
 <POD> {
-^ {PodEND} [^\n\r]*    {
+  ^ {PodEND} [^\n\r]*    {
     yypop();
   }
 }
@@ -495,7 +503,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 
     // "A comment, indicated by putting a '#' in the first column."
     ^ "#" [^\n\r]*    {
-        /* noop */
+        // noop
     }
 
     // The other two types of line in a format FORMLIST -- "a 'picture' line
@@ -513,10 +521,12 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 
 <YYINITIAL, INTRA, SCOMMENT, POD, FMT, QUO, QUOxN, QUOxL, QUOxLxN,
     HERE, HERExN, HEREin, HEREinxN> {
-<<EOF>>   { this.finalOffset =  zzEndRead; return false;}
+ <<EOF>>   { this.finalOffset =  zzEndRead; return false;}
+
  [&<>\"\']      {
         maybeIntraState();
  }
+
  {WhiteSpace}{EOL} |
  {EOL}          {
         // noop
@@ -526,9 +536,11 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  {WhspChar}     {
         // noop
  }
+
  [!-~]          {
         maybeIntraState();
  }
+
  [^\n\r]          {
         maybeIntraState();
  }
