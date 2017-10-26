@@ -296,6 +296,23 @@ public final class HistoryGuru {
     }
 
     /**
+     * Does the history cache contain entry for this directory ?
+     * @param file
+     * @return true if there is cache, false otherwise
+     */
+    public boolean hasCacheForFile(File file) {
+        if (!useCache()) {
+            return false;
+        }
+
+        try {
+            return historyCache.hasCacheForFile(file);
+        } catch (HistoryException ex) {
+            return false;
+        }
+    }
+
+    /**
      * Check if we can annotate the specified file.
      *
      * @param file the file to check
@@ -392,7 +409,6 @@ public final class HistoryGuru {
                         }
                     }
                 } else {
-                    repository.setDirectoryName(path);
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
                         LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
                                 new Object[]{repository.getClass().getName(), path});
@@ -812,14 +828,7 @@ public final class HistoryGuru {
     }
 
     protected Repository getRepository(File path) {
-        File file;
-
-        try {
-            file = path.getCanonicalFile();
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to get canonical path for " + path, e);
-            return null;
-        }
+        File file = path;
 
         while (file != null) {
             Repository r = repositories.get(file.getAbsolutePath());
