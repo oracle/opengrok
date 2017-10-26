@@ -100,13 +100,7 @@ public final class RepositoryFactory {
         for (Repository rep : repositories) {
             if (rep.isRepositoryFor(file)) {
                 repo = rep.getClass().newInstance();
-                try {
-                    repo.setDirectoryName(file.getCanonicalPath());
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE,
-                            "Failed to get canonical path name for "
-                            + file.getAbsolutePath(), e);
-                }
+                repo.setDirectoryName(file.getPath());
 
                 if (!repo.isWorking()) {
                     LOGGER.log(Level.WARNING,
