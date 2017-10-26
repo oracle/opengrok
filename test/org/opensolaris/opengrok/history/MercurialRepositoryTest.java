@@ -161,17 +161,16 @@ public class MercurialRepositoryTest {
     /**
      * Run Mercurial command.
      *
-     * @param command hg command to run
      * @param reposRoot directory of the repository root
-     * @param arg argument to use for the command
+     * @param args {@code hg} command arguments
      */
     static public void runHgCommand(File reposRoot, String ... args) {
         List<String> cmdargs = new ArrayList<>();
         MercurialRepository repo = new MercurialRepository();
+
         cmdargs.add(repo.getRepoCommand());
-        for (String arg: args) {
-            cmdargs.add(arg);
-        }
+        cmdargs.addAll(Arrays.asList(args));
+
         Executor exec = new Executor(cmdargs, reposRoot);
         int exitCode = exec.exec();
         if (exitCode != 0) {
