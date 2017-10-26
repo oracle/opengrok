@@ -82,9 +82,9 @@ public class AccuRevRepository extends Repository {
     private static final Pattern annotationPattern
             = Pattern.compile("^\\s+(\\d+.\\d+)\\s+(\\w+)");   // version, user
     private static final Pattern depotPattern
-            = Pattern.compile("^Depot:\\s+(\\w+)");
+            = Pattern.compile("^Depot:\\s+(.+)$");
     private static final Pattern parentPattern
-            = Pattern.compile("^Basis:\\s+(\\w+)");
+            = Pattern.compile("^Basis:\\s+(.+)$");
     private static final Pattern workspaceRootPattern
             = Pattern.compile("Top:\\s+(.+)$");
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();

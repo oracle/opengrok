@@ -22,7 +22,10 @@
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.ClassUtil;
@@ -54,6 +57,7 @@ public class RepositoryInfo implements Serializable {
     protected String parent;
     protected String branch;
     protected String currentVersion;
+    private String realSourceRoot;
 
     /**
      * format used for printing the date in {@code currentVersion}
@@ -76,6 +80,7 @@ public class RepositoryInfo implements Serializable {
         this.parent = orig.parent;
         this.branch = orig.branch;
         this.currentVersion = orig.currentVersion;
+        this.realSourceRoot = orig.realSourceRoot;
     }
 
     /**
@@ -99,25 +104,70 @@ public class RepositoryInfo implements Serializable {
      * @return the name of the root directory
      */
     public String getDirectoryName() {
-        return RuntimeEnvironment.getInstance().getSourceRootPath() +
-                directoryNameRelative;
+        Path dirname = null;
+        if (realSourceRoot == null) {
+            dirname = 
+               Paths.get(RuntimeEnvironment.getInstance().getSourceRootPath(), 
+                       directoryNameRelative);
+        } else {
+            dirname = Paths.get(realSourceRoot, directoryNameRelative);
+        }
+
+        return dirname.toString();
     }
 
     /**
      * Specify the name of the root directory for this repository.
      *
-     * @param dir the new name of the root directory. Can be absolute
-     * path or relative to source root.
+     * @param dir the new name of the root directory. 
+     * Can be absolute path (/full/path/to/directory) 
+     * or relative to source root (/directory).
      */
     public void setDirectoryName(String dir) {
+        
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String rp = env.getSourceRootPath();
         if (dir.startsWith(env.getSourceRootPath())) {
             this.directoryNameRelative = dir.substring(env.getSourceRootPath().length());
         } else {
-            this.directoryNameRelative = dir;
+            // For a simple relative path (/directory) there should
+            // only be one file separator character. When there is
+            // more than one file separator character, then this is
+            // assumed to be the full path to the root of the
+            // repository. It happened to not start with the source
+            // path from the command line likely due to symbolic linking.
+            
+            String sd = dir.substring(1); // skip over leading '/'
+            if ( sd.indexOf('/') == -1 && sd.indexOf('\\') == -1) {
+                directoryNameRelative = dir;  // simple directory name (eg. /myDir)
+            } else {
+                File folderPath = new File(dir);
+                realSourceRoot = folderPath.getParent();
+                directoryNameRelative = "/" + folderPath.getName();
+            }
         }
     }
-
+    
+    /**
+     * Obtain source root of the repository
+     * 
+     * @return source root of repository
+     */
+    public String getSourceRoot() {
+        return (realSourceRoot != null) // only has value when symbolic link found
+                ? realSourceRoot 
+                : RuntimeEnvironment.getInstance().getSourceRootPath();
+    }
+    
+    /**
+     * Set source root of repository.
+     * This is mostly for rebuilding this object via Configuration instantiation
+     * from configuration.xml
+     * @param path to repository root
+     */
+    public void setSourceRoot(String path) {
+        realSourceRoot = path;
+    }
     /**
      * Returns true if this repository is usable in this context (for SCM
      * systems that use external binaries, the binary must be available etc)
