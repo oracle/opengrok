@@ -49,7 +49,7 @@ public class RepositoryInfo implements Serializable {
     // Do not use this member.
     private transient String directoryName;
     
-    private String directoryNameRelative;
+    private String directoryNameRelative = "";
     protected Boolean working;
     protected String type;
     protected boolean remote;
