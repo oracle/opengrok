@@ -215,7 +215,8 @@ public class AuthorizationPlugin extends AuthorizationStack {
              * the whole stack walk through and prevent the other authorization
              * entities to work properly.
              */
-            return (this.plugin = plugin.getClass().newInstance()) != null;
+            this.plugin = plugin.getClass().getDeclaredConstructor().newInstance();
+            return true;
         } catch (InstantiationException ex) {
             LOGGER.log(Level.INFO, "Class could not be instantiated: ", ex);
         } catch (IllegalAccessException ex) {

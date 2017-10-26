@@ -27,6 +27,7 @@ package org.opensolaris.opengrok.index;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -754,7 +755,8 @@ public final class Indexer {
                         AnalyzerGuru.findFactory(analyzer));
                 }
 
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException 
+                    | InvocationTargetException e) {
                 LOGGER.log(Level.SEVERE, "Unable to locate FileAnalyzerFactory for {0}", analyzer);
                 LOGGER.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
                 System.exit(1);

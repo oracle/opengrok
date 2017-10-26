@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -512,16 +513,18 @@ public class AnalyzerGuru {
      * FileAnalyzerFactory}
      * @throws IllegalAccessException if the constructor cannot be accessed
      * @throws InstantiationException if the class cannot be instantiated
+     * @throws NoSuchMethodException if no-argument constructor could not be found
+     * @throws InvocationTargetException if the underlying constructor throws an exception
      */
     public static FileAnalyzerFactory findFactory(String factoryClassName)
-            throws ClassNotFoundException, IllegalAccessException,
-            InstantiationException {
-        Class fcn = null;
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, 
+            InvocationTargetException {
+        Class<?> fcn = null;
         try {
             fcn = Class.forName(factoryClassName);
             
         } catch (ClassNotFoundException e) {
-            fcn  = getFactoryClass(factoryClassName);
+            fcn = getFactoryClass(factoryClassName);
             
             if (fcn == null) {
                 throw new ClassNotFoundException("Unable to locate class " + factoryClassName);
@@ -540,9 +543,8 @@ public class AnalyzerGuru {
      * 
      * @return the analyzer factory class, or null when not found.
      */
-    public static Class getFactoryClass(String simpleName) {
-        //return new AnalyzerGuru().getClass().getPackage().getName();
-        Class factoryClass = null;
+    public static Class<?> getFactoryClass(String simpleName) {
+        Class<?> factoryClass = null;
         
         // Build analysis package name list first time only
         if (analysisPkgNames.isEmpty()) {
@@ -593,16 +595,17 @@ public class AnalyzerGuru {
      * FileAnalyzerFactory}
      * @throws IllegalAccessException if the constructor cannot be accessed
      * @throws InstantiationException if the class cannot be instantiated
+     * @throws NoSuchMethodException if no-argument constructor could not be found
+     * @throws InvocationTargetException if the underlying constructor throws an exception
      */
     private static FileAnalyzerFactory findFactory(Class<?> factoryClass)
-            throws InstantiationException, IllegalAccessException {
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         for (FileAnalyzerFactory f : factories) {
             if (f.getClass() == factoryClass) {
                 return f;
             }
         }
-        FileAnalyzerFactory f
-                = (FileAnalyzerFactory) factoryClass.newInstance();
+        FileAnalyzerFactory f = (FileAnalyzerFactory) factoryClass.getDeclaredConstructor().newInstance();
         registerAnalyzer(f);
         return f;
     }

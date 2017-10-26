@@ -27,6 +27,7 @@ import org.opensolaris.opengrok.logger.formatter.FileLogFormatter;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
@@ -117,8 +118,9 @@ public class LoggerUtil {
                 String formatter = LogManager.getLogManager().getProperty("java.util.logging.FileHandler.formatter");
                 newFileHandler.setLevel(fileHandler.getLevel());
                 try {
-                    newFileHandler.setFormatter((Formatter) Class.forName(formatter).newInstance());
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                    newFileHandler.setFormatter((Formatter) Class.forName(formatter).getDeclaredConstructor().newInstance());
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException 
+                        | InvocationTargetException e) {
                     newFileHandler.setFormatter(new FileLogFormatter());
                 }
                 getBaseLogger().addHandler(newFileHandler);
@@ -169,8 +171,9 @@ public class LoggerUtil {
             fh.setLevel(filelevel);
             String formatter = LogManager.getLogManager().getProperty("java.util.logging.FileHandler.formatter");
             try {
-                fh.setFormatter((Formatter) Class.forName(formatter).newInstance());
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                fh.setFormatter((Formatter) Class.forName(formatter).getDeclaredConstructor().newInstance());
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException 
+                    | InvocationTargetException e) {
                 fh.setFormatter(new FileLogFormatter());
             }
 
