@@ -36,13 +36,12 @@ interface PerlLexListener {
     void writeHtmlized(String value) throws IOException;
 
     /**
-     * Passes a text fragment that is syntactically a symbol for write
-     * processing
+     * Passes a text fragment that is syntactically a symbol for processing.
      * @param value the excised symbol
      * @param captureOffset the offset from yychar where {@code value} began
      * @param ignoreKwd a value indicating whether keywords should be ignored
      */
-    void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
+    void takeSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException;
 
     /**
@@ -161,8 +160,8 @@ class PerlLexHelper {
     }
 
     /**
-     * Starts a quote-like operator as specified in a syntax fragment, `op',
-     * and write the operator to output.
+     * Starts a quote-like operator as specified in a syntax fragment,
+     * {@code op}, and write the operator to output.
      */
     public void qop(String op, int namelength, boolean nointerp)
         throws IOException {
@@ -170,8 +169,8 @@ class PerlLexHelper {
     }
 
     /**
-     * Starts a quote-like operator as specified in a syntax fragment, `op',
-     * and write the operator to output if `doWrite` is true.
+     * Starts a quote-like operator as specified in a syntax fragment,
+     * {@code op}, and write the operator to output if {@code doWrite} is true.
      */
     public void qop(boolean doWrite, String capture, int namelength,
         boolean nointerp) throws IOException {
@@ -211,7 +210,7 @@ class PerlLexHelper {
         if (doWrite) {
             listener.writeHtmlized(boundary);
             if (qopname.length() > 0) {
-                listener.writeSymbol(qopname, boundary.length(), false);
+                listener.takeSymbol(qopname, boundary.length(), false);
             } else {
                 listener.skipSymbol();
             }
@@ -220,7 +219,9 @@ class PerlLexHelper {
         }
     }
 
-    /** Sets the jflex state reflecting `ltpostop' and `nointerp'. */
+    /**
+     * Sets the jflex state reflecting {@code ltpostop} and {@code nointerp}.
+     */
     public void setState(String ltpostop, boolean nointerp) {
         int state;
         boolean nolink = false;
@@ -242,8 +243,8 @@ class PerlLexHelper {
     }
 
     /**
-     * Sets a special `endqchar' if appropriate for `opener' or just tracks
-     * `opener'.
+     * Sets a special {@code endqchar} if appropriate for {@code opener} or
+     * just tracks {@code opener} as {@code endqchar}.
      */
     private void setEndQuoteChar(char opener) {
         switch (opener) {
@@ -272,8 +273,9 @@ class PerlLexHelper {
 
     /**
      * Begins a quote-like state for a heuristic match of the shorthand // of
-     * m// where the `capture' ends with "/", begins with punctuation, and the
-     * intervening whitespace may contain LFs -- and writes the parts to output.
+     * m// where the {@code capture} ends with "/", begins with punctuation,
+     * and the intervening whitespace may contain LFs -- and writes the parts
+     * to output.
      */
     public void hqopPunc(String capture) throws IOException {
         // `preceding' is everything before the '/'; 'lede' is the initial part
@@ -292,9 +294,9 @@ class PerlLexHelper {
 
     /**
      * Begins a quote-like state for a heuristic match of the shorthand // of
-     * m// where the `capture' ends with "/", begins with an initial symbol,
-     * and the intervening whitespace may contain LFs -- and writes the parts
-     * to output.
+     * m// where the {@code capture} ends with "/", begins with an initial
+     * symbol, and the intervening whitespace may contain LFs -- and writes the
+     * parts to output.
      */
     public void hqopSymbol(String capture) throws IOException {
         // `preceding' is everything before the '/'; 'lede' is the initial part
@@ -305,15 +307,15 @@ class PerlLexHelper {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        listener.writeSymbol(lede, 0, false);
+        listener.takeSymbol(lede, 0, false);
         writeWhitespace(intervening);
         listener.write(Consts.SS);
         listener.write("/");
     }
 
     /**
-     * Write `whsp' to output -- if it does not contain any LFs then the full
-     * String is written; otherwise, pre-LF spaces are condensed as usual.
+     * Write {@code whsp} to output -- if it does not contain any LFs then the
+     * full String is written; otherwise, pre-LF spaces are condensed as usual.
      */
     private void writeWhitespace(String whsp) throws IOException {
         int i;
@@ -330,7 +332,9 @@ class PerlLexHelper {
         }
     }
 
-    /** Begins a Here-document state, and writes the `capture' to output. */
+    /**
+     * Begins a Here-document state, and writes the {@code capture} to output.
+     */
     public void hop(String capture, boolean nointerp, boolean indented)
         throws IOException {
 
@@ -353,8 +357,8 @@ class PerlLexHelper {
     }
 
     /**
-     * Writes the `capture' to output, possibly ending the Here-document state
-     * just beforehand.
+     * Writes the {@code capture} to output, possibly ending the Here-document
+     * state just beforehand.
      * @return true if the quote state ended
      */
     public boolean maybeEndHere(String capture) throws IOException {
@@ -379,7 +383,7 @@ class PerlLexHelper {
     }
 
     /**
-     * Splits a sigil identifier -- where the `capture' starts with
+     * Splits a sigil identifier -- where the {@code capture} starts with
      * a sigil and ends in an identifier and where Perl allows whitespace after
      * the sigil -- and write the parts to output.
      * <p>
@@ -405,7 +409,7 @@ class PerlLexHelper {
         if ((ohnooo = id.indexOf(endqchar)) == -1) {
             listener.writeHtmlized(sigil);
             listener.write(s0);
-            listener.writeSymbol(id, sigil.length() + s0.length(), true);
+            listener.takeSymbol(id, sigil.length() + s0.length(), true);
         } else {
             // If the identifier contains the end quoting character, then it
             // may or may not parse in Perl. Treat everything before the first
@@ -424,7 +428,7 @@ class PerlLexHelper {
             listener.writeHtmlized(sigil);
             listener.write(s0);
             if (w0.length() > 0) {
-                listener.writeSymbol(w0, sigil.length() + s0.length(), true);
+                listener.takeSymbol(w0, sigil.length() + s0.length(), true);
             } else {
                 listener.skipSymbol();
             }
@@ -435,9 +439,9 @@ class PerlLexHelper {
     }
 
     /**
-     * Splits a braced sigil identifier -- where the `capture' starts with
-     * a sigil and ends with a '}' and where Perl allows whitespace after the
-     * sigil and around the identifier -- and write the parts to output.
+     * Splits a braced sigil identifier -- where the {@code capture} starts
+     * with a sigil and ends with a '}' and where Perl allows whitespace after
+     * the sigil and around the identifier -- and write the parts to output.
      */
     public void bracedSigilID(String capture) throws IOException {
         // $      {      identifier      }
@@ -469,7 +473,7 @@ class PerlLexHelper {
         listener.write(s0);
         listener.writeHtmlized(lpunc);
         listener.write(s1);
-        listener.writeSymbol(id, sigil.length() + s0.length() +
+        listener.takeSymbol(id, sigil.length() + s0.length() +
             lpunc.length() + s1.length(), true);
         listener.write(s2);
         listener.writeHtmlized(rpunc);

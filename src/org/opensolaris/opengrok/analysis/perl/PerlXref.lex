@@ -64,10 +64,14 @@ import org.opensolaris.opengrok.web.Util;
         out.write(htmlize(value));
     }
 
-    public void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
+    public void takeSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException {
         if (ignoreKwd) {
-            writeSymbol(value, null, yyline);
+            if (value.length() > 1) {
+                writeSymbol(value, null, yyline);
+            } else {
+                out.write(value);
+            }
         } else {
             writeSymbol(value, Consts.kwd, yyline);
         }
@@ -104,7 +108,7 @@ WhspChar      = [ \t\f]
 WhiteSpace    = {WhspChar}+
 MaybeWhsp     = {WhspChar}*
 EOL = \r|\n|\r\n
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
+Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Sigils = ("$" | "@" | "%" | "&" | "*")
 WxSigils = [[\W]--[\$\@\%\&\*\"\'\`\#]]
 
@@ -269,7 +273,11 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  {Identifier}    {
     maybeIntraState();
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    if (id.length() > 1) {
+        writeSymbol(id, Consts.kwd, yyline);
+    } else {
+        out.write(id);
+    }
  }
 
  "<" ({File}|{Path}) ">"    {

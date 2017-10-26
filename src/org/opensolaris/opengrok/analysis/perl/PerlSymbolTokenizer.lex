@@ -61,7 +61,7 @@ super(in);
         // noop
     }
 
-    public void writeSymbol(String value, int captureOffset, boolean ignoreKwd)
+    public void takeSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException {
         if (ignoreKwd || !Consts.kwd.contains(value)) {
             lastSymbol = value;
