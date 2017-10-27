@@ -51,9 +51,6 @@ super(in);
 
     private String lastSymbol;
 
-    // not used
-    protected String urlPrefix;
-
     public void pushState(int state) { yypush(state); }
 
     public void popState() throws IOException { yypop(); }
@@ -123,6 +120,8 @@ super(in);
     protected boolean getSymbolReturn() {
         return true;
     }
+
+    protected String getUrlPrefix() { return null; }
 
     protected void appendProject() { /* noop */ }
 
@@ -315,7 +314,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
         takeNonword("<");
         String path = yytext();
         path = path.substring(1, path.length() - 1);
-        take("<a href=\""+urlPrefix+"path=");
+        take("<a href=\"" + getUrlPrefix() + "path=");
         take(path);
         appendProject();
         take("\">");
@@ -623,7 +622,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     {Path}    {
         maybeIntraState();
         if (takeAllContent()) {
-            take(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));
+            take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
         }
     }
 
@@ -631,7 +630,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
         maybeIntraState();
         if (takeAllContent()) {
             String path = yytext();
-            take("<a href=\""+urlPrefix+"path=");
+            take("<a href=\"" + getUrlPrefix() + "path=");
             take(path);
             appendProject();
             take("\">");
