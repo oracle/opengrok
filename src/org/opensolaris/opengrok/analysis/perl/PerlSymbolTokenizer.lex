@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -26,58 +27,111 @@
  */
 
 package org.opensolaris.opengrok.analysis.perl;
+
 import java.io.IOException;
-import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
 %class PerlSymbolTokenizer
 %extends JFlexTokenizer
+%implements PerlLexListener
 %unicode
+%type boolean
+%char
 %init{
 super(in);
+
+        h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
+            HERE, HERExN, HEREin, HEREinxN);
 %init}
-%type boolean
+%{
+    private final PerlLexHelper h;
+
+    private String lastSymbol;
+
+    public void pushState(int state) { yypush(state); }
+
+    public void popState() throws IOException { yypop(); }
+
+    public void take(String value) throws IOException {
+        // noop
+    }
+
+    public void takeNonword(String value) throws IOException {
+        // noop
+    }
+
+    public void takeUnicode(String value) throws IOException {
+        // noop
+    }
+
+    public boolean takeSymbol(String value, int captureOffset,
+        boolean ignoreKwd)
+            throws IOException {
+        if (ignoreKwd || !Consts.kwd.contains(value)) {
+            lastSymbol = value;
+            setAttribs(value, yychar + captureOffset, yychar + captureOffset +
+                value.length());
+            return true;
+        } else {
+            lastSymbol = null;
+        }
+        return false;
+    }
+
+    public void skipSymbol() {
+        lastSymbol = null;
+    }
+
+    public void takeKeyword(String value) throws IOException {
+        lastSymbol = null;
+    }
+
+    public void doStartNewLine() throws IOException {
+        // noop
+    }
+
+    public void abortQuote() throws IOException {
+        yypop();
+        if (h.areModifiersOK()) yypush(QM);
+        take(Consts.ZS);
+    }
+
+    public void pushback(int numChars) {
+        yypushback(numChars);
+    }
+
+    // If the state is YYINITIAL, then transitions to INTRA; otherwise does
+    // nothing, because other transitions would have saved the state.
+    public void maybeIntraState() {
+        if (yystate() == YYINITIAL) yybegin(INTRA);
+    }
+
+    protected boolean takeAllContent() {
+        return false;
+    }
+
+    protected boolean returnOnSymbol() {
+        return lastSymbol != null;
+    }
+
+    protected boolean getSymbolReturn() {
+        return true;
+    }
+
+    protected String getUrlPrefix() { return null; }
+
+    protected void appendProject() { /* noop */ }
+
+    protected void appendLink(String s) { /* noop */ }
+
+    protected void writeEMailAddress(String s) { /* noop */ }
+%}
 %eofval{
+this.finalOffset =  zzEndRead;
 return false;
 %eofval}
-%char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-
-%state STRING SCOMMENT QSTRING
-
-%%
-
-<YYINITIAL> {
-{Identifier} {String id = yytext();
-                if(!Consts.kwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
-                        return true; }
-              }
- \"     { yybegin(STRING); }
- \'     { yybegin(QSTRING); }
- "#"   { yybegin(SCOMMENT); }
- }
-
-<STRING> {
- \"     { yybegin(YYINITIAL); }
- \\\"    {}
- \n     { yybegin(YYINITIAL); }
-}
-
-<QSTRING> {
- \'     { yybegin(YYINITIAL); }
- \\\'   {}
- \n     { yybegin(YYINITIAL); }
-}
-
-<SCOMMENT> {
- \n    { yybegin(YYINITIAL);}
-}
-
-<YYINITIAL, STRING, SCOMMENT, QSTRING> {
-<<EOF>>   { return false;}
-[^]    {}
-}
+%include PerlProductions.txt

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -112,5 +113,14 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     public void yypop() {
         this.yybegin(this.stack.pop());
+    }
+
+    /**
+     * reset current yy state, and clear stack
+     * @param newState state id
+     */
+    public void yyjump(int newState) {
+        yybegin(newState);
+        this.stack.clear();
     }
 }
