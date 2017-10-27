@@ -538,14 +538,16 @@ public abstract class JFlexXref {
      * @param keywords a set of keywords recognized by this analyzer (no links
      * will be generated if the symbol is a keyword)
      * @param line the line number on which the symbol appears
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null
      * @throws IOException if an error occurs while writing to the stream
      */
-    protected void writeSymbol(String symbol, Set<String> keywords, int line)
+    protected boolean writeSymbol(String symbol, Set<String> keywords, int line)
             throws IOException {
-        writeSymbol(symbol, keywords, line, true, false);
+        return writeSymbol(symbol, keywords, line, true, false);
     }
 
-        /**
+    /**
      * Write a symbol and generate links as appropriate.
      *
      * @param symbol the symbol to write
@@ -553,12 +555,14 @@ public abstract class JFlexXref {
      * will be generated if the symbol is a keyword)
      * @param line the line number on which the symbol appears
      * @param caseSensitive Whether the keyword list is case sensitive
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null
      * @throws IOException if an error occurs while writing to the stream
      */
-    protected void writeSymbol(
+    protected boolean writeSymbol(
             String symbol, Set<String> keywords, int line, boolean caseSensitive)
             throws IOException {
-        writeSymbol(symbol, keywords, line, caseSensitive, false);
+        return writeSymbol(symbol, keywords, line, caseSensitive, false);
     }
     
     /**
@@ -570,12 +574,14 @@ public abstract class JFlexXref {
      * @param line the line number on which the symbol appears
      * @param caseSensitive Whether the keyword list is case sensitive
      * @param quote Whether the symbol gets quoted in links or not
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null
      * @throws IOException if an error occurs while writing to the stream
      */
-    protected void writeSymbol(
-            String symbol, Set<String> keywords, int line, boolean caseSensitive, boolean quote)
+    protected boolean writeSymbol(String symbol, Set<String> keywords,
+        int line, boolean caseSensitive, boolean quote)
             throws IOException {
-        writeSymbol(symbol, keywords, line, caseSensitive, quote, false);
+        return writeSymbol(symbol, keywords, line, caseSensitive, quote, false);
     }
 
     /**
@@ -589,9 +595,11 @@ public abstract class JFlexXref {
      * @param quote Whether the symbol gets quoted in links or not
      * @param isKeyword Whether the symbol is certainly a keyword without
      * bothering to look up in a defined {@code keywords}
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null and if-and-only-if {@code isKeyword} is false
      * @throws IOException if an error occurs while writing to the stream
      */
-    protected void writeSymbol(
+    protected boolean writeSymbol(
             String symbol, Set<String> keywords, int line, boolean caseSensitive,
             boolean quote, boolean isKeyword)
             throws IOException {
@@ -604,7 +612,7 @@ public abstract class JFlexXref {
         if (isKeyword || (keywords != null && keywords.contains( check ))) {
             // This is a keyword, so we don't create a link.
             out.append("<b>").append(symbol).append("</b>");
-
+            return false;
         } else if (defs != null && defs.hasDefinitionAt(symbol, line, strs)) {
             // This is the definition of the symbol.
             String type = strs[0];
@@ -679,6 +687,7 @@ public abstract class JFlexXref {
             out.append(symbol);
             out.append("</a>");
         }
+        return true;
     }
 
     /**

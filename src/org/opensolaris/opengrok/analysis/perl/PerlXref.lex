@@ -29,8 +29,6 @@
 package org.opensolaris.opengrok.analysis.perl;
 
 import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.web.Util;
 
@@ -41,6 +39,7 @@ import org.opensolaris.opengrok.web.Util;
 %implements PerlLexListener
 %unicode
 %int
+%char
 %init{
         h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
             HERE, HERExN, HEREin, HEREinxN);
@@ -58,22 +57,33 @@ import org.opensolaris.opengrok.web.Util;
 
     public void popState() throws IOException { yypop(); }
 
-    public void write(String value) throws IOException { out.write(value); }
+    public void take(String value) throws IOException {
+        out.write(value);
+    }
 
-    public void writeHtmlized(String value) throws IOException {
+    public void takeNonword(String value) throws IOException {
         out.write(htmlize(value));
     }
 
-    public void takeSymbol(String value, int captureOffset, boolean ignoreKwd)
+    public void takeUnicode(String value) throws IOException {
+        for (int i = 0; i < value.length(); i++){
+            char c = value.charAt(i);
+            writeUnicodeChar(c);
+        }
+    }
+
+    public boolean takeSymbol(String value, int captureOffset,
+        boolean ignoreKwd)
             throws IOException {
         if (ignoreKwd) {
             if (value.length() > 1) {
-                writeSymbol(value, null, yyline);
+                return writeSymbol(value, null, yyline);
             } else {
                 out.write(value);
+                return false;
             }
         } else {
-            writeSymbol(value, Consts.kwd, yyline);
+            return writeSymbol(value, Consts.kwd, yyline);
         }
     }
 
@@ -81,16 +91,18 @@ import org.opensolaris.opengrok.web.Util;
         // noop
     }
 
-    public void writeKeyword(String value) throws IOException {
+    public void takeKeyword(String value) throws IOException {
         writeKeyword(value, yyline);
     }
 
-    public void doStartNewLine() throws IOException { startNewLine(); }
+    public void doStartNewLine() throws IOException {
+        startNewLine();
+    }
 
     public void abortQuote() throws IOException {
         yypop();
         if (h.areModifiersOK()) yypush(QM, null);
-        out.write(Consts.ZS);
+        take(Consts.ZS);
     }
 
     public void pushback(int numChars) {
@@ -101,6 +113,18 @@ import org.opensolaris.opengrok.web.Util;
     // nothing, because other transitions would have saved the state.
     public void maybeIntraState() {
         if (yystate() == YYINITIAL) yybegin(INTRA);
+    }
+
+    protected boolean takeAllContent() {
+        return true;
+    }
+
+    protected boolean returnOnSymbol() {
+        return false;
+    }
+
+    protected int getSymbolReturn() {
+        return 0; // irrelevant value because returnOnSymbol() is false
     }
 %}
 
@@ -241,14 +265,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     "||" |
     {ProtoAttr}    {
         yyjump(YYINITIAL);
-        out.write(htmlize(yytext()));
+        takeNonword(yytext());
     }
     // Part 2 of syntax that jumps back to YYINITIAL. Since this does a
     // look-ahead, keep it apart from "part 1" which uses OR-syntax ("|") --
     // as it seems the look-ahead would apply to all cases.
     "}" / {MaybeWhsp} {EOL}    {
         yyjump(YYINITIAL);
-        out.write(htmlize(yytext()));
+        takeNonword(yytext());
     }
 
  // Following are rules for Here-documents. Stacked multiple here-docs are
@@ -273,39 +297,40 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  {Identifier}    {
     maybeIntraState();
     String id = yytext();
-    if (id.length() > 1) {
-        writeSymbol(id, Consts.kwd, yyline);
-    } else {
-        out.write(id);
+    if (takeSymbol(id, 0, false) && returnOnSymbol()) {
+        return getSymbolReturn();
     }
  }
 
  "<" ({File}|{Path}) ">"    {
-        maybeIntraState();
-        out.write("&lt;");
+    maybeIntraState();
+    if (takeAllContent()) {
+        takeNonword("<");
         String path = yytext();
         path = path.substring(1, path.length() - 1);
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
+        take("<a href=\""+urlPrefix+"path=");
+        take(path);
         appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
-        out.write("&gt;");
+        take("\">");
+        take(path);
+        take("</a>");
+        takeNonword(">");
+    }
  }
 
  {Number}    {
     maybeIntraState();
-    out.write(Consts.SN);
-    out.write(yytext());
-    out.write("</span>");
+    take(Consts.SN);
+    take(yytext());
+    take("</span>");
  }
 
  [\"\`] { h.qop(yytext(), 0, false); }
  \'     { h.qop(yytext(), 0, true); }
  \#     {
-        yypush(SCOMMENT, null);
-        out.write(Consts.SC + "#");
+        pushState(SCOMMENT);
+        take(Consts.SC);
+        take("#");
  }
 
  // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
@@ -339,7 +364,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  ^ "-" [qmsy] |
  {WxSigils} "-" [qmsy]    {
     maybeIntraState();
-    out.write(htmlize(yytext()));
+    takeNonword(yytext());
  }
  // q//, m//, s//, y// and variants -- all with 1 character names
  ^ {MSapos} |
@@ -359,29 +384,32 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 
  // seeing POD-end without having seen POD-start is akin to a one-line comment
  ^ {PodEND} [^\n\r]*    {
-        out.write(htmlize(yytext()));
+        takeNonword(yytext());
  }
 
  // POD start
  ^ "=" [a-zA-Z_] [a-zA-Z0-9_]*    {
-        yypush(POD, null);
-        out.write(Consts.SC + yytext());
+        pushState(POD);
+        take(Consts.SC);
+        take(yytext());
  }
 
  // FORMAT start
  ^ {MaybeWhsp} "format" ({WhiteSpace} {Identifier})? {MaybeWhsp} "="    {
-    yypush(FMT, null);
-    // split off the "  format" as `initial' for keyword processing
-    String capture = yytext();
-    String following = capture.replaceFirst("^\\s+", "").
-        substring("format".length());
-    String initial = capture.substring(0, capture.length() -
-        following.length());
+    pushState(FMT);
+    if (takeAllContent()) {
+        // split off the "  format" as `initial' for keyword processing
+        String capture = yytext();
+        String following = capture.replaceFirst("^\\s+", "").
+            substring("format".length());
+        String initial = capture.substring(0, capture.length() -
+            following.length());
 
-    writeKeyword(initial);
-    out.write(htmlize(following));
-    // start a pseudo-"string"
-    out.write(Consts.SS);
+        takeKeyword(initial);
+        takeNonword(following);
+        // start a pseudo-"string"
+        take(Consts.SS);
+    }
  }
 }
 
@@ -389,8 +417,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     "/"    {
         // OK to pass a fake "m/" with doWrite=false
         h.qop(false, "m/", 1, false);
-        out.write(Consts.SS);
-        out.write(yytext());
+        take(Consts.SS);
+        take(yytext());
     }
 }
 
@@ -418,8 +446,10 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 
     {WxSigils}{Mwords} \s* "/"    {
         String capture = yytext();
-        String boundary = capture.substring(0, 1);
-        out.write(htmlize(boundary));
+        if (takeAllContent()) {
+            String boundary = capture.substring(0, 1);
+            takeNonword(boundary);
+        }
         h.hqopSymbol(capture.substring(1));
     }
 }
@@ -429,6 +459,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
         h.sigilID(yytext());
+        if (returnOnSymbol()) return getSymbolReturn();
     }
 }
 
@@ -437,6 +468,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
         h.bracedSigilID(yytext());
+        if (returnOnSymbol()) return getSymbolReturn();
     }
 
     {SPIdentifier1} |
@@ -465,26 +497,24 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     {Sigils} {Identifier} {
         //we ignore keywords if the identifier starts with a sigil ...
         h.sigilID(yytext());
+        if (returnOnSymbol()) return getSymbolReturn();
     }
 }
 
 <QUO, QUOxN, QUOxL, QUOxLxN> {
-    \\[\&\<\>\"\']    {
-        out.write(htmlize(yytext()));
-    }
-
     \\ \S    {
-        out.write(yytext());
+        takeNonword(yytext());
     }
 
     {Quo0} |
     \w    {
         String capture = yytext();
-        out.write(htmlize(capture));
+        takeNonword(capture);
         if (h.isQuoteEnding(capture)) {
             yypop();
-            if (h.areModifiersOK()) yypush(QM, null);
-            out.write(Consts.ZS);
+            if (h.areModifiersOK())
+                pushState(QM);
+            take(Consts.ZS);
         }
     }
 }
@@ -492,9 +522,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 <FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
     {WhiteSpace}{EOL} |
     {EOL} {
-        out.write(Consts.ZS);
-        startNewLine();
-        out.write(Consts.SS);
+        take(Consts.ZS);
+        doStartNewLine();
+        take(Consts.SS);
     }
 }
 
@@ -505,7 +535,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     // tr/SEARCHLIST/REPLACEMENTLIST/cdsr
     // y/SEARCHLIST/REPLACEMENTLIST/cdsr
     [a-z]    {
-        out.write(yytext());
+        take(yytext());
     }
 
     // anything else ends the quote-modifiers state
@@ -518,7 +548,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 <POD> {
   ^ {PodEND} [^\n\r]*    {
     yypop();
-    out.write(htmlize(yytext()) + Consts.ZS);
+    takeNonword(yytext());
+    take(Consts.ZS);
   }
 }
 
@@ -526,12 +557,15 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     // terminate a format
     ^ "." / {MaybeWhsp} {EOL}    {
         yypop();
-        out.write(htmlize(yytext()) + Consts.ZS);
+        takeNonword(yytext());
+        take(Consts.ZS);
     }
 
     // "A comment, indicated by putting a '#' in the first column."
     ^ "#" [^\n\r]*    {
-        out.write(Consts.SC + htmlize(yytext()) + Consts.ZS);
+        take(Consts.SC);
+        takeNonword(yytext());
+        take(Consts.ZS);
     }
 
     // The other two types of line in a format FORMLIST -- "a 'picture' line
@@ -544,8 +578,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
   {WhiteSpace}{EOL} |
   {EOL} {
     yypop();
-    out.write(Consts.ZS);
-    startNewLine();
+    take(Consts.ZS);
+    doStartNewLine();
   }
 }
 
@@ -553,27 +587,27 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     HERE, HERExN, HEREin, HEREinxN> {
  [&<>\"\']      {
         maybeIntraState();
-        out.write(htmlize(yytext()));
+        takeNonword(yytext());
  }
 
  {WhiteSpace}{EOL} |
  {EOL}          {
-        startNewLine();
+        doStartNewLine();
  }
 
  // Only one whitespace char at a time or else {WxSigils} can be broken
  {WhspChar}     {
-        out.write(yytext());
+        take(yytext());
  }
 
  [!-~]          {
         maybeIntraState();
-        out.write(yycharat(0));
+        take(yytext());
  }
 
  [^\n\r]          {
         maybeIntraState();
-        writeUnicodeChar(yycharat(0));
+        takeUnicode(yytext());
  }
 }
 
@@ -581,27 +615,35 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 <SCOMMENT, POD, FMT, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
     {Path}    {
         maybeIntraState();
-        out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));
+        if (takeAllContent()) {
+            take(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));
+        }
     }
 
     {File}    {
         maybeIntraState();
-        String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
+        if (takeAllContent()) {
+            String path = yytext();
+            take("<a href=\""+urlPrefix+"path=");
+            take(path);
+            appendProject();
+            take("\">");
+            take(path);
+            take("</a>");
+        }
     }
 
     ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]    {
         maybeIntraState();
-        appendLink(yytext());
+        if (takeAllContent()) {
+            appendLink(yytext());
+        }
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
         maybeIntraState();
-        writeEMailAddress(yytext());
+        if (takeAllContent()) {
+            writeEMailAddress(yytext());
+        }
     }
 }

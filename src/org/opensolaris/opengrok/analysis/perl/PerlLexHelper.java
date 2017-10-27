@@ -32,16 +32,18 @@ interface PerlLexListener {
     void pushState(int state);
     void popState() throws IOException;
     void maybeIntraState();
-    void write(String value) throws IOException;
-    void writeHtmlized(String value) throws IOException;
+    void take(String value) throws IOException;
+    void takeNonword(String value) throws IOException;
 
     /**
      * Passes a text fragment that is syntactically a symbol for processing.
      * @param value the excised symbol
      * @param captureOffset the offset from yychar where {@code value} began
      * @param ignoreKwd a value indicating whether keywords should be ignored
+     * @return true if the {@code value} was not in keywords or if the
+     * {@code ignoreKwd} was true
      */
-    void takeSymbol(String value, int captureOffset, boolean ignoreKwd)
+    boolean takeSymbol(String value, int captureOffset, boolean ignoreKwd)
             throws IOException;
 
     /**
@@ -51,11 +53,11 @@ interface PerlLexListener {
     void skipSymbol();
 
     /**
-     * Passes a text fragment that is syntactically a keyword symbol for write
+     * Passes a text fragment that is syntactically a keyword symbol for
      * processing
      * @param value the excised symbol
      */
-    void writeKeyword(String value) throws IOException;
+    void takeKeyword(String value) throws IOException;
 
     void doStartNewLine() throws IOException;
 
@@ -208,14 +210,14 @@ class PerlLexHelper {
         setState(ltpostop, nointerp);
 
         if (doWrite) {
-            listener.writeHtmlized(boundary);
+            listener.takeNonword(boundary);
             if (qopname.length() > 0) {
                 listener.takeSymbol(qopname, boundary.length(), false);
             } else {
                 listener.skipSymbol();
             }
-            listener.write(Consts.SS);
-            listener.writeHtmlized(postop);
+            listener.take(Consts.SS);
+            listener.takeNonword(postop);
         }
     }
 
@@ -286,10 +288,10 @@ class PerlLexHelper {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        listener.writeHtmlized(lede);
-        writeWhitespace(intervening);
-        listener.write(Consts.SS);
-        listener.write("/");
+        listener.takeNonword(lede);
+        takeWhitespace(intervening);
+        listener.take(Consts.SS);
+        listener.take("/");
     }
 
     /**
@@ -308,19 +310,19 @@ class PerlLexHelper {
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
         listener.takeSymbol(lede, 0, false);
-        writeWhitespace(intervening);
-        listener.write(Consts.SS);
-        listener.write("/");
+        takeWhitespace(intervening);
+        listener.take(Consts.SS);
+        listener.take("/");
     }
 
     /**
      * Write {@code whsp} to output -- if it does not contain any LFs then the
      * full String is written; otherwise, pre-LF spaces are condensed as usual.
      */
-    private void writeWhitespace(String whsp) throws IOException {
+    private void takeWhitespace(String whsp) throws IOException {
         int i;
         if ((i = whsp.indexOf("\n")) == -1) {
-            listener.write(whsp);
+            listener.take(whsp);
         } else {
             int numlf = 1, off = i + 1;
             while ((i = whsp.indexOf("\n", off)) != -1) {
@@ -328,7 +330,7 @@ class PerlLexHelper {
                 off = i + 1;
             }
             while (numlf-- > 0) listener.doStartNewLine();
-            if (off < whsp.length()) listener.write(whsp.substring(off));
+            if (off < whsp.length()) listener.take(whsp.substring(off));
         }
     }
 
@@ -338,7 +340,7 @@ class PerlLexHelper {
     public void hop(String capture, boolean nointerp, boolean indented)
         throws IOException {
 
-        listener.writeHtmlized(capture);
+        listener.takeNonword(capture);
 
         hereTerminator = null;
         Matcher m = HERE_TERMINATOR_MATCH.matcher(capture);
@@ -353,7 +355,7 @@ class PerlLexHelper {
         }
         listener.maybeIntraState();
         listener.pushState(state);
-        listener.write(Consts.SS);
+        listener.take(Consts.SS);
     }
 
     /**
@@ -363,12 +365,12 @@ class PerlLexHelper {
      */
     public boolean maybeEndHere(String capture) throws IOException {
         if (!isHereEnding(capture)) {
-            listener.writeHtmlized(capture);
+            listener.takeNonword(capture);
             return false;
         } else {
             listener.popState();
-            listener.write(Consts.ZS);
-            listener.writeHtmlized(capture);
+            listener.take(Consts.ZS);
+            listener.takeNonword(capture);
             return true;
         }
     }
@@ -395,7 +397,7 @@ class PerlLexHelper {
 
         if (capture.charAt(0) == endqchar) {
             listener.skipSymbol();
-            listener.writeHtmlized(sigil);
+            listener.takeNonword(sigil);
             if (isQuoteEnding(sigil)) listener.abortQuote();
             listener.pushback(capture.length() - 1);
             return;
@@ -407,8 +409,8 @@ class PerlLexHelper {
 
         int ohnooo;
         if ((ohnooo = id.indexOf(endqchar)) == -1) {
-            listener.writeHtmlized(sigil);
-            listener.write(s0);
+            listener.takeNonword(sigil);
+            listener.take(s0);
             listener.takeSymbol(id, sigil.length() + s0.length(), true);
         } else {
             // If the identifier contains the end quoting character, then it
@@ -425,14 +427,14 @@ class PerlLexHelper {
             String w0 = id.substring(0, ohnooo);
             String p0 = id.substring(ohnooo, ohnooo + 1);
             String w1 = id.substring(ohnooo + 1);
-            listener.writeHtmlized(sigil);
-            listener.write(s0);
+            listener.takeNonword(sigil);
+            listener.take(s0);
             if (w0.length() > 0) {
                 listener.takeSymbol(w0, sigil.length() + s0.length(), true);
             } else {
                 listener.skipSymbol();
             }
-            listener.writeHtmlized(p0);
+            listener.takeNonword(p0);
             if (isQuoteEnding(p0)) listener.abortQuote();
             listener.pushback(w1.length());
         }
@@ -469,14 +471,14 @@ class PerlLexHelper {
         String id = ltinterior1.substring(0, ltinterior1.length() -
             s2.length());
 
-        listener.writeHtmlized(sigil);
-        listener.write(s0);
-        listener.writeHtmlized(lpunc);
-        listener.write(s1);
+        listener.takeNonword(sigil);
+        listener.take(s0);
+        listener.takeNonword(lpunc);
+        listener.take(s1);
         listener.takeSymbol(id, sigil.length() + s0.length() +
             lpunc.length() + s1.length(), true);
-        listener.write(s2);
-        listener.writeHtmlized(rpunc);
+        listener.take(s2);
+        listener.takeNonword(rpunc);
     }
 
     /**
@@ -486,12 +488,12 @@ class PerlLexHelper {
      */
     public void specialID(String capture) throws IOException {
         if (capture.indexOf(endqchar) == -1) {
-            listener.writeKeyword(capture);
+            listener.takeKeyword(capture);
         } else {
             for (int i = 0; i < capture.length(); ++i) {
                 char c = capture.charAt(i);
                 String w = new String(new char[] {c});
-                listener.writeHtmlized(w);
+                listener.takeNonword(w);
                 if (isQuoteEnding(w)) {
                     listener.abortQuote();
                     listener.pushback(capture.length() - i - 1);
