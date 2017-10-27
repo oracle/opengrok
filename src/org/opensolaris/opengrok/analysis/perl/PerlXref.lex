@@ -130,4 +130,4 @@ import org.opensolaris.opengrok.web.Util;
     protected String getUrlPrefix() { return urlPrefix; }
 %}
 
-%include PerlProductions.lex
+%include PerlProductions.txt

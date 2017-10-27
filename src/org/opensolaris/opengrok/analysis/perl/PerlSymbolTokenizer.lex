@@ -134,4 +134,4 @@ this.finalOffset =  zzEndRead;
 return false;
 %eofval}
 
-%include PerlProductions.lex
+%include PerlProductions.txt
