@@ -122,13 +122,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 // Unfortunately, we cannot control the %state values, so we have to declare
 // a cross-product of states. (Technically, state values are not guaranteed to
 // be unique by jflex, but states that do not have identical rules will have
-// different values. The following four "QUO" states satisfy this difference
-// criterion. Likewise with the four "HERE" states.)
+// different values. The four "QUO" below states satisfy this difference
+// criterion; as likewise do the four "HERE" states.)
 //
 // YYINITIAL : nothing yet parsed or just after a non-quoted [;{}]
 // INTRA : saw content from YYINITIAL but not yet other state or [;{}]
 // SCOMMENT : single-line comment
 // POD : Perl Plain-Old-Documentation
+// FMT : an output record format
 // QUO : quote-like that is OK to match paths|files|URLs|e-mails
 // QUOxN : "" but with no interpolation
 // QUOxL : quote-like that is not OK to match paths|files|URLs|e-mails
@@ -139,9 +140,10 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 // HERExN : Here-docs with no interpolation
 // HEREin : Indented Here-docs
 // HEREinxN : Indented Here-docs with no interpolation
-// FMT : an output record format
 //
-%state INTRA SCOMMENT POD FMT QUO QUOxN QUOxL QUOxLxN QM HERE HERExN HEREin HEREinxN
+%state INTRA SCOMMENT POD FMT
+%state QUO QUOxN QUOxL QUOxLxN QM
+%state HERE HERExN HEREin HEREinxN
 
 %%
 <HERE, HERExN> {
