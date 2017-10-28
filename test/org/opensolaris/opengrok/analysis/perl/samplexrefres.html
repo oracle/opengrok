@@ -362,13 +362,17 @@
 <a class="l" name="355" href="#355">355</a><span class="c">#qq[$var]</span>
 <a class="l" name="356" href="#356">356</a>
 <a class="l" name="357" href="#357">357</a><span class="c"># more HERE-document tests</span>
-<a class="l" name="358" href="#358">358</a><a href="/source/s?defs=myfunc2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myfunc2</a>(&lt;&lt; &quot;THIS&quot;, $var, &lt;&lt;~&apos;THAT&apos;, $var, &lt;&lt;OTHER<span class="s">);</span>
+<a class="l" name="358" href="#358">358</a><a href="/source/s?defs=myfunc2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myfunc2</a>(&lt;&lt; &quot;THIS&quot;, $var, &lt;&lt;~&apos;THAT&apos;, $var, &lt;&lt;OTHER, &lt;&lt;\ELSE, &lt;&lt;`Z`<span class="s">);</span>
 <a class="l" name="359" href="#359">359</a><span class="s">Here&apos;s a $<a href="/source/s?defs=line1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line1</a></span>
 <a class="hl" name="360" href="#360">360</a><span class="s">THIS</span>
-<a class="l" name="361" href="#361">361</a><span class="s">Here&apos;s a $line2</span>
-<a class="l" name="362" href="#362">362</a><span class="s">THAT</span>
+<a class="l" name="361" href="#361">361</a><span class="s">	Here&apos;s a $line2</span>
+<a class="l" name="362" href="#362">362</a><span class="s">	THAT</span>
 <a class="l" name="363" href="#363">363</a><span class="s">Here&apos;s a $<a href="/source/s?defs=line3" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line3</a></span>
-<a class="l" name="364" href="#364">364</a><span class="s"></span>OTHER
-<a class="l" name="365" href="#365">365</a><span class="s">/\b sentinel \b/</span> &amp;&amp; <b>print</b>; <span class="c"># This should heuristically match as m//</span>
-<a class="l" name="366" href="#366">366</a></body>
+<a class="l" name="364" href="#364">364</a><span class="s">OTHER</span>
+<a class="l" name="365" href="#365">365</a><span class="s">Here&apos;s a $line4</span>
+<a class="l" name="366" href="#366">366</a><span class="s">ELSE</span>
+<a class="l" name="367" href="#367">367</a><span class="s">Here&apos;s a $<a href="/source/s?defs=line5" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line5</a></span>
+<a class="l" name="368" href="#368">368</a><span class="s"></span>Z
+<a class="l" name="369" href="#369">369</a><span class="s">/\b sentinel \b/</span> &amp;&amp; <b>print</b>; <span class="c"># This should heuristically match as m//</span>
+<a class="hl" name="370" href="#370">370</a></body>
 </html>

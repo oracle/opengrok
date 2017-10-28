@@ -355,11 +355,15 @@ push @arr, "'$key'=>" . 'q[' . $val . '],';
 #qq[$var]
 
 # more HERE-document tests
-myfunc2(<< "THIS", $var, <<~'THAT', $var, <<OTHER);
+myfunc2(<< "THIS", $var, <<~'THAT', $var, <<OTHER, <<\ELSE, <<`Z`);
 Here's a $line1
 THIS
-Here's a $line2
-THAT
+	Here's a $line2
+	THAT
 Here's a $line3
 OTHER
+Here's a $line4
+ELSE
+Here's a $line5
+Z
 /\b sentinel \b/ && print; # This should heuristically match as m//

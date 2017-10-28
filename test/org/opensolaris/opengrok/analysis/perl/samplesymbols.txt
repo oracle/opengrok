@@ -305,3 +305,4 @@ val
 myfunc2		# 358:myfunc2(
 line1
 line3
+line5
