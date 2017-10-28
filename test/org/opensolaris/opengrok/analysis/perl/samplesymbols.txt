@@ -302,3 +302,9 @@ html		# 351:push @$html
 arr		# 354:push @arr
 key
 val
+myfunc2		# 358:myfunc2(
+var
+var
+line1
+line3
+line5

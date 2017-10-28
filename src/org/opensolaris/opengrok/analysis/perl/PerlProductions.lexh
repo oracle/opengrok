@@ -32,7 +32,7 @@ MaybeWhsp     = {WhspChar}*
 EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Sigils = ("$" | "@" | "%" | "&" | "*")
-WxSigils = [[\W]--[\$\@\%\&\*\"\'\`\#]]
+WxSigils = [[\W]--[\$\@\%\&\*\"\'\`\#\r\n]]
 
 // Perl special identifiers (four of six from
 // https://perldoc.perl.org/perldata.html#Identifier-parsing):
@@ -100,8 +100,10 @@ TRhash = "tr"\#
 TRpunc = "tr" {MaybeWhsp} {Quo0xHash}
 TRword = "tr" {WhiteSpace} \w
 
-HereContinuation = \,{MaybeWhsp} "<<"\~? {MaybeWhsp}
-MaybeHereMarkers = ([\"\'\`\\]?{Identifier} [^\n\r]* {HereContinuation})?
+HereEOF1 = [\"][^\r\n\"]*[\"]
+HereEOF2 = [\`][^\r\n\`]*[\`]
+HereEOF3 = [\'][^\r\n\']*[\']
+HereEOF4 = [\\]?{Identifier}
 
 //
 // Track some keywords that can be used to identify heuristically a possible
@@ -175,23 +177,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
         takeNonword(yytext());
     }
 
- // Following are rules for Here-documents. Stacked multiple here-docs are
- // recognized, but not fully supported, as only the interpolation setting
- // of the first marker will apply to all sections. (The final, second HERE
- // quoting character is not demanded, as it is superfluous for the needs of
- // xref lexing; and leaving it off simplifies parsing.)
-
- "<<"  {MaybeWhsp} {MaybeHereMarkers} [\"\`]?{Identifier}    {
-    h.hop(yytext(), false/*nointerp*/, false/*indented*/);
- }
- "<<~" {MaybeWhsp} {MaybeHereMarkers} [\"\`]?{Identifier}    {
-    h.hop(yytext(), false/*nointerp*/, true/*indented*/);
- }
- "<<"  {MaybeWhsp} {MaybeHereMarkers} [\'\\]{Identifier}    {
-    h.hop(yytext(), true/*nointerp*/, false/*indented*/);
- }
- "<<~" {MaybeWhsp} {MaybeHereMarkers} [\'\\]{Identifier}    {
-    h.hop(yytext(), true/*nointerp*/, true/*indented*/);
+ "<<"[~]? {MaybeWhsp} ({HereEOF1}|{HereEOF2}|{HereEOF3}|{HereEOF4})    {
+    h.hop(yytext());
  }
 
  {Identifier}    {
@@ -451,6 +438,11 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     takeNonword(yytext());
     take(Consts.ZS);
   }
+
+  {WhiteSpace}{EOL} |
+  {EOL}    {
+    doStartNewLine();
+  }
 }
 
 <FMT> {
@@ -477,10 +469,23 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 <SCOMMENT> {
   {WhiteSpace}{EOL} |
   {EOL} {
+    String capture = yytext();
+    yypushback(capture.length());
     yypop();
     take(Consts.ZS);
-    doStartNewLine();
   }
+}
+
+<YYINITIAL, INTRA> {
+    {WhiteSpace}{EOL} |
+    {EOL}    {
+        String capture = yytext();
+        if (h.maybeStartHere()) {
+            yypushback(capture.length());
+        } else {
+            doStartNewLine();
+        }
+    }
 }
 
 <YYINITIAL, INTRA, SCOMMENT, POD, FMT, QUO, QUOxN, QUOxL, QUOxLxN,
@@ -488,11 +493,6 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  [&<>\"\']      {
         maybeIntraState();
         takeNonword(yytext());
- }
-
- {WhiteSpace}{EOL} |
- {EOL}          {
-        doStartNewLine();
  }
 
  // Only one whitespace char at a time or else {WxSigils} can be broken

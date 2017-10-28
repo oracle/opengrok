@@ -22,6 +22,8 @@
  */
 package org.opensolaris.opengrok.analysis.perl;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +33,7 @@ import java.util.regex.Pattern;
 interface PerlLexListener {
     void pushState(int state);
     void popState() throws IOException;
+    void switchState(int state);
     void maybeIntraState();
     void take(String value) throws IOException;
     void takeNonword(String value) throws IOException;
@@ -335,17 +338,68 @@ class PerlLexHelper {
     }
 
     /**
-     * Begins a Here-document state, and writes the {@code capture} to output.
+     * Parses a Here-document declaration, and writes the {@code capture} to
+     * output. If the declaration is valid, {@code hereSettings} will have been
+     * appended.
      */
-    public void hop(String capture, boolean nointerp, boolean indented)
-        throws IOException {
+    public void hop(String capture) throws IOException {
+        if (!capture.startsWith("<<")) {
+            throw new IllegalArgumentException("bad HERE: " + capture);
+        }
 
         listener.takeNonword(capture);
+        if (hereSettings == null) hereSettings = new LinkedList<>();
 
-        hereTerminator = null;
-        Matcher m = HERE_TERMINATOR_MATCH.matcher(capture);
-        if (!m.find()) return;
-        hereTerminator = m.group(0);
+        String remaining = capture;
+        int i = 0;
+        HereDocSettings settings;
+        boolean indented = false;
+        boolean nointerp;
+        String terminator;
+
+        String opener = remaining.substring(0, i + 2);
+        remaining = remaining.substring(opener.length());
+        if (remaining.startsWith("~")) {
+            indented = true;
+            remaining = remaining.substring(1);
+        }
+        remaining = remaining.replaceFirst("^\\s+", "");
+        char c = remaining.charAt(0);
+        switch (c) {
+            case '\'':
+                nointerp = true;
+                remaining = remaining.substring(1);
+                break;
+            case '`':
+            case '\"':
+                nointerp = false;
+                remaining = remaining.substring(1);
+                break;
+            case '\\':
+                c = '\0';
+                nointerp = true;
+                remaining = remaining.substring(1);
+                break;
+            default:
+                c = '\0';
+                nointerp = false;
+                break;
+        }
+
+        if (c != '\0') {
+            if ((i = remaining.indexOf(c)) < 1) {
+                terminator = remaining;
+                remaining = "";
+            } else {
+                terminator = remaining.substring(0, i);
+                remaining = remaining.substring(i + 1);
+            }
+        } else {
+            Matcher m = HERE_TERMINATOR_MATCH.matcher(remaining);
+            if (!m.find()) return;
+            terminator = m.group(0);
+            remaining = remaining.substring(terminator.length());
+        }
 
         int state;
         if (nointerp) {
@@ -353,9 +407,23 @@ class PerlLexHelper {
         } else {
             state = indented ? HEREin : HERE;
         }
-        listener.maybeIntraState();
-        listener.pushState(state);
-        listener.take(Consts.SS);
+        settings = new HereDocSettings(terminator, state);
+        hereSettings.add(settings);
+    }
+
+    /**
+     * Pushes the first Here-document state if any declarations were parsed, or
+     * else does nothing.
+     * @return true if a Here state was pushed
+     */
+    public boolean maybeStartHere() throws IOException {
+        if (hereSettings != null && hereSettings.size() > 0) {
+            HereDocSettings settings = hereSettings.peek();
+            listener.pushState(settings.state);
+            listener.take(Consts.SS);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -364,24 +432,24 @@ class PerlLexHelper {
      * @return true if the quote state ended
      */
     public boolean maybeEndHere(String capture) throws IOException {
-        if (!isHereEnding(capture)) {
-            listener.takeNonword(capture);
+        String trimmed = capture.replaceFirst("^\\s+", "");
+        HereDocSettings settings = hereSettings.peek();
+        if (trimmed.equals(settings.terminator)) {
+            listener.take(Consts.ZS);
+            hereSettings.remove();
+        }
+
+        listener.takeNonword(capture);
+
+        if (hereSettings.size() > 0) {
+            settings = hereSettings.peek();
+            listener.switchState(settings.state);
+            listener.take(Consts.SS);
             return false;
         } else {
             listener.popState();
-            listener.take(Consts.ZS);
-            listener.takeNonword(capture);
             return true;
         }
-    }
-
-    /**
-     * Gets a value indicating if the Here-document should be ended.
-     * @return true if the quote state should end
-     */
-    public boolean isHereEnding(String capture) {
-        String trimmed = capture.replaceFirst("^\\s+", "");
-        return trimmed.equals(hereTerminator);
     }
 
     /**
@@ -504,7 +572,7 @@ class PerlLexHelper {
     }
 
     private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
-        "[a-zA-Z0-9_]+$");
+        "^[a-zA-Z0-9_]+");
 
     /**
      * When matching a quoting construct like qq[], q(), m//, s```, etc., the
@@ -549,6 +617,19 @@ class PerlLexHelper {
      */
     private boolean waitq;
 
-    /** Stores the terminating identifier for For Here-documents */
-    private String hereTerminator;
+    private Queue<HereDocSettings> hereSettings;
+
+    class HereDocSettings {
+        private final String terminator;
+        private final int state;
+
+        public HereDocSettings(String terminator, int state) {
+            this.terminator = terminator;
+            this.state = state;
+        }
+
+        public String getTerminator() { return terminator; }
+
+        public int getState() { return state; }
+    }
 }
