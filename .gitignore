@@ -1,8 +1,6 @@
 *~
-nbproject/*~
+*.swp
 /nbproject/configs/*.properties
-opengrok-web-nbproject/nbproject/*~
-opengrok-web-nbproject/nbproject/build-impl.xml~
 tags
 TAGS
 build
@@ -39,8 +37,6 @@ webrev
 opengrok-web-nbproject/nbproject/private/
 opengrok-web-nbproject/nbproject/genfiles.properties
 run_my.bat
-*.xml~
-opengrok-web-nbproject/nbproject/build-impl.xml~
 build.bat
 jacoco
 jacoco.exec

@@ -26,12 +26,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.apache.lucene.document.Document;
-import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 
 /**
  *
@@ -73,27 +71,4 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         super.analyze(doc, src, xrefOut);
     }        
-
-    /**
-     * Write a cross referenced HTML file reads the source from in
-     *
-     * @param lxref xrefer to be used
-     * @param in Input source
-     * @param out Output xref writer
-     * @param defs definitions for the file (could be null)
-     * @param annotation annotation for the file (could be null)
-     * @param project project where this xref belongs to
-     * @throws IOException when any I/O error occurs
-     */
-    static protected void writeXref(JFlexXref lxref, Reader in, Writer out,
-        Definitions defs, Annotation annotation, Project project)
-            throws IOException {
-        if (lxref != null) {
-            lxref.reInit(in);
-            lxref.annotation = annotation;
-            lxref.project = project;
-            lxref.setDefs(defs);
-            lxref.write(out);
-        }
-    }
 }
