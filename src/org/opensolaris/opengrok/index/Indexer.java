@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
@@ -173,6 +174,16 @@ public final class Indexer {
             for (int optind=0; optind< argv.length; optind++) {
                 String path = Paths.get(cfg.getSourceRoot(), argv[optind]).toString();
                 subFilesList.add(path);
+            }
+
+            // If an user used customizations for projects he perhaps just
+            // used the key value for project without a name but the code
+            // expects a name for the project. Therefore we fill the name
+            // according to the project key which is the same.
+            for (Entry<String, Project> entry : cfg.getProjects().entrySet()) {
+                if (entry.getValue().getName() == null) {
+                    entry.getValue().setName(entry.getKey());
+                }
             }
 
             // Set updated configuration in RuntimeEnvironment.
@@ -886,13 +897,15 @@ public final class Indexer {
                     // This is an existing object. Reuse the old project,
                     // possibly with customizations, instead of creating a
                     // new with default values.
-                    projects.put(name, oldProjects.get(name));
+                    Project p = oldProjects.get(name);
+                    p.setPath(path);
+                    p.setName(name);
+                    p.completeWithDefaults(env.getConfiguration());
+                    projects.put(name, p);
                 } else if (!name.startsWith(".") && file.isDirectory()) {
                     // Found a new directory with no matching project, so
                     // create a new project with default properties.
-                    Project p = new Project(name, path);
-                    p.setTabSize(env.getConfiguration().getTabSize());
-                    projects.put(p.getName(), p);
+                    projects.put(name, new Project(name, path, env.getConfiguration()));
                 }
             }
         }
