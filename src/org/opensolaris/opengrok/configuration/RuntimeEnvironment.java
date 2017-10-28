@@ -557,7 +557,7 @@ public final class RuntimeEnvironment {
     /**
      * Specify the mandoc program to use
      *
-     * @param ctags the mandoc program to use or {@code null}
+     * @param value the mandoc program to use or {@code null}
      */
     public void setMandoc(String value) {
         threadConfig.get().setMandoc(value);

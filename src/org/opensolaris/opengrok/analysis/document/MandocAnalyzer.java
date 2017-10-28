@@ -71,7 +71,7 @@ public class MandocAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create an {@see MandocXref} instance.
+     * Create a {@link MandocXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
