@@ -21,7 +21,8 @@ CDDL HEADER END
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
 -->
-<project name="OpenGrok" default="jar" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="OpenGrok" default="jar" basedir="." xmlns:jacoco="antlib:org.jacoco.ant"
+    xmlns:if="ant:if" xmlns:unless="ant:unless">
     <description>Builds, tests, and runs the project opengrok.</description>
     <property name="build.sysclasspath" value="ignore"/>
     <property file="${user.home}/config/ant/${ant.project.name}.properties" />
@@ -186,6 +187,17 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <attribute name="name"/>
             <attribute name="dir"/>
             <sequential> <!-- Name of input has to be .lex -->
+                <!-- newer *.lexh files cause .lex file to be touched -->
+                <local name="lexh"/>
+                <fileset dir="${src.dir}/@{dir}" includes="*.lexh" id="id.lexh">
+                    <depend targetdir="${src.dir}/@{dir}">
+                        <mapper type="merge" to="@{name}.lex"/>
+                    </depend>
+                </fileset>
+                <pathconvert pathsep="," property="lexh" refid="id.lexh"/>
+                <touch file="${src.dir}/@{dir}/@{name}.lex"
+                    unless:blank="${lexh}"/>
+                <!-- now run the jflex task -->
                 <jflex file="${src.dir}/@{dir}/@{name}.lex" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
             </sequential>
         </macrodef>
@@ -198,6 +210,17 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <attribute name="name"/>    
             <attribute name="dir"/>
             <sequential>
+                <!-- newer *.lexh files cause .lex file to be touched -->
+                <local name="lexh"/>
+                <fileset dir="${src.dir}/@{dir}" includes="*.lexh" id="id.lexh">
+                    <depend targetdir="${src.dir}/@{dir}">
+                        <mapper type="merge" to="@{name}.lex"/>
+                    </depend>
+                </fileset>
+                <pathconvert pathsep="," property="lexh" refid="id.lexh"/>
+                <touch file="${src.dir}/@{dir}/@{name}.lex"
+                    unless:blank="${lexh}"/>
+                <!-- now run the jflex task -->
                 <jflex file="${src.dir}/@{dir}/@{name}.lex" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
                 <!-- LUCENE-5897: Disallow scanner buffer expansion -->
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
