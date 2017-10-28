@@ -57,6 +57,8 @@ import org.opensolaris.opengrok.web.Util;
 
     public void popState() throws IOException { yypop(); }
 
+    public void switchState(int state) { yybegin(state); }
+
     public void take(String value) throws IOException {
         out.write(value);
     }

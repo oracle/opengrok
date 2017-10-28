@@ -101,18 +101,18 @@
 <a class="l" name="94" href="#94">94</a><b>print</b> &lt;&lt;EOF<span class="s">;</span>
 <a class="l" name="95" href="#95">95</a><span class="s">The price is $<a href="/source/s?defs=Price" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Price</a>.</span>
 <a class="l" name="96" href="#96">96</a><span class="s"></span>EOF
-<a class="l" name="97" href="#97">97</a><b>print</b> &lt;&lt; &quot;EOF<span class="s">&quot;; # same as above</span>
+<a class="l" name="97" href="#97">97</a><b>print</b> &lt;&lt; &quot;EOF&quot;<span class="s">; # same as above</span>
 <a class="l" name="98" href="#98">98</a><span class="s">The price is $<a href="/source/s?defs=Price" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Price</a>.</span>
 <a class="l" name="99" href="#99">99</a><span class="s"></span>EOF
 <a class="hl" name="100" href="#100">100</a>
-<a class="l" name="101" href="#101">101</a><b>my</b> $<a href="/source/s?defs=cost" class="intelliWindow-symbol" data-definition-place="undefined-in-file">cost</a> = &lt;&lt;&apos;VISTA<span class="s">&apos;;  # hasta la ...</span>
+<a class="l" name="101" href="#101">101</a><b>my</b> $<a href="/source/s?defs=cost" class="intelliWindow-symbol" data-definition-place="undefined-in-file">cost</a> = &lt;&lt;&apos;VISTA&apos;<span class="s">;  # hasta la ...</span>
 <a class="l" name="102" href="#102">102</a><span class="s">That&apos;ll be $10 please, ma&apos;am.</span>
 <a class="l" name="103" href="#103">103</a><span class="s"></span>VISTA
 <a class="l" name="104" href="#104">104</a>$<a href="/source/s?defs=cost" class="intelliWindow-symbol" data-definition-place="undefined-in-file">cost</a> = &lt;&lt;\VISTA<span class="s">;   # Same thing!</span>
 <a class="l" name="105" href="#105">105</a><span class="s">That&apos;ll be $10 please, ma&apos;am.</span>
 <a class="l" name="106" href="#106">106</a><span class="s"></span>VISTA
 <a class="l" name="107" href="#107">107</a>
-<a class="l" name="108" href="#108">108</a><b>print</b> &lt;&lt; `EOC<span class="s">`; # execute command and get results</span>
+<a class="l" name="108" href="#108">108</a><b>print</b> &lt;&lt; `EOC`<span class="s">; # execute command and get results</span>
 <a class="l" name="109" href="#109">109</a><span class="s">echo hi there</span>
 <a class="hl" name="110" href="#110">110</a><span class="s"></span>EOC
 <a class="l" name="111" href="#111">111</a>
@@ -128,19 +128,19 @@
 <a class="l" name="121" href="#121">121</a><span class="s">		This text is indented with two tabs</span>
 <a class="l" name="122" href="#122">122</a><span class="s"></span>EOF
 <a class="l" name="123" href="#123">123</a>
-<a class="l" name="124" href="#124">124</a><b>print</b> &lt;&lt;~ &apos;EOF<span class="s">&apos;;</span>
+<a class="l" name="124" href="#124">124</a><b>print</b> &lt;&lt;~ &apos;EOF&apos;<span class="s">;</span>
 <a class="l" name="125" href="#125">125</a><span class="s">	This text is not indented</span>
 <a class="l" name="126" href="#126">126</a><span class="s">	This text is indented with two spaces</span>
 <a class="l" name="127" href="#127">127</a><span class="s">		This text is indented with two tabs</span>
 <a class="l" name="128" href="#128">128</a><span class="s"></span>EOF
 <a class="l" name="129" href="#129">129</a>
-<a class="hl" name="130" href="#130">130</a><b>print</b> &lt;&lt;&quot;foo&quot;, &lt;&lt;&quot;bar<span class="s">&quot;; # you can stack them</span>
+<a class="hl" name="130" href="#130">130</a><b>print</b> &lt;&lt;&quot;foo&quot;, &lt;&lt;&quot;bar&quot;<span class="s">; # you can stack them</span>
 <a class="l" name="131" href="#131">131</a><span class="s">I said foo.</span>
 <a class="l" name="132" href="#132">132</a><span class="s">foo</span>
 <a class="l" name="133" href="#133">133</a><span class="s">I said bar.</span>
 <a class="l" name="134" href="#134">134</a><span class="s"></span>bar
 <a class="l" name="135" href="#135">135</a>
-<a class="l" name="136" href="#136">136</a><a href="/source/s?defs=myfunc" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myfunc</a>(&lt;&lt; &quot;THIS&quot;, 23, &lt;&lt;&apos;THAT<span class="s">&apos;);</span>
+<a class="l" name="136" href="#136">136</a><a href="/source/s?defs=myfunc" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myfunc</a>(&lt;&lt; &quot;THIS&quot;, 23, &lt;&lt;&apos;THAT&apos;<span class="s">);</span>
 <a class="l" name="137" href="#137">137</a><span class="s">Here&apos;s a line</span>
 <a class="l" name="138" href="#138">138</a><span class="s">or two.</span>
 <a class="l" name="139" href="#139">139</a><span class="s">THIS</span>
@@ -360,5 +360,15 @@
 <a class="l" name="353" href="#353">353</a><span class="c"># some comment</span>
 <a class="l" name="354" href="#354">354</a><b>push</b> @<a href="/source/s?defs=arr" class="intelliWindow-symbol" data-definition-place="undefined-in-file">arr</a>, <span class="s">&quot;&apos;$<a href="/source/s?defs=key" class="intelliWindow-symbol" data-definition-place="undefined-in-file">key</a>&apos;=&gt;&quot;</span> . <span class="s">&apos;q[&apos;</span> . $<a href="/source/s?defs=val" class="intelliWindow-symbol" data-definition-place="undefined-in-file">val</a> . <span class="s">&apos;],&apos;</span>;
 <a class="l" name="355" href="#355">355</a><span class="c">#qq[$var]</span>
-<a class="l" name="356" href="#356">356</a></body>
+<a class="l" name="356" href="#356">356</a>
+<a class="l" name="357" href="#357">357</a><span class="c"># more HERE-document tests</span>
+<a class="l" name="358" href="#358">358</a><a href="/source/s?defs=myfunc2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">myfunc2</a>(&lt;&lt; &quot;THIS&quot;, $var, &lt;&lt;~&apos;THAT&apos;, $var, &lt;&lt;OTHER<span class="s">);</span>
+<a class="l" name="359" href="#359">359</a><span class="s">Here&apos;s a $<a href="/source/s?defs=line1" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line1</a></span>
+<a class="hl" name="360" href="#360">360</a><span class="s">THIS</span>
+<a class="l" name="361" href="#361">361</a><span class="s">Here&apos;s a $line2</span>
+<a class="l" name="362" href="#362">362</a><span class="s">THAT</span>
+<a class="l" name="363" href="#363">363</a><span class="s">Here&apos;s a $<a href="/source/s?defs=line3" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line3</a></span>
+<a class="l" name="364" href="#364">364</a><span class="s"></span>OTHER
+<a class="l" name="365" href="#365">365</a><span class="s">/\b sentinel \b/</span> &amp;&amp; <b>print</b>; <span class="c"># This should heuristically match as m//</span>
+<a class="l" name="366" href="#366">366</a></body>
 </html>

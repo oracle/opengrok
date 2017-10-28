@@ -176,22 +176,15 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     }
 
  // Following are rules for Here-documents. Stacked multiple here-docs are
- // recognized, but not fully supported, as only the interpolation setting
- // of the first marker will apply to all sections. (The final, second HERE
- // quoting character is not demanded, as it is superfluous for the needs of
- // xref lexing; and leaving it off simplifies parsing.)
+ // recognized and supported. One caveat is that if a language symbol
+ // exists between stacked terminators (e.g., <<A, $val, <<B), then the
+ // symbol will be missed and taken as just regular, non-symbolic text.
 
- "<<"  {MaybeWhsp} {MaybeHereMarkers} [\"\`]?{Identifier}    {
-    h.hop(yytext(), false/*nointerp*/, false/*indented*/);
- }
- "<<~" {MaybeWhsp} {MaybeHereMarkers} [\"\`]?{Identifier}    {
-    h.hop(yytext(), false/*nointerp*/, true/*indented*/);
- }
- "<<"  {MaybeWhsp} {MaybeHereMarkers} [\'\\]{Identifier}    {
-    h.hop(yytext(), true/*nointerp*/, false/*indented*/);
- }
- "<<~" {MaybeWhsp} {MaybeHereMarkers} [\'\\]{Identifier}    {
-    h.hop(yytext(), true/*nointerp*/, true/*indented*/);
+ "<<"[~]? {MaybeWhsp} {MaybeHereMarkers} [\"][^\r\n\"]*[\"] |
+ "<<"[~]? {MaybeWhsp} {MaybeHereMarkers} [\`][^\r\n\`]*[\`] |
+ "<<"[~]? {MaybeWhsp} {MaybeHereMarkers} [\'][^\r\n\']*[\'] |
+ "<<"[~]? {MaybeWhsp} {MaybeHereMarkers} [\\]?{Identifier}    {
+    h.hop(yytext());
  }
 
  {Identifier}    {
