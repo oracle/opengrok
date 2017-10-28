@@ -55,6 +55,8 @@ super(in);
 
     public void popState() throws IOException { yypop(); }
 
+    public void switchState(int state) { yybegin(state); }
+
     public void take(String value) throws IOException {
         // noop
     }

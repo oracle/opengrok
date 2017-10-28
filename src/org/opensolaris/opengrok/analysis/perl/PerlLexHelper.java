@@ -22,6 +22,8 @@
  */
 package org.opensolaris.opengrok.analysis.perl;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +33,7 @@ import java.util.regex.Pattern;
 interface PerlLexListener {
     void pushState(int state);
     void popState() throws IOException;
+    void switchState(int state);
     void maybeIntraState();
     void take(String value) throws IOException;
     void takeNonword(String value) throws IOException;
@@ -337,24 +340,77 @@ class PerlLexHelper {
     /**
      * Begins a Here-document state, and writes the {@code capture} to output.
      */
-    public void hop(String capture, boolean nointerp, boolean indented)
-        throws IOException {
+    public void hop(String capture) throws IOException {
 
         listener.takeNonword(capture);
+        if (hereSettings == null) hereSettings = new LinkedList<>();
+        hereSettings.clear();
 
-        hereTerminator = null;
-        Matcher m = HERE_TERMINATOR_MATCH.matcher(capture);
-        if (!m.find()) return;
-        hereTerminator = m.group(0);
+        String remaining = capture;
+        int i = 0;
+        HereDocSettings settings;
+        do {
+            boolean indented = false;
+            boolean nointerp;
+            String terminator;
 
-        int state;
-        if (nointerp) {
-            state = indented ? HEREinxN : HERExN;
-        } else {
-            state = indented ? HEREin : HERE;
-        }
+            String opener = remaining.substring(0, i + 2);
+            remaining = remaining.substring(opener.length());
+            if (remaining.startsWith("~")) {
+                indented = true;
+                remaining = remaining.substring(1);
+            }
+            remaining = remaining.replaceFirst("^\\s+", "");
+            char c = remaining.charAt(0);
+            switch (c) {
+                case '\'':
+                    nointerp = true;
+                    remaining = remaining.substring(1);
+                    break;
+                case '`':
+                case '\"':
+                    nointerp = false;
+                    remaining = remaining.substring(1);
+                    break;
+                case '\\':
+                    c = '\0';
+                    nointerp = true;
+                    remaining = remaining.substring(1);
+                    break;
+                default:
+                    c = '\0';
+                    nointerp = false;
+                    break;
+            }
+
+            if (c != '\0') {
+                if ((i = remaining.indexOf(c)) < 1) {
+                    terminator = remaining;
+                    remaining = "";
+                } else {
+                    terminator = remaining.substring(0, i);
+                    remaining = remaining.substring(i + 1);
+                }
+            } else {
+                Matcher m = HERE_TERMINATOR_MATCH.matcher(remaining);
+                if (!m.find()) return;
+                terminator = m.group(0);
+                remaining = remaining.substring(terminator.length());
+            }
+
+            int state;
+            if (nointerp) {
+                state = indented ? HEREinxN : HERExN;
+            } else {
+                state = indented ? HEREin : HERE;
+            }
+            settings = new HereDocSettings(terminator, state);
+            hereSettings.add(settings);
+        } while ((i = remaining.indexOf("<<")) != -1);
+
+        settings = hereSettings.peek();
         listener.maybeIntraState();
-        listener.pushState(state);
+        listener.pushState(settings.getState());
         listener.take(Consts.SS);
     }
 
@@ -364,8 +420,14 @@ class PerlLexHelper {
      * @return true if the quote state ended
      */
     public boolean maybeEndHere(String capture) throws IOException {
-        if (!isHereEnding(capture)) {
+        String trimmed = capture.replaceFirst("^\\s+", "");
+        HereDocSettings settings = hereSettings.peek();
+        if (trimmed.equals(settings.terminator)) hereSettings.remove();
+
+        if (hereSettings.size() > 0) {
             listener.takeNonword(capture);
+            settings = hereSettings.peek();
+            listener.switchState(settings.state);
             return false;
         } else {
             listener.popState();
@@ -373,15 +435,6 @@ class PerlLexHelper {
             listener.takeNonword(capture);
             return true;
         }
-    }
-
-    /**
-     * Gets a value indicating if the Here-document should be ended.
-     * @return true if the quote state should end
-     */
-    public boolean isHereEnding(String capture) {
-        String trimmed = capture.replaceFirst("^\\s+", "");
-        return trimmed.equals(hereTerminator);
     }
 
     /**
@@ -504,7 +557,7 @@ class PerlLexHelper {
     }
 
     private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
-        "[a-zA-Z0-9_]+$");
+        "^[a-zA-Z0-9_]+");
 
     /**
      * When matching a quoting construct like qq[], q(), m//, s```, etc., the
@@ -549,6 +602,19 @@ class PerlLexHelper {
      */
     private boolean waitq;
 
-    /** Stores the terminating identifier for For Here-documents */
-    private String hereTerminator;
+    private Queue<HereDocSettings> hereSettings;
+
+    class HereDocSettings {
+        private final String terminator;
+        private final int state;
+
+        public HereDocSettings(String terminator, int state) {
+            this.terminator = terminator;
+            this.state = state;
+        }
+
+        public String getTerminator() { return terminator; }
+
+        public int getState() { return state; }
+    }
 }
