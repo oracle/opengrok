@@ -39,7 +39,10 @@ public class DocumentMatcher implements Matcher {
 
     /**
      * Set to 512K {@code int}, but {@code NUMCHARS_FIRST_LOOK} and
-     * {@code LINE_LIMIT} should apply beforehand
+     * {@code LINE_LIMIT} should apply beforehand. This value is "effectively
+     * unbounded" without being literally 2_147_483_647 -- as the other limits
+     * will apply first, and the {@link java.io.BufferedInputStream} will
+     * manage a reasonably-sized buffer.
      */
     private static final int MARK_READ_LIMIT = 1024 * 512;
 
@@ -47,17 +50,15 @@ public class DocumentMatcher implements Matcher {
 
     private static final int FIRST_LOOK_WIDTH = 300;
 
-    private static final int FIRST_CONTENT_WIDTH = 8;
-
     private final FileAnalyzerFactory factory;
 
     private final String[] lineStarters;
 
     /**
-     * Initializes an instance for the required parameters
+     * Initializes an instance for the required parameters.
      * @param factory required factory to return when matched
      * @param lineStarters required list of line starters that indicate a match
-     * @throws IllegalArgumentException if any parameter is null
+     * @throws IllegalArgumentException thrown if any parameter is null
      */
     public DocumentMatcher(FileAnalyzerFactory factory, String[] lineStarters) {
         if (factory == null) {
@@ -83,9 +84,9 @@ public class DocumentMatcher implements Matcher {
     }
 
     /**
-     * Try to match the file contents by first affirming the document starts
-     * with "." or "'" and then looks for {@code lineStarters} in the first
-     * 100 lines.
+     * Try to match the file contents by looking for {@code lineStarters} in
+     * the first 100 lines while also affirming that the document starts
+     * with "." or "'" after a limited amount of whitespace.
      * <p>
      * The stream is reset before returning.
      *
@@ -102,6 +103,7 @@ public class DocumentMatcher implements Matcher {
         if (!in.markSupported()) return null;
         in.mark(MARK_READ_LIMIT);
 
+        // read encoding, and skip past any BOM
         int bomLength = 0;
         String encoding = IOUtils.findBOMEncoding(contents);
         if (encoding == null) {
@@ -114,56 +116,17 @@ public class DocumentMatcher implements Matcher {
             }
         }
 
+        // affirm that a LF exists in a first block
+        boolean foundLF = hasLineFeed(in, encoding);
+        in.reset();
+        if (!foundLF) return null;
+        if (bomLength > 0) in.skip(bomLength);
+
+        // read line-by-line for a first few lines
         BufferedReader rdr = new BufferedReader(new InputStreamReader(
             in, encoding));
-
-        // Before reading a line, read some characters for a first look
-        char[] buf = new char[FIRST_LOOK_WIDTH];
-        int lenFirstLook;
-        if ((lenFirstLook = rdr.read(buf)) < 1) {
-            in.reset();
-            return null;
-        }
-
-        // Require a "." or "'" as the first non-whitespace character after
-        // only a limited number of whitespaces or else infer it is not troff
-        // or mandoc.
-        int actualFirstContentWidth = lenFirstLook < FIRST_CONTENT_WIDTH ?
-            lenFirstLook : FIRST_CONTENT_WIDTH;
         boolean foundContent = false;
-        for (int i = 0; i < actualFirstContentWidth; ++i) {
-            if (buf[i] == '.' || buf[i] == '\'') {
-                foundContent = true;
-                break;
-            } else if (!Character.isWhitespace(buf[i])) {
-                in.reset();
-                return null;
-            }
-        }
-        if (!foundContent) {
-            in.reset();
-            return null;
-        }
-
-        // affirm that a LF is seen in the first look or else quickly
-        // infer it is not troff
-        boolean foundLF = false;
-        for (int i = 0; i < lenFirstLook; ++i) {
-            if (buf[i] == '\n') {
-                foundLF = true;
-                break;
-            }
-        }
-        if (!foundLF) {
-            in.reset();
-            return null;
-        }
-
-        // reset for line-by-line reading below
-        in.reset();
-        if (bomLength > 0) in.skip(bomLength);
-        rdr = new BufferedReader(new InputStreamReader(in, encoding));
-
+        int numFirstChars = 0;
         int numLines = 0;
         String line;
         while ((line = rdr.readLine()) != null) {
@@ -177,9 +140,74 @@ public class DocumentMatcher implements Matcher {
                 in.reset();
                 return null;
             }
+
+            // If not yet `foundContent', then only a limited allowance is
+            // given until a sentinel '.' or '\'' must be seen after nothing
+            // else but whitespace.
+            if (!foundContent) {
+                for (int i = 0; i < line.length() && numFirstChars <
+                    FIRST_LOOK_WIDTH; ++i, ++numFirstChars) {
+                    char c = line.charAt(i);
+                    if (c == '.' || c == '\'') {
+                        foundContent = true;
+                        break;
+                    } else if (!Character.isWhitespace(c)) {
+                        in.reset();
+                        return null;
+                    }
+                }
+                if (!foundContent && numFirstChars >= FIRST_LOOK_WIDTH) {
+                    in.reset();
+                    return null;
+                }
+            }
         }
 
         in.reset();
         return null;
+    }
+
+    /**
+     * Determines if the {@code in} stream has a line feed character within the
+     * first {@code FIRST_LOOK_WIDTH} characters.
+     * @param in the input stream has any BOM (not {@code reset} after use)
+     * @param encoding the input stream charset
+     * @return true if a line feed '\n' was found
+     * @throws IOException thrown on any error in reading
+     */
+    private boolean hasLineFeed(InputStream in, String encoding)
+            throws IOException {
+        byte[] buf;
+        int nextra;
+        int noff;
+        switch (encoding) {
+            case "UTF-16LE":
+                buf = new byte[FIRST_LOOK_WIDTH * 2];
+                nextra = 1;
+                noff = 0;
+                break;
+            case "UTF-16BE":
+                buf = new byte[FIRST_LOOK_WIDTH * 2];
+                nextra = 1;
+                noff = 1;
+                break;
+            default:
+                buf = new byte[FIRST_LOOK_WIDTH];
+                nextra = 0;
+                noff = 0;
+                break;
+        }
+
+        int nread = in.read(buf);
+        for (int i = 0; i + nextra < nread; i += 1 + nextra) {
+            if (nextra > 0) {
+                if (buf[i + noff] == '\n' && buf[i + 1 - noff] == '\0') {
+                    return true;
+                }
+            } else {
+                if (buf[i] == '\n') return true;
+            }
+        }
+        return false;
     }
 }
