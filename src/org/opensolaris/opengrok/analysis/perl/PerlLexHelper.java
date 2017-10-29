@@ -389,16 +389,13 @@ class PerlLexHelper {
         if (c != '\0') {
             if ((i = remaining.indexOf(c)) < 1) {
                 terminator = remaining;
-                remaining = "";
             } else {
                 terminator = remaining.substring(0, i);
-                remaining = remaining.substring(i + 1);
             }
         } else {
             Matcher m = HERE_TERMINATOR_MATCH.matcher(remaining);
             if (!m.find()) return;
             terminator = m.group(0);
-            remaining = remaining.substring(terminator.length());
         }
 
         int state;
