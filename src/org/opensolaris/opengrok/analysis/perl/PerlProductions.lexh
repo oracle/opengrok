@@ -150,13 +150,13 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
 %%
 <HERE, HERExN> {
     ^ {Identifier} / {MaybeWhsp}{EOL}    {
-        if (h.maybeEndHere(yytext())) yyjump(YYINITIAL);
+        h.maybeEndHere(yytext());
     }
 }
 
 <HEREin, HEREinxN> {
     ^ {MaybeWhsp} {Identifier} / {MaybeWhsp}{EOL}    {
-        if (h.maybeEndHere(yytext())) yyjump(YYINITIAL);
+        h.maybeEndHere(yytext());
     }
 }
 
