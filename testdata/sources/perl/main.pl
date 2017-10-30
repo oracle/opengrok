@@ -319,7 +319,7 @@ print "1\n";
  format STDOUT =
 @<<<<<<   @||||||   @>>>>>>
 # comment <args to follow>
-"left",  substr($var, 0, 2), "right"
+"left",  substr($var, 0, 2), "\$right"
  ...
  print
 .
@@ -365,6 +365,7 @@ OTHER
 Here's a $line4
 ELSE
 Here's a $line5
+Here's a \$line6
 Z
 /\b sentinel \b/ && print; # This should heuristically match as m//
 

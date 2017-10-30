@@ -388,11 +388,13 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
     }
 }
 
-<QUO, QUOxN, QUOxL, QUOxLxN> {
+<FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HEREin> {
     \\ \S    {
         takeNonword(yytext());
     }
+}
 
+<QUO, QUOxN, QUOxL, QUOxLxN> {
     {Quo0} |
     \w    {
         String capture = yytext();

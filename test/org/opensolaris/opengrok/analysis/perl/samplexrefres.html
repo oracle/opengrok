@@ -326,7 +326,7 @@
 <a class="l" name="319" href="#319">319</a><b> format</b> STDOUT =<span class="s"></span>
 <a class="hl" name="320" href="#320">320</a><span class="s">@&lt;&lt;&lt;&lt;&lt;&lt;   @||||||   @&gt;&gt;&gt;&gt;&gt;&gt;</span>
 <a class="l" name="321" href="#321">321</a><span class="s"><span class="c"># comment &lt;args to follow&gt;</span></span>
-<a class="l" name="322" href="#322">322</a><span class="s">&quot;left&quot;,  substr($<a href="/source/s?defs=var" class="intelliWindow-symbol" data-definition-place="undefined-in-file">var</a>, 0, 2), &quot;right&quot;</span>
+<a class="l" name="322" href="#322">322</a><span class="s">&quot;left&quot;,  substr($<a href="/source/s?defs=var" class="intelliWindow-symbol" data-definition-place="undefined-in-file">var</a>, 0, 2), &quot;\$right&quot;</span>
 <a class="l" name="323" href="#323">323</a><span class="s"> ...</span>
 <a class="l" name="324" href="#324">324</a><span class="s"> print</span>
 <a class="l" name="325" href="#325">325</a><span class="s">.</span>
@@ -372,12 +372,13 @@
 <a class="l" name="365" href="#365">365</a><span class="s">Here&apos;s a $line4</span>
 <a class="l" name="366" href="#366">366</a><span class="s"></span>ELSE<span class="s"></span>
 <a class="l" name="367" href="#367">367</a><span class="s">Here&apos;s a $<a href="/source/s?defs=line5" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line5</a></span>
-<a class="l" name="368" href="#368">368</a><span class="s"></span>Z
-<a class="l" name="369" href="#369">369</a><span class="s">/\b sentinel \b/</span> &amp;&amp; <b>print</b>; <span class="c"># This should heuristically match as m//</span>
-<a class="hl" name="370" href="#370">370</a>
-<a class="l" name="371" href="#371">371</a><span class="c"># more quote-like tests</span>
-<a class="l" name="372" href="#372">372</a><b>for</b> <b>my</b> $k (<b>grep</b> <span class="s">/=/</span>, <b>split</b> <span class="s">/;/</span>, $d, -<span class="n">1</span>) {
-<a class="l" name="373" href="#373">373</a>	<b>print</b> <span class="s">&quot;1\n&quot;</span>;
-<a class="l" name="374" href="#374">374</a>}
-<a class="l" name="375" href="#375">375</a></body>
+<a class="l" name="368" href="#368">368</a><span class="s">Here&apos;s a \$line6</span>
+<a class="l" name="369" href="#369">369</a><span class="s"></span>Z
+<a class="hl" name="370" href="#370">370</a><span class="s">/\b sentinel \b/</span> &amp;&amp; <b>print</b>; <span class="c"># This should heuristically match as m//</span>
+<a class="l" name="371" href="#371">371</a>
+<a class="l" name="372" href="#372">372</a><span class="c"># more quote-like tests</span>
+<a class="l" name="373" href="#373">373</a><b>for</b> <b>my</b> $k (<b>grep</b> <span class="s">/=/</span>, <b>split</b> <span class="s">/;/</span>, $d, -<span class="n">1</span>) {
+<a class="l" name="374" href="#374">374</a>	<b>print</b> <span class="s">&quot;1\n&quot;</span>;
+<a class="l" name="375" href="#375">375</a>}
+<a class="l" name="376" href="#376">376</a></body>
 </html>
