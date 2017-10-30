@@ -308,3 +308,5 @@ var
 line1
 line3
 line5
+k
+d

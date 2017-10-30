@@ -367,3 +367,8 @@ ELSE
 Here's a $line5
 Z
 /\b sentinel \b/ && print; # This should heuristically match as m//
+
+# more quote-like tests
+for my $k (grep /=/, split /;/, $d, -1) {
+	print "1\n";
+}

@@ -108,12 +108,12 @@ HereEOF4 = [\\]?{Identifier}
 //
 // Track some keywords that can be used to identify heuristically a possible
 // beginning of the shortcut syntax, //, for m//. Also include any perlfunc
-// that takes /PATTERN/ -- which is just "split". Heuristics using punctuation
-// are defined inline later in some rules.
+// that takes /PATTERN/. Heuristics using punctuation are defined inline later
+// in some rules.
 //
 Mwords_1 = ("eq" | "ne" | "le" | "ge" | "lt" | "gt" | "cmp")
 Mwords_2 = ("if" | "unless" | "or" | "and" | "not")
-Mwords_3 = ("split")
+Mwords_3 = ("split" | "grep")
 Mwords = ({Mwords_1} | {Mwords_2} | {Mwords_3})
 
 Mpunc1YYIN = [\(\!]

@@ -374,5 +374,10 @@
 <a class="l" name="367" href="#367">367</a><span class="s">Here&apos;s a $<a href="/source/s?defs=line5" class="intelliWindow-symbol" data-definition-place="undefined-in-file">line5</a></span>
 <a class="l" name="368" href="#368">368</a><span class="s"></span>Z
 <a class="l" name="369" href="#369">369</a><span class="s">/\b sentinel \b/</span> &amp;&amp; <b>print</b>; <span class="c"># This should heuristically match as m//</span>
-<a class="hl" name="370" href="#370">370</a></body>
+<a class="hl" name="370" href="#370">370</a>
+<a class="l" name="371" href="#371">371</a><span class="c"># more quote-like tests</span>
+<a class="l" name="372" href="#372">372</a><b>for</b> <b>my</b> $k (<b>grep</b> <span class="s">/=/</span>, <b>split</b> <span class="s">/;/</span>, $d, -<span class="n">1</span>) {
+<a class="l" name="373" href="#373">373</a>	<b>print</b> <span class="s">&quot;1\n&quot;</span>;
+<a class="l" name="374" href="#374">374</a>}
+<a class="l" name="375" href="#375">375</a></body>
 </html>
