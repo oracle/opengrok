@@ -33,6 +33,11 @@ class Command:
     and getting their output (stderr is redirected to stdout) and return value
     """
 
+    # state definitions
+    FINISHED = "finished"
+    INTERRUPTED = "interrupted"
+    ERRORED = "errored"
+
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
                  excl_subst=False):
         self.cmd = cmd
@@ -62,10 +67,10 @@ class Command:
         except KeyboardInterrupt as e:
             self.logger.debug("Got KeyboardException while processing ",
                               exc_info=True)
-            self.state = "interrupted"
+            self.state = Command.INTERRUPTED
         except OSError as e:
             self.logger.debug("Got OS error", exc_info=True)
-            self.state = "errored"
+            self.state = Command.ERRORED
         else:
             if p.stdout is not None:
                 self.logger.debug("Program output:")
@@ -73,7 +78,7 @@ class Command:
                     self.logger.debug(line.rstrip(os.linesep.encode("ascii")))
                     out.append(line.decode())
 
-            self.state = "finished"
+            self.state = Command.FINISHED
             self.returncode = int(p.returncode)
             self.logger.debug("{} -> {}".format(self.cmd, self.getretcode()))
             self.out = out
@@ -106,13 +111,16 @@ class Command:
         self.cmd = newcmd
 
     def getretcode(self):
-        if self.state is not "finished":
+        if self.state is not Command.FINISHED:
             return None
         else:
             return self.returncode
 
     def getoutput(self):
-        if self.state is "finished":
+        if self.state is Command.FINISHED:
             return self.out
         else:
             return None
+
+    def getstate(self):
+        return self.state
