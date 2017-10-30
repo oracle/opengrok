@@ -11,7 +11,8 @@ where the sync.conf file contents might look like this:
      "commands": [["/usr/opengrok/bin/Messages", "-c", "info", "-e", "+1 hour",
                    "-n", "normal", "-t", "ARG", "resync + reindex in progress"],
                   ["sudo", "-u", "wsmirror", "/scripts/mirror-project.ksh"],
-                  ["sudo", "-u", "webservd", "/scripts/reindex-project.ksh"],
+                  ["sudo", "-u", "webservd", "/scripts/reindex-project.ksh",
+                   "/opengrok/etc/opengrok.conf", "/usr/opengrok/bin"],
                   ["/usr/opengrok/bin/Messages", "-n", "abort", "-t"],
                   ["/scripts/check-indexer-logs.ksh"]]
   }
