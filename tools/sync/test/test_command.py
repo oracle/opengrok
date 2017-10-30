@@ -35,19 +35,14 @@ class TestApp(unittest.TestCase):
         self.assertEqual(None, cmd.getretcode())
         self.assertEqual(Command.ERRORED, cmd.getstate())
 
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
     def test_getoutput(self):
-        """
-        XXX this only works on Unix
-        """
         cmd = Command(['/bin/ls', '/etc/passwd'])
         cmd.execute()
         self.assertEqual(['/etc/passwd\n'], cmd.getoutput())
 
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
     def test_retcode(self):
-        """
-        XXX this only works on Unix
-        """
-
         cmd = Command(["/bin/false"])
         cmd.execute()
         self.assertNotEqual(0, cmd.getretcode())
