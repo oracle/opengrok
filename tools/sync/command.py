@@ -25,6 +25,7 @@ import os
 import logging
 import subprocess
 import string
+import threading
 
 
 class Command:
@@ -58,11 +59,48 @@ class Command:
         Execute the command and capture its output and return code.
         """
 
-        out = []
+        class OutputThread(threading.Thread):
+            """
+            Capture data from subprocess.Popen(). This avoids hangs when
+            stdout/stderr buffers fill up.
+            """
+
+            def __init__(self):
+                super(OutputThread, self).__init__()
+                self.read_fd, self.write_fd = os.pipe()
+                self.pipe_fobj = os.fdopen(self.read_fd)
+                self.out = []
+                self.start()
+
+            def run(self):
+                """
+                It might happen that after the process is gone, the thread
+                still has data to read from the pipe. Should probably introduce
+                a boolean and set it to True under the 'if not line' block
+                below and make the caller wait for it to become True.
+                """
+                while True:
+                    line = self.pipe_fobj.readline()
+                    if not line:
+                        self.pipe_fobj.close()
+                        return
+
+                    self.out.append(line)
+
+            def getoutput(self):
+                return self.out
+
+            def fileno(self):
+                return self.write_fd
+
+            def close(self):
+                os.close(self.write_fd)
+
+        othr = OutputThread()
         try:
             self.logger.debug("command = {}".format(self.cmd))
             p = subprocess.Popen(self.cmd, stderr=subprocess.STDOUT,
-                                 stdout=subprocess.PIPE)
+                                 stdout=othr)
             p.wait()
         except KeyboardInterrupt as e:
             self.logger.debug("Got KeyboardException while processing ",
@@ -72,17 +110,12 @@ class Command:
             self.logger.debug("Got OS error", exc_info=True)
             self.state = Command.ERRORED
         else:
-            if p.stdout is not None:
-                self.logger.debug("Program output:")
-                for line in p.stdout:
-                    self.logger.debug(line.rstrip(os.linesep.encode("ascii")))
-                    out.append(line.decode())
-
             self.state = Command.FINISHED
             self.returncode = int(p.returncode)
             self.logger.debug("{} -> {}".format(self.cmd, self.getretcode()))
-            self.out = out
-            p.stdout.close()
+        finally:
+            othr.close()
+            self.out = othr.getoutput()
 
     def fill_arg(self, args_append=None, args_subst=None):
         """
