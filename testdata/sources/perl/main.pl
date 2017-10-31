@@ -373,3 +373,12 @@ Z
 for my $k (grep /=/, split /;/, $d, -1) {
 	print "1\n";
 }
+
+# more format tests
+%a = (
+    format => "%s");
+ format=
+@<<<<<<   @||||||   @>>>>>>
+"left",  "middle", "right"
+.
+print "1\n";

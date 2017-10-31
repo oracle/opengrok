@@ -117,7 +117,7 @@ Mwords_3 = ("split" | "grep")
 Mwords = ({Mwords_1} | {Mwords_2} | {Mwords_3})
 
 Mpunc1YYIN = [\(\!]
-Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
+Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
 //
 // There are two dimensions to quoting: "link"-or-not and "interpolate"-or-not.
@@ -282,7 +282,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>")
  }
 
  // FORMAT start
- ^ {MaybeWhsp} "format" ({WhiteSpace} {Identifier})? {MaybeWhsp} "="    {
+ ^ {MaybeWhsp} "format" ({WhiteSpace} {Identifier})? {MaybeWhsp} "=" /
+     {MaybeWhsp}{EOL}    {
     pushState(FMT);
     if (takeAllContent()) {
         // split off the "  format" as `initial' for keyword processing

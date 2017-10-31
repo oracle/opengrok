@@ -310,3 +310,5 @@ line3
 line5
 k
 d
+a		# 378:%a =
+s
