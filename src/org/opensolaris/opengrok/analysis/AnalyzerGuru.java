@@ -54,6 +54,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.analysis.ada.AdaAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.BZip2AnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.GZIPAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.TarAnalyzerFactory;
@@ -242,7 +243,8 @@ public class AnalyzerGuru {
             new HaskellAnalyzerFactory(),
             new GolangAnalyzerFactory(),
             new LuaAnalyzerFactory(),
-            new PascalAnalyzerFactory()
+            new PascalAnalyzerFactory(),
+            new AdaAnalyzerFactory()
         };
 
         for (FileAnalyzerFactory analyzer : analyzers) {

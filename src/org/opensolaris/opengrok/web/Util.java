@@ -78,10 +78,6 @@ public final class Util {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    private static final String SPAN_D = "<span class=\"d\">";
-    private static final String SPAN_A = "<span class=\"a\">";
-    private static final String SPAN_E = "</span>";
-
     private Util() {
         // singleton
     }
@@ -598,10 +594,10 @@ public final class Util {
             }
             String a = annotation.getAuthor(num);
             if (userPageLink == null) {
-                out.write("<span class=\"a\">");
+                out.write(HtmlConsts.SPAN_A);
                 htmlize(a, buf);
                 out.write(buf.toString());
-                out.write("</span>");
+                out.write(HtmlConsts.ZSPAN);
                 buf.setLength(0);
             } else {
                 out.write(anchorClassStart);
@@ -835,9 +831,9 @@ public final class Util {
         if (s <= m) {
             StringBuilder sb = new StringBuilder();
             sb.append(Util.htmlize(line1.substring(0, s)));
-            sb.append(SPAN_D);
+            sb.append(HtmlConsts.SPAN_D);
             sb.append(Util.htmlize(line1.substring(s, m + 1)));
-            sb.append(SPAN_E);
+            sb.append(HtmlConsts.ZSPAN);
             sb.append(Util.htmlize(line1.substring(m + 1, line1.length())));
             ret[0] = sb.toString();
         } else {
@@ -848,9 +844,9 @@ public final class Util {
         if (s <= n) {
             StringBuilder sb = new StringBuilder();
             sb.append(Util.htmlize(line2.substring(0, s)));
-            sb.append(SPAN_A);
+            sb.append(HtmlConsts.SPAN_A);
             sb.append(Util.htmlize(line2.substring(s, n + 1)));
-            sb.append(SPAN_E);
+            sb.append(HtmlConsts.ZSPAN);
             sb.append(Util.htmlize(line2.substring(n + 1, line2.length())));
             ret[1] = sb.toString();
         } else {
