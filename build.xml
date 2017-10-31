@@ -254,6 +254,8 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
           -->
   
         <property name="gen.analysis.dir" value="/org/opensolaris/opengrok/analysis"/>        
+        <run-jflex dir="${gen.analysis.dir}/ada" name="AdaSymbolTokenizer" />
+        <run-jflex dir="${gen.analysis.dir}/ada" name="AdaXref"/>
         <run-jflex dir="${gen.analysis.dir}/c" name="CSymbolTokenizer" />
         <run-jflex dir="${gen.analysis.dir}/c" name="CXref"/>
         <run-jflex dir="${gen.analysis.dir}/c" name="CxxSymbolTokenizer"/>
