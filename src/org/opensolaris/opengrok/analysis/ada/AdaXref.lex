@@ -23,26 +23,27 @@
  */
 
 /*
- * Cross reference a Perl file
+ * Cross reference an Ada file
  */
 
-package org.opensolaris.opengrok.analysis.perl;
+package org.opensolaris.opengrok.analysis.ada;
 
 import java.io.IOException;
 import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
-%class PerlXref
+%class AdaXref
 %extends JFlexXref
-%implements PerlLexListener
+%implements AdaLexListener
 %unicode
+%ignorecase
 %int
 %char
 %init{
-        h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-            HERE, HERExN, HEREin, HEREinxN);
+    h = new AdaLexHelper(this);
 %init}
 %{
   // TODO move this into an include file when bug #16053 is fixed
@@ -51,7 +52,7 @@ import org.opensolaris.opengrok.web.Util;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
 
-    private final PerlLexHelper h;
+    private final AdaLexHelper h;
 
     public void pushState(int state) { yypush(state, null); }
 
@@ -79,13 +80,13 @@ import org.opensolaris.opengrok.web.Util;
             throws IOException {
         if (ignoreKwd) {
             if (value.length() > 1) {
-                return writeSymbol(value, null, yyline);
+                return writeSymbol(value, null, yyline, false);
             } else {
                 out.write(value);
                 return false;
             }
         } else {
-            return writeSymbol(value, Consts.kwd, yyline);
+            return writeSymbol(value, Consts.kwd, yyline, false);
         }
     }
 
@@ -101,20 +102,8 @@ import org.opensolaris.opengrok.web.Util;
         startNewLine();
     }
 
-    public void abortQuote() throws IOException {
-        yypop();
-        if (h.areModifiersOK()) yypush(QM, null);
-        take(Consts.ZS);
-    }
-
     public void pushback(int numChars) {
         yypushback(numChars);
-    }
-
-    // If the state is YYINITIAL, then transitions to INTRA; otherwise does
-    // nothing, because other transitions would have saved the state.
-    public void maybeIntraState() {
-        if (yystate() == YYINITIAL) yybegin(INTRA);
     }
 
     protected boolean takeAllContent() {
@@ -132,4 +121,4 @@ import org.opensolaris.opengrok.web.Util;
     protected String getUrlPrefix() { return urlPrefix; }
 %}
 
-%include PerlProductions.lexh
+%include AdaProductions.lexh

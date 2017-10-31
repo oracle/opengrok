@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -23,31 +23,30 @@
  */
 
 /*
- * Gets Perl symbols - ignores comments, strings, keywords
+ * Gets Ada symbols - ignores comments, strings, keywords
  */
 
-package org.opensolaris.opengrok.analysis.perl;
+package org.opensolaris.opengrok.analysis.ada;
 
 import java.io.IOException;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
-%class PerlSymbolTokenizer
+%class AdaSymbolTokenizer
 %extends JFlexTokenizer
-%implements PerlLexListener
+%implements AdaLexListener
 %unicode
 %type boolean
 %char
 %init{
-super(in);
-
-        h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-            HERE, HERExN, HEREin, HEREinxN);
+    super(in);
+    h = new AdaLexHelper(this);
 %init}
 %{
-    private final PerlLexHelper h;
+    private final AdaLexHelper h;
 
     private String lastSymbol;
 
@@ -72,7 +71,7 @@ super(in);
     public boolean takeSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
-        if (ignoreKwd || !Consts.kwd.contains(value)) {
+        if (ignoreKwd || !Consts.kwd.contains(value.toLowerCase())) {
             lastSymbol = value;
             setAttribs(value, yychar + captureOffset, yychar + captureOffset +
                 value.length());
@@ -95,20 +94,8 @@ super(in);
         // noop
     }
 
-    public void abortQuote() throws IOException {
-        yypop();
-        if (h.areModifiersOK()) yypush(QM);
-        take(Consts.ZS);
-    }
-
     public void pushback(int numChars) {
         yypushback(numChars);
-    }
-
-    // If the state is YYINITIAL, then transitions to INTRA; otherwise does
-    // nothing, because other transitions would have saved the state.
-    public void maybeIntraState() {
-        if (yystate() == YYINITIAL) yybegin(INTRA);
     }
 
     protected boolean takeAllContent() {
@@ -136,4 +123,4 @@ this.finalOffset =  zzEndRead;
 return false;
 %eofval}
 
-%include PerlProductions.lexh
+%include AdaProductions.lexh

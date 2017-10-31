@@ -134,8 +134,8 @@ I said bar.
 bar
 
 myfunc(<< "THIS", 23, <<'THAT');
-Here's a line
-or two.
+Here's a line or
+two
 THIS
 and here's another.
 THAT
@@ -319,7 +319,7 @@ print "1\n";
  format STDOUT =
 @<<<<<<   @||||||   @>>>>>>
 # comment <args to follow>
-"left",  substr($var, 0, 2), "right"
+"left",  substr($var, 0, 2), "\$right"
  ...
  print
 .
@@ -353,3 +353,32 @@ print "%\abc\n", %\, "abc\n";
 # some comment
 push @arr, "'$key'=>" . 'q[' . $val . '],';
 #qq[$var]
+
+# more HERE-document tests
+myfunc2(<< "THIS", $var, <<~'THAT', $var, <<OTHER, <<\ELSE, <<`Z`);
+Here's a $line1
+THIS
+	Here's a $line2
+	THAT
+Here's a $line3
+OTHER
+Here's a $line4
+ELSE
+Here's a $line5
+Here's a \$line6
+Z
+/\b sentinel \b/ && print; # This should heuristically match as m//
+
+# more quote-like tests
+for my $k (grep /=/, split /;/, $d, -1) {
+	print "1\n";
+}
+
+# more format tests
+%a = (
+    format => "%s");
+ format=
+@<<<<<<   @||||||   @>>>>>>
+"left",  "middle", "right"
+.
+print "1\n";
