@@ -431,8 +431,11 @@ class PerlLexHelper {
     public boolean maybeEndHere(String capture) throws IOException {
         String trimmed = capture.replaceFirst("^\\s+", "");
         HereDocSettings settings = hereSettings.peek();
+
+        boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
             listener.take(Consts.ZS);
+            didZspan = true;
             hereSettings.remove();
         }
 
@@ -441,7 +444,7 @@ class PerlLexHelper {
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
             listener.switchState(settings.state);
-            listener.take(Consts.SS);
+            if (didZspan) listener.take(Consts.SS);
             return false;
         } else {
             listener.popState();

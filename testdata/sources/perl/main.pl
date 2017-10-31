@@ -134,8 +134,8 @@ I said bar.
 bar
 
 myfunc(<< "THIS", 23, <<'THAT');
-Here's a line
-or two.
+Here's a line or
+two
 THIS
 and here's another.
 THAT
