@@ -19,6 +19,7 @@
 
  /*
   * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
   */
 package org.opensolaris.opengrok.configuration;
 
@@ -543,6 +544,24 @@ public final class RuntimeEnvironment {
      */
     public void setCtags(String ctags) {
         threadConfig.get().setCtags(ctags);
+    }
+
+    /**
+     * Get the name of the mandoc program in use
+     *
+     * @return the name of the mandoc program in use or {@code null}
+     */
+    public String getMandoc() {
+        return threadConfig.get().getMandoc();
+    }
+
+    /**
+     * Specify the mandoc program to use
+     *
+     * @param value the mandoc program to use or {@code null}
+     */
+    public void setMandoc(String value) {
+        threadConfig.get().setMandoc(value);
     }
 
     public int getCachePages() {

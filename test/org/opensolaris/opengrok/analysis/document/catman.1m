@@ -1,0 +1,72 @@
+.\"
+.\" This file and its contents are supplied under the terms of the
+.\" Common Development and Distribution License ("CDDL"), version 1.0.
+.\" You may only use this file in accordance with the terms of version
+.\" 1.0 of the CDDL.
+.\"
+.\" A full copy of the text of the CDDL should have accompanied this
+.\" source.  A copy of the CDDL is also available via the Internet at
+.\" http://www.illumos.org/license/CDDL.
+.\"
+.\"
+.\" Copyright 2014 Garrett D'Amore <garrett@damore.org>
+.\"
+.Dd April 9, 2016
+.Dt CATMAN 1M
+.Os
+.Sh NAME
+.Nm catman
+.Nd generate
+.Nm whatis
+database files
+.Sh SYNOPSIS
+.Nm
+.Op Fl M Ar path
+.Op Fl w
+.Sh DESCRIPTION
+The
+.Nm
+utility generates a set of
+.Nm whatis
+database files suitable for use with
+.Xr apropos 1
+and
+.Xr whatis 1 .
+It is supplied for compatibility reasons.
+The same databases can be generated using the
+.Fl w
+option with
+.Xr man 1 ,
+and that command should be used instead.
+.Sh OPTIONS
+.Bl -tag -width ".Fl d"
+.It Fl M Ar path
+Generate the
+.Nm whatis
+database files within the specified colon separated manual paths.
+Overrides the
+.Ev MANPATH
+environment variable.
+.It Fl w
+This option is present for backwards compatibility, and is ignored.
+.El
+.Sh ENVIRONMENT
+The following environment variables affect the execution of
+.Nm :
+.Bl -tag -width ".Ev MANPATH"
+.It Ev MANPATH
+Used to specify a colon separated list of manual paths within
+which to generate
+.Nm whatis
+database files.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh INTERFACE STABILITY
+.Nm "Obsolete Committed" .
+.Sh CODE SET INDEPENDENCE
+Enabled.
+.Sh SEE ALSO
+.Xr apropos 1 ,
+.Xr man 1 ,
+.Xr whatis 1

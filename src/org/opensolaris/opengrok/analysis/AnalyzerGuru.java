@@ -64,6 +64,7 @@ import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.csharp.CSharpAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.data.IgnorantAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.data.ImageAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.document.MandocAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.document.TroffAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.erlang.ErlangAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.ELFAnalyzerFactory;
@@ -199,7 +200,10 @@ public class AnalyzerGuru {
     private static final Map<String, String> fileTypeDescriptions = new TreeMap<>();
 
     /*
-     * If you write your own analyzer please register it here
+     * If you write your own analyzer please register it here. The order is
+     * important for any factory that uses a FileAnalyzerFactory.Matcher
+     * implementation, as those are run in the same order as defined below --
+     * though precise Matchers are run before imprecise ones.
      */
     static {
         FileAnalyzerFactory[] analyzers = {
@@ -207,7 +211,8 @@ public class AnalyzerGuru {
             new IgnorantAnalyzerFactory(),
             new BZip2AnalyzerFactory(),
             new XMLAnalyzerFactory(),
-            new TroffAnalyzerFactory(),
+            MandocAnalyzerFactory.DEFAULT_INSTANCE,
+            TroffAnalyzerFactory.DEFAULT_INSTANCE,
             new ELFAnalyzerFactory(),
             new JavaClassAnalyzerFactory(),
             new ImageAnalyzerFactory(),

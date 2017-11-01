@@ -216,10 +216,11 @@ public class FileAnalyzerFactory {
     /**
      * Interface for matchers which map file contents to analyzer factories.
      */
-    protected interface Matcher {
+    public interface Matcher {
 
         /**
          * Get a value indicating if the magic is byte-precise.
+         * @return true if precise
          */
         default boolean getIsPreciseMagic() { return false; }
 
