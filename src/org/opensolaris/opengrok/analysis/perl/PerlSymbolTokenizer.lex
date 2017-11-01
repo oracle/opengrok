@@ -51,16 +51,12 @@ super(in);
 
     private String lastSymbol;
 
-    public void pushState(int state) { yypush(state); }
-
-    public void popState() throws IOException { yypop(); }
-
-    public void switchState(int state) { yybegin(state); }
-
+    @Override
     public void take(String value) throws IOException {
         // noop
     }
 
+    @Override
     public void takeNonword(String value) throws IOException {
         // noop
     }
@@ -69,6 +65,7 @@ super(in);
         // noop
     }
 
+    @Override
     public boolean takeSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
@@ -83,26 +80,26 @@ super(in);
         return false;
     }
 
+    @Override
     public void skipSymbol() {
         lastSymbol = null;
     }
 
+    @Override
     public void takeKeyword(String value) throws IOException {
         lastSymbol = null;
     }
 
-    public void doStartNewLine() throws IOException {
+    @Override
+    public void startNewLine() throws IOException {
         // noop
     }
 
+    @Override
     public void abortQuote() throws IOException {
         yypop();
         if (h.areModifiersOK()) yypush(QM);
         take(Consts.ZS);
-    }
-
-    public void pushback(int numChars) {
-        yypushback(numChars);
     }
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does

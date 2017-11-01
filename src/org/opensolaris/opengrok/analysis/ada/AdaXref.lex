@@ -54,16 +54,12 @@ import org.opensolaris.opengrok.web.Util;
 
     private final AdaLexHelper h;
 
-    public void pushState(int state) { yypush(state, null); }
-
-    public void popState() throws IOException { yypop(); }
-
-    public void switchState(int state) { yybegin(state); }
-
+    @Override
     public void take(String value) throws IOException {
         out.write(value);
     }
 
+    @Override
     public void takeNonword(String value) throws IOException {
         out.write(htmlize(value));
     }
@@ -75,6 +71,7 @@ import org.opensolaris.opengrok.web.Util;
         }
     }
 
+    @Override
     public boolean takeSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
@@ -90,20 +87,14 @@ import org.opensolaris.opengrok.web.Util;
         }
     }
 
+    @Override
     public void skipSymbol() {
         // noop
     }
 
+    @Override
     public void takeKeyword(String value) throws IOException {
         writeKeyword(value, yyline);
-    }
-
-    public void doStartNewLine() throws IOException {
-        startNewLine();
-    }
-
-    public void pushback(int numChars) {
-        yypushback(numChars);
     }
 
     protected boolean takeAllContent() {

@@ -31,9 +31,11 @@ import java.util.regex.Pattern;
  * Represents an API for object's using {@link PerlLexHelper}
  */
 interface PerlLexListener {
-    void pushState(int state);
-    void popState() throws IOException;
-    void switchState(int state);
+    void yypush(int state);
+    void yypop() throws IOException;
+    void yybegin(int state);
+    void yypushback(int numChars);
+
     void maybeIntraState();
     void take(String value) throws IOException;
     void takeNonword(String value) throws IOException;
@@ -62,20 +64,14 @@ interface PerlLexListener {
      */
     void takeKeyword(String value) throws IOException;
 
-    void doStartNewLine() throws IOException;
+    void startNewLine() throws IOException;
 
     /**
      * Indicates that a premature end of quoting occurred. Everything up to the
      * causal character has been written, and anything following will be
-     * indicated via {@link pushback}.
+     * indicated via {@link yypushback}.
      */
     void abortQuote() throws IOException;
-
-    /**
-     * Pushes back to the scanner a specified number of characters
-     * @param numChars
-     */
-    void pushback(int numChars);
 }
 
 /**
@@ -244,7 +240,7 @@ class PerlLexHelper {
             state = nolink ? QUOxL : QUO;
         }
         listener.maybeIntraState();
-        listener.pushState(state);
+        listener.yypush(state);
     }
 
     /**
@@ -332,7 +328,7 @@ class PerlLexHelper {
                 ++numlf;
                 off = i + 1;
             }
-            while (numlf-- > 0) listener.doStartNewLine();
+            while (numlf-- > 0) listener.startNewLine();
             if (off < whsp.length()) listener.take(whsp.substring(off));
         }
     }
@@ -416,7 +412,7 @@ class PerlLexHelper {
     public boolean maybeStartHere() throws IOException {
         if (hereSettings != null && hereSettings.size() > 0) {
             HereDocSettings settings = hereSettings.peek();
-            listener.pushState(settings.state);
+            listener.yypush(settings.state);
             listener.take(Consts.SS);
             return true;
         }
@@ -443,11 +439,11 @@ class PerlLexHelper {
 
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
-            listener.switchState(settings.state);
+            listener.yybegin(settings.state);
             if (didZspan) listener.take(Consts.SS);
             return false;
         } else {
-            listener.popState();
+            listener.yypop();
             return true;
         }
     }
@@ -467,7 +463,7 @@ class PerlLexHelper {
             listener.skipSymbol();
             listener.takeNonword(sigil);
             if (isQuoteEnding(sigil)) listener.abortQuote();
-            listener.pushback(capture.length() - 1);
+            listener.yypushback(capture.length() - 1);
             return;
         }
 
@@ -504,7 +500,7 @@ class PerlLexHelper {
             }
             listener.takeNonword(p0);
             if (isQuoteEnding(p0)) listener.abortQuote();
-            listener.pushback(w1.length());
+            listener.yypushback(w1.length());
         }
     }
 
@@ -564,7 +560,7 @@ class PerlLexHelper {
                 listener.takeNonword(w);
                 if (isQuoteEnding(w)) {
                     listener.abortQuote();
-                    listener.pushback(capture.length() - i - 1);
+                    listener.yypushback(capture.length() - i - 1);
                     break;
                 }
             }

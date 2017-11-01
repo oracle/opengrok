@@ -167,7 +167,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
     }
 
     {Comment_token}    {
-        pushState(SCOMMENT);
+        yypush(SCOMMENT);
         take(HtmlConsts.SPAN_C);
         takeNonword(yytext());
     }
@@ -186,7 +186,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 <YYINITIAL> {
     {WhiteSpace}{EOL} |
     {EOL}    {
-        doStartNewLine();
+        startNewLine();
     }
 }
 

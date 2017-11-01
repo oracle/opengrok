@@ -215,7 +215,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  [\"\`] { h.qop(yytext(), 0, false); }
  \'     { h.qop(yytext(), 0, true); }
  \#     {
-        pushState(SCOMMENT);
+        yypush(SCOMMENT);
         take(Consts.SC);
         take("#");
  }
@@ -276,7 +276,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
  // POD start
  ^ "=" [a-zA-Z_] [a-zA-Z0-9_]*    {
-        pushState(POD);
+        yypush(POD);
         take(Consts.SC);
         take(yytext());
  }
@@ -284,7 +284,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  // FORMAT start
  ^ {MaybeWhsp} "format" ({WhiteSpace} {Identifier})? {MaybeWhsp} "=" /
      {MaybeWhsp}{EOL}    {
-    pushState(FMT);
+    yypush(FMT);
     if (takeAllContent()) {
         // split off the "  format" as `initial' for keyword processing
         String capture = yytext();
@@ -403,7 +403,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         if (h.isQuoteEnding(capture)) {
             yypop();
             if (h.areModifiersOK())
-                pushState(QM);
+                yypush(QM);
             take(Consts.ZS);
         }
     }
@@ -413,7 +413,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     {WhiteSpace}{EOL} |
     {EOL} {
         take(Consts.ZS);
-        doStartNewLine();
+        startNewLine();
         take(Consts.SS);
     }
 }
@@ -444,7 +444,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
   {WhiteSpace}{EOL} |
   {EOL}    {
-    doStartNewLine();
+    startNewLine();
   }
 }
 
@@ -486,7 +486,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         if (h.maybeStartHere()) {
             yypushback(capture.length());
         } else {
-            doStartNewLine();
+            startNewLine();
         }
     }
 }
