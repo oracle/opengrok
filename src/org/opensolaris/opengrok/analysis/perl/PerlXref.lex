@@ -53,16 +53,12 @@ import org.opensolaris.opengrok.web.Util;
 
     private final PerlLexHelper h;
 
-    public void pushState(int state) { yypush(state, null); }
-
-    public void popState() throws IOException { yypop(); }
-
-    public void switchState(int state) { yybegin(state); }
-
+    @Override
     public void take(String value) throws IOException {
         out.write(value);
     }
 
+    @Override
     public void takeNonword(String value) throws IOException {
         out.write(htmlize(value));
     }
@@ -74,6 +70,7 @@ import org.opensolaris.opengrok.web.Util;
         }
     }
 
+    @Override
     public boolean takeSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
@@ -89,26 +86,21 @@ import org.opensolaris.opengrok.web.Util;
         }
     }
 
+    @Override
     public void skipSymbol() {
         // noop
     }
 
+    @Override
     public void takeKeyword(String value) throws IOException {
         writeKeyword(value, yyline);
     }
 
-    public void doStartNewLine() throws IOException {
-        startNewLine();
-    }
-
+    @Override
     public void abortQuote() throws IOException {
         yypop();
         if (h.areModifiersOK()) yypush(QM, null);
         take(Consts.ZS);
-    }
-
-    public void pushback(int numChars) {
-        yypushback(numChars);
     }
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does

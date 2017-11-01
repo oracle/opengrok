@@ -28,9 +28,6 @@ import java.io.IOException;
  * Represents an API for object's using {@link AdaLexHelper}
  */
 interface AdaLexListener {
-    void pushState(int state);
-    void popState() throws IOException;
-    void switchState(int state);
     void take(String value) throws IOException;
     void takeNonword(String value) throws IOException;
 
@@ -58,13 +55,12 @@ interface AdaLexListener {
      */
     void takeKeyword(String value) throws IOException;
 
-    void doStartNewLine() throws IOException;
-
     /**
-     * Pushes back to the scanner a specified number of characters
-     * @param numChars
+     * Indicates that the current line is ended.
+     *
+     * @throws IOException thrown on error when handling the EOL
      */
-    void pushback(int numChars);
+    void startNewLine() throws IOException;
 }
 
 /**
@@ -118,7 +114,7 @@ class AdaLexHelper {
             String sub = value.substring(off, i);
             listener.takeNonword(sub);
             if (lineSuffix != null) listener.take(lineSuffix);
-            listener.doStartNewLine();
+            listener.startNewLine();
             if (linePrefix != null) listener.take(linePrefix);
             off = i + w;
         } while (off < value.length());

@@ -479,7 +479,7 @@ public abstract class JFlexXref {
      *
      * @throws IOException on error when writing the xref
      */
-    protected void startNewLine() throws IOException {
+    public void startNewLine() throws IOException {
         String iconId = null;
         int line = getLineNumber() + 1;
         boolean skipNl = false;
@@ -738,6 +738,16 @@ public abstract class JFlexXref {
     public void yypush(int newState, String popString) {
         this.stack.push(yystate());
         this.stackPopString.push(popString);
+        yybegin(newState);
+    }
+
+    /**
+     * save current yy state to stack
+     * @param newState state id
+     */
+    public void yypush(int newState) {
+        this.stack.push(yystate());
+        this.stackPopString.push(null);
         yybegin(newState);
     }
 

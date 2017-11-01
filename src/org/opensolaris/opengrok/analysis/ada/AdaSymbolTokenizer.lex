@@ -50,16 +50,12 @@ import org.opensolaris.opengrok.web.Util;
 
     private String lastSymbol;
 
-    public void pushState(int state) { yypush(state); }
-
-    public void popState() throws IOException { yypop(); }
-
-    public void switchState(int state) { yybegin(state); }
-
+    @Override
     public void take(String value) throws IOException {
         // noop
     }
 
+    @Override
     public void takeNonword(String value) throws IOException {
         // noop
     }
@@ -68,6 +64,7 @@ import org.opensolaris.opengrok.web.Util;
         // noop
     }
 
+    @Override
     public boolean takeSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
@@ -82,20 +79,19 @@ import org.opensolaris.opengrok.web.Util;
         return false;
     }
 
+    @Override
     public void skipSymbol() {
         lastSymbol = null;
     }
 
+    @Override
     public void takeKeyword(String value) throws IOException {
         lastSymbol = null;
     }
 
-    public void doStartNewLine() throws IOException {
+    @Override
+    public void startNewLine() throws IOException {
         // noop
-    }
-
-    public void pushback(int numChars) {
-        yypushback(numChars);
     }
 
     protected boolean takeAllContent() {
