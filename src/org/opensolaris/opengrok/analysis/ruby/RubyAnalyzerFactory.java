@@ -18,54 +18,42 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.sh;
+
+package org.opensolaris.opengrok.analysis.ruby;
 
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
-public class ShAnalyzerFactory extends FileAnalyzerFactory {
-    
-    private static final String name = "Shell script";
-    
-    private static final String[] NAMES = {
-        "GNUMAKEFILE", "MAKEFILE"
-    };
+/**
+ * Represents an implementation of {@link FileAnalyzerFactory} to produce
+ * {@link RubyAnalyzer} instances.
+ */
+public class RubyAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static final String[] PREFIXES = {
-        "MAKEFILE"
-    };
-
+    private static final String name = "Ruby";
+    
     private static final String[] SUFFIXES = {
-        "SH",
-        "KSH",
-        "KSHLIB", // RFE #17849
-        "CSH",
-        "BASH",
-        "P5",
-        "AWK",
-        "GMK",
-        "MK",
-        "CONF",
-        "COM",
-        "SPEC",
-        "FLG",
-        "XCL", // message
+        "RB",
+        "RUBY"
     };
 
-    private static final String[] MAGICS = {
-        "#!",
-    };
-
-    public ShAnalyzerFactory() {
-        super(NAMES, PREFIXES, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
+    /**
+     * Creates a new instance of {@link RubyAnalyzerFactory}.
+     */
+    public RubyAnalyzerFactory() {
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
     }
 
+    /**
+     * Creates a new instance of {@link RubyAnalyzer}.
+     * @return the new instance
+     */
     @Override
     protected FileAnalyzer newAnalyzer() {
-        return new ShAnalyzer(this);
+        return new RubyAnalyzer(this);
     }
 }

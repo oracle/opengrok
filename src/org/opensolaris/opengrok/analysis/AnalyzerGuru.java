@@ -90,6 +90,7 @@ import org.opensolaris.opengrok.analysis.json.JsonAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.kotlin.KotlinAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.powershell.PowershellAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.ruby.RubyAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sql.PLSQLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sql.SQLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.swift.SwiftAnalyzerFactory;
@@ -156,7 +157,7 @@ public class AnalyzerGuru {
     /**
      * Descending string length comparator for magics
      */
-    private static Comparator<String> descStrlenComparator =
+    private static final Comparator<String> descStrlenComparator =
         new Comparator<String>() {
         @Override public int compare(String s1, String s2) {
             // DESC: s2 length <=> s1 length
@@ -249,7 +250,8 @@ public class AnalyzerGuru {
             new GolangAnalyzerFactory(),
             new LuaAnalyzerFactory(),
             new PascalAnalyzerFactory(),
-            new AdaAnalyzerFactory()
+            new AdaAnalyzerFactory(),
+            new RubyAnalyzerFactory()
         };
 
         for (FileAnalyzerFactory analyzer : analyzers) {

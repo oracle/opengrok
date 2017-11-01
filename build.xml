@@ -285,6 +285,8 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         <run-jflex dir="${gen.analysis.dir}/perl" name="PerlXref"/>
         <run-jflex dir="${gen.analysis.dir}/php" name="PhpSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/php" name="PhpXref"/>
+        <run-jflex dir="${gen.analysis.dir}/ruby" name="RubySymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/ruby" name="RubyXref"/>
         <run-jflex dir="${gen.analysis.dir}/lisp" name="LispSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/lisp" name="LispXref"/>
         <run-jflex dir="${gen.analysis.dir}/tcl" name="TclSymbolTokenizer"/>
