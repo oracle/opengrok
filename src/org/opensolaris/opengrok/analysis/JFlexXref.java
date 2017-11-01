@@ -746,9 +746,7 @@ public abstract class JFlexXref {
      * @param newState state id
      */
     public void yypush(int newState) {
-        this.stack.push(yystate());
-        this.stackPopString.push(null);
-        yybegin(newState);
+        yypush(newState, null);
     }
 
     /**
