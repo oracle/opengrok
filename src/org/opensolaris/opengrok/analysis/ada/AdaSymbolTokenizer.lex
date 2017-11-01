@@ -39,6 +39,7 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexTokenizer
 %implements AdaLexListener
 %unicode
+%ignorecase
 %type boolean
 %char
 %init{
