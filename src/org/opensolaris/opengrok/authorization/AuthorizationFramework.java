@@ -310,7 +310,7 @@ public final class AuthorizationFramework {
      */
     public void addPlugin(AuthorizationStack stack, IAuthorizationPlugin plugin, AuthControlFlag flag) {
         if (stack != null) {
-            LOGGER.log(Level.INFO, "Plugin class \"{0}\" was not found in configuration."
+            LOGGER.log(Level.WARNING, "Plugin class \"{0}\" was not found in configuration."
                     + " Appending the plugin at the end of the list with flag \"{1}\"",
                     new Object[]{getClassName(plugin), flag});
             addPlugin(stack, new AuthorizationPlugin(flag, getClassName(plugin), plugin));
@@ -364,15 +364,15 @@ public final class AuthorizationFramework {
         try {
             return loadClass(classname);
         } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" was not found: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" was not found: ", classname), ex);
         } catch (SecurityException ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" was found but it is placed in prohibited package: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" was found but it is placed in prohibited package: ", classname), ex);
         } catch (InstantiationException ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" could not be instantiated: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" could not be instantiated: ", classname), ex);
         } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an exception: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" loader threw an exception: ", classname), ex);
         } catch (Throwable ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an unknown error: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" loader threw an unknown error: ", classname), ex);
         }
         return null;
     }
