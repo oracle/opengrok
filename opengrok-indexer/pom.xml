@@ -43,20 +43,6 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
         <resources>
             <resource>
-                <targetPath>org/opensolaris/opengrok/analysis/ada/</targetPath>
-                <directory>../src/org/opensolaris/opengrok/analysis/ada/</directory>
-                <includes>
-                    <include>*.adb</include>
-                </includes>
-            </resource>
-            <resource>
-                <targetPath>org/opensolaris/opengrok/analysis/document/</targetPath>
-                <directory>../src/org/opensolaris/opengrok/analysis/document/</directory>
-                <includes>
-                    <include>*.1m</include>
-                </includes>
-            </resource>
-            <resource>
                 <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/analysis/sql/</directory>
                 <includes>
@@ -98,6 +84,20 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/ada/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/ada/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/document/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/document/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
