@@ -29,6 +29,7 @@
 package org.opensolaris.opengrok.analysis.ada;
 
 import java.io.IOException;
+import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
@@ -43,16 +44,27 @@ import org.opensolaris.opengrok.web.Util;
 %int
 %char
 %init{
-    h = new AdaLexHelper(this);
+    h = getNewHelper();
 %init}
 %{
+    private AdaLexHelper h;
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
   @Override
   protected void setLineNumber(int x) { yyline = x; }
 
-    private final AdaLexHelper h;
+    /**
+     * Reinitialize the lexer with new reader.
+     *
+     * @param reader new reader for this lexer
+     */
+    @Override
+    public void reInit(Reader reader) {
+        super.reInit(reader);
+        h = getNewHelper();
+    }
 
     @Override
     public void take(String value) throws IOException {
@@ -95,6 +107,10 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void takeKeyword(String value) throws IOException {
         writeKeyword(value, yyline);
+    }
+
+    protected AdaLexHelper getNewHelper() {
+        return new AdaLexHelper(this);
     }
 
     protected boolean takeAllContent() {

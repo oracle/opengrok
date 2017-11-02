@@ -44,12 +44,22 @@ import org.opensolaris.opengrok.web.Util;
 %char
 %init{
     super(in);
-    h = new AdaLexHelper(this);
+    h = getNewHelper();
 %init}
 %{
-    private final AdaLexHelper h;
+    private AdaLexHelper h;
 
     private String lastSymbol;
+
+    /**
+     * Reinitialize the tokenizer with new reader.
+     * @throws java.io.IOException in case of I/O error
+     */
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        h = getNewHelper();
+    }
 
     @Override
     public void take(String value) throws IOException {
@@ -93,6 +103,10 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void startNewLine() throws IOException {
         // noop
+    }
+
+    protected AdaLexHelper getNewHelper() {
+        return new AdaLexHelper(this);
     }
 
     protected boolean takeAllContent() {
