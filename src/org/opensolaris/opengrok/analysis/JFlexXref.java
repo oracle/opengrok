@@ -182,7 +182,7 @@ public abstract class JFlexXref {
      *
      * @param reader new reader for this lexer
      */
-    public final void reInit(Reader reader) {
+    public void reInit(Reader reader) {
         this.yyreset(reader);
         annotation = null;
 
