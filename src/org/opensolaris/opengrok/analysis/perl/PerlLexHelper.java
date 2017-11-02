@@ -20,12 +20,15 @@
  /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
+
 package org.opensolaris.opengrok.analysis.perl;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.web.HtmlConsts;
 
 /**
  * Represents an API for object's using {@link PerlLexHelper}
@@ -35,8 +38,8 @@ interface PerlLexListener {
     void yypop() throws IOException;
     void yybegin(int state);
     void yypushback(int numChars);
-
     void maybeIntraState();
+
     void take(String value) throws IOException;
     void takeNonword(String value) throws IOException;
 
@@ -64,14 +67,19 @@ interface PerlLexListener {
      */
     void takeKeyword(String value) throws IOException;
 
-    void startNewLine() throws IOException;
-
     /**
      * Indicates that a premature end of quoting occurred. Everything up to the
      * causal character has been written, and anything following will be
      * indicated via {@link yypushback}.
      */
     void abortQuote() throws IOException;
+
+    /**
+     * Indicates that the current line is ended.
+     *
+     * @throws IOException thrown on error when handling the EOL
+     */
+    void startNewLine() throws IOException;
 }
 
 /**
@@ -79,6 +87,10 @@ interface PerlLexListener {
  * inheritance
  */
 class PerlLexHelper {
+
+    // Using equivalent of {Identifier} from PerlProductions.lexh
+    private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
+        "^[a-zA-Z0-9_]+");
 
     private final PerlLexListener listener;
 
@@ -90,6 +102,51 @@ class PerlLexHelper {
     private final int HERExN;
     private final int HEREin;
     private final int HERE;
+
+    private Queue<HereDocSettings> hereSettings;
+
+    /**
+     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
+     * operator name (e.g., "m" or "tr") is stored. Unlike {@code endqchar} it
+     * is not unset when the quote ends, because it is useful to indicate if
+     * quote modifier characters are expected.
+     */
+    private String qopname;
+
+    /**
+     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
+     * terminating character is stored.
+     */
+    private char endqchar;
+
+    /**
+     * When matching a quoting construct like qq[], q(), m&lt;&gt;, s{}{} that
+     * nest, the begin character ('[', '&lt;', '(', or '{') is stored so that
+     * nesting is tracked and {@code nendqchar} is incremented appropriately.
+     * Otherwise, {@code nestqchar} is set to '\0' if no nesting occurs.
+     */
+    private char nestqchar;
+
+    /**
+     * When matching a quoting construct like qq//, m//, or s```, etc., the
+     * number of remaining end separators in an operator section is stored.
+     * It starts at 1, and any nesting increases the value.
+     */
+    private int nendqchar;
+
+    /**
+     * When matching a quoting construct like qq//, m//, or s```, etc., the
+     * number of sections for the operator is stored. E.g., for m//, it is 1;
+     * for tr/// it is 2.
+     */
+    private int nsections;
+
+    /**
+     * When matching a two part construct like tr/// or s```, etc., after the
+     * first end separator, {@code waitq} is set to true so that nesting is not
+     * active.
+     */
+    private boolean waitq;
 
     public PerlLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
         PerlLexListener listener,
@@ -109,16 +166,16 @@ class PerlLexHelper {
     }
 
     /**
-     * Gets a value indicating if the quote should be ended, recognizing
-     * quote-like operators which allow nesting to increase the nesting level
-     * if appropriate.
+     * Determine if the quote should end based on the first character of
+     * {@code capture}, recognizing quote-like operators that allow nesting to
+     * increase the nesting level if appropriate.
      * <p>
      * Calling this method has side effects to possibly modify {@code nqchar},
      * {@code waitq}, or {@code endqchar}.
      * @return true if the quote state should end
      */
-    public boolean isQuoteEnding(String match) {
-        char c = match.charAt(0);
+    public boolean maybeEndQuote(String capture) {
+        char c = capture.charAt(0);
         if (c == endqchar) {
             if (--nendqchar <= 0) {
                 if (--nsections <= 0) {
@@ -162,7 +219,7 @@ class PerlLexHelper {
 
     /**
      * Starts a quote-like operator as specified in a syntax fragment,
-     * {@code op}, and write the operator to output.
+     * {@code op}, and gives the {@code op} for the {@code listener} to take.
      */
     public void qop(String op, int namelength, boolean nointerp)
         throws IOException {
@@ -171,7 +228,8 @@ class PerlLexHelper {
 
     /**
      * Starts a quote-like operator as specified in a syntax fragment,
-     * {@code op}, and write the operator to output if {@code doWrite} is true.
+     * {@code op}, and gives the {@code capture} for the {@code listener} to
+     * take if {@code doWrite} is true.
      */
     public void qop(boolean doWrite, String capture, int namelength,
         boolean nointerp) throws IOException {
@@ -215,7 +273,7 @@ class PerlLexHelper {
             } else {
                 listener.skipSymbol();
             }
-            listener.take(Consts.SS);
+            listener.take(HtmlConsts.SPAN_S);
             listener.takeNonword(postop);
         }
     }
@@ -289,7 +347,7 @@ class PerlLexHelper {
         qop(false, "m/", 1, false);
         listener.takeNonword(lede);
         takeWhitespace(intervening);
-        listener.take(Consts.SS);
+        listener.take(HtmlConsts.SPAN_S);
         listener.take("/");
     }
 
@@ -310,7 +368,7 @@ class PerlLexHelper {
         qop(false, "m/", 1, false);
         listener.takeSymbol(lede, 0, false);
         takeWhitespace(intervening);
-        listener.take(Consts.SS);
+        listener.take(HtmlConsts.SPAN_S);
         listener.take("/");
     }
 
@@ -334,9 +392,9 @@ class PerlLexHelper {
     }
 
     /**
-     * Parses a Here-document declaration, and writes the {@code capture} to
-     * output. If the declaration is valid, {@code hereSettings} will have been
-     * appended.
+     * Parses a Here-document declaration, and takes the {@code capture} using
+     * {@link PerlLexListener#takeNonword(java.lang.String)}. If the
+     * declaration is valid, {@code hereSettings} will have been appended.
      */
     public void hop(String capture) throws IOException {
         if (!capture.startsWith("<<")) {
@@ -413,15 +471,15 @@ class PerlLexHelper {
         if (hereSettings != null && hereSettings.size() > 0) {
             HereDocSettings settings = hereSettings.peek();
             listener.yypush(settings.state);
-            listener.take(Consts.SS);
+            listener.take(HtmlConsts.SPAN_S);
             return true;
         }
         return false;
     }
 
     /**
-     * Writes the {@code capture} to output, possibly ending the Here-document
-     * state just beforehand.
+     * Process the {@code capture}, possibly ending the Here-document state
+     * just beforehand.
      * @return true if the quote state ended
      */
     public boolean maybeEndHere(String capture) throws IOException {
@@ -430,7 +488,7 @@ class PerlLexHelper {
 
         boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
-            listener.take(Consts.ZS);
+            listener.take(HtmlConsts.ZSPAN);
             didZspan = true;
             hereSettings.remove();
         }
@@ -440,7 +498,7 @@ class PerlLexHelper {
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
             listener.yybegin(settings.state);
-            if (didZspan) listener.take(Consts.SS);
+            if (didZspan) listener.take(HtmlConsts.SPAN_S);
             return false;
         } else {
             listener.yypop();
@@ -462,7 +520,7 @@ class PerlLexHelper {
         if (capture.charAt(0) == endqchar) {
             listener.skipSymbol();
             listener.takeNonword(sigil);
-            if (isQuoteEnding(sigil)) listener.abortQuote();
+            if (maybeEndQuote(sigil)) listener.abortQuote();
             listener.yypushback(capture.length() - 1);
             return;
         }
@@ -499,7 +557,7 @@ class PerlLexHelper {
                 listener.skipSymbol();
             }
             listener.takeNonword(p0);
-            if (isQuoteEnding(p0)) listener.abortQuote();
+            if (maybeEndQuote(p0)) listener.abortQuote();
             listener.yypushback(w1.length());
         }
     }
@@ -558,7 +616,7 @@ class PerlLexHelper {
                 char c = capture.charAt(i);
                 String w = new String(new char[] {c});
                 listener.takeNonword(w);
-                if (isQuoteEnding(w)) {
+                if (maybeEndQuote(w)) {
                     listener.abortQuote();
                     listener.yypushback(capture.length() - i - 1);
                     break;
@@ -566,54 +624,6 @@ class PerlLexHelper {
             }
         }
     }
-
-    private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
-        "^[a-zA-Z0-9_]+");
-
-    /**
-     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
-     * operator name (e.g., "m" or "tr") is stored. Unlike {@code endqchar} it
-     * is not unset when the quote ends, because it is useful to indicate if
-     * quote modifier characters are expected.
-     */
-    private String qopname;
-
-    /**
-     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
-     * terminating character is stored.
-     */
-    private char endqchar;
-
-    /**
-     * When matching a quoting construct like qq[], q(), m&lt;&gt;, s{}{} that
-     * nest, the begin character ('[', '&lt;', '(', or '{') is stored so that
-     * nesting is tracked and {@code nendqchar} is incremented appropriately.
-     * Otherwise, {@code nestqchar} is set to '\0' if no nesting occurs.
-     */
-    private char nestqchar;
-
-    /**
-     * When matching a quoting construct like qq//, m//, or s```, etc., the
-     * number of remaining end separators in an operator section is stored.
-     * It starts at 1, and nesting increases the value when seen.
-     */
-    private int nendqchar;
-
-    /**
-     * When matching a quoting construct like qq//, m//, or s```, etc., the
-     * number of sections for the operator is stored. E.g., for m//, it is 1;
-     * for tr/// it is 2.
-     */
-    private int nsections;
-
-    /**
-     * When matching a two part construct like tr/// or s```, etc., after the
-     * first end separator, {@code waitq} is set to TRUE so that nesting is not
-     * active.
-     */
-    private boolean waitq;
-
-    private Queue<HereDocSettings> hereSettings;
 
     class HereDocSettings {
         private final String terminator;

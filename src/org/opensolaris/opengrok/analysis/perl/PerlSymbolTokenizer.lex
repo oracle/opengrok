@@ -30,6 +30,7 @@ package org.opensolaris.opengrok.analysis.perl;
 
 import java.io.IOException;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 %%
@@ -41,15 +42,23 @@ import org.opensolaris.opengrok.web.Util;
 %type boolean
 %char
 %init{
-super(in);
-
-        h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-            HERE, HERExN, HEREin, HEREinxN);
+    super(in);
+    h = getNewHelper();
 %init}
 %{
-    private final PerlLexHelper h;
+    private PerlLexHelper h;
 
     private String lastSymbol;
+
+    /**
+     * Reinitialize the tokenizer with new reader.
+     * @throws java.io.IOException in case of I/O error
+     */
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        h = getNewHelper();
+    }
 
     @Override
     public void take(String value) throws IOException {
@@ -99,13 +108,18 @@ super(in);
     public void abortQuote() throws IOException {
         yypop();
         if (h.areModifiersOK()) yypush(QM);
-        take(Consts.ZS);
+        take(HtmlConsts.ZSPAN);
     }
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does
     // nothing, because other transitions would have saved the state.
     public void maybeIntraState() {
         if (yystate() == YYINITIAL) yybegin(INTRA);
+    }
+
+    protected PerlLexHelper getNewHelper() {
+        return new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
+            HERE, HERExN, HEREin, HEREinxN);
     }
 
     protected boolean takeAllContent() {

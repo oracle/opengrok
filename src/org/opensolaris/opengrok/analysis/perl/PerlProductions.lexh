@@ -207,17 +207,17 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
  {Number}    {
     maybeIntraState();
-    take(Consts.SN);
-    take(yytext());
-    take("</span>");
+    take(HtmlConsts.SPAN_N);
+    takeNonword(yytext());
+    take(HtmlConsts.ZSPAN);
  }
 
  [\"\`] { h.qop(yytext(), 0, false); }
  \'     { h.qop(yytext(), 0, true); }
  \#     {
         yypush(SCOMMENT);
-        take(Consts.SC);
-        take("#");
+        take(HtmlConsts.SPAN_C);
+        takeNonword(yytext());
  }
 
  // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
@@ -277,7 +277,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  // POD start
  ^ "=" [a-zA-Z_] [a-zA-Z0-9_]*    {
         yypush(POD);
-        take(Consts.SC);
+        take(HtmlConsts.SPAN_C);
         take(yytext());
  }
 
@@ -296,7 +296,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         takeKeyword(initial);
         takeNonword(following);
         // start a pseudo-"string"
-        take(Consts.SS);
+        take(HtmlConsts.SPAN_S);
     }
  }
 }
@@ -305,7 +305,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     "/"    {
         // OK to pass a fake "m/" with doWrite=false
         h.qop(false, "m/", 1, false);
-        take(Consts.SS);
+        take(HtmlConsts.SPAN_S);
         take(yytext());
     }
 }
@@ -400,11 +400,10 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     \w    {
         String capture = yytext();
         takeNonword(capture);
-        if (h.isQuoteEnding(capture)) {
+        if (h.maybeEndQuote(capture)) {
             yypop();
-            if (h.areModifiersOK())
-                yypush(QM);
-            take(Consts.ZS);
+            if (h.areModifiersOK()) yypush(QM);
+            take(HtmlConsts.ZSPAN);
         }
     }
 }
@@ -412,9 +411,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
     {WhiteSpace}{EOL} |
     {EOL} {
-        take(Consts.ZS);
+        take(HtmlConsts.ZSPAN);
         startNewLine();
-        take(Consts.SS);
+        take(HtmlConsts.SPAN_S);
     }
 }
 
@@ -431,7 +430,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     // anything else ends the quote-modifiers state
     [^]    {
         yypop();
-        yypushback(1);
+        yypushback(yytext().length());
     }
 }
 
@@ -439,7 +438,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
   ^ {PodEND} [^\n\r]*    {
     yypop();
     takeNonword(yytext());
-    take(Consts.ZS);
+    take(HtmlConsts.ZSPAN);
   }
 
   {WhiteSpace}{EOL} |
@@ -453,14 +452,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     ^ "." / {MaybeWhsp} {EOL}    {
         yypop();
         takeNonword(yytext());
-        take(Consts.ZS);
+        take(HtmlConsts.ZSPAN);
     }
 
     // "A comment, indicated by putting a '#' in the first column."
     ^ "#" [^\n\r]*    {
-        take(Consts.SC);
+        take(HtmlConsts.SPAN_C);
         takeNonword(yytext());
-        take(Consts.ZS);
+        take(HtmlConsts.ZSPAN);
     }
 
     // The other two types of line in a format FORMLIST -- "a 'picture' line
@@ -475,7 +474,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     String capture = yytext();
     yypushback(capture.length());
     yypop();
-    take(Consts.ZS);
+    take(HtmlConsts.ZSPAN);
   }
 }
 
@@ -517,14 +516,12 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 // "string links" and "comment links"
 <SCOMMENT, POD, FMT, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
     {Path}    {
-        maybeIntraState();
         if (takeAllContent()) {
             take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
         }
     }
 
     {File}    {
-        maybeIntraState();
         if (takeAllContent()) {
             String path = yytext();
             take("<a href=\"" + getUrlPrefix() + "path=");
@@ -537,14 +534,12 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     }
 
     ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]    {
-        maybeIntraState();
         if (takeAllContent()) {
             appendLink(yytext());
         }
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
-        maybeIntraState();
         if (takeAllContent()) {
             writeEMailAddress(yytext());
         }

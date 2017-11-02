@@ -30,16 +30,11 @@ import java.util.Set;
   * Holds static hash set containing the Perl keywords
   */
 public class Consts{
-    public static final String SC = "<span class=\"c\">";
-    public static final String SN = "<span class=\"n\">";
-    public static final String SS = "<span class=\"s\">";
-    public static final String ZS = "</span>";
-
     public static final Set<String> kwd = new HashSet<String>() ;
     static {
-        // Note that keywords with 1 letter will be ignored for {Identifier}
-        // since that macro needs at least 2 chars. Single character quote-like
-        // operators -- e.g., m//, s/// -- will not be ignored.
+        // Note that keywords with 1 letter will be ignored for historical
+        // reasons, as the {Identifier} used to require 2 characters in
+        // PerlXref while only 1 in PerlSymbolTokenizer.
         kwd.add("__DATA__");
         kwd.add("__END__");
         kwd.add("__FILE__");
