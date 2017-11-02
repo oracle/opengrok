@@ -1069,6 +1069,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         <javac srcdir="plugins/" 
                destdir="${build.dir}/plugins"
                includes="**/*.java"
+	       excludes="**/test/**"
                classpath="${javac.classpath}:${dist.jar}"
                compiler="javac${javac.source}">
             <compilerarg value="-Xlint:deprecation,unchecked" />
