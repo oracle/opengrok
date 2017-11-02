@@ -392,7 +392,6 @@ public final class HistoryGuru {
                         }
                     }
                 } else {
-                    repository.setDirectoryName(path);
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
                         LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
                                 new Object[]{repository.getClass().getName(), path});
