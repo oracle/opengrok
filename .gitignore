@@ -29,6 +29,7 @@ lib/derby.jar
 lib/jrcs.jar
 lib/lucene-*
 lib/servlet-api-*
+lib/junit-*
 derby.log
 opengrok*.log
 nbproject/genfiles.properties
