@@ -117,6 +117,9 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
     <property name="test.razor" value="${test.repositories}/razor"/>
     <property name="test.plugins_jar" value="${test.plugins}/plugins.jar"/>
 
+    <property name="junit.version" value="4.12"/>
+    <property name="junit.jar" value="junit-${junit.version}.jar"/>
+
     <property name="mvn.repository" value="http://repo1.maven.org/maven2"/>
 
     <property name="jflex-version" value="1.6.1"/>
@@ -551,6 +554,27 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
              dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
+    <target name="-check-junit" description="Check that junit jar file is present">
+        <available file="${junit.jar}" type="file" property="junit.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>
+        <condition property="junit_not_downloaded">
+            <not>
+                <isset property="junit.jar.present"/>
+            </not>
+        </condition>
+    </target>
+
+    <target name="download-junit" depends="-check-junit" if="junit_not_downloaded">
+        <delete>
+            <fileset dir="lib">
+                <include name="junit-*.jar"/>
+            </fileset>
+        </delete>
+        <get src="${mvn.repository}/junit/junit/${junit.version}/${junit.jar}"
+             dest="lib/${junit.jar}" verbose="true" usetimestamp="true"/>
+    </target>
+
     <target name="-post-jar" depends="-copy-lib-without-netbeans, sample-plugins">
         <war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" excludes="META-INF/context.xml"/>
@@ -828,7 +852,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </jacoco:report>
     </target>
 
-    <target name="-pre-compile-test"><!-- depends="-set-jacocoagent"> -->
+    <target name="-pre-compile-test" depends="-check-junit"><!-- depends="-set-jacocoagent"> -->
     </target>
 
     <!-- <target name="-pre-compile-test-single" depends="-set-jacocoagent"/> -->
