@@ -557,7 +557,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
              dest="lib/${junit.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
-    <target name="-post-jar" depends="-copy-lib-without-netbeans, sample-plugins">
+    <target name="-post-jar" depends="-copy-lib-without-netbeans, plugins">
         <war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" excludes="META-INF/context.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
@@ -1063,10 +1063,10 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </jar>
     </target>
 
-    <!-- Build the sample plugins. -->
-    <target name="sample-plugins" depends="-pre-pre-compile">
+    <!-- Build the plugins. -->
+    <target name="plugins" depends="-pre-pre-compile">
         <mkdir dir="${build.dir}/plugins"/>
-        <javac srcdir="plugins/" 
+        <javac srcdir="plugins/"
                destdir="${build.dir}/plugins"
                includes="**/*.java"
 	       excludes="**/test/**"
@@ -1074,6 +1074,9 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                compiler="javac${javac.source}">
             <compilerarg value="-Xlint:deprecation,unchecked" />
         </javac>
+        <jar destfile="${dist.dir}/plugins.jar">
+            <fileset dir="${build.dir}/plugins" includes="opengrok/**/*.class"/>
+        </jar>
     </target>
 
     <!-- compile jsp - just to test -->
