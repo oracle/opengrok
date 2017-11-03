@@ -115,7 +115,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
     <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
-    <property name="test.plugins_jar" value="${test.plugins}/plugins.jar"/>
+    <property name="test.plugins_jar" value="${test.plugins}/testplugins.jar"/>
 
     <property name="junit.version" value="4.12"/>
     <property name="junit.jar" value="junit-${junit.version}.jar"/>
@@ -859,28 +859,36 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </condition>
     </target>
 
-    <target name="check_plugins_jar" description="check if plugins.jar was generated">
+    <target name="check_testplugins_jar" description="check if plugins.jar was generated">
         <available
-            file="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/plugins.jar"
-            type="file" property="plugins_exists">
+            file="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/testplugins.jar"
+            type="file" property="testplugins_exists">
         </available>
-        <condition property="plugins_missing">
+        <condition property="testplugins_missing">
             <not>
-                <isset property="plugins_exists" />
+                <isset property="testplugins_exists" />
             </not>
         </condition>
     </target>
 
-    <target depends="create_repos, create_plugins" name="-post-compile-test">
+    <target depends="create_repos, create_testplugins" name="-post-compile-test">
     </target>
 
-    <target depends="create_repos, create_plugins" name="-post-compile-test-single">
+    <target depends="create_repos, create_testplugins" name="-post-compile-test-single">
     </target>
 
-    <target depends="check_plugins_jar" name="create_plugins" if="plugins_missing">
-        <copy
-            file="${test.plugins_jar}"
-            tofile="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/plugins.jar" />
+    <target depends="check_testplugins_jar,plugins" name="create_testplugins" if="testplugins_missing">
+        <!-- this is how testplugins.jar was created -->
+	<!--
+        <jar destfile="testdata/testplugins.jar">
+            <fileset dir="build/plugins">
+		<include name="**/TruePlugin.class"/>
+		<include name="**/FalsePlugin.class"/>
+	    </fileset>
+        </jar>
+	-->
+	<copy file="${test.plugins_jar}"
+	    tofile="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/testplugins.jar"/>
     </target>
 
     <target depends="check_repositories_zip" name="create_repos" if="repos_missing">

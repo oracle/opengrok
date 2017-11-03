@@ -35,7 +35,7 @@ public class AuthorizationPluginClassLoaderTest {
     private File pluginDirectory;
 
     public AuthorizationPluginClassLoaderTest() {
-        URL resource = AuthorizationPluginClassLoaderTest.class.getResource("plugins.jar");
+        URL resource = AuthorizationPluginClassLoaderTest.class.getResource("testplugins.jar");
         pluginDirectory = new File(resource.getFile()).getParentFile();
     }
 
@@ -146,7 +146,7 @@ public class AuthorizationPluginClassLoaderTest {
         AuthorizationPluginClassLoader instance
                 = new AuthorizationPluginClassLoader(pluginDirectory);
 
-        Class clazz = loadClass(instance, "org.sample.plugin.FalsePlugin");
+        Class clazz = loadClass(instance, "opengrok.auth.plugin.FalsePlugin");
 
         IAuthorizationPlugin plugin = getNewInstance(clazz);
 
@@ -166,7 +166,7 @@ public class AuthorizationPluginClassLoaderTest {
         AuthorizationPluginClassLoader instance
                 = new AuthorizationPluginClassLoader(pluginDirectory);
 
-        Class clazz = loadClass(instance, "org.sample.plugin.TruePlugin");
+        Class clazz = loadClass(instance, "opengrok.auth.plugin.TruePlugin");
 
         IAuthorizationPlugin plugin = getNewInstance(clazz);
 
