@@ -28,14 +28,12 @@
 
 package org.opensolaris.opengrok.analysis.swift;
 
-import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class SwiftSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %init{
-super(in);
 %init}
 %unicode
 %buffer 32766
@@ -46,7 +44,7 @@ super(in);
     private int nestedComment;
 
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         nestedComment = 0;
     }
@@ -62,14 +60,14 @@ super(in);
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar, yychar + yylength());
                         return yystate(); }
               }
 
  [`] {Identifier} [`]    {
     String capture = yytext();
     String id = capture.substring(1, capture.length() - 1);
-    setAttribs(id, yychar + 1, yychar + 1 + id.length());
+    onSymbolMatched(id, yychar + 1, yychar + 1 + id.length());
     return yystate();
  }
 

@@ -60,8 +60,8 @@ import org.opensolaris.opengrok.web.Util;
   }
 
   @Override
-  public void reset() {
-      super.reset();
+  protected void clearStack() {
+      super.clearStack();
       popStrings.clear();
       docLabels.clear();
   }

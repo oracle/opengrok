@@ -46,6 +46,16 @@ import org.opensolaris.opengrok.web.Util;
   private String heredocStopWord;
   private boolean heredocStripLeadingTabs;
 
+  /**
+   * Resets the sh tracked state after {@link #reset()}.
+   */
+  @Override
+  public void reset() {
+      super.reset();
+      heredocStopWord = null;
+      heredocStripLeadingTabs = false;
+  }
+
   @Override
   protected void clearStack() {
       super.clearStack();

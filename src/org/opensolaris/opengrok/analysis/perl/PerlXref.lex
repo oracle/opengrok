@@ -51,6 +51,9 @@ import org.opensolaris.opengrok.web.Util;
 %{
     private final PerlLexHelper h;
 
+    /**
+     * Resets the Perl tracked state after {@link #reset()}.
+     */
     @Override
     public void reset() {
         super.reset();

@@ -29,21 +29,19 @@
 package org.opensolaris.opengrok.analysis.ada;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class AdaSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %implements AdaLexer
 %unicode
 %ignorecase
 %int
 %char
 %init{
-    super(in);
     h = new AdaLexHelper(this);
 %init}
 %include CommonTokenizer.lexh
@@ -53,13 +51,13 @@ import org.opensolaris.opengrok.web.Util;
     private String lastSymbol;
 
     /**
-     * Reinitialize the tokenizer with new reader.
-     * @throws java.io.IOException in case of I/O error
+     * Resets the Ada tracked state after {@link #reset()}.
      */
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         h.reset();
+        lastSymbol = null;
     }
 
     @Override
@@ -82,8 +80,8 @@ import org.opensolaris.opengrok.web.Util;
             throws IOException {
         if (ignoreKwd || !Consts.kwd.contains(value.toLowerCase())) {
             lastSymbol = value;
-            setAttribs(value, yychar + captureOffset, yychar + captureOffset +
-                value.length());
+            onSymbolMatched(value, yychar + captureOffset, yychar +
+                captureOffset + value.length());
             return true;
         } else {
             lastSymbol = null;

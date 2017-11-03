@@ -53,6 +53,9 @@ import org.opensolaris.opengrok.web.Util;
 
     private RubyLexHelper h;
 
+    /**
+     * Resets the Ruby tracked state after {@link #reset()}.
+     */
     @Override
     public void reset() {
         super.reset();

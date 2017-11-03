@@ -25,16 +25,15 @@ package org.opensolaris.opengrok.analysis.eiffel;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 %%
 %public
 %class EiffelSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %implements EiffelLexer
 %init{
-    super(in);
     h = new EiffelLexHelper(VSTRING, this);
 %init}
 %unicode
@@ -51,7 +50,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
      * Resets the Eiffel tracked state after {@link #reset()}.
      */
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         h.reset();
         lastSymbol = null;
@@ -77,8 +76,8 @@ import org.opensolaris.opengrok.web.HtmlConsts;
             throws IOException {
         if (ignoreKwd || !Consts.kwd.contains(value.toLowerCase())) {
             lastSymbol = value;
-            setAttribs(value, yychar + captureOffset, yychar + captureOffset +
-                value.length());
+            onSymbolMatched(value, yychar + captureOffset, yychar +
+                captureOffset + value.length());
             return true;
         } else {
             lastSymbol = null;
