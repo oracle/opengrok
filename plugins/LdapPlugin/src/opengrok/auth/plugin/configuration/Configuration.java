@@ -41,6 +41,7 @@ public class Configuration {
 
     private List<LdapServer> servers = new ArrayList<>();
     private int interval;
+    private String searchBase;
 
     public void setServers(List<LdapServer> servers) {
         this.servers = servers;
@@ -58,6 +59,14 @@ public class Configuration {
         this.interval = interval;
     }
 
+    public String getSearchBase() {
+        return searchBase;
+    }
+    
+    public void setSearchBase(String base) {
+        this.searchBase = base;
+    }
+    
     public String getXMLRepresentationAsString() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         this.encodeObject(bos);

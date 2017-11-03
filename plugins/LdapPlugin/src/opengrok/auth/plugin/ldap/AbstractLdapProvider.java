@@ -53,7 +53,7 @@ public abstract class AbstractLdapProvider {
      * java.lang.String, java.lang.String[])
      */
     public Map<String, Set<String>> lookupLdapContent(User user, String filter) {
-        return lookupLdapContent(user, null, null);
+        return lookupLdapContent(user, filter, null);
     }
 
     /**

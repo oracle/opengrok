@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
@@ -78,6 +78,11 @@ public class LdapFacade extends AbstractLdapProvider {
      * server waiting.
      */
     private int interval = 10 * 1000;
+    
+    /**
+     * LDAP search base
+     */
+    private String searchBase;
 
     /**
      * Server pool.
@@ -166,6 +171,7 @@ public class LdapFacade extends AbstractLdapProvider {
     public LdapFacade(Configuration cfg) {
         setServers(cfg.getServers());
         setInterval(cfg.getInterval());
+        setSearchBase(cfg.getSearchBase());
         prepareSearchControls();
         prepareServers();
     }
@@ -215,9 +221,17 @@ public class LdapFacade extends AbstractLdapProvider {
         }
     }
 
+    public String getSearchBase() {
+        return searchBase;
+    }
+            
+    public void setSearchBase(String base) {
+        this.searchBase = base;
+    }
+    
     @Override
     public boolean isConfigured() {
-        return servers != null && servers.size() > 0 && LDAP_FILTER != null;
+        return servers != null && servers.size() > 0 && LDAP_FILTER != null && searchBase != null;
     }
 
     /**
@@ -235,13 +249,8 @@ public class LdapFacade extends AbstractLdapProvider {
     @Override
     public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) {
 
-        if (user == null) {
-            LOGGER.log(Level.SEVERE, "no user");
-            return null;
-        }
-
         return lookup(
-                user.getUsername(),
+                user != null ? user.getUsername() : getSearchBase(),
                 filter == null ? LDAP_FILTER : filter,
                 values,
                 new ContentAttributeMapper(values));
@@ -278,6 +287,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * @param filter ldap filter for the query
      * @param attributes returning ldap attributes
      * @param mapper mapper class implementing @code{AttributeMapper} closed
+     * @param fail current count of failures
      *
      * @return results transformed with mapper
      */
@@ -341,6 +351,8 @@ public class LdapFacade extends AbstractLdapProvider {
                 try {
                     namingEnum.close();
                 } catch (NamingException e) {
+                    LOGGER.log(Level.WARNING,
+                            "failed to close search result enumeration");
                 }
             }
         }

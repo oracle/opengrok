@@ -54,6 +54,7 @@ public class LdapFilter extends AbstractLdapPlugin {
         if ((ldapFilter = (String) parameters.get(FILTER_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + FILTER_PARAM + "] in the setup");
         }
+        LOGGER.log(Level.FINE, "LdapFilter plugin loaded");
     }
 
     @Override
@@ -67,26 +68,29 @@ public class LdapFilter extends AbstractLdapPlugin {
         Boolean sessionAllowed = false;
         LdapUser ldapUser;
         Map<String, Set<String>> records;
+        String dn[] = {"dn"};
 
         updateSession(req, sessionAllowed);
 
         if ((ldapUser = (LdapUser) req.getSession().getAttribute(LdapUserPlugin.SESSION_ATTR)) == null) {
+            LOGGER.log(Level.FINER, "failed to get attribute " + LdapUserPlugin.SESSION_ATTR);
             return;
         }
 
         if (ldapUser.getUid() == null) {
+            LOGGER.log(Level.FINER, "failed to get uid");
             return;
         }
 
-        if ((records = getLdapProvider().lookupLdapContent(user,
-                expandFilter(ldapFilter, ldapUser, user))) == null) {
+        String expandedFilter = expandFilter(ldapFilter, ldapUser, user);
+        LOGGER.log(Level.FINER, "expanded filter for user {0} into ''{1}''",
+                new Object[]{user, expandedFilter});
+        if ((records = getLdapProvider().lookupLdapContent(null, expandedFilter, dn)) == null) {
+            LOGGER.log(Level.FINER, "failed to get content for user from LDAP server");
             return;
         }
 
-        if (records.isEmpty()) {
-            return;
-        }
-
+        LOGGER.log(Level.FINER, "got {0} records", records.size());
         sessionAllowed = true;
 
         updateSession(req, sessionAllowed);
