@@ -24,65 +24,66 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.util.Stack;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 
 /**
- *
- * Generally this is a "template" for all new Tokenizers, so be careful when
- * changing it, it will impact almost ALL symbol tokenizers in OpenGrok ...
- *
  * Created on August 24, 2009
  *
  * @author Lubos Kosco
  */
-public abstract class JFlexTokenizer extends Tokenizer {
+public class JFlexTokenizer extends Tokenizer
+    implements SymbolMatchedListener {
 
-    protected Stack<Integer> stack = new Stack<>();
+    private final ScanningSymbolMatcher matcher;
 
-    // default jflex scanner methods and variables
-    abstract public int yylex() throws IOException;
-
-    abstract public void yyreset(Reader reader);
-
-    abstract public void yyclose() throws IOException;
-
-    abstract public void yybegin(int newState);
-
-    abstract public int yystate();    
-        
-    abstract public int getYYEOF();
-
-    //TODO can be removed once we figure out jflex generation of empty constructor
-    protected JFlexTokenizer(Reader in) {
-        super();
-        setReader(in);
-    }
-            
     /**
-     * Reinitialize the tokenizer with new reader.
+     * Initialize an instance, passing a {@link ScanningSymbolMatcher} which
+     * will be owned by the {@link JFlexTokenizer}.
+     * @param matcher a defined instance
+     */
+    public JFlexTokenizer(ScanningSymbolMatcher matcher) {
+        if (matcher == null) {
+            throw new IllegalArgumentException("`matcher' is null");
+        }
+        this.matcher = matcher;
+        matcher.addSymbolMatchedListener(this);
+        // The tokenizer will own the matcher, so we won't have to unsubscribe.
+    }
+
+    /**
+     * Resets the instance and the instance's {@link ScanningSymbolMatcher}.
+     * If necessary, users should have first called this instance's
+     * {@link #setReader(java.io.Reader)} since the matcher will be
+     * reset to the current reader.
      * @throws java.io.IOException in case of I/O error
      */
     @Override
     public void reset() throws IOException {
         super.reset();
-        stack.clear();        
-        this.yyreset(input);
+        matcher.yyreset(input);
+        matcher.reset();
         clearAttributes();
     }
-        
+
+    /**
+     * Closes the instance and the instance's {@link ScanningSymbolMatcher}.
+     * @throws IOException if any error occurs while closing
+     */
     @Override
     public final void close() throws IOException {
         super.close();
-        this.yyclose();
+        matcher.yyclose();
     }
-    protected CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
-    protected OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
-    protected PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
+
+    private final CharTermAttribute termAtt = addAttribute(
+        CharTermAttribute.class);
+    private final OffsetAttribute offsetAtt = addAttribute(
+        OffsetAttribute.class);
+    private final PositionIncrementAttribute posIncrAtt = addAttribute(
+        PositionIncrementAttribute.class);
 
     /**
      * This will re-initialize internal AttributeImpls, or it returns false if
@@ -94,9 +95,26 @@ public abstract class JFlexTokenizer extends Tokenizer {
     @Override
     public final boolean incrementToken() throws IOException {        
         clearAttributes();
-        return this.yylex() != getYYEOF();
+        return matcher.yylex() != matcher.getYYEOF();
     }
 
+    /**
+     * Calls {@link #setAttribs(java.lang.String, int, int)} on the publishing
+     * of a {@link SymbolMatchedEvent}.
+     * @param evt the event raised
+     */
+    @Override
+    public void symbolMatched(SymbolMatchedEvent evt) {
+        setAttribs(evt.getStr(), evt.getStart(), evt.getEnd());
+    }
+
+    /**
+     * Clears, and then resets the instance's attributes per the specified
+     * arguments.
+     * @param str the matched symbol
+     * @param start the match start position
+     * @param end the match end position
+     */
     protected void setAttribs(String str, int start, int end) {
         clearAttributes();
         //FIXME increasing below by one(default) might be tricky, need more analysis
@@ -105,23 +123,5 @@ public abstract class JFlexTokenizer extends Tokenizer {
         this.termAtt.setEmpty();
         this.termAtt.append(str);
         this.offsetAtt.setOffset(start, end);
-    }
-
-    public void yypush(int newState) {
-        this.stack.push(yystate());
-        this.yybegin(newState);
-    }
-
-    public void yypop() {
-        this.yybegin(this.stack.pop());
-    }
-
-    /**
-     * reset current yy state, and clear stack
-     * @param newState state id
-     */
-    public void yyjump(int newState) {
-        yybegin(newState);
-        this.stack.clear();
     }
 }

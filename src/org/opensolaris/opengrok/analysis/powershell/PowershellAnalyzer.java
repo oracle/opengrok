@@ -19,12 +19,14 @@
 
 /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.powershell;
 
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -36,12 +38,12 @@ import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 public class PowershellAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of PoshAnalyzer
-     * @param factory name
+     * Creates a new instance of {@link PowershellAnalyzer}.
+     * @param factory defined instance for the analyzer
      */
     protected PowershellAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer=new PoshSymbolTokenizer(FileAnalyzer.dummyReader);    
+        super(factory, new JFlexTokenizer(new PoshSymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }    
 
     @Override

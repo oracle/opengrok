@@ -27,6 +27,7 @@ package org.opensolaris.opengrok.analysis.ruby;
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -38,11 +39,11 @@ public class RubyAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of {@link RubyAnalyzer}.
-     * @param factory
+     * @param factory defined instance for the analyzer
      */
     protected RubyAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer = new RubySymbolTokenizer(FileAnalyzer.dummyReader);    
+        super(factory, new JFlexTokenizer(new RubySymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }
 
     /**

@@ -27,17 +27,14 @@
  */
 
 package org.opensolaris.opengrok.analysis.lisp;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class LispSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
 %init}
 %int
 %include CommonTokenizer.lexh
@@ -56,7 +53,7 @@ Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
 <YYINITIAL> {
 {Identifier} {String id = yytext();
               if (!Consts.kwd.contains(id.toLowerCase())) {
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar, yychar + yylength());
                         return yystate(); }
               }
  \"     { yybegin(STRING); }

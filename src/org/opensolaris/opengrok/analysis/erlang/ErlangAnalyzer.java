@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.erlang;
@@ -26,6 +27,7 @@ package org.opensolaris.opengrok.analysis.erlang;
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -33,11 +35,11 @@ public class ErlangAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of ErlangAnalyzer
-     * @param factory name
+     * @param factory defined instance for the analyzer
      */
     protected ErlangAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer=new ErlangSymbolTokenizer(FileAnalyzer.dummyReader);    
+        super(factory, new JFlexTokenizer(new ErlangSymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }
 
     @Override

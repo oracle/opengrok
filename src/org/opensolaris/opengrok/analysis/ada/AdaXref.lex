@@ -50,6 +50,9 @@ import org.opensolaris.opengrok.web.Util;
 %{
     private final AdaLexHelper h;
 
+    /**
+     * Resets the Ada tracked state after {@link #reset()}.
+     */
     @Override
     public void reset() {
         super.reset();

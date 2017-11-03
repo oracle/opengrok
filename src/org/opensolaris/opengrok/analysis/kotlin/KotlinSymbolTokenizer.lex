@@ -31,14 +31,12 @@
 
 package org.opensolaris.opengrok.analysis.kotlin;
 
-import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class KotlinSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %init{
-super(in);
 %init}
 %unicode
 %buffer 32766
@@ -49,7 +47,7 @@ super(in);
     private int nestedComment;
 
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         nestedComment = 0;
     }
@@ -65,7 +63,7 @@ super(in);
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar, yychar + yylength());
                         return yystate(); }
               }
  {Number}    {}
@@ -102,7 +100,7 @@ super(in);
         String sigil = capture.substring(0, 1);
         String id = capture.substring(1);
         if (!Consts.kwd.contains(id)) {
-            setAttribs(id, yychar + 1, yychar + yylength());
+            onSymbolMatched(id, yychar + 1, yychar + yylength());
             return yystate();
        }
     }

@@ -30,21 +30,19 @@ package org.opensolaris.opengrok.analysis.perl;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class PerlSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %implements PerlLexer
 %unicode
 %int
 %char
 %init{
-    super(in);
     h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
         HERE, HERExN, HEREin, HEREinxN);
 %init}
@@ -55,11 +53,9 @@ import org.opensolaris.opengrok.web.Util;
     private String lastSymbol;
 
     /**
-     * Reinitialize the tokenizer with new reader.
-     * @throws java.io.IOException in case of I/O error
+     * Resets the Perl tracked state after {@link #reset()}.
      */
-    @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         h.reset();
         lastSymbol = null;
@@ -85,8 +81,8 @@ import org.opensolaris.opengrok.web.Util;
             throws IOException {
         if (ignoreKwd || !Consts.kwd.contains(value)) {
             lastSymbol = value;
-            setAttribs(value, yychar + captureOffset, yychar + captureOffset +
-                value.length());
+            onSymbolMatched(value, yychar + captureOffset, yychar +
+                captureOffset + value.length());
             return true;
         } else {
             lastSymbol = null;

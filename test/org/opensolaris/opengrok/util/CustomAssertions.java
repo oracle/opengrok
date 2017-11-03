@@ -34,6 +34,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
@@ -111,15 +112,16 @@ public class CustomAssertions {
      * @throws java.lang.Exception if an error occurs constructing a
      * {@code klass} instance or testing the stream
      */
-    public static void assertSymbolStream(Class<? extends JFlexTokenizer> klass,
-        InputStream iss, List<String> expectedTokens) throws Exception {
+    public static void assertSymbolStream(
+        Class<? extends JFlexSymbolMatcher> klass, InputStream iss,
+        List<String> expectedTokens) throws Exception {
 
         byte[] inputCopy = copyStream(iss);
         String input = new String(inputCopy, StandardCharsets.UTF_8);
-
-        JFlexTokenizer tokenizer = klass.getConstructor(Reader.class).
-            newInstance(new InputStreamReader(
-            new ByteArrayInputStream(inputCopy), StandardCharsets.UTF_8));
+        JFlexTokenizer tokenizer = new JFlexTokenizer(
+            klass.getConstructor(Reader.class).newInstance(
+	        new InputStreamReader(new ByteArrayInputStream(inputCopy),
+	        StandardCharsets.UTF_8)));
 
         CharTermAttribute term = tokenizer.addAttribute(
             CharTermAttribute.class);

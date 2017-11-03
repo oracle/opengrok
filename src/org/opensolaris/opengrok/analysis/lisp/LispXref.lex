@@ -43,6 +43,9 @@ import org.opensolaris.opengrok.web.Util;
 %{
   private int nestedComment;
 
+  /**
+   * Resets the Lisp tracked state after {@link #reset()}.
+   */
   @Override
   public void reset() {
       super.reset();

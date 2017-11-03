@@ -30,8 +30,22 @@ import org.opensolaris.opengrok.util.IOUtils;
 
 public abstract class TextAnalyzer extends FileAnalyzer {
 
-    public TextAnalyzer(FileAnalyzerFactory factory) {
+    /**
+     * Creates a new instance of {@link TextAnalyzer}.
+     * @param factory defined instance for the analyzer
+     */
+    protected TextAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+    }
+
+    /**
+     * Creates a new instance of {@link TextAnalyzer}.
+     * @param factory defined instance for the analyzer
+     * @param symbolTokenizer defined instance for the analyzer
+     */
+    protected TextAnalyzer(FileAnalyzerFactory factory,
+        JFlexTokenizer symbolTokenizer) {
+        super(factory, symbolTokenizer);
     }
 
     /**

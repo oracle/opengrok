@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.analysis.eiffel;
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -39,8 +40,8 @@ public class EiffelAnalyzer extends AbstractSourceCodeAnalyzer {
      * @param factory instance
      */
     protected EiffelAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer = new EiffelSymbolTokenizer(FileAnalyzer.dummyReader);
+        super(factory, new JFlexTokenizer(new EiffelSymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }
 
     /**

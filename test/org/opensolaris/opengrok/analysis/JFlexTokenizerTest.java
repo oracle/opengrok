@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -82,7 +83,7 @@ public class JFlexTokenizerTest {
      * Helper method for {@link #testOffsetAttribute()} that runs the test on
      * one single implementation class.
      */
-    private void testOffsetAttribute(Class<? extends JFlexTokenizer> klass)
+    private void testOffsetAttribute(Class<? extends JFlexSymbolMatcher> klass)
             throws Exception {
         String inputText = "alpha beta gamma delta";
         String[] expectedTokens = inputText.split(" ");
@@ -94,11 +95,12 @@ public class JFlexTokenizerTest {
      * one single implementation class with the specified input text and
      * expected tokens.
      */
-    private void testOffsetAttribute(Class<? extends JFlexTokenizer> klass,
+    private void testOffsetAttribute(Class<? extends JFlexSymbolMatcher> klass,
             String inputText, String[] expectedTokens)
             throws Exception {
-        JFlexTokenizer tokenizer = klass.getConstructor(Reader.class)
-                .newInstance(new StringReader(inputText));
+        JFlexSymbolMatcher matcher = klass.getConstructor(Reader.class).
+            newInstance(new StringReader(inputText));
+        JFlexTokenizer tokenizer = new JFlexTokenizer(matcher);
 
         CharTermAttribute term = tokenizer.addAttribute(CharTermAttribute.class);
         OffsetAttribute offset = tokenizer.addAttribute(OffsetAttribute.class);
@@ -146,8 +148,9 @@ public class JFlexTokenizerTest {
      */
     @Test
     public void truncatedUuencodedFile() throws IOException {
-        UuencodeFullTokenizer tokenizer = new UuencodeFullTokenizer(
-                new StringReader("begin 644 test\n"));
+        JFlexSymbolMatcher matcher = new UuencodeFullTokenizer(
+            new StringReader("begin 644 test\n"));
+        JFlexTokenizer tokenizer = new JFlexTokenizer(matcher);
         CharTermAttribute term = tokenizer.addAttribute(CharTermAttribute.class);
 
         assertTrue(tokenizer.incrementToken());

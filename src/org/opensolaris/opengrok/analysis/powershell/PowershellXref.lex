@@ -42,8 +42,8 @@ import java.util.regex.Matcher;
   private final Stack<String> styleStack = new Stack<String>();
 
   @Override
-  public void reset() {
-      super.reset();
+  protected void clearStack() {
+      super.clearStack();
       styleStack.clear();
   }
 

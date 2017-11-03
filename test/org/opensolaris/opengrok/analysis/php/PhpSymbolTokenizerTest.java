@@ -57,10 +57,10 @@ public class PhpSymbolTokenizerTest {
         List<String> l = new LinkedList<>();        
         JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.tokenStream("refs", r);
         ts.setReader(r);        
-        ts.yyreset(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         try {
-            while (ts.yylex() != ts.getYYEOF()) {
+            ts.reset();
+            while (ts.incrementToken()) {
                 l.add(term.toString());
             }
         } catch (IOException ex) {
