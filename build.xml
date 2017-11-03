@@ -731,6 +731,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         <checkstyle config="checkstyle/style.xml" failOnViolation="false">
             <fileset dir="src" includes="**/*.java"/>
             <fileset dir="test" includes="**/*.java"/>
+            <fileset dir="plugins" includes="**/*.java"/>
             <formatter type="plain"/>
             <formatter type="plain"  toFile="checkstyle/checkstyle_errors.txt"/>
             <formatter type="xml" toFile="checkstyle/checkstyle_errors.xml"/>
@@ -774,6 +775,9 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
             <fileset dir="test">
                 <include name="**/*.java"/>
             </fileset>
+            <fileset dir="plugins">
+                <include name="**/*.java"/>
+            </fileset>
         </cpd>
     </target>
 
@@ -784,6 +788,9 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 <include name="**/*.java"/>
             </fileset>
             <fileset dir="test">
+                <include name="**/*.java"/>
+            </fileset>
+            <fileset dir="plugins">
                 <include name="**/*.java"/>
             </fileset>
         </cpd>
