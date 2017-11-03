@@ -44,10 +44,10 @@ import org.opensolaris.opengrok.web.Util;
 %char
 %init{
     super(in);
-    h = getNewHelper();
+    h = new AdaLexHelper(this);
 %init}
 %{
-    private AdaLexHelper h;
+    private final AdaLexHelper h;
 
     private String lastSymbol;
 
@@ -58,7 +58,7 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void reset() throws IOException {
         super.reset();
-        h = getNewHelper();
+        h.reset();
     }
 
     @Override
@@ -103,10 +103,6 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void startNewLine() throws IOException {
         // noop
-    }
-
-    protected AdaLexHelper getNewHelper() {
-        return new AdaLexHelper(this);
     }
 
     protected boolean takeAllContent() {

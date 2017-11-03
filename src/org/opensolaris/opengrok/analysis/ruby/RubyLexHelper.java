@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.analysis.Resettable;
 import org.opensolaris.opengrok.web.HtmlConsts;
 
 /**
@@ -78,7 +79,7 @@ interface RubyLexListener {
 /**
  * Represents a helper for Ruby lexers
  */
-class RubyLexHelper {
+class RubyLexHelper implements Resettable {
 
     // Using equivalent of {Local_nextchar} from RubyProductions.lexh
     private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
@@ -147,6 +148,19 @@ class RubyLexHelper {
         this.HERExN = hERExN;
         this.HEREin = hEREin;
         this.HERE = hERE;
+    }
+
+    /**
+     * Resets the instance to an initial state.
+     */
+    @Override
+    public void reset() {
+        endqchar = '\0';
+        if (hereSettings != null) hereSettings.clear();
+        nendbrace = 0;
+        nendqchar = 0;
+        nestqchar = '\0';
+        qopname = null;
     }
 
     /**

@@ -61,7 +61,7 @@ import org.opensolaris.opengrok.web.Util;
     public void reset() throws IOException {
         super.reset();
         if (helpers != null) helpers.clear();
-        h = getNewHelper();
+        h.reset();
     }
 
     @Override

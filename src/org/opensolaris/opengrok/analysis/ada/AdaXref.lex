@@ -44,10 +44,10 @@ import org.opensolaris.opengrok.web.Util;
 %int
 %char
 %init{
-    h = getNewHelper();
+    h = new AdaLexHelper(this);
 %init}
 %{
-    private AdaLexHelper h;
+    private final AdaLexHelper h;
 
   // TODO move this into an include file when bug #16053 is fixed
   @Override
@@ -63,7 +63,7 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void reInit(Reader reader) {
         super.reInit(reader);
-        h = getNewHelper();
+        h.reset();
     }
 
     @Override
@@ -107,10 +107,6 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void takeKeyword(String value) throws IOException {
         writeKeyword(value, yyline);
-    }
-
-    protected AdaLexHelper getNewHelper() {
-        return new AdaLexHelper(this);
     }
 
     protected boolean takeAllContent() {

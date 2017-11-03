@@ -43,10 +43,11 @@ import org.opensolaris.opengrok.web.Util;
 %char
 %init{
     super(in);
-    h = getNewHelper();
+    h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
+        HERE, HERExN, HEREin, HEREinxN);
 %init}
 %{
-    private PerlLexHelper h;
+    private final PerlLexHelper h;
 
     private String lastSymbol;
 
@@ -57,7 +58,7 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void reset() throws IOException {
         super.reset();
-        h = getNewHelper();
+        h.reset();
     }
 
     @Override
@@ -115,11 +116,6 @@ import org.opensolaris.opengrok.web.Util;
     // nothing, because other transitions would have saved the state.
     public void maybeIntraState() {
         if (yystate() == YYINITIAL) yybegin(INTRA);
-    }
-
-    protected PerlLexHelper getNewHelper() {
-        return new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-            HERE, HERExN, HEREin, HEREinxN);
     }
 
     protected boolean takeAllContent() {

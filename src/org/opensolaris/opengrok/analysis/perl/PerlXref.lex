@@ -43,10 +43,11 @@ import org.opensolaris.opengrok.web.Util;
 %int
 %char
 %init{
-    h = getNewHelper();
+    h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
+        HERE, HERExN, HEREin, HEREinxN);
 %init}
 %{
-    private PerlLexHelper h;
+    private final PerlLexHelper h;
 
   // TODO move this into an include file when bug #16053 is fixed
   @Override
@@ -62,7 +63,7 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void reInit(Reader reader) {
         super.reInit(reader);
-        h = getNewHelper();
+        h.reset();
     }
 
     @Override
@@ -119,11 +120,6 @@ import org.opensolaris.opengrok.web.Util;
     // nothing, because other transitions would have saved the state.
     public void maybeIntraState() {
         if (yystate() == YYINITIAL) yybegin(INTRA);
-    }
-
-    protected PerlLexHelper getNewHelper() {
-        return new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-            HERE, HERExN, HEREin, HEREinxN);
     }
 
     protected boolean takeAllContent() {

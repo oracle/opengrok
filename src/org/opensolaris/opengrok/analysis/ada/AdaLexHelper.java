@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.analysis.ada;
 
 import java.io.IOException;
+import org.opensolaris.opengrok.analysis.Resettable;
 
 /**
  * Represents an API for object's using {@link AdaLexHelper}
@@ -67,7 +68,7 @@ interface AdaLexListener {
 /**
  * Represents a helper for Ada lexers
  */
-class AdaLexHelper {
+class AdaLexHelper implements Resettable {
 
     private final AdaLexListener listener;
 
@@ -76,6 +77,14 @@ class AdaLexHelper {
             throw new IllegalArgumentException("`listener' is null");
         }
         this.listener = listener;
+    }
+
+    /**
+     * Resets the instance to an initial state.
+     */
+    @Override
+    public void reset() {
+        // noop
     }
 
     /**

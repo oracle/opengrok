@@ -66,7 +66,7 @@ import org.opensolaris.opengrok.web.Util;
     public void reInit(Reader reader) {
         super.reInit(reader);
         if (helpers != null) helpers.clear();
-        h = getNewHelper();
+        h.reset();
     }
 
     @Override
