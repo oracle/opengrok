@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.sh;
@@ -33,9 +34,11 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %init{
 super(in);
 %init}
-%type boolean
+%int
+%include CommonTokenizer.lexh
 %eofval{
-return false;
+    this.finalOffset = zzEndRead;
+    return YYEOF;
 %eofval}
 %char
 
@@ -49,7 +52,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 {Identifier} {String id = yytext();
                 if(!Consts.shkwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
-                        return true; }
+                        return yystate(); }
               }
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
@@ -59,7 +62,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 <STRING> {
 "$" {Identifier} {
     setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
-    return true;
+    return yystate();
 }
 
 "${" {Identifier} "}" {
@@ -68,7 +71,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
     setAttribs(yytext().substring(startOffset, endOffset),
                yychar + startOffset,
                yychar + endOffset);
-    return true;
+    return yystate();
 }
 
  \"     { yybegin(YYINITIAL); }
@@ -84,6 +87,5 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <YYINITIAL, STRING, SCOMMENT, QSTRING> {
-<<EOF>>   { return false;}
 [^]    {}
 }

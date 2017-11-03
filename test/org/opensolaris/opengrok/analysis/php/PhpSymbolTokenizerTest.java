@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.php;
 
@@ -59,7 +60,7 @@ public class PhpSymbolTokenizerTest {
         ts.yyreset(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         try {
-            while (ts.yylex()) {
+            while (ts.yylex() != ts.getYYEOF()) {
                 l.add(term.toString());
             }
         } catch (IOException ex) {

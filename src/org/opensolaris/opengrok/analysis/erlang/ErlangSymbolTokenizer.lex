@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -38,9 +39,11 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %init{
 super(in);
 %init}
-%type boolean
+%int
+%include CommonTokenizer.lexh
 %eofval{
-return false;
+    this.finalOffset = zzEndRead;
+    return YYEOF;
 %eofval}
 %char
 
@@ -54,7 +57,7 @@ Identifier = [A-Z_] [a-zA-Z0-9_@]*
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
-                        return true; }
+                        return yystate(); }
               }
  \"     { yybegin(STRING); }
  \'     { yybegin(QATOM); }
@@ -76,6 +79,5 @@ Identifier = [A-Z_] [a-zA-Z0-9_@]*
 }
 
 <YYINITIAL, STRING, QATOM, COMMENT> {
-<<EOF>>   { return false;}
 [^]    {}
 }

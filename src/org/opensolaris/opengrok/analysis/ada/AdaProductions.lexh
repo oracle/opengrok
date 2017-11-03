@@ -142,7 +142,7 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
     {Identifier}    {
         String id = yytext();
         if (takeSymbol(id, 0, false) && returnOnSymbol()) {
-            return getSymbolReturn();
+            return yystate();
         }
     }
 

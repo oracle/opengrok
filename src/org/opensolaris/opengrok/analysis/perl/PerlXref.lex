@@ -130,10 +130,6 @@ import org.opensolaris.opengrok.web.Util;
         return false;
     }
 
-    protected int getSymbolReturn() {
-        return 0; // irrelevant value because returnOnSymbol() is false
-    }
-
     protected String getUrlPrefix() { return urlPrefix; }
 %}
 

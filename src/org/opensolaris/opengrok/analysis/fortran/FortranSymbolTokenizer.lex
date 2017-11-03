@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.fortran;
@@ -34,9 +35,11 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %init{
 super(in);
 %init}
-%type boolean
+%int
+%include CommonTokenizer.lexh
 %eofval{
-return false;
+    this.finalOffset = zzEndRead;
+    return YYEOF;
 %eofval}
 %char
 
@@ -53,7 +56,7 @@ Label = [0-9]+
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id.toLowerCase())) {
                         setAttribs(id, yychar, yychar + yylength());
-                        return true; }
+                        return yystate(); }
               }
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
@@ -78,6 +81,5 @@ Label = [0-9]+
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-<<EOF>>   { return false;}
 [^]    {}
 }

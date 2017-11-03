@@ -18,6 +18,11 @@
  */
 
 /*
+ * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+/*
  * Gets Php symbols - ignores comments, strings, keywords
  */
 
@@ -33,10 +38,11 @@ import java.util.*;
 %init{
 super(in);
 %init}
-%type boolean
+%int
+%include CommonTokenizer.lexh
 %eofval{
-this.finalOffset=zzEndRead;
-return false;
+    this.finalOffset = zzEndRead;
+    return YYEOF;
 %eofval}
 %char
 %ignorecase
@@ -110,13 +116,13 @@ DocParamWithName = "uses"
     "$" {Identifier} {
         //we ignore keywords if the identifier starts with one of variable chars
         setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
-        return true;
+        return yystate();
     }
 
     {Identifier} {
         if (!Consts.kwd.contains(yytext())) {
             setAttribs(yytext(), yychar, yychar + yylength());
-            return true;
+            return yystate();
         }
     }
 
@@ -209,7 +215,7 @@ DocParamWithName = "uses"
 <STRINGVAR> {
     {Identifier} {
         setAttribs(yytext(), yychar, yychar + yylength());
-        return true;
+        return yystate();
     }
 
     \[ {Number} \] {
@@ -225,13 +231,13 @@ DocParamWithName = "uses"
         setAttribs(yytext().substring(2, yylength()-1), yychar + 2,
                 yychar + yylength() - 1);
         yypop();
-        return true;
+        return yystate();
     }
 
     "->" {Identifier} {
         setAttribs(yytext().substring(2), yychar + 2, yychar + yylength());
         yypop(); //because "$arr->a[0]" is the same as $arr->a . "[0]"
-        return true;
+        return yystate();
     }
 
     [^]          { yypushback(1); yypop(); }
@@ -240,7 +246,7 @@ DocParamWithName = "uses"
 <STRINGEXPR> {
     {Identifier} {
         setAttribs(yytext(), yychar, yychar + yylength());
-        return true;
+        return yystate();
     }
     \}  { yypop(); }
     \[  { yybegin(IN_SCRIPT); } /* don't push. when we find '}'
@@ -287,7 +293,7 @@ DocParamWithName = "uses"
     {Identifier} {
         if (!PSEUDO_TYPES.contains(yytext().toLowerCase())) {
             setAttribs(yytext(), yychar, yychar + yylength());
-            return true;
+            return yystate();
         }
     }
 
@@ -298,7 +304,7 @@ DocParamWithName = "uses"
     "$" {Identifier} {
         setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
         yybegin(DOCCOMMENT);
-        return true;
+        return yystate();
     }
 
     [^] { yybegin(DOCCOMMENT); yypushback(1); }

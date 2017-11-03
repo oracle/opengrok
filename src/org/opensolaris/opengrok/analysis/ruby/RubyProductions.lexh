@@ -260,7 +260,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
         maybeIntraState();
         String id = yytext();
         if (takeSymbol(id, 0, true) && returnOnSymbol()) {
-            return getSymbolReturn();
+            return yystate();
         }
     }
 
@@ -268,7 +268,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
         maybeIntraState();
         String id = yytext();
         if (takeSymbol(id, 0, false) && returnOnSymbol()) {
-            return getSymbolReturn();
+            return yystate();
         }
     }
 

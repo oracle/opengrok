@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -34,10 +35,11 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %init{
 super(in);
 %init}
-%type boolean
+%int
+%include CommonTokenizer.lexh
 %eofval{
-this.finalOffset=zzEndRead;
-return false;
+    this.finalOffset = zzEndRead;
+    return YYEOF;
 %eofval}
 %caseless
 %char
@@ -50,5 +52,5 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 %%
 {Identifier}|{Number}|{Printable} { // below assumes locale from the shell/container, instead of just US
                         setAttribs(yytext().toLowerCase(Locale.getDefault()), yychar, yychar + yylength());
-                        return true; }
+                        return yystate(); }
 [^]    {}

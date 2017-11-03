@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -40,10 +41,11 @@ super(in);
 %init}
 %unicode
 %buffer 32766
-%type boolean
+%int
+%include CommonTokenizer.lexh
 %eofval{
-this.finalOffset =  zzEndRead;
-return false;
+    this.finalOffset = zzEndRead;
+    return YYEOF;
 %eofval}
 %char
 
@@ -59,7 +61,7 @@ Identifier = [:jletter:] [:jletterdigit:]*
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
-                        return true; }
+                        return yystate(); }
               }
 
  \"     { yybegin(STRING); }
@@ -93,6 +95,5 @@ Identifier = [:jletter:] [:jletterdigit:]*
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, TSTRING> {
-<<EOF>>   { this.finalOffset =  zzEndRead; return false;}
 [^]    {}
 }

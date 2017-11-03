@@ -40,12 +40,17 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexTokenizer
 %implements RubyLexListener
 %unicode
-%type boolean
+%int
 %char
 %init{
     super(in);
     h = getNewHelper();
 %init}
+%include CommonTokenizer.lexh
+%eofval{
+    this.finalOffset = zzEndRead;
+    return YYEOF;
+%eofval}
 %{
     protected Stack<RubyLexHelper> helpers;
 
@@ -141,10 +146,6 @@ import org.opensolaris.opengrok.web.Util;
         return lastSymbol != null;
     }
 
-    protected boolean getSymbolReturn() {
-        return true;
-    }
-
     protected String getUrlPrefix() { return null; }
 
     protected void appendProject() { /* noop */ }
@@ -153,9 +154,5 @@ import org.opensolaris.opengrok.web.Util;
 
     protected void writeEMailAddress(String s) { /* noop */ }
 %}
-%eofval{
-this.finalOffset =  zzEndRead;
-return false;
-%eofval}
 
 %include RubyProductions.lexh

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -32,15 +33,16 @@ super(in);
 %init}
 %unicode
 %buffer 32766
-%type boolean
+%int
+%include CommonTokenizer.lexh
 %eofval{
-this.finalOffset=zzEndRead;
-return false;
+    this.finalOffset = zzEndRead;
+    return YYEOF;
 %eofval}
 %char
 
 %%
 //TODO decide if we should let one char symbols
 [a-zA-Z_] [a-zA-Z0-9_]+ {setAttribs(yytext(), yychar, yychar + yylength());
-                        return true; }
+                        return yystate(); }
 [^]    {}
