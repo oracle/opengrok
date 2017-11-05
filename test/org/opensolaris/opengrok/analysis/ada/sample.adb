@@ -40,3 +40,7 @@ begin
 	Put_Line();
 	Put_Line("Archimedes said ""Εύρηκα""");
 end Hello;
+
+-- Test a URL that is not matched fully by a rule using just {URIChar} and
+-- {FnameChar}:
+-- https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx
