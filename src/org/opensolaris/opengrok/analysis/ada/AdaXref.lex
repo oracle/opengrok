@@ -38,7 +38,7 @@ import org.opensolaris.opengrok.web.Util;
 %public
 %class AdaXref
 %extends JFlexXref
-%implements AdaLexListener
+%implements AdaLexer
 %unicode
 %ignorecase
 %int
@@ -63,12 +63,12 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public void take(String value) throws IOException {
+    public void offer(String value) throws IOException {
         out.write(value);
     }
 
     @Override
-    public void takeNonword(String value) throws IOException {
+    public void offerNonword(String value) throws IOException {
         out.write(htmlize(value));
     }
 
@@ -80,7 +80,7 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public boolean takeSymbol(String value, int captureOffset,
+    public boolean offerSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
         if (ignoreKwd) {
@@ -101,7 +101,7 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public void takeKeyword(String value) throws IOException {
+    public void offerKeyword(String value) throws IOException {
         writeKeyword(value, yyline);
     }
 

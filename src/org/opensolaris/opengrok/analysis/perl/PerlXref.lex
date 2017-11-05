@@ -38,7 +38,7 @@ import org.opensolaris.opengrok.web.Util;
 %public
 %class PerlXref
 %extends JFlexXref
-%implements PerlLexListener
+%implements PerlLexer
 %unicode
 %int
 %char
@@ -63,12 +63,12 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public void take(String value) throws IOException {
+    public void offer(String value) throws IOException {
         out.write(value);
     }
 
     @Override
-    public void takeNonword(String value) throws IOException {
+    public void offerNonword(String value) throws IOException {
         out.write(htmlize(value));
     }
 
@@ -80,7 +80,7 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public boolean takeSymbol(String value, int captureOffset,
+    public boolean offerSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
         if (ignoreKwd) {
@@ -101,7 +101,7 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public void takeKeyword(String value) throws IOException {
+    public void offerKeyword(String value) throws IOException {
         writeKeyword(value, yyline);
     }
 
@@ -109,7 +109,7 @@ import org.opensolaris.opengrok.web.Util;
     public void abortQuote() throws IOException {
         yypop();
         if (h.areModifiersOK()) yypush(QM);
-        take(HtmlConsts.ZSPAN);
+        disjointSpan(null);
     }
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does
