@@ -90,6 +90,13 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
         <loadfile srcFile="${git.archival.temp}" property="changeset"/>
     </target>
 
+    <target name="-collect-lex-lexh">
+        <mkdir dir="${tgt.dir}"/>
+        <copy todir="${tgt.dir}" flatten="true">
+            <fileset dir="${src.dir}" includes="**/*.lex,**/*.lexh"/>
+        </copy>
+    </target>
+
     <target name="-update-build-info"
             depends="-get-changeset-from-command,-get-changeset-from-file">
         <mkdir dir="${build.classes.dir}/org/opensolaris/opengrok"/>
