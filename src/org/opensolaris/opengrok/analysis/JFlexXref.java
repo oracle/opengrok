@@ -28,14 +28,12 @@ import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.Stack;
 import java.util.TreeSet;
 import org.opensolaris.opengrok.analysis.Definitions.Tag;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
@@ -43,6 +41,7 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -50,7 +49,7 @@ import org.opensolaris.opengrok.web.Util;
  *
  * @author Lubos Kosco
  */
-public abstract class JFlexXref {
+public abstract class JFlexXref extends JFlexStateStacker {
 
     public Writer out;
     public String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
@@ -81,8 +80,12 @@ public abstract class JFlexXref {
      * @see #startNewLine()
      */
     protected String userPageSuffix;
-    protected Stack<Integer> stack = new Stack<>();
-    protected Stack<String> stackPopString = new Stack<>();
+
+    /**
+     * The span class name from the last call to
+     * {@link #disjointSpan(java.lang.String)}.
+     */
+    private String disjointSpanClassName;
 
     /**
      * Description of the style to use for a type of definitions.
@@ -164,8 +167,18 @@ public abstract class JFlexXref {
      */
     public void reInit(Reader reader) {
         this.yyreset(reader);
-        annotation = null;
+        reset();
+    }
 
+    /**
+     * Resets the xref tracked state after {@link #reset()}.
+     */
+    @Override
+    public void reset() {
+        super.reset();
+
+        annotation = null;
+        disjointSpanClassName = null;
         scopes = new Scopes();
         scope = null;
         scopeLevel = 0;
@@ -353,6 +366,26 @@ public abstract class JFlexXref {
     public abstract int getYYEOF();
 
     /**
+     * Writes the closing of an open span tag previously opened by this method
+     * and the opening -- if {@code className} is non-null -- of a new span
+     * tag.
+     * <p>This method's disjoint spans are independent of any span used for
+     * scopes.
+     * <p>Any open span is closed at the end of {@link #write(java.io.Writer)}
+     * just before any open scope is closed.
+     * @param className the class name for the new tag or {@code null} just to
+     * close an open tag.
+     * @throws IOException if an output error occurs
+     */
+    public void disjointSpan(String className) throws IOException {
+        if (disjointSpanClassName != null) out.write(HtmlConsts.ZSPAN);
+        if (className != null) {
+            out.write(String.format(HtmlConsts.SPAN_FMT, className));
+        }
+        disjointSpanClassName = className;
+    }
+
+    /**
      * Write xref to the specified {@code Writer}.
      *
      * @param out xref destination
@@ -366,6 +399,8 @@ public abstract class JFlexXref {
         while (yylex() != getYYEOF()) { // NOPMD while statement intentionally empty
             // nothing to do here, yylex() will do the work
         }
+
+        disjointSpan(null);
 
         // terminate scopes
         if (scopeOpen) {
@@ -756,46 +791,5 @@ public abstract class JFlexXref {
         } else {
             out.write(address);
         }
-    }
-
-    /**
-     * save current yy state to stack
-     * @param newState state id
-     * @param popString string for the state
-     */
-    public void yypush(int newState, String popString) {
-        this.stack.push(yystate());
-        this.stackPopString.push(popString);
-        yybegin(newState);
-    }
-
-    /**
-     * save current yy state to stack
-     * @param newState state id
-     */
-    public void yypush(int newState) {
-        yypush(newState, null);
-    }
-
-    /**
-     * pop last state from stack
-     * @throws IOException in case of any I/O problem
-     */
-    public void yypop() throws IOException {
-        yybegin(this.stack.pop());
-        String popString = this.stackPopString.pop();
-        if (popString != null) {
-            out.write(popString);
-        }
-    }
-
-    /**
-     * reset current yy state, and clear stack
-     * @param newState state id
-     */
-    public void yyjump(int newState) {
-        yybegin(newState);
-        this.stack.clear();
-        this.stackPopString.clear();
     }
 }

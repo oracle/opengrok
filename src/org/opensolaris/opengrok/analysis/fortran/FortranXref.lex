@@ -26,16 +26,15 @@
  * Cross reference a Fortran file
  */
 package org.opensolaris.opengrok.analysis.fortran;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
+
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
 %class FortranXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
 %ignorecase
 %int
@@ -64,9 +63,8 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 <YYINITIAL>{
  ^{Label} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
  ^[^ \t\f\r\n]+ {
-    yypush(LCOMMENT, "</span>");
-    out.write("<span class=\"c\">");
-    Util.htmlize(yytext(), out);
+    pushSpan(LCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(htmlize(yytext()));
 }
 
 {Identifier} {
@@ -89,9 +87,18 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 */
 {Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
- \"     { yypush(STRING, "</span>"); out.write("<span class=\"s\">\"");}
- \'     { yypush(QSTRING, "</span>"); out.write("<span class=\"s\">\'");}
- \!     { yypush(SCOMMENT, "</span>"); out.write("<span class=\"c\">!");}
+ \"     {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'     {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \!     {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(htmlize(yytext()));
+ }
 }
 
 <STRING> {

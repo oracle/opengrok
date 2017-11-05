@@ -27,18 +27,17 @@
  */
 
 package org.opensolaris.opengrok.analysis.c;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
 %class CXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
 %int
 %include CommonXref.lexh
@@ -75,7 +74,6 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 %include CommonPath.lexh
 %%
 <YYINITIAL>{
-
  \{     { incScope(); writeUnicodeChar(yycharat(0)); }
  \}     { decScope(); writeUnicodeChar(yycharat(0)); }
  \;     { endScope(); writeUnicodeChar(yycharat(0)); }
@@ -106,25 +104,38 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 */
 {Number} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
- \\\" | \\\' { out.write(yytext()); }
- \"     { out.write("<span class=\"s\">\""); yypush(STRING, "</span>"); }
- \'     { out.write("<span class=\"s\">\'"); yypush(QSTRING, "</span>"); }
- "/*"   { out.write("<span class=\"c\">/*"); yypush(COMMENT, "</span>"); }
- "//"   { out.write("<span class=\"c\">//"); yypush(SCOMMENT, "</span>"); }
+ \\\" | \\\' { out.write(htmlize(yytext())); }
+ \"     {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'     {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ "/*"   {
+    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
+ "//"   {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext()); }
- \"     { out.write(yytext()); yypop(); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \" {WhiteSpace} \"  { out.write(htmlize(yytext())); }
+ \"      { out.write(htmlize(yytext())); yypop(); }
+ \\\\ |
+ \\\"    { out.write(htmlize(yytext())); }
 }
 
 <QSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { out.write(yytext()); yypop(); }
+ "\\\\" |
+ "\\'"  |
+ \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
+
+ \'     { out.write(htmlize(yytext())); yypop(); }
 }
 
 <COMMENT> {
@@ -139,9 +150,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }

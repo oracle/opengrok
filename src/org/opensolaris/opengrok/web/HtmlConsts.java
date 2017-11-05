@@ -33,4 +33,13 @@ public class HtmlConsts {
     public static final String SPAN_N = "<span class=\"n\">";
     public static final String SPAN_S = "<span class=\"s\">";
     public static final String ZSPAN = "</span>";
+
+    public static final String SPAN_FMT = "<span class=\"%s\">";
+
+    public static final String AUTHOR_CLASS = "a";
+    public static final String COMMENT_CLASS = "c";
+    public static final String DELETED_CLASS = "d";
+    public static final String NUMBER_CLASS = "n";
+    public static final String STRING_CLASS = "s";
+
 }

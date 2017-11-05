@@ -44,9 +44,9 @@ import org.opensolaris.opengrok.web.Util;
   private int nestedComment;
 
   @Override
-  public void reInit(char[] buf, int len) {
-        super.reInit(buf, len);
-        nestedComment = 0;
+  public void reset() {
+      super.reset();
+      nestedComment = 0;
   }
 
   // TODO move this into an include file when bug #16053 is fixed
