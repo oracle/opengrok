@@ -136,4 +136,7 @@ import org.opensolaris.opengrok.web.Util;
     protected void writeEMailAddress(String s) { /* noop */ }
 %}
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %include PerlProductions.lexh

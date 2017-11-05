@@ -134,4 +134,7 @@ import org.opensolaris.opengrok.web.Util;
     protected String getUrlPrefix() { return urlPrefix; }
 %}
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %include PerlProductions.lexh

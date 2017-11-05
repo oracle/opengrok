@@ -29,6 +29,7 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.Resettable;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 
 /**
@@ -300,10 +301,10 @@ class PerlLexHelper implements Resettable {
         int state;
         boolean nolink = false;
 
-        // "no link" for {FNameChar} or {URIChar}, which covers everything in
-        // the rule for "string links" below
-        if (ltpostop.matches("^[a-zA-Z0-9_]") ||
-            ltpostop.matches("^[\\?\\#\\+%&:/\\.@_;=\\$,\\-!~\\*\\\\]")) {
+        // "no link" for values in the rules for "string links" if `ltpostop'
+        // is file- or URI-like.
+        if (StringUtils.startsWithFnameChars(ltpostop) ||
+            StringUtils.startsWithURIChars(ltpostop)) {
             nolink = true;
         }
 
