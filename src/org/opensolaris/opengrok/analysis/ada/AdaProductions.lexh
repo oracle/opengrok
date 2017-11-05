@@ -26,10 +26,6 @@
  * Regex productions shared between AdaXref and AdaSymbolTokenizer
  */
 
-WhspChar      = [ \t\f]
-WhiteSpace    = {WhspChar}+
-EOL = \r|\n|\r\n
-
 /*
  * Identifiers syntax
  * 2.3-1: Identifiers are used as names.
@@ -136,12 +132,8 @@ String_literal = [\"] ([\"][\"] | [^\"])* [\"]
  */
 Comment_token = "--"
 
-URIChar = [\?\#\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-
-FNameChar = [a-zA-Z0-9_\-\.]
 FileExt = ([Aa][Dd][AaBbSs] | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
 File = [a-zA-Z]{FNameChar}* "." {FileExt}
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 %state SCOMMENT
 
@@ -229,7 +221,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
         }
     }
 
-    ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]    {
+    {BrowseableURI}    {
         if (takeAllContent()) {
             appendLink(yytext());
         }

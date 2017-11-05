@@ -45,6 +45,7 @@ import org.opensolaris.opengrok.web.Util;
 %init{
     h = new AdaLexHelper(this);
 %init}
+%include CommonXref.lexh
 %{
   // TODO move this into an include file when bug #16053 is fixed
   @Override
@@ -112,4 +113,5 @@ import org.opensolaris.opengrok.web.Util;
     protected String getUrlPrefix() { return urlPrefix; }
 %}
 
+%include Common.lexh
 %include AdaProductions.lexh
