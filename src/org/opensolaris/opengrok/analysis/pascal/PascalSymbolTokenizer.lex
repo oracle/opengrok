@@ -39,10 +39,6 @@ super(in);
 %unicode
 %int
 %include CommonTokenizer.lexh
-%eofval{
-    this.finalOffset = zzEndRead;
-    return YYEOF;
-%eofval}
 %char
 
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*

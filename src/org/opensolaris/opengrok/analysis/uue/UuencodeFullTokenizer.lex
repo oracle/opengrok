@@ -40,10 +40,6 @@ super(in);
 %init}
 %int
 %include CommonTokenizer.lexh
-%eofval{
-    this.finalOffset = zzEndRead;
-    return YYEOF;
-%eofval}
 %caseless
 %char
 %{

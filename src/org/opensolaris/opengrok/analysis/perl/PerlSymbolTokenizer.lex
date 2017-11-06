@@ -47,10 +47,6 @@ import org.opensolaris.opengrok.web.Util;
         HERE, HERExN, HEREin, HEREinxN);
 %init}
 %include CommonTokenizer.lexh
-%eofval{
-    this.finalOffset =  zzEndRead;
-    return YYEOF;
-%eofval}
 %{
     private final PerlLexHelper h;
 

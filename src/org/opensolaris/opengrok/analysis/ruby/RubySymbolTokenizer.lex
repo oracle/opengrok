@@ -47,10 +47,6 @@ import org.opensolaris.opengrok.web.Util;
     h = getNewHelper();
 %init}
 %include CommonTokenizer.lexh
-%eofval{
-    this.finalOffset = zzEndRead;
-    return YYEOF;
-%eofval}
 %{
     protected Stack<RubyLexHelper> helpers;
 

@@ -35,10 +35,6 @@ super(in);
 %buffer 32766
 %int
 %include CommonTokenizer.lexh
-%eofval{
-    this.finalOffset = zzEndRead;
-    return YYEOF;
-%eofval}
 %char
 
 %%

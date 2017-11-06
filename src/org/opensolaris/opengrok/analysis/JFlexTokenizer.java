@@ -83,7 +83,6 @@ public abstract class JFlexTokenizer extends Tokenizer {
     protected CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
     protected OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
     protected PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
-    protected int finalOffset;
 
     /**
      * This will re-initialize internal AttributeImpls, or it returns false if

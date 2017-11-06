@@ -36,10 +36,6 @@ super(in);
 %init}
 %int
 %include CommonTokenizer.lexh
-%eofval{
-    this.finalOffset = zzEndRead;
-    return YYEOF;
-%eofval}
 %char
 
 EOL = \r|\n|\r\n
