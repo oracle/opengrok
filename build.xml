@@ -188,18 +188,26 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
             <attribute name="name"/>
             <attribute name="dir"/>
             <sequential> <!-- Name of input has to be .lex -->
+                <mkdir dir="${src.generatedsrc.dir}/@{dir}"/>
+                <!-- Copy source *.lex,*.lexh and global *.lexh to interm. dir -->
+                <copy todir="${src.generatedsrc.dir}/@{dir}">
+                    <fileset dir="${src.dir}/@{dir}" includes="*.lex,*.lexh"/>
+                    <fileset dir="${src.dir}/org/opensolaris/opengrok/analysis"
+                        includes="*.lexh"/>
+                </copy>
                 <!-- newer *.lexh files cause .lex file to be touched -->
                 <local name="lexh"/>
-                <fileset dir="${src.dir}/@{dir}" includes="*.lexh" id="id.lexh">
-                    <depend targetdir="${src.dir}/@{dir}">
+                <fileset dir="${src.generatedsrc.dir}/@{dir}" includes="*.lexh" id="id.lexh">
+                    <depend targetdir="${src.generatedsrc.dir}/@{dir}">
                         <mapper type="merge" to="@{name}.lex"/>
                     </depend>
                 </fileset>
                 <pathconvert pathsep="," property="lexh" refid="id.lexh"/>
-                <touch file="${src.dir}/@{dir}/@{name}.lex"
+                <touch file="${src.generatedsrc.dir}/@{dir}/@{name}.lex"
                     unless:blank="${lexh}"/>
                 <!-- now run the jflex task -->
-                <jflex file="${src.dir}/@{dir}/@{name}.lex" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
+                <jflex file="${src.generatedsrc.dir}/@{dir}/@{name}.lex"
+                    destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
             </sequential>
         </macrodef>
         
@@ -211,18 +219,26 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
             <attribute name="name"/>    
             <attribute name="dir"/>
             <sequential>
+                <mkdir dir="${src.generatedsrc.dir}/@{dir}"/>
+                <!-- Copy source *.lex,*.lexh and global *.lexh to interm. dir -->
+                <copy todir="${src.generatedsrc.dir}/@{dir}">
+                    <fileset dir="${src.dir}/@{dir}" includes="*.lex,*.lexh"/>
+                    <fileset dir="${src.dir}/org/opensolaris/opengrok/analysis"
+                        includes="*.lexh"/>
+                </copy>
                 <!-- newer *.lexh files cause .lex file to be touched -->
                 <local name="lexh"/>
-                <fileset dir="${src.dir}/@{dir}" includes="*.lexh" id="id.lexh">
-                    <depend targetdir="${src.dir}/@{dir}">
+                <fileset dir="${src.generatedsrc.dir}/@{dir}" includes="*.lexh" id="id.lexh">
+                    <depend targetdir="${src.generatedsrc.dir}/@{dir}">
                         <mapper type="merge" to="@{name}.lex"/>
                     </depend>
                 </fileset>
                 <pathconvert pathsep="," property="lexh" refid="id.lexh"/>
-                <touch file="${src.dir}/@{dir}/@{name}.lex"
+                <touch file="${src.generatedsrc.dir}/@{dir}/@{name}.lex"
                     unless:blank="${lexh}"/>
                 <!-- now run the jflex task -->
-                <jflex file="${src.dir}/@{dir}/@{name}.lex" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
+                <jflex file="${src.generatedsrc.dir}/@{dir}/@{name}.lex"
+                    destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
                 <!-- LUCENE-5897: Disallow scanner buffer expansion -->
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="[ \t]*/\* is the buffer big enough\? \*/\s+if \(zzCurrentPos >= zzBuffer\.length.*?\}[ \t]*\r?\n"

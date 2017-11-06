@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.web.Util;
     super(in);
     h = new AdaLexHelper(this);
 %init}
+%include CommonTokenizer.lexh
 %{
     private final AdaLexHelper h;
 
@@ -130,4 +131,5 @@ this.finalOffset =  zzEndRead;
 return false;
 %eofval}
 
+%include Common.lexh
 %include AdaProductions.lexh

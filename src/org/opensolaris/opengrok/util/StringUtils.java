@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.util;
@@ -31,6 +32,35 @@ import java.util.regex.Pattern;
  * @author austvik
  */
 public final class StringUtils {
+
+    /**
+     * Edit and paste (in NetBeans) for easy escaping:
+     * {@code [a-zA-Z0-9_\-\.] }.
+     */
+    private static final String FNAME_CHARS_PAT =
+        "[a-zA-Z0-9_\\-\\.]";
+
+    private static final Pattern FNAME_CHARS_ANYMATCH =
+        Pattern.compile(FNAME_CHARS_PAT);
+
+    private static final Pattern FNAME_CHARS_STARTSMATCH =
+        Pattern.compile("^" + FNAME_CHARS_PAT);
+
+    /**
+     * Edit and paste (in NetBeans) for easy escaping:
+     * {@code [a-zA-Z0-9\-\._~%:/\?\#\[\]@!\$&\'\(\)\*\+,;=] }
+     * <p>
+     * Backslash, '\', was in {URIChar} in many .lex files, but that is not
+     * a valid URI character per RFC-3986.
+     */
+    private static final String URI_CHARS_PAT =
+        "[a-zA-Z0-9\\-\\._~%:/\\?\\#\\[\\]@!\\$&\\'\\(\\)\\*\\+,;=]";
+
+    private static final Pattern URI_CHARS_ANYMATCH =
+        Pattern.compile(URI_CHARS_PAT);
+
+    private static final Pattern URI_CHARS_STARTSMATCH =
+        Pattern.compile("^" + URI_CHARS_PAT);
 
     private StringUtils() {
         // Only static utility methods
@@ -130,5 +160,45 @@ public final class StringUtils {
             n--;
         }
         return pos;
+    }
+
+    /**
+     * Determines if the {@code value} contains characters matching
+     * Common.lexh's {FNameChar}.
+     * @param value the input to test
+     * @return true if {@code value} matches anywhere
+     */
+    public static boolean containsFnameChars(String value) {
+        return FNAME_CHARS_ANYMATCH.matcher(value).matches();
+    }
+
+    /**
+     * Determines if the {@code value} starts with characters matching
+     * Common.lexh's {FNameChar}.
+     * @param value the input to test
+     * @return true if {@code value} matches at its start
+     */
+    public static boolean startsWithFnameChars(String value) {
+        return FNAME_CHARS_STARTSMATCH.matcher(value).matches();
+    }
+
+    /**
+     * Determines if the {@code value} contains characters matching
+     * RFC-3986 and Common.lexh's definitions for allowable URI characters.
+     * @param value the input to test
+     * @return true if {@code value} matches anywhere
+     */
+    public static boolean containsURIChars(String value) {
+        return URI_CHARS_ANYMATCH.matcher(value).matches();
+    }
+
+    /**
+     * Determines if the {@code value} starts with characters matching
+     * RFC-3986 and Common.lexh's definitions for allowable URI characters.
+     * @param value the input to test
+     * @return true if {@code value} matches at its start
+     */
+    public static boolean startsWithURIChars(String value) {
+        return URI_CHARS_STARTSMATCH.matcher(value).matches();
     }
 }

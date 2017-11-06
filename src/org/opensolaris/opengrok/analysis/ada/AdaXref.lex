@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.web.Util;
 %init{
     h = new AdaLexHelper(this);
 %init}
+%include CommonXref.lexh
 %{
     private final AdaLexHelper h;
 
@@ -124,4 +125,5 @@ import org.opensolaris.opengrok.web.Util;
     protected String getUrlPrefix() { return urlPrefix; }
 %}
 
+%include Common.lexh
 %include AdaProductions.lexh
