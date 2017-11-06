@@ -23,37 +23,39 @@
  */
 
 /*
- * Cross reference a Perl file
+ * Cross reference a Ruby file
  */
 
-package org.opensolaris.opengrok.analysis.perl;
+package org.opensolaris.opengrok.analysis.ruby;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Stack;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
-%class PerlXref
+%class RubyXref
 %extends JFlexXref
-%implements PerlLexListener
+%implements RubyLexListener
 %unicode
 %int
 %char
 %init{
-    h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-        HERE, HERExN, HEREin, HEREinxN);
+    h = getNewHelper();
 %init}
 %{
-    private final PerlLexHelper h;
+    protected Stack<RubyLexHelper> helpers;
 
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
+    private RubyLexHelper h;
+
+    // TODO move this into an include file when bug #16053 is fixed
+    @Override
+    protected int getLineNumber() { return yyline; }
+    @Override
+    protected void setLineNumber(int x) { yyline = x; }
 
     /**
      * Reinitialize the lexer with new reader.
@@ -63,6 +65,7 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void reInit(Reader reader) {
         super.reInit(reader);
+        if (helpers != null) helpers.clear();
         h.reset();
     }
 
@@ -87,13 +90,11 @@ import org.opensolaris.opengrok.web.Util;
     public boolean takeSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
-        if (ignoreKwd) {
-            if (value.length() > 1) {
-                return writeSymbol(value, null, yyline);
-            } else {
-                out.write(value);
-                return false;
-            }
+        if (h.nameLength(value) <= 1) {
+            out.write(value);
+            return false;
+        } else if (ignoreKwd) {
+            return writeSymbol(value, null, yyline);
         } else {
             return writeSymbol(value, Consts.kwd, yyline);
         }
@@ -109,17 +110,27 @@ import org.opensolaris.opengrok.web.Util;
         writeKeyword(value, yyline);
     }
 
-    @Override
-    public void abortQuote() throws IOException {
-        yypop();
-        if (h.areModifiersOK()) yypush(QM);
-        take(HtmlConsts.ZSPAN);
-    }
-
-    // If the state is YYINITIAL, then transitions to INTRA; otherwise does
-    // nothing, because other transitions would have saved the state.
+    /**
+     * If the state is YYINITIAL, then transitions to INTRA; otherwise does
+     * nothing, because other transitions would have saved the state.
+     */
     public void maybeIntraState() {
         if (yystate() == YYINITIAL) yybegin(INTRA);
+    }
+
+    protected void pushHelper() {
+        if (helpers == null) helpers = new Stack<>();
+        helpers.push(h);
+        h = getNewHelper();
+    }
+
+    protected void popHelper() {
+        h = helpers.pop();
+    }
+
+    protected RubyLexHelper getNewHelper() {
+        return new RubyLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
+            HERE, HERExN, HEREin, HEREinxN);
     }
 
     protected boolean takeAllContent() {
@@ -137,4 +148,4 @@ import org.opensolaris.opengrok.web.Util;
     protected String getUrlPrefix() { return urlPrefix; }
 %}
 
-%include PerlProductions.lexh
+%include RubyProductions.lexh

@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -23,31 +23,33 @@
  */
 
 /*
- * Gets Perl symbols - ignores comments, strings, keywords
+ * Gets Ruby symbols - ignores comments, strings, keywords
  */
 
-package org.opensolaris.opengrok.analysis.perl;
+package org.opensolaris.opengrok.analysis.ruby;
 
 import java.io.IOException;
+import java.util.Stack;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
-%class PerlSymbolTokenizer
+%class RubySymbolTokenizer
 %extends JFlexTokenizer
-%implements PerlLexListener
+%implements RubyLexListener
 %unicode
 %type boolean
 %char
 %init{
     super(in);
-    h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-        HERE, HERExN, HEREin, HEREinxN);
+    h = getNewHelper();
 %init}
 %{
-    private final PerlLexHelper h;
+    protected Stack<RubyLexHelper> helpers;
+
+    private RubyLexHelper h;
 
     private String lastSymbol;
 
@@ -58,6 +60,7 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     public void reset() throws IOException {
         super.reset();
+        if (helpers != null) helpers.clear();
         h.reset();
     }
 
@@ -79,7 +82,9 @@ import org.opensolaris.opengrok.web.Util;
     public boolean takeSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
-        if (ignoreKwd || !Consts.kwd.contains(value)) {
+        if (h.nameLength(value) <= 1) {
+            lastSymbol = null;
+        } else if (ignoreKwd || !Consts.kwd.contains(value)) {
             lastSymbol = value;
             setAttribs(value, yychar + captureOffset, yychar + captureOffset +
                 value.length());
@@ -105,17 +110,27 @@ import org.opensolaris.opengrok.web.Util;
         // noop
     }
 
-    @Override
-    public void abortQuote() throws IOException {
-        yypop();
-        if (h.areModifiersOK()) yypush(QM);
-        take(HtmlConsts.ZSPAN);
-    }
-
-    // If the state is YYINITIAL, then transitions to INTRA; otherwise does
-    // nothing, because other transitions would have saved the state.
+    /**
+     * If the state is YYINITIAL, then transitions to INTRA; otherwise does
+     * nothing, because other transitions would have saved the state.
+     */
     public void maybeIntraState() {
         if (yystate() == YYINITIAL) yybegin(INTRA);
+    }
+
+    protected void pushHelper() {
+        if (helpers == null) helpers = new Stack<>();
+        helpers.push(h);
+        h = getNewHelper();
+    }
+
+    protected void popHelper() {
+        h = helpers.pop();
+    }
+
+    protected RubyLexHelper getNewHelper() {
+        return new RubyLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
+            HERE, HERExN, HEREin, HEREinxN);
     }
 
     protected boolean takeAllContent() {
@@ -143,4 +158,4 @@ this.finalOffset =  zzEndRead;
 return false;
 %eofval}
 
-%include PerlProductions.lexh
+%include RubyProductions.lexh

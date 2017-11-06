@@ -17,11 +17,11 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.perl;
+package org.opensolaris.opengrok.analysis.ruby;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -32,9 +32,9 @@ import org.opensolaris.opengrok.analysis.Resettable;
 import org.opensolaris.opengrok.web.HtmlConsts;
 
 /**
- * Represents an API for object's using {@link PerlLexHelper}
+ * Represents an API for object's using {@link RubyLexHelper}
  */
-interface PerlLexListener {
+interface RubyLexListener {
     void yypush(int state);
     void yypop() throws IOException;
     void yybegin(int state);
@@ -53,7 +53,7 @@ interface PerlLexListener {
      * {@code ignoreKwd} was true
      */
     boolean takeSymbol(String value, int captureOffset, boolean ignoreKwd)
-            throws IOException;
+        throws IOException;
 
     /**
      * Indicates that something unusual happened where normally a symbol would
@@ -69,13 +69,6 @@ interface PerlLexListener {
     void takeKeyword(String value) throws IOException;
 
     /**
-     * Indicates that a premature end of quoting occurred. Everything up to the
-     * causal character has been written, and anything following will be
-     * indicated via {@link yypushback}.
-     */
-    void abortQuote() throws IOException;
-
-    /**
      * Indicates that the current line is ended.
      *
      * @throws IOException thrown on error when handling the EOL
@@ -84,16 +77,15 @@ interface PerlLexListener {
 }
 
 /**
- * Represents a helper for Perl lexers to work around jflex's lack of lex
- * inheritance
+ * Represents a helper for Ruby lexers
  */
-class PerlLexHelper implements Resettable {
+class RubyLexHelper implements Resettable {
 
-    // Using equivalent of {Identifier} from PerlProductions.lexh
+    // Using equivalent of {Local_nextchar} from RubyProductions.lexh
     private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
-        "^[a-zA-Z0-9_]+");
+        "^[a-zA-Z0-9_\u00160-\u0255]+");
 
-    private final PerlLexListener listener;
+    private final RubyLexListener listener;
 
     private final int QUOxLxN;
     private final int QUOxN;
@@ -115,13 +107,13 @@ class PerlLexHelper implements Resettable {
     private String qopname;
 
     /**
-     * When matching a quoting construct like qq[], q(), m//, s```, etc., the
+     * When matching a quoting construct like %w(), '', %[], etc., the
      * terminating character is stored.
      */
     private char endqchar;
 
     /**
-     * When matching a quoting construct like qq[], q(), m&lt;&gt;, s{}{} that
+     * When matching a quoting construct like %[], %w(), %&lt;&gt; etc. that
      * nest, the begin character ('[', '&lt;', '(', or '{') is stored so that
      * nesting is tracked and {@code nendqchar} is incremented appropriately.
      * Otherwise, {@code nestqchar} is set to '\0' if no nesting occurs.
@@ -129,28 +121,20 @@ class PerlLexHelper implements Resettable {
     private char nestqchar;
 
     /**
-     * When matching a quoting construct like qq//, m//, or s```, etc., the
-     * number of remaining end separators in an operator section is stored.
-     * It starts at 1, and any nesting increases the value.
+     * When matching a quoting construct like %[], %w(), etc., the
+     * number of remaining end separators is stored. It starts at 1, and
+     * any nesting increases the value.
      */
     private int nendqchar;
 
     /**
-     * When matching a quoting construct like qq//, m//, or s```, etc., the
-     * number of sections for the operator is stored. E.g., for m//, it is 1;
-     * for tr/// it is 2.
+     * When interpolating inside a quoting construct, the number of remaining
+     * '}' is stored. It starts at 1, and any nesting increases the value.
      */
-    private int nsections;
+    private int nendbrace;
 
-    /**
-     * When matching a two part construct like tr/// or s```, etc., after the
-     * first end separator, {@code waitq} is set to true so that nesting is not
-     * active.
-     */
-    private boolean waitq;
-
-    public PerlLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
-        PerlLexListener listener,
+    public RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
+	    RubyLexListener listener,
         int hERE, int hERExN, int hEREin, int hEREinxN) {
         if (listener == null) {
             throw new IllegalArgumentException("`listener' is null");
@@ -173,11 +157,10 @@ class PerlLexHelper implements Resettable {
     public void reset() {
         endqchar = '\0';
         if (hereSettings != null) hereSettings.clear();
+        nendbrace = 0;
         nendqchar = 0;
         nestqchar = '\0';
-        nsections = 0;
         qopname = null;
-        waitq = false;
     }
 
     /**
@@ -193,23 +176,12 @@ class PerlLexHelper implements Resettable {
         char c = capture.charAt(0);
         if (c == endqchar) {
             if (--nendqchar <= 0) {
-                if (--nsections <= 0) {
-                    endqchar = '\0';
-                    nestqchar = '\0';
-                    return true;
-                } else if (nestqchar != '\0') {
-                    waitq = true;
-                } else {
-                    nendqchar = 1;
-                }
+                endqchar = '\0';
+                nestqchar = '\0';
+                return true;
             }
         } else if (nestqchar != '\0' && c == nestqchar) {
-            if (waitq) {
-                waitq = false;
-                nendqchar = 1;
-            } else {
-                ++nendqchar;
-            }
+            ++nendqchar;
         }
         return false;
     }
@@ -221,11 +193,7 @@ class PerlLexHelper implements Resettable {
      */
     public boolean areModifiersOK() {
         switch (qopname) {
-            case "m":
-            case "qr":
-            case "s":
-            case "tr":
-            case "y":
+            case "m": // named here a la Perl for the Ruby /pat/ operator
                 return true;
             default:
                 return false;
@@ -252,58 +220,37 @@ class PerlLexHelper implements Resettable {
         // character may have needed to be matched since jflex does not conform
         // with \b as a zero-width simple word boundary. Excise it into
         // `boundary'.
-        String boundary = "";
-        String postboundary = capture;
+        String postop = capture;
         qopname = "";
         if (namelength > 0) {
-            postboundary = capture.replaceFirst("^\\W+", "");
-            boundary = capture.substring(0, capture.length() -
-                postboundary.length());
-            qopname = postboundary.substring(0, namelength);
+            qopname = capture.substring(0, namelength);
+            postop = capture.substring(qopname.length());
         }
-        waitq = false;
         nendqchar = 1;
 
-        switch (qopname) {
-            case "tr":
-            case "s":
-            case "y":
-                nsections = 2;
-                break;
-            default:
-                nsections = 1;
-                break;
-        }
-
-        String postop = postboundary.substring(qopname.length());
-        String ltpostop = postop.replaceFirst("^\\s+", "");
-        char opc = ltpostop.charAt(0);
+        char opc = postop.charAt(0);
         setEndQuoteChar(opc);
-        setState(ltpostop, nointerp);
+        setState(postop, nointerp);
 
         if (doWrite) {
-            listener.takeNonword(boundary);
-            if (qopname.length() > 0) {
-                listener.takeSymbol(qopname, boundary.length(), false);
-            } else {
-                listener.skipSymbol();
-            }
+            listener.takeNonword(qopname);
+            listener.skipSymbol();
             listener.take(HtmlConsts.SPAN_S);
             listener.takeNonword(postop);
         }
     }
 
     /**
-     * Sets the jflex state reflecting {@code ltpostop} and {@code nointerp}.
+     * Sets the jflex state reflecting {@code postop} and {@code nointerp}.
      */
-    public void setState(String ltpostop, boolean nointerp) {
+    public void setState(String postop, boolean nointerp) {
         int state;
         boolean nolink = false;
 
         // "no link" for {FNameChar} or {URIChar}, which covers everything in
         // the rule for "string links" below
-        if (ltpostop.matches("^[a-zA-Z0-9_]") ||
-            ltpostop.matches("^[\\?\\#\\+%&:/\\.@_;=\\$,\\-!~\\*\\\\]")) {
+        if (postop.matches("^[a-zA-Z0-9_]") ||
+            postop.matches("^[\\?\\#\\+%&:/\\.@_;=\\$,\\-!~\\*\\\\]")) {
             nolink = true;
         }
 
@@ -408,7 +355,7 @@ class PerlLexHelper implements Resettable {
 
     /**
      * Parses a Here-document declaration, and takes the {@code capture} using
-     * {@link PerlLexListener#takeNonword(java.lang.String)}. If the
+     * {@link RubyLexListener#takeNonword(java.lang.String)}. If the
      * declaration is valid, {@code hereSettings} will have been appended.
      */
     public void hop(String capture) throws IOException {
@@ -428,11 +375,11 @@ class PerlLexHelper implements Resettable {
 
         String opener = remaining.substring(0, i + 2);
         remaining = remaining.substring(opener.length());
-        if (remaining.startsWith("~")) {
+        if (remaining.startsWith("~") || remaining.startsWith("-")) {
             indented = true;
             remaining = remaining.substring(1);
         }
-        remaining = remaining.replaceFirst("^\\s+", "");
+
         char c = remaining.charAt(0);
         switch (c) {
             case '\'':
@@ -440,13 +387,8 @@ class PerlLexHelper implements Resettable {
                 remaining = remaining.substring(1);
                 break;
             case '`':
-            case '\"':
+                // (Ruby, unlike Perl, does not recognize '"' here.)
                 nointerp = false;
-                remaining = remaining.substring(1);
-                break;
-            case '\\':
-                c = '\0';
-                nointerp = true;
                 remaining = remaining.substring(1);
                 break;
             default:
@@ -522,125 +464,70 @@ class PerlLexHelper implements Resettable {
     }
 
     /**
-     * Splits a sigil identifier -- where the {@code capture} starts with
-     * a sigil and ends in an identifier and where Perl allows whitespace after
-     * the sigil -- and write the parts to output.
-     * <p>
-     * Seeing the {@link endqchar} in the capture will affect an active
-     * quote-like operator.
+     * Resets the interpolation counter to 1.
      */
-    public void sigilID(String capture) throws IOException {
-        String sigil = capture.substring(0, 1);
-
-        if (capture.charAt(0) == endqchar) {
-            listener.skipSymbol();
-            listener.takeNonword(sigil);
-            if (maybeEndQuote(sigil)) listener.abortQuote();
-            listener.yypushback(capture.length() - 1);
-            return;
-        }
-
-        String postsigil = capture.substring(1);
-        String id = postsigil.replaceFirst("^\\s+", "");
-        String s0 = postsigil.substring(0, postsigil.length() - id.length());
-
-        int ohnooo;
-        if ((ohnooo = id.indexOf(endqchar)) == -1) {
-            listener.takeNonword(sigil);
-            listener.take(s0);
-            listener.takeSymbol(id, sigil.length() + s0.length(), true);
-        } else {
-            // If the identifier contains the end quoting character, then it
-            // may or may not parse in Perl. Treat everything before the first
-            // instance of the `endqchar' as inside the quote -- and possibly
-            // as real identifier -- and possibly abort the quote early.
-            // e.g.: qr z$abcz;
-            //     OK
-            // e.g.: qr z$abziz;
-            //     Unknown regexp modifier "/z" at -e line 1, near "= "
-            //     Global symbol "$ab" requires explicit package name ...
-            // e.g.: qr i$abixi;
-            //     OK
-            String w0 = id.substring(0, ohnooo);
-            String p0 = id.substring(ohnooo, ohnooo + 1);
-            String w1 = id.substring(ohnooo + 1);
-            listener.takeNonword(sigil);
-            listener.take(s0);
-            if (w0.length() > 0) {
-                listener.takeSymbol(w0, sigil.length() + s0.length(), true);
-            } else {
-                listener.skipSymbol();
-            }
-            listener.takeNonword(p0);
-            if (maybeEndQuote(p0)) listener.abortQuote();
-            listener.yypushback(w1.length());
-        }
+    public void interpop() {
+        nendbrace = 1;
     }
 
     /**
-     * Splits a braced sigil identifier -- where the {@code capture} starts
-     * with a sigil and ends with a '}' and where Perl allows whitespace after
-     * the sigil and around the identifier -- and write the parts to output.
-     */
-    public void bracedSigilID(String capture) throws IOException {
-        // $      {      identifier      }
-        //
-        // S|_________interior0_________|r
-        //        |_____ltinterior0_____|r
-        //        l|_____interior1______|r
-        //               |_ltinterior1__|r
-        // S|_s0_|l|_s1_||---id---||_s2_|r
-
-        String sigil = capture.substring(0, 1);
-        String rpunc = capture.substring(capture.length() - 1);
-        String interior0 = capture.substring(1, capture.length() - 1);
-        String ltinterior0 = interior0.replaceFirst("^\\s+", "");
-        String s0 = interior0.substring(0, interior0.length() -
-            ltinterior0.length());
-
-        String lpunc = ltinterior0.substring(0, 1);
-        String interior1 = ltinterior0.substring(1);
-        String ltinterior1 = interior1.replaceFirst("^\\s+", "");
-        String s1 = interior1.substring(0, interior1.length() -
-            ltinterior1.length());
-
-        String s2 = ltinterior1.replaceFirst("^\\S+", "");
-        String id = ltinterior1.substring(0, ltinterior1.length() -
-            s2.length());
-
-        listener.takeNonword(sigil);
-        listener.take(s0);
-        listener.takeNonword(lpunc);
-        listener.take(s1);
-        listener.takeSymbol(id, sigil.length() + s0.length() +
-            lpunc.length() + s1.length(), true);
-        listener.take(s2);
-        listener.takeNonword(rpunc);
-    }
-
-    /**
-     * Write a special identifier as a keyword -- unless {@link endqchar} is in
-     * the {@code capture}, which will affect an active quote-like operator
+     * Determine if the interpolation should end based on the first character
+     * of {@code capture}, recognizing tokens that increase the nesting level
      * instead.
+     * <p>
+     * Calling this method has side effects to possibly modify
+     * {@code nendbrace}.
+     * @return true if the interpolation state should end
      */
-    public void specialID(String capture) throws IOException {
-        if (capture.indexOf(endqchar) == -1) {
-            listener.takeKeyword(capture);
-        } else {
-            for (int i = 0; i < capture.length(); ++i) {
-                char c = capture.charAt(i);
-                String w = new String(new char[] {c});
-                listener.takeNonword(w);
-                if (maybeEndQuote(w)) {
-                    listener.abortQuote();
-                    listener.yypushback(capture.length() - i - 1);
-                    break;
-                }
+    public boolean maybeEndInterpolation(String capture) {
+        if (nendbrace <= 0) {
+            return false;
+        }
+        if (capture.startsWith("}")) {
+            if (--nendbrace <= 0) {
+                return true;
             }
+        } else if (capture.startsWith("{")) {
+            ++nendbrace;
+        }
+        return false;
+    }
+
+    /**
+     * Take a series of module names separated by "::".
+     */
+    public void takeModules(String capture) throws IOException {
+        final String SEP = "::";
+        int o = 0, i;
+        while (o < capture.length() && (i = capture.indexOf(SEP, o)) != -1) {
+            String module = capture.substring(o, i);
+            listener.takeSymbol(module, o, false); 
+            listener.takeNonword(SEP);
+            o = i + 2;
+        }
+        if (o < capture.length()) {
+            String module = capture.substring(o);
+            listener.takeSymbol(module, o, false); 
         }
     }
 
-    class HereDocSettings {
+    /**
+     * Subtract the number of initial, non-word characters from the length of
+     * {@code capture}.
+     * @param capture a defined value
+     * @return the length of {@code value} minus the number of initial,
+     * non-word characters
+     */
+    public int nameLength(String capture) {
+        int len = capture.length();
+        for (int i = 0; i < capture.length(); ++i) {
+            if (Character.isLetterOrDigit(capture.charAt(i))) break;
+            --len;
+        }
+        return len;
+    }
+
+    private class HereDocSettings {
         private final String terminator;
         private final int state;
 

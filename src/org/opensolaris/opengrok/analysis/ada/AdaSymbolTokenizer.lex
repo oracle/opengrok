@@ -51,6 +51,16 @@ import org.opensolaris.opengrok.web.Util;
 
     private String lastSymbol;
 
+    /**
+     * Reinitialize the tokenizer with new reader.
+     * @throws java.io.IOException in case of I/O error
+     */
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        h.reset();
+    }
+
     @Override
     public void take(String value) throws IOException {
         // noop
