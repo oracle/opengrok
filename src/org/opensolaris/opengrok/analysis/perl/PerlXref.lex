@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.web.Util;
     h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
         HERE, HERExN, HEREin, HEREinxN);
 %init}
+%include CommonXref.lexh
 %{
     private final PerlLexHelper h;
 

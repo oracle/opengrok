@@ -65,10 +65,6 @@ public abstract class JFlexXref {
     private int scopeLevel = 0;
 
     /**
-     * EOF value returned by yylex().
-     */
-    private final int yyeof;
-    /**
      * See {@link RuntimeEnvironment#getUserPage()}. Per default initialized in
      * the constructor and here to be consistent and avoid lot of unnecessary
      * lookups.
@@ -140,30 +136,13 @@ public abstract class JFlexXref {
         new Style("subroutine", "xsr", "Subroutine"),};
 
     protected JFlexXref() {
-        try {
-            // TODO when bug #16053 is fixed, we should add a getter to a file
-            // that's included from all the Xref classes so that we avoid the
-            // reflection.
-            Field f = getClass().getField("YYEOF");
-            yyeof = f.getInt(null);
-            userPageLink = RuntimeEnvironment.getInstance().getUserPage();
-            if (userPageLink != null && userPageLink.length() == 0) {
-                userPageLink = null;
-            }
-            userPageSuffix = RuntimeEnvironment.getInstance().getUserPageSuffix();
-            if (userPageSuffix != null && userPageSuffix.length() == 0) {
-                userPageSuffix = null;
-            }
-        } catch (NoSuchFieldException | SecurityException 
-                | IllegalArgumentException | IllegalAccessException e) {
-            // The auto-generated constructors for the Xref classes don't
-            // expect a checked exception, so wrap it in an AssertionError.
-            // This should never happen, since all the Xref classes will get
-            // a public static YYEOF field from JFlex.
-                        
-            // NOPMD (stack trace is preserved by initCause(), but
-            // PMD thinks it's lost)            
-            throw new AssertionError("Couldn't initialize yyeof", e); 
+        userPageLink = RuntimeEnvironment.getInstance().getUserPage();
+        if (userPageLink != null && userPageLink.length() == 0) {
+            userPageLink = null;
+        }
+        userPageSuffix = RuntimeEnvironment.getInstance().getUserPageSuffix();
+        if (userPageSuffix != null && userPageSuffix.length() == 0) {
+            userPageSuffix = null;
         }
     }
 
@@ -325,6 +304,12 @@ public abstract class JFlexXref {
     public abstract int yystate();
 
     /**
+     * Gets the YYEOF value.
+     * @return YYEOF
+     */
+    public abstract int getYYEOF();
+
+    /**
      * Write xref to the specified {@code Writer}.
      *
      * @param out xref destination
@@ -335,7 +320,7 @@ public abstract class JFlexXref {
         writeSymbolTable();
         setLineNumber(0);
         startNewLine();
-        while (yylex() != yyeof) { // NOPMD while statement intentionally empty
+        while (yylex() != getYYEOF()) { // NOPMD while statement intentionally empty
             // nothing to do here, yylex() will do the work
         }
 
