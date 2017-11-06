@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.document;
@@ -36,10 +37,8 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %init{
 super(in);
 %init}
-%type boolean
-%eofval{
-return false;
-%eofval}
+%int
+%include CommonTokenizer.lexh
 %caseless
 %char
 
@@ -54,10 +53,9 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 \\f[ABCIR]  {}
 ^"...\\\"" {}
 
-\\&.        {setAttribs(".", yychar, yychar + yylength()); return true;}
+\\&.        {setAttribs(".", yychar, yychar + yylength()); return yystate();}
 {Identifier}|{Number}|{Printable} {
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
-    return true;
+    return yystate();
 }
-<<EOF>>   { return false;}
 [^]    {}

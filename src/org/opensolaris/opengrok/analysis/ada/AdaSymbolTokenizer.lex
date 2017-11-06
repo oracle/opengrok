@@ -40,7 +40,7 @@ import org.opensolaris.opengrok.web.Util;
 %implements AdaLexListener
 %unicode
 %ignorecase
-%type boolean
+%int
 %char
 %init{
     super(in);
@@ -114,10 +114,6 @@ import org.opensolaris.opengrok.web.Util;
         return lastSymbol != null;
     }
 
-    protected boolean getSymbolReturn() {
-        return true;
-    }
-
     protected String getUrlPrefix() { return null; }
 
     protected void appendProject() { /* noop */ }
@@ -126,10 +122,6 @@ import org.opensolaris.opengrok.web.Util;
 
     protected void writeEMailAddress(String s) { /* noop */ }
 %}
-%eofval{
-this.finalOffset =  zzEndRead;
-return false;
-%eofval}
 
 %include Common.lexh
 %include AdaProductions.lexh

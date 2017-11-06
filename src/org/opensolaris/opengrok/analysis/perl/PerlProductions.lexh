@@ -185,7 +185,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     maybeIntraState();
     String id = yytext();
     if (takeSymbol(id, 0, false) && returnOnSymbol()) {
-        return getSymbolReturn();
+        return yystate();
     }
  }
 
@@ -347,7 +347,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
         h.sigilID(yytext());
-        if (returnOnSymbol()) return getSymbolReturn();
+        if (returnOnSymbol()) return yystate();
     }
 }
 
@@ -356,7 +356,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         maybeIntraState();
         //we ignore keywords if the identifier starts with a sigil ...
         h.bracedSigilID(yytext());
-        if (returnOnSymbol()) return getSymbolReturn();
+        if (returnOnSymbol()) return yystate();
     }
 
     {SPIdentifier1} |
@@ -385,7 +385,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     {Sigils} {Identifier} {
         //we ignore keywords if the identifier starts with a sigil ...
         h.sigilID(yytext());
-        if (returnOnSymbol()) return getSymbolReturn();
+        if (returnOnSymbol()) return yystate();
     }
 }
 

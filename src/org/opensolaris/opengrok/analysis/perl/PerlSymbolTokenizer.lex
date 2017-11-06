@@ -39,13 +39,14 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexTokenizer
 %implements PerlLexListener
 %unicode
-%type boolean
+%int
 %char
 %init{
     super(in);
     h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
         HERE, HERExN, HEREin, HEREinxN);
 %init}
+%include CommonTokenizer.lexh
 %{
     private final PerlLexHelper h;
 
@@ -126,10 +127,6 @@ import org.opensolaris.opengrok.web.Util;
         return lastSymbol != null;
     }
 
-    protected boolean getSymbolReturn() {
-        return true;
-    }
-
     protected String getUrlPrefix() { return null; }
 
     protected void appendProject() { /* noop */ }
@@ -138,9 +135,5 @@ import org.opensolaris.opengrok.web.Util;
 
     protected void writeEMailAddress(String s) { /* noop */ }
 %}
-%eofval{
-this.finalOffset =  zzEndRead;
-return false;
-%eofval}
 
 %include PerlProductions.lexh
