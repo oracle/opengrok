@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.web.Util;
 %init{
     h = getNewHelper();
 %init}
+%include CommonXref.lexh
 %{
     protected Stack<RubyLexHelper> helpers;
 

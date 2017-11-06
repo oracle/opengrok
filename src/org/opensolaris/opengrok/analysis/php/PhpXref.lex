@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -40,6 +41,7 @@ import java.util.*;
 %unicode
 %ignorecase
 %int
+%include CommonXref.lexh
 %{
   private final static Set<String> PSEUDO_TYPES;
   private Stack<String> docLabels = new Stack<String>();

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.sql;
@@ -35,6 +36,7 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
+%include CommonXref.lexh
 %{
     private int commentLevel;
 

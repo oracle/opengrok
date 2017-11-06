@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -34,6 +35,7 @@ import java.io.Reader;
 %unicode
 %ignorecase
 %int
+%include CommonXref.lexh
 %{
   // TODO move this into an include file when bug #16053 is fixed
   @Override

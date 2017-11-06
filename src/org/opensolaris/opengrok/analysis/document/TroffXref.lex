@@ -36,6 +36,7 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexXref
 %unicode
 %int
+%include CommonXref.lexh
 %{ 
   int p;
   int span;
