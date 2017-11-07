@@ -36,6 +36,8 @@ import java.io.Writer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 
 /**
  * Tests the {@link PhpXref} class.
@@ -48,7 +50,9 @@ public class PhpXrefTest {
     public void basicTest() throws IOException {
         String s = "<?php foo bar";
         Writer w = new StringWriter();
-        PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
+        PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
+        FileAnalyzer analyzer = fac.getAnalyzer();
+        analyzer.writeXref(new WriteXrefArgs(new StringReader(s), w));
         assertEquals(
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> <a href=\"/"
                 + "source/s?defs=foo\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">foo</a> <a href=\"/source/s?defs=bar\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">bar</a>",
@@ -59,7 +63,9 @@ public class PhpXrefTest {
     public void basicSingleQuotedStringTest() throws IOException {
         String s = "<?php define(\"FOO\", 'BAR\\'\"'); $foo='bar'; $hola=\"ls\"; $hola=''; $hola=\"\";";
         Writer w = new StringWriter();
-        PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
+        PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
+        FileAnalyzer analyzer = fac.getAnalyzer();
+        analyzer.writeXref(new WriteXrefArgs(new StringReader(s), w));
         assertEquals(
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> "
                 + "<a href=\"/source/s?defs=define\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">define</a>(<span class=\"s\">\"FOO\"</span>, <span class=\"s\">'BAR<strong>\\'</strong>\"'</span>); "
@@ -77,9 +83,10 @@ public class PhpXrefTest {
                 + "href=\"http://localhost:8080/source/default/style.css\" /><title>PHP Xref Test</title></head>");
         os.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
-        PhpAnalyzer.writeXref(
-                new InputStreamReader(is, "UTF-8"),
-                w, null, null, null);
+        PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
+        FileAnalyzer analyzer = fac.getAnalyzer();
+        analyzer.writeXref(new WriteXrefArgs(
+            new InputStreamReader(is, "UTF-8"), w));
         os.print(w.toString());
         os.println("</pre></div></body></html>");
     }

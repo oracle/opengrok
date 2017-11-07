@@ -36,6 +36,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 
 /**
  * Tests the {@link PerlXref} class.
@@ -81,8 +83,10 @@ public class PerlXrefTest {
         copyStream(begin, oss);
 
         Writer sw = new StringWriter();
-        PerlAnalyzer.writeXref(new InputStreamReader(iss, "UTF-8"), sw, null,
-            null, null);
+        PerlAnalyzerFactory fac = new PerlAnalyzerFactory();
+        FileAnalyzer analyzer = fac.getAnalyzer();
+        analyzer.writeXref(new WriteXrefArgs(
+            new InputStreamReader(iss, "UTF-8"), sw));
         oss.print(sw.toString());
 
         InputStream end = getClass().getClassLoader().getResourceAsStream(

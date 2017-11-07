@@ -168,7 +168,7 @@ public class SearchEngineTest {
             return;
         }
 
-        List<Hit> hits = new ArrayList<Hit>();
+        List<Hit> hits = new ArrayList<>();
 
         SearchEngine instance = new SearchEngine();
         instance.setHistory("\"Add lint make target and fix lint warnings\"");
@@ -269,7 +269,11 @@ public class SearchEngineTest {
         // file name search is case insensitive
         instance = new SearchEngine();
         instance.setFile("JaVa"); // should match java
-        assertEquals(8, instance.search());
+        int count=instance.search();
+        if (count > 0) {
+        instance.results(0, count, hits);
+        }
+        assertEquals(8, count); // path is now case sensitive ... but only in SearchEngine !
         instance.destroy();
         
         //test eol and eof        

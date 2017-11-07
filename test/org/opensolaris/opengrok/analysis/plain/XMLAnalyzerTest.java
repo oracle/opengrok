@@ -20,6 +20,7 @@
 /*
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -29,6 +30,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 
 public class XMLAnalyzerTest {
     @Test
@@ -41,7 +44,9 @@ public class XMLAnalyzerTest {
                 "</foo>";
         StringReader sr = new StringReader(xmlText);
         StringWriter sw = new StringWriter();
-        XMLAnalyzer.writeXref(sr, sw, null, null, null);
+        XMLAnalyzerFactory fac = new XMLAnalyzerFactory();
+        FileAnalyzer analyzer = fac.getAnalyzer();
+        analyzer.writeXref(new WriteXrefArgs(sr, sw));
         String[] xref = sw.toString().split("\n");
         // Reference to a Java class should have / instead of . in the path
         assertTrue(xref[2].contains("path=com/foo/bar/MyClass"));
@@ -65,7 +70,9 @@ public class XMLAnalyzerTest {
                 + "</server>";
         StringReader sr = new StringReader(xmlText);
         StringWriter sw = new StringWriter();
-        XMLAnalyzer.writeXref(sr, sw, null, null, null);
+        XMLAnalyzerFactory fac = new XMLAnalyzerFactory();
+        FileAnalyzer analyzer = fac.getAnalyzer();
+        analyzer.writeXref(new WriteXrefArgs(sr, sw));
         String[] xref = sw.toString().split("\n");
         // don't remove ../
         assertTrue(xref[7].contains("org.quartz.plugin.jobInitializer.fileNames</a> = <a href=\"/source/s?path=../\">..</a>/"));
@@ -80,12 +87,14 @@ public class XMLAnalyzerTest {
         StringReader input =
                 new StringReader("<foo xyz='<betweensinglequotes>'> </foo>");
         StringWriter output = new StringWriter();
-        XMLAnalyzer.writeXref(input, output, null, null, null);
+        XMLAnalyzerFactory fac = new XMLAnalyzerFactory();
+        FileAnalyzer analyzer = fac.getAnalyzer();
+        analyzer.writeXref(new WriteXrefArgs(input, output));
         assertTrue(output.toString().contains("&lt;betweensinglequotes&gt;"));
 
         input = new StringReader("<foo xyz=\"<betweendoublequotes>\"> </foo>");
         output = new StringWriter();
-        XMLAnalyzer.writeXref(input, output, null, null, null);
+        analyzer.writeXref(new WriteXrefArgs(input, output));
         assertTrue(output.toString().contains("&lt;betweendoublequotes&gt;"));
     }
 }

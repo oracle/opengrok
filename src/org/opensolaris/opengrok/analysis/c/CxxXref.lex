@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -41,6 +42,7 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
+%include CommonXref.lexh
 %{
   // TODO move this into an include file when bug #16053 is fixed
   @Override

@@ -192,7 +192,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * @throws SecurityException if the loader cannot access the class
      */
     @Override
-    public Class loadClass(String name) throws ClassNotFoundException, SecurityException {
+    public Class<?> loadClass(String name) throws ClassNotFoundException, SecurityException {
         return loadClass(name, true);
     }
 

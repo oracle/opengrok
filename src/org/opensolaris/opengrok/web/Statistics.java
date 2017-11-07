@@ -103,7 +103,7 @@ public class Statistics {
     synchronized public void addRequest(String category) {
         Long val = requestCategories.get(category);
         if (val == null) {
-            val = new Long(0);
+            val = 0L;
         }
         val += 1;
         requestCategories.put(category, val);
@@ -122,13 +122,13 @@ public class Statistics {
         Long max = timingMax.get(category);
 
         if (val == null) {
-            val = new Long(0);
+            val = 0L;
         }
         if (max == null || v > max) {
-            max = new Long(v);
+            max = v;
         }
         if (min == null || v < min) {
-            min = new Long(v);
+            min = v;
         }
 
         val += v;

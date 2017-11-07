@@ -36,12 +36,35 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
         <version>1.1-SNAPSHOT</version>
     </parent>
 
+    <build>
+        <sourceDirectory>.</sourceDirectory>
+
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2</version>
+            <configuration>
+              <includes>
+                <include>**/LdapPlugin/src/**</include>
+                <include>**/UserPlugin/src/**</include>
+                <include>*Plugin.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>opengrok-indexer</artifactId>
             <version>${project.version}</version>
         </dependency>
+	<dependency>
+	    <groupId>junit</groupId>
+	    <artifactId>junit</artifactId>
+	    <version>4.12</version>
+	</dependency>
     </dependencies>
 
 </project>

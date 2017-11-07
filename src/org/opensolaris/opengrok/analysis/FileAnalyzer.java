@@ -20,6 +20,7 @@
  /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -204,6 +205,18 @@ public class FileAnalyzer extends Analyzer {
         // not used
     }
 
+    /**
+     * Derived classes should override to write a cross referenced HTML file
+     * for the specified args.
+     * @param args a defined instance
+     * @return the instance used to write the cross-referencing
+     * @throws java.io.IOException if an error occurs
+     */
+    public JFlexXref writeXref(WriteXrefArgs args) throws IOException {
+        throw new UnsupportedOperationException(
+            "Base FileAnalyzer cannot write xref");
+    }
+    
     // you analyzer HAS to override this to get proper symbols in results
     protected JFlexTokenizer SymbolTokenizer;
 

@@ -134,8 +134,8 @@ I said bar.
 bar
 
 myfunc(<< "THIS", 23, <<'THAT');
-Here's a line
-or two.
+Here's a line or
+two
 THIS
 and here's another.
 THAT
@@ -278,3 +278,107 @@ $s = y zpP \"\'\(\)\<\>\{\}\[\]\/\# fin.zpP \"\'\(\)\<\>\{\}\[\]\/\# fin.z;
 $s = y#pP \"\'\(\)\<\>\{\}\[\]\/\# fin.#pP \"\'\(\)\<\>\{\}\[\]\/\# fin.#;
 $s = y'pP \"\'\(\)\<\>\{\}\[\]\/\# fin.'pP \"\'\(\)\<\>\{\}\[\]\/\# fin.';
 $s = y"pP \"\'\(\)\<\>\{\}\[\]\/\# fin."pP \"\'\(\)\<\>\{\}\[\]\/\# fin.";
+
+# more sigiled identifier tests
+print "$abc\n${abc}\n", '$abc\n${abc}\n', "\n";
+$s = $ {var};
+$s = ${ var };
+print qr z$abczix, "\n";
+print $0 if $!;
+print $^V;
+print "${^GLOBAL_PHASE} is what?";
+
+# more quote-like tests
+qr{\.[a-z]+$}i;
+
+# should back to YYINITIAL after HERE document
+print <<EOF;
+	Some text
+EOF
+/\b sentinel \b/ && print; # This should heuristically match as m//
+
+# spaced sigil
+$ svar = 1;
+
+# more quote-like tests
+s{\.[a-z]+$}{no}i;
+my $a = qr$abc$ix;
+
+# more POD tests
+=cut for no purpose
+print "1\n";
+
+# POD odd case
+=ITEM fubar($)
+=CUT back -- not really though
+n0n{(sense]
+=cut back really
+print "1\n";
+
+# format FORMLIST tests
+ format STDOUT =
+@<<<<<<   @||||||   @>>>>>>
+# comment <args to follow>
+"left",  substr($var, 0, 2), "\$right"
+ ...
+ print
+.
+print "1\n";
+
+# some tests for syntax near "s" characters
+my $this = {};
+if (! -s $this->{filename}) {
+	open UCFILE, "create_file -s $this->{start} -e $this->{end} |" or exit 0;
+} else {
+	open UCFILE, "$this->{filename}" or exit 0;
+}
+
+# more quote-like tests
+my $KK = "b";
+$bref = {'b' => 5};
+%bhash = ('b' => 6);
+{ print $bref -> {$KK} / $bhash { $KK }, "$bref->{$KK} $bhash{$KK} $b {\n"; }
+$bref->{int} = -1 * $bref->{int} / $bref->{a_rate}; # do not infer a m//
+$bref->{"int"} = -1 * $bref->{"int"} / $bref->{"a_rate"}; # do not infer a m//
+$var = qq[select t.col
+	from $table
+	where key = $k
+	and k1 = "$r->[0]->[0]"
+	and k2 = "$s->{ code }->{ v }"
+	and k3 = "$t ->[ 0 ]->{ v }"
+	and k4 = "$u ->{ k }->[ 0 ]"
+	order by value_date DESC];
+push @$html, "<TD width=\"20%\">";
+print "%\abc\n", %\, "abc\n";
+# some comment
+push @arr, "'$key'=>" . 'q[' . $val . '],';
+#qq[$var]
+
+# more HERE-document tests
+myfunc2(<< "THIS", $var, <<~'THAT', $var, <<OTHER, <<\ELSE, <<`Z`);
+Here's a $line1
+THIS
+	Here's a $line2
+	THAT
+Here's a $line3
+OTHER
+Here's a $line4
+ELSE
+Here's a $line5
+Here's a \$line6
+Z
+/\b sentinel \b/ && print; # This should heuristically match as m//
+
+# more quote-like tests
+for my $k (grep /=/, split /;/, $d, -1) {
+	print "1\n";
+}
+
+# more format tests
+%a = (
+    format => "%s");
+ format=
+@<<<<<<   @||||||   @>>>>>>
+"left",  "middle", "right"
+.
+print "1\n";

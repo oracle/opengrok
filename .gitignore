@@ -1,8 +1,6 @@
 *~
-nbproject/*~
+*.swp
 /nbproject/configs/*.properties
-opengrok-web-nbproject/nbproject/*~
-opengrok-web-nbproject/nbproject/build-impl.xml~
 tags
 TAGS
 build
@@ -31,6 +29,7 @@ lib/derby.jar
 lib/jrcs.jar
 lib/lucene-*
 lib/servlet-api-*
+lib/junit-*
 derby.log
 opengrok*.log
 nbproject/genfiles.properties
@@ -39,8 +38,6 @@ webrev
 opengrok-web-nbproject/nbproject/private/
 opengrok-web-nbproject/nbproject/genfiles.properties
 run_my.bat
-*.xml~
-opengrok-web-nbproject/nbproject/build-impl.xml~
 build.bat
 jacoco
 jacoco.exec

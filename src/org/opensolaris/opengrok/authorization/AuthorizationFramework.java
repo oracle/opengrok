@@ -24,6 +24,7 @@ package org.opensolaris.opengrok.authorization;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -309,7 +310,7 @@ public final class AuthorizationFramework {
      */
     public void addPlugin(AuthorizationStack stack, IAuthorizationPlugin plugin, AuthControlFlag flag) {
         if (stack != null) {
-            LOGGER.log(Level.INFO, "Plugin class \"{0}\" was not found in configuration."
+            LOGGER.log(Level.WARNING, "Plugin class \"{0}\" was not found in configuration."
                     + " Appending the plugin at the end of the list with flag \"{1}\"",
                     new Object[]{getClassName(plugin), flag});
             addPlugin(stack, new AuthorizationPlugin(flag, getClassName(plugin), plugin));
@@ -363,15 +364,15 @@ public final class AuthorizationFramework {
         try {
             return loadClass(classname);
         } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" was not found: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" was not found: ", classname), ex);
         } catch (SecurityException ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" was found but it is placed in prohibited package: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" was found but it is placed in prohibited package: ", classname), ex);
         } catch (InstantiationException ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" could not be instantiated: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" could not be instantiated: ", classname), ex);
         } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an exception: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" loader threw an exception: ", classname), ex);
         } catch (Throwable ex) {
-            LOGGER.log(Level.INFO, String.format("Class \"%s\" loader threw an unknown error: ", classname), ex);
+            LOGGER.log(Level.WARNING, String.format("Class \"%s\" loader threw an unknown error: ", classname), ex);
         }
         return null;
     }
@@ -395,20 +396,24 @@ public final class AuthorizationFramework {
      * instance of that class
      * @throws IllegalAccessException when the constructor of the class is not
      * accessible
+     * @throws NoSuchMethodException when the class does not have no-argument constructor
+     * @throws InvocationTargetException if the underlying constructor of the class throws an exception
      */
     private IAuthorizationPlugin loadClass(String classname) throws ClassNotFoundException,
             SecurityException,
             InstantiationException,
-            IllegalAccessException {
+            IllegalAccessException,
+            NoSuchMethodException,
+            InvocationTargetException {
 
-        Class c = loader.loadClass(classname);
+        Class<?> c = loader.loadClass(classname);
 
         // check for implemented interfaces
         for (Class intf1 : getInterfaces(c)) {
             if (intf1.getCanonicalName().equals(IAuthorizationPlugin.class.getCanonicalName())
                     && !Modifier.isAbstract(c.getModifiers())) {
                 // call to non-parametric constructor
-                return (IAuthorizationPlugin) c.newInstance();
+                return (IAuthorizationPlugin) c.getDeclaredConstructor().newInstance();
             }
         }
         LOGGER.log(Level.FINEST, "Plugin class \"{0}\" does not implement IAuthorizationPlugin interface.", classname);

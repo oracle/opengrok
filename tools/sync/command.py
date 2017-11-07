@@ -25,6 +25,7 @@ import os
 import logging
 import subprocess
 import string
+import threading
 
 
 class Command:
@@ -32,6 +33,11 @@ class Command:
     wrapper for synchronous execution of commands via subprocess.Popen()
     and getting their output (stderr is redirected to stdout) and return value
     """
+
+    # state definitions
+    FINISHED = "finished"
+    INTERRUPTED = "interrupted"
+    ERRORED = "errored"
 
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
                  excl_subst=False):
@@ -53,31 +59,63 @@ class Command:
         Execute the command and capture its output and return code.
         """
 
-        out = []
+        class OutputThread(threading.Thread):
+            """
+            Capture data from subprocess.Popen(). This avoids hangs when
+            stdout/stderr buffers fill up.
+            """
+
+            def __init__(self):
+                super(OutputThread, self).__init__()
+                self.read_fd, self.write_fd = os.pipe()
+                self.pipe_fobj = os.fdopen(self.read_fd)
+                self.out = []
+                self.start()
+
+            def run(self):
+                """
+                It might happen that after the process is gone, the thread
+                still has data to read from the pipe. Should probably introduce
+                a boolean and set it to True under the 'if not line' block
+                below and make the caller wait for it to become True.
+                """
+                while True:
+                    line = self.pipe_fobj.readline()
+                    if not line:
+                        self.pipe_fobj.close()
+                        return
+
+                    self.out.append(line)
+
+            def getoutput(self):
+                return self.out
+
+            def fileno(self):
+                return self.write_fd
+
+            def close(self):
+                os.close(self.write_fd)
+
+        othr = OutputThread()
         try:
             self.logger.debug("command = {}".format(self.cmd))
             p = subprocess.Popen(self.cmd, stderr=subprocess.STDOUT,
-                                 stdout=subprocess.PIPE)
+                                 stdout=othr)
             p.wait()
         except KeyboardInterrupt as e:
             self.logger.debug("Got KeyboardException while processing ",
                               exc_info=True)
-            self.state = "interrupted"
+            self.state = Command.INTERRUPTED
         except OSError as e:
             self.logger.debug("Got OS error", exc_info=True)
-            self.state = "errored"
+            self.state = Command.ERRORED
         else:
-            if p.stdout is not None:
-                self.logger.debug("Program output:")
-                for line in p.stdout:
-                    self.logger.debug(line.rstrip(os.linesep.encode("ascii")))
-                    out.append(line.decode())
-
-            self.state = "finished"
+            self.state = Command.FINISHED
             self.returncode = int(p.returncode)
             self.logger.debug("{} -> {}".format(self.cmd, self.getretcode()))
-            self.out = out
-            p.stdout.close()
+        finally:
+            othr.close()
+            self.out = othr.getoutput()
 
     def fill_arg(self, args_append=None, args_subst=None):
         """
@@ -106,13 +144,16 @@ class Command:
         self.cmd = newcmd
 
     def getretcode(self):
-        if self.state is not "finished":
+        if self.state is not Command.FINISHED:
             return None
         else:
             return self.returncode
 
     def getoutput(self):
-        if self.state is "finished":
+        if self.state is Command.FINISHED:
             return self.out
         else:
             return None
+
+    def getstate(self):
+        return self.state

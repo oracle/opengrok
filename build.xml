@@ -19,9 +19,11 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
 -->
-<project name="OpenGrok" default="jar" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="OpenGrok" default="jar" basedir="." xmlns:jacoco="antlib:org.jacoco.ant"
+    xmlns:if="ant:if" xmlns:unless="ant:unless">
     <description>Builds, tests, and runs the project opengrok.</description>
     <property name="build.sysclasspath" value="ignore"/>
     <property file="${user.home}/config/ant/${ant.project.name}.properties" />
@@ -113,7 +115,10 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
-    <property name="test.plugins_jar" value="${test.plugins}/plugins.jar"/>
+    <property name="test.plugins_jar" value="${test.plugins}/testplugins.jar"/>
+
+    <property name="junit.version" value="4.12"/>
+    <property name="junit.jar" value="junit-${junit.version}.jar"/>
 
     <property name="mvn.repository" value="http://repo1.maven.org/maven2"/>
 
@@ -186,7 +191,26 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <attribute name="name"/>
             <attribute name="dir"/>
             <sequential> <!-- Name of input has to be .lex -->
-                <jflex file="${src.dir}/@{dir}/@{name}.lex" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
+                <mkdir dir="${src.generatedsrc.dir}/@{dir}"/>
+                <!-- Copy source *.lex,*.lexh and global *.lexh to interm. dir -->
+                <copy todir="${src.generatedsrc.dir}/@{dir}">
+                    <fileset dir="${src.dir}/@{dir}" includes="*.lex,*.lexh"/>
+                    <fileset dir="${src.dir}/org/opensolaris/opengrok/analysis"
+                        includes="*.lexh"/>
+                </copy>
+                <!-- newer *.lexh files cause .lex file to be touched -->
+                <local name="lexh"/>
+                <fileset dir="${src.generatedsrc.dir}/@{dir}" includes="*.lexh" id="id.lexh">
+                    <depend targetdir="${src.generatedsrc.dir}/@{dir}">
+                        <mapper type="merge" to="@{name}.lex"/>
+                    </depend>
+                </fileset>
+                <pathconvert pathsep="," property="lexh" refid="id.lexh"/>
+                <touch file="${src.generatedsrc.dir}/@{dir}/@{name}.lex"
+                    unless:blank="${lexh}"/>
+                <!-- now run the jflex task -->
+                <jflex file="${src.generatedsrc.dir}/@{dir}/@{name}.lex"
+                    destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
             </sequential>
         </macrodef>
         
@@ -198,7 +222,26 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <attribute name="name"/>    
             <attribute name="dir"/>
             <sequential>
-                <jflex file="${src.dir}/@{dir}/@{name}.lex" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
+                <mkdir dir="${src.generatedsrc.dir}/@{dir}"/>
+                <!-- Copy source *.lex,*.lexh and global *.lexh to interm. dir -->
+                <copy todir="${src.generatedsrc.dir}/@{dir}">
+                    <fileset dir="${src.dir}/@{dir}" includes="*.lex,*.lexh"/>
+                    <fileset dir="${src.dir}/org/opensolaris/opengrok/analysis"
+                        includes="*.lexh"/>
+                </copy>
+                <!-- newer *.lexh files cause .lex file to be touched -->
+                <local name="lexh"/>
+                <fileset dir="${src.generatedsrc.dir}/@{dir}" includes="*.lexh" id="id.lexh">
+                    <depend targetdir="${src.generatedsrc.dir}/@{dir}">
+                        <mapper type="merge" to="@{name}.lex"/>
+                    </depend>
+                </fileset>
+                <pathconvert pathsep="," property="lexh" refid="id.lexh"/>
+                <touch file="${src.generatedsrc.dir}/@{dir}/@{name}.lex"
+                    unless:blank="${lexh}"/>
+                <!-- now run the jflex task -->
+                <jflex file="${src.generatedsrc.dir}/@{dir}/@{name}.lex"
+                    destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
                 <!-- LUCENE-5897: Disallow scanner buffer expansion -->
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="[ \t]*/\* is the buffer big enough\? \*/\s+if \(zzCurrentPos >= zzBuffer\.length.*?\}[ \t]*\r?\n"
@@ -231,6 +274,8 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
           -->
   
         <property name="gen.analysis.dir" value="/org/opensolaris/opengrok/analysis"/>        
+        <run-jflex dir="${gen.analysis.dir}/ada" name="AdaSymbolTokenizer" />
+        <run-jflex dir="${gen.analysis.dir}/ada" name="AdaXref"/>
         <run-jflex dir="${gen.analysis.dir}/c" name="CSymbolTokenizer" />
         <run-jflex dir="${gen.analysis.dir}/c" name="CXref"/>
         <run-jflex dir="${gen.analysis.dir}/c" name="CxxSymbolTokenizer"/>
@@ -259,6 +304,8 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <run-jflex dir="${gen.analysis.dir}/perl" name="PerlXref"/>
         <run-jflex dir="${gen.analysis.dir}/php" name="PhpSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/php" name="PhpXref"/>
+        <run-jflex dir="${gen.analysis.dir}/ruby" name="RubySymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/ruby" name="RubyXref"/>
         <run-jflex dir="${gen.analysis.dir}/lisp" name="LispSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/lisp" name="LispXref"/>
         <run-jflex dir="${gen.analysis.dir}/tcl" name="TclSymbolTokenizer"/>
@@ -297,6 +344,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
                         
         <run-jflex dir="${gen.analysis.dir}/sql" name="SQLXref"/>
         <run-jflex dir="${gen.analysis.dir}/sql" name="PLSQLXref"/>
+        <run-jflex dir="${gen.analysis.dir}/document" name="MandocXref"/>
         <run-jflex dir="${gen.analysis.dir}/document" name="TroffXref"/>
         <run-jflex dir="${gen.analysis.dir}/document" name="TroffFullTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/sh" name="ShSymbolTokenizer"/>
@@ -506,7 +554,28 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
              dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
-    <target name="-post-jar" depends="-copy-lib-without-netbeans, sample-plugins">
+    <target name="-check-junit" description="Check that junit jar file is present">
+        <available file="${junit.jar}" type="file" property="junit.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>
+        <condition property="junit_not_downloaded">
+            <not>
+                <isset property="junit.jar.present"/>
+            </not>
+        </condition>
+    </target>
+
+    <target name="download-junit" depends="-check-junit" if="junit_not_downloaded">
+        <delete>
+            <fileset dir="lib">
+                <include name="junit-*.jar"/>
+            </fileset>
+        </delete>
+        <get src="${mvn.repository}/junit/junit/${junit.version}/${junit.jar}"
+             dest="lib/${junit.jar}" verbose="true" usetimestamp="true"/>
+    </target>
+
+    <target name="-post-jar" depends="-copy-lib-without-netbeans, plugins">
         <war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" excludes="META-INF/context.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
@@ -602,6 +671,9 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <tarfileset dir="${dist.dir}" prefix="${distname}-${version}/man/man1">
                 <include name="opengrok.1"/>
             </tarfileset>
+            <tarfileset dir="${dist.dir}" prefix="${distname}-${version}/share/plugins">
+                <include name="plugins.jar"/>
+            </tarfileset>
         </tar>
     </target>
 
@@ -680,6 +752,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <checkstyle config="checkstyle/style.xml" failOnViolation="false">
             <fileset dir="src" includes="**/*.java"/>
             <fileset dir="test" includes="**/*.java"/>
+            <fileset dir="plugins" includes="**/*.java"/>
             <formatter type="plain"/>
             <formatter type="plain"  toFile="checkstyle/checkstyle_errors.txt"/>
             <formatter type="xml" toFile="checkstyle/checkstyle_errors.xml"/>
@@ -707,6 +780,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>
+            <fileset dir="plugins" includes="**/*.java"/>
             <!--            <fileset dir="test" includes="**/*.java"/> -->
             <!--            <fileset dir="web" includes="**/*.jsp"/>
             <fileset dir="web" includes="**/*.jspf"/> -->
@@ -723,6 +797,9 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <fileset dir="test">
                 <include name="**/*.java"/>
             </fileset>
+            <fileset dir="plugins">
+                <include name="**/*.java"/>
+            </fileset>
         </cpd>
     </target>
 
@@ -733,6 +810,9 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
                 <include name="**/*.java"/>
             </fileset>
             <fileset dir="test">
+                <include name="**/*.java"/>
+            </fileset>
+            <fileset dir="plugins">
                 <include name="**/*.java"/>
             </fileset>
         </cpd>
@@ -783,7 +863,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         </jacoco:report>
     </target>
 
-    <target name="-pre-compile-test"><!-- depends="-set-jacocoagent"> -->
+    <target name="-pre-compile-test" depends="-check-junit"><!-- depends="-set-jacocoagent"> -->
     </target>
 
     <!-- <target name="-pre-compile-test-single" depends="-set-jacocoagent"/> -->
@@ -800,28 +880,36 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         </condition>
     </target>
 
-    <target name="check_plugins_jar" description="check if plugins.jar was generated">
+    <target name="check_testplugins_jar" description="check if plugins.jar was generated">
         <available
-            file="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/plugins.jar"
-            type="file" property="plugins_exists">
+            file="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/testplugins.jar"
+            type="file" property="testplugins_exists">
         </available>
-        <condition property="plugins_missing">
+        <condition property="testplugins_missing">
             <not>
-                <isset property="plugins_exists" />
+                <isset property="testplugins_exists" />
             </not>
         </condition>
     </target>
 
-    <target depends="create_repos, create_plugins" name="-post-compile-test">
+    <target depends="create_repos, create_testplugins" name="-post-compile-test">
     </target>
 
-    <target depends="create_repos, create_plugins" name="-post-compile-test-single">
+    <target depends="create_repos, create_testplugins" name="-post-compile-test-single">
     </target>
 
-    <target depends="check_plugins_jar" name="create_plugins" if="plugins_missing">
-        <copy
-            file="${test.plugins_jar}"
-            tofile="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/plugins.jar" />
+    <target depends="check_testplugins_jar,plugins" name="create_testplugins" if="testplugins_missing">
+        <!-- this is how testplugins.jar was created -->
+	<!--
+        <jar destfile="testdata/testplugins.jar">
+            <fileset dir="build/plugins">
+		<include name="**/TruePlugin.class"/>
+		<include name="**/FalsePlugin.class"/>
+	    </fileset>
+        </jar>
+	-->
+	<copy file="${test.plugins_jar}"
+	    tofile="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/testplugins.jar"/>
     </target>
 
     <target depends="check_repositories_zip" name="create_repos" if="repos_missing">
@@ -1012,16 +1100,20 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         </jar>
     </target>
 
-    <!-- Build the sample plugins. -->
-    <target name="sample-plugins" depends="-pre-pre-compile">
+    <!-- Build the plugins. -->
+    <target name="plugins" depends="-pre-pre-compile">
         <mkdir dir="${build.dir}/plugins"/>
-        <javac srcdir="plugins/" 
+        <javac srcdir="plugins/"
                destdir="${build.dir}/plugins"
                includes="**/*.java"
+	       excludes="**/test/**"
                classpath="${javac.classpath}:${dist.jar}"
                compiler="javac${javac.source}">
             <compilerarg value="-Xlint:deprecation,unchecked" />
         </javac>
+        <jar destfile="${dist.dir}/plugins.jar">
+            <fileset dir="${build.dir}/plugins" includes="opengrok/**/*.class"/>
+        </jar>
     </target>
 
     <!-- compile jsp - just to test -->

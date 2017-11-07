@@ -32,9 +32,9 @@ import java.util.Set;
 public class Consts{
     public static final Set<String> kwd = new HashSet<String>() ;
     static {
-        // Note that keywords with 1 letter will be ignored for {Identifier}
-        // since that macro needs at least 2 chars. Single character quote-like
-        // operators -- e.g., m//, s/// -- will not be ignored.
+        // Note that keywords with 1 letter will be ignored for historical
+        // reasons, as the {Identifier} used to require 2 characters in
+        // PerlXref while only 1 in PerlSymbolTokenizer.
         kwd.add("__DATA__");
         kwd.add("__END__");
         kwd.add("__FILE__");
@@ -46,16 +46,25 @@ public class Consts{
         kwd.add("alarm");
         kwd.add("and");
         kwd.add("atan2");
+        kwd.add("attributes");
+        kwd.add("autodie");
         kwd.add("AUTOLOAD");
+        kwd.add("autouse");
         kwd.add("base");
         kwd.add("BEGIN");
+        kwd.add("bigint");
+        kwd.add("bignum");
+        kwd.add("bigrat");
         kwd.add("bind");
         kwd.add("binmode");
         kwd.add("bless");
+        kwd.add("blib");
         kwd.add("break");
         kwd.add("byte");
+        kwd.add("bytes");
         kwd.add("caller");
         kwd.add("carp");
+        kwd.add("charnames");
         kwd.add("chdir");
         kwd.add("CHECK");
         kwd.add("chmod");
@@ -69,6 +78,7 @@ public class Consts{
         kwd.add("cmp");
         kwd.add("confess");
         kwd.add("connect");
+        kwd.add("constant");
         kwd.add("continue");
         kwd.add("CORE");
         kwd.add("cos");
@@ -80,6 +90,7 @@ public class Consts{
         kwd.add("defined");
         kwd.add("delete");
         kwd.add("DESTROY");
+        kwd.add("diagnostics");
         kwd.add("die");
         kwd.add("do");
         kwd.add("dump");
@@ -87,6 +98,7 @@ public class Consts{
         kwd.add("else");
         kwd.add("elseif");	/* parsed "but only to warn you ..." */
         kwd.add("elsif");
+        kwd.add("encoding");
         kwd.add("END");
         kwd.add("endgrent");
         kwd.add("endhostent");
@@ -105,8 +117,10 @@ public class Consts{
         kwd.add("exp");
         kwd.add("fc");
         kwd.add("fcntl");
+        kwd.add("feature");
         kwd.add("fields");
         kwd.add("fileno");
+        kwd.add("filetest");
         kwd.add("flock");
         kwd.add("for");
         kwd.add("foreach");
@@ -162,10 +176,12 @@ public class Consts{
         kwd.add("lcfirst");
         kwd.add("le");
         kwd.add("length");
+        kwd.add("less");
         kwd.add("lib");
         kwd.add("link");
         kwd.add("listen");
         kwd.add("local");
+        kwd.add("locale");
         kwd.add("localtime");
         kwd.add("lock");
         kwd.add("log");
@@ -174,6 +190,7 @@ public class Consts{
         kwd.add("m");
         kwd.add("map");
         kwd.add("mkdir");
+        kwd.add("mro");
         kwd.add("msgctl");
         kwd.add("msgget");
         kwd.add("msgrcv");
@@ -187,11 +204,15 @@ public class Consts{
         kwd.add("oct");
         kwd.add("open");
         kwd.add("opendir");
+        kwd.add("ops");
         kwd.add("or");
         kwd.add("ord");
         kwd.add("our");
+        kwd.add("overload");
+        kwd.add("overloading");
         kwd.add("pack");
         kwd.add("package");
+        kwd.add("parent");
         kwd.add("pipe");
         kwd.add("pop");
         kwd.add("pos");
@@ -206,6 +227,7 @@ public class Consts{
         kwd.add("qw");
         kwd.add("qx");
         kwd.add("rand");
+        kwd.add("re");
         kwd.add("read");
         kwd.add("readdir");
         kwd.add("readline");
@@ -275,6 +297,8 @@ public class Consts{
         kwd.add("syswrite");
         kwd.add("tell");
         kwd.add("telldir");
+        kwd.add("threads::shared");
+        kwd.add("threads");
         kwd.add("tie");
         kwd.add("tied");
         kwd.add("time");
@@ -298,10 +322,12 @@ public class Consts{
         kwd.add("values");
         kwd.add("vars");
         kwd.add("vec");
+        kwd.add("vmsish");
         kwd.add("wait");
         kwd.add("waitpid");
         kwd.add("wantarray");
         kwd.add("warn");
+        kwd.add("warnings::register");
         kwd.add("warnings");
         kwd.add("when");
         kwd.add("while");

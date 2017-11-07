@@ -61,6 +61,9 @@ f none usr/opengrok/doc/paths.tsv=paths.tsv 0444 root sys
 f none usr/opengrok/doc/EXAMPLE.txt=doc/EXAMPLE.txt 0444 root sys
 f none usr/opengrok/doc/opengrok-agent.properties=platform/solaris/default/opengrok-agent.properties 0444 root sys
 f none usr/opengrok/lib/opengrok.jar=dist/opengrok.jar 0444 root bin
+d none var/opengrok/share 0755 root sys
+d none var/opengrok/share/plugins 0755 root sys
+f none usr/opengrok/share/plugins/plugins.jar=dist/plugins.jar 0444 root bin
 f none usr/opengrok/lib/ant.jar=dist/lib/ant.jar 0444 root bin
 f none usr/opengrok/lib/bcel-6.0.jar=lib/bcel-6.0.jar 0444 root bin
 f none usr/opengrok/lib/lucene-core-7.1.0.jar=lib/lucene-core-7.1.0.jar 0444 root bin

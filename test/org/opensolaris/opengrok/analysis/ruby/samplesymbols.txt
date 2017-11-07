@@ -1,0 +1,186 @@
+Board		# 4:class Board
+clr
+colorstr
+id
+id
+put
+col
+str
+colorstr
+str
+@hi
+@mc
+@total
+private		# 19:private :clr
+:clr
+:pos
+:colorstr
+:put
+CHR
+COL
+initialize	# 22:def initialize
+@hi
+@wi
+reset
+reset		# 27:def reset
+@cx
+@cy
+@mc
+@over
+@data
+@hi
+@wi
+@state
+@hi
+@wi
+@total
+@hi
+@wi
+@total
+@data
+@total
+@data
+@data
+clr
+@hi
+colorstr
+COL
+CHR
+@wi
+@cx
+@cy
+mark		# 49:def mark
+@state
+@wi
+@cy
+@cx
+@state
+@wi
+@cy
+@cx
+@mc
+@mc
+@total
+@total
+put
+@cx
+@cy
+COL
+CHR
+@cx		# 57:def open(x=@cx
+@cy
+@state
+@wi
+@state
+@wi
+@total
+@total
+@state
+@wi
+@mc
+@mc
+@state
+@wi
+fetch
+@over
+put
+COL
+CHR
+@wi
+@wi
+@hi
+@hi
+@wi
+@hi
+@cx
+@cy
+fetch		# 78:def fetch(
+@wi
+@hi
+@data
+@wi
+fetch		# 90:  fetch
+fetch
+fetch
+fetch
+fetch
+fetch
+fetch
+fetch
+over		# 94:def over(
+win
+quit
+win
+@cx
+@cy
+CHR
+@hi
+win
+over?		# 105:def over?
+remain
+@mc
+@total
+@over
+remain
+over
+remain
+quit		# 116:def quit
+@hi
+@wi
+colorstr
+@state
+@wi
+COL
+COL
+fetch
+CHR
+CHR
+down		# 127:def down
+@cy
+@hi
+@cy
+@cy
+@cx
+@cy
+up		# 131:def up
+@cy
+@cy
+@cy
+@cx
+@cy
+left		# 135:def left
+@cx
+@cx
+@cx
+@cx
+@cy
+right		# 139:def right
+@cx
+@wi
+@cx
+@cx
+@cx
+@cy
+bd		# 145:bd=Board
+Board
+STDIN
+bd
+reset
+bd
+mark
+bd
+down
+bd
+up
+bd
+left
+bd
+right
+bd
+bd
+quit
+bd		# 168:    if bd.over?
+over?
+STDIN
+bd
+reset

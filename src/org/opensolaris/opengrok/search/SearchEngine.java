@@ -308,7 +308,7 @@ public class SearchEngine {
     public int search() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         return search(
-                env.hasProjects() ? env.getProjectList() : new ArrayList<Project>(),
+                env.hasProjects() ? env.getProjectList() : new ArrayList<>(),
                 new File(env.getDataRootFile(), IndexDatabase.INDEX_DIR));
     }
 

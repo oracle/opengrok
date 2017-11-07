@@ -62,6 +62,11 @@ public final class IOUtils {
         // singleton
     }
 
+    /**
+     * If {@code c} is not null, tries to {@code close}, catching and logging
+     * any {@link IOException}.
+     * @param c null or a defined instance
+     */
     public static void close(Closeable c) {
         if (c != null) {
             try {

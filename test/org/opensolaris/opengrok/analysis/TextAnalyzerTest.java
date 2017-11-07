@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -134,6 +135,11 @@ public class TextAnalyzerTest {
 
                 contents = sb.toString();
             }
+        }
+
+        @Override
+        protected JFlexXref newXref(Reader reader) {
+            throw new UnsupportedOperationException("Not needed by test.");
         }
     }
 }

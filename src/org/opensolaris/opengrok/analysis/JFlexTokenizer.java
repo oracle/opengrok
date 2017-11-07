@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -44,7 +45,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
     protected Stack<Integer> stack = new Stack<>();
 
     // default jflex scanner methods and variables
-    abstract public boolean yylex() throws IOException;
+    abstract public int yylex() throws IOException;
 
     abstract public void yyreset(Reader reader);
 
@@ -52,7 +53,9 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     abstract public void yybegin(int newState);
 
-    abstract public int yystate();
+    abstract public int yystate();    
+        
+    abstract public int getYYEOF();
 
     //TODO can be removed once we figure out jflex generation of empty constructor
     protected JFlexTokenizer(Reader in) {
@@ -81,7 +84,6 @@ public abstract class JFlexTokenizer extends Tokenizer {
     protected CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
     protected OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
     protected PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
-    protected int finalOffset;
 
     /**
      * This will re-initialize internal AttributeImpls, or it returns false if
@@ -93,7 +95,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
     @Override
     public final boolean incrementToken() throws IOException {
         clearAttributes();
-        return this.yylex();
+        return this.yylex() != getYYEOF();
     }
 
     protected void setAttribs(String str, int start, int end) {
@@ -113,5 +115,14 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     public void yypop() {
         this.yybegin(this.stack.pop());
+    }
+
+    /**
+     * reset current yy state, and clear stack
+     * @param newState state id
+     */
+    public void yyjump(int newState) {
+        yybegin(newState);
+        this.stack.clear();
     }
 }

@@ -1,0 +1,526 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+/*
+ * Regex productions shared between RubyXref and RubySymbolTokenizer
+ */
+
+WhspChar      = [ \t\f]
+WhiteSpace    = {WhspChar}+
+MaybeWhsp     = {WhspChar}*
+EOL = \r|\n|\r\n
+
+/*
+ * globals_rdoc: Pre-defined variables
+ * regexp_rdoc: Special global variables
+ */
+SPIdentifier = \$ ( [\!\@\&\`\'\+\1\~\=\/\\\,\;\<\>\_\0\*\$\?\:\"] |
+    "-0" | "-a" | "-d" | "-F" | "-i" | "-I" | "-l" | "-p" | "-v" | "-w" |
+    [~&\`\'\+] | [0-9]+ )
+
+AnyIdentifier = ({Local_var} | {Instance_var} | {Class_var} | {Global_var} |
+    {Method_name})
+
+/*
+ * A local variable name must start with a lowercase US-ASCII letter or a
+ * character with the eight bit set. Typically local variables are US-ASCII
+ * compatible since the keys to type them exist on all keyboards. (Ruby
+ * programs must be written in a US-ASCII-compatible character set. In such
+ * character sets if the eight bit is set it indicates an extended character.
+ * Ruby allows local variables to contain such characters.)
+ *  A local variable name may contain letters, numbers, an _ (underscore or low
+ * line) or a character with the eighth bit set.
+ */
+Local_var = {Local_char1} {Local_nextchar}*
+Local_char1 = ([a-z] | {Char8})
+Local_nextchar = ([a-zA-Z0-9_] | {Char8})
+Char8 = [\xA0-\xFF]
+/*
+ * An instance variable must start with a @ (“at” sign or commercial at).
+ * Otherwise instance variable names follow the rules as local variable names.
+ * Since the instance variable starts with an @ the second character may be an
+ * upper-case letter.
+ */
+Instance_var = [@]{Local_nextchar}+
+/*
+ * A class variable must start with a @@ (two “at” signs). The rest of the name
+ * follows the same rules as instance variables.
+ */
+Class_var = [@][@]{Local_nextchar}+
+/*
+ * Global variables start with a $ (dollar sign). The rest of the name follows
+ * the same rules as instance variables.
+ */
+Global_var = [$]{Local_nextchar}+
+
+/*
+ * methods_rdoc: Method Names
+ *
+ * Method names may be one of the operators or must start a letter or a
+ * character with the eight bit set.
+ *
+ * Method names may end with a ! (bang or exclamation mark), a ? (question
+ * mark) or = equals sign.
+ *
+ * N.b. an '=' suffix is not included in {Method_name}, because that character
+ * in a name is aligned with the operation (assignment) and not with the target
+ * (variable). E.g., `def birthdate=` is for an assignment of `birthdate'.
+ */
+Method_name_base = ([a-zA-Z] | {Char8}) {Local_nextchar}*
+Method_name = {Method_name_base} [\!\?]?
+
+/*
+ * modules_and_classes_rdoc: Nesting
+ *
+ * You may also define inner modules using ::
+ */
+Modules_nested = {AnyIdentifier}("::"{AnyIdentifier})+
+
+/*
+ * literals_rdoc: Numbers
+ */
+Numeric_literal = ({Decimal_literal} | {Decimal_prefixed} | {Hex_prefixed} |
+    {Octal_prefixed} | {Binary_prefixed})
+/*
+ * You can write integers of any size as follows: 1234 1_234
+ * Floating point numbers may be written as follows: 12.34 1234e-2 1.234E1
+ */
+Decimal_literal = {Numeral} ([\.]{Numeral})? {Exponent}?
+Numeral = {Digit} ([_]? {Digit})*
+Exponent = [Ee] [\+\-]? {Numeral}
+Digit = [0-9]
+/*
+ * You can use a special prefix to write numbers in decimal, hexadecimal, octal
+ * or binary formats. For decimal numbers use a prefix of 0d, for hexadecimal
+ * numbers use a prefix of 0x, for octal numbers use a prefix of 0 or 0o, for
+ * binary numbers use a prefix of 0b. The alphabetic component of the number is
+ * not case-sensitive.
+ *
+ * Like integers and floats you may use an underscore for readability.
+ *
+ * Examples: 0d170 0D170 0xaa 0xAa 0xAA 0Xaa 0XAa 0XaA 0252 0o252 0O252
+ *     0b10101010 0B10101010
+ */
+Decimal_prefixed = [0][Dd] {Numeral}
+Hex_prefixed = [0][Xx] {Hex_numeral}
+Hex_numeral = {Hex_digit} ([_]? {Hex_digit})*
+Hex_digit = [0-9A-Fa-z]
+/*
+ * The "0"-prefixed octal number as a regex will be captured by
+ * {Decimal_literal} so it is not defined in {Octal_prefixed}.
+ */
+Octal_prefixed = [0][Oo]{Octal_numeral}
+Octal_numeral = {Octal_digit} ([_]? {Octal_digit})*
+Octal_digit = [0-7]
+Binary_prefixed = [0][Bb]{Binary_numeral}
+Binary_numeral = {Binary_digit} ([_]? {Binary_digit})*
+Binary_digit = [01]
+
+/*
+ * There is also a character literal notation to represent single character
+ * strings, which syntax is a question mark (?) followed by a single character
+ * or escape sequence that corresponds to a single codepoint in the script
+ * encoding: ?a #=> "a"  ?abc #=> SyntaxError  ?\n #=> "\n"  ?\s #=> " "
+ *     ?\\ #=> "\\"  ?\u{41} #=> "A"  ?\C-a #=> "\x01"  ?\M-a #=> "\xE1"
+ *     ?\M-\C-a #=> "\x81"  ?\C-\M-a #=> "\x81", same as above  ?あ #=> "あ"
+ * N.b. the Ruby rule about ?abc is not enforced in this regex.
+ */
+Character_literal = [?] ({Character_literal_esc} | [^\s])
+Character_literal_esc = [\\] ([MC][\-][^\s] | "u{" [0-9]+ "}" |
+    "M-C-" [^\s] | "C-M-" [^\s] | [^\s])
+
+/*
+ * literals_rdoc: Strings
+ *
+ * The most common way of writing strings is using ". The string may be many
+ * lines long. Any internal " must be escaped. Strings may allow interpolation
+ * of other values using #{...}, or they may be cross-referenced as URLs or
+ * files, so they are handled as separate yy states.
+ */
+
+WxSigils = [[\W]--[\$\@\"\'\`\#\r\n]]
+
+// see also: RubyLexHelper.setState() which mirrors this regex
+URIChar = [\?\#\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
+
+FNameChar = [a-zA-Z0-9_\-\.]
+FileExt = ([Rr][Bb] | [Rr][Uu][Bb][Yy] | [Dd][Ii][Ff][Ff] |
+    [Pp][Aa][Tt][Cc][Hh])
+File = [a-zA-Z]{FNameChar}* "." {FileExt}
+Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
+
+POD_begin = "=begin"
+POD_end = "=end"
+
+Quo0 =           [[\`\(\)\<\>\[\]\{\}\p{P}\p{S}]]
+QuoP =     [%]{Quo0}
+QuoPC =    [%][IQRSWX]{Quo0}
+QuoPC_xN = [%][iqrswx]{Quo0}
+
+Symbol =    [:]{AnyIdentifier}
+Symquo =    [:][\"]
+Symquo_xN = [:][\']
+
+//
+// Track some keywords that can be used to identify heuristically a possible
+// beginning of the shortcut syntax, //, for m//. Also include any perlfunc
+// that takes /PATTERN/. Heuristics using punctuation are defined inline later
+// in some rules.
+//
+Mwords_1 = ("and" | "or" | "not")
+Mwords_2 = ("begin" | "end" | "unless" | "until" | "when" | "while")
+Mwords = ({Mwords_1} | {Mwords_2})
+
+Mpunc1YYIN = [\(\!\[]
+Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="[=]?|"!="|"<="|">="|"<=>"|"=>")
+
+Here_marker = {Local_nextchar}+
+Here_EOF1 = {Here_marker}
+Here_EOF2 = [\'][^\r\n\']*[\']
+Here_EOF3 = [\`][^\r\n\`]*[\`]
+
+/*
+ * YYINITIAL : nothing yet parsed or just after an non-continuation EOL
+ * INTRA : saw content from YYINITIAL but not yet other state or [{}] or non-
+ *     continuation {EOL}
+ * SCOMMENT : single-line comment
+ * POD : embedded documentation
+ * QUO : quote-like that is OK to match paths|files|URLs|e-mails
+ * QUOxN : "" but with no interpolation
+ * QUOxL : quote-like that is not OK to match paths|files|URLs|e-mails
+ *     because a non-traditional character is used as the quote-like delimiter
+ * QUOxLxN : "" but with no interpolation
+ * QM : a quote-like has ended, and quote modifier chars are awaited
+ * HERE : Here-docs
+ * HERExN : Here-docs with no interpolation
+ * HEREin : Indented Here-docs
+ * HEREinxN : Indented Here-docs with no interpolation
+ */
+%state INTRA SCOMMENT POD
+%state QUO QUOxN QUOxL QUOxLxN QM
+%state HERE HERExN HEREin HEREinxN
+
+%%
+<HERE, HERExN> {
+    ^ {Here_marker} / {MaybeWhsp}{EOL}    {
+        h.maybeEndHere(yytext());
+    }
+}
+
+<HEREin, HEREinxN> {
+    ^ {MaybeWhsp} {Here_marker} / {MaybeWhsp}{EOL}    {
+        h.maybeEndHere(yytext());
+    }
+}
+
+<INTRA> {
+    // Syntax that switches back to YYINITIAL but preserves otherwise the stack
+    [\{] |
+    "&&" |
+    "||"    {
+        yypushback(yytext().length());
+        yybegin(YYINITIAL);
+    }
+}
+
+<YYINITIAL, INTRA> {
+    [\\] {EOL}    {
+        maybeIntraState();
+        take("\\");
+        startNewLine();
+    }
+
+    "<<"[~\-]? ({Here_EOF1} | {Here_EOF2} | {Here_EOF3})    {
+        maybeIntraState();
+        h.hop(yytext());
+    }
+
+    {Instance_var} | {Class_var} | {Global_var} | {Symbol}    {
+        maybeIntraState();
+        String id = yytext();
+        if (takeSymbol(id, 0, true) && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {Local_var} | {Method_name}    {
+        maybeIntraState();
+        String id = yytext();
+        if (takeSymbol(id, 0, false) && returnOnSymbol()) {
+            return yystate();
+        }
+    }
+
+    {SPIdentifier}    {
+        maybeIntraState();
+        takeKeyword(yytext());
+    }
+
+    {Modules_nested}    {
+        maybeIntraState();
+        h.takeModules(yytext());
+    }
+
+    {Character_literal}    {
+        maybeIntraState();
+        take(HtmlConsts.SPAN_S);
+        takeNonword(yytext());
+        take(HtmlConsts.ZSPAN);
+    }
+
+    {Numeric_literal}    {
+        maybeIntraState();
+        take(HtmlConsts.SPAN_N);
+        takeNonword(yytext());
+        take(HtmlConsts.ZSPAN);
+    }
+
+    \"    { h.qop(yytext(), 0, false); }
+    \'    { h.qop(yytext(), 0, true); }
+    \#    {
+        yypush(SCOMMENT);
+        take(HtmlConsts.SPAN_C);
+        takeNonword(yytext());
+    }
+
+    // Quote with two character names plus possibly a {WxSigils} spacer
+    ^ {QuoPC}                   { h.qop(yytext(), 2, false); }
+    {WxSigils}{QuoPC}           { h.qop(yytext(), 3, false); }
+    ^ {QuoPC_xN}                { h.qop(yytext(), 2, true); }
+    {WxSigils}{QuoPC_xN}        { h.qop(yytext(), 3, true); }
+
+    // Quote with one character names plus possibly a {WxSigils} spacer
+    ^ {QuoP}                    { h.qop(yytext(), 1, false); }
+    {WxSigils}{QuoP}            { h.qop(yytext(), 2, false); }
+    ^ {Symquo}                  { h.qop(yytext(), 1, false); }
+    {WxSigils}{Symquo}          { h.qop(yytext(), 2, false); }
+    ^ {Symquo_xN}               { h.qop(yytext(), 1, true); }
+    {WxSigils}{Symquo_xN}       { h.qop(yytext(), 2, true); }
+
+    // POD-end without having seen POD-begin is akin to a one-line comment
+    ^ {POD_end} [^\n\r]*    {
+        takeNonword(yytext());
+    }
+
+    // POD start
+    ^ {POD_begin}   {
+        yypush(POD);
+        take(HtmlConsts.SPAN_C);
+        take(yytext());
+    }
+
+    [\{\}]    {
+        String capture = yytext();
+        if (h.maybeEndInterpolation(capture)) {
+            popHelper();
+            yypop();
+            take(HtmlConsts.SPAN_S);
+        }
+        takeNonword(capture);
+    }
+}
+
+<YYINITIAL> {
+    "/"    {
+        // OK to pass a fake "m/" with doWrite=false
+        h.qop(false, "m/", 1, false);
+        take(HtmlConsts.SPAN_S);
+        take(yytext());
+    }
+}
+
+<YYINITIAL, INTRA> {
+    // Use some heuristics to identify double-slash syntax for the m//
+    // operator. We can't handle all possible appearances of `//', because the
+    // first slash cannot always be distinguished from division (/) without
+    // true parsing.
+
+    {Mpunc1YYIN} \s* "/"    { h.hqopPunc(yytext()); }
+}
+
+<INTRA> {
+    // Continue with more punctuation heuristics
+
+    {Mpunc2IN} \s* "/"      { h.hqopPunc(yytext()); }
+}
+
+<YYINITIAL, INTRA> {
+    // Define keyword heuristics
+
+    ^ {Mwords} \s* "/"    {
+        h.hqopSymbol(yytext());
+    }
+
+    {WxSigils}{Mwords} \s* "/"    {
+        String capture = yytext();
+        if (takeAllContent()) {
+            String boundary = capture.substring(0, 1);
+            takeNonword(boundary);
+        }
+        h.hqopSymbol(capture.substring(1));
+    }
+}
+
+<QUO, QUOxN, QUOxL, QUOxLxN, HERE, HEREin> {
+    \\ \S    {
+        takeNonword(yytext());
+    }
+}
+
+<QUO, QUOxL> {
+    "#{"    {
+        takeNonword(yytext());
+        take(HtmlConsts.ZSPAN);
+        yypush(YYINITIAL);
+        pushHelper();
+        h.interpop();
+    }
+}
+
+<QUO, QUOxN, QUOxL, QUOxLxN> {
+    {Quo0}    {
+        String capture = yytext();
+        takeNonword(capture);
+        if (h.maybeEndQuote(capture)) {
+            yypop();
+            if (h.areModifiersOK()) yypush(QM);
+            take(HtmlConsts.ZSPAN);
+        }
+    }
+}
+
+<QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
+    {WhiteSpace}{EOL} |
+    {EOL} {
+        take(HtmlConsts.ZSPAN);
+        startNewLine();
+        take(HtmlConsts.SPAN_S);
+    }
+}
+
+<QM> {
+    // /PAT/imxouesn
+    [a-z]    {
+        take(yytext());
+    }
+
+    // anything else ends the quote-modifiers state
+    [^]    {
+        yypop();
+        yypushback(yytext().length());
+    }
+}
+
+<POD> {
+    ^ {POD_end} [^\n\r]*    {
+        yypop();
+        takeNonword(yytext());
+        take(HtmlConsts.ZSPAN);
+    }
+
+    {WhiteSpace}{EOL} |
+    {EOL}    {
+        startNewLine();
+    }
+}
+
+<SCOMMENT> {
+    {WhiteSpace}{EOL} |
+    {EOL}    {
+        String capture = yytext();
+        yypushback(capture.length());
+        yypop();
+        take(HtmlConsts.ZSPAN);
+    }
+}
+
+<YYINITIAL, INTRA> {
+    {WhiteSpace}{EOL} |
+    {EOL}    {
+        String capture = yytext();
+        if (h.maybeStartHere()) {
+            yypushback(capture.length());
+        } else {
+            startNewLine();
+            yybegin(YYINITIAL);
+        }
+    }
+}
+
+<YYINITIAL, INTRA, SCOMMENT, POD, QUO, QUOxN, QUOxL, QUOxLxN,
+    HERE, HERExN, HEREin, HEREinxN> {
+
+    [&<>\"\']    {
+        maybeIntraState();
+        takeNonword(yytext());
+    }
+
+    // Only one whitespace char at a time or else {WxSigils} can be broken
+    {WhspChar}    {
+        take(yytext());
+    }
+
+    [!-~]    {
+        maybeIntraState();
+        take(yytext());
+    }
+
+    [^\n\r]    {
+        maybeIntraState();
+        takeUnicode(yytext());
+    }
+}
+
+// "string links" and "comment links"
+<SCOMMENT, POD, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
+    {Path}    {
+        if (takeAllContent()) {
+            take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
+        }
+    }
+
+    {File}    {
+        if (takeAllContent()) {
+            String path = yytext();
+            take("<a href=\"" + getUrlPrefix() + "path=");
+            take(path);
+            appendProject();
+            take("\">");
+            take(path);
+            take("</a>");
+        }
+    }
+
+    ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]    {
+        if (takeAllContent()) {
+            appendLink(yytext());
+        }
+    }
+
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        if (takeAllContent()) {
+            writeEMailAddress(yytext());
+        }
+    }
+}

@@ -19,19 +19,14 @@
 
 /*
  * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.perl;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
 
 /**
  *
@@ -44,6 +39,7 @@ public class PerlAnalyzerFactory extends FileAnalyzerFactory {
     
     private static final String[] SUFFIXES = {
         "PL",
+        "PLX",
         "PERL",
         "PM",
         "PH"
@@ -62,11 +58,5 @@ public class PerlAnalyzerFactory extends FileAnalyzerFactory {
     @Override
     protected FileAnalyzer newAnalyzer() {
         return new PerlAnalyzer(this);
-    }
-
-    @Override
-    public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
-        throws IOException {
-        PerlAnalyzer.writeXref(in, out, defs, annotation, project);
     }
 }

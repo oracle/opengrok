@@ -20,6 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
+Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
 --%><%--
 
@@ -58,6 +59,7 @@ org.opensolaris.opengrok.web.PageConfig"
     title="Default" href="<%= dstyle %>" />
 <link rel="alternate stylesheet" type="text/css" media="all"
     title="Paper White" href="<%= pstyle %>" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/mandoc.css" media="all" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/print.css" media="print" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.0-custom.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tooltip.css" />

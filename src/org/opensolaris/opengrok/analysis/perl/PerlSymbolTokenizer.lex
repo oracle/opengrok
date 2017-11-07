@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -26,58 +27,113 @@
  */
 
 package org.opensolaris.opengrok.analysis.perl;
+
 import java.io.IOException;
-import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
 %class PerlSymbolTokenizer
 %extends JFlexTokenizer
+%implements PerlLexListener
 %unicode
-%init{
-super(in);
-%init}
-%type boolean
-%eofval{
-return false;
-%eofval}
+%int
 %char
+%init{
+    super(in);
+    h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
+        HERE, HERExN, HEREin, HEREinxN);
+%init}
+%include CommonTokenizer.lexh
+%{
+    private final PerlLexHelper h;
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+    private String lastSymbol;
 
-%state STRING SCOMMENT QSTRING
+    /**
+     * Reinitialize the tokenizer with new reader.
+     * @throws java.io.IOException in case of I/O error
+     */
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        h.reset();
+    }
 
-%%
+    @Override
+    public void take(String value) throws IOException {
+        // noop
+    }
 
-<YYINITIAL> {
-{Identifier} {String id = yytext();
-                if(!Consts.kwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
-                        return true; }
-              }
- \"     { yybegin(STRING); }
- \'     { yybegin(QSTRING); }
- "#"   { yybegin(SCOMMENT); }
- }
+    @Override
+    public void takeNonword(String value) throws IOException {
+        // noop
+    }
 
-<STRING> {
- \"     { yybegin(YYINITIAL); }
- \\\"    {}
- \n     { yybegin(YYINITIAL); }
-}
+    public void takeUnicode(String value) throws IOException {
+        // noop
+    }
 
-<QSTRING> {
- \'     { yybegin(YYINITIAL); }
- \\\'   {}
- \n     { yybegin(YYINITIAL); }
-}
+    @Override
+    public boolean takeSymbol(String value, int captureOffset,
+        boolean ignoreKwd)
+            throws IOException {
+        if (ignoreKwd || !Consts.kwd.contains(value)) {
+            lastSymbol = value;
+            setAttribs(value, yychar + captureOffset, yychar + captureOffset +
+                value.length());
+            return true;
+        } else {
+            lastSymbol = null;
+        }
+        return false;
+    }
 
-<SCOMMENT> {
- \n    { yybegin(YYINITIAL);}
-}
+    @Override
+    public void skipSymbol() {
+        lastSymbol = null;
+    }
 
-<YYINITIAL, STRING, SCOMMENT, QSTRING> {
-<<EOF>>   { return false;}
-[^]    {}
-}
+    @Override
+    public void takeKeyword(String value) throws IOException {
+        lastSymbol = null;
+    }
+
+    @Override
+    public void startNewLine() throws IOException {
+        // noop
+    }
+
+    @Override
+    public void abortQuote() throws IOException {
+        yypop();
+        if (h.areModifiersOK()) yypush(QM);
+        take(HtmlConsts.ZSPAN);
+    }
+
+    // If the state is YYINITIAL, then transitions to INTRA; otherwise does
+    // nothing, because other transitions would have saved the state.
+    public void maybeIntraState() {
+        if (yystate() == YYINITIAL) yybegin(INTRA);
+    }
+
+    protected boolean takeAllContent() {
+        return false;
+    }
+
+    protected boolean returnOnSymbol() {
+        return lastSymbol != null;
+    }
+
+    protected String getUrlPrefix() { return null; }
+
+    protected void appendProject() { /* noop */ }
+
+    protected void appendLink(String s) { /* noop */ }
+
+    protected void writeEMailAddress(String s) { /* noop */ }
+%}
+
+%include PerlProductions.lexh

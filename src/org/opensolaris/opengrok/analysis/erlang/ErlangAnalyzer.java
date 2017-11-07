@@ -23,16 +23,11 @@
 
 package org.opensolaris.opengrok.analysis.erlang;
 
-import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
-import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
 
 public class ErlangAnalyzer extends AbstractSourceCodeAnalyzer {
 
@@ -45,19 +40,8 @@ public class ErlangAnalyzer extends AbstractSourceCodeAnalyzer {
         SymbolTokenizer=new ErlangSymbolTokenizer(FileAnalyzer.dummyReader);    
     }
 
-//    @Override
-//    protected JFlexScopeParser newScopeParser(Reader reader) {
-//        return new ErlangScopeParser(reader);
-//    }
-   
     @Override
     protected JFlexXref newXref(Reader reader) {
         return new ErlangXref(reader);
-    }
-
-    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
-        ErlangXref xref = new ErlangXref(in);
-        AbstractSourceCodeAnalyzer.writeXref(xref, in, out, defs, annotation, project);
-
     }
 }

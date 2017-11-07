@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -63,10 +64,6 @@ public abstract class JFlexXref {
     protected Scope scope;
     private int scopeLevel = 0;
 
-    /**
-     * EOF value returned by yylex().
-     */
-    private final int yyeof;
     /**
      * See {@link RuntimeEnvironment#getUserPage()}. Per default initialized in
      * the constructor and here to be consistent and avoid lot of unnecessary
@@ -139,30 +136,13 @@ public abstract class JFlexXref {
         new Style("subroutine", "xsr", "Subroutine"),};
 
     protected JFlexXref() {
-        try {
-            // TODO when bug #16053 is fixed, we should add a getter to a file
-            // that's included from all the Xref classes so that we avoid the
-            // reflection.
-            Field f = getClass().getField("YYEOF");
-            yyeof = f.getInt(null);
-            userPageLink = RuntimeEnvironment.getInstance().getUserPage();
-            if (userPageLink != null && userPageLink.length() == 0) {
-                userPageLink = null;
-            }
-            userPageSuffix = RuntimeEnvironment.getInstance().getUserPageSuffix();
-            if (userPageSuffix != null && userPageSuffix.length() == 0) {
-                userPageSuffix = null;
-            }
-        } catch (NoSuchFieldException | SecurityException 
-                | IllegalArgumentException | IllegalAccessException e) {
-            // The auto-generated constructors for the Xref classes don't
-            // expect a checked exception, so wrap it in an AssertionError.
-            // This should never happen, since all the Xref classes will get
-            // a public static YYEOF field from JFlex.
-                        
-            // NOPMD (stack trace is preserved by initCause(), but
-            // PMD thinks it's lost)            
-            throw new AssertionError("Couldn't initialize yyeof", e); 
+        userPageLink = RuntimeEnvironment.getInstance().getUserPage();
+        if (userPageLink != null && userPageLink.length() == 0) {
+            userPageLink = null;
+        }
+        userPageSuffix = RuntimeEnvironment.getInstance().getUserPageSuffix();
+        if (userPageSuffix != null && userPageSuffix.length() == 0) {
+            userPageSuffix = null;
         }
     }
 
@@ -181,7 +161,7 @@ public abstract class JFlexXref {
      *
      * @param reader new reader for this lexer
      */
-    public final void reInit(Reader reader) {
+    public void reInit(Reader reader) {
         this.yyreset(reader);
         annotation = null;
 
@@ -324,6 +304,12 @@ public abstract class JFlexXref {
     public abstract int yystate();
 
     /**
+     * Gets the YYEOF value.
+     * @return YYEOF
+     */
+    public abstract int getYYEOF();
+
+    /**
      * Write xref to the specified {@code Writer}.
      *
      * @param out xref destination
@@ -334,7 +320,7 @@ public abstract class JFlexXref {
         writeSymbolTable();
         setLineNumber(0);
         startNewLine();
-        while (yylex() != yyeof) { // NOPMD while statement intentionally empty
+        while (yylex() != getYYEOF()) { // NOPMD while statement intentionally empty
             // nothing to do here, yylex() will do the work
         }
 
@@ -478,7 +464,7 @@ public abstract class JFlexXref {
      *
      * @throws IOException on error when writing the xref
      */
-    protected void startNewLine() throws IOException {
+    public void startNewLine() throws IOException {
         String iconId = null;
         int line = getLineNumber() + 1;
         boolean skipNl = false;
@@ -537,14 +523,16 @@ public abstract class JFlexXref {
      * @param keywords a set of keywords recognized by this analyzer (no links
      * will be generated if the symbol is a keyword)
      * @param line the line number on which the symbol appears
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null
      * @throws IOException if an error occurs while writing to the stream
      */
-    protected void writeSymbol(String symbol, Set<String> keywords, int line)
+    protected boolean writeSymbol(String symbol, Set<String> keywords, int line)
             throws IOException {
-        writeSymbol(symbol, keywords, line, true, false);
+        return writeSymbol(symbol, keywords, line, true, false);
     }
 
-        /**
+    /**
      * Write a symbol and generate links as appropriate.
      *
      * @param symbol the symbol to write
@@ -552,12 +540,14 @@ public abstract class JFlexXref {
      * will be generated if the symbol is a keyword)
      * @param line the line number on which the symbol appears
      * @param caseSensitive Whether the keyword list is case sensitive
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null
      * @throws IOException if an error occurs while writing to the stream
      */
-    protected void writeSymbol(
+    protected boolean writeSymbol(
             String symbol, Set<String> keywords, int line, boolean caseSensitive)
             throws IOException {
-        writeSymbol(symbol, keywords, line, caseSensitive, false);
+        return writeSymbol(symbol, keywords, line, caseSensitive, false);
     }
     
     /**
@@ -569,10 +559,34 @@ public abstract class JFlexXref {
      * @param line the line number on which the symbol appears
      * @param caseSensitive Whether the keyword list is case sensitive
      * @param quote Whether the symbol gets quoted in links or not
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null
      * @throws IOException if an error occurs while writing to the stream
      */
-    protected void writeSymbol(
-            String symbol, Set<String> keywords, int line, boolean caseSensitive, boolean quote)
+    protected boolean writeSymbol(String symbol, Set<String> keywords,
+        int line, boolean caseSensitive, boolean quote)
+            throws IOException {
+        return writeSymbol(symbol, keywords, line, caseSensitive, quote, false);
+    }
+
+    /**
+     * Write a symbol and generate links as appropriate.
+     *
+     * @param symbol the symbol to write
+     * @param keywords a set of keywords recognized by this analyzer (no links
+     * will be generated if the symbol is a keyword)
+     * @param line the line number on which the symbol appears
+     * @param caseSensitive Whether the keyword list is case sensitive
+     * @param quote Whether the symbol gets quoted in links or not
+     * @param isKeyword Whether the symbol is certainly a keyword without
+     * bothering to look up in a defined {@code keywords}
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null and if-and-only-if {@code isKeyword} is false
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected boolean writeSymbol(
+            String symbol, Set<String> keywords, int line, boolean caseSensitive,
+            boolean quote, boolean isKeyword)
             throws IOException {
         String[] strs = new String[1];
         strs[0] = "";
@@ -580,10 +594,10 @@ public abstract class JFlexXref {
         String qt = (quote) ? "&quot;" : "";
 
         String check = caseSensitive ? symbol : symbol.toLowerCase();
-        if (keywords != null && keywords.contains( check )) {
+        if (isKeyword || (keywords != null && keywords.contains( check ))) {
             // This is a keyword, so we don't create a link.
             out.append("<b>").append(symbol).append("</b>");
-
+            return false;
         } else if (defs != null && defs.hasDefinitionAt(symbol, line, strs)) {
             // This is the definition of the symbol.
             String type = strs[0];
@@ -658,6 +672,18 @@ public abstract class JFlexXref {
             out.append(symbol);
             out.append("</a>");
         }
+        return true;
+    }
+
+    /**
+     * Write an {@code htmlize()}d keyword symbol
+     *
+     * @param symbol the symbol to write
+     * @param line the line number on which the symbol appears
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected void writeKeyword(String symbol, int line) throws IOException {
+        writeSymbol(htmlize(symbol), null, line, false, false, true);
     }
 
     /**
@@ -701,6 +727,14 @@ public abstract class JFlexXref {
     }
 
     /**
+     * save current yy state to stack
+     * @param newState state id
+     */
+    public void yypush(int newState) {
+        yypush(newState, null);
+    }
+
+    /**
      * pop last state from stack
      * @throws IOException in case of any I/O problem
      */
@@ -710,5 +744,15 @@ public abstract class JFlexXref {
         if (popString != null) {
             out.write(popString);
         }
+    }
+
+    /**
+     * reset current yy state, and clear stack
+     * @param newState state id
+     */
+    public void yyjump(int newState) {
+        yybegin(newState);
+        this.stack.clear();
+        this.stackPopString.clear();
     }
 }

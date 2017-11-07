@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.uue;
@@ -37,10 +38,8 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %init{
 super(in);
 %init}
-%type boolean
-%eofval{
-return false;
-%eofval}
+%int
+%include CommonTokenizer.lexh
 %caseless
 %char
 %{
@@ -57,7 +56,6 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 %state BEGIN MODE NAME UUE
 
 %%
-<<EOF>>   { return false; }
 
 <YYINITIAL> {
   ^ ( "begin " | "begin-" ) {
@@ -67,12 +65,12 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     yybegin(BEGIN);
     yypushback(1);
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
-    return true;
+    return yystate();
   }
 
   {Identifier}|{Number}|{Printable} {
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
-    return true;
+    return yystate();
   }
 
   [^] {}
@@ -90,7 +88,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
       yybegin(YYINITIAL);
     b64 = true;
     setAttribs(yytext(), yychar, yychar + yylength());
-    return true;
+    return yystate();
   }
   "base64 " {
     if (b64)
@@ -99,7 +97,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
       yybegin(YYINITIAL);
     yypushback(1);
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
-    return true;
+    return yystate();
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
 }
@@ -109,7 +107,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
   {Identifier}|{Number}|{Printable} {
     modeFound = true;
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
-    return true;
+    return yystate();
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
 }
@@ -124,7 +122,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
   {Identifier}|{Number}|{Printable} {
     nameFound = true;
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
-    return true;
+    return yystate();
   }
   [^\n] { yybegin(YYINITIAL); yypushback(1); }
 }
@@ -136,7 +134,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     if (t.equals("end") && !b64) {
       yybegin(YYINITIAL);
       setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
-      return true;
+      return yystate();
     } else if (t.equals("====") && b64)
       yybegin(YYINITIAL);
   }

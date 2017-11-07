@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.kotlin;
@@ -36,6 +37,7 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
+%include CommonXref.lexh
 %{
   /* Must match WhiteSpace regex */
   private final static String WHITE_SPACE = "[ \n\t\f]+";

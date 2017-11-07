@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
@@ -60,7 +60,7 @@ public class JarAnalyzer extends FileAnalyzer {
                     xrefOut.append("</b>");
                 }
 
-                doc.add(new TextField("full", ename, Store.NO));
+//                doc.add(new TextField("full", ename, Store.NO)); we cannot do multiple adds from lucene 7, so later call will merge this
                 FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
                 if (fac instanceof JavaClassAnalyzerFactory) {
                     if (xrefOut != null) {
@@ -68,7 +68,7 @@ public class JarAnalyzer extends FileAnalyzer {
                     }
                     JavaClassAnalyzer jca =
                             (JavaClassAnalyzer) fac.getAnalyzer();
-                    jca.analyze(doc, new BufferedInputStream(zis), xrefOut);
+                    jca.analyze(doc, new BufferedInputStream(zis), xrefOut,ename);
                 }
             }
         }

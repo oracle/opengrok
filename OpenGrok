@@ -41,6 +41,7 @@
 #   - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
 #                                 options for CTags program (for its --options
 #                                 switch), default is DATA_ROOT/etc/ctags.config
+#   - OPENGROK_MANDOC             Full path to mandoc(1) binary
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
@@ -80,6 +81,12 @@
 #   - OPENGROK_ENABLE_PROJECTS    Enable projects (set it to true or false)
 #                                 Every directory in SRC_ROOT is
 #                                   considered a separate project
+#   - OPENGROK_IGNORE_PATTERNS    Set ignored patterns for indexer to skip.
+#                                   OPENGROK_IGNORE_PATTERNS="-i dummy"
+#                                   OPENGROK_IGNORE_PATTERNS="-i f:dummy"
+#                                   OPENGROK_IGNORE_PATTERNS="-i d:dummy"
+#                                   Multiple entries can be joined together:
+#                                     "-i dummy -i d:tmp -i f:dummy"
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
 #                                 (by default 3 directories from SRC_ROOT)
@@ -112,6 +119,7 @@
 
 #
 # Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 #
 
 #
@@ -275,7 +283,7 @@ DefaultInstanceConfiguration()
     #JAVA_DEBUG="$JAVA_DEBUG,server=y,address=8010,suspend=y"
 
     # OPTIONAL: Ignore these patterns as names of files or directories
-    #IGNORE_PATTERNS="-i dummy"
+    #OPENGROK_IGNORE_PATTERNS="-i dummy"
     # To ignore skipping just the history cache creation for a particular
     # directory and all of it's subdirectories, touch an empty
     # .opengrok_skip_history file at the root of that directory
@@ -840,13 +848,14 @@ MinimalInvocation()
 CommonInvocation()
 {
     MinimalInvocation							\
-        ${IGNORE_PATTERNS}                    				\
+        ${OPENGROK_IGNORE_PATTERNS}                    			\
         ${HISTORY_TAGS}							\
         ${GENERATE_HISTORY}           					\
 	${RENAMED_FILES_HISTORY}					\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
         ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\
+        ${OPENGROK_MANDOC:+--mandoc} ${OPENGROK_MANDOC}			\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
         ${READ_XML_CONF}                                        	\

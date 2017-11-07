@@ -37,6 +37,8 @@ import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
 import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.document.MandocAnalyzer;
+import org.opensolaris.opengrok.analysis.document.TroffAnalyzer;
 import org.opensolaris.opengrok.analysis.executables.ELFAnalyzer;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
 import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer;
@@ -313,6 +315,26 @@ public class AnalyzerGuruTest {
         ByteArrayInputStream in = new ByteArrayInputStream(dotclass);
         FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame("despite 0xCAFEBABE magic,", JavaClassAnalyzer.class,
+            fa.getClass());
+    }
+
+    @Test
+    public void shouldMatchTroffMagic() throws Exception {
+        byte[] mandoc = {' ', '\n', '.', '\"', '\n', '.', 'T', 'H',
+            (byte) 0x20, '\n'};
+        ByteArrayInputStream in = new ByteArrayInputStream(mandoc);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        assertSame("despite .TH magic,", TroffAnalyzer.class,
+            fa.getClass());
+    }
+
+    @Test
+    public void shouldMatchMandocMagic() throws Exception {
+        byte[] mandoc = {'\n', ' ', '.', '\"', '\n', '.', 'D', 'd',
+            (byte) 0x20, '\n'};
+        ByteArrayInputStream in = new ByteArrayInputStream(mandoc);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        assertSame("despite .Dd magic,", MandocAnalyzer.class,
             fa.getClass());
     }
 }

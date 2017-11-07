@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
@@ -86,11 +86,11 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         try (InputStream in = src.getStream()) {
-            analyze(doc, in, xrefOut);
+            analyze(doc, in, xrefOut,null);
         }
     }
 
-    void analyze(Document doc, InputStream in, Writer xrefOut) throws IOException {
+    void analyze(Document doc, InputStream in, Writer xrefOut, String extra) throws IOException {
         List<String> defs = new ArrayList<>();
         List<String> refs = new ArrayList<>();
         List<String> full = new ArrayList<>();
@@ -118,13 +118,13 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             cout.write('\n');
         }
         String constants = cout.toString();
-        
-        StringReader fullout=new StringReader(fullt);
+        if (extra==null) {extra="";}
+        //merge all info into one reader to avoid problems with multiple adds in lucene 7
+        StringReader fullout_constants=new StringReader(extra+fullt+constants);
 
         doc.add(new TextField("defs", new IteratorReader(defs)));
         doc.add(new TextField("refs", new IteratorReader(refs)));
-        doc.add(new TextField("full", fullout));
-        doc.add(new TextField("full", constants, Store.NO));
+        doc.add(new TextField("full", fullout_constants));
     }
 
     

@@ -1,0 +1,27 @@
+'\" te
+.\"  Copyright 1989 AT&T
+.\" Copyright (c) 1998, Sun Microsystems, Inc. , All Rights Reserved
+.\" The contents of this file are subject to the terms of the Common Development and Distribution License (the "License").  You may not use this file except in compliance with the License.
+.\" You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE or http://www.opensolaris.org/os/licensing.  See the License for the specific language governing permissions and limitations under the License.
+.\" When distributing Covered Code, include this CDDL HEADER in each file and include the License file at usr/src/OPENSOLARIS.LICENSE.  If applicable, add the following below this CDDL HEADER, with the fields enclosed by brackets "[]" replaced with your own identifying information: Portions Copyright [yyyy] [name of copyright owner]
+.TH SYNC 1M "Dec 1, 1998"
+.SH NAME
+sync \- update the super block
+.SH SYNOPSIS
+.LP
+.nf
+\fBsync\fR
+.fi
+
+.SH DESCRIPTION
+.sp
+.LP
+\fBsync\fR executes the \fBsync\fR system primitive. If the system is to be
+stopped, \fBsync\fR must be called to ensure file system integrity. It will
+flush all previously unwritten system buffers out to disk, thus assuring that
+all file modifications up to that point will be saved. See \fBsync\fR(2) for
+details.
+.SH SEE ALSO
+.sp
+.LP
+\fBsync\fR(2), \fBattributes\fR(5)

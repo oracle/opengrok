@@ -189,7 +189,7 @@ do
 done
 
 
-for dir in /usr/opengrok/bin /usr/opengrok/lib
+for dir in /usr/opengrok/bin /usr/opengrok/lib /usr/opengrok/share
 do
    PKG pkgsend add dir mode=0755 owner=root group=bin path=${dir}
 done
@@ -255,6 +255,10 @@ PKG pkgsend add file tools/sync/reindex-project.ksh \
 
 PKG pkgsend add file dist/opengrok.jar \
     mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
+
+PKG pkgsend add dir mode=0755 owner=root group=bin path=/usr/opengrok/share/plugins
+PKG pkgsend add file dist/plugins.jar \
+    mode=0444 owner=root group=bin path=/usr/opengrok/share/plugins/plugins.jar
 
 PKG pkgsend add file logging.properties \
     mode=0444 owner=root group=sys path=/usr/opengrok/doc/logging.properties

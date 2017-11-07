@@ -22,16 +22,11 @@
  */
 package org.opensolaris.opengrok.analysis.csharp;
 
-import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
-import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
 
 /**
  *
@@ -52,10 +47,5 @@ public class CSharpAnalyzer extends AbstractSourceCodeAnalyzer {
     @Override
     protected boolean supportsScopes() {
         return true;
-    }
-
-    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
-        CSharpXref xref = new CSharpXref(in);
-        AbstractSourceCodeAnalyzer.writeXref(xref, in, out, defs, annotation, project);
     }
 }
