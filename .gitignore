@@ -11,6 +11,8 @@ opengrok.jar
 source.war
 prj.el
 nbproject/private
+plugins/LdapPlugin/nbproject/private/
+plugins/UserPlugin/nbproject/private/
 generatedsrc
 lib/JFlex.jar
 lib/jflex-*
