@@ -109,6 +109,8 @@ public class LdapFilter extends AbstractLdapPlugin {
      *
      * Use \% for printing the '%̈́' character.
      *
+     * Also replaces any other LDAP attribute that would not be ambiguous.
+     *
      * @param filter basic filter containing the special values
      * @param ldapUser user from LDAP
      * @param user user from the request
@@ -119,6 +121,7 @@ public class LdapFilter extends AbstractLdapPlugin {
         filter = filter.replaceAll("(?<!\\\\)%mail(?<!\\\\)%", ldapUser.getMail());
         filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
         filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
+        
         for (Entry<String, Set<String>> entry : ldapUser.getAttributes().entrySet()) {
             if (entry.getValue().size() == 1) {
                 try {
@@ -131,7 +134,9 @@ public class LdapFilter extends AbstractLdapPlugin {
             }
 
         }
+        
         filter = filter.replaceAll("\\\\%", "%");
+        
         return filter;
     }
 
