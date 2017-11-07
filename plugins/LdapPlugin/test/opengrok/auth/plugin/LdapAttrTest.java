@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -49,6 +49,7 @@ public class LdapAttrTest {
 
     private HttpServletRequest dummyRequest;
     private LdapAttr plugin;
+    private AuthorizationFramework framework;
 
     private static File whitelistFile;
 
@@ -77,7 +78,8 @@ public class LdapAttrTest {
 
         plugin.load(parameters);
 
-        AuthorizationFramework.getInstance().setPluginVersion(1);
+        framework = new AuthorizationFramework(null);
+        framework.setPluginVersion(1);
     }
 
     private void prepareRequest(String username, String mail, String... ous) {
@@ -152,7 +154,7 @@ public class LdapAttrTest {
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
 
-        AuthorizationFramework.getInstance().increasePluginVersion();
+        framework.increasePluginVersion();
         prepareRequest("007", "james@bond.com", "MI6", "MI7");
 
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
