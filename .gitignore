@@ -34,7 +34,6 @@ derby.log
 opengrok*.log
 nbproject/genfiles.properties
 glassfish
-webrev
 opengrok-web-nbproject/nbproject/private/
 opengrok-web-nbproject/nbproject/genfiles.properties
 run_my.bat
