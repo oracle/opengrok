@@ -4,10 +4,43 @@ This directory contains various authorization plugins:
 
   - FalsePlugin - denies everything
   - TruePlugin - allows everything
-  - HttpBasicAuthorizationPlugin -
-  - SampleAuthorizationPlugin - 
-  - LdapPlugin
-  - UserPlugin
+  - HttpBasicAuthorizationPlugin - sample plugin to utilize HTTP Basic auth
+  - LdapPlugin - set of plugins to perform authorization based on LDAP
+  - UserPlugin - extract user information from HTTP headers
+
+## Debugging
+
+In general, it should be possible to increase log level in Tomcat's
+`logging.properties` file to get more verbose logging.
+
+### UserPlugin
+
+Has a special property called "fake" that allows to insert custom headers,
+e.g. using the Modify headers Firefox plugin.
+
+
+```xml
+        <!-- get user cred from HTTP headers -->
+        <void method="add">
+            <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+                <void property="name">
+                    <string>opengrok.auth.plugin.UserPlugin</string>
+                </void>
+                <void property="flag">
+                    <string>REQUISITE</string>
+                </void>
+
+                <!-- set fake parameter to true to allow insertion of custom headers -->
+                <void property="setup">
+                        <void method="put">
+                                <string>fake</string>
+                                <boolean>true</boolean>
+                        </void>
+                </void>
+            </object>
+        </void>
+
+```
 
 ## Example configuration
 
@@ -16,6 +49,9 @@ plugins and a sub-stack with 1 SUFFICIENT and 1 REQUIRED plugin.
 
 There is a config file `ldap-plugin-config.xml` specified globally that will be
 used by LdapPlugin. See LdapPlugin directory for sample of this config file.
+
+This snippet can be put info read-only configuration that is passed to the
+indexer via the -R option.
 
 
 ```xml
