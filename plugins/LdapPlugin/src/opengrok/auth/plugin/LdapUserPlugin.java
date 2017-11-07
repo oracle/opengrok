@@ -38,7 +38,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
      * Check if the session exists and contains all necessary fields required by
      * this plugin.
      *
-     * @param req the http request
+     * @param req the HTTP request
      * @return true if it does; false otherwise
      */
     @Override

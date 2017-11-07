@@ -68,7 +68,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     protected String SESSION_VERSION = "opengrok-group-plugin-session-version";
 
     /**
-     * Configuration for the ldap servers.
+     * Configuration for the LDAP servers.
      */
     private Configuration cfg;
 
@@ -79,7 +79,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     private static final Map<String, Configuration> LOADED_CONFIGURATIONS = new ConcurrentHashMap<>();
 
     /**
-     * Ldap lookup facade.
+     * LDAP lookup facade.
      */
     private AbstractLdapProvider ldap;
 
@@ -159,7 +159,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     }
 
     /**
-     * Closes the ldap connections.
+     * Closes the LDAP connections.
      */
     @Override
     public void unload() {
@@ -182,7 +182,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     /**
      * Return the LDAP provider.
      *
-     * @return the ldap provider
+     * @return the LDAP provider
      */
     public AbstractLdapProvider getLdapProvider() {
         return ldap;
@@ -207,7 +207,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * Check if the session exists and contains all necessary fields required by
      * this plugin.
      *
-     * @param req the http request
+     * @param req the HTTP request
      * @return true if it does; false otherwise
      */
     protected boolean sessionExists(HttpServletRequest req) {
@@ -222,7 +222,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * appropriate fields. If any error occurs during the call which might be:
      * <ul>
      * <li>The user has not been authenticated</li>
-     * <li>The user can not be retrieved from ldap</li>
+     * <li>The user can not be retrieved from LDAP</li>
      * <li>There are no records for authorization for the user</li>
      * </ul>
      * the session is established as an empty session to avoid any exception in
