@@ -54,9 +54,15 @@ public class HeaderDecoder implements IUserDecoder {
         timestamp = request.getHeader(OSSO_COOKIE_TIMESTAMP_HEADER);
         userguid = request.getHeader(OSSO_USER_GUID_HEADER);
         
-        if (username == null || userguid == null || username.isEmpty() || userguid.isEmpty()) {
+        if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,
-                    "Can not construct an user: username or userguid could not be extracted");
+                    "Can not construct an user: username could not be extracted");
+            return null;
+        }
+        
+        if (userguid == null || userguid.isEmpty()) {
+            LOGGER.log(Level.WARNING,
+                    "Can not construct an user: userguid could not be extracted");
             return null;
         }
 
