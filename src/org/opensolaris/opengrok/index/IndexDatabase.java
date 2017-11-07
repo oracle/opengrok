@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -335,7 +336,12 @@ public class IndexDatabase {
                 Message m = Message.createMessage("project");
                 m.addTag(project.getName());
                 m.setText("indexed");
-                m.write(env.getConfigHost(), env.getConfigPort());
+                try {
+                    m.write(env.getConfigHost(), env.getConfigPort());
+                } catch (ConnectException ce) {
+                    LOGGER.log(Level.SEVERE, "Misconfig of webapp host or port", ce);
+                    System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());
+                }
             }
 
             // Also need to store the correct value in configuration

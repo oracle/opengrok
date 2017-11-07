@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.net.ConnectException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -243,7 +244,12 @@ public final class Indexer {
                 Message m = Message.createMessage("config");
                 m.addTag("set");
                 m.setText("projectsEnabled = true");
-//                m.write(host, port);
+                try {
+                m.write(host, port);
+                } catch (ConnectException ce) {
+                    LOGGER.log(Level.SEVERE, "Misconfig of webapp host or port", ce);
+                    System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());
+                }
             }
 
             // Get history first.
