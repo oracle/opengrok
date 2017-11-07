@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
@@ -30,7 +30,7 @@ import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.Timestamp;
 
 /**
- *
+ * Decode Oracle SSO specific headers.
  * @author Krystof Tulinger
  */
 public class HeaderDecoder implements IUserDecoder {
