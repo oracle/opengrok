@@ -7,6 +7,7 @@ This directory contains various authorization plugins:
   - HttpBasicAuthorizationPlugin - sample plugin to utilize HTTP Basic auth
   - LdapPlugin - set of plugins to perform authorization based on LDAP
   - UserPlugin - extract user information from HTTP headers
+    - this plugin can have multiple header decoders, the default is for Oracle SSO
 
 ## Debugging
 
@@ -15,8 +16,10 @@ In general, it should be possible to increase log level in Tomcat's
 
 ### UserPlugin
 
-Has a special property called "fake" that allows to insert custom headers,
-e.g. using the Modify headers Firefox plugin.
+Has a special property called "fake" that allows to insert custom headers
+with the "my-" prefix that would be evaluated instead of the usual SSO headers.
+
+Header insertion can be done e.g. using the Modify headers Firefox plugin.
 
 
 ```xml
