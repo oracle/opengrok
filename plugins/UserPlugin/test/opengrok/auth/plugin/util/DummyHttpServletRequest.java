@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
@@ -45,7 +45,7 @@ public class DummyHttpServletRequest implements HttpServletRequest {
     private final Map<String, Object> attrs = new HashMap<String, Object>();
     private HttpSession sessions = new HttpSession() {
 
-        private final Map<String, Object> attrs = new HashMap<String, Object>();
+        private final Map<String, Object> attrs = new HashMap<>();
 
         @Override
         public long getCreationTime() {

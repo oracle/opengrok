@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -103,5 +103,4 @@ public class UserPluginTest {
         g.setName(name);
         return g;
     }
-;
 }
