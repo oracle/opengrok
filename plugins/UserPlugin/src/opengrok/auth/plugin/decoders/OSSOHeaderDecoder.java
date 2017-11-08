@@ -34,9 +34,9 @@ import opengrok.auth.plugin.util.Timestamp;
  *
  * @author Krystof Tulinger
  */
-public class HeaderDecoder implements IUserDecoder {
+public class OSSOHeaderDecoder implements IUserDecoder {
 
-    private static final Logger LOGGER = Logger.getLogger(HeaderDecoder.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OSSOHeaderDecoder.class.getName());
 
     protected static String OSSO_COOKIE_TIMESTAMP_HEADER = "osso-cookie-timestamp";
     protected static String OSSO_TIMEOUT_EXCEEDED_HEADER = "osso-idle-timeout-exceeded";
