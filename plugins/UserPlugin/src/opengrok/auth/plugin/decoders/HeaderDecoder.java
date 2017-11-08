@@ -31,6 +31,7 @@ import opengrok.auth.plugin.util.Timestamp;
 
 /**
  * Decode Oracle SSO specific headers.
+ *
  * @author Krystof Tulinger
  */
 public class HeaderDecoder implements IUserDecoder {
@@ -79,7 +80,7 @@ public class HeaderDecoder implements IUserDecoder {
 
         /**
          * Creating new user entity with provided information. The entity can be
-         * checked if it is timeouted via {@link User#isTimeouted()}.
+         * checked if the timeout expired via {@link User#isTimeouted()}.
          */
         User user = new User(username, userguid, cookieTimestamp,
                 "true".equalsIgnoreCase(timeouted));

@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -33,8 +33,9 @@ import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
 /**
+ * Authorization plug-in to extract user info from HTTP headers.
  *
- * @author ktulinge
+ * @author Krystof Tulinger
  */
 public class UserPlugin implements IAuthorizationPlugin {
 

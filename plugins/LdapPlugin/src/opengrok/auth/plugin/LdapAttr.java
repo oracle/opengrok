@@ -35,6 +35,11 @@ import opengrok.auth.plugin.entity.User;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
+/**
+ * Authorization plug-in to check user's LDAP attribute against whitelist.
+ *
+ * @author Krystof Tulinger
+ */
 public class LdapAttr extends AbstractLdapPlugin {
 
     protected static final String ATTR_PARAM = "attribute";

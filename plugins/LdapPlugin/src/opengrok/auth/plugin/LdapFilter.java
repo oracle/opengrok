@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -34,6 +34,11 @@ import opengrok.auth.plugin.entity.User;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
+/**
+ * Authorization plug-in to check if given user matches configured LDAP filter.
+ *
+ * @author Krystof Tulinger
+ */
 public class LdapFilter extends AbstractLdapPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(LdapFilter.class.getName());
