@@ -39,16 +39,16 @@ import org.opensolaris.opengrok.configuration.Project;
  *
  * @author Krystof Tulinger
  */
-public class LdapFilter extends AbstractLdapPlugin {
+public class LdapFilterPlugin extends AbstractLdapPlugin {
 
-    private static final Logger LOGGER = Logger.getLogger(LdapFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LdapFilterPlugin.class.getName());
 
     protected static final String FILTER_PARAM = "filter";
     protected String SESSION_ALLOWED = "opengrok-filter-plugin-allowed";
 
     private String ldapFilter;
 
-    public LdapFilter() {
+    public LdapFilterPlugin() {
         SESSION_ALLOWED += "-" + nextId++;
     }
 
