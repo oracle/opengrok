@@ -48,7 +48,7 @@ import org.opensolaris.opengrok.configuration.Project;
 public class LdapAttrTest {
 
     private HttpServletRequest dummyRequest;
-    private LdapAttr plugin;
+    private LdapAttrPlugin plugin;
     private AuthorizationFramework framework;
 
     private static File whitelistFile;
@@ -70,11 +70,12 @@ public class LdapAttrTest {
 
     @Before
     public void setUp() {
-        plugin = new LdapAttr();
+        plugin = new LdapAttrPlugin();
         Map<String, Object> parameters = new TreeMap<>();
+        
         parameters.put(AbstractLdapPlugin.FAKE_PARAM, true);
-        parameters.put(LdapAttr.FILE_PARAM, whitelistFile.getAbsolutePath());
-        parameters.put(LdapAttr.ATTR_PARAM, "mail");
+        parameters.put(LdapAttrPlugin.FILE_PARAM, whitelistFile.getAbsolutePath());
+        parameters.put(LdapAttrPlugin.ATTR_PARAM, "mail");
 
         plugin.load(parameters);
 

@@ -40,7 +40,7 @@ import org.opensolaris.opengrok.configuration.Project;
  *
  * @author Krystof Tulinger
  */
-public class LdapAttr extends AbstractLdapPlugin {
+public class LdapAttrPlugin extends AbstractLdapPlugin {
 
     protected static final String ATTR_PARAM = "attribute";
     protected static final String FILE_PARAM = "file";
@@ -50,7 +50,7 @@ public class LdapAttr extends AbstractLdapPlugin {
     private String ldapAttr;
     private final Set<String> whitelist = new TreeSet<>();
 
-    public LdapAttr() {
+    public LdapAttrPlugin() {
         SESSION_ALLOWED += "-" + nextId++;
     }
 

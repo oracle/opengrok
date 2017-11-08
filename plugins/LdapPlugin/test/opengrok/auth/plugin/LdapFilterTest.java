@@ -33,11 +33,11 @@ import static org.junit.Assert.assertEquals;
 
 public class LdapFilterTest {
 
-    private LdapFilter plugin;
+    private LdapFilterPlugin plugin;
 
     @Before
     public void setUp() {
-        plugin = new LdapFilter();
+        plugin = new LdapFilterPlugin();
     }
 
     @Test
