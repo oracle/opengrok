@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
@@ -29,13 +29,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
+ * Test OSSO header decoder.
  *
  * @author Krystof Tulinger
  */
-public class DecoderTest {
+public class OSSODecoderTest {
 
     DummyHttpServletRequest dummyRequest;
-    HeaderDecoder decoder = new HeaderDecoder();
+    OSSOHeaderDecoder decoder = new OSSOHeaderDecoder();
 
     @Before
     public void setUp() {
@@ -144,9 +145,7 @@ public class DecoderTest {
             "ffffx" // not a hex number
         };
 
-        for (int i = 0;
-                i < tests.length;
-                i++) {
+        for (int i = 0; i < tests.length; i++) {
             dummyRequest.setHeader("osso-cookie-timestamp", tests[i]);
             Assert.assertNotNull(u = decoder.fromRequest(dummyRequest));
             Assert.assertNull(u.getCookieTimestamp());
