@@ -49,19 +49,17 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-WhiteSpace     = [ \t\f]+
-EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* "." ("py"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch")
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ]*)?
 
 %state  STRING LSTRING SCOMMENT QSTRING LQSTRING
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 <YYINITIAL>{
 
@@ -70,7 +68,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
     writeSymbol(id, Consts.kwd, yyline);
 }
 
-"<" ({File}|{Path}) ">" {
+"<" ({File}|{FPath}) ">" {
         out.write("&lt;");
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -96,7 +94,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
   \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
  \\\\   { out.write("\\\\"); }
  \\\"   { out.write("\\\""); }
- {WhiteSpace}*{EOL} {
+ {WhspChar}*{EOL} {
     yybegin(YYINITIAL); out.write("</span>");
     startNewLine();
   }
@@ -107,7 +105,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
  "\\\'" { out.write("\\\'"); }
  \' {WhiteSpace} \' { out.write(yytext()); }
  \'     { yybegin(YYINITIAL); out.write("'</span>"); }
- {WhiteSpace}*{EOL} {
+ {WhspChar}*{EOL} {
     yybegin(YYINITIAL); out.write("</span>");
     startNewLine();
   }
@@ -128,7 +126,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
 }
 
 <SCOMMENT> {
-  {WhiteSpace}*{EOL} {
+  {WhspChar}*{EOL} {
     yybegin(YYINITIAL); out.write("</span>");
     startNewLine();
   }
@@ -139,14 +137,14 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { startNewLine(); }
+{WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, SCOMMENT, STRING, QSTRING , LSTRING, LQSTRING> {
-{Path}
+{FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
 {File}
@@ -159,8 +157,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
         out.write(path);
         out.write("</a>");}
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
+{BrowseableURI}    {
           appendLink(yytext());
         }
 

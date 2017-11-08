@@ -203,7 +203,7 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 
 // "comment links"
 <SCOMMENT> {
-    {Path}    {
+    {FPath}    {
         if (takeAllContent()) {
             take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
         }

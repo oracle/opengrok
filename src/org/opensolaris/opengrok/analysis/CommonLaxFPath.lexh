@@ -21,6 +21,8 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-WhspChar    = [ \t\f]
-WhiteSpace  = {WhspChar}+
-EOL         = ([\n\r] | \r\n)
+/*
+ * Relaxed from {FPath} in that only the last path segment is required
+ * to end in {ASCII_ALPHA} or {DIGIT}.
+ */
+LaxFPath = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]

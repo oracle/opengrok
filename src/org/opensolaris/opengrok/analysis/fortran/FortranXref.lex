@@ -48,20 +48,18 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-WhiteSpace     = [ \t\f]+
-EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 Label = [0-9]+
 
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* ".inc"
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 
 %state  STRING COMMENT SCOMMENT QSTRING LCOMMENT
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 <YYINITIAL>{
  ^{Label} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
@@ -76,7 +74,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
     writeSymbol(id, Consts.kwd, yyline);
 }
 
-"<" ({File}|{Path}) ">" {
+"<" ({File}|{FPath}) ">" {
     out.write("&lt;");
     String file = yytext();
     file = file.substring(1, file.length() - 1);
@@ -115,7 +113,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 }
 
 <SCOMMENT> {
-{WhiteSpace}*{EOL}      { yypop();
+{WhspChar}*{EOL}      { yypop();
                   startNewLine();}
 }
 
@@ -123,7 +121,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { yypop();
+{WhspChar}*{EOL}      { yypop();
                   startNewLine();}
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
@@ -135,14 +133,14 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { startNewLine(); }
+{WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { }
 }
 
 <STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
-{Path}
+{FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
 {File}
@@ -152,8 +150,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
         out.write(path);out.write("\">");
         out.write(path);out.write("</a>");}
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
+{BrowseableURI}    {
           appendLink(yytext());
         }
 

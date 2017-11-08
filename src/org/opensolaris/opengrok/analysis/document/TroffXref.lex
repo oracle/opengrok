@@ -124,14 +124,14 @@ import org.opensolaris.opengrok.web.Util;
     }
 %eof}
 
-WhiteSpace     = [ \t\f]
-EOL = \r|\n|\r\n
 FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([chtsCHS]|"conf"|"java"|"cpp"|"CC"|"txt"|"htm"|"html"|"pl"|"xml")
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 %state HEADER COMMENT BOLD TBL TBLL
 
+%include Common.lexh
+%include CommonPath.lexh
+%include CommonLaxFPath.lexh
 %%
 <YYINITIAL> {
 ^\.(SH|TH|SS|IP|NH|TL|UH)       { yybegin(HEADER); cleanup(); openDiv("b");}
@@ -209,7 +209,7 @@ T[\{\}] {}
         out.write(path);
         out.write("</a>");}
 
-{Path}
+{LaxFPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 \\&.    {out.write(yycharat(yylength() - 1));}
 \\-     { out.write('-'); }
@@ -218,6 +218,6 @@ T[\{\}] {}
 ">"     {out.write( "&gt;");}
 "&"     {out.write( "&amp;");}
 {EOL}   { out.write("\n"); yyline++;}
-{WhiteSpace}+   { out.write(' '); }
+{WhiteSpace}    { out.write(' '); }
 [!-~]   { out.write(yycharat(0)); }
 [^\n]      { writeUnicodeChar(yycharat(0)); }

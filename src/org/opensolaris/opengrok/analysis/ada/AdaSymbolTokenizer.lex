@@ -124,4 +124,6 @@ import org.opensolaris.opengrok.web.Util;
 %}
 
 %include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %include AdaProductions.lexh

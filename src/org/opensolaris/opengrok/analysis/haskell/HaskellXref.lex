@@ -50,16 +50,14 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-WhiteSpace     = [ \t\f]+
-EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
-FNameChar = [a-zA-Z0-9_\-\.]
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 
 %state STRING CHAR COMMENT BCOMMENT
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 <YYINITIAL> {
     {Identifier} {
@@ -77,16 +75,16 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
     \"                 { yybegin(YYINITIAL); out.write("\"</span>");               }
     \\\\               { out.write("\\\\");                                        }
     \\\"               { out.write("\\\"");                                        }
-    {WhiteSpace}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine(); }
+    {WhspChar}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine(); }
 }
 
 <CHAR> {    // we don't need to consider the case where prime is part of an identifier since it is handled above
     ( .\' | \\.\' )    { yybegin(YYINITIAL); out.write(yytext()); out.write("</span>"); }
-    {WhiteSpace}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine();      }
+    {WhspChar}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine();      }
 }
 
 <COMMENT> {
-    {WhiteSpace}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine(); }
+    {WhspChar}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine(); }
 }
 
 <BCOMMENT> {
@@ -96,15 +94,14 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 "&"                { out.write( "&amp;");           }
 "<"                { out.write( "&lt;");            }
 ">"                { out.write( "&gt;");            }
-{WhiteSpace}*{EOL} { startNewLine();                }
+{WhspChar}*{EOL} { startNewLine();                }
 {WhiteSpace}       { out.write(yytext());           }
 [^\n]              { writeUnicodeChar(yycharat(0)); }
 
 <STRING, COMMENT, BCOMMENT> {
-    {Path} { out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/')); }
-    ("http" | "https" | "ftp") "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/] {
+    {FPath} { out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/')); }
+    {BrowseableURI}    {
         appendLink(yytext());
     }
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
 }
-

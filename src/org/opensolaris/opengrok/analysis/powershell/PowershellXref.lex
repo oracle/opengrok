@@ -112,15 +112,13 @@ import java.util.regex.Matcher;
 
 %}
 
-EOL = \r|\n|\r\n
-WhiteSpace = [ \t\f]
 Identifier = [a-zA-Z_] [a-zA-Z0-9_-]*
 SimpleVariable  = [\$] [a-zA-Z_] [a-zA-Z0-9_:-]*
 ComplexVariable = [\$] "{" [^}]+  "}"
 Operator = "-" [a-zA-Z]+
-Label =  {WhiteSpace}* ":" {Identifier}
-Break = "break" {WhiteSpace}+ {Identifier}
-Continue = "continue" {WhiteSpace}+ {Identifier}
+Label =  {WhspChar}* ":" {Identifier}
+Break = "break" {WhiteSpace} {Identifier}
+Continue = "continue" {WhiteSpace} {Identifier}
 DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
 
 
@@ -156,10 +154,13 @@ Number = {RegExGroup} | (0[xX][0-9a-fA-F]+[lL]?|(\.[0-9]+|[0-9]+(\.[0-9]*)?)([eE
 
 /*Number = \$? [0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+*/
 
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z0-9]+)
-Path = "/"? {FNameChar}+ ("/" {FNameChar}+)+
+
+/*
+ * Differs from {FPath} in that the path segments are only constrained to be
+ * {FNameChar}.
+ */
+AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 /*
  * States:
@@ -173,6 +174,9 @@ Path = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  */
 %state STRING COMMENT SCOMMENT QSTRING SUBSHELL HERESTRING HEREQSTRING
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 
 <STRING>{
@@ -276,13 +280,13 @@ Path = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 }
 
 <STRING> {
- \" {WhiteSpace}* \"  { out.write(yytext()); }
+ \" {WhspChar}* \"  { out.write(yytext()); }
  \\ { out.write(yytext()); }
  \" { out.write(yytext()); popstate(); }
 }
 
 <QSTRING> {
- \' {WhiteSpace}* \' { out.write(yytext()); }
+ \' {WhspChar}* \' { out.write(yytext()); }
  \\ { out.write("\\"); }
  \' { out.write(yytext()); popstate(); }
 }
@@ -346,21 +350,21 @@ Path = "/"? {FNameChar}+ ("/" {FNameChar}+)+
         out.write("</a>");
     }
 
-    {Path}
+    {AnyFPath}
             {out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
     "&"     {out.write( "&amp;");}
     "<"     {out.write( "&lt;");}
     ">"     {out.write( "&gt;");}
-    {EOL}   { startNewLine(); }
-    {WhiteSpace}+   { out.write(yytext()); }
+    {WhiteSpace}{EOL} |
+        {EOL}    { startNewLine(); }
+    {WhiteSpace}   { out.write(yytext()); }
     [!-~]   { out.write(yycharat(0)); }
     [^\n]   { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
+{BrowseableURI}    {
             appendLink(yytext());
         }
 

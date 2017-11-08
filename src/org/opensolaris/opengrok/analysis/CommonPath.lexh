@@ -21,6 +21,15 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-WhspChar    = [ \t\f]
-WhiteSpace  = {WhspChar}+
-EOL         = ([\n\r] | \r\n)
+/*
+ * See org.opensolaris.opengrok.util.StringUtils FNAME_CHARS_PAT where the
+ * following regex is mirrored.
+ */
+FNameChar = [a-zA-Z0-9_\-\.]
+
+/*
+ * Path-like, absolute or relative, where the path components each start with
+ * {ASCII_ALPHA}, where all but the first path component end in {ASCII_ALPHA}
+ * or {DIGIT}, and are otherwise {FNameChar}.
+ */
+FPath = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+

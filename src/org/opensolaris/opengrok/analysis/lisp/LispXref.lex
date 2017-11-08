@@ -56,19 +56,17 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-WhiteSpace     = [ \t\f]+
-EOL = \r|\n|\r\n
 Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
 
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 
 %state  STRING COMMENT SCOMMENT
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 <YYINITIAL>{
 
@@ -109,7 +107,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 }
 
 <SCOMMENT> {
-  {WhiteSpace}*{EOL} {
+  {WhspChar}*{EOL} {
     yybegin(YYINITIAL); out.write("</span>");
     startNewLine();
   }
@@ -119,14 +117,14 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL} { startNewLine(); }
+{WhspChar}*{EOL} { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, COMMENT, SCOMMENT> {
-{Path}
+{FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
 {File}
@@ -139,8 +137,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
         out.write(path);
         out.write("</a>");}
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
+{BrowseableURI}    {
           appendLink(yytext());
         }
 
