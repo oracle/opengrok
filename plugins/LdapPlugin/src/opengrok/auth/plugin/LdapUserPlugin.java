@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -30,13 +30,18 @@ import opengrok.auth.plugin.entity.User;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
+/**
+ * Authorization plug-in to extract user's LDAP attributes.
+ *
+ * @author Krystof Tulinger
+ */
 public class LdapUserPlugin extends AbstractLdapPlugin {
 
     public static final String SESSION_ATTR = "opengrok-ldap-plugin-user";
 
     /**
      * Check if the session exists and contains all necessary fields required by
-     * this plugin.
+     * this plug-in.
      *
      * @param req the HTTP request
      * @return true if it does; false otherwise

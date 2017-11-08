@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -38,11 +38,11 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
- * Abstract class for all plugins working with LDAP. Takes care of
+ * Abstract class for all plug-ins working with LDAP. Takes care of
  * <ul>
  * <li>controlling the established session</li>
  * <li>controlling if the session belongs to the user</li>
- * <li>controlling plugin version</li>
+ * <li>controlling plug-in version</li>
  * </ul>
  *
  * <p>
@@ -55,7 +55,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
 
     /**
-     * This is used to ensure that every instance of this plugin has its own
+     * This is used to ensure that every instance of this plug-in has its own
      * unique name for its session parameters.
      */
     public static long nextId = 1;
@@ -153,7 +153,8 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     protected Configuration getConfiguration(String configurationPath) throws IOException {
         if ((cfg = LOADED_CONFIGURATIONS.get(configurationPath)) == null) {
-            LOADED_CONFIGURATIONS.put(configurationPath, cfg = Configuration.read(new File(configurationPath)));
+            LOADED_CONFIGURATIONS.put(configurationPath, cfg =
+                    Configuration.read(new File(configurationPath)));
         }
         return cfg;
     }
@@ -205,7 +206,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
 
     /**
      * Check if the session exists and contains all necessary fields required by
-     * this plugin.
+     * this plug-in.
      *
      * @param req the HTTP request
      * @return true if it does; false otherwise
@@ -228,7 +229,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * the session is established as an empty session to avoid any exception in
      * the caller.
      *
-     * @param req the http request
+     * @param req the HTTP request
      */
     @SuppressWarnings("unchecked")
     private void ensureSessionExists(HttpServletRequest req) {
@@ -335,7 +336,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     }
 
     /**
-     * Return the current plugin version tracked by the authorization framework.
+     * Return the current plug-in version tracked by the authorization framework.
      *
      * @return the version
      */
