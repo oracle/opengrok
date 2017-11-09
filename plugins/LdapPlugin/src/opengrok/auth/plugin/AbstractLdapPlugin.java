@@ -60,7 +60,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     public static long nextId = 1;
 
-    private static final String CONFIGURATION_PARAM = "configuration";
+    protected static final String CONFIGURATION_PARAM = "configuration";
     protected static final String FAKE_PARAM = "fake";
 
     protected String SESSION_USERNAME = "opengrok-group-plugin-username";
