@@ -138,7 +138,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
         out.write("</a>");}
 
 {BrowseableURI}    {
-          appendLink(yytext());
+          appendLink(yytext(), true);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

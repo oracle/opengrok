@@ -580,7 +580,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
             out.write("</a>");}
 
     {BrowseableURI}    {
-              appendLink(yytext());
+              appendLink(yytext(), true);
             }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

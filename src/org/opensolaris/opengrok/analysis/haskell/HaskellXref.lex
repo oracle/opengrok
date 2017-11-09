@@ -101,7 +101,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 <STRING, COMMENT, BCOMMENT> {
     {FPath} { out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/')); }
     {BrowseableURI}    {
-        appendLink(yytext());
+        appendLink(yytext(), true);
     }
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
 }

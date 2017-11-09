@@ -64,7 +64,7 @@ import org.opensolaris.opengrok.web.Util;
   }
 
   {BrowseableURI}    {
-    appendLink(yytext());
+    appendLink(yytext(), true);
   }
 
   {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }

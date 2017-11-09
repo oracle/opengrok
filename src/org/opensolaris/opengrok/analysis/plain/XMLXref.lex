@@ -118,7 +118,7 @@ NameChar = {FileChar}|"."
   }
 
 {BrowseableURI}    {
-          appendLink(yytext());
+          appendLink(yytext(), true);
         }
 
 {NameChar}+ "@" {NameChar}+ "." {NameChar}+

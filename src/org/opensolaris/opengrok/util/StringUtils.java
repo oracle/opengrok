@@ -201,4 +201,28 @@ public final class StringUtils {
     public static boolean startsWithURIChars(String value) {
         return URI_CHARS_STARTSMATCH.matcher(value).matches();
     }
+
+    /**
+     * Count the number of ending pushback characters from a matched URI.
+     * <p>
+     * jflex does not support negative lookbehind, so modifying a URI matcher
+     * to backtrack on ending characters that are otherwise normally valid
+     * (e.g. '.') is difficult. Instead, this method allows counting and
+     * pushing back.
+     * @param value the URI to test
+     * @return the number of characters greater than or equal to zero which
+     * could be pushed back.
+     */
+    public static int countURIEndingPushback(String value) {
+        int n = 0;
+        for (int i = value.length() - 1; i >= 0; --i) {
+            char c = value.charAt(i);
+            if (c == '.') {
+                ++n;
+            } else {
+                break;
+            }
+        }
+        return n;
+    }
 }

@@ -223,7 +223,7 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 
     {BrowseableURI}    {
         if (takeAllContent()) {
-            appendLink(yytext());
+            appendLink(yytext(), true);
         }
     }
 

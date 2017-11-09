@@ -56,7 +56,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
         out.write(s);out.write("</a>");}
 
 {BrowseableURI}    {
-          appendLink(yytext());
+          appendLink(yytext(), true);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

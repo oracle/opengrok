@@ -168,7 +168,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         out.write("</a>");}
 
 {BrowseableURI}    {
-          appendLink(yytext());
+          appendLink(yytext(), true);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

@@ -365,7 +365,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 <STRING, SCOMMENT, QSTRING> {
 
 {BrowseableURI}    {
-            appendLink(yytext());
+            appendLink(yytext(), true);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

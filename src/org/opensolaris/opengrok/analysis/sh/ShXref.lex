@@ -290,7 +290,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 <STRING, SCOMMENT, QSTRING> {
 
 {BrowseableURI}    {
-    appendLink(yytext());
+    appendLink(yytext(), true);
 }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

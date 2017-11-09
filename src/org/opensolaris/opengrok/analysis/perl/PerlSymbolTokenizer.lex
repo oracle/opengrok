@@ -131,7 +131,7 @@ import org.opensolaris.opengrok.web.Util;
 
     protected void appendProject() { /* noop */ }
 
-    protected void appendLink(String s) { /* noop */ }
+    protected void appendLink(String s, boolean b) { /* noop */ }
 
     protected void writeEMailAddress(String s) { /* noop */ }
 %}

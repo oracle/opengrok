@@ -527,7 +527,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
     {BrowseableURI}    {
         if (takeAllContent()) {
-            appendLink(yytext());
+            appendLink(yytext(), true);
         }
     }
 

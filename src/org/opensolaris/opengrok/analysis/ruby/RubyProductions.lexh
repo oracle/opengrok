@@ -506,7 +506,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
     {BrowseableURI}    {
         if (takeAllContent()) {
-            appendLink(yytext());
+            appendLink(yytext(), true);
         }
     }
 

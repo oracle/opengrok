@@ -108,4 +108,25 @@ public class StringUtilsTest {
                     index, indices[i]);
         }
     }
+
+    @Test
+    public void uriShouldNotCountAnyPushback() {
+        String uri = "http://www.example.com";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 0, n);
+    }
+
+    @Test
+    public void uriAtSentenceEndShouldCountPushback() {
+        String uri = "http://www.example.com.";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 1, n);
+    }
+
+    @Test
+    public void uriEmptyShouldNotCountAnyPushback() {
+        String uri = "";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals("empty pushback", 0, n);
+    }
 }

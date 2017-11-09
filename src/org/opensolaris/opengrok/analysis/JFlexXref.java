@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -202,7 +203,41 @@ public abstract class JFlexXref {
         }
     }
 
+    /**
+     * Calls {@link #appendLink(java.lang.String, boolean) with false to
+     * disable {@code doPushback} handling.
+     * @param url the URL to append
+     * @throws IOException if an error occurs while appending
+     */
     protected void appendLink(String url) throws IOException {
+        appendLink(url, false);
+    }
+
+    /**
+     * Appends the {@code url} to the active {@link Writer}. If
+     * {@code doPushback} is true, then any characters counted by
+     * {@link StringUtils#countURIEndingPushback(java.lang.String)} are
+     * handled by {@link #yypushback(int)} with {@code url} only partially
+     * written.
+     * <p>If the count is equal to the length of {@code url}, then it is
+     * simply written, and nothing is pushed back.
+     * @param url the URL to append
+     * @param doPushback a value indicating whether to test the {@code url}
+     * with {@link StringUtils#countURIEndingPushback(java.lang.String)}.
+     * @throws IOException if an error occurs while appending
+     */
+    protected void appendLink(String url, boolean doPushback)
+        throws IOException {
+
+        if (doPushback) {
+            int n = StringUtils.countURIEndingPushback(url);
+            // Push back if positive, but not if equal to the current length,
+            // or else the pushback might cause a neverending loop.
+            if (n > 0 && n < url.length()) {
+                yypushback(n);
+                url = url.substring(0, url.length() - n);
+            }
+        }
         out.write("<a href=\"");
         out.write(Util.formQuoteEscape(url));
         out.write("\">");
@@ -296,6 +331,14 @@ public abstract class JFlexXref {
      * @param newState state to begin from
      */
     public abstract void yybegin(int newState);
+
+    /**
+     * Pushes {@code number} characters of the matched text back into the
+     * input stream per the documented JFlex behavior.
+     * @param number a value greater than or equal to zero and less than or
+     * equal to the length of the matched text.
+     */
+    public abstract void yypushback(int number);
 
     /**
      * returns current state of analysis
