@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
@@ -69,7 +69,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(true, createAllowedGroup()),
                 NewTest(true, createUnallowedProject()),
                 NewTest(true, createUnallowedGroup()))
-            }, //
+            },
             // -------------------------------------------------------------- //
             //
             // Test authorization flags for plugins. Both plugins do not fail
@@ -103,7 +103,7 @@ public class AuthorizationFrameworkTest {
                 // sufficient returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -115,7 +115,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(true, createUnallowedGroup()),
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -130,7 +130,7 @@ public class AuthorizationFrameworkTest {
                 // the rest is sufficient => false
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -144,7 +144,7 @@ public class AuthorizationFrameworkTest {
                 // sufficient returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -159,7 +159,7 @@ public class AuthorizationFrameworkTest {
                 // required returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -174,7 +174,7 @@ public class AuthorizationFrameworkTest {
                 // the rest is sufficient => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -187,7 +187,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -202,7 +202,7 @@ public class AuthorizationFrameworkTest {
                 // requisite returns true => false
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             // -------------------------------------------------------------- //
             //
             // Test authorization flags for plugins. One of the plugin fails
@@ -224,7 +224,7 @@ public class AuthorizationFrameworkTest {
                 // required returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -236,7 +236,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(true, createUnallowedGroup()),
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -249,7 +249,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -262,7 +262,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -275,7 +275,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             // -------------------------------------------------------------- //
             //
             // Test authorization flags for plugins. One of the plugin fails
@@ -300,7 +300,7 @@ public class AuthorizationFrameworkTest {
                 // required returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -312,7 +312,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(true, createUnallowedGroup()),
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -325,7 +325,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -338,7 +338,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -351,7 +351,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             // -------------------------------------------------------------- //
             //
             // Test authorization flags for plugins in multiple stacks.
@@ -372,7 +372,7 @@ public class AuthorizationFrameworkTest {
                 // sufficient stack returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -388,7 +388,7 @@ public class AuthorizationFrameworkTest {
                 // sufficient stack returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -405,7 +405,7 @@ public class AuthorizationFrameworkTest {
                 // required stack2 returns false => false
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -421,7 +421,7 @@ public class AuthorizationFrameworkTest {
                 // sufficient stack returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -435,7 +435,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(true, createUnallowedGroup()),
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -449,7 +449,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(true, createUnallowedGroup()),
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -469,7 +469,7 @@ public class AuthorizationFrameworkTest {
                 // sufficient stack return true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             // -------------------------------------------------------------- //
             //
             // Test authorization flags for plugins in multiple stacks. Some of
@@ -493,7 +493,7 @@ public class AuthorizationFrameworkTest {
                 // required stack returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -508,7 +508,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -525,7 +525,7 @@ public class AuthorizationFrameworkTest {
                 // required stack returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -542,7 +542,7 @@ public class AuthorizationFrameworkTest {
                 // required stack returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -557,7 +557,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             // -------------------------------------------------------------- //
             //
             // Test authorization flags for plugins. Some of the plugins fail
@@ -581,7 +581,7 @@ public class AuthorizationFrameworkTest {
                 // required stack returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -596,7 +596,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -613,7 +613,7 @@ public class AuthorizationFrameworkTest {
                 // required stack returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -630,7 +630,7 @@ public class AuthorizationFrameworkTest {
                 // required stack returns true => true
                 NewTest(true, createAllowedProject()),
                 NewTest(true, createAllowedGroup()))
-            }, //
+            },
             {
                 new StackSetup(
                 NewStack(AuthControlFlag.REQUIRED,
@@ -645,7 +645,7 @@ public class AuthorizationFrameworkTest {
                 NewTest(false, createUnallowedGroup()),
                 NewTest(false, createAllowedProject()),
                 NewTest(false, createAllowedGroup()))
-            }, //
+            },
         };
     }
 
