@@ -48,7 +48,7 @@ public class LdapFacade extends AbstractLdapProvider {
     private static final Logger LOGGER = Logger.getLogger(LdapFacade.class.getName());
 
     /**
-     * LDAP filter.
+     * default LDAP filter
      */
     private static final String LDAP_FILTER = "objectclass=*";
 
@@ -237,11 +237,9 @@ public class LdapFacade extends AbstractLdapProvider {
     /**
      * Lookups the authorization values {
      *
-     *
-     *
-     * @param user the osso headers
-     * @param filter LDAP filter to use
-     * @param values match these LDAP value
+     * @param user user information. If @{code null} then search base will be used.
+     * @param filter LDAP filter to use. If @{code null} then @{link LDAP_FILTER} will be used.
+     * @param values match these LDAP values
      *
      * @return set of strings describing the user's attributes
      * @see #LDAP_VALUES
@@ -289,7 +287,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * @param mapper mapper class implementing @code{AttributeMapper} closed
      * @param fail current count of failures
      *
-     * @return results transformed with mapper
+     * @return results transformed with mapper or {@code null} on failure
      */
     private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper, int fail) {
 

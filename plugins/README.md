@@ -91,6 +91,12 @@ indexer via the -R option.
                     <string>REQUISITE</string>
                 </void>
             </object>
+	    <void property="setup">
+                <void method="put">
+                    <string>objectclass</string>
+                    <string>posixAccount</string>
+                </void>
+            </void>
         </void>
 
         <!-- Authorization stacks follow -->
@@ -116,7 +122,7 @@ indexer via the -R option.
                 <void method="add">
                     <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
                         <void property="name">
-                            <string>opengrok.auth.plugin.LdapAttr</string>
+                            <string>opengrok.auth.plugin.LdapAttrPlugin</string>
                         </void>
                         <void property="flag">
                             <string>SUFFICIENT</string>
@@ -136,7 +142,7 @@ indexer via the -R option.
                 <void method="add">
                     <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
                         <void property="name">
-                            <string>opengrok.auth.plugin.LdapFilter</string>
+                            <string>opengrok.auth.plugin.LdapFilterPlugin</string>
                         </void>
                         <void property="flag">
                             <string>REQUIRED</string>
