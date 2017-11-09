@@ -51,7 +51,7 @@ Initially a LXR based solution was in mind for hosting OpenSolaris code. Due to 
 
 Cscope had a number of minor dificiencies; its full text search is too slow. Giving the book analogy above, it is does something like linearly searching through each page looking for your words. It could not AND two search conditions, which was a severe limitation if you wanted to search only with in a hierarchy of source tree. To work around this limitation, we had pre-built cscope index in each major tree branch (like library or kernel code), which is very expensive and inefficient. Also it understood only C or C like languages, and could not search for definitions in Makefiles for example.
 
-At that time, this summarizes the state of the art in code lookup and version control web interfaces that were deployed for large open source projects (like http://lxr.mozilla.org/ or http://cvs.gnome.org/)
+At that time, this summarizes the state of the art in code lookup and version control web interfaces that were deployed for large open source projects (like `http://lxr.mozilla.org/` or `http://cvs.gnome.org/`)
 
 {|
 |'''Feature'''
