@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -38,7 +39,6 @@ import javax.xml.parsers.SAXParserFactory;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.Interner;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
@@ -64,7 +64,6 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         final DateFormat format;
         HistoryEntry entry;
         StringBuilder sb;
-        private final Interner<String> stringInterner = new Interner<String>();
 
         Handler(String home, String prefix, int length, DateFormat df) {
             this.home = home;
@@ -105,11 +104,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                     String path = file.getAbsolutePath().substring(length);
                     // The same file names may be repeated in many commits,
                     // so intern them to reduce the memory footprint.
-                    // Bug #15956: Don't use String.intern(), since that may
-                    // exhaust the permgen space. Instead, use our own
-                    // interner that allocates space on the heap.
-                    path = stringInterner.intern(path);
-                    entry.addFile(path);
+                    entry.addFile(path.intern());
                 } else {
                     LOGGER.log(Level.FINER, "Skipping file outside repository: " + s);
                 }

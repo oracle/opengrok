@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -140,7 +141,8 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                     if (strings[ii].length() > 0) {
                         File f = new File(mydir, strings[ii]);
                         try {
-                            entry.addFile(env.getPathRelativeToSourceRoot(f));
+                            String path = env.getPathRelativeToSourceRoot(f);
+                            entry.addFile(path.intern());
                         } catch (FileNotFoundException e) { // NOPMD
                             // If the file is not located under the source root,
                             // ignore it (bug #11664).
