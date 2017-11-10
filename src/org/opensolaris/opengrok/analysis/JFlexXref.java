@@ -204,7 +204,7 @@ public abstract class JFlexXref {
     }
 
     /**
-     * Calls {@link #appendLink(java.lang.String, boolean) with false to
+     * Calls {@link #appendLink(java.lang.String, boolean)} with false to
      * disable {@code doPushback} handling.
      * @param url the URL to append
      * @throws IOException if an error occurs while appending
