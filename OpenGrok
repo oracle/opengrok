@@ -885,9 +885,9 @@ UpdateDataPartial()
     extra_args=""
     for arg in "$@"; do
         if [ -n "$extra_args" ]; then
-            extra_args="$extra_args -h $arg"
+            extra_args="$extra_args -H $arg"
 	else
-	    extra_args="-h $arg"
+	    extra_args="-H $arg"
 	fi
     done
     CommonInvocation $extra_args "$@"
