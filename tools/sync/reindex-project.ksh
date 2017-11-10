@@ -79,10 +79,11 @@ function reindex_one
 	    OPENGROK_READ_XML_CONFIGURATION=$config_xml	\
 	    $binary_base/OpenGrok			\
 	    indexpart "$project_name"
+	ret=$?
 
 	rm -f "$config_xml"
 
-	return $?
+	return $ret
 }
 
 if (( $# != 3 )); then
