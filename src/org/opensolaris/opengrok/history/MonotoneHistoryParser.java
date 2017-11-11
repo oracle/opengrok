@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -164,7 +165,9 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                         for (String f : files) {
                             File file = new File(mydir, f);
                             try {
-                                entry.addFile(env.getPathRelativeToSourceRoot(file));
+                                String path = env.getPathRelativeToSourceRoot(
+                                    file);
+                                entry.addFile(path.intern());
                             } catch (FileNotFoundException e) { // NOPMD
                                 // If the file is not located under the source root, ignore it
                             }

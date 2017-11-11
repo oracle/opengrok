@@ -17,6 +17,12 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2017, James Service <jas2701@googlemail.com>.
+ * Portions Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
@@ -107,7 +113,7 @@ class BitKeeperHistoryParser implements Executor.StreamHandler {
                     if (fields[0].equals("ChangeSet")) {
                         continue;
                     }
-                    newEntry.addFile(fields[0]);
+                    newEntry.addFile(fields[0].intern());
                     newEntry.setRevision(fields[1]);
                     newEntry.setDate(dateFormat.parse(fields[2]));
                     newEntry.setAuthor(fields[3]);
