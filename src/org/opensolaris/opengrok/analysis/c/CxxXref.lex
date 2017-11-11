@@ -40,10 +40,18 @@ import org.opensolaris.opengrok.web.Util;
 %class CxxXref
 %extends JFlexXref
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
+  private static final Pattern MATCH_INCLUDE = Pattern.compile(
+      "^(#.*)(include)(.*)([<\"])(.*)([>\"])$");
+  private static final int INCL_HASH_G = 1;
+  private static final int INCLUDE_G = 2;
+  private static final int INCL_POST_G = 3;
+  private static final int INCL_PUNC0_G = 4;
+  private static final int INCL_PATH_G = 5;
+  private static final int INCL_PUNCZ_G = 6;
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -53,7 +61,10 @@ import org.opensolaris.opengrok.web.Util;
 
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 
-File = [a-zA-Z]{FNameChar}* "." ([chts]|"conf"|"java"|"cpp"|"hpp"|"CC"|"txt"|"htm"|"html"|"pl"|"xml"|"cc"|"cxx"|"c++"|"hh"|"hxx"|"h++"|"diff"|"patch")
+File = [a-zA-Z]{FNameChar}* "." ([cChHsStT] | [Cc][Oo][Nn][Ff] |
+    [Jj][Aa][Vv][Aa] | [CcHh][Pp][Pp] | [Cc][Cc] | [Tt][Xx][Tt] |
+    [Hh][Tt][Mm][Ll]? | [Pp][Ll] | [Xx][Mm][Ll] | [CcHh][\+][\+] | [Hh][Hh] |
+    [CcHh][Xx][Xx] | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
 
 Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
 
@@ -73,16 +84,19 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
     writeSymbol(id, CxxConsts.kwd, yyline);
 }
 
-"#" {WhspChar}* "include" {WhspChar}* "<" ({File}|{FPath}|{Identifier}) ">" {
-        Matcher match = Pattern.compile("(#.*)(include)(.*)<(.*)>").matcher(yytext());
+"#" {WhspChar}* "include" {WhspChar}* ("<"[^>\n\r]+">" | \"[^\"\n\r]+\")    {
+        String capture = yytext();
+        Matcher match = MATCH_INCLUDE.matcher(capture);
         if (match.matches()) {
-            out.write(match.group(1));
-            writeSymbol(match.group(2), CxxConsts.kwd, yyline);
-            out.write(match.group(3));
-            out.write("&lt;");
-            String path = match.group(4);
+            out.write(match.group(INCL_HASH_G));
+            writeSymbol(match.group(INCLUDE_G), CxxConsts.kwd, yyline);
+            out.write(match.group(INCL_POST_G));
+            out.write(htmlize(match.group(INCL_PUNC0_G)));
+            String path = match.group(INCL_PATH_G);
             out.write(Util.breadcrumbPath(urlPrefix + "path=", path));
-            out.write("&gt;");
+            out.write(htmlize(match.group(INCL_PUNCZ_G)));
+        } else {
+            out.write(htmlize(capture));
         }
 }
 

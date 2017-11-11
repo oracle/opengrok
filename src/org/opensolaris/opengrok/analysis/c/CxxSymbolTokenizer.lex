@@ -42,6 +42,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 
 %state STRING COMMENT SCOMMENT QSTRING
 
+%include Common.lexh
 %%
 
 <YYINITIAL> {
@@ -70,9 +71,10 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{EOL}   { yybegin(YYINITIAL); }
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+{WhiteSpace}    {}
 [^]    {}
 }
