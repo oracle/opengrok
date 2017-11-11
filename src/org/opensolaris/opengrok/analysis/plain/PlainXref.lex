@@ -49,7 +49,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 %include CommonPath.lexh
 %include CommonLaxFPath.lexh
 %%
-{File} | {LaxFPath}
+{File} | {RelaxedMiddleFPath}
         {String s=yytext();
         out.write("<a href=\"");out.write(urlPrefix);out.write("path=");
         out.write(s);appendProject();out.write("\">");

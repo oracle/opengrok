@@ -275,7 +275,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
     out.write("</a>");
 }
 
-{LaxFPath}
+{RelaxedMiddleFPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}

@@ -209,7 +209,7 @@ T[\{\}] {}
         out.write(path);
         out.write("</a>");}
 
-{LaxFPath}
+{RelaxedMiddleFPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 \\&.    {out.write(yycharat(yylength() - 1));}
 \\-     { out.write('-'); }

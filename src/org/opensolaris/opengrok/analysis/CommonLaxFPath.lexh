@@ -25,4 +25,5 @@
  * Relaxed from {FPath} in that only the last path segment is required
  * to end in {ASCII_ALPHA} or {DIGIT}.
  */
-LaxFPath = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
+_RMFPSegment = [a-zA-Z]{FNameChar}*
+RelaxedMiddleFPath = "/"? {_RMFPSegment} ("/" {_RMFPSegment})+[a-zA-Z0-9]
