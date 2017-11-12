@@ -49,26 +49,16 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-ErlangWhspChar     = ({WhspChar} | [\u{B}])
-ErlangWhiteSpace   = {ErlangWhspChar}+ | {WhiteSpace}
-Identifier = [a-zA-Z_] [a-zA-Z0-9_@]+
-
 IncludeDirective = (include|include_lib)
-//PPDirective = (define|undef|ifdef|else|endif)
-//Directive = (module|author|compile|export|import)
-
-// ErlChar = \$ASCII
-ErlInt = ([12][0-9]|3[0-6]|[1-9])#[0-9]+
 
 File = [a-zA-Z]{FNameChar}* "." ("erl"|"hrl"|"app"|"asn"|"yrl"|"asn1"|"xml"|"html")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ]*)?
 
 %state  STRING COMMENT QATOM
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Erlang.lexh
 %%
 <YYINITIAL>{
 
@@ -78,7 +68,13 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    // N.b. for historical reasons, ErlangXref does not link identifiers of
+    // length=1
+    if (id.length() > 1) {
+        writeSymbol(id, Consts.kwd, yyline);
+    } else {
+        out.write(id);
+    }
 }
 
 "-" {IncludeDirective} "(" ({File}|{FPath}) ")." {
@@ -92,6 +88,14 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
         out.write(path);
         out.write("</a>");
         out.write("&gt;");
+}
+
+^"-" {Identifier} {
+    String capture = yytext();
+    String punc = capture.substring(0, 1);
+    String id = capture.substring(1);
+    out.write(punc);
+    writeSymbol(id, Consts.modules_kwd, yyline);
 }
 
 {ErlInt}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }

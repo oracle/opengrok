@@ -43,18 +43,37 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [A-Z_] [a-zA-Z0-9_@]*
-
 %state STRING COMMENT QATOM
 
+%include Erlang.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
-                if(!Consts.kwd.contains(id)){
+
+"?" {Identifier}    {  // Macros
+}
+
+{Identifier} {
+    String id = yytext();
+                if (id.length() > 1 && !Consts.kwd.contains(id)) {
                         setAttribs(id, yychar, yychar + yylength());
-                        return yystate(); }
-              }
+                        return yystate();
+                }
+ }
+
+^"-" {Identifier} {
+    String capture = yytext();
+    String punc = capture.substring(0, 1);
+    String id = capture.substring(1);
+    if (!Consts.modules_kwd.contains(id)) {
+        setAttribs(id, yychar + 1, yychar + yylength());
+        return yystate();
+    }
+}
+
+{ErlInt}        {}
+{Number}        {}
+
  \"     { yybegin(STRING); }
  \'     { yybegin(QATOM); }
  "%"   { yybegin(COMMENT); }
