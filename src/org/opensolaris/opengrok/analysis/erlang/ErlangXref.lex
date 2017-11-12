@@ -27,18 +27,18 @@
  */
 
 package org.opensolaris.opengrok.analysis.erlang;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.Reader;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
 %class ErlangXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
@@ -51,7 +51,9 @@ import org.opensolaris.opengrok.web.Util;
 
 IncludeDirective = (include|include_lib)
 
-File = [a-zA-Z]{FNameChar}* "." ("erl"|"hrl"|"app"|"asn"|"yrl"|"asn1"|"xml"|"html")
+File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
+    [Aa][Ss][Nn] | [Yy][Rr][Ll] | [Aa][Ss][Nn][1] | [Xx][Mm][Ll] |
+    [Hh][Tt][Mm][Ll]?)
 
 %state  STRING COMMENT QATOM
 
@@ -63,7 +65,9 @@ File = [a-zA-Z]{FNameChar}* "." ("erl"|"hrl"|"app"|"asn"|"yrl"|"asn1"|"xml"|"htm
 <YYINITIAL>{
 
 "?" {Identifier} {  // Macros
-    out.write("<span class=\"xm\">"); out.write(yytext()); out.write("</span>");
+    disjointSpan(HtmlConsts.MACRO_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
 }
 
 {Identifier} {
@@ -98,41 +102,59 @@ File = [a-zA-Z]{FNameChar}* "." ("erl"|"hrl"|"app"|"asn"|"yrl"|"asn1"|"xml"|"htm
     writeSymbol(id, Consts.modules_kwd, yyline);
 }
 
-{ErlInt}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+{ErlInt} |
+    {Number}    {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+}
 
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'     { yybegin(QATOM);out.write("<span class=\"s\">\'");}
- "%"   { yybegin(COMMENT);out.write("<span class=\"c\">%");}
+ \"     {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+
+ \'     {
+    pushSpan(QATOM, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+
+ "%"    {
+    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
 }
 
 <STRING> {
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \\[\"\\]    { out.write(htmlize(yytext())); }
+ \"    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <QATOM> {
- \'     { yybegin(YYINITIAL); out.write("\'</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\'   { out.write("\\\'"); }
+ \\[\'\\]    { out.write(htmlize(yytext())); }
+ \'    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <COMMENT> {
   {ErlangWhspChar}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
+    yypop();
     startNewLine();
   }
 }
 
 <YYINITIAL, STRING, COMMENT, QATOM> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {ErlangWhspChar}*{EOL}      { startNewLine(); }
  {ErlangWhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
- .      { writeUnicodeChar(yycharat(0)); }
+
+ [^]    { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, COMMENT, STRING, QATOM> {

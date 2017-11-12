@@ -45,6 +45,7 @@ super(in);
 
 %state STRING COMMENT QATOM
 
+%include Common.lexh
 %include Erlang.lexh
 %%
 
@@ -80,19 +81,21 @@ super(in);
  }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
- \\\\ | \\\"   {}
 }
 
 <QATOM> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
- \\\\ | \\\'   {}
 }
 
 <COMMENT> {
- \n    { yybegin(YYINITIAL);}
+ {EOL}    { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, QATOM, COMMENT> {
+{ErlangWhiteSpace}    {}
+
 [^]    {}
 }

@@ -12,7 +12,7 @@ function get_sym_list(){return [["Function","xf",[["flush",51],["loop",27],["sta
 <a class="l" name="4" href="#4">4</a><span class="c">%% purpose with or without fee is hereby granted, provided that the above</span>
 <a class="l" name="5" href="#5">5</a><span class="c">%% copyright notice and this permission notice appear in all copies.</span>
 <a class="l" name="6" href="#6">6</a><span class="c">%%</span>
-<a class="l" name="7" href="#7">7</a><span class="c">%% THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES</span>
+<a class="l" name="7" href="#7">7</a><span class="c">%% THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES</span>
 <a class="l" name="8" href="#8">8</a><span class="c">%% WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF</span>
 <a class="l" name="9" href="#9">9</a><span class="c">%% MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR</span>
 <a class="hl" name="10" href="#10">10</a><span class="c">%% ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES</span>
@@ -44,10 +44,10 @@ function get_sym_list(){return [["Function","xf",[["flush",51],["loop",27],["sta
 <a class="l" name="36" href="#36">36</a>					<a href="/source/s?defs=Transport" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Transport</a>:<a href="/source/s?defs=close" class="intelliWindow-symbol" data-definition-place="undefined-in-file">close</a>(<a href="/source/s?defs=CSocket" class="intelliWindow-symbol" data-definition-place="undefined-in-file">CSocket</a>)
 <a class="l" name="37" href="#37">37</a>			<b>end</b>;
 <a class="l" name="38" href="#38">38</a>		<span class="c">%% Reduce the accept rate if we run out of file descriptors.</span>
-<a class="l" name="39" href="#39">39</a>		<span class="c">%% We can't accept anymore anyway, so we might as well wait</span>
+<a class="l" name="39" href="#39">39</a>		<span class="c">%% We can&apos;t accept anymore anyway, so we might as well wait</span>
 <a class="hl" name="40" href="#40">40</a>		<span class="c">%% a little for the situation to resolve itself.</span>
 <a class="l" name="41" href="#41">41</a>		{<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>, <a href="/source/s?defs=emfile" class="intelliWindow-symbol" data-definition-place="undefined-in-file">emfile</a>} -&gt;
-<a class="l" name="42" href="#42">42</a>			<a href="/source/s?defs=error_logger" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error_logger</a>:<a href="/source/s?defs=warning_msg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">warning_msg</a>(<span class="s">"Ranch acceptor reducing accept rate: out of file descriptors~n"</span>),
+<a class="l" name="42" href="#42">42</a>			<a href="/source/s?defs=error_logger" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error_logger</a>:<a href="/source/s?defs=warning_msg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">warning_msg</a>(<span class="s">&quot;Ranch acceptor reducing accept rate: out of file descriptors~n&quot;</span>),
 <a class="l" name="43" href="#43">43</a>			<b>receive</b> <b>after</b> <span class="n">0xFF</span> -&gt; <a href="/source/s?defs=ok" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ok</a> <b>end</b>;
 <a class="l" name="44" href="#44">44</a>		<span class="c">%% We want to crash if the listening socket got closed.</span>
 <a class="l" name="45" href="#45">45</a>		{<a href="/source/s?defs=error" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error</a>, <a href="/source/s?defs=Reason" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Reason</a>} <b>when</b> <a href="/source/s?defs=Reason" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Reason</a> =/= <a href="/source/s?defs=closed" class="intelliWindow-symbol" data-definition-place="undefined-in-file">closed</a> -&gt;
@@ -59,7 +59,7 @@ function get_sym_list(){return [["Function","xf",[["flush",51],["loop",27],["sta
 <a class="l" name="51" href="#51">51</a><a class="xf" name="flush"/><a href="/source/s?refs=flush" class="xf intelliWindow-symbol" data-definition-place="def">flush</a>() -&gt;
 <a class="l" name="52" href="#52">52</a>	<b>receive</b> <a href="/source/s?defs=Msg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Msg</a> -&gt;
 <a class="l" name="53" href="#53">53</a>		<a href="/source/s?defs=error_logger" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error_logger</a>:<a href="/source/s?defs=error_msg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">error_msg</a>(
-<a class="l" name="54" href="#54">54</a>			<span class="s">"Ranch acceptor received unexpected message: ~p~n"</span>,
+<a class="l" name="54" href="#54">54</a>			<span class="s">&quot;Ranch acceptor received unexpected message: ~p~n&quot;</span>,
 <a class="l" name="55" href="#55">55</a>			[<a href="/source/s?defs=Msg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">Msg</a>]),
 <a class="l" name="56" href="#56">56</a>		<a class="d intelliWindow-symbol" href="#flush" data-definition-place="defined-in-file">flush</a>()
 <a class="l" name="57" href="#57">57</a>	<b>after</b> <span class="n">0</span> -&gt;
