@@ -55,11 +55,9 @@ Number = {Sign}? ({SimpleNumber} | {ScientificNumber})
 
 Identifier = [a-zA-Z] [a-zA-Z0-9_]*
 
-Whitespace = [ \t\f]+
-EOL = \r|\n|\r\n
-
 %state STRING QUOTED_IDENTIFIER SINGLE_LINE_COMMENT BRACKETED_COMMENT
 
+%include Common.lexh
 %%
 
 <YYINITIAL> {
@@ -119,8 +117,8 @@ EOL = \r|\n|\r\n
     "&"    { out.append( "&amp;"); }
     "<"    { out.append( "&lt;"); }
     ">"    { out.append( "&gt;"); }
-    {EOL}     { startNewLine(); }
-    {Whitespace}  { out.append(yytext()); }
+    {WhspChar}*{EOL}    { startNewLine(); }
+    {WhiteSpace}  { out.append(yytext()); }
     [ \t\f\r!-~]  { out.append(yycharat(0)); }
     [^\n]      { writeUnicodeChar(yycharat(0)); }
 }

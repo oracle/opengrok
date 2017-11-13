@@ -39,8 +39,8 @@ import org.opensolaris.opengrok.web.Util;
 %int
 %include CommonXref.lexh
 %{
-  /* Must match WhiteSpace regex */
-  private final static String WHITE_SPACE = "[ \n\t\f]+";
+  /* Must match {WhiteSpace} regex */
+  private final static String WHITE_SPACE = "[ \\t\\f]+";
 
   // TODO move this into an include file when bug #16053 is fixed
   @Override
@@ -49,16 +49,10 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-/* Must match WHITE_SPACE constant */
-WhiteSpace     = [\ \n\t\f]+
-EOL = \r|\n|\r\n
 /* TODO: prohibit '$' in identifiers? */
 Identifier = [:jletter:] [:jletterdigit:]*
 
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* "." ("java"|"properties"|"props"|"xml"|"conf"|"txt"|"htm"|"html"|"ini"|"jnlp"|"jad"|"diff"|"patch")
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
 
@@ -66,12 +60,15 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 SdocWithClassArg = "@throws" | "@exception"
 SdocWithParamNameArg = "@param"
 
-ClassName = "class"{WhiteSpace}+({Identifier} ".")* {Identifier}
+ClassName = "class"{WhiteSpace}({Identifier} ".")* {Identifier}
 ParamName = {Identifier} | "<" {Identifier} ">"
 */
 
 %state  STRING COMMENT SCOMMENT QSTRING SDOC TSTRING
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 <YYINITIAL>{
  \{     { incScope(); writeUnicodeChar(yycharat(0)); }
@@ -83,7 +80,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
     writeSymbol(id, Consts.kwd, yyline);
 }
 
-"<" ({File}|{Path}) ">" {
+"<" ({File}|{FPath}) ">" {
         out.write("&lt;");
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -151,7 +148,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 */
 
 <SCOMMENT> {
-  {WhiteSpace}*{EOL} {
+  {WhspChar}*{EOL} {
     yybegin(YYINITIAL); out.write("</span>");
     startNewLine();
   }
@@ -162,14 +159,14 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { startNewLine(); }
+{WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, COMMENT, SCOMMENT, STRING, QSTRING, SDOC, TSTRING> {
-{Path}
+{FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
 {File}
@@ -182,9 +179,8 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         out.write(path);
         out.write("</a>");}
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
-          appendLink(yytext());
+{BrowseableURI}    {
+          appendLink(yytext(), true);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
@@ -192,4 +188,3 @@ ParamName = {Identifier} | "<" {Identifier} ">"
           writeEMailAddress(yytext());
         }
 }
-

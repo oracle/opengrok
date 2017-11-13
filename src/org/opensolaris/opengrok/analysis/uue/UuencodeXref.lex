@@ -50,13 +50,11 @@ import org.opensolaris.opengrok.web.Util;
 %eof{
 %eof}
 
-WhiteSpace     = [ \t\f]
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-EOL = \r|\n|\r\n
-FNameChar = [a-zA-Z0-9_\-\.]
-
 %state MODE NAME UUE
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 <YYINITIAL> {
   ^ ( "begin " | "begin-base64 " ) {
@@ -65,8 +63,8 @@ FNameChar = [a-zA-Z0-9_\-\.]
     out.write("<strong>" + yytext() + "</strong>");
   }
 
-  ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+ [a-zA-Z0-9/] {
-    appendLink(yytext());
+  {BrowseableURI}    {
+    appendLink(yytext(), true);
   }
 
   {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
@@ -76,7 +74,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
   "<"     {out.write( "&lt;");}
   "&"     {out.write( "&amp;");}
   {EOL}   {startNewLine();}
-  {WhiteSpace}+   { out.write(yytext()); }
+  {WhiteSpace}   { out.write(yytext()); }
   [!-~]   { out.write(yycharat(0)); }
   [^\n]      { writeUnicodeChar(yycharat(0)); }
 }

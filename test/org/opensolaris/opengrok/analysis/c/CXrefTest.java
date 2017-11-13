@@ -22,8 +22,9 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.ada;
+package org.opensolaris.opengrok.analysis.c;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,15 +35,18 @@ import java.io.StringWriter;
 import java.io.Writer;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.analysis.CtagsReader;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 
 /**
- * Tests the {@link AdaXref} class.
+ * Tests the {@link CXref} class.
  */
-public class AdaXrefTest {
+public class CXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
@@ -50,14 +54,14 @@ public class AdaXrefTest {
         ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ada/sample.adb");
-        assertNotNull("though sample.adb should stream,", res);
-        writeAdaXref(res, new PrintStream(baos));
+            "org/opensolaris/opengrok/analysis/c/sample.c");
+        assertNotNull("though sample.c should stream,", res);
+        writeCXref(res, new PrintStream(baos));
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ada/ada_xrefres.html");
-        assertNotNull("ada_xrefres.html should stream,", exp);
+            "org/opensolaris/opengrok/analysis/c/c_xrefres.html");
+        assertNotNull("c_xrefres.html should stream,", exp);
         copyStream(exp, baosExp);
         exp.close();
         baosExp.close();
@@ -69,24 +73,30 @@ public class AdaXrefTest {
         String estr = new String(baosExp.toByteArray(), "UTF-8");
         String expected[] = estr.split("\n");
 
-        assertLinesEqual("Ada xref", expected, gotten);
+        assertLinesEqual("C xref", expected, gotten);
     }
 
-    private void writeAdaXref(InputStream iss, PrintStream oss) throws IOException {
+    private void writeCXref(InputStream iss, PrintStream oss)
+        throws IOException {
+
         oss.print(getHtmlBegin());
 
         Writer sw = new StringWriter();
-        AdaAnalyzerFactory fac = new AdaAnalyzerFactory();
+        CAnalyzerFactory fac = new CAnalyzerFactory();
         FileAnalyzer analyzer = fac.getAnalyzer();
         WriteXrefArgs wargs = new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw);
+        wargs.setDefs(getTagsDefinitions());
+        analyzer.setScopesEnabled(true);
+        analyzer.setFoldingEnabled(true);
         analyzer.writeXref(wargs);
 
         oss.print(sw.toString());
         oss.print(getHtmlEnd());
     }
 
-    private void copyStream(InputStream iss, OutputStream oss) throws IOException {
+    private void copyStream(InputStream iss, OutputStream oss)
+        throws IOException {
         byte buffer[] = new byte[8192];
         int read;
         do {
@@ -97,7 +107,23 @@ public class AdaXrefTest {
         } while (read >= 0);
     }
 
-    private String getHtmlBegin() {
+    private Definitions getTagsDefinitions() throws IOException {
+        InputStream res = getClass().getClassLoader().getResourceAsStream(
+            "org/opensolaris/opengrok/analysis/c/sampletags_c");
+        assertNotNull("though sampletags_c should stream,", res);
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            res, "UTF-8"));
+
+        CtagsReader rdr = new CtagsReader();
+        String line;
+        while ((line = in.readLine()) != null) {
+            rdr.readLine(line);
+        }
+        return rdr.getDefinitions();
+    }
+
+    private static String getHtmlBegin() {
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n" +
             "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
@@ -109,7 +135,7 @@ public class AdaXrefTest {
             " for /sampleFile</title></head><body>\n";
     }
 
-    private String getHtmlEnd() {
+    private static String getHtmlEnd() {
         return "</body>\n" +
             "</html>\n";
     }

@@ -34,10 +34,10 @@ import java.io.StringWriter;
 import java.io.Writer;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 
 /**
  * Tests the {@link PerlXref} class.
@@ -69,11 +69,7 @@ public class PerlXrefTest {
         String estr = new String(baosExp.toByteArray(), "UTF-8");
         String expected[] = estr.split("\n");
 
-        for (int i = 0; i < expected.length && i < gotten.length; i++) {
-            assertEquals("line " + (i + 1) + " diff", expected[i], gotten[i]);
-        }
-
-        assertEquals(expected.length, gotten.length);
+        assertLinesEqual("Perl xref", expected, gotten);
     }
 
     private void writePerlXref(InputStream iss, PrintStream oss) throws IOException {

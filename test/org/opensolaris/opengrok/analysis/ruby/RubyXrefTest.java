@@ -35,12 +35,12 @@ import java.io.StringWriter;
 import java.io.Writer;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.opensolaris.opengrok.analysis.CtagsReader;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 
 /**
  * Tests the {@link RubyXref} class.
@@ -72,17 +72,7 @@ public class RubyXrefTest {
         String estr = new String(baosExp.toByteArray(), "UTF-8");
         String expected[] = estr.split("\n");
 
-        for (int i = 0; i < expected.length && i < gotten.length; i++) {
-            if (!expected[i].equals(gotten[i])) {
-                System.out.print("- ");
-                System.out.println(expected[i]);
-                System.out.print("+ ");
-                System.out.println(gotten[i]);
-            }
-            assertEquals("line " + (i + 1) + " diff", expected[i], gotten[i]);
-        }
-
-        assertEquals(expected.length, gotten.length);
+        assertLinesEqual("Ruby xref", expected, gotten);
     }
 
     private void writeRubyXref(InputStream iss, PrintStream oss)

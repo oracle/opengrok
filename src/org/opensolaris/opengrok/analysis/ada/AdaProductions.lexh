@@ -203,7 +203,7 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 
 // "comment links"
 <SCOMMENT> {
-    {Path}    {
+    {FPath}    {
         if (takeAllContent()) {
             take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
         }
@@ -223,7 +223,7 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 
     {BrowseableURI}    {
         if (takeAllContent()) {
-            appendLink(yytext());
+            appendLink(yytext(), true);
         }
     }
 

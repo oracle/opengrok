@@ -45,17 +45,21 @@ import org.opensolaris.opengrok.web.Util;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
 %}
-WhiteSpace     = [ \t\f]
-EOL = \r|\n|\r\n
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
-Path = "/"? {FNameChar}+ ("/" {FNameChar}+)+[a-zA-Z0-9]
+
+/*
+ * Differs from FPath in that the path segments are only constrained to be
+ * {FNameChar} -- except the last character must be {ASCII_ALPHA} or {DIGIT}.
+ */
+AlmostAnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+[a-zA-Z0-9]
 
 FileChar = [a-zA-Z_0-9_\-\/]
 NameChar = {FileChar}|"."
 
 %state TAG STRING COMMENT SSTRING CDATA
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 
 <YYINITIAL> {
@@ -68,7 +72,7 @@ NameChar = {FileChar}|"."
 }
 
 <TAG> {
-[a-zA-Z_0-9]+{WhiteSpace}*\= { out.write("<b>"); out.write(yytext()); out.write("</b>"); }
+[a-zA-Z_0-9]+{WhspChar}*\= { out.write("<b>"); out.write(yytext()); out.write("</b>"); }
 [a-zA-Z_0-9]+ { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 \"      { yybegin(STRING); out.write("<span class=\"s\">\""); }
 \'      { yybegin(SSTRING); out.write("<span class=\"s\">'"); }
@@ -77,7 +81,7 @@ NameChar = {FileChar}|"."
 }
 
 <STRING> {
- \" {WhiteSpace}* \"  { out.write(yytext());}
+ \" {WhspChar}* \"  { out.write(yytext());}
  \"     { yybegin(TAG); out.write("\"</span>"); }
 }
 
@@ -87,7 +91,7 @@ NameChar = {FileChar}|"."
 }
 
 <SSTRING> {
- \' {WhiteSpace}* \'  { out.write(yytext());}
+ \' {WhspChar}* \'  { out.write(yytext());}
  \'     { yybegin(TAG); out.write("'</span>"); }
 }
 
@@ -102,7 +106,7 @@ NameChar = {FileChar}|"."
 }
 
 <YYINITIAL, COMMENT, CDATA, STRING, SSTRING, TAG> {
-{File}|{Path}
+{File}|{AlmostAnyFPath}
   {
     final String path = yytext();
     final boolean isJavaClass=StringUtils.isPossiblyJavaClass(path);
@@ -113,9 +117,8 @@ NameChar = {FileChar}|"."
     out.append(hyperlink);
   }
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
-          appendLink(yytext());
+{BrowseableURI}    {
+          appendLink(yytext(), true);
         }
 
 {NameChar}+ "@" {NameChar}+ "." {NameChar}+
@@ -124,7 +127,8 @@ NameChar = {FileChar}|"."
         }
 
 "&"     {out.write( "&amp;");}
-{EOL}   {startNewLine(); }
-[ !-~\t\f]      {out.write(yycharat(0));}
+{WhiteSpace}{EOL} |
+    {EOL}   {startNewLine(); }
+[!-~] | {WhspChar}    {out.write(yycharat(0));}
 [^\n]       { writeUnicodeChar(yycharat(0)); }
 }
