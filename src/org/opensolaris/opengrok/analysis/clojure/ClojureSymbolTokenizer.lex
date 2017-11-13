@@ -49,13 +49,14 @@ super(in);
 
 %state STRING COMMENT SCOMMENT
 
+%include Common.lexh
 %include Clojure.lexh
 %%
 
 <YYINITIAL> {
 {Identifier} {
     String id = yytext();
-              if (!Consts.kwd.contains(id.toLowerCase())) {
+              if (!Consts.kwd.contains(id)) {
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate();
               }
@@ -69,11 +70,11 @@ super(in);
 
 <STRING> {
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
+ \\[\"\\]    {}
 }
 
 <YYINITIAL, COMMENT> {
- "#|"    { yybegin(COMMENT); ++nestedComment; }
+ "#|"   { if (nestedComment++ == 0) { yybegin(COMMENT); } }
 }
 
 <COMMENT> {
@@ -81,9 +82,11 @@ super(in);
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{EOL}   { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT> {
+{WhiteSpace}    {}
+
 [^]    {}
 }
