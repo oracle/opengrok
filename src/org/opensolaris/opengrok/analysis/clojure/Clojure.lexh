@@ -1,0 +1,70 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+Identifier = {Symbol}
+
+Number = ({NumberLong} | {NumberDecimal} | {NumberSci} | {NumberHex} |
+    {NumberBinary} | {NumberCrazy} | {NumberRatio})
+NumberLong = [\-\+]?[0-9]+
+NumberDecimal = [\-\+]?[0-9]*\.[0-9]+
+NumberSci = ({NumberLong} | {NumberDecimal}) ([eE][+-]?[0-9]+)?
+NumberHex = 0[Xx][0-9A-Fa-f]+
+NumberBinary = 2[Rr][01]+
+NumberCrazy = 36[Rr][0-9A-Za-z]+
+NumberRatio = {NumberLong}"/"{NumberLong}
+
+/*
+ * Symbols
+ *
+ * Symbols begin with a non-numeric character and can contain alphanumeric
+ * characters and *, +, !, -, _, ', and ? (other characters may be allowed
+ * eventually).
+ *
+ * N.b. under "Macro Characters", the Quote (') macro is defined -- and that
+ * section implies that Symbols cannot begin with \'
+ */
+Symbol = ({SymbolNormal} | {SymbolSlashed} | {SymbolDotted} | {SymbolColon})
+SymbolNormal = {SymCharLead} {SymCharAny}*
+SymCharSpecial = [\*\+\!\-_\'\?]
+SymCharLead = ([A-Za-z] | [[\*\+\!\-_\'\?]--\']) // i.e. [{SymCharSpecial}--\']
+SymCharAlphanum = [A-Za-z0-9]
+SymCharAny = ({SymCharAlphanum} | {SymCharSpecial})
+/*
+ * '/' has special meaning, it can be used once in the middle of a symbol to
+ * separate the namespace from the name, e.g. my-namespace/foo. '/' by itself
+ * names the division function.
+ */
+SymbolSlashed = {SymbolNormal} "/" {SymCharAny}+
+/*
+ * '.' has special meaning - it can be used one or more times in the middle of
+ * a symbol to designate a fully-qualified class name, e.g. java.util.BitSet,
+ * or in namespace names. Symbols beginning or ending with '.' are reserved by
+ * Clojure. Symbols containing / or . are said to be 'qualified'.
+ */
+SymbolDotted = {SymbolNormal} ("." {SymCharAny}+)+
+/*
+ * Symbols beginning or ending with ':' are reserved by Clojure. A symbol can
+ * contain one or more non-repeating ':'s.
+ */
+SymbolColon = (":" {SymCharAny}+ ":"? | {SymCharAny}+ ":")

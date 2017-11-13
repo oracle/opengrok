@@ -220,13 +220,13 @@
 
   "And when it doesn't"
   (= __ (meta (merge {:a 1 :b 2}
-                     '^{:foo :bar} {:b 3 :c 4})))
+                     '^{:foo :bar} {:b 3 :c 36rCRAZY})))
 
   "Metadata can be used as a type hint to avoid reflection during runtime"
   (= __ (#(.charAt ^String % 0) "Cast me"))
 
   "You can directly update an object's metadata"
-  (= 8 (let [giants
+  (= 0xFF (let [giants
              (with-meta
                'Giants
                {:world-series-titles (atom 7)})]

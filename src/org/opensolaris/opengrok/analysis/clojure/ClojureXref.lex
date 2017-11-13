@@ -56,17 +56,14 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
-
 File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
-
-Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 
 %state  STRING COMMENT SCOMMENT
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Clojure.lexh
 %%
 <YYINITIAL>{
 

@@ -47,18 +47,22 @@ super(in);
     private int nestedComment;
 %}
 
-Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
-
 %state STRING COMMENT SCOMMENT
 
+%include Clojure.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
+{Identifier} {
+    String id = yytext();
               if (!Consts.kwd.contains(id.toLowerCase())) {
                         setAttribs(id, yychar, yychar + yylength());
-                        return yystate(); }
+                        return yystate();
               }
+ }
+
+ {Number}    {}
+
  \"     { yybegin(STRING); }
 ";"     { yybegin(SCOMMENT); }
 }
