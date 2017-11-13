@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Ancestor.h"
+#include "Ancestor.ext1"
 
 /* ========================================================================= */
 /* Ancestor object definitions. */

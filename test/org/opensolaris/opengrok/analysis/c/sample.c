@@ -28,7 +28,7 @@
 
 #include <sys/types.h>
 #include <time.h>
-#include <errno.h>
+#include "errno.ext1"
 
 /*
  * This function is blatently stolen from the kernel.
