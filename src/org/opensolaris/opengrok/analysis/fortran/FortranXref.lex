@@ -69,7 +69,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    writeSymbol(id, Consts.kwd, yyline, false);
 }
 
 "<" ({File}|{FPath}) ">" {
