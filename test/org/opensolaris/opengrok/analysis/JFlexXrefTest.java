@@ -415,7 +415,7 @@ public class JFlexXrefTest {
         CSharpXref xref = new CSharpXref(in);
         StringWriter out = new StringWriter();
         xref.write(out);
-        assertTrue(out.toString().contains("<span class=\"s\">@\"\\some_windows_path_in_a_string\\\"</span>"));
+        assertTrue(out.toString().contains("<span class=\"s\">@&quot;\\some_windows_path_in_a_string\\&quot;</span>"));
     }
 
     /**

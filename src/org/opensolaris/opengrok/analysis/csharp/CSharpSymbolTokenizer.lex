@@ -45,6 +45,7 @@ super(in);
 
 %state STRING COMMENT SCOMMENT QSTRING VSTRING
 
+%include Common.lexh
 %include CSharp.lexh
 %%
 
@@ -67,16 +68,19 @@ super(in);
 }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
-}
-
-<VSTRING> {
-"@\""  { yybegin(YYINITIAL);}
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
+}
+
+<VSTRING> {
+ \\ |
+ \"\"    {}
+ \"    { yybegin(YYINITIAL);}
 }
 
 <COMMENT> {
@@ -84,9 +88,11 @@ super(in);
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{CsharpEOL}    { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, VSTRING> {
+{WhiteSpace}    {}
+
 [^]    {}
 }
