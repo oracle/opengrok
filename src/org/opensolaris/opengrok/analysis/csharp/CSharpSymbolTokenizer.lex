@@ -42,18 +42,23 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 
 %state STRING COMMENT SCOMMENT QSTRING VSTRING
 
+%include CSharp.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
+{Identifier} {
+    String id = yytext();
                 if(!Consts.kwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
-                        return yystate(); }
-              }
+                        return yystate();
+                }
+ }
+
+ {Number}    {}
+
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  "/*"   { yybegin(COMMENT); }

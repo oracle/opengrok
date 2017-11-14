@@ -74,7 +74,7 @@ namespace Microsoft.PowerShell
             ///
             /// </summary>
 
-            XML = 1,
+            XML = 0xFF,
 
             /// <summary>
             ///

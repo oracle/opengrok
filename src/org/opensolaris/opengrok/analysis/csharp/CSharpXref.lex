@@ -50,21 +50,14 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-CsharpEOL = {EOL}|\u2028|\u2029|\u000B|\u000C|\u0085
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-
 File = [a-zA-Z]{FNameChar}* "." ([chts]|"cs")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
-
-//ClassName = ({Identifier} ".")* {Identifier}
-//ParamName = {Identifier} | "<" {Identifier} ">"
 
 %state  STRING COMMENT SCOMMENT QSTRING VSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include CSharp.lexh
 %%
 <YYINITIAL>{
  \{     { incScope(); writeUnicodeChar(yycharat(0)); }
@@ -73,7 +66,13 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    // N.b. for historical reasons, CSharpXref does not link identifiers of
+    // length=1.
+    if (id.length() > 1) {
+        writeSymbol(id, Consts.kwd, yyline);
+    } else {
+        out.write(id);
+    }
 }
 
 "<" ({File} | {FPath}) ">" {
