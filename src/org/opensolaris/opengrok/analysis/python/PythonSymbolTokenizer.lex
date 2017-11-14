@@ -45,6 +45,7 @@ super(in);
 
 %state STRING LSTRING SCOMMENT QSTRING LQSTRING
 
+%include Common.lexh
 %include Python.lexh
 %%
 
@@ -67,25 +68,30 @@ super(in);
  }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
- \n     { yybegin(YYINITIAL); }
-}
-
-<LSTRING> {
- \"\"\" { yybegin(YYINITIAL); }
+ {EOL}  { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
- \n     { yybegin(YYINITIAL); }
+ {EOL}  { yybegin(YYINITIAL); }
+}
+
+<LSTRING> {
+ \\[\"\\]    {}
+ \"\"\" { yybegin(YYINITIAL); }
 }
 
 <LQSTRING> {
+ \\[\'\\]    {}
  \'\'\' { yybegin(YYINITIAL); }
 }
 
 <SCOMMENT> {
- \n    { yybegin(YYINITIAL);}
+ {WhiteSpace}    {}
+ {EOL}    { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, LSTRING, SCOMMENT, QSTRING , LQSTRING> {
