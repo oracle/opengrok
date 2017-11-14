@@ -43,18 +43,22 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-
 %state STRING LSTRING SCOMMENT QSTRING LQSTRING
 
+%include Python.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
+{Identifier} {
+    String id = yytext();
                 if(!Consts.kwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
-                        return yystate(); }
-              }
+                        return yystate();
+                }
+ }
+
+ {Number}        {}
+
  \"     { yybegin(STRING); }
  \"\"\" { yybegin(LSTRING); }
  \'     { yybegin(QSTRING); }

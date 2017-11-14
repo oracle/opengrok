@@ -127,7 +127,7 @@ for slide in range(18):
         text.append(text_line+'\r\n')
     # print(text)
 
-    img_aa = np.ones_like(img, dtype=np.uint8) * 255
+    img_aa = np.ones_like(img, dtype=np.uint8) * 0xFF
 
     for h in range(num_line):
         w = 0

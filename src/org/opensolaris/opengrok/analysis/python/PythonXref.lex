@@ -49,23 +49,25 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-
 File = [a-zA-Z]{FNameChar}* "." ("py"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ]*)?
 
 %state  STRING LSTRING SCOMMENT QSTRING LQSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Python.lexh
 %%
 <YYINITIAL>{
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    // For historical reasons, PythonXref does not link identifiers of length=1.
+    if (id.length() > 1) {
+        writeSymbol(id, Consts.kwd, yyline);
+    } else {
+        out.write(id);
+    }
 }
 
 "<" ({File}|{FPath}) ">" {
