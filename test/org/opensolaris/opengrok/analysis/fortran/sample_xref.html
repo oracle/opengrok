@@ -45,7 +45,7 @@ function get_sym_list(){return [["Subroutine","xsr",[["DGESV",173]]]];} /* ]]> *
 <a class="l" name="37" href="#37">37</a><span class="c">* intellectual property rights.</span>
 <a class="l" name="38" href="#38">38</a><span class="c">*</span>
 <a class="l" name="39" href="#39">39</a><span class="c">* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS</span>
-<a class="hl" name="40" href="#40">40</a><span class="c">* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT</span>
+<a class="hl" name="40" href="#40">40</a><span class="c">* &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT</span>
 <a class="l" name="41" href="#41">41</a><span class="c">* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR</span>
 <a class="l" name="42" href="#42">42</a><span class="c">* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT</span>
 <a class="l" name="43" href="#43">43</a><span class="c">* OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,</span>
@@ -65,11 +65,11 @@ function get_sym_list(){return [["Subroutine","xsr",[["DGESV",173]]]];} /* ]]> *
 <a class="l" name="57" href="#57">57</a><span class="c">*</span>
 <a class="l" name="58" href="#58">58</a><span class="c">*&gt; \htmlonly</span>
 <a class="l" name="59" href="#59">59</a><span class="c">*&gt; Download DGESV + dependencies</span>
-<a class="hl" name="60" href="#60">60</a><span class="c">*&gt; &lt;a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&amp;filename=/lapack/lapack_routine/dgesv.f"&gt;</span>
+<a class="hl" name="60" href="#60">60</a><span class="c">*&gt; &lt;a href=&quot;http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&amp;filename=/lapack/lapack_routine/dgesv.f&quot;&gt;</span>
 <a class="l" name="61" href="#61">61</a><span class="c">*&gt; [TGZ]&lt;/a&gt;</span>
-<a class="l" name="62" href="#62">62</a><span class="c">*&gt; &lt;a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&amp;filename=/lapack/lapack_routine/dgesv.f"&gt;</span>
+<a class="l" name="62" href="#62">62</a><span class="c">*&gt; &lt;a href=&quot;http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&amp;filename=/lapack/lapack_routine/dgesv.f&quot;&gt;</span>
 <a class="l" name="63" href="#63">63</a><span class="c">*&gt; [ZIP]&lt;/a&gt;</span>
-<a class="l" name="64" href="#64">64</a><span class="c">*&gt; &lt;a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&amp;filename=/lapack/lapack_routine/dgesv.f"&gt;</span>
+<a class="l" name="64" href="#64">64</a><span class="c">*&gt; &lt;a href=&quot;http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&amp;filename=/lapack/lapack_routine/dgesv.f&quot;&gt;</span>
 <a class="l" name="65" href="#65">65</a><span class="c">*&gt; [TXT]&lt;/a&gt;</span>
 <a class="l" name="66" href="#66">66</a><span class="c">*&gt; \endhtmlonly</span>
 <a class="l" name="67" href="#67">67</a><span class="c">*</span>
@@ -216,7 +216,7 @@ function get_sym_list(){return [["Subroutine","xsr",[["DGESV",173]]]];} /* ]]> *
 <a class="l" name="208" href="#208">208</a>         <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = -<span class="n">7</span>
 <a class="l" name="209" href="#209">209</a>      <b>END</b> <b>IF</b>
 <a class="hl" name="210" href="#210">210</a>      <b>IF</b>( <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a>.<b>NE</b>.<span class="n">0</span> ) <b>THEN</b>
-<a class="l" name="211" href="#211">211</a>         <b>CALL</b> <a href="/source/s?defs=XERBLA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">XERBLA</a>( <span class="s">&apos;DGESV '</span>, -<a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> )
+<a class="l" name="211" href="#211">211</a>         <b>CALL</b> <a href="/source/s?defs=XERBLA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">XERBLA</a>( <span class="s">&apos;DGESV &apos;</span>, -<a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> )
 <a class="l" name="212" href="#212">212</a>         <b>RETURN</b>
 <a class="l" name="213" href="#213">213</a>      <b>END</b> <b>IF</b>
 <a class="l" name="214" href="#214">214</a><span class="c">*</span>
@@ -227,7 +227,7 @@ function get_sym_list(){return [["Subroutine","xsr",[["DGESV",173]]]];} /* ]]> *
 <a class="l" name="219" href="#219">219</a><span class="c">*</span>
 <a class="hl" name="220" href="#220">220</a><span class="c">*        Solve the system A*X = B, overwriting B with X.</span>
 <a class="l" name="221" href="#221">221</a><span class="c">*</span>
-<a class="l" name="222" href="#222">222</a>         <b>CALL</b> <a href="/source/s?defs=DGETRS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRS</a>( <span class="s">&apos;No transpose'</span>, N, <a href="/source/s?defs=NRHS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NRHS</a>, A, <a href="/source/s?defs=LDA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>, <a href="/source/s?defs=IPIV" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IPIV</a>, B, <a href="/source/s?defs=LDB" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDB</a>,
+<a class="l" name="222" href="#222">222</a>         <b>CALL</b> <a href="/source/s?defs=DGETRS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRS</a>( <span class="s">&apos;No transpose&apos;</span>, N, <a href="/source/s?defs=NRHS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NRHS</a>, A, <a href="/source/s?defs=LDA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>, <a href="/source/s?defs=IPIV" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IPIV</a>, B, <a href="/source/s?defs=LDB" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDB</a>,
 <a class="l" name="223" href="#223">223</a>     $                <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> )
 <a class="l" name="224" href="#224">224</a>      <b>END</b> <b>IF</b>
 <a class="l" name="225" href="#225">225</a>      <b>RETURN</b>

@@ -61,7 +61,11 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 %include CommonPath.lexh
 %%
 <YYINITIAL>{
- ^{Label} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+ ^{Label} {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
  ^[^ \t\f\r\n]+ {
     pushSpan(LCOMMENT, HtmlConsts.COMMENT_CLASS);
     out.write(htmlize(yytext()));
@@ -85,7 +89,11 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 /*{Hier}
         { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
 */
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+{Number}        {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
  \"     {
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
@@ -102,21 +110,28 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
- \"     { out.write('"'); yypop(); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \" {WhiteSpace} \"  { out.write(htmlize(yytext()));}
+ \"     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+ \\[\"\\]    { out.write(htmlize(yytext())); }
 }
 
 <QSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { out.write('\''); yypop(); }
+ \\[\'\\]    { out.write(htmlize(yytext())); }
+ \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
+ \'     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <COMMENT> {
-"*/"    { out.write("*/"); yypop(); }
+"*/"    {
+    out.write(yytext());
+    yypop();
+ }
 }
 
 <SCOMMENT> {
@@ -125,9 +140,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 }
 
 <LCOMMENT> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { yypop();
                   startNewLine();}
  {WhiteSpace}   { out.write(yytext()); }
@@ -137,9 +150,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }

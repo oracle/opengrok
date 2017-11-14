@@ -32,6 +32,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class FortranSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
+%ignorecase
 %init{
 super(in);
 %init}
@@ -42,8 +43,10 @@ super(in);
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Label = [0-9]+
 
+// (OK to exclude LSTRING state used in FortranXref.)
 %state STRING COMMENT SCOMMENT QSTRING
 
+%include Common.lexh
 %%
 
 <YYINITIAL> {
@@ -61,10 +64,11 @@ Label = [0-9]+
 
 <STRING> {
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
+ \\[\"\\]    {}
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
 }
 
@@ -73,7 +77,8 @@ Label = [0-9]+
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{WhiteSpace}    {}
+{EOL}    { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
