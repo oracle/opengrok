@@ -32,12 +32,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import static org.junit.Assert.*;
+import static org.opensolaris.opengrok.util.CustomAssertions.assertSymbolStream;
 
 /**
- * Unit tests for PerlSymbolTokenizerTest.
+ * Unit tests for {@link PerlSymbolTokenizer}.
  */
 public class PerlSymbolTokenizerTest {
 
@@ -110,31 +112,6 @@ public class PerlSymbolTokenizerTest {
             }            
         }
 
-        testSymbolStream(PerlSymbolTokenizer.class, plres, expectedSymbols);
-    }
-
-    /**
-     * Runs the test on one single implementation class with the specified
-     * input text and expected tokens.
-     */
-    private void testSymbolStream(Class<? extends JFlexTokenizer> klass,
-            InputStream iss, List<String> expectedTokens)
-            throws Exception {
-        JFlexTokenizer tokenizer = klass.getConstructor(Reader.class)
-                .newInstance(new InputStreamReader(iss, "UTF-8"));
-
-        CharTermAttribute term = tokenizer.addAttribute(CharTermAttribute.class);
-
-        int count = 0;
-        while (tokenizer.incrementToken()) {
-            assertTrue("too many tokens at term" + (1 + count) + ": " +
-                term.toString(), count < expectedTokens.size());
-            String expected = expectedTokens.get(count);
-            // 1-based offset to accord with line #
-            assertEquals("term" + (1 + count), expected, term.toString());
-            count++;
-        }
-
-        assertEquals("wrong number of tokens", expectedTokens.size(), count);
+        assertSymbolStream(PerlSymbolTokenizer.class, plres, expectedSymbols);
     }
 }

@@ -18,12 +18,19 @@
  */
 
 /*
- * Copyright (c) 2017, cfraire@me.com.
+ * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.util;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.List;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 /**
  * Represents a container for custom test assertion methods
@@ -58,5 +65,36 @@ public class CustomAssertions {
 
         assertEquals(messagePrefix + ":number of lines", expecteds.length,
             actuals.length);
+    }
+
+    /**
+     * Asserts the specified tokenizer class produces an expected stream of
+     * symbols from the specified input.
+     * @param klass the test class
+     * @param iss the input stream
+     * @param expectedTokens the expected, ordered token list
+     * @throws java.lang.Exception if an error occurs constructing a
+     * {@code klass} instance or testing the stream
+     */
+    public static void assertSymbolStream(Class<? extends JFlexTokenizer> klass,
+        InputStream iss, List<String> expectedTokens) throws Exception {
+
+        JFlexTokenizer tokenizer = klass.getConstructor(Reader.class).
+            newInstance(new InputStreamReader(iss, "UTF-8"));
+
+        CharTermAttribute term = tokenizer.addAttribute(
+            CharTermAttribute.class);
+
+        int count = 0;
+        while (tokenizer.incrementToken()) {
+            assertTrue("too many tokens at term" + (1 + count) + ": " +
+                term.toString(), count < expectedTokens.size());
+            String expected = expectedTokens.get(count);
+            // 1-based offset to accord with line #
+            assertEquals("term" + (1 + count), expected, term.toString());
+            count++;
+        }
+
+        assertEquals("wrong number of tokens", expectedTokens.size(), count);
     }
 }
