@@ -27,7 +27,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.golang;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -37,9 +38,8 @@ import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class GolangXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
@@ -50,7 +50,8 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-File = [a-zA-Z]{FNameChar}* "." ("go"|"txt"|"htm"|"html"|"diff"|"patch")
+File = [a-zA-Z]{FNameChar}* "." ([Gg][Oo] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
+    [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
 
 %state STRING COMMENT SCOMMENT QSTRING
 
@@ -64,11 +65,27 @@ File = [a-zA-Z]{FNameChar}* "." ("go"|"txt"|"htm"|"html"|"diff"|"patch")
         String id = yytext();
         writeSymbol(id, Consts.kwd, yyline);
     }
-    {Number}     { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
-    \"           { yybegin(STRING); out.write("<span class=\"s\">\"");                         }
-    \'           { yybegin(QSTRING); out.write("<span class=\"s\">\'");                        }
-    "/*"         { yybegin(COMMENT); out.write("<span class=\"c\">/*");                        }
-    "//"         { yybegin(SCOMMENT); out.write("<span class=\"c\">//");                       }
+    {Number}     {
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
+        out.write(yytext());
+        disjointSpan(null);
+    }
+    \"           {
+        pushSpan(STRING, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext()));
+    }
+    \'           {
+        pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext()));
+    }
+    "/*"         {
+        pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+        out.write(yytext());
+    }
+    "//"         {
+        pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+        out.write(yytext());
+    }
 }
 
 "<" ({File}|{FPath}) ">" {
@@ -85,33 +102,42 @@ File = [a-zA-Z]{FNameChar}* "." ("go"|"txt"|"htm"|"html"|"diff"|"patch")
 }
 
 <STRING> {
-    \" {WhiteSpace} \" { out.write(yytext()); }
-    \"                 { yybegin(YYINITIAL); out.write("\"</span>"); }
-    \\\\               { out.write("\\\\"); }
-    \\\"               { out.write("\\\""); }
+    \\[\"\\] |
+    \" {WhiteSpace} \"    { out.write(htmlize(yytext())); }
+    \"    {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
 }
 
 <QSTRING> {
-    "\\\\"             { out.write("\\\\");                         }
-    "\\'"              { out.write("\\\'");                         }
-    \' {WhiteSpace} \' { out.write(yytext());                       }
-    \'                 { yybegin(YYINITIAL); out.write("'</span>"); }
+    \\[\'\\] |
+    \' {WhiteSpace} \'    { out.write(htmlize(yytext())); }
+    \'    {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
 }
 
 <COMMENT> {
-    "*/"               { yybegin(YYINITIAL); out.write("*/</span>"); }
+    "*/"    {
+        out.write(yytext());
+        yypop();
+    }
 }
 
 <SCOMMENT> {
-    {WhspChar}*{EOL}   { yybegin(YYINITIAL); out.write("</span>"); startNewLine(); }
+    {WhspChar}*{EOL}    {
+        yypop();
+        startNewLine();
+    }
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-    "&"                { out.write( "&amp;");           }
-    "<"                { out.write( "&lt;");            }
-    ">"                { out.write( "&gt;");            }
+    [&<>\'\"]          { out.write(htmlize(yytext())); }
     {WhspChar}*{EOL}   { startNewLine();                }
     {WhiteSpace}       { out.write(yytext());           }
+    [!-~]              { out.write(yycharat(0)); }
     [^\n]              { writeUnicodeChar(yycharat(0)); }
 }
 

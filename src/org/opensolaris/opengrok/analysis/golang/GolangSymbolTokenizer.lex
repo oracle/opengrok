@@ -47,6 +47,7 @@ super(in);
 
 %state STRING COMMENT SCOMMENT QSTRING
 
+%include Common.lexh
 %include Golang.lexh
 %%
 
@@ -66,12 +67,13 @@ super(in);
 }
 
 <STRING> {
-    \"   { yybegin(YYINITIAL); }
-    \\\\ | \\\" {}
+    \\[\"\\]    {}
+    \"    { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
-    \' { yybegin(YYINITIAL); }
+    \\[\'\\]    {}
+    \'    { yybegin(YYINITIAL); }
 }
 
 <COMMENT> {
@@ -79,9 +81,10 @@ super(in);
 }
 
 <SCOMMENT> {
-    \n { yybegin(YYINITIAL); }
+    {EOL} { yybegin(YYINITIAL); }
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+{WhiteSpace}    {}
 [^] {}
 }
