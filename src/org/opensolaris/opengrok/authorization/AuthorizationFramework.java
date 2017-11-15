@@ -460,7 +460,10 @@ public final class AuthorizationFramework {
             }
             // Load the class in memory and try to find a configured space for this class.
             if ((pf = handleLoadClass(classname)) != null) {
-                stack.setPlugin(pf);
+                if (!stack.setPlugin(pf)) {
+                    LOGGER.log(Level.INFO, "plugin {0} is not configured in the stack",
+                            classname);
+                }
             }
         }
 
@@ -475,7 +478,10 @@ public final class AuthorizationFramework {
                     }
                     // Load the class in memory and try to find a configured space for this class.
                     if ((pf = handleLoadClass(classname)) != null) {
-                        stack.setPlugin(pf);
+                        if (!stack.setPlugin(pf)) {
+                            LOGGER.log(Level.INFO, "plugin {0} is not configured in the stack",
+                                    classname);
+                        }
                     }
                 }
             } catch (IOException ex) {
