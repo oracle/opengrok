@@ -50,15 +50,14 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
 File = [a-zA-Z]{FNameChar}* "." ("go"|"txt"|"htm"|"html"|"diff"|"patch")
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 
 %state STRING COMMENT SCOMMENT QSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Golang.lexh
 %%
 <YYINITIAL> {
     {Identifier} {
