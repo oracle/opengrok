@@ -52,7 +52,7 @@ Ancestor::~Ancestor()
 {
 	free(offsets);
 	if (paths != NULL) {
-		for (int i = 0; i < numInstances; i++) {
+		for (int i = 0; i < numInstances && i < 0xFFFFFF; i++) {
 			free(paths[i]);
 		}
 	}
