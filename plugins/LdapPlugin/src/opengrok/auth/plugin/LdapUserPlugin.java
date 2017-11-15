@@ -47,6 +47,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     protected static final String OBJECT_CLASS = "objectclass";
     
     private String objectClass;
+    private Pattern usernameCnPattern = Pattern.compile("(cn=[a-zA-Z_]+)");
 
     private boolean isAlphanumeric(String str) {
         for (int i = 0; i < str.length(); i++) {
@@ -58,8 +59,6 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
 
         return true;
     }
-    
-    private Pattern usernameCnPattern = null;
     
     @Override
     public void load(Map<String, Object> parameters) {
@@ -75,8 +74,6 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
                     "' contains non-alphanumeric characters");
         }
     
-        usernameCnPattern = Pattern.compile("(cn=[a-zA-Z_]+)");
-        
         LOGGER.log(Level.FINE, "LdapUser plugin loaded with objectclass={0}",
                 objectClass);
     }
