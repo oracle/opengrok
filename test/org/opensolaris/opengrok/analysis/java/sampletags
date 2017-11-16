@@ -1,0 +1,20 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+org.opensolaris.opengrok.analysis.java	grok.java	/^package org.opensolaris.opengrok.analysis.java;$/;"	package	line:23
+Sample	grok.java	/^public class Sample {$/;"	class	line:25
+MY_MEMBER	grok.java	/^    static private String MY_MEMBER = "value";$/;"	field	line:27	class:Sample
+Sample	grok.java	/^    public Sample() {$/;"	method	line:29	class:Sample	signature:()
+Method	grok.java	/^    public int Method(int arg) {$/;"	method	line:33	class:Sample	signature:(int arg)
+res	grok.java	/^        int res = 5;$/;"	local	line:34
+i	grok.java	/^        InnerClass i = new InnerClass();$/;"	local	line:38
+AbstractMethod	grok.java	/^    public int AbstractMethod(int test) {$/;"	method	line:43	class:Sample	signature:(int test)
+InnerClass	grok.java	/^    private class InnerClass {$/;"	class	line:47	class:Sample
+InnerMethod	grok.java	/^        public String InnerMethod() {$/;"	method	line:49	class:Sample.InnerClass	signature:()
+main	grok.java	/^    public static void main(String args[]) {$/;"	method	line:62	class:Sample	signature:(String args[])
+num1	grok.java	/^        int num1, num2;$/;"	local	line:63
+num2	grok.java	/^        int num1, num2;$/;"	local	line:63
