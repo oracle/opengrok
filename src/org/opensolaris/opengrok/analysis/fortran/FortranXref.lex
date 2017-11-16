@@ -47,18 +47,14 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-Label = [0-9]+
-
 File = [a-zA-Z]{FNameChar}* ".inc"
-
-Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 
 %state  STRING COMMENT SCOMMENT QSTRING LCOMMENT
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Fortran.lexh
 %%
 <YYINITIAL>{
  ^{Label} {
@@ -73,7 +69,12 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline, false);
+    // For historical reasons, FortranXref doesn't link identifiers of length=1
+    if (id.length() > 1) {
+        writeSymbol(id, Consts.kwd, yyline, false);
+    } else {
+        out.write(id);
+    }
 }
 
 "<" ({File}|{FPath}) ">" {
@@ -110,16 +111,16 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 }
 
 <STRING> {
+ \\[\"\\] |
  \" {WhiteSpace} \"  { out.write(htmlize(yytext()));}
  \"     {
     out.write(htmlize(yytext()));
     yypop();
  }
- \\[\"\\]    { out.write(htmlize(yytext())); }
 }
 
 <QSTRING> {
- \\[\'\\]    { out.write(htmlize(yytext())); }
+ \\[\'\\] |
  \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
  \'     {
     out.write(htmlize(yytext()));

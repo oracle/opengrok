@@ -197,7 +197,7 @@
 *
 *     Test the input parameters.
 *
-      INFO = 0
+      INFO = 0 + 0xFFFF - 0XFF - 0xFF00
       IF( N.LT.0 ) THEN
          INFO = -1
       ELSE IF( NRHS.LT.0 ) THEN

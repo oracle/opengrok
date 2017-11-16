@@ -40,13 +40,11 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-Label = [0-9]+
-
 // (OK to exclude LSTRING state used in FortranXref.)
 %state STRING COMMENT SCOMMENT QSTRING
 
 %include Common.lexh
+%include Fortran.lexh
 %%
 
 <YYINITIAL> {
@@ -57,14 +55,17 @@ Label = [0-9]+
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
+
+ {Number}        {}
+
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  \!     { yybegin(SCOMMENT); }
 }
 
 <STRING> {
- \"     { yybegin(YYINITIAL); }
  \\[\"\\]    {}
+ \"     { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
