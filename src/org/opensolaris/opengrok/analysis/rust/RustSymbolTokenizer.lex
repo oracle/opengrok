@@ -28,8 +28,9 @@
  */
 
 package org.opensolaris.opengrok.analysis.rust;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class RustSymbolTokenizer
@@ -41,42 +42,85 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
+%{
+  /**
+   * Stores the number of hashes beginning and ending a raw string or raw byte
+   * string. E.g., r##"blah"## has rawHashCount == 2.
+   */
+  int rawHashCount;
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+  int nestedComment;
 
-%state STRING COMMENT SCOMMENT QSTRING
+  @Override
+  public void reset() throws IOException {
+      super.reset();
+      rawHashCount = 0;
+      nestedComment = 0;
+  }
+%}
 
+%state STRING RSTRING COMMENT SCOMMENT
+
+%include Common.lexh
+%include Rust.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
+{Identifier} {
+    String id = yytext();
                 if(!Consts.kwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
-                        return yystate(); }
-              }
- \"     { yybegin(STRING); }
- \'     { yybegin(QSTRING); }
- "/*"   { yybegin(COMMENT); }
+                        return yystate();
+                }
+ }
+ {Number}    {}
+ [b]?\"     { yybegin(STRING); }
+ [b]?[r][#]*\" {
+    yybegin(RSTRING);
+    rawHashCount = RustUtils.countRawHashes(yytext());
+ }
+ [b]?\' ([^\n\r\'\\] | \\[^\n\r]) \' |
+ [b]?\' \\[xX]{HEXDIG}{HEXDIG} \' |
+ [b]?\' \\[uU]\{ {HEXDIG}{1,6} \}\'    {}
+ "/*"   {
+    ++nestedComment;
+    yybegin(COMMENT);
+ }
  "//"   { yybegin(SCOMMENT); }
 }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
-<QSTRING> {
- \'     { yybegin(YYINITIAL); }
+<RSTRING> {
+    \"[#]*    {
+        String capture = yytext();
+        if (RustUtils.isRawEnding(capture, rawHashCount)) {
+            yybegin(YYINITIAL);
+            int excess = capture.length() - 1 - rawHashCount;
+            if (excess > 0) yypushback(excess);
+        }
+    }
+}
+
+<STRING, RSTRING> {
+    {WhspChar}*{EOL}    {
+        // no-op
+    }
 }
 
 <COMMENT> {
-"*/"    { yybegin(YYINITIAL);}
+    "*/"    { if (--nestedComment == 0) yybegin(YYINITIAL); }
+    "/*"    { ++nestedComment; }
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{WhiteSpace}    {}
+{EOL}      { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, RSTRING, COMMENT, SCOMMENT> {
 [^]    {}
 }
