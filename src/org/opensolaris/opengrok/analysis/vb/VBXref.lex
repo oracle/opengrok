@@ -49,24 +49,24 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-
 File = [a-zA-Z]{FNameChar}* "." ("vb"|"cls"|"frm"|"vbs"|"bas"|"ctl")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
-
 
 %state  STRING COMMENT
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include VB.lexh
 %%
 <YYINITIAL>{
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.reservedKeywords, yyline, false);
+    if (id.length() > 1) {
+        writeSymbol(id, Consts.reservedKeywords, yyline, false);
+    } else {
+        out.write(id);
+    }
 }
 
 "<" ({File}|{FPath}) ">" {

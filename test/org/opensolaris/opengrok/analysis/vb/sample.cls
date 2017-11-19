@@ -424,7 +424,7 @@ Private Function web_FindBlankLine(web_CurlResponseLines() As String) As Long
 End Function
 
 Private Sub Class_Initialize()
-    web_CrLf = VBA.Chr$(13) & VBA.Chr$(10)
+    web_CrLf = VBA.Chr$(&HA) & VBA.Chr$(&o12)
 
     Set Headers = New Collection
     Set Cookies = New Collection
