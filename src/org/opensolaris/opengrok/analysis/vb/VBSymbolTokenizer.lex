@@ -36,6 +36,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class VBSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
+%ignorecase
 %init{
 super(in);
 %init}
@@ -50,8 +51,9 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
-                if(!Consts.getReservedKeywords().contains(id)){
+{Identifier} {
+    String id = yytext();
+                if (!Consts.reservedKeywords.contains(id.toLowerCase())) {
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
