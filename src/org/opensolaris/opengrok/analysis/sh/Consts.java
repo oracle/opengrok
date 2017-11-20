@@ -20,6 +20,7 @@
 /*
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.sh;
@@ -144,5 +145,6 @@ public class Consts{
         shkwd.add( "void" );
         shkwd.add( "unsigned" );
         shkwd.add( "nameref" );
+        shkwd.add( "in" );
     }
 }

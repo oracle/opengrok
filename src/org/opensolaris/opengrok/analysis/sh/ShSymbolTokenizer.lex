@@ -37,10 +37,10 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-
 %state STRING COMMENT SCOMMENT QSTRING
 
+%include Common.lexh
+%include Sh.lexh
 %%
 
 <YYINITIAL> {
@@ -49,16 +49,20 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
+ {Number}    {}
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  "#"    { yybegin(SCOMMENT); }
+
+ {Unary_op} |
+ {Binary_op}    {}
 }
 
 <STRING> {
 "$" {Identifier} {
     setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
     return yystate();
-}
+ }
 
 "${" {Identifier} "}" {
     int startOffset = 2;            // trim away the "${" prefix
@@ -67,18 +71,20 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
                yychar + startOffset,
                yychar + endOffset);
     return yystate();
-}
+ }
 
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
+ \\[\"\$\`\\]    {}
 }
 
 <QSTRING> {
+ \\[\']    {}
  \'     { yybegin(YYINITIAL); }
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{WhiteSpace}    {}
+{EOL}      { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, SCOMMENT, QSTRING> {

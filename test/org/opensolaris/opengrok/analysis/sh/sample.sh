@@ -264,3 +264,6 @@ for dir in $dirs; do
 	cd - > /dev/null
 done
 exit 0
+
+typeset -i vint
+vint=0xFFEF

@@ -95,9 +95,6 @@ import org.opensolaris.opengrok.web.Util;
 
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-Number = \$? [0-9]+\.[0-9]+| [0-9][0-9]* | [0][xX] [0-9a-fA-F]+
-
 File = {FNameChar}+ "." ([a-zA-Z]+)
 
 /*
@@ -119,18 +116,25 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 %include CommonURI.lexh
 %include CommonPath.lexh
 %include CommonLaxFPath.lexh
+%include Sh.lexh
 %%
 <STRING>{
  "$" {Identifier} {
     String id = yytext();
-    out.write("<a href=\"");
-    out.write(urlPrefix);
-    out.write("refs=");
-    out.write(id);
-    appendProject();
-    out.write("\">");
-    out.write(id);
-    out.write("</a>");
+    // For historical reasons, ShXref will not link identifiers of length=1
+    // (or of length=2 with a leading '$')
+    if (id.length() > 2) {
+        out.write("<a href=\"");
+        out.write(urlPrefix);
+        out.write("refs=");
+        out.write(id);
+        appendProject();
+        out.write("\">");
+        out.write(id);
+        out.write("</a>");
+    } else {
+        out.write(id);
+    }
  }
 
   /* This rule matches associative arrays inside strings,
@@ -138,7 +142,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
      state on the stack to prevent premature exit from the
      STRING state. */
   \$\{ {Identifier} \[\" {
-    out.write(yytext());
+    out.write(htmlize(yytext()));
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
   }
 }
@@ -146,7 +150,14 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
 \$ ? {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.shkwd, yyline);
+    // For historical reasons, ShXref will not link identifiers of length=1
+    int minlength = 1;
+    if (id.startsWith("$")) ++minlength;
+    if (id.length() > minlength) {
+        writeSymbol(id, Consts.shkwd, yyline);
+    } else {
+        out.write(id);
+    }
 }
 
 {Number}        {
@@ -158,11 +169,11 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
  \$ ? \" {
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
-    out.write(yytext());
+    out.write(htmlize(yytext()));
  }
  \$ ? \' {
     pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
-    out.write(yytext());
+    out.write(htmlize(yytext()));
  }
  "#"     {
     pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
@@ -172,7 +183,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
  // Recognize here-documents. At least a subset of them.
  "<<" "-"? {WhspChar}* {Identifier} {WhspChar}* {
    String text = yytext();
-   out.write(Util.htmlize(text));
+   out.write(htmlize(text));
 
    heredocStripLeadingTabs = (text.charAt(2) == '-');
    heredocStopWord = text.substring(heredocStripLeadingTabs ? 3 : 2).trim();
@@ -182,20 +193,24 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
  // Any sequence of more than two < characters should not start HEREDOC. Use
  // this rule to catch them before the HEREDOC rule.
  "<<" "<" + {
-   out.write(Util.htmlize(yytext()));
+   out.write(htmlize(yytext()));
  }
 
+ {Unary_op} |
+ {Binary_op}    {
+    out.write(yytext());
+ }
 }
 
 <STRING> {
- \" {WhspChar}* \"  { out.write(yytext()); }
- \"     { out.write(yytext()); yypop(); }
- \\\\ | \\\" | \\\$ | \\` { out.write(yytext()); }
+ \\[\"\$\`\\] |
+ \" {WhspChar}* \"  { out.write(htmlize(yytext())); }
+ \"     { out.write(htmlize(yytext())); yypop(); }
  \$\(   {
     pushSpan(SUBSHELL, null);
     out.write(yytext());
  }
- `      {
+ [`]    {
     pushSpan(BACKQUOTE, null);
     out.write(yytext());
  }
@@ -211,13 +226,13 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 }
 
 <QSTRING> {
- \' {WhspChar}* \' { out.write(yytext()); }
- \\'  { out.write("\\'"); }
- \'   { out.write(yytext()); yypop(); }
+ \\[\'] |
+ \' {WhspChar}* \' { out.write(htmlize(yytext())); }
+ \'   { out.write(htmlize(yytext())); yypop(); }
 }
 
 <SCOMMENT> {
-{EOL} {
+{WhspChar}*{EOL}    {
     yypop();
     startNewLine();
  }
@@ -247,7 +262,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
     if (isHeredocStopWord(line)) {
       yypop();
     }
-    out.write(Util.htmlize(line));
+    out.write(htmlize(line));
   }
 
   {EOL} { startNewLine(); }
@@ -255,8 +270,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
   /* Don't enter new state if special character is escaped. */
-  \\` | \\\( | \\\) | \\\\ | \\\{ { out.write(yytext()); }
-  \\\" | \\' | \\\$ | \\\# { out.write(yytext()); }
+  \\[`\)\(\{\"\'\$\#\\]    { out.write(htmlize(yytext())); }
 
   /* $# should not start a comment. */
   "$#" { out.write(yytext()); }
@@ -288,11 +302,9 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
 {RelaxedMiddleFPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
-{WhiteSpace}{EOL} |
-    {EOL}    { startNewLine(); }
+
+[&<>\'\"]    { out.write(htmlize(yytext())); }
+{WhspChar}*{EOL}    { startNewLine(); }
 {WhiteSpace}   { out.write(yytext()); }
 [!-~]   { out.write(yycharat(0)); }
 [^\n]      { writeUnicodeChar(yycharat(0)); }
