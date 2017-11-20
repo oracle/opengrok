@@ -23,8 +23,7 @@
  */
 
 package org.opensolaris.opengrok.analysis.sh;
-import java.io.IOException;
-import java.io.Reader;
+
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public

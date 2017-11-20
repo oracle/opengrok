@@ -421,6 +421,15 @@ public abstract class JFlexXref extends JFlexStateStacker {
     }
 
     /**
+     * Gets the argument from the last call to
+     * {@link #disjointSpan(java.lang.String)}.
+     * @return a defined value or null
+     */
+    public String getDisjointSpanClassName() {
+        return disjointSpanClassName;
+    }
+
+    /**
      * Write xref to the specified {@code Writer}.
      *
      * @param out xref destination
