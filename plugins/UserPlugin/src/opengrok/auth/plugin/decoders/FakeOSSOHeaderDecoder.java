@@ -23,20 +23,22 @@
 package opengrok.auth.plugin.decoders;
 
 /**
- * Almost like @{code OSSOHeaderDecoder} however uses HTTP headers with
- * the "my-" prefix which allows for custom header insertion.
+ * Almost like @{code OSSOHeaderDecoder} however uses OSSO HTTP headers with
+ * prefix which allows for custom header insertion.
  * This class should therefore only be used for debugging.
  *
  * @author Krystof Tulinger
  */
 public class FakeOSSOHeaderDecoder extends OSSOHeaderDecoder {
 
+    private final String PREFIX = "fake-";
+    
     public FakeOSSOHeaderDecoder() {
-        OSSO_COOKIE_TIMESTAMP_HEADER = "my-osso-cookie-timestamp";
-        OSSO_TIMEOUT_EXCEEDED_HEADER = "my-osso-idle-timeout-exceeded";
-        OSSO_SUBSCRIBER_DN_HEADER = "my-osso-subscriber-dn";
-        OSSO_SUBSCRIBER_HEADER = "my-osso-subscriber";
-        OSSO_USER_DN_HEADER = "my-osso-user-dn";
-        OSSO_USER_GUID_HEADER = "my-osso-user-guid";
+        OSSO_COOKIE_TIMESTAMP_HEADER = PREFIX + OSSOHeaderDecoder.OSSO_COOKIE_TIMESTAMP_HEADER;
+        OSSO_TIMEOUT_EXCEEDED_HEADER = PREFIX + OSSOHeaderDecoder.OSSO_TIMEOUT_EXCEEDED_HEADER;
+        OSSO_SUBSCRIBER_DN_HEADER = PREFIX + OSSOHeaderDecoder.OSSO_SUBSCRIBER_DN_HEADER;
+        OSSO_SUBSCRIBER_HEADER = PREFIX + OSSOHeaderDecoder.OSSO_SUBSCRIBER_HEADER;
+        OSSO_USER_DN_HEADER = PREFIX + OSSOHeaderDecoder.OSSO_USER_DN_HEADER;
+        OSSO_USER_GUID_HEADER = PREFIX + OSSOHeaderDecoder.OSSO_USER_GUID_HEADER;
     }
 }
