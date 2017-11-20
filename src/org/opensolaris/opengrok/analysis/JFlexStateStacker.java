@@ -33,7 +33,7 @@ import java.util.Stack;
  * a state stack.
  */
 public abstract class JFlexStateStacker implements Resettable,
-    JFlexStackableLexer {
+    JFlexStackingLexer {
 
     protected final Stack<Integer> stack = new Stack<>();
 

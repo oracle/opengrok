@@ -31,7 +31,7 @@ import java.io.IOException;
  * Represents an API for an extension of {@link JFlexLexer} that needs to track
  * a state stack.
  */
-public interface JFlexStackableLexer extends JFlexLexer {
+public interface JFlexStackingLexer extends JFlexLexer {
 
     /**
      * Saves current {@link #yystate()} to stack, and enters the specified
