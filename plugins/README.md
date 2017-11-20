@@ -17,7 +17,7 @@ In general, it should be possible to increase log level in Tomcat's
 ### UserPlugin
 
 Has a special property called "fake" that allows to insert custom headers
-with the "my-" prefix that would be evaluated instead of the usual SSO headers.
+with the "fake-" prefix that would be evaluated instead of the usual SSO headers.
 
 Header insertion can be done e.g. using the Modify headers Firefox plugin.
 
