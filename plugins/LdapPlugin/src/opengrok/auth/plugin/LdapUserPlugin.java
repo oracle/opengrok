@@ -47,7 +47,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     protected static final String OBJECT_CLASS = "objectclass";
     
     private String objectClass;
-    private Pattern usernameCnPattern = Pattern.compile("(cn=[a-zA-Z_]+)");
+    private final Pattern usernameCnPattern = Pattern.compile("(cn=[a-zA-Z0-9_-]+)");
 
     private boolean isAlphanumeric(String str) {
         for (int i = 0; i < str.length(); i++) {
@@ -124,25 +124,25 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         String filter = getFilter(user);
         if ((records = getLdapProvider().lookupLdapContent(null, filter,
                 new String[]{"uid", "mail", "ou"})) == null) {
-            LOGGER.log(Level.FINER, "failed to get LDAP contents for user '{0}' with filter '{1}'",
+            LOGGER.log(Level.WARNING, "failed to get LDAP contents for user '{0}' with filter '{1}'",
                     new Object[]{user, filter});
             return;
         }
 
         if (records.isEmpty()) {
-            LOGGER.log(Level.FINER, "LDAP records for user {0} are empty",
+            LOGGER.log(Level.WARNING, "LDAP records for user {0} are empty",
                     user);
             return;
         }
 
         if (!records.containsKey("uid") || records.get("uid").isEmpty()) {
-            LOGGER.log(Level.FINER, "uid record for user {0} is not present or empty",
+            LOGGER.log(Level.WARNING, "uid record for user {0} is not present or empty",
                     user);
             return;
         }
 
         if (!records.containsKey("mail") || records.get("mail").isEmpty()) {
-            LOGGER.log(Level.FINER, "mail record for user {0} is not present or empty",
+            LOGGER.log(Level.WARNING, "mail record for user {0} is not present or empty",
                     user);
             return;
         }
