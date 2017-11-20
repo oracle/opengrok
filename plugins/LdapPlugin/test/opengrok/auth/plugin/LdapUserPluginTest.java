@@ -88,7 +88,7 @@ public class LdapUserPluginTest {
         String cl = "posixUser";
         params.put(LdapUserPlugin.OBJECT_CLASS, (Object) cl);
         plugin.load(params);
-        String cn = "cn=foo";
+        String cn = "cn=foo-foo_bar1";
         User user = new User(cn + ",l=EMEA,dc=foobar,dc=com", "id", null, false);
         String filter = plugin.getFilter(user);
         Assert.assertEquals("(&(" + LdapUserPlugin.OBJECT_CLASS + "=" + cl + ")(" + cn + "))",
