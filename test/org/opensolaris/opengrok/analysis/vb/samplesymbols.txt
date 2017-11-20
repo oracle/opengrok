@@ -497,3 +497,6 @@ Headers
 Collection
 Cookies
 Collection
+Test_strings
+foo1
+foo1

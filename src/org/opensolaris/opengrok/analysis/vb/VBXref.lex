@@ -23,20 +23,18 @@
  */
 
 /*
- * Cross reference a Java file
+ * Cross reference a VB file
  */
 
 package org.opensolaris.opengrok.analysis.vb;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class VBXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
 %ignorecase
 %int
@@ -85,32 +83,46 @@ File = [a-zA-Z]{FNameChar}* "." ("vb"|"cls"|"frm"|"vbs"|"bas"|"ctl")
 /*{Hier}
         { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
 */
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+ {Number}        {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
- \"   { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'   { yybegin(COMMENT);out.write("<span class=\"c\">\'");}
+ \"   {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'   {
+    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(htmlize(yytext()));
+ }
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
-  \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
-  \\\\   { out.write("\\\\"); }
- \\\"   { yybegin(YYINITIAL); out.write("\\\"</span>"); }
- 
+ \"\" |
+ \" {WhiteSpace} \"    { out.write(htmlize(yytext())); }
+ \"     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+ {WhspChar}*{EOL}    {
+    disjointSpan(null);
+    startNewLine();
+    disjointSpan(HtmlConsts.STRING_CLASS);
+ }
 }
 
 <COMMENT> {
   {WhspChar}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
+    yypop();
     startNewLine();
   }
 }
 
 
 <YYINITIAL, STRING, COMMENT> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }

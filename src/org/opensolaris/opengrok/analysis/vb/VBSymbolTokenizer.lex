@@ -23,14 +23,12 @@
  */
 
 /*
- * Gets Java symbols - ignores comments, strings, keywords
+ * Gets VB symbols - ignores comments, strings, keywords
  */
 
 package org.opensolaris.opengrok.analysis.vb;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class VBSymbolTokenizer
@@ -46,6 +44,7 @@ super(in);
 
 %state STRING COMMENT
 
+%include Common.lexh
 %include VB.lexh
 %%
 
@@ -64,12 +63,13 @@ super(in);
 }
 
 <STRING> {
+   \"\"    {}
    \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <COMMENT> {
-\n      { yybegin(YYINITIAL);}
+{WhiteSpace}    {}
+{EOL}     { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT> {

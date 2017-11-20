@@ -429,3 +429,9 @@ Private Sub Class_Initialize()
     Set Headers = New Collection
     Set Cookies = New Collection
 End Sub
+
+Private Sub Test_strings()
+    Dim foo1() As String
+    Set foo1 = " testing    
+    1-2-3"
+End Sub
