@@ -225,4 +225,20 @@ public final class StringUtils {
         }
         return n;
     }
+    
+    /**
+     * Find out if string contains only alphanumeric characters.
+     * @param str string to check
+     * @return {@code true} if the string is alphanumeric, {@code false} otherwise
+     */
+    public static boolean isAlphanumeric(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (!Character.isDigit(c) && !Character.isLetter(c)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
