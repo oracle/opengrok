@@ -604,7 +604,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </condition>
     </target>
 
-    <target name="package-svr4" depends="-check-svr4-package,jar" if="svr4_package_missing">
+    <target name="package-svr4" depends="-check-svr4-package,jar,plugins" if="svr4_package_missing">
         <exec os="SunOS" executable="/usr/bin/pkgmk" failonerror="true">
             <arg line="-o -d build -r . -v ${version} -f platform/solaris/pkgdef/prototype"/>
         </exec>
@@ -625,7 +625,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </condition>
     </target>
 
-    <target name="package-ips" depends="-check-ips-package,jar" if="ips_package_missing">
+    <target name="package-ips" depends="-check-ips-package,jar,plugins" if="ips_package_missing">
         <exec os="SunOS" executable="platform/solaris/ips/create.sh" failonerror="true">
             <arg line="-v ${version}"/>
         </exec>
@@ -634,7 +634,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
     <target name="package" depends="package-svr4,package-ips">
     </target>
 
-    <target name="dist" depends="jar">
+    <target name="dist" depends="jar,plugins">
         <tar destfile="${dist.dir}/${tardest}"
              compression="gzip">
             <tarfileset dir="." prefix="${distname}-${version}/doc">
