@@ -17,11 +17,12 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.util;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -128,5 +129,11 @@ public class StringUtilsTest {
         String uri = "";
         int n = StringUtils.countURIEndingPushback(uri);
         assertEquals("empty pushback", 0, n);
+    }
+    
+    @Test
+    public void testIsAlphanumeric() {
+        Assert.assertTrue(StringUtils.isAlphanumeric("foo123"));
+        Assert.assertFalse(StringUtils.isAlphanumeric("foo_123"));
     }
 }

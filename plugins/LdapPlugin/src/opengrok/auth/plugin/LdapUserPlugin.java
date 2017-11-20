@@ -33,6 +33,7 @@ import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * Authorization plug-in to extract user's LDAP attributes.
@@ -49,17 +50,6 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
     private String objectClass;
     private final Pattern usernameCnPattern = Pattern.compile("(cn=[a-zA-Z0-9_-]+)");
 
-    private boolean isAlphanumeric(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (!Character.isDigit(c) && !Character.isLetter(c)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-    
     @Override
     public void load(Map<String, Object> parameters) {
         super.load(parameters);
@@ -69,7 +59,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
                     "] in the setup");
         }
 
-        if (!isAlphanumeric(objectClass)) {
+        if (!StringUtils.isAlphanumeric(objectClass)) {
             throw new NullPointerException("object class '" + objectClass +
                     "' contains non-alphanumeric characters");
         }
