@@ -121,6 +121,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
     ">"                { out.write( "&gt;");            }
     {WhspChar}*{EOL} { startNewLine();                }
     {WhiteSpace}       { out.write(yytext());           }
+    [!-~]              { out.write(yytext()); }
     [^\n]              { writeUnicodeChar(yycharat(0)); }
 }
 
