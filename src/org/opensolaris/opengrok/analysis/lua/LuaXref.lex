@@ -50,15 +50,14 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
 File = [a-zA-Z]{FNameChar}* "." ("lua"|"txt"|"htm"|"html"|"diff"|"patch")
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 
 %state STRING LSTRING COMMENT SCOMMENT QSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Lua.lexh
 %%
 <YYINITIAL> {
     {Identifier} {
@@ -87,24 +86,21 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 }
 
 <STRING> {
+    \\[\"\\] |
     \" {WhiteSpace} \" { out.write(yytext()); }
     \"                 { yybegin(YYINITIAL); out.write("\"</span>"); }
-    \\\\               { out.write("\\\\"); }
-    \\\"               { out.write("\\\""); }
 }
 
 <QSTRING> {
-    "\\\\"             { out.write("\\\\");                         }
-    "\\'"              { out.write("\\\'");                         }
+    \\[\'\\] |
     \' {WhiteSpace} \' { out.write(yytext());                       }
     \'                 { yybegin(YYINITIAL); out.write("'</span>"); }
 }
 
 <LSTRING> {
+ \\[\"\\] |
  \" {WhiteSpace} \"  { out.write(yytext());}
  "]]" { yybegin(YYINITIAL); out.write("]]</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
 }
 
 <COMMENT> {

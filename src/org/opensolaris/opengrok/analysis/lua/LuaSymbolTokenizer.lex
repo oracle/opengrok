@@ -45,10 +45,10 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
-
 %state STRING LSTRING COMMENT SCOMMENT QSTRING
 
+%include Common.lexh
+%include Lua.lexh
 %%
 
 <YYINITIAL> {
@@ -59,6 +59,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
             return yystate();
         }
     }
+    {Number}    {}
     \"     { yybegin(STRING);   }
     "[["   { yybegin(LSTRING);  }
     \'     { yybegin(QSTRING);  }
@@ -67,26 +68,30 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
 }
 
 <STRING> {
+    \\[\"\\]    {}
     \"   { yybegin(YYINITIAL); }
-    \\\\ | \\\" {}
-}
-
-<LSTRING> {
-    "]]" { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
+    \\[\'\\]    {}
     \' { yybegin(YYINITIAL); }
 }
 
-<COMMENT> {
+<LSTRING> {
+    \\[\"\\]    {}
+
     "]]" { yybegin(YYINITIAL); }
 }
 
+<COMMENT> {
+    "--]]" { yybegin(YYINITIAL); }
+}
+
 <SCOMMENT> {
-    \n { yybegin(YYINITIAL); }
+    {WhspChar}*{EOL} { yybegin(YYINITIAL); }
 }
 
 <YYINITIAL, STRING, LSTRING, COMMENT, SCOMMENT, QSTRING> {
+{WhiteSpace}    {}
 [^] {}
 }
