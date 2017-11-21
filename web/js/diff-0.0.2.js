@@ -17,6 +17,8 @@
  * CDDL HEADER END
  */
 
+/* global textInputHasFocus */
+
 /*
  * Copyright (c) 2016, 2017 Oracle and/or its affiliates. All rights reserved.
  */
@@ -124,6 +126,9 @@
                 load: function ($window) {
                     var that = this
                     $(document).keypress(function (e) {
+                        if (textInputHasFocus()) {
+                            return true;
+                        }
                         var key = e.keyCode || e.which
                         switch (key) {
                             case 110: // n
