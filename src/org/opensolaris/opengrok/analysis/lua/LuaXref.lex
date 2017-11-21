@@ -43,11 +43,19 @@ import org.opensolaris.opengrok.web.Util;
 %int
 %include CommonXref.lexh
 %{
+    int bracketLevel;
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
   @Override
   protected void setLineNumber(int x) { yyline = x; }
+
+    @Override
+    public void reset() {
+        super.reset();
+        bracketLevel = 0;
+    }
 %}
 
 File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
@@ -74,21 +82,26 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
         pushSpan(STRING, HtmlConsts.STRING_CLASS);
         out.write(htmlize(yytext()));
     }
-    "[["         {
+    "[" [=]* "["    {
+        String capture = yytext();
+        bracketLevel = LuaUtils.countOpeningLongBracket(capture);
         pushSpan(LSTRING, HtmlConsts.STRING_CLASS);
-        out.write(yytext());
+        out.write(capture);
     }
     \'           {
         pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
         out.write(htmlize(yytext()));
     }
-    "--[["       {
+    "--[" [=]* "["    {
+        String capture = yytext();
+        String bracket = capture.substring(2);
+        bracketLevel = LuaUtils.countOpeningLongBracket(bracket);
         pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
-        out.write(htmlize(yytext()));
+        out.write(capture);
     }
     "--"         {
         pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
-        out.write(htmlize(yytext()));
+        out.write(yytext());
     }
 }
 
@@ -107,8 +120,8 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 
 <STRING> {
     \\[\"\\] |
-    \" {WhiteSpace} \" { out.write(htmlize(yytext())); }
-    \"                 {
+    \" {WhiteSpace} \"    { out.write(htmlize(yytext())); }
+    \"    {
         out.write(htmlize(yytext()));
         yypop();
     }
@@ -116,31 +129,39 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 
 <QSTRING> {
     \\[\'\\] |
-    \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
-    \'                 {
+    \' {WhiteSpace} \'    { out.write(htmlize(yytext())); }
+    \'    {
         out.write(htmlize(yytext()));
         yypop();
     }
 }
 
-<LSTRING> {
- \\[\"\\] |
- \" {WhiteSpace} \"  { out.write(htmlize(yytext())); }
- "]]"    {
-        out.write(htmlize(yytext()));
-        yypop();
- }
+<LSTRING, COMMENT> {
+    "]" [=]* "]"    {
+        String capture = yytext();
+        out.write(capture);
+        if (LuaUtils.isClosingLongBracket(capture, bracketLevel)) yypop();
+    }
+}
+
+<STRING, QSTRING, LSTRING> {
+    {WhspChar}*{EOL}    {
+        disjointSpan(null);
+        startNewLine();
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
 }
 
 <COMMENT> {
-    "]]"               {
-        out.write(yytext());
-        yypop();
+    {WhspChar}*{EOL}    {
+        disjointSpan(null);
+        startNewLine();
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
     }
 }
 
 <SCOMMENT> {
-    {WhspChar}*{EOL} {
+    {WhspChar}*{EOL}    {
         yypop();
         startNewLine();
     }

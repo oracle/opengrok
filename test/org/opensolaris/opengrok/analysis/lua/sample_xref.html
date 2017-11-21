@@ -281,8 +281,8 @@ function get_sym_list(){return [["Function","xf",[["[MIME_TYPES.form_url_encoded
 <a class="l" name="273" href="#273">273</a>        <b>return</b> {}
 <a class="l" name="274" href="#274">274</a>      <b>end</b>
 <a class="l" name="275" href="#275">275</a>
-<a class="l" name="276" href="#276">276</a>      <span class="c">-- don&apos;t read raw_body if not necessary</span>
-<a class="l" name="277" href="#277">277</a>      <span class="c">-- if we called get_body_args(), we only want the parsed body</span>
+<a class="l" name="276" href="#276">276</a>      <span class="c">--[=[ don&apos;t read raw_body if not necessary ]]</span>
+<a class="l" name="277" href="#277">277</a><span class="c">      -- if we called get_body_args(), we only want the parsed body ]=]</span>
 <a class="l" name="278" href="#278">278</a>      <b>return</b> <a href="/source/s?defs=res" class="intelliWindow-symbol" data-definition-place="undefined-in-file">res</a>
 <a class="l" name="279" href="#279">279</a>    <b>end</b>,
 <a class="hl" name="280" href="#280">280</a>  }
@@ -310,7 +310,7 @@ function get_sym_list(){return [["Function","xf",[["[MIME_TYPES.form_url_encoded
 <a class="l" name="302" href="#302">302</a>    <b>then</b>
 <a class="l" name="303" href="#303">303</a>      <a href="/source/s?defs=req_mime" class="intelliWindow-symbol" data-definition-place="undefined-in-file">req_mime</a> = <a href="/source/s?defs=MIME_TYPES" class="intelliWindow-symbol" data-definition-place="undefined-in-file">MIME_TYPES</a>.<a href="/source/s?defs=form_url_encoded" class="intelliWindow-symbol" data-definition-place="undefined-in-file">form_url_encoded</a>
 <a class="l" name="304" href="#304">304</a>
-<a class="l" name="305" href="#305">305</a>    <b>elseif</b> <a href="/source/s?defs=str_find" class="intelliWindow-symbol" data-definition-place="undefined-in-file">str_find</a>(<a href="/source/s?defs=content_type" class="intelliWindow-symbol" data-definition-place="undefined-in-file">content_type</a>, <span class="s">&quot;<a href="/source/s?path=text/">text</a>/<a href="/source/s?path=text/plain">plain</a>&quot;</span>, <b>nil</b>, <b>true</b>) <b>then</b>
+<a class="l" name="305" href="#305">305</a>    <b>elseif</b> <a href="/source/s?defs=str_find" class="intelliWindow-symbol" data-definition-place="undefined-in-file">str_find</a>(<a href="/source/s?defs=content_type" class="intelliWindow-symbol" data-definition-place="undefined-in-file">content_type</a>, <span class="s">[=[<a href="/source/s?path=text/">text</a>/<a href="/source/s?path=text/plain">plain</a>]=]</span>, <b>nil</b>, <b>true</b>) <b>then</b>
 <a class="l" name="306" href="#306">306</a>      <a href="/source/s?defs=req_mime" class="intelliWindow-symbol" data-definition-place="undefined-in-file">req_mime</a> = <a href="/source/s?defs=MIME_TYPES" class="intelliWindow-symbol" data-definition-place="undefined-in-file">MIME_TYPES</a>.<a href="/source/s?defs=text" class="intelliWindow-symbol" data-definition-place="undefined-in-file">text</a>
 <a class="l" name="307" href="#307">307</a>
 <a class="l" name="308" href="#308">308</a>    <b>elseif</b> <a href="/source/s?defs=str_find" class="intelliWindow-symbol" data-definition-place="undefined-in-file">str_find</a>(<a href="/source/s?defs=content_type" class="intelliWindow-symbol" data-definition-place="undefined-in-file">content_type</a>, <span class="s">&quot;<a href="/source/s?path=text/">text</a>/<a href="/source/s?path=text/html">html</a>&quot;</span>, <b>nil</b>, <b>true</b>) <b>then</b>

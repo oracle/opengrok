@@ -273,8 +273,8 @@ do
         return {}
       end
 
-      -- don't read raw_body if not necessary
-      -- if we called get_body_args(), we only want the parsed body
+      --[=[ don't read raw_body if not necessary ]]
+      -- if we called get_body_args(), we only want the parsed body ]=]
       return res
     end,
   }
@@ -302,7 +302,7 @@ do
     then
       req_mime = MIME_TYPES.form_url_encoded
 
-    elseif str_find(content_type, "text/plain", nil, true) then
+    elseif str_find(content_type, [=[text/plain]=], nil, true) then
       req_mime = MIME_TYPES.text
 
     elseif str_find(content_type, "text/html", nil, true) then

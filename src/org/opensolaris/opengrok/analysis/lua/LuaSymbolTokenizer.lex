@@ -28,6 +28,7 @@
 
 package org.opensolaris.opengrok.analysis.lua;
 
+import java.io.IOException;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 /**
@@ -44,6 +45,15 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
+%{
+    int bracketLevel;
+
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        bracketLevel = 0;
+    }
+%}
 
 %state STRING LSTRING COMMENT SCOMMENT QSTRING
 
@@ -61,9 +71,18 @@ super(in);
     }
     {Number}    {}
     \"     { yybegin(STRING);   }
-    "[["   { yybegin(LSTRING);  }
+    "[" [=]* "["    {
+        String capture = yytext();
+        bracketLevel = LuaUtils.countOpeningLongBracket(capture);
+        yybegin(LSTRING);
+    }
     \'     { yybegin(QSTRING);  }
-    "--[[" { yybegin(COMMENT);  }
+    "--[" [=]* "["    {
+        String capture = yytext();
+        String bracket = capture.substring(2);
+        bracketLevel = LuaUtils.countOpeningLongBracket(bracket);
+        yybegin(COMMENT);
+    }
     "--"   { yybegin(SCOMMENT); }
 }
 
@@ -77,14 +96,13 @@ super(in);
     \' { yybegin(YYINITIAL); }
 }
 
-<LSTRING> {
-    \\[\"\\]    {}
-
-    "]]" { yybegin(YYINITIAL); }
-}
-
-<COMMENT> {
-    "]]"    { yybegin(YYINITIAL); }
+<LSTRING, COMMENT> {
+    "]" [=]* "]"    {
+        String capture = yytext();
+        if (LuaUtils.isClosingLongBracket(capture, bracketLevel)) {
+            yybegin(YYINITIAL);
+        }
+    }
 }
 
 <SCOMMENT> {
