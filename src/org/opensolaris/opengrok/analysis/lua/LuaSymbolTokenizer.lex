@@ -27,12 +27,12 @@
  */
 
 package org.opensolaris.opengrok.analysis.lua;
+
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 /**
  * @author Evan Kinney
  */
-
 %%
 %public
 %class LuaSymbolTokenizer
@@ -84,7 +84,7 @@ super(in);
 }
 
 <COMMENT> {
-    "--]]" { yybegin(YYINITIAL); }
+    "]]"    { yybegin(YYINITIAL); }
 }
 
 <SCOMMENT> {

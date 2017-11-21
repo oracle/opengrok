@@ -27,19 +27,19 @@
  */
 
 package org.opensolaris.opengrok.analysis.lua;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 /**
  * @author Evan Kinney
  */
-
 %%
 %public
 %class LuaXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
@@ -50,7 +50,8 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-File = [a-zA-Z]{FNameChar}* "." ("lua"|"txt"|"htm"|"html"|"diff"|"patch")
+File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
+    [Hh][Tt][Mm][Ll]? | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
 
 %state STRING LSTRING COMMENT SCOMMENT QSTRING
 
@@ -64,12 +65,31 @@ File = [a-zA-Z]{FNameChar}* "." ("lua"|"txt"|"htm"|"html"|"diff"|"patch")
         String id = yytext();
         writeSymbol(id, Consts.kwd, yyline);
     }
-    {Number}     { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
-    \"           { yybegin(STRING); out.write("<span class=\"s\">\"");                         }
-    "[["         { yybegin(LSTRING); out.write("<span class=\"s\">[[");                        }
-    \'           { yybegin(QSTRING); out.write("<span class=\"s\">\'");                        }
-    "--[["         { yybegin(COMMENT); out.write("<span class=\"c\">--[[");                        }
-    "--"         { yybegin(SCOMMENT); out.write("<span class=\"c\">--");                       }
+    {Number}     {
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
+        out.write(yytext());
+        disjointSpan(null);
+    }
+    \"           {
+        pushSpan(STRING, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext()));
+    }
+    "[["         {
+        pushSpan(LSTRING, HtmlConsts.STRING_CLASS);
+        out.write(yytext());
+    }
+    \'           {
+        pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext()));
+    }
+    "--[["       {
+        pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+        out.write(htmlize(yytext()));
+    }
+    "--"         {
+        pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+        out.write(htmlize(yytext()));
+    }
 }
 
 "<" ({File}|{FPath}) ">" {
@@ -87,35 +107,48 @@ File = [a-zA-Z]{FNameChar}* "." ("lua"|"txt"|"htm"|"html"|"diff"|"patch")
 
 <STRING> {
     \\[\"\\] |
-    \" {WhiteSpace} \" { out.write(yytext()); }
-    \"                 { yybegin(YYINITIAL); out.write("\"</span>"); }
+    \" {WhiteSpace} \" { out.write(htmlize(yytext())); }
+    \"                 {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
 }
 
 <QSTRING> {
     \\[\'\\] |
-    \' {WhiteSpace} \' { out.write(yytext());                       }
-    \'                 { yybegin(YYINITIAL); out.write("'</span>"); }
+    \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
+    \'                 {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
 }
 
 <LSTRING> {
  \\[\"\\] |
- \" {WhiteSpace} \"  { out.write(yytext());}
- "]]" { yybegin(YYINITIAL); out.write("]]</span>"); }
+ \" {WhiteSpace} \"  { out.write(htmlize(yytext())); }
+ "]]"    {
+        out.write(htmlize(yytext()));
+        yypop();
+ }
 }
 
 <COMMENT> {
-    "--]]"               { yybegin(YYINITIAL); out.write("--]]</span>"); }
+    "]]"               {
+        out.write(yytext());
+        yypop();
+    }
 }
 
 <SCOMMENT> {
-    {WhspChar}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine(); }
+    {WhspChar}*{EOL} {
+        yypop();
+        startNewLine();
+    }
 }
 
 <YYINITIAL, STRING, LSTRING, COMMENT, SCOMMENT, QSTRING> {
-    "&"                { out.write( "&amp;");           }
-    "<"                { out.write( "&lt;");            }
-    ">"                { out.write( "&gt;");            }
-    {WhspChar}*{EOL} { startNewLine();                }
+    [&<>\'\"]          { out.write(htmlize(yytext())); }
+    {WhspChar}*{EOL}   { startNewLine(); }
     {WhiteSpace}       { out.write(yytext());           }
     [!-~]              { out.write(yytext()); }
     [^\n]              { writeUnicodeChar(yycharat(0)); }
