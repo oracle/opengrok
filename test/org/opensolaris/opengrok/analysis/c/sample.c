@@ -102,3 +102,5 @@ abstime_to_reltime(clockid_t clock_id,
 	if ((ulong_t)abstime->tv_nsec >= NANOSEC)
 		reltime->tv_nsec = abstime->tv_nsec;
 }
+
+/*http://example.com*/

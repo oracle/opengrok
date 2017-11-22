@@ -261,3 +261,5 @@ Ancestor::definitionContains(const fru_regdef_t *def,
 
 	return (found);
 }
+
+/*http://example.com*/
