@@ -359,3 +359,7 @@ end
 
 
 return _M
+return 'http://example.com?a='
+return [=[http://example.com?a=]=]
+return "http://example.com?a="
+return 'http://example.com?a=\'b\''
