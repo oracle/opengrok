@@ -187,10 +187,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
         out.write("</a>");
     }
     {BrowseableURI}    {
-        String url = yytext();
-        out.write("<a href=\"");
-        out.write(url); out.write("\">");
-        out.write(url); out.write("</a>");
+        appendLink(yytext(), true);
     }
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
 }
