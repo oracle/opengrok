@@ -345,7 +345,7 @@ do
 
 
   function _M.get_body_info()
-    local args, err_code, raw_body, req_mime = get_body_info()
+    local args, err_code, raw_body, req_mime0 = get_body_info()
     if not raw_body then
       -- if our body was form-urlencoded and read via ngx.req.get_post_args()
       -- we need to retrieve the raw body because it was not retrieved by the
