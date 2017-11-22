@@ -215,4 +215,20 @@ public class RepositoryInfo implements Serializable {
     public void setCurrentVersion(String currentVersion) {
         this.currentVersion = currentVersion;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof RepositoryInfo)) {
+            return false;
+        }
+        
+        RepositoryInfo ri = (RepositoryInfo) obj;
+        
+        // Directory paths should be unique.
+        if (ri.getDirectoryNameRelative() != null && this.getDirectoryNameRelative() != null) {
+            return ri.getDirectoryNameRelative().equals(this.getDirectoryNameRelative());
+        } else {
+            return (ri.getDirectoryNameRelative() == null && this.getDirectoryNameRelative() == null);
+        }
+    }
 }
