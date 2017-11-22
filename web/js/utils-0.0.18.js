@@ -846,6 +846,9 @@
                 load: function ($window) {
                     var that = this;
                     $(document).keypress(function (e) {
+                        if (textInputHasFocus()) {
+                            return true;
+                        }
                         var key = e.which;
                         switch (key) {
                             case 49: // 1
@@ -1953,13 +1956,14 @@ function isOnSearchPage() {
  */
 function searchSubmit(form) {
     var submitInitiator = '';
-    if (document.activeElement && document.activeElement.nodeName === 'INPUT') {
+    if (textInputHasFocus()) {
         submitInitiator = document.activeElement.getAttribute('id');
     }
     if (submitInitiator) {
         var input = document.createElement('INPUT');
         input.setAttribute('name', 'si');
         input.value = submitInitiator;
+        input.type = 'hidden';
         form.appendChild(input);
     }
 }
@@ -1979,4 +1983,13 @@ function restoreFocusAfterSearchSubmit() {
             $input.focus();
         }
     }
+}
+
+/**
+ * @return {boolean} true if focus is on a input[type=text] element
+ */
+function textInputHasFocus() {
+    return !!document.activeElement &&
+        document.activeElement.nodeName === 'INPUT' &&
+        document.activeElement.type === 'text';
 }
