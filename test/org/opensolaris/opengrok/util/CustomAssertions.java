@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.util;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import static org.junit.Assert.assertEquals;
@@ -52,17 +53,31 @@ public class CustomAssertions {
     public static void assertLinesEqual(String messagePrefix,
         String expecteds[], String actuals[]) {
 
-        for (int i = 0; i < expecteds.length && i < actuals.length; i++) {
-            if (!expecteds[i].equals(actuals[i])) {
-                System.out.print("- ");
-                System.out.println(expecteds[i]);
-                System.out.print("+ ");
-                System.out.println(actuals[i]);
+        List<Integer> diffLines = new ArrayList<>();
+
+        final int SHOW_N_DIFFS = 10;
+        int ndiffs = 0;
+        int lastDiff = -2;
+        for (int i = 0; i < expecteds.length || i < actuals.length; i++) {
+            if (i >= expecteds.length || i >= actuals.length ||
+                !expecteds[i].equals(actuals[i])) {
+
+                if (lastDiff + 1 != i && !diffLines.isEmpty()) {
+                    printDiffs(expecteds, actuals, diffLines);
+                    diffLines.clear();
+                }
+                ++ndiffs;
+                lastDiff = i;
+                diffLines.add(i);
+                if (ndiffs >= SHOW_N_DIFFS) break;
             }
-            assertEquals(messagePrefix + ":line " + (i + 1), expecteds[i],
-                actuals[i]);
+        }
+        if (!diffLines.isEmpty()) {
+            printDiffs(expecteds, actuals, diffLines);
+            diffLines.clear();
         }
 
+        assertTrue("should have no diffs", ndiffs == 0);
         assertEquals(messagePrefix + ":number of lines", expecteds.length,
             actuals.length);
     }
@@ -96,5 +111,46 @@ public class CustomAssertions {
         }
 
         assertEquals("wrong number of tokens", expectedTokens.size(), count);
+    }
+
+    private static void printDiffs(String expecteds[], String actuals[],
+        List<Integer> diffLines) {
+
+        if (diffLines.size() < 1) return;
+
+        int ln0 = diffLines.get(0);
+        int numln = diffLines.size();
+        int loff = ln0 < expecteds.length ? ln0 : expecteds.length;
+        int lnum = count_within(expecteds.length, ln0, numln);
+        int roff = ln0 < actuals.length ? ln0 : actuals.length;
+        int rnum = count_within(actuals.length, ln0, numln);
+
+        System.out.format("@@ -%d,%d +%d,%d @@", loff, lnum, roff, rnum);
+        System.out.println();
+
+        for (int i : diffLines) {
+            if (i >= expecteds.length) {
+                break;
+            } else {
+                System.out.print("- ");
+                System.out.println(expecteds[i]);
+            }
+        }
+        for (int i : diffLines) {
+            if (i >= actuals.length) {
+                break;
+            } else {
+                System.out.print("+ ");
+                System.out.println(actuals[i]);
+            }
+        }
+    }
+
+    private static int count_within(int maxoffset, int ln0, int numln) {
+        while (numln > 0) {
+            if (ln0 + numln <= maxoffset) return numln;
+            --numln;
+        }
+        return 0;
     }
 }
