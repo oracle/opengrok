@@ -148,3 +148,5 @@ for slide in range(18):
     f=open(save_path[:-4] + '.txt', 'w')
     f.writelines(text)
     f.close()
+print('http://example.com?a=')
+print('''http://example.com?a='b'&''')

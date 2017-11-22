@@ -27,13 +27,11 @@
  */
 
 package org.opensolaris.opengrok.analysis.python;
+
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class PythonXref
@@ -182,12 +180,26 @@ File = [a-zA-Z]{FNameChar}* "." ([Pp][Yy] | [Pp][Mm] | [Cc][Oo][Nn][Ff] |
         out.write(path);
         out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<SCOMMENT, STRING, LSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
+}
+
+<LQSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, PythonUtils.LONGSTRING_APOS);
+    }
 }
