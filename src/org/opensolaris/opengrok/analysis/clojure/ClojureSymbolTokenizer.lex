@@ -27,10 +27,9 @@
  */
 
 package org.opensolaris.opengrok.analysis.clojure;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class ClojureSymbolTokenizer
@@ -45,6 +44,12 @@ super(in);
 
 %{
     private int nestedComment;
+
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        nestedComment = 0;
+    }
 %}
 
 %state STRING COMMENT SCOMMENT

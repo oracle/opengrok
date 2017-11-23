@@ -27,10 +27,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.clojure;
+
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 %%
