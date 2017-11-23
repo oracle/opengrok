@@ -38,7 +38,7 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
 
     <build>
         <sourceDirectory>.</sourceDirectory>
-	<!-- TODO: use build-helper:add-test-source to add plugins/UserPlugin/test/ -->
+	<!-- Note that the plugins/UserPlugin/test/ directory is added via the build-helper plugin below -->
         <testSourceDirectory>LdapPlugin/test</testSourceDirectory>
 
         <testResources>
@@ -73,6 +73,26 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
                       <junit-force-all>true</junit-force-all>
                   </systemPropertyVariables>
               </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.8</version>
+            <executions>
+                <execution>
+                    <id>add-test-source</id>
+                    <phase>generate-test-sources</phase>
+                    <goals>
+                        <goal>add-test-source</goal>
+                    </goals>
+                    <configuration>
+                        <sources>
+                            <directory>UserPlugin/test</directory>
+                        </sources>
+                    </configuration>
+                </execution>
+            </executions>
           </plugin>
 
         </plugins>
