@@ -24,7 +24,7 @@ package opengrok.auth.plugin;
 
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.plugin.entity.User;
-import opengrok.auth.plugin.util.DummyHttpServletRequest;
+import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,10 +46,10 @@ public class UserPluginTest {
 
     @Test
     public void testNoUser() {
-        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequest(), new Group()));
-        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequest(), new Project()));
-        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequest(), createGroup("some group")));
-        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequest(), createProject("some project")));
+        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), new Group()));
+        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), new Project()));
+        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), createGroup("some group")));
+        Assert.assertFalse(plugin.isAllowed(new DummyHttpServletRequestUser(), createProject("some project")));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class UserPluginTest {
     }
 
     protected HttpServletRequest createRequest(String email, Boolean timeout) {
-        return new DummyHttpServletRequest() {
+        return new DummyHttpServletRequestUser() {
             {
                 setHeader("osso-user-dn", email);
                 setHeader("osso-user-guid", "100");

@@ -29,7 +29,7 @@ import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_TIMEOUT_EXCEE
 import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_USER_DN_HEADER;
 import static opengrok.auth.plugin.decoders.OSSOHeaderDecoder.OSSO_USER_GUID_HEADER;
 import opengrok.auth.plugin.entity.User;
-import opengrok.auth.plugin.util.DummyHttpServletRequest;
+import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,12 +41,12 @@ import org.junit.Test;
  */
 public class OSSODecoderTest {
 
-    DummyHttpServletRequest dummyRequest;
+    DummyHttpServletRequestUser dummyRequest;
     OSSOHeaderDecoder decoder = new OSSOHeaderDecoder();
 
     @Before
     public void setUp() {
-        dummyRequest = new DummyHttpServletRequest();
+        dummyRequest = new DummyHttpServletRequestUser();
         dummyRequest.setHeader(OSSO_COOKIE_TIMESTAMP_HEADER, "5761172f");
         dummyRequest.setHeader(OSSO_TIMEOUT_EXCEEDED_HEADER, "");
         dummyRequest.setHeader(OSSO_SUBSCRIBER_DN_HEADER, "");

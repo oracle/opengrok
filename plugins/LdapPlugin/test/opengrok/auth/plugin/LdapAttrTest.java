@@ -35,7 +35,7 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
-import opengrok.auth.plugin.util.DummyHttpServletRequest;
+import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -84,7 +84,7 @@ public class LdapAttrTest {
     }
 
     private void prepareRequest(String username, String mail, String... ous) {
-        dummyRequest = new DummyHttpServletRequest();
+        dummyRequest = new DummyHttpServletRequestLdap();
         dummyRequest.setAttribute(UserPlugin.REQUEST_ATTR, new User(username, "123", null, false));
         dummyRequest.getSession().setAttribute(LdapUserPlugin.SESSION_ATTR, new LdapUser(mail, "123",
                 new TreeSet<>(Arrays.asList(ous))));
