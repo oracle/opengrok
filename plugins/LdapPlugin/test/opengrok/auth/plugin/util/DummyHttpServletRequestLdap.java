@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
@@ -38,14 +38,16 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
+import opengrok.auth.plugin.UserPlugin;
+import opengrok.auth.plugin.entity.User;
 
-public class DummyHttpServletRequest implements HttpServletRequest {
+public class DummyHttpServletRequestLdap implements HttpServletRequest {
 
     private final Map<String, String> headers = new HashMap<String, String>();
     private final Map<String, Object> attrs = new HashMap<String, Object>();
     private HttpSession sessions = new HttpSession() {
 
-        private final Map<String, Object> attrs = new HashMap<>();
+        private final Map<String, Object> attrs = new HashMap<String, Object>();
 
         @Override
         public long getCreationTime() {
@@ -54,7 +56,11 @@ public class DummyHttpServletRequest implements HttpServletRequest {
 
         @Override
         public String getId() {
-            return "abcd";
+            User user;
+            if ((user = (User) getAttribute(UserPlugin.REQUEST_ATTR)) != null) {
+                return user.getUsername();
+            }
+            return Strings.generate(5);
         }
 
         @Override
@@ -64,7 +70,7 @@ public class DummyHttpServletRequest implements HttpServletRequest {
 
         @Override
         public ServletContext getServletContext() {
-            return (ServletContext) DummyHttpServletRequest.this;
+            return (ServletContext) DummyHttpServletRequestLdap.this;
         }
 
         @Override
@@ -78,7 +84,7 @@ public class DummyHttpServletRequest implements HttpServletRequest {
 
         @SuppressWarnings("deprecation")
         public HttpSessionContext getSessionContext() {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
@@ -89,18 +95,18 @@ public class DummyHttpServletRequest implements HttpServletRequest {
         @Override
         @SuppressWarnings("deprecation")
         public Object getValue(String string) {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public Enumeration getAttributeNames() {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         @SuppressWarnings("deprecation")
         public String[] getValueNames() {
-            throw new UnsupportedOperationException("Not supported yet."); 
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
@@ -151,7 +157,7 @@ public class DummyHttpServletRequest implements HttpServletRequest {
     public void setHeader(String string, String value) {
         headers.put(string, value);
     }
-    
+
     @Override
     public String getHeader(String string) {
         return headers.get(string);
@@ -241,7 +247,7 @@ public class DummyHttpServletRequest implements HttpServletRequest {
     public HttpSession getSession() {
         return sessions;
     }
-    
+
     public void setSession(HttpSession session) {
         this.sessions = session;
     }
