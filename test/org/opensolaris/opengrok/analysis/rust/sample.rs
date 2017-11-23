@@ -152,3 +152,4 @@ mod tests {
     /*   /* */  /** */
     pub mod dummy_item {}  /*! */  */
 }
+/*http://example.com*/

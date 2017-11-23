@@ -30,6 +30,7 @@
 package org.opensolaris.opengrok.analysis.rust;
 
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 %%
@@ -202,11 +203,19 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
         out.write("</a>");
     }
 
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ {
+        writeEMailAddress(yytext());
+    }
+}
+
+<STRING, RSTRING, SCOMMENT> {
     {BrowseableURI}    {
         appendLink(yytext(), true);
     }
+}
 
-    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ {
-        writeEMailAddress(yytext());
+<COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
     }
 }
