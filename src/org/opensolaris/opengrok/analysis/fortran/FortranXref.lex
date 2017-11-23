@@ -30,7 +30,6 @@ package org.opensolaris.opengrok.analysis.fortran;
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class FortranXref
@@ -49,7 +48,7 @@ import org.opensolaris.opengrok.web.Util;
 
 File = [a-zA-Z]{FNameChar}* ".inc"
 
-%state  STRING COMMENT SCOMMENT QSTRING LCOMMENT
+%state  STRING SCOMMENT QSTRING LCOMMENT
 
 %include Common.lexh
 %include CommonURI.lexh
@@ -128,13 +127,6 @@ File = [a-zA-Z]{FNameChar}* ".inc"
  }
 }
 
-<COMMENT> {
-"*/"    {
-    out.write(yytext());
-    yypop();
- }
-}
-
 <SCOMMENT> {
 {WhspChar}*{EOL}      { yypop();
                   startNewLine();}
@@ -150,7 +142,7 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 }
 
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, SCOMMENT, QSTRING> {
 [&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
@@ -158,7 +150,7 @@ File = [a-zA-Z]{FNameChar}* ".inc"
  [^\n]      { }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
+<SCOMMENT, STRING, QSTRING> {
 {FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 

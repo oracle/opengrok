@@ -23,10 +23,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.fortran;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class FortranSymbolTokenizer
@@ -41,7 +39,7 @@ super(in);
 %char
 
 // (OK to exclude LSTRING state used in FortranXref.)
-%state STRING COMMENT SCOMMENT QSTRING
+%state STRING SCOMMENT QSTRING
 
 %include Common.lexh
 %include Fortran.lexh
@@ -73,15 +71,11 @@ super(in);
  \'     { yybegin(YYINITIAL); }
 }
 
-<COMMENT> {
-"*/"    { yybegin(YYINITIAL);}
-}
-
 <SCOMMENT> {
 {WhiteSpace}    {}
 {EOL}    { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, SCOMMENT, QSTRING> {
 [^]    {}
 }
