@@ -112,8 +112,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
      * <li>%guid% - to be replaced with OSSO guid value</li>
      * </ul>
      *
-     * Use \% for printing the '%̈́' character.
-     *
+     * Use \% for printing the '%' character.
      * Also replaces any other LDAP attribute that would not be ambiguous.
      *
      * @param filter basic filter containing the special values
