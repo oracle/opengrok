@@ -28,6 +28,7 @@
 package org.opensolaris.opengrok.analysis.fortran;
 
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 %%
@@ -110,8 +111,7 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 }
 
 <STRING> {
- \\[\"\\] |
- \" {WhiteSpace} \"  { out.write(htmlize(yytext()));}
+ \"\"    { out.write(htmlize(yytext()));}
  \"     {
     out.write(htmlize(yytext()));
     yypop();
@@ -119,35 +119,34 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 }
 
 <QSTRING> {
- \\[\'\\] |
- \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
+ \'\'    { out.write(htmlize(yytext())); }
  \'     {
     out.write(htmlize(yytext()));
     yypop();
  }
 }
 
-<SCOMMENT> {
-{WhspChar}*{EOL}      { yypop();
-                  startNewLine();}
+<STRING, QSTRING> {
+    {WhspChar}*{EOL}    {
+        disjointSpan(null);
+        startNewLine();
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
 }
 
-<LCOMMENT> {
-[&<>\'\"]    { out.write(htmlize(yytext())); }
-{WhspChar}*{EOL}      { yypop();
-                  startNewLine();}
- {WhiteSpace}   { out.write(yytext()); }
- [!-~]  { out.write(yycharat(0)); }
- [^\n]      { writeUnicodeChar(yycharat(0)); }
+<SCOMMENT, LCOMMENT> {
+    {WhspChar}*{EOL}    {
+        yypop();
+        startNewLine();
+    }
 }
 
-
-<YYINITIAL, STRING, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, SCOMMENT, QSTRING, LCOMMENT> {
 [&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
- [^\n]      { }
+ [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <SCOMMENT, STRING, QSTRING> {
@@ -161,12 +160,20 @@ File = [a-zA-Z]{FNameChar}* ".inc"
         out.write(path);out.write("\">");
         out.write(path);out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<SCOMMENT, STRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, FortranUtils.CHARLITERAL_APOS_DELIMITER);
+    }
 }

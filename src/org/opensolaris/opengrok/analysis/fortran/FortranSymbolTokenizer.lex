@@ -38,7 +38,7 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-// (OK to exclude LSTRING state used in FortranXref.)
+// (OK to exclude LCOMMENT state used in FortranXref.)
 %state STRING SCOMMENT QSTRING
 
 %include Common.lexh
@@ -62,12 +62,12 @@ super(in);
 }
 
 <STRING> {
- \\[\"\\]    {}
+ \"\"    {}
  \"     { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
- \\[\'\\]    {}
+ \'\'    {}
  \'     { yybegin(YYINITIAL); }
 }
 
