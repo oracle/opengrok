@@ -311,11 +311,11 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
         </dependency>
-        <dependency>                                                                                                                                                                                     
+        <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
         </dependency>
-        <dependency>                                                                                                                                                                                     
+        <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-suggest</artifactId>
         </dependency>
