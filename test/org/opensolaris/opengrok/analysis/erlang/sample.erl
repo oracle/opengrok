@@ -57,3 +57,4 @@ flush() ->
 	after 0 ->
 		ok
 	end.
+'http://example.com?a='

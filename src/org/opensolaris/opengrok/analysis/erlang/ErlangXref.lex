@@ -27,13 +27,11 @@
  */
 
 package org.opensolaris.opengrok.analysis.erlang;
+
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class ErlangXref
@@ -157,7 +155,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
  [^]    { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, STRING, QATOM> {
+<STRING, COMMENT, QATOM> {
 {FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
@@ -171,12 +169,20 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
         out.write(path);
         out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<STRING, COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<QATOM> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }
