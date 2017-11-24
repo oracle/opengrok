@@ -27,6 +27,7 @@ package org.opensolaris.opengrok.analysis.sh;
 import java.io.IOException;
 import java.util.Stack;
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 %%
@@ -311,13 +312,20 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 }
 
 <STRING, SCOMMENT, QSTRING> {
-
-{BrowseableURI}    {
-    appendLink(yytext(), true);
-}
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<STRING, SCOMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }
