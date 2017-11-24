@@ -36,20 +36,13 @@ public final class StringUtils {
 
     /**
      * Matches an apostrophe not following a backslash escape or following an
-     * even number¹ of backslash escapes:
-     * <pre>
-     * {@code
-     * \'((?<=^.)|(?<=[^\\].)|(?<=^(\\\\){1,3}.)|(?<=[^\\](\\\\){1,3}.))
-     * }
-     * </pre>
-     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * even number¹ of backslash escapes.
      * <p>
-     * ¹"even number" is limited to 2,4,6 because Java look-behind is not
-     * variable length but instead must have a definite upper bound in the
-     * regex definition.
+     * ¹See {@link RegexUtils#getNotFollowingEscapePattern()} for a caveat
+     * about the backslash assertion.
      */
     public static final Pattern APOS_NO_BSESC =
-        Pattern.compile("\\'((?<=^.)|(?<=[^\\\\].)|(?<=^(\\\\\\\\){1,3}.)|(?<=[^\\\\](\\\\\\\\){1,3}.))");
+        Pattern.compile("\\'" + RegexUtils.getNotFollowingEscapePattern());
 
     /**
      * Matches the close of a C comment:
