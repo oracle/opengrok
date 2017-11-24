@@ -273,13 +273,8 @@ public abstract class JFlexXref extends JFlexStateStacker {
         if (doEndingPushback) {
             n = StringUtils.countURIEndingPushback(url);
         }
-        if (collateralCapture != null) {
-            int o = StringUtils.patindexOf(url, collateralCapture);
-            if (o > 0) {
-                int ccn = url.length() - o;
-                if (ccn > n) n = ccn;
-            }
-        }
+        int ccn = StringUtils.countPushback(url, collateralCapture);
+        if (ccn > n) n = ccn;
         // Push back if positive, but not if equal to the current length.
         if (n > 0 && n < url.length()) {
             yypushback(n);

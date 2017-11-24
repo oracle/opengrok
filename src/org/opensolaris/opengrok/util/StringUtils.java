@@ -287,4 +287,28 @@ public final class StringUtils {
     public static boolean startsWithFpathChar(String value) {
         return FPATH_CHAR_STARTSMATCH.matcher(value).matches();
     }
+
+    /**
+     * Determines if the specified pattern, {@code pat}, matches the specified
+     * {@code capture}, and computes an eligible pushback.
+     * @param capture a defined input
+     * @param pat a pattern, or null to skip computation
+     * @return a positive value if {@code pat} matches in {@code capture} at or
+     * after the second character to indicate the number of characters to
+     * pushback including the first-matched character; otherwise 0 to indicate
+     * no match or a match at the 0-th character. (The 0-th chracter is
+     * ineligible for fear of looping non-stop upon pushing back the entire
+     * {@code yytext()}.)
+     */
+    public static int countPushback(String capture, Pattern pat) {
+        if (pat != null) {
+            int o = StringUtils.patindexOf(capture, pat);
+            if (o >= 0) {
+                int n = capture.length() - o;
+                // Push back if positive, but not if equal to the full length.
+                if (n > 0 && n < capture.length()) return n;
+            }
+        }
+        return 0;
+    }
 }
