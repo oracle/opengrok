@@ -28,13 +28,11 @@
  */
 
 package org.opensolaris.opengrok.analysis.csharp;
+
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class CSharpXref
@@ -183,12 +181,26 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
         out.write(path);
         out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<STRING, SCOMMENT, VSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }

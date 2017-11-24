@@ -27,10 +27,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.csharp;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class CSharpSymbolTokenizer
