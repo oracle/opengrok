@@ -29,7 +29,9 @@
 package org.opensolaris.opengrok.analysis.perl;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
@@ -137,9 +139,14 @@ import org.opensolaris.opengrok.web.Util;
 
     protected void appendProject() { /* noop */ }
 
-    protected void appendLink(String s, boolean b) { /* noop */ }
+    protected void appendLink(String s, boolean b, Pattern p) { /* noop */ }
 
     protected void writeEMailAddress(String s) { /* noop */ }
+
+    protected void skipLink(String url, Pattern p) {
+        int n = StringUtils.countPushback(url, p);
+        if (n > 0) yypushback(n);
+    }
 %}
 
 %include Common.lexh
