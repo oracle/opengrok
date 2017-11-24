@@ -32,6 +32,7 @@ import org.opensolaris.opengrok.analysis.Resettable;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.analysis.JFlexJointLexer;
+import org.opensolaris.opengrok.util.RegexUtils;
 
 /**
  * Represents an API for object's using {@link RubyLexHelper}
@@ -97,6 +98,12 @@ class RubyLexHelper implements Resettable {
      */
     private int nendbrace;
 
+    /**
+     * When matching a quoting construct, a Pattern to identify collateral
+     * capture characters is stored.
+     */
+    private Pattern collateralCapture;
+
     public RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
 	    RubyLexer lexer,
         int hERE, int hERExN, int hEREin, int hEREinxN) {
@@ -119,6 +126,7 @@ class RubyLexHelper implements Resettable {
      */
     @Override
     public void reset() {
+        collateralCapture = null;
         endqchar = '\0';
         if (hereSettings != null) hereSettings.clear();
         nendbrace = 0;
@@ -191,6 +199,7 @@ class RubyLexHelper implements Resettable {
             postop = capture.substring(qopname.length());
         }
         nendqchar = 1;
+        collateralCapture = null;
 
         char opc = postop.charAt(0);
         setEndQuoteChar(opc);
@@ -212,9 +221,9 @@ class RubyLexHelper implements Resettable {
         boolean nolink = false;
 
         // "no link" for values in the rules for "string links" if `postop'
-        // is file- or URI-like.
-        if (StringUtils.startsWithFnameChars(postop) ||
-            StringUtils.startsWithURIChars(postop)) {
+        // starts path-like or with the e-mail delimiter.
+        if (StringUtils.startsWithFpathChar(postop) ||
+            postop.startsWith("@")) {
             nolink = true;
         }
 
@@ -489,6 +498,26 @@ class RubyLexHelper implements Resettable {
             --len;
         }
         return len;
+    }
+
+    /**
+     * Gets a pattern to match the collateral capture for the current quoting
+     * state or null if there is no active quoting state.
+     * @return a defined pattern or null
+     */
+    public Pattern getCollateralCapturePattern() {
+        if (endqchar == '\0') return null;
+        if (collateralCapture != null) return collateralCapture;
+
+        StringBuilder patb = new StringBuilder("[");
+        patb.append(Pattern.quote(String.valueOf(endqchar)));
+        if (nestqchar != '\0') {
+            patb.append(Pattern.quote(String.valueOf(nestqchar)));
+        }
+        patb.append("]");
+        patb.append(RegexUtils.getNotFollowingEscapePattern());
+        collateralCapture = Pattern.compile(patb.toString());
+        return collateralCapture;
     }
 
     private class HereDocSettings {

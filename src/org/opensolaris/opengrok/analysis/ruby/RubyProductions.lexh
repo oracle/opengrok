@@ -504,15 +504,30 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
         }
     }
 
-    {BrowseableURI}    {
-        if (takeAllContent()) {
-            appendLink(yytext(), true);
-        }
-    }
-
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
         if (takeAllContent()) {
             writeEMailAddress(yytext());
+        }
+    }
+}
+
+<SCOMMENT, POD, HERE, HERExN, HEREin, HEREinxN> {
+    {BrowseableURI}    {
+        if (takeAllContent()) {
+            appendLink(yytext(), true, null);
+        }
+        // no skipLink() needed except in QUO* states
+    }
+}
+
+<QUO, QUOxN> {
+    {BrowseableURI}    {
+        String capture = yytext();
+        Pattern collateralCapture = h.getCollateralCapturePattern();
+        if (takeAllContent()) {
+            appendLink(capture, true, collateralCapture);
+        } else {
+            skipLink(capture, collateralCapture);
         }
     }
 }

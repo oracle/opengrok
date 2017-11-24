@@ -31,6 +31,7 @@ package org.opensolaris.opengrok.analysis.ruby;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Stack;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
@@ -138,6 +139,8 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     protected String getUrlPrefix() { return urlPrefix; }
+
+    protected void skipLink(String s, Pattern p) { /* noop */ }
 %}
 
 %include Common.lexh
