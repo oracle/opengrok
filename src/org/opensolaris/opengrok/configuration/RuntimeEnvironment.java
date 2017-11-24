@@ -392,17 +392,18 @@ public final class RuntimeEnvironment {
         String canonicalPath = file.getCanonicalPath();
         String sourceRoot = getSourceRootPath();
         
-        if(sourceRoot == null){
+        if (sourceRoot == null) {
             throw new FileNotFoundException("Source Root Not Found");
         }
         
         if (canonicalPath.startsWith(sourceRoot)) {
             return canonicalPath.substring(sourceRoot.length() + stripCount);
         }
+        
         for (String allowedSymlink : getAllowedSymlinks()) {
             String allowedTarget = new File(allowedSymlink).getCanonicalPath();
             if (canonicalPath.startsWith(allowedTarget)) {
-                return canonicalPath.substring(allowedTarget.length()
+                return file.getAbsolutePath().substring(sourceRoot.length()
                         + stripCount);
             }
         }
