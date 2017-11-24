@@ -810,14 +810,7 @@ public final class HistoryGuru {
     }
 
     protected Repository getRepository(File path) {
-        File file;
-
-        try {
-            file = path.getCanonicalFile();
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to get canonical path for " + path, e);
-            return null;
-        }
+        File file = path;
 
         while (file != null) {
             Repository r = repositories.get(file.getAbsolutePath());

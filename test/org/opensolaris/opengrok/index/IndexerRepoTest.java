@@ -144,6 +144,12 @@ public class IndexerRepoTest {
         assertEquals(sourceRoot.toString() + File.separator + "symlink",
                 repo.getDirectoryName());
         
+        // Check that history exists for a file in the repository.
+        File repoRoot = new File(env.getSourceRootFile(), symlink);
+        File fileInRepo = new File(repoRoot, "main.c");
+        assertTrue(fileInRepo.exists());
+        assertTrue(HistoryGuru.getInstance().hasHistory(fileInRepo));
+        
         // cleanup
         IOUtils.removeRecursive(realSource.toPath());
         IOUtils.removeRecursive(sourceRoot.toPath());
