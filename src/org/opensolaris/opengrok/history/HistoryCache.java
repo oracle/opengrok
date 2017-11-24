@@ -93,6 +93,14 @@ interface HistoryCache {
      */
     boolean hasCacheForDirectory(File directory, Repository repository)
             throws HistoryException;
+    
+    /**
+     * Check if the specified file is present in the cache.
+     * @param file the file to check
+     * @return {@code true} if the file is in the cache, {@code false}
+     * otherwise
+     */
+    boolean hasCacheForFile(File file) throws HistoryException;
 
     /**
      * Get the revision identifier for the latest cached revision in a

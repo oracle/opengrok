@@ -614,23 +614,27 @@ class FileHistoryCache implements HistoryCache {
     public boolean hasCacheForDirectory(File directory, Repository repository)
             throws HistoryException {
         assert directory.isDirectory();
-        Repository repos = HistoryGuru.getInstance().getRepository(directory);
-        if (repos == null) {
+        Repository repo = HistoryGuru.getInstance().getRepository(directory);
+        if (repo == null) {
             return true;
         }
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File dir = env.getDataRootFile();
-        dir = new File(dir, this.historyCacheDirName);
+        dir = new File(dir, FileHistoryCache.historyCacheDirName);
         try {
-            dir = new File(dir, env.getPathRelativeToSourceRoot(
-                new File(repos.getDirectoryName())));
+            dir = new File(dir, env.getPathRelativeToSourceRoot(new File(repo.getDirectoryName())));
         } catch (IOException e) {
             throw new HistoryException("Could not resolve " +
-                    repos.getDirectoryName()+" relative to source root", e);
+                    repo.getDirectoryName()+" relative to source root", e);
         }
         return dir.exists();
     }
 
+    @Override
+    public boolean hasCacheForFile(File file) throws HistoryException {
+        return getCachedFile(file).exists();
+    }
+    
     public String getRepositoryHistDataDirname(Repository repository) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String repoDirBasename;
@@ -645,7 +649,7 @@ class FileHistoryCache implements HistoryCache {
         }
 
         return env.getDataRootPath() + File.separatorChar
-            + this.historyCacheDirName
+            + FileHistoryCache.historyCacheDirName
             + repoDirBasename;
     }
 

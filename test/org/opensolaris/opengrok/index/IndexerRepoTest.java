@@ -31,7 +31,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -114,14 +116,16 @@ public class IndexerRepoTest {
                 realSource.getPath());
         
         // Create symlink from source root to the real repository.
-        Files.createSymbolicLink(Paths.get(sourceRoot.toString() + File.separator +
-                symlink), Paths.get(realSource.getPath()));
+        String symlinkPath = sourceRoot.toString() + File.separator + symlink;
+        Files.createSymbolicLink(Paths.get(symlinkPath), Paths.get(realSource.getPath()));
         
         env.setSourceRoot(sourceRoot.toString());
         env.setDataRoot(repository.getDataRoot());
         // Need to have history cache enabled in order to perform scan of repositories.
         env.setHistoryEnabled(true);
-        
+        // Normally the Indexer would add the symlink automatically.
+        env.setAllowedSymlinks(new HashSet<String>(Arrays.asList(symlinkPath)));
+
         // Do a rescan of the projects, and only that (we don't care about
         // the other aspects of indexing in this test case).
         Indexer.getInstance().prepareIndexer(
@@ -149,6 +153,7 @@ public class IndexerRepoTest {
         File fileInRepo = new File(repoRoot, "main.c");
         assertTrue(fileInRepo.exists());
         assertTrue(HistoryGuru.getInstance().hasHistory(fileInRepo));
+        assertTrue(HistoryGuru.getInstance().hasCacheForFile(fileInRepo));
         
         // cleanup
         IOUtils.removeRecursive(realSource.toPath());

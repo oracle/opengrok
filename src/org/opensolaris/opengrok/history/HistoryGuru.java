@@ -295,6 +295,23 @@ public final class HistoryGuru {
     }
 
     /**
+     * Does the history cache contain entry for this directory ?
+     * @param file
+     * @return true if there is cache, false otherwise
+     */
+    public boolean hasCacheForFile(File file) {
+        if (!useCache()) {
+            return false;
+        }
+
+        try {
+            return historyCache.hasCacheForFile(file);
+        } catch (HistoryException ex) {
+            return false;
+        }
+    }
+    
+    /**
      * Check if we can annotate the specified file.
      *
      * @param file the file to check
