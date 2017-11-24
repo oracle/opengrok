@@ -27,14 +27,15 @@
  */
 
 package org.opensolaris.opengrok.analysis.golang;
+
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 /**
  * @author Patrick Lundquist
  */
-
 %%
 %public
 %class GolangXref
@@ -152,8 +153,23 @@ File = [a-zA-Z]{FNameChar}* "." ([Gg][Oo] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
         out.write(path);
         out.write("</a>");
     }
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
+}
+
+<STRING, SCOMMENT> {
     {BrowseableURI}    {
         appendLink(yytext(), true);
     }
-    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
+}
+
+<COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }

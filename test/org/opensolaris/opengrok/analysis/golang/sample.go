@@ -137,3 +137,5 @@ func (r *Reader) readFromCommand(shell string, cmd string) bool {
 	r.feed(out)
 	return listCommand.Wait() == nil
 }
+/*http://example.com*/
+import ('http://example.com')

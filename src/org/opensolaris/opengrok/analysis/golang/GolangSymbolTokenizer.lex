@@ -27,12 +27,12 @@
  */
 
 package org.opensolaris.opengrok.analysis.golang;
+
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 /**
  * @author Patrick Lundquist
  */
-
 %%
 %public
 %class GolangSymbolTokenizer
