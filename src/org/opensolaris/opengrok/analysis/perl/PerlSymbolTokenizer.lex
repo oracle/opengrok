@@ -60,6 +60,7 @@ import org.opensolaris.opengrok.web.Util;
     public void reset() throws IOException {
         super.reset();
         h.reset();
+        lastSymbol = null;
     }
 
     @Override

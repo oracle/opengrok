@@ -63,6 +63,7 @@ import org.opensolaris.opengrok.web.Util;
         super.reset();
         if (helpers != null) helpers.clear();
         h.reset();
+        lastSymbol = null;
     }
 
     @Override
