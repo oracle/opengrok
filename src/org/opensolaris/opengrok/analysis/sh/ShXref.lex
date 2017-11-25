@@ -47,10 +47,10 @@ import java.util.Stack;
   private boolean heredocStripLeadingTabs;
 
   @Override
-  public void reInit(char[] contents, int length) {
-    super.reInit(contents, length);
-    stateStack.clear();
-    styleStack.clear();
+  public void reset() {
+      super.reset();
+      stateStack.clear();
+      styleStack.clear();
   }
 
   // TODO move this into an include file when bug #16053 is fixed

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -270,6 +271,10 @@ public class JFlexXrefTest {
     @Test
     public void testCXrefInclude() throws Exception {
         testCXrefInclude(CXref.class);
+    }
+
+    @Test
+    public void testCxxXrefInclude() throws Exception {
         testCXrefInclude(CxxXref.class);
     }
 

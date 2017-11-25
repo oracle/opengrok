@@ -27,17 +27,17 @@
  */
 
 package org.opensolaris.opengrok.analysis.php;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
-import java.util.*;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class PhpXref
-%extends JFlexXref
+%extends PhpXrefSpanner
 %unicode
 %ignorecase
 %int
@@ -59,6 +59,12 @@ import java.util.*;
             "false", "true", "self", "callable"
         }
     ));
+  }
+
+  @Override
+  public void reset() {
+      super.reset();
+      docLabels.clear();
   }
 
   private void writeDocTag() throws IOException {
@@ -128,7 +134,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 %include CommonPath.lexh
 %%
 <YYINITIAL> { //HTML
-    "<" | "</"      { out.write(Util.htmlize(yytext())); yypush(TAG_NAME, null); }
+    "<" | "</"      { out.write(Util.htmlize(yytext())); yypush(TAG_NAME); }
 
     "<!--" {
         out.write("<span class=\"c\">&lt;!--");
@@ -168,11 +174,11 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write("=<span class=\"s\">");
         out.write(yytext().substring(1));
         if (attributeDelim == '\'') {
-            yypush(ATTRIBUTE_SINGLE, null);
+            yypush(ATTRIBUTE_SINGLE);
         } else if (attributeDelim == '"') {
-            yypush(ATTRIBUTE_DOUBLE, null);
+            yypush(ATTRIBUTE_DOUBLE);
         } else {
-            yypush(ATTRIBUTE_NOQUOTE, null);
+            yypush(ATTRIBUTE_NOQUOTE);
         }
     }
 }
@@ -186,7 +192,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write("<strong>");
         out.write(Util.htmlize(yytext()));
         out.write("</strong>");
-        yypush(IN_SCRIPT, null); }
+        yypush(IN_SCRIPT); }
 }
 
 <ATTRIBUTE_NOQUOTE> {
@@ -270,18 +276,18 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     b? \" {
-        yypush(STRING, null);
+        yypush(STRING);
         if (yycharat(0) == 'b') { out.write('b'); }
         out.write("<span class=\"s\">\"");
     }
 
     b? \' {
-        yypush(QSTRING, null);
+        yypush(QSTRING);
         if (yycharat(0) == 'b') { out.write('b'); }
         out.write("<span class=\"s\">\'");
     }
 
-    ` { yypush(BACKQUOTE, null); out.write("<span class=\"s\">`"); }
+    ` { yypush(BACKQUOTE); out.write("<span class=\"s\">`"); }
 
     b? "<<<" {WhspChar}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
         if (yycharat(0) == 'b') { out.write('b'); }
@@ -293,7 +299,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         while (yycharat(j) == '\n' || yycharat(j) == '\r') { j--; }
 
         if (yycharat(i) == '\'' || yycharat(i) == '"') {
-            yypush(NOWDOC, null);
+            yypush(NOWDOC);
             String text = yytext().substring(i+1, j);
             this.docLabels.push(text);
             out.write(yycharat(i));
@@ -302,7 +308,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
             out.write("</span>");
             out.write(yycharat(i));
         } else {
-            yypush(HEREDOC, null);
+            yypush(HEREDOC);
             String text = yytext().substring(i, j+1);
             this.docLabels.push(text);
             out.write("<span class=\"b\">");
@@ -315,11 +321,11 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
     {Number}   { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
-    "#"|"//"   { yypush(SCOMMENT, null); out.write("<span class=\"c\">" + yytext()); }
-    "/**"      { yypush(DOCCOMMENT, null); out.write("<span class=\"c\">/*"); yypushback(1); }
-    "/*"       { yypush(COMMENT, null); out.write("<span class=\"c\">/*"); }
+    "#"|"//"   { yypush(SCOMMENT); out.write("<span class=\"c\">" + yytext()); }
+    "/**"      { yypush(DOCCOMMENT); out.write("<span class=\"c\">/*"); yypushback(1); }
+    "/*"       { yypush(COMMENT); out.write("<span class=\"c\">/*"); }
 
-    \{         { out.write(yytext()); yypush(IN_SCRIPT, null); }
+    \{         { out.write(yytext()); yypush(IN_SCRIPT); }
     \}         {
         out.write(yytext());
         if (!this.stack.empty() && !isHtmlState(this.stack.peek()))
