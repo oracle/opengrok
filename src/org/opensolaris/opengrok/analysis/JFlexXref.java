@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.Definitions.Tag;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.configuration.Project;
@@ -217,8 +218,8 @@ public abstract class JFlexXref extends JFlexStateStacker {
     }
 
     /**
-     * Calls {@link #appendLink(java.lang.String, boolean)} with false to
-     * disable {@code doPushback} handling.
+     * Calls {@link #appendLink(java.lang.String, boolean)} with {@code url}
+     * and false.
      * @param url the URL to append
      * @throws IOException if an error occurs while appending
      */
@@ -227,30 +228,64 @@ public abstract class JFlexXref extends JFlexStateStacker {
     }
 
     /**
-     * Appends the {@code url} to the active {@link Writer}. If
-     * {@code doPushback} is true, then any characters counted by
-     * {@link StringUtils#countURIEndingPushback(java.lang.String)} are
-     * handled by {@link #yypushback(int)} with {@code url} only partially
-     * written.
-     * <p>If the count is equal to the length of {@code url}, then it is
-     * simply written, and nothing is pushed back.
+     * Calls
+     * {@link #appendLink(java.lang.String, boolean, java.util.regex.Pattern)}
+     * with {@code url}, {@code doEndingPushback}, and null.
      * @param url the URL to append
-     * @param doPushback a value indicating whether to test the {@code url}
-     * with {@link StringUtils#countURIEndingPushback(java.lang.String)}.
+     * @param doEndingPushback a value indicating whether to test the
+     * {@code url} with
+     * {@link StringUtils#countURIEndingPushback(java.lang.String)}
      * @throws IOException if an error occurs while appending
      */
-    protected void appendLink(String url, boolean doPushback)
+    protected void appendLink(String url, boolean doEndingPushback)
         throws IOException {
 
-        if (doPushback) {
-            int n = StringUtils.countURIEndingPushback(url);
-            // Push back if positive, but not if equal to the current length,
-            // or else the pushback might cause a neverending loop.
-            if (n > 0 && n < url.length()) {
-                yypushback(n);
-                url = url.substring(0, url.length() - n);
+        appendLink(url, doEndingPushback, null);
+    }
+
+    /**
+     * Appends the {@code url} to the active {@link Writer}.
+     * <p>If {@code doEndingPushback} is true, then
+     * {@link StringUtils#countURIEndingPushback(java.lang.String)} is enlisted
+     * for use with {@link #yypushback(int)} -- i.e., {@code url} is only
+     * partially written.
+     * <p>If {@code collateralCapture} is not null, then its match in
+     * {@code url} will alternatively mark the start of a count for pushback --
+     * i.e., everything at and beyond the first {@code collateralCapture} match
+     * will be considered not to belong to the URI.
+     * <p>If the pushback count is equal to the length of {@code url}, then it
+     * is simply written -- and nothing is pushed back -- in order to avoid a
+     * never-ending {@code yylex()} loop.
+     * @param url the URL to append
+     * @param doEndingPushback a value indicating whether to test the
+     * {@code url} with
+     * {@link StringUtils#countURIEndingPushback(java.lang.String)}
+     * @param collateralCapture optional pattern to indicate characters which
+     * may have been captured as valid URI characters but in a particular
+     * context should mark the start of a pushback
+     * @throws IOException if an error occurs while appending
+     */
+    protected void appendLink(String url, boolean doEndingPushback,
+        Pattern collateralCapture)
+            throws IOException {
+
+        int n = 0;
+        if (doEndingPushback) {
+            n = StringUtils.countURIEndingPushback(url);
+        }
+        if (collateralCapture != null) {
+            int o = StringUtils.patindexOf(url, collateralCapture);
+            if (o > 0) {
+                int ccn = url.length() - o;
+                if (ccn > n) n = ccn;
             }
         }
+        // Push back if positive, but not if equal to the current length.
+        if (n > 0 && n < url.length()) {
+            yypushback(n);
+            url = url.substring(0, url.length() - n);
+        }
+
         out.write("<a href=\"");
         out.write(Util.formQuoteEscape(url));
         out.write("\">");

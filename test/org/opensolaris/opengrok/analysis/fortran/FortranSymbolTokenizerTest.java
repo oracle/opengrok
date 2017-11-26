@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.ruby;
+package org.opensolaris.opengrok.analysis.fortran;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -34,21 +34,21 @@ import org.junit.Test;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertSymbolStream;
 
 /**
- * Tests the {@link RubySymbolTokenizer} class.
+ * Tests the {@link FortranSymbolTokenizer} class.
  */
-public class RubySymbolTokenizerTest {
+public class FortranSymbolTokenizerTest {
 
     /**
-     * Test sample.rb v. samplesymbols.txt
+     * Test sample.f v. samplesymbols.txt
      * @throws java.lang.Exception thrown on error
      */
     @Test
-    public void testRubySymbolStream() throws Exception {
-        InputStream rbres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ruby/sample.rb");
-        assertNotNull("despite sample.rb as resource,", rbres);
+    public void testFortranSymbolStream() throws Exception {
+        InputStream fres = getClass().getClassLoader().getResourceAsStream(
+            "org/opensolaris/opengrok/analysis/fortran/sample.f");
+        assertNotNull("despite sample.f as resource,", fres);
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ruby/samplesymbols.txt");
+            "org/opensolaris/opengrok/analysis/fortran/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", wdsres);
 
         List<String> expectedSymbols = new ArrayList<>();
@@ -59,9 +59,10 @@ public class RubySymbolTokenizerTest {
                 int hasho = line.indexOf('#');
                 if (hasho != -1) line = line.substring(0, hasho);
                 expectedSymbols.add(line.trim());
-            }            
+            }
         }
 
-        assertSymbolStream(RubySymbolTokenizer.class, rbres, expectedSymbols);
+        assertSymbolStream(FortranSymbolTokenizer.class, fres,
+            expectedSymbols);
     }
 }

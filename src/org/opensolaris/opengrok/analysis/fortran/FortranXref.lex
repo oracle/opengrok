@@ -28,9 +28,9 @@
 package org.opensolaris.opengrok.analysis.fortran;
 
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class FortranXref
@@ -47,21 +47,21 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-Label = [0-9]+
-
 File = [a-zA-Z]{FNameChar}* ".inc"
 
-Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
-
-%state  STRING COMMENT SCOMMENT QSTRING LCOMMENT
+%state  STRING SCOMMENT QSTRING LCOMMENT
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Fortran.lexh
 %%
 <YYINITIAL>{
- ^{Label} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+ ^{Label} {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
  ^[^ \t\f\r\n]+ {
     pushSpan(LCOMMENT, HtmlConsts.COMMENT_CLASS);
     out.write(htmlize(yytext()));
@@ -69,7 +69,12 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    // For historical reasons, FortranXref doesn't link identifiers of length=1
+    if (id.length() > 1) {
+        writeSymbol(id, Consts.kwd, yyline, false);
+    } else {
+        out.write(id);
+    }
 }
 
 "<" ({File}|{FPath}) ">" {
@@ -85,7 +90,11 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 /*{Hier}
         { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
 */
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+{Number}        {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
  \"     {
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
@@ -102,51 +111,45 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
- \"     { out.write('"'); yypop(); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \"\"    { out.write(htmlize(yytext()));}
+ \"     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <QSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { out.write('\''); yypop(); }
+ \'\'    { out.write(htmlize(yytext())); }
+ \'     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
-<COMMENT> {
-"*/"    { out.write("*/"); yypop(); }
+<STRING, QSTRING> {
+    {WhspChar}*{EOL}    {
+        disjointSpan(null);
+        startNewLine();
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
 }
 
-<SCOMMENT> {
-{WhspChar}*{EOL}      { yypop();
-                  startNewLine();}
+<SCOMMENT, LCOMMENT> {
+    {WhspChar}*{EOL}    {
+        yypop();
+        startNewLine();
+    }
 }
 
-<LCOMMENT> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
-{WhspChar}*{EOL}      { yypop();
-                  startNewLine();}
+<YYINITIAL, STRING, SCOMMENT, QSTRING, LCOMMENT> {
+[&<>\'\"]    { out.write(htmlize(yytext())); }
+{WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
-{WhspChar}*{EOL}      { startNewLine(); }
- {WhiteSpace}   { out.write(yytext()); }
- [!-~]  { out.write(yycharat(0)); }
- [^\n]      { }
-}
-
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
+<SCOMMENT, STRING, QSTRING> {
 {FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
@@ -157,12 +160,20 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
         out.write(path);out.write("\">");
         out.write(path);out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<SCOMMENT, STRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, FortranUtils.CHARLITERAL_APOS_DELIMITER);
+    }
 }

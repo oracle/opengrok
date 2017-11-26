@@ -19,12 +19,12 @@
 
 /*
  * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.util;
 
 import org.junit.Assert;
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -130,10 +130,44 @@ public class StringUtilsTest {
         int n = StringUtils.countURIEndingPushback(uri);
         assertEquals("empty pushback", 0, n);
     }
-    
+
     @Test
     public void testIsAlphanumeric() {
         Assert.assertTrue(StringUtils.isAlphanumeric("foo123"));
         Assert.assertFalse(StringUtils.isAlphanumeric("foo_123"));
+    }
+
+    @Test
+    public void shouldMatchNonescapedApostrophe() {
+        // Copy-and-paste the following so Netbeans does the escaping:
+        // value: \'1-2-3\''
+        final String value = "\\'1-2-3\\''";
+        int i = StringUtils.patindexOf(value, StringUtils.APOS_NO_BSESC);
+        assertEquals("unquoted apostrophe", 9, i);
+    }
+
+    @Test
+    public void shouldMatchApostropheAfterEvenEscapes() {
+        // Copy-and-paste the following so Netbeans does the escaping:
+        // value: \\'
+        final String value = "\\\\'";
+        int i = StringUtils.patindexOf(value, StringUtils.APOS_NO_BSESC);
+        assertEquals("unquoted apostrophe after backslashes", 2, i);
+    }
+
+    @Test
+    public void shouldNotMatchApostropheAfterOddEscapes() {
+        // Copy-and-paste the following so Netbeans does the escaping:
+        // value: \\\'
+        final String value = "\\\\\\'";
+        int i = StringUtils.patindexOf(value, StringUtils.APOS_NO_BSESC);
+        assertEquals("quoted apostrophe after backslashes", -1, i);
+    }
+
+    @Test
+    public void shouldMatchInitialApostrophe() {
+        final String value = "'";
+        int i = StringUtils.patindexOf(value, StringUtils.APOS_NO_BSESC);
+        assertEquals("initial apostrophe", 0, i);
     }
 }
