@@ -35,7 +35,7 @@ import java.io.Reader;
 %unicode
 %ignorecase
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 %include Common.lexh

@@ -46,7 +46,7 @@ import org.opensolaris.opengrok.web.Util;
 %init{
     h = getNewHelper();
 %init}
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %{
     protected Stack<RubyLexHelper> helpers;
 

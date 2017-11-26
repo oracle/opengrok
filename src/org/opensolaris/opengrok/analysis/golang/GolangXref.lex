@@ -42,7 +42,7 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexXrefSimple
 %unicode
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 
 File = [a-zA-Z]{FNameChar}* "." ([Gg][Oo] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
     [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])

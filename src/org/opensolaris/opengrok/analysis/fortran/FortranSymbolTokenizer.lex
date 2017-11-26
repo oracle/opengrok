@@ -34,7 +34,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %init{
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 // (OK to exclude LCOMMENT state used in FortranXref.)

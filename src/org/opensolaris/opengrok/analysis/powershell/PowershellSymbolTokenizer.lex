@@ -35,7 +35,7 @@ import java.util.regex.Matcher;
 %init{
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 %{
     private boolean onCertainlyPublish(String symbol, int yyoffset) {

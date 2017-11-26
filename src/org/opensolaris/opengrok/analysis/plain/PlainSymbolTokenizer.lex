@@ -34,7 +34,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %unicode
 %buffer 32766
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 %%

@@ -37,7 +37,7 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 

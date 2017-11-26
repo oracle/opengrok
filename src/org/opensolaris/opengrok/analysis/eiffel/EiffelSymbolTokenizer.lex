@@ -40,7 +40,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 %ignorecase
 %int
 %char
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %{
     private final EiffelLexHelper h;
 

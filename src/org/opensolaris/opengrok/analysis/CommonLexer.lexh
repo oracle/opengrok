@@ -26,6 +26,7 @@
      * Gets the YYEOF value.
      * @return YYEOF
      */
+    @Override
     public int getYYEOF() { return YYEOF; }
 
     /**
@@ -33,7 +34,7 @@
      * @return yyline
      */
     @Override
-    protected int getLineNumber() { return yyline; }
+    public int getLineNumber() { return yyline; }
 
     /**
      * Sets the yyline value.

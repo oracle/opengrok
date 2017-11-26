@@ -41,7 +41,7 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexXrefSimple
 %unicode
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
   private static final Pattern MATCH_INCLUDE = Pattern.compile(
       "^(#.*)(include)(.*)([<\"])(.*)([>\"])$");

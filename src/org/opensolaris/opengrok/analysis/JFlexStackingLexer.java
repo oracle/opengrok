@@ -46,4 +46,16 @@ public interface JFlexStackingLexer extends JFlexLexer {
      * @throws IOException if any error occurs while effecting the pop
      */
     void yypop() throws IOException;
+
+    /**
+     * Gets the YYEOF value.
+     * @return YYEOF
+     */
+    int getYYEOF();
+
+    /**
+     * Gets the yyline value.
+     * @return yyline
+     */
+    int getLineNumber();
 }
