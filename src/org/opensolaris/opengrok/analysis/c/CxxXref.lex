@@ -78,12 +78,7 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHsStT] | [Cc][Oo][Nn][Ff] |
 
 {Identifier} {
     String id = yytext();
-    // For historical reasons, CxxXref does not link identifiers of length=1
-    if (id.length() > 1) {
-        writeSymbol(id, CxxConsts.kwd, yyline);
-    } else {
-        out.write(id);
-    }
+    writeSymbol(id, CxxConsts.kwd, yyline);
 }
 
 "#" {WhspChar}* "include" {WhspChar}* ("<"[^>\n\r]+">" | \"[^\"\n\r]+\")    {

@@ -120,9 +120,9 @@ public class CustomAssertions {
 
         int ln0 = diffLines.get(0);
         int numln = diffLines.size();
-        int loff = ln0 < expecteds.length ? ln0 : expecteds.length;
+        int loff = (ln0 < expecteds.length ? ln0 : expecteds.length) + 1;
         int lnum = count_within(expecteds.length, ln0, numln);
-        int roff = ln0 < actuals.length ? ln0 : actuals.length;
+        int roff = (ln0 < actuals.length ? ln0 : actuals.length) + 1;
         int rnum = count_within(actuals.length, ln0, numln);
 
         System.out.format("@@ -%d,%d +%d,%d @@", loff, lnum, roff, rnum);
