@@ -45,11 +45,6 @@ import org.opensolaris.opengrok.web.Util;
 %{
   private final static Set<String> PSEUDO_TYPES;
   private Stack<String> docLabels = new Stack<String>();
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
 
   static {
     PSEUDO_TYPES = new HashSet<String>(Arrays.asList(
