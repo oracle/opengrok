@@ -27,4 +27,15 @@
      * @return YYEOF
      */
     public int getYYEOF() { return YYEOF; }
+
+    /**
+     * Gets the yyline value.
+     * @return yyline
+     */
+    protected int getLineNumber() { return yyline; }
+
+    /**
+     * Sets the yyline value.
+     */
+    protected void setLineNumber(int x) { yyline = x; }
 %}
