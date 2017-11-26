@@ -36,13 +36,7 @@ import org.opensolaris.opengrok.web.Util;
 %ignorecase
 %int
 %include CommonXref.lexh
-%{
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-%}
+
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 
 /*

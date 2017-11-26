@@ -52,12 +52,6 @@ import org.opensolaris.opengrok.web.Util;
       styleStack.clear();
   }
 
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-
   @Override
   public void pushSpan(int newState, String className) throws IOException {
       super.pushSpan(newState, className);

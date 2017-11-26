@@ -52,12 +52,6 @@ import org.opensolaris.opengrok.web.Util;
       nestedComment = 0;
   }
 
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-
   private void pushQuotedString(int state, String capture) throws IOException {
       int qoff = capture.indexOf("\"");
       String id = capture.substring(0, qoff);

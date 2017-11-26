@@ -57,12 +57,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
         }
     }
 
-    // TODO move this into an include file when bug #16053 is fixed
-    @Override
-    protected int getLineNumber() { return yyline; }
-    @Override
-    protected void setLineNumber(int x) { yyline = x; }
-
     protected void startTee() throws IOException {
         plainbuf = new StringWriter();
 
