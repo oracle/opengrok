@@ -38,7 +38,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 %extends JFlexXref
 %unicode
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
     protected boolean didStartTee;
     protected boolean didStartMandoc;

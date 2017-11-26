@@ -37,7 +37,7 @@ import java.util.regex.Matcher;
 %unicode
 %ignorecase
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
   private final Stack<String> styleStack = new Stack<String>();
 

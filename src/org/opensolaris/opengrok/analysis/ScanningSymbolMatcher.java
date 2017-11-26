@@ -28,12 +28,6 @@ package org.opensolaris.opengrok.analysis;
  * Represents an API for a resettable {@link JFlexLexer} that exposes its YYEOF
  * value and publishes {@link SymbolMatchedEvent}s.
  */
-public interface ScanningSymbolMatcher extends JFlexLexer, Resettable,
+public interface ScanningSymbolMatcher extends JFlexStackingLexer, Resettable,
     SymbolMatchedPublisher {
-
-    /**
-     * Gets the YYEOF value.
-     * @return YYEOF
-     */
-    int getYYEOF();
 }

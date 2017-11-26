@@ -43,7 +43,7 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
   private final static Set<String> PSEUDO_TYPES;
   private final Stack<String> popStrings = new Stack<>();

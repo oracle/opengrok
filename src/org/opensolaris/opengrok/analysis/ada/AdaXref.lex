@@ -46,7 +46,7 @@ import org.opensolaris.opengrok.web.Util;
 %init{
     h = new AdaLexHelper(this);
 %init}
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
     private final AdaLexHelper h;
 

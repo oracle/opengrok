@@ -38,7 +38,7 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 

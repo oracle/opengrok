@@ -37,7 +37,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %init}
 %unicode
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
