@@ -52,6 +52,18 @@ public final class StringUtils {
         Pattern.compile("\\'((?<=^.)|(?<=[^\\\\].)|(?<=^(\\\\\\\\){1,3}.)|(?<=[^\\\\](\\\\\\\\){1,3}.))");
 
     /**
+     * Matches the close of a C comment:
+     * <pre>
+     * {@code
+     * \*\/
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    public static final Pattern END_C_COMMENT =
+        Pattern.compile("\\*\\/");
+
+    /**
      * Matches the same possible character as CommonPath.lexh's {FNameChar}:
      * <pre>
      * {@code

@@ -31,6 +31,7 @@ package org.opensolaris.opengrok.analysis.c;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
@@ -58,20 +59,17 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-
 File = [a-zA-Z]{FNameChar}* "." ([cChHsStT] | [Cc][Oo][Nn][Ff] |
     [Jj][Aa][Vv][Aa] | [CcHh][Pp][Pp] | [Cc][Cc] | [Tt][Xx][Tt] |
     [Hh][Tt][Mm][Ll]? | [Pp][Ll] | [Xx][Mm][Ll] | [CcHh][\+][\+] | [Hh][Hh] |
     [CcHh][Xx][Xx] | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
 
 %state  STRING COMMENT SCOMMENT QSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include C.lexh
 %%
 <YYINITIAL>{
  \{     { incScope(); writeUnicodeChar(yycharat(0)); }
@@ -128,15 +126,13 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 }
 
 <STRING> {
+ \\[\"\\] |
  \" {WhiteSpace} \"  { out.write(htmlize(yytext())); }
  \"      { out.write(htmlize(yytext())); yypop(); }
- \\\\ |
- \\\"    { out.write(htmlize(yytext())); }
 }
 
 <QSTRING> {
- "\\\\" |
- "\\'"  |
+ \\[\'\\] |
  \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
 
  \'     { out.write(htmlize(yytext())); yypop(); }
@@ -161,7 +157,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
+<STRING, COMMENT, SCOMMENT, QSTRING> {
 {FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
@@ -175,12 +171,26 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
         out.write(path);
         out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<STRING, SCOMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }

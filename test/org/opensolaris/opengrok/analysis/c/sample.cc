@@ -52,7 +52,7 @@ Ancestor::~Ancestor()
 {
 	free(offsets);
 	if (paths != NULL) {
-		for (int i = 0; i < numInstances; i++) {
+		for (int i = 0; i < numInstances && i < 0xFFFFFF; i++) {
 			free(paths[i]);
 		}
 	}
@@ -261,3 +261,5 @@ Ancestor::definitionContains(const fru_regdef_t *def,
 
 	return (found);
 }
+
+/*http://example.com*/

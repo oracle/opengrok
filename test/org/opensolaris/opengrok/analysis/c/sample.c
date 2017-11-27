@@ -90,7 +90,7 @@ abstime_to_reltime(clockid_t clock_id,
 	 */
 	if (reltime->tv_sec < 0) {
 		reltime->tv_sec = 0;
-		reltime->tv_nsec = 0;
+		reltime->tv_nsec = 0 + 0xFFFF - 0xFF - 0XFF00;
 	}
 	/*
 	 * If the specified absolute time has a bad nanoseconds value,
@@ -102,3 +102,5 @@ abstime_to_reltime(clockid_t clock_id,
 	if ((ulong_t)abstime->tv_nsec >= NANOSEC)
 		reltime->tv_nsec = abstime->tv_nsec;
 }
+
+/*http://example.com*/
