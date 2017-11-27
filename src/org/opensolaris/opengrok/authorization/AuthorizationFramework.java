@@ -277,36 +277,36 @@ public final class AuthorizationFramework {
     }
 
     /**
-     * Add a plugin into the plugin stack. This has the same effect as invoking
+     * Add a plug-in into the plug-in stack. This has the same effect as invoking
      * addPlugin(stack, IAuthorizationPlugin, REQUIRED).
      *
      * @param stack the stack
-     * @param plugin the authorization plugin
+     * @param plugin the authorization plug-in
      */
     public void addPlugin(AuthorizationStack stack, IAuthorizationPlugin plugin) {
         addPlugin(stack, plugin, AuthControlFlag.REQUIRED);
     }
 
     /**
-     * Add a plugin into the plugin array.
+     * Add a plug-in into the plug-in array.
      *
      * <h3>Configured plugin</h3>
-     * For plugin which have an entry in configuration, the new plugin is put in
-     * the place respecting the user-defined order of execution.
+     * For plug-in that has an entry in configuration, the new plug-in is put
+     * in the place respecting the user-defined order of execution.
      *
      * <h3>New plugin</h3>
      * If there is no entry in configuration for this class, the plugin is
      * appended to the end of the plugin stack with flag <code>flag</code>
+     * 
+     * <p><b>The plug-in's load method is NOT invoked at this point</b></p>
      *
-     * <p>
-     * <b>The plugin's load method is NOT invoked at this point</b></p>
-     *
-     * This has the same effect as invoking addPlugin(new
-     * AuthorizationEntity(stack, flag, getClassName(plugin), plugin).
+     * This has the same effect as invoking
+     * {@code addPlugin(new AuthorizationEntity(stack, flag,
+     * getClassName(plugin), plugin)}.
      *
      * @param stack the stack
-     * @param plugin the authorization plugin
-     * @param flag the flag for the new plugin
+     * @param plugin the authorization plug-in
+     * @param flag the flag for the new plug-in
      */
     public void addPlugin(AuthorizationStack stack, IAuthorizationPlugin plugin, AuthControlFlag flag) {
         if (stack != null) {
@@ -452,15 +452,18 @@ public final class AuthorizationFramework {
      */
     private void loadClasses(AuthorizationStack stack, List<File> classfiles, List<File> jarfiles) {
         IAuthorizationPlugin pf;
+        
         for (File file : classfiles) {
             String classname = getClassName(file);
             if (classname.isEmpty()) {
                 continue;
             }
-            // load the class in memory and try to find a configured space for this class
-            if ((pf = handleLoadClass(classname)) != null && !stack.setPlugin(pf)) {
-                // if there is not configured space -> append it to the stack
-                addPlugin(stack, pf);
+            // Load the class in memory and try to find a configured space for this class.
+            if ((pf = handleLoadClass(classname)) != null) {
+                if (!stack.setPlugin(pf)) {
+                    LOGGER.log(Level.INFO, "plugin {0} is not configured in the stack",
+                            classname);
+                }
             }
         }
 
@@ -473,10 +476,12 @@ public final class AuthorizationFramework {
                     if (!entry.getName().endsWith(".class") || classname.isEmpty()) {
                         continue;
                     }
-                    // load the class in memory and try to find a configured space for this class
-                    if ((pf = handleLoadClass(classname)) != null && !stack.setPlugin(pf)) {
-                        // if there is not configured space -> append it to the stack
-                        addPlugin(stack, pf);
+                    // Load the class in memory and try to find a configured space for this class.
+                    if ((pf = handleLoadClass(classname)) != null) {
+                        if (!stack.setPlugin(pf)) {
+                            LOGGER.log(Level.INFO, "plugin {0} is not configured in the stack",
+                                    classname);
+                        }
                     }
                 }
             } catch (IOException ex) {

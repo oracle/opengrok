@@ -43,21 +43,20 @@ import java.io.Reader;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
 %}
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-EOL = \r|\n|\r\n
-FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
+%include CommonLaxFPath.lexh
 %%
-{File}|{Path}
+{File} | {RelaxedMiddleFPath}
         {String s=yytext();
         out.write("<a href=\"");out.write(urlPrefix);out.write("path=");
         out.write(s);appendProject();out.write("\">");
         out.write(s);out.write("</a>");}
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
-          appendLink(yytext());
+{BrowseableURI}    {
+          appendLink(yytext(), true);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
@@ -75,6 +74,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{EOL}   {startNewLine(); }
-[ !-~\t\f]      {out.write(yycharat(0));}
+{WhiteSpace}{EOL} |
+    {EOL}   {startNewLine(); }
+[!-~] | {WhspChar}    {out.write(yycharat(0));}
 [^\n]       { writeUnicodeChar(yycharat(0)); }

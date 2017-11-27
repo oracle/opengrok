@@ -38,16 +38,15 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-EOL = \r|\n|\r\n
-WhiteSpace = [ \t\f]
 Identifier = [a-zA-Z_] [a-zA-Z0-9_-]*
 SimpleVariable  = [\$] [a-zA-Z_] [a-zA-Z0-9_:-]*
 ComplexVariable = [\$] "{" [^}]+  "}"
-Label =  {WhiteSpace}* ":" {Identifier}
+Label =  {WhspChar}* ":" {Identifier}
 DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
 
 %state STRING COMMENT SCOMMENT QSTRING HERESTRING HEREQSTRING
 
+%include Common.lexh
 %%
 
 <YYINITIAL> {
@@ -132,5 +131,6 @@ DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING, HEREQSTRING> {
+{WhiteSpace}    {}
 [^]    {}
 }

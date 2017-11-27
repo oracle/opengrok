@@ -26,16 +26,15 @@
  * Cross reference a Fortran file
  */
 package org.opensolaris.opengrok.analysis.fortran;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class FortranXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
 %ignorecase
 %int
@@ -48,35 +47,37 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-WhiteSpace     = [ \t\f]+
-EOL = \r|\n|\r\n
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-Label = [0-9]+
-
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* ".inc"
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
-Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
+%state  STRING SCOMMENT QSTRING LCOMMENT
 
-%state  STRING COMMENT SCOMMENT QSTRING LCOMMENT
-
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
+%include Fortran.lexh
 %%
 <YYINITIAL>{
- ^{Label} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+ ^{Label} {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
  ^[^ \t\f\r\n]+ {
-    yypush(LCOMMENT, "</span>");
-    out.write("<span class=\"c\">");
-    Util.htmlize(yytext(), out);
+    pushSpan(LCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(htmlize(yytext()));
 }
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    // For historical reasons, FortranXref doesn't link identifiers of length=1
+    if (id.length() > 1) {
+        writeSymbol(id, Consts.kwd, yyline, false);
+    } else {
+        out.write(id);
+    }
 }
 
-"<" ({File}|{Path}) ">" {
+"<" ({File}|{FPath}) ">" {
     out.write("&lt;");
     String file = yytext();
     file = file.substring(1, file.length() - 1);
@@ -89,60 +90,67 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 /*{Hier}
         { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
 */
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+{Number}        {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
- \"     { yypush(STRING, "</span>"); out.write("<span class=\"s\">\"");}
- \'     { yypush(QSTRING, "</span>"); out.write("<span class=\"s\">\'");}
- \!     { yypush(SCOMMENT, "</span>"); out.write("<span class=\"c\">!");}
+ \"     {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'     {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \!     {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(htmlize(yytext()));
+ }
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
- \"     { out.write('"'); yypop(); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \"\"    { out.write(htmlize(yytext()));}
+ \"     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <QSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { out.write('\''); yypop(); }
+ \'\'    { out.write(htmlize(yytext())); }
+ \'     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
-<COMMENT> {
-"*/"    { out.write("*/"); yypop(); }
+<STRING, QSTRING> {
+    {WhspChar}*{EOL}    {
+        disjointSpan(null);
+        startNewLine();
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
 }
 
-<SCOMMENT> {
-{WhiteSpace}*{EOL}      { yypop();
-                  startNewLine();}
+<SCOMMENT, LCOMMENT> {
+    {WhspChar}*{EOL}    {
+        yypop();
+        startNewLine();
+    }
 }
 
-<LCOMMENT> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { yypop();
-                  startNewLine();}
+<YYINITIAL, STRING, SCOMMENT, QSTRING, LCOMMENT> {
+[&<>\'\"]    { out.write(htmlize(yytext())); }
+{WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { startNewLine(); }
- {WhiteSpace}   { out.write(yytext()); }
- [!-~]  { out.write(yycharat(0)); }
- [^\n]      { }
-}
-
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
-{Path}
+<SCOMMENT, STRING, QSTRING> {
+{FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
 {File}
@@ -152,13 +160,20 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
         out.write(path);out.write("\">");
         out.write(path);out.write("</a>");}
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
-          appendLink(yytext());
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<SCOMMENT, STRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, FortranUtils.CHARLITERAL_APOS_DELIMITER);
+    }
 }

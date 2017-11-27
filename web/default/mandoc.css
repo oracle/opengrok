@@ -20,14 +20,14 @@ li, dt {	margin-top: 1em; }
 ========*/
 div#mandoc {	max-width: 100ex;
 		font-family: Helvetica,Arial,sans-serif; }
-table ~div#mandoc {
+div#mandoc table {
 		margin-top: 0em;
 		margin-bottom: 0em; }
-td ~div#mandoc {	vertical-align: top; }
-ul ~div#mandoc, ol ~div#mandoc, dl ~div#mandoc {
+div#mandoc td {	vertical-align: top; }
+div#mandoc ul, div#mandoc ol, div#mandoc dl {
 		margin-top: 0em;
 		margin-bottom: 0em; }
-li ~div#mandoc, dt ~div#mandoc {
+div#mandoc li, div#mandoc dt {
 		margin-top: 1em; }
 /*>>>> OPENGROK REVISED */
 
@@ -35,7 +35,11 @@ a.selflink {	border-bottom: thin dotted;
 		color: inherit;
 		font: inherit;
 		text-decoration: inherit; }
+/*<<<< OPENGROK REVISED
 * {		clear: both }
+========*/
+div#mandoc * {	clear: both }
+/*>>>> OPENGROK REVISED */
 
 /* Search form and search results. */
 

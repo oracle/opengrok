@@ -23,15 +23,14 @@
  */
 
 package org.opensolaris.opengrok.analysis.fortran;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class FortranSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
+%ignorecase
 %init{
 super(in);
 %init}
@@ -39,11 +38,11 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-Label = [0-9]+
+// (OK to exclude LCOMMENT state used in FortranXref.)
+%state STRING SCOMMENT QSTRING
 
-%state STRING COMMENT SCOMMENT QSTRING
-
+%include Common.lexh
+%include Fortran.lexh
 %%
 
 <YYINITIAL> {
@@ -54,28 +53,29 @@ Label = [0-9]+
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
+
+ {Number}        {}
+
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  \!     { yybegin(SCOMMENT); }
 }
 
 <STRING> {
+ \"\"    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <QSTRING> {
+ \'\'    {}
  \'     { yybegin(YYINITIAL); }
 }
 
-<COMMENT> {
-"*/"    { yybegin(YYINITIAL);}
-}
-
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{WhiteSpace}    {}
+{EOL}    { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, SCOMMENT, QSTRING> {
 [^]    {}
 }

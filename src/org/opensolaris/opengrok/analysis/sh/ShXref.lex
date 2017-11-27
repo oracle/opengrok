@@ -47,10 +47,10 @@ import java.util.Stack;
   private boolean heredocStripLeadingTabs;
 
   @Override
-  public void reInit(char[] contents, int length) {
-    super.reInit(contents, length);
-    stateStack.clear();
-    styleStack.clear();
+  public void reset() {
+      super.reset();
+      stateStack.clear();
+      styleStack.clear();
   }
 
   // TODO move this into an include file when bug #16053 is fixed
@@ -108,15 +108,10 @@ import java.util.Stack;
 
 %}
 
-WhiteSpace     = [ \t\f]
-EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 Number = \$? [0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+
 
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+)
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 /*
  * States:
@@ -133,6 +128,10 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
  */
 %state STRING SCOMMENT QSTRING SUBSHELL BACKQUOTE BRACEGROUP HEREDOC
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
+%include CommonLaxFPath.lexh
 %%
 <STRING>{
  "$" {Identifier} {
@@ -169,7 +168,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
  "#"     { pushstate(SCOMMENT, "c"); out.write(yytext()); }
 
  // Recognize here-documents. At least a subset of them.
- "<<" "-"? {WhiteSpace}* {Identifier} {WhiteSpace}* {
+ "<<" "-"? {WhspChar}* {Identifier} {WhspChar}* {
    String text = yytext();
    out.write(Util.htmlize(text));
 
@@ -187,7 +186,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <STRING> {
- \" {WhiteSpace}* \"  { out.write(yytext()); }
+ \" {WhspChar}* \"  { out.write(yytext()); }
  \"     { out.write(yytext()); popstate(); }
  \\\\ | \\\" | \\\$ | \\` { out.write(yytext()); }
  \$\(   { pushstate(SUBSHELL, null); out.write(yytext()); }
@@ -197,13 +196,13 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
   * to ksh man page http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
   * the opening brace must be followed by a blank.
   */
- "${" / {WhiteSpace} | {EOL} {
+ "${" / {WhspChar} | {EOL} {
    pushstate(BRACEGROUP, null); out.write(yytext());
  }
 }
 
 <QSTRING> {
- \' {WhiteSpace}* \' { out.write(yytext()); }
+ \' {WhspChar}* \' { out.write(yytext()); }
  \\'  { out.write("\\'"); }
  \'   { out.write(yytext()); popstate(); }
 }
@@ -227,8 +226,8 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
   * the closing brace must be on beginning of line, or it must be preceded by
   * a semi-colon and (optionally) whitespace.
   */
-  ^ {WhiteSpace}* \}  { out.write(yytext()); popstate(); }
-  ; {WhiteSpace}* \}  { out.write(yytext()); popstate(); }
+  ^ {WhspChar}* \}  { out.write(yytext()); popstate(); }
+  ; {WhspChar}* \}  { out.write(yytext()); popstate(); }
 }
 
 <HEREDOC> {
@@ -260,7 +259,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
   * optional so that we get the nesting right and don't terminate the brace
   * group too early if the ${ cmd; } expression contains nested { cmd; } groups.
   */
-  \$ ? \{ / {WhiteSpace} | {EOL} {
+  \$ ? \{ / {WhspChar} | {EOL} {
     pushstate(BRACEGROUP, null); out.write(yytext());
   }
 }
@@ -276,22 +275,22 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
     out.write("</a>");
 }
 
-{Path}
+{RelaxedMiddleFPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
- {EOL}  { startNewLine(); }
-{WhiteSpace}+   { out.write(yytext()); }
+{WhiteSpace}{EOL} |
+    {EOL}    { startNewLine(); }
+{WhiteSpace}   { out.write(yytext()); }
 [!-~]   { out.write(yycharat(0)); }
 [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-{
-    appendLink(yytext());
+{BrowseableURI}    {
+    appendLink(yytext(), true);
 }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

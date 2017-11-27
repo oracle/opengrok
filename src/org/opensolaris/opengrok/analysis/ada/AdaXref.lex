@@ -56,14 +56,9 @@ import org.opensolaris.opengrok.web.Util;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
 
-    /**
-     * Reinitialize the lexer with new reader.
-     *
-     * @param reader new reader for this lexer
-     */
     @Override
-    public void reInit(Reader reader) {
-        super.reInit(reader);
+    public void reset() {
+        super.reset();
         h.reset();
     }
 
@@ -122,4 +117,6 @@ import org.opensolaris.opengrok.web.Util;
 %}
 
 %include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %include AdaProductions.lexh

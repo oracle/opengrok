@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
@@ -113,7 +113,7 @@ public class LdapServer {
     }
 
     /**
-     * The ldap server is working only when its connection is not null. This
+     * The LDAP server is working only when its connection is not null. This
      * tries to establish the connection if it is not established already.
      *
      * @return true if it is working
@@ -126,7 +126,7 @@ public class LdapServer {
     }
 
     /**
-     * Connects to the ldap server.
+     * Connects to the LDAP server.
      *
      * @return the new connection or null
      */
@@ -169,12 +169,12 @@ public class LdapServer {
     }
 
     /**
-     * Lookups the ldap server.
+     * Lookups the LDAP server.
      *
      * @param name base dn for the search
-     * @param filter ldap filter
-     * @param cons controls for the ldap request
-     * @return ldap enumeration with the results
+     * @param filter LDAP filter
+     * @param cons controls for the LDAP request
+     * @return LDAP enumeration with the results
      *
      * @throws NamingException
      */
@@ -183,13 +183,13 @@ public class LdapServer {
     }
 
     /**
-     * Lookups the ldap server.
+     * Lookups the LDAP server.
      *
      * @param name base dn for the search
-     * @param filter ldap filter
-     * @param controls controls for the ldap request
+     * @param filter LDAP filter
+     * @param controls controls for the LDAP request
      * @param reconnected flag if the request has failed previously
-     * @return ldap enumeration with the results
+     * @return LDAP enumeration with the results
      *
      * @throws NamingException
      */

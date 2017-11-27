@@ -93,7 +93,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
     -->
 
-    <property name="version" value="1.1-rc16"/>
+    <property name="version" value="1.1-rc17"/>
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
@@ -575,7 +575,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
              dest="lib/${junit.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
-    <target name="-post-jar" depends="-copy-lib-without-netbeans, plugins">
+    <target name="-post-jar" depends="-copy-lib-without-netbeans">
         <war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" excludes="META-INF/context.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
@@ -604,7 +604,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </condition>
     </target>
 
-    <target name="package-svr4" depends="-check-svr4-package,jar" if="svr4_package_missing">
+    <target name="package-svr4" depends="-check-svr4-package,jar,plugins" if="svr4_package_missing">
         <exec os="SunOS" executable="/usr/bin/pkgmk" failonerror="true">
             <arg line="-o -d build -r . -v ${version} -f platform/solaris/pkgdef/prototype"/>
         </exec>
@@ -625,7 +625,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </condition>
     </target>
 
-    <target name="package-ips" depends="-check-ips-package,jar" if="ips_package_missing">
+    <target name="package-ips" depends="-check-ips-package,jar,plugins" if="ips_package_missing">
         <exec os="SunOS" executable="platform/solaris/ips/create.sh" failonerror="true">
             <arg line="-v ${version}"/>
         </exec>
@@ -634,7 +634,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
     <target name="package" depends="package-svr4,package-ips">
     </target>
 
-    <target name="dist" depends="jar">
+    <target name="dist" depends="jar,plugins">
         <tar destfile="${dist.dir}/${tardest}"
              compression="gzip">
             <tarfileset dir="." prefix="${distname}-${version}/doc">
@@ -1101,10 +1101,11 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
     </target>
 
     <!-- Build the plugins. -->
-    <target name="plugins" depends="-pre-pre-compile">
+    <target name="plugins" depends="jar">
         <mkdir dir="${build.dir}/plugins"/>
         <javac srcdir="plugins/"
                destdir="${build.dir}/plugins"
+               debug="true"
                includes="**/*.java"
 	       excludes="**/test/**"
                classpath="${javac.classpath}:${dist.jar}"
@@ -1252,5 +1253,5 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </exec>
     </target>
 
-    <target name="all" depends="clean,jar,compile.jsp,test,javadoc,pmd,findbugs-xml,checkstyle" />
+    <target name="all" depends="clean,plugins,jar,compile.jsp,test,javadoc,pmd,findbugs-xml,checkstyle" />
 </project>

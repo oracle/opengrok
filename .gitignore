@@ -11,6 +11,8 @@ opengrok.jar
 source.war
 prj.el
 nbproject/private
+plugins/LdapPlugin/nbproject/private/
+plugins/UserPlugin/nbproject/private/
 generatedsrc
 lib/JFlex.jar
 lib/jflex-*
@@ -34,7 +36,6 @@ derby.log
 opengrok*.log
 nbproject/genfiles.properties
 glassfish
-webrev
 opengrok-web-nbproject/nbproject/private/
 opengrok-web-nbproject/nbproject/genfiles.properties
 run_my.bat

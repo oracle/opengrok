@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.decoders;
@@ -30,12 +30,13 @@ import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.Timestamp;
 
 /**
+ * Decode Oracle SSO specific headers.
  *
  * @author Krystof Tulinger
  */
-public class HeaderDecoder implements IUserDecoder {
+public class OSSOHeaderDecoder implements IUserDecoder {
 
-    private static final Logger LOGGER = Logger.getLogger(HeaderDecoder.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OSSOHeaderDecoder.class.getName());
 
     protected static String OSSO_COOKIE_TIMESTAMP_HEADER = "osso-cookie-timestamp";
     protected static String OSSO_TIMEOUT_EXCEEDED_HEADER = "osso-idle-timeout-exceeded";
@@ -54,9 +55,15 @@ public class HeaderDecoder implements IUserDecoder {
         timestamp = request.getHeader(OSSO_COOKIE_TIMESTAMP_HEADER);
         userguid = request.getHeader(OSSO_USER_GUID_HEADER);
         
-        if (username == null || userguid == null || username.isEmpty() || userguid.isEmpty()) {
+        if (username == null || username.isEmpty()) {
             LOGGER.log(Level.WARNING,
-                    "Can not construct an user: username or userguid could not be extracted");
+                    "Can not construct an user: username could not be extracted");
+            return null;
+        }
+        
+        if (userguid == null || userguid.isEmpty()) {
+            LOGGER.log(Level.WARNING,
+                    "Can not construct an user: userguid could not be extracted");
             return null;
         }
 
@@ -73,7 +80,7 @@ public class HeaderDecoder implements IUserDecoder {
 
         /**
          * Creating new user entity with provided information. The entity can be
-         * checked if it is timeouted via {@link User#isTimeouted()}.
+         * checked if the timeout expired via {@link User#isTimeouted()}.
          */
         User user = new User(username, userguid, cookieTimestamp,
                 "true".equalsIgnoreCase(timeouted));

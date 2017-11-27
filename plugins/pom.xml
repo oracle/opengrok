@@ -28,7 +28,7 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
     <artifactId>plugins</artifactId>
     <packaging>jar</packaging>
     <version>1.1-SNAPSHOT</version>
-    <name>OpenGrok Sample Plugins</name>
+    <name>OpenGrok authorization plugins</name>
 
     <parent>
         <groupId>org.opensolaris.opengrok</groupId>
@@ -38,8 +38,21 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
 
     <build>
         <sourceDirectory>.</sourceDirectory>
+	<!-- Note that the plugins/UserPlugin/test/ directory is added via the build-helper plugin below -->
+        <testSourceDirectory>LdapPlugin/test</testSourceDirectory>
 
+        <testResources>
+            <testResource>
+                <targetPath>opengrok/auth/plugin/</targetPath>
+                <directory>LdapPlugin/test/opengrok/auth/plugin/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+        </testResources>
+ 
         <plugins>
+
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
             <version>2.0.2</version>
@@ -51,6 +64,37 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
               </includes>
             </configuration>
           </plugin>
+
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                  <systemPropertyVariables>
+                      <junit-force-all>true</junit-force-all>
+                  </systemPropertyVariables>
+              </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.8</version>
+            <executions>
+                <execution>
+                    <id>add-test-source</id>
+                    <phase>generate-test-sources</phase>
+                    <goals>
+                        <goal>add-test-source</goal>
+                    </goals>
+                    <configuration>
+                        <sources>
+                            <directory>UserPlugin/test</directory>
+                        </sources>
+                    </configuration>
+                </execution>
+            </executions>
+          </plugin>
+
         </plugins>
     </build>
 
@@ -60,10 +104,15 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
             <artifactId>opengrok-indexer</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
 	<dependency>
 	    <groupId>junit</groupId>
 	    <artifactId>junit</artifactId>
 	    <version>4.12</version>
+            <scope>test</scope>
 	</dependency>
     </dependencies>
 

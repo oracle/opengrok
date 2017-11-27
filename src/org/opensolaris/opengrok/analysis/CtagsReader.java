@@ -28,7 +28,6 @@ import java.util.EnumMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Interner;
 
 /**
  * Represents a reader of output from runs of ctags.
@@ -204,12 +203,10 @@ public class CtagsReader {
 
         // Bug #809: Keep track of which symbols have already been
         // seen to prevent duplicating them in memory.
-        final Interner<String> seenSymbols = new Interner<>();
 
         final String type = classInher == null ? kind : kind + " in " +
             classInher;
-        addTag(defs, seenSymbols, lnum, def, type, match, classInher,
-            signature);
+        addTag(defs, lnum, def, type, match, classInher, signature);
         if (signature != null) {
             // TODO if some languages use different character for separating
             // arguments, below needs to be adjusted
@@ -250,9 +247,8 @@ public class CtagsReader {
                 for (int ii = names.length - 1; ii >= 0; ii--) {
                     name = names[ii];
                     if (name.length() > 0) {
-                        addTag(defs, seenSymbols, lnum, name, "argument",
-                            def.trim() + signature.trim(), null,
-                            signature);
+                        addTag(defs, lnum, name, "argument", def.trim() +
+                            signature.trim(), null, signature);
                         break;
                     }
                 }
@@ -266,9 +262,8 @@ public class CtagsReader {
     /**
      * Adds a tag to a {@code Definitions} instance.
      */
-    private void addTag(Definitions defs, Interner<String> seenSymbols,
-        String lnum, String symbol, String type, String text, String namespace,
-        String signature) {
+    private void addTag(Definitions defs, String lnum, String symbol,
+        String type, String text, String namespace, String signature) {
         // The strings are frequently repeated (a symbol can be used in
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
@@ -280,9 +275,8 @@ public class CtagsReader {
             LOGGER.log(Level.WARNING, "CTags line number parsing problem(but" +
                 " I will continue with line # 0) for symbol {0}", symbol);
         }
-        defs.addTag(lineno, seenSymbols.intern(symbol.trim()),
-            seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()),
-            namespace == null ? null : seenSymbols.intern(namespace.trim()),
-            signature);
+        defs.addTag(lineno, symbol.trim().intern(), type.trim().intern(),
+            text.trim().intern(), namespace == null ? null :
+            namespace.trim().intern(), signature);
     }
 }

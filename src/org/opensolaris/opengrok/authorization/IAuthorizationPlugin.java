@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
@@ -28,26 +28,27 @@ import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
 /**
- * Interface for authorization plugins.
+ * Interface for authorization plug-ins.
  *
- * All plugins considered for authorization must implement this interface
+ * All plug-ins considered for authorization must implement this interface
  *
  * @author Krystof Tulinger
  */
 public interface IAuthorizationPlugin {
 
     /**
-     * Called when the plugin is loaded into memory. With the parameters from
+     * Called when the plug-in is loaded into memory. With the parameters from
      * the configuration.
      *
-     * This can be used for establishing db/ldap connection or other init stuff.
+     * This can be used for establishing database/LDAP connection or perform
+     * initialization.
      *
      * @param parameters parameters specified in the configuration
      */
     void load(Map<String, Object> parameters);
 
     /**
-     * Called when the plugin is about to be deleted from the memory.
+     * Called when the plug-in is about to be deleted from the memory.
      *
      * This can be used for releasing connections and/or other release stuff.
      */

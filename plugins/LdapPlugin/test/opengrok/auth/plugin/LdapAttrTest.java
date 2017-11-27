@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -35,7 +35,7 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
-import opengrok.auth.plugin.util.DummyHttpServletRequest;
+import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,7 +48,8 @@ import org.opensolaris.opengrok.configuration.Project;
 public class LdapAttrTest {
 
     private HttpServletRequest dummyRequest;
-    private LdapAttr plugin;
+    private LdapAttrPlugin plugin;
+    private AuthorizationFramework framework;
 
     private static File whitelistFile;
 
@@ -69,19 +70,21 @@ public class LdapAttrTest {
 
     @Before
     public void setUp() {
-        plugin = new LdapAttr();
+        plugin = new LdapAttrPlugin();
         Map<String, Object> parameters = new TreeMap<>();
+        
         parameters.put(AbstractLdapPlugin.FAKE_PARAM, true);
-        parameters.put(LdapAttr.FILE_PARAM, whitelistFile.getAbsolutePath());
-        parameters.put(LdapAttr.ATTR_PARAM, "mail");
+        parameters.put(LdapAttrPlugin.FILE_PARAM, whitelistFile.getAbsolutePath());
+        parameters.put(LdapAttrPlugin.ATTR_PARAM, "mail");
 
         plugin.load(parameters);
 
-        AuthorizationFramework.getInstance().setPluginVersion(1);
+        framework = new AuthorizationFramework(null);
+        framework.setPluginVersion(1);
     }
 
     private void prepareRequest(String username, String mail, String... ous) {
-        dummyRequest = new DummyHttpServletRequest();
+        dummyRequest = new DummyHttpServletRequestLdap();
         dummyRequest.setAttribute(UserPlugin.REQUEST_ATTR, new User(username, "123", null, false));
         dummyRequest.getSession().setAttribute(LdapUserPlugin.SESSION_ATTR, new LdapUser(mail, "123",
                 new TreeSet<>(Arrays.asList(ous))));
@@ -152,7 +155,7 @@ public class LdapAttrTest {
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
 
-        AuthorizationFramework.getInstance().increasePluginVersion();
+        framework.increasePluginVersion();
         prepareRequest("007", "james@bond.com", "MI6", "MI7");
 
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));

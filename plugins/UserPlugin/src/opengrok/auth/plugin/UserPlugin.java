@@ -17,15 +17,15 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-import opengrok.auth.plugin.decoders.FakeHeaderDecoder;
-import opengrok.auth.plugin.decoders.HeaderDecoder;
+import opengrok.auth.plugin.decoders.FakeOSSOHeaderDecoder;
+import opengrok.auth.plugin.decoders.OSSOHeaderDecoder;
 import opengrok.auth.plugin.decoders.IUserDecoder;
 import opengrok.auth.plugin.entity.User;
 import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
@@ -33,8 +33,9 @@ import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
 /**
+ * Authorization plug-in to extract user info from HTTP headers.
  *
- * @author ktulinge
+ * @author Krystof Tulinger
  */
 public class UserPlugin implements IAuthorizationPlugin {
 
@@ -42,7 +43,7 @@ public class UserPlugin implements IAuthorizationPlugin {
 
     public static final String REQUEST_ATTR = "opengrok-user-plugin-user";
 
-    private IUserDecoder decoder = new HeaderDecoder();
+    private IUserDecoder decoder = new OSSOHeaderDecoder();
 
     @Override
     public void load(Map<String, Object> parameters) {
@@ -50,7 +51,7 @@ public class UserPlugin implements IAuthorizationPlugin {
 
         if ((fake = (Boolean) parameters.get(FAKE_PARAM)) != null
                 && fake) {
-            decoder = new FakeHeaderDecoder();
+            decoder = new FakeOSSOHeaderDecoder();
         }
     }
 

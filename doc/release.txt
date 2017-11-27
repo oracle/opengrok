@@ -36,7 +36,14 @@ jars/dirs for tests
 
    - index
    - deploy webapp
-   - check serarch
+   - check UI:
+     - history view
+       - try comparing 2 distant revisions
+       - check pagination
+     - annotate view
+     - directory listing
+       - check sorting using multiple criteria
+     - perform search using multiple fields across multiple projects
 
 3) check all tests, tests code coverage:
    junit, pmd, findbugs, checkstyle, emma, jdepend

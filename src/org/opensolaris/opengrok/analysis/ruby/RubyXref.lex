@@ -58,14 +58,9 @@ import org.opensolaris.opengrok.web.Util;
     @Override
     protected void setLineNumber(int x) { yyline = x; }
 
-    /**
-     * Reinitialize the lexer with new reader.
-     *
-     * @param reader new reader for this lexer
-     */
     @Override
-    public void reInit(Reader reader) {
-        super.reInit(reader);
+    public void reset() {
+        super.reset();
         if (helpers != null) helpers.clear();
         h.reset();
     }
@@ -145,4 +140,7 @@ import org.opensolaris.opengrok.web.Util;
     protected String getUrlPrefix() { return urlPrefix; }
 %}
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %include RubyProductions.lexh

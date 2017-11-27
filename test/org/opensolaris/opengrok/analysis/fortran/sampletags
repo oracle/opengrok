@@ -1,0 +1,16 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+DGESV	grok.f	/^      SUBROUTINE DGESV(/;"	subroutine	line:173	signature:(N, NRHS, A, LDA, IPIV, B, LDB, INFO)
+INFO	grok.f	/^      INTEGER            INFO,/;"	local	line:181	subroutine:DGESV
+LDA	grok.f	/^      INTEGER            INFO, LDA,/;"	local	line:181	subroutine:DGESV
+LDB	grok.f	/^      INTEGER            INFO, LDA, LDB,/;"	local	line:181	subroutine:DGESV
+N	grok.f	/^      INT/;"	local	line:181	subroutine:DGESV
+NRHS	grok.f	/^      INTEGER            INFO, LDA, LDB, N, NRHS$/;"	local	line:181	subroutine:DGESV
+IPIV	grok.f	/^      INTEGER            IPIV(/;"	local	line:184	subroutine:DGESV
+A	grok.f	/^      DOUBLE PRECISION   A(/;"	local	line:185	subroutine:DGESV
+B	grok.f	/^      DOUBL/;"	local	line:185	subroutine:DGESV

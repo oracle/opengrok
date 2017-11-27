@@ -26,10 +26,7 @@
  * Regex productions shared between PerlXref and PerlSymbolTokenizer
  */
 
-WhspChar      = [ \t\f]
-WhiteSpace    = {WhspChar}+
 MaybeWhsp     = {WhspChar}*
-EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Sigils = ("$" | "@" | "%" | "&" | "*")
 WxSigils = [[\W]--[\$\@\%\&\*\"\'\`\#\r\n]]
@@ -63,14 +60,9 @@ SPIdentifier4 = "${^" ( "]" | "[" | [A-Z\^_?\\] ) [a-zA-Z0-9_]* "}"
 // mistaken for an SPIdentifier2
 ProtoAttr = "(" ( [\\]? {Sigils} | ";" | {WhiteSpace} )* ")"
 
-// see also: PerlLexHelper.setState() which mirrors this regex
-URIChar = [\?\#\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-
-FNameChar = [a-zA-Z0-9_\-\.]
 FileExt = ("pl"|"perl"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch"|
            "PL"|"PERL"|"PM"|"CONF"|"TXT"|"HTM"|"HTML"|"XML"|"INI"|"DIFF"|"PATCH")
 File = [a-zA-Z]{FNameChar}* "." {FileExt}
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 
@@ -189,7 +181,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     }
  }
 
- "<" ({File}|{Path}) ">"    {
+ "<" ({File} | {FPath}) ">"    {
     maybeIntraState();
     if (takeAllContent()) {
         takeNonword("<");
@@ -515,7 +507,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
 // "string links" and "comment links"
 <SCOMMENT, POD, FMT, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
-    {Path}    {
+    {FPath}    {
         if (takeAllContent()) {
             take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
         }
@@ -533,9 +525,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         }
     }
 
-    ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]    {
+    {BrowseableURI}    {
         if (takeAllContent()) {
-            appendLink(yytext());
+            appendLink(yytext(), true);
         }
     }
 

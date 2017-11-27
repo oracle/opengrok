@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -270,6 +271,10 @@ public class JFlexXrefTest {
     @Test
     public void testCXrefInclude() throws Exception {
         testCXrefInclude(CXref.class);
+    }
+
+    @Test
+    public void testCxxXrefInclude() throws Exception {
         testCXrefInclude(CxxXref.class);
     }
 
@@ -277,8 +282,8 @@ public class JFlexXrefTest {
         String[][] testData = {
             {"#include <abc.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc.h\">abc.h</a>&gt;"},
             {"#include <abc/def.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc/\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>&gt;"},
-            {"#include \"abc.h\"", "#<b>include</b> <span class=\"s\">\"<a href=\"/source/s?path=abc.h\">abc.h</a>\"</span>"},
-            {"#include \"abc/def.h\"", "#<b>include</b> <span class=\"s\">\"<a href=\"/source/s?path=abc/\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>\"</span>"},
+            {"#include \"abc.h\"", "#<b>include</b> &quot;<a href=\"/source/s?path=abc.h\">abc.h</a>&quot;"},
+            {"#include \"abc/def.h\"", "#<b>include</b> &quot;<a href=\"/source/s?path=abc/\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>&quot;"},
             {"#include <vector>", "#<b>include</b> &lt;<a href=\"/source/s?path=vector\">vector</a>&gt;"},
         };
 

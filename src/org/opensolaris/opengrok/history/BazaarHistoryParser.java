@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -168,7 +169,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
 
                         File f = new File(myDir, s);
                         String name = env.getPathRelativeToSourceRoot(f);
-                        entry.addFile(name);
+                        entry.addFile(name.intern());
                     }
                     break;
                 default:

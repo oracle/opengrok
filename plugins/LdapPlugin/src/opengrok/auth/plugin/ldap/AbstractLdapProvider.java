@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
@@ -31,7 +31,7 @@ public abstract class AbstractLdapProvider {
     /**
      * Lookups user's records - mail address - ou records - uid
      *
-     * @param user find ldap information about this user
+     * @param user find LDAP information about this user
      * @return set of important attributes for the user
      *
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
@@ -45,22 +45,22 @@ public abstract class AbstractLdapProvider {
     /**
      * Lookups user's records - mail address - ou records - uid
      *
-     * @param user find ldap information about this user
-     * @param filter the ldap filter
+     * @param user find LDAP information about this user
+     * @param filter the LDAP filter
      * @return set of important attributes for the user
      *
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
      * java.lang.String, java.lang.String[])
      */
     public Map<String, Set<String>> lookupLdapContent(User user, String filter) {
-        return lookupLdapContent(user, null, null);
+        return lookupLdapContent(user, filter, null);
     }
 
     /**
      * Lookups user's records - mail address - ou records - uid
      *
-     * @param user find ldap information about this user
-     * @param values match these ldap value
+     * @param user find LDAP information about this user
+     * @param values match these LDAP value
      * @return set of important attributes for the user
      *
      * @see #lookupLdapContent(opengrok.auth.plugin.entity.User,
@@ -73,9 +73,9 @@ public abstract class AbstractLdapProvider {
     /**
      * Lookups user's records - mail address - ou records - uid
      *
-     * @param user find ldap information about this user
-     * @param filter the ldap filter
-     * @param values match these ldap value
+     * @param user find LDAP information about this user
+     * @param filter the LDAP filter
+     * @param values match these LDAP value
      * @return set of important attributes for the user
      */
     abstract public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values);
@@ -86,7 +86,7 @@ public abstract class AbstractLdapProvider {
     abstract public boolean isConfigured();
 
     /**
-     * Closes the ldap provider.
+     * Closes the LDAP provider.
      */
     abstract public void close();
 

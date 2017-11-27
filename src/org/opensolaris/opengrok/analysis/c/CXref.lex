@@ -27,23 +27,31 @@
  */
 
 package org.opensolaris.opengrok.analysis.c;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
 %class CXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
+  private static final Pattern MATCH_INCLUDE = Pattern.compile(
+      "^(#.*)(include)(.*)([<\"])(.*)([>\"])$");
+  private static final int INCL_HASH_G = 1;
+  private static final int INCLUDE_G = 2;
+  private static final int INCL_POST_G = 3;
+  private static final int INCL_PUNC0_G = 4;
+  private static final int INCL_PATH_G = 5;
+  private static final int INCL_PUNCZ_G = 6;
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -51,22 +59,19 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-WhiteSpace     = [ \t\f]+
-EOL = \r|\n|\r\n
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
-File = [a-zA-Z]{FNameChar}* "." ([chts]|"conf"|"java"|"cpp"|"hpp"|"CC"|"txt"|"htm"|"html"|"pl"|"xml"|"cc"|"cxx"|"c++"|"hh"|"hxx"|"h++"|"diff"|"patch")
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
+File = [a-zA-Z]{FNameChar}* "." ([cChHsStT] | [Cc][Oo][Nn][Ff] |
+    [Jj][Aa][Vv][Aa] | [CcHh][Pp][Pp] | [Cc][Cc] | [Tt][Xx][Tt] |
+    [Hh][Tt][Mm][Ll]? | [Pp][Ll] | [Xx][Mm][Ll] | [CcHh][\+][\+] | [Hh][Hh] |
+    [CcHh][Xx][Xx] | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
 
 %state  STRING COMMENT SCOMMENT QSTRING
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
+%include C.lexh
 %%
 <YYINITIAL>{
-
  \{     { incScope(); writeUnicodeChar(yycharat(0)); }
  \}     { decScope(); writeUnicodeChar(yycharat(0)); }
  \;     { endScope(); writeUnicodeChar(yycharat(0)); }
@@ -76,43 +81,61 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
     writeSymbol(id, Consts.kwd, yyline);
 }
 
-"#" {WhiteSpace}* "include" {WhiteSpace}* "<" ({File}|{Path}|{Identifier}) ">" {
-        Matcher match = Pattern.compile("(#.*)(include)(.*)<(.*)>").matcher(yytext());
+"#" {WhspChar}* "include" {WhspChar}* ("<"[^>\n\r]+">" | \"[^\"\n\r]+\")    {
+        String capture = yytext();
+        Matcher match = MATCH_INCLUDE.matcher(capture);
         if (match.matches()) {
-            out.write(match.group(1));
-            writeSymbol(match.group(2), Consts.kwd, yyline);
-            out.write(match.group(3));
-            out.write("&lt;");
-            String path = match.group(4);
+            out.write(match.group(INCL_HASH_G));
+            writeSymbol(match.group(INCLUDE_G), Consts.kwd, yyline);
+            out.write(match.group(INCL_POST_G));
+            out.write(htmlize(match.group(INCL_PUNC0_G)));
+            String path = match.group(INCL_PATH_G);
             out.write(Util.breadcrumbPath(urlPrefix + "path=", path));
-            out.write("&gt;");
+            out.write(htmlize(match.group(INCL_PUNCZ_G)));
+        } else {
+            out.write(htmlize(capture));
         }
 }
 
 /*{Hier}
         { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
 */
-{Number} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+{Number} {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
- \\\" | \\\' { out.write(yytext()); }
- \"     { out.write("<span class=\"s\">\""); yypush(STRING, "</span>"); }
- \'     { out.write("<span class=\"s\">\'"); yypush(QSTRING, "</span>"); }
- "/*"   { out.write("<span class=\"c\">/*"); yypush(COMMENT, "</span>"); }
- "//"   { out.write("<span class=\"c\">//"); yypush(SCOMMENT, "</span>"); }
+ \\\" | \\\' { out.write(htmlize(yytext())); }
+ \"     {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'     {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ "/*"   {
+    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
+ "//"   {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext()); }
- \"     { out.write(yytext()); yypop(); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \\[\"\\] |
+ \" {WhiteSpace} \"  { out.write(htmlize(yytext())); }
+ \"      { out.write(htmlize(yytext())); yypop(); }
 }
 
 <QSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { out.write(yytext()); yypop(); }
+ \\[\'\\] |
+ \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
+
+ \'     { out.write(htmlize(yytext())); yypop(); }
 }
 
 <COMMENT> {
@@ -120,24 +143,22 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 }
 
 <SCOMMENT> {
-{WhiteSpace}*{EOL}      {
+{WhspChar}*{EOL}      {
     yypop();
     startNewLine();}
 }
 
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { startNewLine(); }
+[&<>\'\"]    { out.write(htmlize(yytext())); }
+{WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
-{Path}
+<STRING, COMMENT, SCOMMENT, QSTRING> {
+{FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
 {File}
@@ -150,13 +171,26 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
         out.write(path);
         out.write("</a>");}
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
-          appendLink(yytext());
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<STRING, SCOMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }

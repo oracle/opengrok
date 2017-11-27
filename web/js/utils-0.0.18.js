@@ -846,6 +846,9 @@
                 load: function ($window) {
                     var that = this;
                     $(document).keypress(function (e) {
+                        if (textInputHasFocus()) {
+                            return true;
+                        }
                         var key = e.which;
                         switch (key) {
                             case 49: // 1
@@ -1314,23 +1317,6 @@ function init_results_autohide() {
 }
 
 function init_searchable_option_list() {
-    function init_sol_on_type_combobox() {
-        /**
-         * Has to be here because otherwise the offset()
-         * takes the original long &lt;select&gt; box and the max-height
-         * does not work then.
-         */
-        $('#type').searchableOptionList({
-            texts: {
-                searchplaceholder: 'Click here to restrict the file type'
-            },
-            maxHeight: $('#type').offset().top + 'px',
-            /**
-             * Defined in menu.jsp just next to the original &lt;select&gt;
-             */
-            resultsContainer: $("#type-select-container")
-        });
-    }
     var searchableOptionListOptions = {
         maxHeight: '300px',
         showSelectionBelowList: false,
@@ -1378,16 +1364,27 @@ function init_searchable_option_list() {
                         .css('left', Math.floor(this.$container.offset().left))
                         .css('width', selectionContainerWidth);
             },
-            onRendered: init_sol_on_type_combobox
+            onRendered: function () {
+                /**
+                 * Has to be here because otherwise the offset()
+                 * takes the original long &lt;select&gt; box and the max-height
+                 * does not work then.
+                 */
+                $('#type').searchableOptionList({
+                    texts: {
+                        searchplaceholder: 'Click here to restrict the file type'
+                    },
+                    maxHeight: $('#type').offset().top + 'px',
+                    /**
+                     * Defined in menu.jsp just next to the original &lt;select&gt;
+                     */
+                    resultsContainer: $("#type-select-container"),
+                });
+            }
         }
     };
 
-    var $project = $('#project');
-    if ($project.length === 1) {
-        $project.searchableOptionList(searchableOptionListOptions);
-    } else {
-        init_sol_on_type_combobox();
-    }
+    $('#project').searchableOptionList(searchableOptionListOptions);
 }
 
 function init_history_input() {
@@ -1959,13 +1956,14 @@ function isOnSearchPage() {
  */
 function searchSubmit(form) {
     var submitInitiator = '';
-    if (document.activeElement && document.activeElement.nodeName === 'INPUT') {
+    if (textInputHasFocus()) {
         submitInitiator = document.activeElement.getAttribute('id');
     }
     if (submitInitiator) {
         var input = document.createElement('INPUT');
         input.setAttribute('name', 'si');
         input.value = submitInitiator;
+        input.type = 'hidden';
         form.appendChild(input);
     }
 }
@@ -1985,4 +1983,13 @@ function restoreFocusAfterSearchSubmit() {
             $input.focus();
         }
     }
+}
+
+/**
+ * @return {boolean} true if focus is on a input[type=text] element
+ */
+function textInputHasFocus() {
+    return !!document.activeElement &&
+        document.activeElement.nodeName === 'INPUT' &&
+        document.activeElement.type === 'text';
 }

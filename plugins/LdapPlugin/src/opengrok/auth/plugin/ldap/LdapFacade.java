@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.ldap;
@@ -48,7 +48,7 @@ public class LdapFacade extends AbstractLdapProvider {
     private static final Logger LOGGER = Logger.getLogger(LdapFacade.class.getName());
 
     /**
-     * Ldap filter.
+     * default LDAP filter
      */
     private static final String LDAP_FILTER = "objectclass=*";
 
@@ -71,13 +71,18 @@ public class LdapFacade extends AbstractLdapProvider {
      * When there is no active server in the pool, the facade waits this time
      * interval (since the last failure) until it tries the servers again.
      *
-     * This should avoid heavy load to the ldap servers when they are all
+     * This should avoid heavy load to the LDAP servers when they are all
      * broken/not responding/down - pool waiting.
      *
      * Also each server uses this same interval since its last failure - per
      * server waiting.
      */
     private int interval = 10 * 1000;
+    
+    /**
+     * LDAP search base
+     */
+    private String searchBase;
 
     /**
      * Server pool.
@@ -90,7 +95,7 @@ public class LdapFacade extends AbstractLdapProvider {
     private boolean reported = false;
 
     /**
-     * Interface for converting ldap results into user defined types.
+     * Interface for converting LDAP results into user defined types.
      *
      * @param <T> the type of the result
      */
@@ -166,6 +171,7 @@ public class LdapFacade extends AbstractLdapProvider {
     public LdapFacade(Configuration cfg) {
         setServers(cfg.getServers());
         setInterval(cfg.getInterval());
+        setSearchBase(cfg.getSearchBase());
         prepareSearchControls();
         prepareServers();
     }
@@ -215,19 +221,25 @@ public class LdapFacade extends AbstractLdapProvider {
         }
     }
 
+    public String getSearchBase() {
+        return searchBase;
+    }
+            
+    public void setSearchBase(String base) {
+        this.searchBase = base;
+    }
+    
     @Override
     public boolean isConfigured() {
-        return servers != null && servers.size() > 0 && LDAP_FILTER != null;
+        return servers != null && servers.size() > 0 && LDAP_FILTER != null && searchBase != null;
     }
 
     /**
      * Lookups the authorization values {
      *
-     *
-     *
-     * @param user the osso headers
-     * @param filter ldap filter to use
-     * @param values match these ldap value
+     * @param user user information. If @{code null} then search base will be used.
+     * @param filter LDAP filter to use. If @{code null} then @{link LDAP_FILTER} will be used.
+     * @param values match these LDAP values
      *
      * @return set of strings describing the user's attributes
      * @see #LDAP_VALUES
@@ -235,13 +247,8 @@ public class LdapFacade extends AbstractLdapProvider {
     @Override
     public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) {
 
-        if (user == null) {
-            LOGGER.log(Level.SEVERE, "no user");
-            return null;
-        }
-
         return lookup(
-                user.getUsername(),
+                user != null ? user.getUsername() : getSearchBase(),
                 filter == null ? LDAP_FILTER : filter,
                 values,
                 new ContentAttributeMapper(values));
@@ -256,12 +263,12 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     /**
-     * Lookups the ldap server for content
+     * Lookups the LDAP server for content
      *
      * @param <T> return type
      * @param dn search base for the query
-     * @param filter ldap filter for the query
-     * @param attributes returning ldap attributes
+     * @param filter LDAP filter for the query
+     * @param attributes returning LDAP attributes
      * @param mapper mapper class implementing @code{AttributeMapper} closed
      *
      * @return results transformed with mapper
@@ -271,15 +278,16 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     /**
-     * Lookups the ldap server for content
+     * Lookups the LDAP server for content
      *
      * @param <T> return type
      * @param dn search base for the query
-     * @param filter ldap filter for the query
-     * @param attributes returning ldap attributes
+     * @param filter LDAP filter for the query
+     * @param attributes returning LDAP attributes
      * @param mapper mapper class implementing @code{AttributeMapper} closed
+     * @param fail current count of failures
      *
-     * @return results transformed with mapper
+     * @return results transformed with mapper or {@code null} on failure
      */
     private <T> T lookup(String dn, String filter, String[] attributes, AttributeMapper<T> mapper, int fail) {
 
@@ -314,15 +322,15 @@ public class LdapFacade extends AbstractLdapProvider {
                 return processResult(sr, mapper);
             }
         } catch (NameNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, "The ldap name was not found.", ex);
+            LOGGER.log(Level.SEVERE, "The LDAP name was not found.", ex);
             return null;
         } catch (SizeLimitExceededException ex) {
-            LOGGER.log(Level.SEVERE, "The maximum size of the ldap result has exceeded.", ex);
+            LOGGER.log(Level.SEVERE, "The maximum size of the LDAP result has exceeded.", ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } catch (TimeLimitExceededException ex) {
-            LOGGER.log(Level.SEVERE, "Time limit for ldap operation has exceeded.", ex);
+            LOGGER.log(Level.SEVERE, "Time limit for LDAP operation has exceeded.", ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
@@ -332,7 +340,7 @@ public class LdapFacade extends AbstractLdapProvider {
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } catch (NamingException ex) {
-            LOGGER.log(Level.SEVERE, "An arbitrary ldap error occured.", ex);
+            LOGGER.log(Level.SEVERE, "An arbitrary LDAP error occured.", ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
@@ -341,6 +349,8 @@ public class LdapFacade extends AbstractLdapProvider {
                 try {
                     namingEnum.close();
                 } catch (NamingException e) {
+                    LOGGER.log(Level.WARNING,
+                            "failed to close search result enumeration");
                 }
             }
         }
@@ -361,10 +371,10 @@ public class LdapFacade extends AbstractLdapProvider {
     }
 
     /**
-     * Process the incoming ldap result.
+     * Process the incoming LDAP result.
      *
      * @param <T> type of the result
-     * @param result ldap result
+     * @param result LDAP result
      * @param mapper mapper to transform the result into the result type
      * @return transformed result
      *

@@ -26,10 +26,7 @@
  * Regex productions shared between RubyXref and RubySymbolTokenizer
  */
 
-WhspChar      = [ \t\f]
-WhiteSpace    = {WhspChar}+
 MaybeWhsp     = {WhspChar}*
-EOL = \r|\n|\r\n
 
 /*
  * globals_rdoc: Pre-defined variables
@@ -161,14 +158,9 @@ Character_literal_esc = [\\] ([MC][\-][^\s] | "u{" [0-9]+ "}" |
 
 WxSigils = [[\W]--[\$\@\"\'\`\#\r\n]]
 
-// see also: RubyLexHelper.setState() which mirrors this regex
-URIChar = [\?\#\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-
-FNameChar = [a-zA-Z0-9_\-\.]
 FileExt = ([Rr][Bb] | [Rr][Uu][Bb][Yy] | [Dd][Ii][Ff][Ff] |
     [Pp][Aa][Tt][Cc][Hh])
 File = [a-zA-Z]{FNameChar}* "." {FileExt}
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 POD_begin = "=begin"
 POD_end = "=end"
@@ -494,7 +486,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
 // "string links" and "comment links"
 <SCOMMENT, POD, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
-    {Path}    {
+    {FPath}    {
         if (takeAllContent()) {
             take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
         }
@@ -512,9 +504,9 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
         }
     }
 
-    ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]    {
+    {BrowseableURI}    {
         if (takeAllContent()) {
-            appendLink(yytext());
+            appendLink(yytext(), true);
         }
     }
 

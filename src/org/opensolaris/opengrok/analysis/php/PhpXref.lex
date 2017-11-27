@@ -27,17 +27,17 @@
  */
 
 package org.opensolaris.opengrok.analysis.php;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
-import java.util.*;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class PhpXref
-%extends JFlexXref
+%extends PhpXrefSpanner
 %unicode
 %ignorecase
 %int
@@ -61,6 +61,12 @@ import java.util.*;
     ));
   }
 
+  @Override
+  public void reset() {
+      super.reset();
+      docLabels.clear();
+  }
+
   private void writeDocTag() throws IOException {
     out.write(yycharat(0));
     out.write("<strong>");
@@ -80,14 +86,9 @@ import java.util.*;
   }
 %}
 
-WhiteSpace     = [ \t]+
-EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_\u007F-\u10FFFF] [a-zA-Z0-9_\u007F-\u10FFFF]*
 
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* "." ("php"|"php3"|"php4"|"phps"|"phtml"|"inc"|"diff"|"patch")
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 BinaryNumber = 0[b|B][01]+
 OctalNumber = 0[0-7]+
@@ -128,9 +129,12 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 %state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT QSTRING BACKQUOTE STRINGEXPR STRINGVAR
 %state DOCCOMMENT DOCCOM_TYPE_THEN_NAME DOCCOM_NAME DOCCOM_TYPE
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 <YYINITIAL> { //HTML
-    "<" | "</"      { out.write(Util.htmlize(yytext())); yypush(TAG_NAME, null); }
+    "<" | "</"      { out.write(Util.htmlize(yytext())); yypush(TAG_NAME); }
 
     "<!--" {
         out.write("<span class=\"c\">&lt;!--");
@@ -165,16 +169,16 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write("</strong>");
     }
 
-    "=" {WhiteSpace}* (\" | \')? {
+    "=" {WhspChar}* (\" | \')? {
         char attributeDelim = yycharat(yylength()-1);
         out.write("=<span class=\"s\">");
         out.write(yytext().substring(1));
         if (attributeDelim == '\'') {
-            yypush(ATTRIBUTE_SINGLE, null);
+            yypush(ATTRIBUTE_SINGLE);
         } else if (attributeDelim == '"') {
-            yypush(ATTRIBUTE_DOUBLE, null);
+            yypush(ATTRIBUTE_DOUBLE);
         } else {
-            yypush(ATTRIBUTE_NOQUOTE, null);
+            yypush(ATTRIBUTE_NOQUOTE);
         }
     }
 }
@@ -188,11 +192,11 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write("<strong>");
         out.write(Util.htmlize(yytext()));
         out.write("</strong>");
-        yypush(IN_SCRIPT, null); }
+        yypush(IN_SCRIPT); }
 }
 
 <ATTRIBUTE_NOQUOTE> {
-    {WhiteSpace}* {EOL} {
+    {WhspChar}* {EOL} {
         out.write("</span>");
         startNewLine();
         yypop();
@@ -209,7 +213,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 <ATTRIBUTE_SINGLE>\' { out.write("'</span>"); yypop(); }
 
 <ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE> {
-    {WhiteSpace}* {EOL} {
+    {WhspChar}* {EOL} {
         out.write("</span>");
         startNewLine();
         out.write("<span class=\"s\">");
@@ -231,7 +235,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         yybegin(YYINITIAL);
     }
 
-    {WhiteSpace}* {EOL} {
+    {WhspChar}* {EOL} {
         out.write("</span>");
         startNewLine();
         out.write("<span class=\"c\">");
@@ -257,7 +261,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         writeSymbol(yytext(), Consts.kwd, yyline);
     }
 
-    \( {WhiteSpace}* {CastTypes} {WhiteSpace}* \) {
+    \( {WhspChar}* {CastTypes} {WhspChar}* \) {
         out.write("(");
         int i = 1, j;
         while (isTabOrSpace(i)) { out.write(yycharat(i++)); }
@@ -272,20 +276,20 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     b? \" {
-        yypush(STRING, null);
+        yypush(STRING);
         if (yycharat(0) == 'b') { out.write('b'); }
         out.write("<span class=\"s\">\"");
     }
 
     b? \' {
-        yypush(QSTRING, null);
+        yypush(QSTRING);
         if (yycharat(0) == 'b') { out.write('b'); }
         out.write("<span class=\"s\">\'");
     }
 
-    ` { yypush(BACKQUOTE, null); out.write("<span class=\"s\">`"); }
+    ` { yypush(BACKQUOTE); out.write("<span class=\"s\">`"); }
 
-    b? "<<<" {WhiteSpace}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
+    b? "<<<" {WhspChar}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
         if (yycharat(0) == 'b') { out.write('b'); }
         out.write("&lt;&lt;&lt;");
         int i = yycharat(0) == 'b' ? 4 : 3, j = yylength()-1;
@@ -295,7 +299,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         while (yycharat(j) == '\n' || yycharat(j) == '\r') { j--; }
 
         if (yycharat(i) == '\'' || yycharat(i) == '"') {
-            yypush(NOWDOC, null);
+            yypush(NOWDOC);
             String text = yytext().substring(i+1, j);
             this.docLabels.push(text);
             out.write(yycharat(i));
@@ -304,7 +308,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
             out.write("</span>");
             out.write(yycharat(i));
         } else {
-            yypush(HEREDOC, null);
+            yypush(HEREDOC);
             String text = yytext().substring(i, j+1);
             this.docLabels.push(text);
             out.write("<span class=\"b\">");
@@ -317,11 +321,11 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
     {Number}   { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
-    "#"|"//"   { yypush(SCOMMENT, null); out.write("<span class=\"c\">" + yytext()); }
-    "/**"      { yypush(DOCCOMMENT, null); out.write("<span class=\"c\">/*"); yypushback(1); }
-    "/*"       { yypush(COMMENT, null); out.write("<span class=\"c\">/*"); }
+    "#"|"//"   { yypush(SCOMMENT); out.write("<span class=\"c\">" + yytext()); }
+    "/**"      { yypush(DOCCOMMENT); out.write("<span class=\"c\">/*"); yypushback(1); }
+    "/*"       { yypush(COMMENT); out.write("<span class=\"c\">/*"); }
 
-    \{         { out.write(yytext()); yypush(IN_SCRIPT, null); }
+    \{         { out.write(yytext()); yypush(IN_SCRIPT); }
     \}         {
         out.write(yytext());
         if (!this.stack.empty() && !isHtmlState(this.stack.peek()))
@@ -418,7 +422,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 }
 
-<STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC>{WhiteSpace}* {EOL} {
+<STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC>{WhspChar}* {EOL} {
     out.write("</span>");
     startNewLine();
     out.write("<span class=\"s\">");
@@ -477,7 +481,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         while (!isHtmlState(yystate()))
             yypop();
     }
-    {WhiteSpace}* {EOL} {
+    {WhspChar}* {EOL} {
         out.write("</span>");
         startNewLine();
         yypop();
@@ -503,7 +507,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <DOCCOM_TYPE_THEN_NAME, DOCCOM_TYPE> {
-    {WhiteSpace}+ {DocType} {
+    {WhiteSpace} {DocType} {
         int i = 0;
         do { out.write(yycharat(i++)); } while (isTabOrSpace(i));
         int j = i;
@@ -531,7 +535,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <DOCCOM_NAME> {
-    {WhiteSpace}+ "$" {Identifier} {
+    {WhiteSpace} "$" {Identifier} {
         int i = 0;
         do { out.write(yycharat(i++)); } while (isTabOrSpace(i));
 
@@ -545,7 +549,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <COMMENT, DOCCOMMENT> {
-    {WhiteSpace}* {EOL} {
+    {WhspChar}* {EOL} {
         out.write("</span>");
         startNewLine();
         out.write("<span class=\"c\">");
@@ -557,7 +561,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     "&"     { out.write( "&amp;"); }
     "<"     { out.write( "&lt;"); }
     ">"     { out.write( "&gt;"); }
-    {WhiteSpace}* {EOL} {
+    {WhspChar}* {EOL} {
         startNewLine();
     }
     {WhiteSpace}    {
@@ -568,7 +572,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <YYINITIAL, HTMLCOMMENT, SCOMMENT, COMMENT, DOCCOMMENT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC> {
-    {Path}
+    {FPath}
             { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
     {File}
@@ -581,9 +585,8 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
             out.write(path);
             out.write("</a>");}
 
-    ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-            {
-              appendLink(yytext());
+    {BrowseableURI}    {
+              appendLink(yytext(), true);
             }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

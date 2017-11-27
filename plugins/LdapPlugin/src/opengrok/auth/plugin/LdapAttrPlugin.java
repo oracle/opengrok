@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -35,7 +35,12 @@ import opengrok.auth.plugin.entity.User;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
-public class LdapAttr extends AbstractLdapPlugin {
+/**
+ * Authorization plug-in to check user's LDAP attribute against whitelist.
+ *
+ * @author Krystof Tulinger
+ */
+public class LdapAttrPlugin extends AbstractLdapPlugin {
 
     protected static final String ATTR_PARAM = "attribute";
     protected static final String FILE_PARAM = "file";
@@ -45,7 +50,7 @@ public class LdapAttr extends AbstractLdapPlugin {
     private String ldapAttr;
     private final Set<String> whitelist = new TreeSet<>();
 
-    public LdapAttr() {
+    public LdapAttrPlugin() {
         SESSION_ALLOWED += "-" + nextId++;
     }
 

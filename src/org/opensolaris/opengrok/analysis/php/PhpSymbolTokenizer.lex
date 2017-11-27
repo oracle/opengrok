@@ -65,14 +65,9 @@ super(in);
   }
 %}
 
-WhiteSpace     = [ \t]+
-EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_\u007F-\u10FFFF] [a-zA-Z0-9_\u007F-\u10FFFF]*
 
-URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* "." ("php"|"php3"|"php4"|"phps"|"phtml"|"inc"|"diff"|"patch")
-Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 BinaryNumber = 0[b|B][01]+
 OctalNumber = 0[0-7]+
@@ -101,6 +96,9 @@ DocParamWithName = "uses"
 %state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT QSTRING BACKQUOTE STRINGEXPR STRINGVAR
 %state DOCCOMMENT DOCCOM_TYPE_THEN_NAME DOCCOM_NAME DOCCOM_TYPE
 
+%include Common.lexh
+%include CommonURI.lexh
+%include CommonPath.lexh
 %%
 
 <YYINITIAL> {
@@ -122,7 +120,7 @@ DocParamWithName = "uses"
         }
     }
 
-    \( {WhiteSpace}* {CastTypes} {WhiteSpace}* \) { }
+    \( {WhspChar}* {CastTypes} {WhspChar}* \) { }
 
     b? \" { yypush(STRING); }
 
@@ -130,7 +128,7 @@ DocParamWithName = "uses"
 
     ` { yypush(BACKQUOTE); }
 
-    b? "<<<" {WhiteSpace}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
+    b? "<<<" {WhspChar}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
         int i = yycharat(0) == 'b' ? 4 : 3, j = yylength()-1;
         while (isTabOrSpace(i)) { i++; }
         while (yycharat(j) == '\n' || yycharat(j) == '\r') { j--; }
@@ -206,7 +204,7 @@ DocParamWithName = "uses"
     }
 }
 
-<STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC>{WhiteSpace}* {EOL} { }
+<STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC>{WhspChar}* {EOL} { }
 
 <STRINGVAR> {
     {Identifier} {
@@ -255,22 +253,22 @@ DocParamWithName = "uses"
     {ClosingTag}    {
         while (!isHtmlState(yystate())) yypop();
     }
-    {WhiteSpace}* {EOL} {
+    {WhspChar}* {EOL} {
         yypop();
     }
 }
 
 <DOCCOMMENT> {
     /* change relatively to xref -- we also consume the whitespace after */
-    {DocPreviousChar} "@" {DocParamWithType} {WhiteSpace}+ {
+    {DocPreviousChar} "@" {DocParamWithType} {WhiteSpace} {
         yybegin(DOCCOM_TYPE);
     }
 
-    {DocPreviousChar} "@" {DocParamWithTypeAndName} {WhiteSpace}+ {
+    {DocPreviousChar} "@" {DocParamWithTypeAndName} {WhiteSpace} {
         yybegin(DOCCOM_TYPE_THEN_NAME);
     }
 
-    {DocPreviousChar} "@" {DocParamWithName} {WhiteSpace}+ {
+    {DocPreviousChar} "@" {DocParamWithName} {WhiteSpace} {
         yybegin(DOCCOM_NAME);
     }
 }
@@ -307,24 +305,23 @@ DocParamWithName = "uses"
 }
 
 <COMMENT, DOCCOMMENT> {
-    {WhiteSpace}* {EOL} {  }
+    {WhspChar}* {EOL} {  }
     "*/"    { yypop(); }
 }
 
 <YYINITIAL, IN_SCRIPT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
-    {WhiteSpace}* {EOL} { }
+    {WhspChar}* {EOL} { }
     {WhiteSpace}    { }
     [!-~]   { }
     [^\n]       { }
 }
 
 <YYINITIAL, SCOMMENT, COMMENT, DOCCOMMENT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC> {
-    {Path} { }
+    {FPath} { }
 
     {File} { }
 
-    ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-            { }
+    {BrowseableURI}    { }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
             { }

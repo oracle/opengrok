@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -38,11 +38,11 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
- * Abstract class for all plugins working with LDAP. Takes care of
+ * Abstract class for all plug-ins working with LDAP. Takes care of
  * <ul>
  * <li>controlling the established session</li>
  * <li>controlling if the session belongs to the user</li>
- * <li>controlling plugin version</li>
+ * <li>controlling plug-in version</li>
  * </ul>
  *
  * <p>
@@ -55,12 +55,12 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
 
     /**
-     * This is used to ensure that every instance of this plugin has its own
+     * This is used to ensure that every instance of this plug-in has its own
      * unique name for its session parameters.
      */
     public static long nextId = 1;
 
-    private static final String CONFIGURATION_PARAM = "configuration";
+    protected static final String CONFIGURATION_PARAM = "configuration";
     protected static final String FAKE_PARAM = "fake";
 
     protected String SESSION_USERNAME = "opengrok-group-plugin-username";
@@ -68,7 +68,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     protected String SESSION_VERSION = "opengrok-group-plugin-session-version";
 
     /**
-     * Configuration for the ldap servers.
+     * Configuration for the LDAP servers.
      */
     private Configuration cfg;
 
@@ -79,7 +79,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     private static final Map<String, Configuration> LOADED_CONFIGURATIONS = new ConcurrentHashMap<>();
 
     /**
-     * Ldap lookup facade.
+     * LDAP lookup facade.
      */
     private AbstractLdapProvider ldap;
 
@@ -153,13 +153,14 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     protected Configuration getConfiguration(String configurationPath) throws IOException {
         if ((cfg = LOADED_CONFIGURATIONS.get(configurationPath)) == null) {
-            LOADED_CONFIGURATIONS.put(configurationPath, cfg = Configuration.read(new File(configurationPath)));
+            LOADED_CONFIGURATIONS.put(configurationPath, cfg =
+                    Configuration.read(new File(configurationPath)));
         }
         return cfg;
     }
 
     /**
-     * Closes the ldap connections.
+     * Closes the LDAP connections.
      */
     @Override
     public void unload() {
@@ -182,7 +183,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     /**
      * Return the LDAP provider.
      *
-     * @return the ldap provider
+     * @return the LDAP provider
      */
     public AbstractLdapProvider getLdapProvider() {
         return ldap;
@@ -205,9 +206,9 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
 
     /**
      * Check if the session exists and contains all necessary fields required by
-     * this plugin.
+     * this plug-in.
      *
-     * @param req the http request
+     * @param req the HTTP request
      * @return true if it does; false otherwise
      */
     protected boolean sessionExists(HttpServletRequest req) {
@@ -222,13 +223,13 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * appropriate fields. If any error occurs during the call which might be:
      * <ul>
      * <li>The user has not been authenticated</li>
-     * <li>The user can not be retrieved from ldap</li>
+     * <li>The user can not be retrieved from LDAP</li>
      * <li>There are no records for authorization for the user</li>
      * </ul>
      * the session is established as an empty session to avoid any exception in
      * the caller.
      *
-     * @param req the http request
+     * @param req the HTTP request
      */
     @SuppressWarnings("unchecked")
     private void ensureSessionExists(HttpServletRequest req) {
@@ -335,7 +336,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     }
 
     /**
-     * Return the current plugin version tracked by the authorization framework.
+     * Return the current plug-in version tracked by the authorization framework.
      *
      * @return the version
      */

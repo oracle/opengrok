@@ -29,6 +29,7 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.Resettable;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 
 /**
@@ -247,10 +248,10 @@ class RubyLexHelper implements Resettable {
         int state;
         boolean nolink = false;
 
-        // "no link" for {FNameChar} or {URIChar}, which covers everything in
-        // the rule for "string links" below
-        if (postop.matches("^[a-zA-Z0-9_]") ||
-            postop.matches("^[\\?\\#\\+%&:/\\.@_;=\\$,\\-!~\\*\\\\]")) {
+        // "no link" for values in the rules for "string links" if `postop'
+        // is file- or URI-like.
+        if (StringUtils.startsWithFnameChars(postop) ||
+            StringUtils.startsWithURIChars(postop)) {
             nolink = true;
         }
 

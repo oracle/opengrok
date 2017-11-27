@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
@@ -34,16 +34,21 @@ import opengrok.auth.plugin.entity.User;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
-public class LdapFilter extends AbstractLdapPlugin {
+/**
+ * Authorization plug-in to check if given user matches configured LDAP filter.
+ *
+ * @author Krystof Tulinger
+ */
+public class LdapFilterPlugin extends AbstractLdapPlugin {
 
-    private static final Logger LOGGER = Logger.getLogger(LdapFilter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LdapFilterPlugin.class.getName());
 
     protected static final String FILTER_PARAM = "filter";
     protected String SESSION_ALLOWED = "opengrok-filter-plugin-allowed";
 
     private String ldapFilter;
 
-    public LdapFilter() {
+    public LdapFilterPlugin() {
         SESSION_ALLOWED += "-" + nextId++;
     }
 
@@ -54,6 +59,7 @@ public class LdapFilter extends AbstractLdapPlugin {
         if ((ldapFilter = (String) parameters.get(FILTER_PARAM)) == null) {
             throw new NullPointerException("Missing param [" + FILTER_PARAM + "] in the setup");
         }
+        LOGGER.log(Level.FINE, "LdapFilter plugin loaded");
     }
 
     @Override
@@ -67,26 +73,29 @@ public class LdapFilter extends AbstractLdapPlugin {
         Boolean sessionAllowed = false;
         LdapUser ldapUser;
         Map<String, Set<String>> records;
+        String dn[] = {"dn"};
 
         updateSession(req, sessionAllowed);
 
         if ((ldapUser = (LdapUser) req.getSession().getAttribute(LdapUserPlugin.SESSION_ATTR)) == null) {
+            LOGGER.log(Level.FINER, "failed to get attribute " + LdapUserPlugin.SESSION_ATTR);
             return;
         }
 
         if (ldapUser.getUid() == null) {
+            LOGGER.log(Level.FINER, "failed to get uid");
             return;
         }
 
-        if ((records = getLdapProvider().lookupLdapContent(user,
-                expandFilter(ldapFilter, ldapUser, user))) == null) {
+        String expandedFilter = expandFilter(ldapFilter, ldapUser, user);
+        LOGGER.log(Level.FINER, "expanded filter for user {0} into ''{1}''",
+                new Object[]{user, expandedFilter});
+        if ((records = getLdapProvider().lookupLdapContent(null, expandedFilter, dn)) == null) {
+            LOGGER.log(Level.FINER, "failed to get content for user from LDAP server");
             return;
         }
 
-        if (records.isEmpty()) {
-            return;
-        }
-
+        LOGGER.log(Level.FINER, "got {0} records", records.size());
         sessionAllowed = true;
 
         updateSession(req, sessionAllowed);
@@ -103,7 +112,8 @@ public class LdapFilter extends AbstractLdapPlugin {
      * <li>%guid% - to be replaced with OSSO guid value</li>
      * </ul>
      *
-     * Use \% for printing the '%̈́' character.
+     * Use \% for printing the '%' character.
+     * Also replaces any other LDAP attribute that would not be ambiguous.
      *
      * @param filter basic filter containing the special values
      * @param ldapUser user from LDAP
@@ -115,6 +125,7 @@ public class LdapFilter extends AbstractLdapPlugin {
         filter = filter.replaceAll("(?<!\\\\)%mail(?<!\\\\)%", ldapUser.getMail());
         filter = filter.replaceAll("(?<!\\\\)%username(?<!\\\\)%", user.getUsername());
         filter = filter.replaceAll("(?<!\\\\)%guid(?<!\\\\)%", user.getId());
+        
         for (Entry<String, Set<String>> entry : ldapUser.getAttributes().entrySet()) {
             if (entry.getValue().size() == 1) {
                 try {
@@ -127,7 +138,9 @@ public class LdapFilter extends AbstractLdapPlugin {
             }
 
         }
+        
         filter = filter.replaceAll("\\\\%", "%");
+        
         return filter;
     }
 

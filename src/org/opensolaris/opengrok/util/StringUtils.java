@@ -24,6 +24,7 @@
 
 package org.opensolaris.opengrok.util;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -34,8 +35,42 @@ import java.util.regex.Pattern;
 public final class StringUtils {
 
     /**
-     * Edit and paste (in NetBeans) for easy escaping:
-     * {@code [a-zA-Z0-9_\-\.] }.
+     * Matches an apostrophe not following a backslash escape or following an
+     * even number¹ of backslash escapes:
+     * <pre>
+     * {@code
+     * \'((?<=^.)|(?<=[^\\].)|(?<=^(\\\\){1,3}.)|(?<=[^\\](\\\\){1,3}.))
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     * <p>
+     * ¹"even number" is limited to 2,4,6 because Java look-behind is not
+     * variable length but instead must have a definite upper bound in the
+     * regex definition.
+     */
+    public static final Pattern APOS_NO_BSESC =
+        Pattern.compile("\\'((?<=^.)|(?<=[^\\\\].)|(?<=^(\\\\\\\\){1,3}.)|(?<=[^\\\\](\\\\\\\\){1,3}.))");
+
+    /**
+     * Matches the close of a C comment:
+     * <pre>
+     * {@code
+     * \*\/
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    public static final Pattern END_C_COMMENT =
+        Pattern.compile("\\*\\/");
+
+    /**
+     * Matches the same possible character as CommonPath.lexh's {FNameChar}:
+     * <pre>
+     * {@code
+     * [a-zA-Z0-9_\-\.]
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
      */
     private static final String FNAME_CHARS_PAT =
         "[a-zA-Z0-9_\\-\\.]";
@@ -47,10 +82,15 @@ public final class StringUtils {
         Pattern.compile("^" + FNAME_CHARS_PAT);
 
     /**
-     * Edit and paste (in NetBeans) for easy escaping:
-     * {@code [a-zA-Z0-9\-\._~%:/\?\#\[\]@!\$&\'\(\)\*\+,;=] }
+     * Matches one of the same¹ possible characters as Common.lexh's {URIChar}:
+     * <pre>
+     * {@code
+     * [a-zA-Z0-9\-\._~%:/\?\#\[\]@!\$&\'\(\)\*\+,;=]
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
      * <p>
-     * Backslash, '\', was in {URIChar} in many .lex files, but that is not
+     * ¹Backslash, '\', was in {URIChar} in many .lex files, but that is not
      * a valid URI character per RFC-3986.
      */
     private static final String URI_CHARS_PAT =
@@ -200,5 +240,59 @@ public final class StringUtils {
      */
     public static boolean startsWithURIChars(String value) {
         return URI_CHARS_STARTSMATCH.matcher(value).matches();
+    }
+
+    /**
+     * Count the number of ending pushback characters from a matched URI.
+     * <p>
+     * jflex does not support negative lookbehind, so modifying a URI matcher
+     * to backtrack on ending characters that are otherwise normally valid
+     * (e.g. '.') is difficult. Instead, this method allows counting and
+     * pushing back.
+     * @param value the URI to test
+     * @return the number of characters greater than or equal to zero which
+     * could be pushed back.
+     */
+    public static int countURIEndingPushback(String value) {
+        int n = 0;
+        for (int i = value.length() - 1; i >= 0; --i) {
+            char c = value.charAt(i);
+            if (c == '.') {
+                ++n;
+            } else {
+                break;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Find out if string contains only alphanumeric characters.
+     * @param str string to check
+     * @return {@code true} if the string is alphanumeric, {@code false} otherwise
+     */
+    public static boolean isAlphanumeric(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (!Character.isDigit(c) && !Character.isLetter(c)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Determines if the specified {@code pattern} matches in the specified
+     * {@code value}.
+     * @param value the string to inspect
+     * @param pattern the pattern to match
+     * @return the index of the first occurrence of the specified pattern, or
+     * -1 if there is no such occurrence
+     */
+    public static int patindexOf(String value, Pattern pattern) {
+        Matcher m = pattern.matcher(value);
+        if (!m.find()) return -1;
+        return m.start();
     }
 }
