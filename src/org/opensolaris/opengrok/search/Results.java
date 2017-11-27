@@ -80,7 +80,7 @@ public final class Results {
      * @throws CorruptIndexException
      * @throws IOException
      */
-    private static Map<String, ArrayList<Document>> createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx)
+    private static Map<String, ArrayList<Document>> createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx)
             throws CorruptIndexException, IOException {
         LinkedHashMap<String, ArrayList<Document>> dirHash =
                 new LinkedHashMap<>();
@@ -147,7 +147,7 @@ public final class Results {
      * @throws ClassNotFoundException
      */
     public static void prettyPrint(Writer out, SearchHelper sh, int start,
-            int end)
+            long end)
             throws HistoryException, IOException, ClassNotFoundException {
         Project p;
         String ctxE = Util.URIEncodePath(sh.contextPath);

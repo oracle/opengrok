@@ -196,8 +196,8 @@ include file="menu.jspf"
     } else {
         int start = searchHelper.start;
         int max = searchHelper.maxItems;
-        int totalHits = searchHelper.totalHits;
-        int thispage = Math.min(totalHits - start, max);  // number of items to display on the current page
+        long totalHits = searchHelper.totalHits;
+        long thispage = Math.min(totalHits - start, max);  // number of items to display on the current page
         // We have a lots of results to show: create a slider for
         String slider = Util.createSlider(start, max, totalHits, request);
         %>

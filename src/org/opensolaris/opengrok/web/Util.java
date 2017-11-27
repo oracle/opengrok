@@ -1304,7 +1304,7 @@ public final class Util {
      * to the page URL
      * @return string containing slider html
      */
-    public static String createSlider(int offset, int limit, int size, HttpServletRequest request) {
+    public static String createSlider(int offset, int limit, long size, HttpServletRequest request) {
         String slider = "";
         if (limit < size) {
             final StringBuilder buf = new StringBuilder(4096);
