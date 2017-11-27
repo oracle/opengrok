@@ -44,7 +44,8 @@ super(in);
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
+{Identifier}    {
+    String id = yytext();
                 if(!Consts.shkwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
@@ -54,17 +55,27 @@ super(in);
  \'     { yybegin(QSTRING); }
  "#"    { yybegin(SCOMMENT); }
 
- {Unary_op} |
- {Binary_op}    {}
+ {Unary_op_req_lookahead} / \W    {
+    // noop
+ }
+ {Unary_op_req_lookahead} $    {
+    // noop
+ }
+ {WhiteSpace} {Unary_op_char} / ")"    {
+    // noop
+ }
+ {Binary_op}    {
+    // noop
+ }
 }
 
 <STRING> {
-"$" {Identifier} {
+"$" {Identifier}    {
     setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
     return yystate();
  }
 
-"${" {Identifier} "}" {
+"${" {Identifier} "}"    {
     int startOffset = 2;            // trim away the "${" prefix
     int endOffset = yylength() - 1; // trim away the "}" suffix
     setAttribs(yytext().substring(startOffset, endOffset),

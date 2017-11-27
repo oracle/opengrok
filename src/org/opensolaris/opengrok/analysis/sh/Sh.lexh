@@ -28,8 +28,10 @@ Number = \$? [0-9]+\.[0-9]+| [0-9][0-9]* | [0][xX] [0-9a-fA-F]+
 
 /*
  * Rather than enumerate letters, just treat all hyphen-single-char as a
- * unary op.
+ * unary op. "req_lookahead" because an assertion is needed that it is followed
+ * by non-word or end-of-line.
  */
-Unary_op = [\-][A-Za-z]{WhspChar}
+Unary_op_req_lookahead = [\-]{Unary_op_char}
+Unary_op_char = [A-Za-z]
 
 Binary_op = [\-]("ef"|"nt"|"ot"|"eq"|"ge"|"gt"|"le"|"lt"|"ne"){WhspChar}

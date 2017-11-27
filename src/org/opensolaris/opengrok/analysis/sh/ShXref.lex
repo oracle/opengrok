@@ -120,46 +120,33 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 %include Sh.lexh
 %%
 <STRING>{
- "$" {Identifier} {
+ "$" {Identifier}    {
     String id = yytext();
-    // For historical reasons, ShXref will not link identifiers of length=1
-    // (or of length=2 with a leading '$')
-    if (id.length() > 2) {
-        out.write("<a href=\"");
-        out.write(urlPrefix);
-        out.write("refs=");
-        out.write(id);
-        appendProject();
-        out.write("\">");
-        out.write(id);
-        out.write("</a>");
-    } else {
-        out.write(id);
-    }
+    out.write("<a href=\"");
+    out.write(urlPrefix);
+    out.write("refs=");
+    out.write(id);
+    appendProject();
+    out.write("\">");
+    out.write(id);
+    out.write("</a>");
  }
 
   /* This rule matches associative arrays inside strings,
      for instance "${array["string"]}". Push a new STRING
      state on the stack to prevent premature exit from the
      STRING state. */
-  \$\{ {Identifier} \[\" {
+  \$\{ {Identifier} \[\"    {
     out.write(htmlize(yytext()));
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
   }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
-\$ ? {Identifier} {
+\$ ? {Identifier}    {
     String id = yytext();
-    // For historical reasons, ShXref will not link identifiers of length=1
-    int minlength = 1;
-    if (id.startsWith("$")) ++minlength;
-    if (id.length() > minlength) {
-        writeSymbol(id, Consts.shkwd, yyline);
-    } else {
-        out.write(id);
-    }
-}
+    writeSymbol(id, Consts.shkwd, yyline);
+ }
 
 {Number}        {
     String lastClassName = getDisjointSpanClassName();
@@ -168,11 +155,11 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
     disjointSpan(lastClassName);
  }
 
- \$ ? \" {
+ \$ ? \"    {
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
     out.write(htmlize(yytext()));
  }
- \$ ? \' {
+ \$ ? \'    {
     pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
     out.write(htmlize(yytext()));
  }
@@ -182,7 +169,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
  }
 
  // Recognize here-documents. At least a subset of them.
- "<<" "-"? {WhspChar}* {Identifier} {WhspChar}* {
+ "<<" "-"? {WhspChar}* {Identifier} {WhspChar}*    {
    String text = yytext();
    out.write(htmlize(text));
 
@@ -193,11 +180,19 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
  // Any sequence of more than two < characters should not start HEREDOC. Use
  // this rule to catch them before the HEREDOC rule.
- "<<" "<" + {
+ "<<" "<" +    {
    out.write(htmlize(yytext()));
  }
 
- {Unary_op} |
+ {Unary_op_req_lookahead} / \W    {
+    out.write(yytext());
+ }
+ {Unary_op_req_lookahead} $    {
+    out.write(yytext());
+ }
+ {WhiteSpace} {Unary_op_char} / ")"    {
+    out.write(yytext());
+ }
  {Binary_op}    {
     out.write(yytext());
  }
@@ -205,9 +200,9 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
 <STRING> {
  \\[\"\$\`\\] |
- \" {WhspChar}* \"  { out.write(htmlize(yytext())); }
+ \" {WhspChar}* \"    { out.write(htmlize(yytext())); }
  \"     { out.write(htmlize(yytext())); yypop(); }
- \$\(   {
+ \$\(    {
     pushSpan(SUBSHELL, null);
     out.write(yytext());
  }
@@ -220,7 +215,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * to ksh man page http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
   * the opening brace must be followed by a blank.
   */
- "${" / {WhspChar} | {EOL} {
+ "${" / {WhspChar} | {EOL}    {
     pushSpan(BRACEGROUP, null);
     out.write(yytext());
  }
@@ -228,8 +223,8 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
 <QSTRING> {
  \\[\'] |
- \' {WhspChar}* \' { out.write(htmlize(yytext())); }
- \'   { out.write(htmlize(yytext())); yypop(); }
+ \' {WhspChar}* \'    { out.write(htmlize(yytext())); }
+ \'    { out.write(htmlize(yytext())); yypop(); }
 }
 
 <SCOMMENT> {
@@ -244,7 +239,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 }
 
 <BACKQUOTE> {
-  ` { out.write(yytext()); yypop(); }
+  [`]    { out.write(yytext()); yypop(); }
 }
 
 <BRACEGROUP> {
@@ -253,12 +248,12 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * the closing brace must be on beginning of line, or it must be preceded by
   * a semi-colon and (optionally) whitespace.
   */
-  ^ {WhspChar}* \}  { out.write(yytext()); yypop(); }
-  ; {WhspChar}* \}  { out.write(yytext()); yypop(); }
+  ^ {WhspChar}* \}    { out.write(yytext()); yypop(); }
+  ; {WhspChar}* \}    { out.write(yytext()); yypop(); }
 }
 
 <HEREDOC> {
-  [^\n]+ {
+  [^\n]+    {
     String line = yytext();
     if (isHeredocStopWord(line)) {
       yypop();
@@ -266,7 +261,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
     out.write(htmlize(line));
   }
 
-  {EOL} { startNewLine(); }
+  {EOL}    { startNewLine(); }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
@@ -274,10 +269,10 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   \\[`\)\(\{\"\'\$\#\\]    { out.write(htmlize(yytext())); }
 
   /* $# should not start a comment. */
-  "$#" { out.write(yytext()); }
+  "$#"    { out.write(yytext()); }
 
-  \$ ? \( { pushSpan(SUBSHELL, null); out.write(yytext()); }
-  ` { pushSpan(BACKQUOTE, null); out.write(yytext()); }
+  \$ ? \(    { pushSpan(SUBSHELL, null); out.write(yytext()); }
+  [`]    { pushSpan(BACKQUOTE, null); out.write(yytext()); }
 
  /* Bug #15661: Recognize ksh command substitution within strings. According
   * to ksh man page http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
@@ -285,13 +280,13 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * optional so that we get the nesting right and don't terminate the brace
   * group too early if the ${ cmd; } expression contains nested { cmd; } groups.
   */
-  \$ ? \{ / {WhspChar} | {EOL} {
+  \$ ? \{ / {WhspChar} | {EOL}    {
     pushSpan(BRACEGROUP, null); out.write(yytext());
   }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP, STRING, SCOMMENT, QSTRING> {
-{File} {
+{File}    {
     String path = yytext();
     out.write("<a href=\""+urlPrefix+"path=");
     out.write(path);
@@ -301,19 +296,18 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
     out.write("</a>");
 }
 
-{RelaxedMiddleFPath}
-        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+{RelaxedMiddleFPath}    {
+    out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/')); }
 
 [&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}    { startNewLine(); }
-{WhiteSpace}   { out.write(yytext()); }
-[!-~]   { out.write(yycharat(0)); }
-[^\n]      { writeUnicodeChar(yycharat(0)); }
+{WhiteSpace}    { out.write(yytext()); }
+[!-~]    { out.write(yycharat(0)); }
+[^\n]    { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
-{FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
-        {
+{FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
           writeEMailAddress(yytext());
         }
 }
