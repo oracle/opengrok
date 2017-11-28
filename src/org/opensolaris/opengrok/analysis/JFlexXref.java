@@ -575,9 +575,7 @@ public abstract class JFlexXref extends JFlexStateStacker {
      * @return String with escaped html characters
      */
     protected String htmlize(String raw) {
-        return raw.replace("&", "&amp;").replace("<", "&lt;")
-                .replace(">", "&gt;").replace("\"", "&quot;")
-                .replace("'", "&apos;");
+        return Util.prehtmlize(raw);
     }
 
     /**

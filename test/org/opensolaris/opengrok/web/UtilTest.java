@@ -19,7 +19,9 @@
 
  /*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
+
 package org.opensolaris.opengrok.web;
 
 import java.io.ByteArrayInputStream;
@@ -211,19 +213,19 @@ public class UtilTest {
                 "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
                 + "cur, ps_id, ret_url, exp_url, d_req_time, d_req_mil, "
                 + "h_resp_time, h_resp_mil) \"",
-                "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
+                "&quot;(ses_id, mer_id, pass_id, &quot; + refCol +&quot; , mer_ref, amnt, "
                 + "cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, "
-                + "h_resp_mil) \"",
-                "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
+                + "h_resp_mil) &quot;",
+                "&quot;(ses_id, mer_id, pass_id, &quot; + refCol +&quot; , mer_ref, amnt, "
                 + "cur, ps_id, ret_url, <span class=\"a\">exp_url, "
-                + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) \""
+                + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) &quot;"
             },
             {
                 "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
                 "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
-                "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
-                "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span "
-                + "class=\"a\">, ?</span>)\", values);"
+                "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;, values);",
+                "&quot;VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span "
+                + "class=\"a\">, ?</span>)&quot;, values);"
             },
             {
                 "char    *config_list = NULL;",
