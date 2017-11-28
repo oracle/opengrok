@@ -44,6 +44,22 @@ public class CustomAssertions {
     }
 
     /**
+     * Asserts the specified strings have equal contents, comparing line-wise
+     * after splitting on LFs.
+     * @param messagePrefix a message prefixed to line-specific or length-
+     * specific errors
+     * @param expected the expected content
+     * @param actual the actual content
+     */
+    public static void assertLinesEqual(String messagePrefix, String expected,
+        String actual) {
+
+        String expecteds[] = expected.split("\n");
+        String gotten[] = actual.split("\n");
+        assertLinesEqual(messagePrefix, expecteds, gotten);
+    }
+
+    /**
      * Asserts the specified lines arrays have equal contents.
      * @param messagePrefix a message prefixed to line-specific or length-
      * specific errors
@@ -77,8 +93,8 @@ public class CustomAssertions {
             diffLines.clear();
         }
 
-        assertTrue("should have no diffs", ndiffs == 0);
-        assertEquals(messagePrefix + ":number of lines", expecteds.length,
+        assertTrue(messagePrefix + "--should have no diffs", ndiffs == 0);
+        assertEquals(messagePrefix + "--number of lines", expecteds.length,
             actuals.length);
     }
 

@@ -64,12 +64,8 @@ public class PerlXrefTest {
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
-        String gotten[] = ostr.split("\n");
-
         String estr = new String(baosExp.toByteArray(), "UTF-8");
-        String expected[] = estr.split("\n");
-
-        assertLinesEqual("Perl xref", expected, gotten);
+        assertLinesEqual("Perl xref", estr, ostr);
     }
 
     private void writePerlXref(InputStream iss, PrintStream oss) throws IOException {

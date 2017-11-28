@@ -67,12 +67,8 @@ public class RubyXrefTest {
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
-        String gotten[] = ostr.split("\n");
-
         String estr = new String(baosExp.toByteArray(), "UTF-8");
-        String expected[] = estr.split("\n");
-
-        assertLinesEqual("Ruby xref", expected, gotten);
+        assertLinesEqual("Ruby xref", estr, ostr);
     }
 
     private void writeRubyXref(InputStream iss, PrintStream oss)

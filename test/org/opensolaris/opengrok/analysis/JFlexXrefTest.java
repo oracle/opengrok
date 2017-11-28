@@ -36,6 +36,8 @@ import java.util.Arrays;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.lucene.document.Document;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.c.CXref;
@@ -56,10 +58,9 @@ import org.opensolaris.opengrok.analysis.sql.SQLXref;
 import org.opensolaris.opengrok.analysis.tcl.TclXref;
 import org.opensolaris.opengrok.analysis.uue.UuencodeXref;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 import org.opensolaris.opengrok.util.TestRepository;
 import org.xml.sax.InputSource;
-
-import static org.junit.Assert.*;
 
 /**
  * Unit tests for JFlexXref.
@@ -183,18 +184,18 @@ public class JFlexXrefTest {
     @Test
     public void testBug14663() throws Exception {
         // \" should not start a new string literal
-        assertXrefLine(ShXref.class, "echo \\\"", "<b>echo</b> \\\"");
+        assertXrefLine(ShXref.class, "echo \\\"", "<b>echo</b> \\&quot;");
         // \" should not terminate a string literal
         assertXrefLine(ShXref.class, "echo \"\\\"\"",
-                "<b>echo</b> <span class=\"s\">\"\\\"\"</span>");
+                "<b>echo</b> <span class=\"s\">&quot;\\&quot;&quot;</span>");
         // \` should not start a command substitution
         assertXrefLine(ShXref.class, "echo \\`", "<b>echo</b> \\`");
         // \` should not start command substitution inside a string
         assertXrefLine(ShXref.class, "echo \"\\`\"",
-                "<b>echo</b> <span class=\"s\">\"\\`\"</span>");
+                "<b>echo</b> <span class=\"s\">&quot;\\`&quot;</span>");
         // \` should not terminate command substitution
         assertXrefLine(ShXref.class, "echo `\\``",
-                "<b>echo</b> <span>`\\``</span>");
+                "<b>echo</b> `\\``");
         // $# should not start a comment
         assertXrefLine(ShXref.class, "$#", "$#");
     }
@@ -216,7 +217,8 @@ public class JFlexXrefTest {
         StringWriter output = new StringWriter();
         xref.write(output);
 
-        assertEquals(FIRST_LINE_PREAMBLE + expectedOutput, output.toString());
+        assertLinesEqual("xref " + xrefClass.getSimpleName(),
+            FIRST_LINE_PREAMBLE + expectedOutput, output.toString());
     }
 
     /**
@@ -227,14 +229,14 @@ public class JFlexXrefTest {
      */
     @Test
     public void bug16883() throws Exception {
+        final String ECHO_QUOT_XYZ = "echo \"xyz";
         // Analyze a script with broken syntax (unterminated string literal)
-        ShXref xref = new ShXref(new StringReader("echo \"xyz"));
+        ShXref xref = new ShXref(new StringReader(ECHO_QUOT_XYZ));
         StringWriter out = new StringWriter();
         xref.write(out);
-        assertEquals(
-                FIRST_LINE_PREAMBLE +
-                    "<b>echo</b> <span class=\"s\">\"xyz</span>",
-                out.toString());
+        assertLinesEqual("Unterminated string:\n" + ECHO_QUOT_XYZ,
+            FIRST_LINE_PREAMBLE +
+            "<b>echo</b> <span class=\"s\">&quot;xyz</span>", out.toString());
 
         // Reuse the xref and verify that the broken syntax in the previous
         // file doesn't cause broken highlighting in the next file
@@ -242,10 +244,10 @@ public class JFlexXrefTest {
         String contents = "echo \"hello\"";
         xref.reInit(contents.toCharArray(), contents.length());
         xref.write(out);
-        assertEquals(
-                FIRST_LINE_PREAMBLE +
-                    "<b>echo</b> <span class=\"s\">\"hello\"</span>",
-                out.toString());
+        assertLinesEqual("reused ShXref after broken syntax",
+            FIRST_LINE_PREAMBLE +
+            "<b>echo</b> <span class=\"s\">&quot;hello&quot;</span>",
+            out.toString());
     }
 
     /**
@@ -315,24 +317,27 @@ public class JFlexXrefTest {
      */
     @Test
     public void testShXrefHeredoc() throws IOException {
+        final String SH_HERE_DOC = "cat<<EOF\n" +
+            "This shouldn't cause any problem.\n" +
+            "EOF\n" +
+            "var='some string'\n";
         StringReader in = new StringReader(
-                "cat<<EOF\n" +
-                "This shouldn't cause any problem.\n" +
-                "EOF\n" +
-                "var='some string'\n");
+                SH_HERE_DOC);
 
         ShXref xref = new ShXref(in);
         StringWriter out = new StringWriter();
         xref.write(out);
 
-        String[] result = out.toString().split("\n");
+        String xout = out.toString();
+        String[] result = xout.split("\n");
 
         // The single-quote on line 2 shouldn't start a string literal.
-        assertTrue(result[1].endsWith("This shouldn't cause any problem."));
+        assertTrue("Line 2 of:\n" + xout, result[1].endsWith(
+            "This shouldn&apos;t cause any problem."));
 
         // The string literal on line 4 should be recognized as one.
-        assertTrue(
-            result[3].endsWith("=<span class=\"s\">'some string'</span>"));
+        assertTrue("Line 4 of:\n" + xout,
+            result[3].endsWith("=<span class=\"s\">&apos;some string&apos;</span>"));
     }
 
     /**

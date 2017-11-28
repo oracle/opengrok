@@ -83,12 +83,8 @@ public class FortranXrefTest {
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
-        String gotten[] = ostr.split("\n");
-
         String estr = new String(baosExp.toByteArray(), "UTF-8");
-        String expected[] = estr.split("\n");
-
-        assertLinesEqual("CSharp xref", expected, gotten);
+        assertLinesEqual("Fortran xref", estr, ostr);
     }
 
     private void writeFortranXref(PrintStream oss, InputStream iss,

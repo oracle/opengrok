@@ -68,12 +68,8 @@ public class CXrefTest {
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
-        String gotten[] = ostr.split("\n");
-
         String estr = new String(baosExp.toByteArray(), "UTF-8");
-        String expected[] = estr.split("\n");
-
-        assertLinesEqual("C xref", expected, gotten);
+        assertLinesEqual("C xref", estr, ostr);
     }
 
     private void writeCXref(InputStream iss, PrintStream oss)
