@@ -805,7 +805,7 @@ public class IndexDatabase {
         return !RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
     }
 
-    boolean accept(File parent, File file) {
+    private boolean accept(File parent, File file) {
         try {
             File f1 = parent.getCanonicalFile();
             File f2 = file.getCanonicalFile();
