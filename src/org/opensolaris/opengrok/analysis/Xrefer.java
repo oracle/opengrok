@@ -41,6 +41,12 @@ public interface Xrefer extends Resettable {
      */
     Scopes getScopes();
 
+    /**
+     * Gets the document number of lines.
+     * @return a number greater than or equal to 1
+     */
+    int getLineNumber();
+
     void setAnnotation(Annotation annotation);
 
     /**

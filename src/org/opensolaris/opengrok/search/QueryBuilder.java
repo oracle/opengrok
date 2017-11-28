@@ -20,6 +20,7 @@
 /* 
  * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.search;
 
@@ -49,6 +50,7 @@ public class QueryBuilder {
     public static final String HIST = "hist";
     public static final String TYPE = "type";
     public static final String SCOPES = "scopes";
+    public static final String NUML = "numl";
     /**
      * Fields we use in lucene internal ones
      */

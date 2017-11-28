@@ -76,7 +76,9 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
         didStartTee = true;
     }
 
-    protected void writeTee(String s) throws IOException {
+    protected void writeTee() throws IOException {
+        if (!didStartTee) startTee();
+        String s = yytext();
         plainbuf.write(s);
         if (didStartMandoc) mandoc.write(s);
     }
@@ -116,11 +118,17 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
     plainbuf = null;
 %eof}
 
+%include Common.lexh
 %%
 <YYINITIAL> {
+    {EOL}    {
+        writeTee();
+        setLineNumber(++yyline);
+    }
+
+    {WhiteSpace} |
     \w+ |
     [^]    {
-        if (!didStartTee) startTee();
-        writeTee(yytext());
+        writeTee();
     }
 }

@@ -33,10 +33,12 @@ import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.StoredField;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  * Base class for all different File Analyzers
@@ -243,6 +245,15 @@ public class FileAnalyzer extends Analyzer {
                         Level.WARNING, "Have no analyzer for: {0}", fieldName);
                 return null;
         }
+    }
+
+    /**
+     * Add a field to store document number of lines.
+     * @param doc the target document
+     * @param value the number of lines
+     */
+    protected void addNumLines(Document doc, int value)  {
+        doc.add(new StoredField(QueryBuilder.NUML, value));
     }
 
     private JFlexTokenizer createPlainSymbolTokenizer() {

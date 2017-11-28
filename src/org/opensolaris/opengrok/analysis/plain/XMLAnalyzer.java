@@ -33,6 +33,7 @@ import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 
 /**
  * Analyzes HTML files Created on September 30, 2005
@@ -57,7 +58,9 @@ public class XMLAnalyzer extends TextAnalyzer {
             try (Reader in = getReader(src.getStream())) {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setProject(project);
-                writeXref(args);
+                Xrefer xref = writeXref(args);
+
+                addNumLines(doc, xref.getLineNumber());
             }
         }
     }
