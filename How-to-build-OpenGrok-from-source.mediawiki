@@ -32,7 +32,9 @@ First build should download all needed dependencies, so don't get scared about m
 
 == Compile the source ==
 
-If you use NetBeans you should be able to open OpenGrok as a project and build it from there(ignore "Resolve problem" for jar files other than junit, but setup a webapp server for the -web-nbproject application). If you want to build from the command line, execute the following command(it will need internet connection first time, so setup any proxies if needed):
+If you use NetBeans you should be able to open OpenGrok as a project and build it from there. Specifically, open pom.xml from the root directory, and click Run => Build Project (opengrok). (Ignore "Resolve problem" for jar files other than junit, but setup a webapp server for the -web-nbproject application.)
+
+If you want to build from the command line, execute the following command (it will need internet connection first time, so setup any proxies if needed):
 
  ant
 
