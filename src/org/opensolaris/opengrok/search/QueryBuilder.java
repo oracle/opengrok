@@ -24,6 +24,10 @@
  */
 package org.opensolaris.opengrok.search;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -41,7 +45,7 @@ import org.apache.lucene.search.Query;
 public class QueryBuilder {
 
     /**
-     * Fields we use in lucene public ones
+     * Fields we use in lucene: public ones
      */
     public static final String FULL = "full";
     public static final String DEFS = "defs";
@@ -53,14 +57,19 @@ public class QueryBuilder {
     public static final String NUML = "numl";
     public static final String LOC = "loc";
     /**
-     * Fields we use in lucene internal ones
+     * Fields we use in lucene: internal ones
      */
     public static final String U = "u";
     public static final String TAGS = "tags";
     public static final String T = "t";
     public static final String FULLPATH = "fullpath";
+    public static final String DIRPATH = "dirpath";
     public static final String PROJECT = "project";
     public static final String DATE = "date";
+
+    /** Used for paths, so SHA-1 is completely sufficient */
+    private static final String DIRPATH_HASH_ALGORITHM = "SHA-1";
+
     /**
      * A map containing the query text for each field. (We use a sorted map here
      * only because we have tests that check the generated query string. If we
@@ -146,6 +155,55 @@ public class QueryBuilder {
     }
 
     /**
+     * Set search string for the "dirpath" field.
+     * @param path query string to set
+     * @return this instance
+     */
+    public QueryBuilder setDirPath(String path) {
+        String normalizedPath = normalizeDirPath(path);
+        return addQueryText(DIRPATH, normalizedPath);
+    }
+
+    /**
+     * Get search string for the "dirpath" field.
+     * @return {@code null} if not set; the query string otherwise.
+     */
+    public String getDirPath() {
+        return getQueryText(DIRPATH);
+    }
+
+    /**
+     * Transform {@code path} to ensure any {@link File#separatorChar} is
+     * represented as '/', that there is a trailing '/', and then to hash using
+     * SHA-1 and formatted in a private encoding using only letters [g-u].
+     * @param path a defined value
+     * @return a defined, transformed value
+     */
+    public static String normalizeDirPath(String path) {
+        String norm1 = path.replace(File.separatorChar, '/');
+        String norm2 = norm1.endsWith("/") ? norm1 : norm1 + "/";
+
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance(DIRPATH_HASH_ALGORITHM);
+        } catch (NoSuchAlgorithmException e) {
+            return norm2;
+        }
+        byte[] hash = digest.digest(norm2.getBytes(StandardCharsets.UTF_8));
+
+        StringBuilder encodedString = new StringBuilder();
+        for (int i = 0; i < hash.length; ++i) {
+            int v0 = (0xF0 & hash[i]) >> 4;
+            int v1 = 0xF & hash[i];
+            char c0 = (char)('g' + v0);
+            char c1 = (char)('g' + v1);
+            encodedString.append(c0);
+            encodedString.append(c1);
+        }
+        return encodedString.toString();
+    }
+
+    /**
      * Set search string for the "hist" field.
      *
      * @param hist query string to set
@@ -213,6 +271,7 @@ public class QueryBuilder {
                 && (getQueryText(REFS) == null)
                 && (getQueryText(PATH) == null)
                 && (getQueryText(HIST) == null)
+                && (getQueryText(DIRPATH) == null)
                 && (getQueryText(DEFS) != null));
     }
 

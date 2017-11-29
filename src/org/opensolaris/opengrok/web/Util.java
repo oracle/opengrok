@@ -80,6 +80,8 @@ public final class Util {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
+    private static final int BOLD_COUNT_THRESHOLD = 1000;
+
     /**
      * Matches a character that is not ASCII alpha-numeric or underscore:
      * <pre>
@@ -596,6 +598,9 @@ public final class Util {
 
     private static NumberFormat FORMATTER = new DecimalFormat("#,###,###,###.#");
 
+    private static NumberFormat COUNT_FORMATTER =
+        new DecimalFormat("#,###,###,###");
+
     /**
      * Convert the given size into a human readable string.
      *
@@ -616,6 +621,20 @@ public final class Util {
             return ("<b>" + formatter.format(l / 1048576) + " MiB</b>");
         } else {
             return ("<b>" + formatter.format(l / 1073741824) + " GiB</b>");
+        }
+    }
+
+    /**
+     * Convert the specified {@code count} into a human readable string.
+     * @param count value to convert.
+     * @return a readable string
+     */
+    public static String readableCount(long count) {
+        NumberFormat formatter = (NumberFormat) COUNT_FORMATTER.clone();
+        if (count < BOLD_COUNT_THRESHOLD) {
+            return formatter.format(count);
+        } else {
+            return "<b>" + formatter.format(count) + "</b>";
         }
     }
 

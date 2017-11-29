@@ -429,6 +429,20 @@ public class AnalyzerGuru {
             doc.add(new TextField(QueryBuilder.PROJECT, project.getPath(), Store.YES));
         }
 
+        /*
+         * Use the parent of the path -- not the absolute file as is done for
+         * FULLPATH -- so that DIRPATH is the same convention as for PATH
+         * above. A StringField, however, is used instead of a TextField.
+         */
+        File fpath = new File(path);
+        String fileParent = fpath.getParent();
+        if (fileParent != null && fileParent.length() > 0) {
+            String normalizedPath = QueryBuilder.normalizeDirPath(fileParent);
+            StringField npstring = new StringField(QueryBuilder.DIRPATH,
+                normalizedPath, Store.NO);
+            doc.add(npstring);
+        }
+
         if (fa != null) {
             Genre g = fa.getGenre();
             if (g == Genre.PLAIN || g == Genre.XREFABLE || g == Genre.HTML) {

@@ -708,6 +708,14 @@ table#dirlist thead tr:nth-child(1) {
     width: 3em;
 }
 
+#dirlist td.numlines { /* 5th column: #Lines */
+    text-align: right; /* CSS3 may allow " " (single space char) */
+}
+
+#dirlist td.loc { /* 6th column: LOC */
+    text-align: right; /* CSS3 may allow " " (single space char) */
+}
+
 span.simplified-path {
     color: #888;
 }
