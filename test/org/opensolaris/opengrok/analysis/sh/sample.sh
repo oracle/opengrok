@@ -268,3 +268,4 @@ exit 0
 typeset -i vint
 vint=0xFFEF
 echo 'http://example.com'
+typeset +l -i vint2
