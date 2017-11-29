@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
@@ -41,6 +41,7 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Nameable;
@@ -77,21 +78,21 @@ public final class AuthorizationFramework {
     /**
      * Lock for safe reloads.
      */
-    private ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
-     * Keeping track of the number of reloads in this framework. This can be
-     * used by the plugins to invalidate the session and force reload the
-     * authorization values.
+     * Keeping track of the number of reloads in this framework. This is
+     * used to invalidate the session and force reload the authorization values
+     * stored in HTTP session.
      *
      * Starting at 0 and increases with every reload.
      *
-     * The plugin should call RuntimeEnvironment.getPluginVersion() to get this
-     * number.
+     * External consumers should call RuntimeEnvironment.getPluginVersion() 
+     * to get this number.
      *
      * @see RuntimeEnvironment#getPluginVersion()
      */
-    private int pluginVersion = 0;
+    private long pluginVersion = 0;
 
     /**
      * Create a new instance of authorization framework with the plugin
@@ -118,6 +119,7 @@ public final class AuthorizationFramework {
 
     /**
      * Get the plugin directory.
+     * @return plugin directory file
      */
     public synchronized File getPluginDirectory() {
         return pluginDirectory;
@@ -230,14 +232,14 @@ public final class AuthorizationFramework {
     /**
      * Get available plugins.
      *
-     * This and couple of following methods are declared as synchronized because
+     * This method and couple of following methods use locking because
      * <ol>
      * <li>plugins can be reloaded at anytime</li>
      * <li>requests are pretty asynchronous</li>
      * </ol>
      *
      * So this tries to ensure that there will be no
-     * ConcurrentModificationException or other similar exceptions.
+     * {@code ConcurrentModificationException} or other similar exceptions.
      *
      * @return the stack containing plugins/other stacks
      */
@@ -320,10 +322,14 @@ public final class AuthorizationFramework {
     /**
      * Remove and unload all plugins from the stack.
      *
-     * @param stack the stack
      * @see AuthorizationEntity#unload()
      */
-    public void removeAll(AuthorizationStack stack) {
+    public void removeAll() {
+        unloadAllPlugins(stack);
+        stack.getStack().clear();
+    }
+    
+    private void removeAll(AuthorizationStack stack) {
         unloadAllPlugins(stack);
         stack.getStack().clear();
     }
@@ -546,9 +552,6 @@ public final class AuthorizationFramework {
         // clone a new stack not interfering with the current stack
         AuthorizationStack newStack = RuntimeEnvironment.getInstance().getPluginStack().clone();
 
-        // increase the current plugin version tracked by the framework
-        increasePluginVersion();
-
         // load all other possible plugin classes
         loadClasses(newStack,
                 IOUtils.listFilesRec(pluginDirectory, ".class"),
@@ -569,46 +572,63 @@ public final class AuthorizationFramework {
         try {
             oldStack = stack;
             stack = newStack;
+            
+            // increase the current plugin version tracked by the framework
+            increasePluginVersion();
         } finally {
             lock.writeLock().unlock();
         }
 
+        Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
+        stats.addRequest("authorization_stack_reload");
+        
         // clean the old stack
         removeAll(oldStack);
         oldStack = null;
     }
 
     /**
-     * Returns the current plugin version in this framework. This can be used by
-     * the plugin to invalidate the session and force reload the authorization
-     * values.
-     *
-     * This number changes with every plugin reload.
-     *
-     * The plugin should call RuntimeEnvironment.getPluginVersion() to get this
-     * number and act upon if it needs to renew the session.
+     * Returns the current plugin version in this framework.
+     * 
+     * This number changes with every {@code reload()}.
+     * 
+     * Assumes the {@code lock} is held for reading.
      *
      * @return the current version number
      * @see RuntimeEnvironment#getPluginVersion()
      */
-    public int getPluginVersion() {
+    private long getPluginVersion() {
         return pluginVersion;
     }
 
     /**
      * Changes the plugin version to the next version.
+     * 
+     * Assumes that {@code lock} is held for writing.
      */
-    public void increasePluginVersion() {
+    private void increasePluginVersion() {
         this.pluginVersion++;
     }
 
+    // HTTP session attribute that holds plugin version 
+    private final static String SESSION_VERSION = "opengrok-authorization-session-version";
+    
     /**
-     * Sets the plugin version to an arbitrary number.
+     * Is this session marked as invalid?
      *
-     * @param pluginVersion the number
+     * Assumes the {@code lock} is held for reading.
+     *
+     * @param req the request
+     * @return true if it is; false otherwise
      */
-    public void setPluginVersion(int pluginVersion) {
-        this.pluginVersion = pluginVersion;
+    private boolean isSessionInvalid(HttpSession session) {
+        long version;
+        
+        if (session.getAttribute(SESSION_VERSION) == null)
+            return true;
+        
+        version = (long) session.getAttribute(SESSION_VERSION);
+        return version != getPluginVersion();
     }
 
     /**
@@ -664,6 +684,7 @@ public final class AuthorizationFramework {
     private boolean checkAll(HttpServletRequest request, String cache, Nameable entity,
             AuthorizationEntity.PluginDecisionPredicate pluginPredicate,
             AuthorizationEntity.PluginSkippingPredicate skippingPredicate) {
+        
         if (stack == null) {
             return true;
         }
@@ -683,31 +704,52 @@ public final class AuthorizationFramework {
 
         stats.addRequest("authorization_cache_misses");
 
-        long time = System.currentTimeMillis();
+        long time = 0;
+        boolean overallDecision = false;
+        
+        lock.readLock().lock();
+        try {
+            // Make sure there is a HTTP session that corresponds to current plugin version.
+            HttpSession session;
+            if (((session = request.getSession(false)) != null) && isSessionInvalid(session)) {
+                session.invalidate();
+                stats.addRequest("authorization_sessions_invalidated");
+            }
+            request.getSession().setAttribute(SESSION_VERSION, getPluginVersion());
 
-        boolean overallDecision = performCheck(entity, pluginPredicate, skippingPredicate);
+            time = System.currentTimeMillis();
 
-        time = System.currentTimeMillis() - time;
+            overallDecision = performCheck(entity, pluginPredicate, skippingPredicate);
+        } finally {
+            lock.readLock().unlock();
+        }
 
-        stats.addRequestTime("authorization", time);
-        stats.addRequestTime(
-                String.format("authorization_%s", overallDecision ? "positive" : "negative"),
-                time);
-        stats.addRequestTime(
-                String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()),
-                time);
-        stats.addRequestTime(
-                String.format("authorization_of_%s", entity.getName()),
-                time);
+        if (time > 0) {
+            time = System.currentTimeMillis() - time;
 
+            stats.addRequestTime("authorization", time);
+            stats.addRequestTime(
+                    String.format("authorization_%s", overallDecision ? "positive" : "negative"),
+                    time);
+            stats.addRequestTime(
+                    String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()),
+                    time);
+            stats.addRequestTime(
+                    String.format("authorization_of_%s", entity.getName()),
+                    time);
+        }
+        
         m.put(entity.getName(), overallDecision);
         request.setAttribute(cache, m);
+        
         return overallDecision;
     }
 
     /**
      * Perform the actual check for the entity.
      *
+     * Assumes that {@code lock} is held in read mode.
+     * 
      * @param entity either a project or a group
      * @param pluginPredicate a predicate that decides if the authorization is
      * successful for the given plugin
@@ -718,11 +760,7 @@ public final class AuthorizationFramework {
     private boolean performCheck(Nameable entity,
             AuthorizationEntity.PluginDecisionPredicate pluginPredicate,
             AuthorizationEntity.PluginSkippingPredicate skippingPredicate) {
-        lock.readLock().lock();
-        try {
+        
             return stack.isAllowed(entity, pluginPredicate, skippingPredicate);
-        } finally {
-            lock.readLock().unlock();
-        }
     }
 }

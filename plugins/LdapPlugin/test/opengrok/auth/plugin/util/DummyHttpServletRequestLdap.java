@@ -40,6 +40,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 import opengrok.auth.plugin.UserPlugin;
 import opengrok.auth.plugin.entity.User;
+import org.opensolaris.opengrok.util.RandomString;
 
 public class DummyHttpServletRequestLdap implements HttpServletRequest {
 
@@ -60,7 +61,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
             if ((user = (User) getAttribute(UserPlugin.REQUEST_ATTR)) != null) {
                 return user.getUsername();
             }
-            return Strings.generate(5);
+            return RandomString.generate(5);
         }
 
         @Override

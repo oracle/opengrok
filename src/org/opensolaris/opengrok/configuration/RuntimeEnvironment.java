@@ -1657,16 +1657,6 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Return the current plugin version tracked by the authorization framework.
-     *
-     * @return the version
-     * @see AuthorizationFramework#getPluginVersion()
-     */
-    public int getPluginVersion() {
-        return getAuthorizationFramework().getPluginVersion();
-    }
-
-    /**
      * Return the authorization framework used in this environment.
      *
      * @return the framework
@@ -1686,7 +1676,7 @@ public final class RuntimeEnvironment {
      */
     synchronized public void setAuthorizationFramework(AuthorizationFramework fw) {
         if (this.authFramework != null) {
-            this.authFramework.removeAll(this.authFramework.getStack());
+            this.authFramework.removeAll();
         }
         this.authFramework = fw;
     }

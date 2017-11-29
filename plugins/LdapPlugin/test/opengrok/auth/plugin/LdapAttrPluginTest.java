@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.util.DummyHttpServletRequestLdap;
@@ -45,7 +46,7 @@ import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
-public class LdapAttrTest {
+public class LdapAttrPluginTest {
 
     private HttpServletRequest dummyRequest;
     private LdapAttrPlugin plugin;
@@ -80,7 +81,6 @@ public class LdapAttrTest {
         plugin.load(parameters);
 
         framework = new AuthorizationFramework(null);
-        framework.setPluginVersion(1);
     }
 
     private void prepareRequest(String username, String mail, String... ous) {
@@ -90,7 +90,6 @@ public class LdapAttrTest {
                 new TreeSet<>(Arrays.asList(ous))));
         plugin.setSessionEstablished(dummyRequest, true);
         plugin.setSessionUsername(dummyRequest, username);
-        plugin.setSessionVersion(dummyRequest, 1);
     }
 
     private Project makeProject(String name) {
@@ -136,36 +135,6 @@ public class LdapAttrTest {
 
         prepareRequest("00A", "random@email.com", "MI6", "MI7");
 
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
-
-    }
-
-    @Test
-    public void testInvalidateSession() {
-        /**
-         * whitelist[mail] => [james@bond.com, random@email.com, just_a_text]
-         */
-        prepareRequest("007", "james@bond.com", "MI6", "MI7");
-        
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
-
-        framework.increasePluginVersion();
-        prepareRequest("007", "james@bond.com", "MI6", "MI7");
-
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));
-        Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 2")));
-
-        plugin.setSessionVersion(dummyRequest, 2);
-        prepareRequest("007", "james@bond.com", "MI6", "MI7");
-        
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Random Project")));
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeProject("Project 1")));
         Assert.assertTrue(plugin.isAllowed(dummyRequest, makeGroup("Group 1")));

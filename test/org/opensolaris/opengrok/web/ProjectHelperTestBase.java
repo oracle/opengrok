@@ -288,6 +288,6 @@ public class ProjectHelperTestBase {
 
     @After
     public void tearDown() {
-        env.getAuthorizationFramework().removeAll(env.getAuthorizationFramework().getStack());
+        env.getAuthorizationFramework().removeAll();
     }
 }

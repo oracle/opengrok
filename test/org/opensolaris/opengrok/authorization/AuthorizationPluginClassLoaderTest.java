@@ -32,7 +32,7 @@ import org.opensolaris.opengrok.web.DummyHttpServletRequest;
 
 public class AuthorizationPluginClassLoaderTest {
 
-    private File pluginDirectory;
+    private final File pluginDirectory;
 
     public AuthorizationPluginClassLoaderTest() {
         URL resource = AuthorizationPluginClassLoaderTest.class.getResource("testplugins.jar");
