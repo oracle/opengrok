@@ -405,7 +405,8 @@ public class AnalyzerGuru {
                 string_ft_stored_nanalyzed_norms));
         doc.add(new Field(QueryBuilder.FULLPATH, file.getAbsolutePath(),
                 string_ft_nstored_nanalyzed_norms));
-        doc.add(new SortedDocValuesField(QueryBuilder.FULLPATH, new BytesRef(file.getAbsolutePath())));
+        doc.add(new SortedDocValuesField(QueryBuilder.FULLPATH,
+                new BytesRef(file.getAbsolutePath())));
 
         if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
             try {
@@ -420,12 +421,12 @@ public class AnalyzerGuru {
         }
         doc.add(new Field(QueryBuilder.DATE, date, string_ft_stored_nanalyzed_norms));
         doc.add(new SortedDocValuesField(QueryBuilder.DATE, new BytesRef(date)));
-        if (path != null) {
-            doc.add(new TextField(QueryBuilder.PATH, path, Store.YES));
-            Project project = Project.getProject(path);
-            if (project != null) {
-                doc.add(new TextField(QueryBuilder.PROJECT, project.getPath(), Store.YES));
-            }
+
+        // `path' is not null, as it was passed to Util.path2uid() above.
+        doc.add(new TextField(QueryBuilder.PATH, path, Store.YES));
+        Project project = Project.getProject(path);
+        if (project != null) {
+            doc.add(new TextField(QueryBuilder.PROJECT, project.getPath(), Store.YES));
         }
 
         if (fa != null) {
