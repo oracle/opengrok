@@ -23,21 +23,21 @@
  */
 
 package org.opensolaris.opengrok.analysis.sh;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import org.opensolaris.opengrok.web.Util;
-import java.util.Stack;
 
+import java.io.IOException;
+import java.util.Stack;
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class ShXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
-  private final Stack<Integer> stateStack = new Stack<Integer>();
   private final Stack<String> styleStack = new Stack<String>();
 
   // State variables for the HEREDOC state. They tell what the stop word is,
@@ -47,9 +47,8 @@ import java.util.Stack;
   private boolean heredocStripLeadingTabs;
 
   @Override
-  public void reset() {
-      super.reset();
-      stateStack.clear();
+  protected void clearStack() {
+      super.clearStack();
       styleStack.clear();
   }
 
@@ -59,32 +58,21 @@ import java.util.Stack;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
 
-  private void pushstate(int state, String style) throws IOException {
-    if (!styleStack.empty()) {
-      out.write("</span>");
-    }
-    if (style == null) {
-      out.write("<span>");
-    } else {
-      out.write("<span class=\"" + style + "\">");
-    }
-    stateStack.push(yystate());
-    styleStack.push(style);
-    yybegin(state);
+  @Override
+  public void pushSpan(int newState, String className) throws IOException {
+      super.pushSpan(newState, className);
+      styleStack.push(className);
   }
 
-  private void popstate() throws IOException {
-    out.write("</span>");
-    yybegin(stateStack.pop());
-    styleStack.pop();
-    if (!styleStack.empty()) {
-      String style = styleStack.peek();
-      if (style == null) {
-        out.write("<span>");
-      } else {
-        out.write("<span class=\"" + style + "\">");
+  @Override
+  public void yypop() throws IOException {
+      super.yypop();
+      styleStack.pop();
+
+      if (!styleStack.empty()) {
+          String style = styleStack.peek();
+          disjointSpan(style);
       }
-    }
   }
 
   /**
@@ -108,9 +96,6 @@ import java.util.Stack;
 
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-Number = \$? [0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+
-
 File = {FNameChar}+ "." ([a-zA-Z]+)
 
 /*
@@ -132,9 +117,10 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 %include CommonURI.lexh
 %include CommonPath.lexh
 %include CommonLaxFPath.lexh
+%include Sh.lexh
 %%
 <STRING>{
- "$" {Identifier} {
+ "$" {Identifier}    {
     String id = yytext();
     out.write("<a href=\"");
     out.write(urlPrefix);
@@ -150,74 +136,110 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
      for instance "${array["string"]}". Push a new STRING
      state on the stack to prevent premature exit from the
      STRING state. */
-  \$\{ {Identifier} \[\" {
-    out.write(yytext()); pushstate(STRING, "s");
+  \$\{ {Identifier} \[\"    {
+    out.write(htmlize(yytext()));
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
   }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
-\$ ? {Identifier} {
+\$ ? {Identifier}    {
     String id = yytext();
     writeSymbol(id, Consts.shkwd, yyline);
-}
+ }
 
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+{Number}        {
+    String lastClassName = getDisjointSpanClassName();
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(lastClassName);
+ }
 
- \$ ? \" { pushstate(STRING, "s"); out.write(yytext()); }
- \$ ? \' { pushstate(QSTRING, "s"); out.write(yytext()); }
- "#"     { pushstate(SCOMMENT, "c"); out.write(yytext()); }
+ \$ ? \"    {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \$ ? \'    {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ "#"     {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
 
  // Recognize here-documents. At least a subset of them.
- "<<" "-"? {WhspChar}* {Identifier} {WhspChar}* {
+ "<<" "-"? {WhspChar}* {Identifier} {WhspChar}*    {
    String text = yytext();
-   out.write(Util.htmlize(text));
+   out.write(htmlize(text));
 
    heredocStripLeadingTabs = (text.charAt(2) == '-');
    heredocStopWord = text.substring(heredocStripLeadingTabs ? 3 : 2).trim();
-   pushstate(HEREDOC, "s");
+   pushSpan(HEREDOC, HtmlConsts.STRING_CLASS);
  }
 
  // Any sequence of more than two < characters should not start HEREDOC. Use
  // this rule to catch them before the HEREDOC rule.
- "<<" "<" + {
-   out.write(Util.htmlize(yytext()));
+ "<<" "<" +    {
+   out.write(htmlize(yytext()));
  }
 
+ {Unary_op_req_lookahead} / \W    {
+    out.write(yytext());
+ }
+ {Unary_op_req_lookahead} $    {
+    out.write(yytext());
+ }
+ {WhiteSpace} {Unary_op_char} / ")"    {
+    out.write(yytext());
+ }
+ {Binary_op}    {
+    out.write(yytext());
+ }
 }
 
 <STRING> {
- \" {WhspChar}* \"  { out.write(yytext()); }
- \"     { out.write(yytext()); popstate(); }
- \\\\ | \\\" | \\\$ | \\` { out.write(yytext()); }
- \$\(   { pushstate(SUBSHELL, null); out.write(yytext()); }
- `      { pushstate(BACKQUOTE, null); out.write(yytext()); }
+ \\[\"\$\`\\] |
+ \" {WhspChar}* \"    { out.write(htmlize(yytext())); }
+ \"     { out.write(htmlize(yytext())); yypop(); }
+ \$\(    {
+    pushSpan(SUBSHELL, null);
+    out.write(yytext());
+ }
+ [`]    {
+    pushSpan(BACKQUOTE, null);
+    out.write(yytext());
+ }
 
  /* Bug #15661: Recognize ksh command substitution within strings. According
   * to ksh man page http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
   * the opening brace must be followed by a blank.
   */
- "${" / {WhspChar} | {EOL} {
-   pushstate(BRACEGROUP, null); out.write(yytext());
+ "${" / {WhspChar} | {EOL}    {
+    pushSpan(BRACEGROUP, null);
+    out.write(yytext());
  }
 }
 
 <QSTRING> {
- \' {WhspChar}* \' { out.write(yytext()); }
- \\'  { out.write("\\'"); }
- \'   { out.write(yytext()); popstate(); }
+ \\[\'] |
+ \' {WhspChar}* \'    { out.write(htmlize(yytext())); }
+ \'    { out.write(htmlize(yytext())); yypop(); }
 }
 
 <SCOMMENT> {
-{EOL} { popstate();
-     startNewLine();}
+{WhspChar}*{EOL}    {
+    yypop();
+    startNewLine();
+ }
 }
 
 <SUBSHELL> {
-  \)   { out.write(yytext()); popstate(); }
+  \)   { out.write(yytext()); yypop(); }
 }
 
 <BACKQUOTE> {
-  ` { out.write(yytext()); popstate(); }
+  [`]    { out.write(yytext()); yypop(); }
 }
 
 <BRACEGROUP> {
@@ -226,32 +248,31 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * the closing brace must be on beginning of line, or it must be preceded by
   * a semi-colon and (optionally) whitespace.
   */
-  ^ {WhspChar}* \}  { out.write(yytext()); popstate(); }
-  ; {WhspChar}* \}  { out.write(yytext()); popstate(); }
+  ^ {WhspChar}* \}    { out.write(yytext()); yypop(); }
+  ; {WhspChar}* \}    { out.write(yytext()); yypop(); }
 }
 
 <HEREDOC> {
-  [^\n]+ {
+  [^\n]+    {
     String line = yytext();
     if (isHeredocStopWord(line)) {
-      popstate();
+      yypop();
     }
-    out.write(Util.htmlize(line));
+    out.write(htmlize(line));
   }
 
-  {EOL} { startNewLine(); }
+  {EOL}    { startNewLine(); }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
   /* Don't enter new state if special character is escaped. */
-  \\` | \\\( | \\\) | \\\\ | \\\{ { out.write(yytext()); }
-  \\\" | \\' | \\\$ | \\\# { out.write(yytext()); }
+  \\[`\)\(\{\"\'\$\#\\]    { out.write(htmlize(yytext())); }
 
   /* $# should not start a comment. */
-  "$#" { out.write(yytext()); }
+  "$#"    { out.write(yytext()); }
 
-  \$ ? \( { pushstate(SUBSHELL, null); out.write(yytext()); }
-  ` { pushstate(BACKQUOTE, null); out.write(yytext()); }
+  \$ ? \(    { pushSpan(SUBSHELL, null); out.write(yytext()); }
+  [`]    { pushSpan(BACKQUOTE, null); out.write(yytext()); }
 
  /* Bug #15661: Recognize ksh command substitution within strings. According
   * to ksh man page http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
@@ -259,13 +280,13 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * optional so that we get the nesting right and don't terminate the brace
   * group too early if the ${ cmd; } expression contains nested { cmd; } groups.
   */
-  \$ ? \{ / {WhspChar} | {EOL} {
-    pushstate(BRACEGROUP, null); out.write(yytext());
+  \$ ? \{ / {WhspChar} | {EOL}    {
+    pushSpan(BRACEGROUP, null); out.write(yytext());
   }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP, STRING, SCOMMENT, QSTRING> {
-{File} {
+{File}    {
     String path = yytext();
     out.write("<a href=\""+urlPrefix+"path=");
     out.write(path);
@@ -275,35 +296,30 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
     out.write("</a>");
 }
 
-{RelaxedMiddleFPath}
-        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
-{WhiteSpace}{EOL} |
-    {EOL}    { startNewLine(); }
-{WhiteSpace}   { out.write(yytext()); }
-[!-~]   { out.write(yycharat(0)); }
-[^\n]      { writeUnicodeChar(yycharat(0)); }
+{RelaxedMiddleFPath}    {
+    out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/')); }
+
+[&<>\'\"]    { out.write(htmlize(yytext())); }
+{WhspChar}*{EOL}    { startNewLine(); }
+{WhiteSpace}    { out.write(yytext()); }
+[!-~]    { out.write(yycharat(0)); }
+[^\n]    { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
-
-{BrowseableURI}    {
-    appendLink(yytext(), true);
-}
-
-{FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
-        {
+{FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
           writeEMailAddress(yytext());
         }
 }
 
-<<EOF>> {
-    // If we reach EOF while being in a nested state, pop all the way up
-    // the initial state so that we close open HTML tags.
-    while (!stateStack.isEmpty()) {
-        popstate();
+<STRING, SCOMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
     }
-    return YYEOF;
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }

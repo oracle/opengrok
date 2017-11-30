@@ -23,8 +23,7 @@
  */
 
 package org.opensolaris.opengrok.analysis.sh;
-import java.io.IOException;
-import java.io.Reader;
+
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
@@ -38,48 +37,65 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-
 %state STRING COMMENT SCOMMENT QSTRING
 
+%include Common.lexh
+%include Sh.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
+{Identifier}    {
+    String id = yytext();
                 if(!Consts.shkwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
+ {Number}    {}
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  "#"    { yybegin(SCOMMENT); }
+
+ {Unary_op_req_lookahead} / \W    {
+    // noop
+ }
+ {Unary_op_req_lookahead} $    {
+    // noop
+ }
+ {WhiteSpace} {Unary_op_char} / ")"    {
+    // noop
+ }
+ {Binary_op}    {
+    // noop
+ }
 }
 
 <STRING> {
-"$" {Identifier} {
+"$" {Identifier}    {
     setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
     return yystate();
-}
+ }
 
-"${" {Identifier} "}" {
+"${" {Identifier} "}"    {
     int startOffset = 2;            // trim away the "${" prefix
     int endOffset = yylength() - 1; // trim away the "}" suffix
     setAttribs(yytext().substring(startOffset, endOffset),
                yychar + startOffset,
                yychar + endOffset);
     return yystate();
-}
+ }
 
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
+ \\[\"\$\`\\]    {}
 }
 
 <QSTRING> {
+ \\[\']    {}
  \'     { yybegin(YYINITIAL); }
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{WhiteSpace}    {}
+{EOL}      { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, SCOMMENT, QSTRING> {

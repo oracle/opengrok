@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.fortran;
+package org.opensolaris.opengrok.analysis.sh;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -43,21 +43,21 @@ import static org.junit.Assert.assertNotNull;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 
 /**
- * Tests the {@link FortranXref} class.
+ * Tests the {@link ShXref} class.
  */
-public class FortranXrefTest {
+public class ShXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/fortran/sample.f",
-            "org/opensolaris/opengrok/analysis/fortran/sample_xref.html",
+        writeAndCompare("org/opensolaris/opengrok/analysis/sh/sample.sh",
+            "org/opensolaris/opengrok/analysis/sh/sample_xref.html",
             getTagsDefinitions());
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/fortran/truncated.f",
-            "org/opensolaris/opengrok/analysis/fortran/truncated_xref.html",
+        writeAndCompare("org/opensolaris/opengrok/analysis/sh/truncated.sh",
+            "org/opensolaris/opengrok/analysis/sh/truncated_xref.html",
             null);
     }
 
@@ -71,7 +71,7 @@ public class FortranXrefTest {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             sourceResource);
         assertNotNull(sourceResource + " should get-as-stream", res);
-        writeFortranXref(new PrintStream(baos), res, defs);
+        writeShXref(new PrintStream(baos), res, defs);
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
@@ -84,17 +84,17 @@ public class FortranXrefTest {
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
         String estr = new String(baosExp.toByteArray(), "UTF-8");
-        assertLinesEqual("Fortran xref", estr, ostr);
+        assertLinesEqual("sh xref", estr, ostr);
     }
 
-    private void writeFortranXref(PrintStream oss, InputStream iss,
+    private void writeShXref(PrintStream oss, InputStream iss,
         Definitions defs)
         throws IOException {
 
         oss.print(getHtmlBegin());
 
         Writer sw = new StringWriter();
-        FortranAnalyzerFactory fac = new FortranAnalyzerFactory();
+        ShAnalyzerFactory fac = new ShAnalyzerFactory();
         FileAnalyzer analyzer = fac.getAnalyzer();
         analyzer.setScopesEnabled(true);
         analyzer.setFoldingEnabled(true);
@@ -122,7 +122,7 @@ public class FortranXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/fortran/sampletags");
+            "org/opensolaris/opengrok/analysis/sh/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

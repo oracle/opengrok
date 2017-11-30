@@ -144,6 +144,13 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/sh/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/sh/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
         </testResources>
 
         <plugins>
