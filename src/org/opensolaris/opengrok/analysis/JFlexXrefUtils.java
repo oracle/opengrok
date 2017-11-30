@@ -229,6 +229,7 @@ public class JFlexXrefUtils {
      * @param urlPrefix a defined instance
      * @param project a possibly defined instance or null
      * @param symbol the symbol to write
+     * @param id the symbol to write, normalized according to language-specific conventions
      * @param keywords a set of keywords recognized by this analyzer (no links
      * will be generated if the symbol is a keyword)
      * @param line the line number on which the symbol appears
@@ -240,7 +241,7 @@ public class JFlexXrefUtils {
      * @throws IOException if an error occurs while writing to the stream
      */
     public static boolean writeSymbol(Writer out, Definitions defs,
-        String urlPrefix, Project project, String symbol, Set<String> keywords,
+        String urlPrefix, Project project, String symbol, String id, Set<String> keywords,
         int line, boolean caseSensitive, boolean isKeyword)
             throws IOException {
         String[] strs = new String[1];
@@ -255,7 +256,7 @@ public class JFlexXrefUtils {
             return false;
         }
 
-        if (defs != null && defs.hasDefinitionAt(symbol, line, strs)) {
+        if (defs != null && defs.hasDefinitionAt(id, line, strs)) {
             // This is the definition of the symbol.
             String type = strs[0];
             String style_class = "d";
@@ -281,7 +282,7 @@ public class JFlexXrefUtils {
                 out.append("<a class=\"");
                 out.append(style_class);
                 out.append("\" name=\"");
-                Util.htmlize(symbol, out);
+                Util.htmlize(id, out);
                 out.append("\"/>");
             }
 
@@ -289,7 +290,7 @@ public class JFlexXrefUtils {
             out.append("<a href=\"");
             out.append(urlPrefix);
             out.append("refs=");
-            Util.qurlencode(symbol, out);
+            Util.qurlencode(id, out);
             appendProject(out, project);
             out.append("\" class=\"");
             out.append(style_class);
@@ -298,8 +299,8 @@ public class JFlexXrefUtils {
             out.append(">");
             Util.htmlize(symbol, out);
             out.append("</a>");
-        } else if (defs != null && defs.occurrences(symbol) == 1) {
-            writeSameFileLinkSymbol(out, symbol);
+        } else if (defs != null && defs.occurrences(id) == 1) {
+            writeSameFileLinkSymbol(out, symbol, id);
         } else {
             // This is a symbol that is not defined in this file, or a symbol
             // that is defined more than once in this file. In either case, we
@@ -308,7 +309,7 @@ public class JFlexXrefUtils {
             out.append("<a href=\"");
             out.append(urlPrefix);
             out.append("defs=");
-            Util.qurlencode(symbol, out);
+            Util.qurlencode(id, out);
             appendProject(out, project);
             out.append("\"");
             out.append(" class=\"intelliWindow-symbol\"");
@@ -325,10 +326,11 @@ public class JFlexXrefUtils {
      * exactly one location in the same file.
      * @param out a defined, target instance
      * @param symbol the symbol to write
+     * @param id the symbol to write, normalized according to language-specific conventions
      * @throws IOException if {@link Writer#append(java.lang.CharSequence)}
      * fails
      */
-    public static void writeSameFileLinkSymbol(Writer out, String symbol)
+    public static void writeSameFileLinkSymbol(Writer out, String symbol, String id)
             throws IOException {
         // This is a reference to a symbol defined exactly once in this file.
         String style_class = "d";
@@ -337,7 +339,7 @@ public class JFlexXrefUtils {
         out.append("<a class=\"");
         out.append(style_class);
         out.append(" intelliWindow-symbol\" href=\"#");
-        Util.URIEncode(symbol, out);
+        Util.URIEncode(id, out);
         out.append("\"");
         out.append(" data-definition-place=\"defined-in-file\"");
         out.append(">");

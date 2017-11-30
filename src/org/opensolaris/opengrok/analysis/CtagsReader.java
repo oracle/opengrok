@@ -25,6 +25,7 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.util.EnumMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,6 +93,12 @@ public class CtagsReader {
     private SourceSplitter splitter;
 
     private int tabSize;
+
+    private Function<String, String> normalizeIdentifier = str -> str;
+
+    public void setNormalizeIdentifier(Function<String, String> normalize) {
+        normalizeIdentifier = normalize;
+    }
 
     /**
      * This should mimic
@@ -209,7 +216,7 @@ public class CtagsReader {
             //log.fine("SKIPPING LINE - NO TAB");
             return;
         }
-        String def = tagLine.substring(0, p);
+        String def = normalizeIdentifier.apply(tagLine.substring(0, p));
         int mstart = tagLine.indexOf('\t', p + 1);
 
         String kind = null;
@@ -326,7 +333,7 @@ public class CtagsReader {
                     name = arg;
                 }
                 if (name != null) {
-                    addTag(defs, cidx.lineno, name, "argument", def.trim() +
+                    addTag(defs, cidx.lineno, normalizeIdentifier.apply(name), "argument", def.trim() +
                         signature.trim(), null, signature, cidx.lineStart,
                         cidx.lineEnd);
                 } else {

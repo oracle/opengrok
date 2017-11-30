@@ -38,6 +38,8 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     private NonSymbolMatchedListener nonSymbolListener;
     private String disjointSpanClassName;
 
+    protected String normalizeIdentifier(String id) { return id; }
+
     /**
      * Associates the specified listener, replacing the former one.
      * @param l defined instance
@@ -97,7 +99,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     protected void onSymbolMatched(String str, int start) {
         SymbolMatchedListener l = symbolListener;
         if (l != null) {
-            SymbolMatchedEvent evt = new SymbolMatchedEvent(this, str, start,
+            SymbolMatchedEvent evt = new SymbolMatchedEvent(this, str, normalizeIdentifier(str), start,
                 start + str.length());
             l.symbolMatched(evt);
         }

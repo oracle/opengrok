@@ -473,7 +473,7 @@ public abstract class JFlexNonXref extends JFlexStateStacker
     protected boolean writeSymbol(String symbol, Set<String> keywords, int line,
         boolean caseSensitive, boolean isKeyword) throws IOException {
         return JFlexXrefUtils.writeSymbol(out, defs, urlPrefix, project,
-            symbol, keywords, line, caseSensitive, isKeyword);
+            symbol, symbol, keywords, line, caseSensitive, isKeyword);
     }
 
     /**

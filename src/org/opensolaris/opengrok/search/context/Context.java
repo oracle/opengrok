@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,8 +45,12 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.fortran.FortranAnalyzer;
+import org.opensolaris.opengrok.analysis.fortran.FortranAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
@@ -416,6 +421,10 @@ public class Context {
             String token;
             int matchState;
             int matchedLines = 0;
+            FileAnalyzerFactory factory = AnalyzerGuru.find(path);
+            if (factory instanceof FortranAnalyzerFactory) {
+                tokens.setNormalizeIdentifier(FortranAnalyzer::normalizeIdentifier);
+            }
             while ((token = tokens.yylex()) != null && (!lim ||
                     matchedLines < limit_max_lines)) {
                 for (int i = 0; i < m.length; i++) {
@@ -455,6 +464,7 @@ public class Context {
                 }
             }
         }
+        tokens.resetNormalizeIdentifier();
         return anything;
     }
 }

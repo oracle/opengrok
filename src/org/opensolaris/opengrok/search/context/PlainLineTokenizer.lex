@@ -32,6 +32,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.function.Function;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.analysis.Scopes;
@@ -71,6 +72,14 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
   StringBuilder sb;
   boolean alt;
   Scopes scopes = null;
+
+  Function<String, String> normalizeIdentifier = str -> str;
+  public void setNormalizeIdentifier(Function<String, String> normalizeIdentifier) {
+    this.normalizeIdentifier = normalizeIdentifier;
+  }
+  public void resetNormalizeIdentifier() {
+    this.normalizeIdentifier = str -> str;
+  }
 
   /**
    * Set the writer that should receive all output
@@ -400,7 +409,13 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 
 %%
-{Identifier}|{Number}|{Printable}    {
+{Identifier} {
+    String text = yytext();
+    markedContents.append(text);
+    return normalizeIdentifier.apply(text);
+}
+
+{Number}|{Printable}    {
     String text = yytext();
     markedContents.append(text);
     return text;

@@ -60,6 +60,9 @@ import org.opensolaris.opengrok.web.HtmlConsts;
                 break;
         }
     }
+
+    @Override
+    protected String normalizeIdentifier(String id) { return FortranAnalyzer.normalizeIdentifier(id); }
 %}
 
 File = [a-zA-Z]{FNameChar}* ".inc"

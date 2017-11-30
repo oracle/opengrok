@@ -36,6 +36,7 @@ public class SymbolMatchedEvent {
 
     private final Object source;
     private final String str;
+    private final String normalizedStr;
     private final int start;
     private final int end;
 
@@ -43,12 +44,14 @@ public class SymbolMatchedEvent {
      * Initializes an immutable instance of {@link SymbolMatchedEvent}.
      * @param source the event source
      * @param str the symbol string
+     * @param normalizedStr the symbol string, normalized according to language-specific conventions
      * @param start the symbol start position
      * @param end the symbol end position
      */
-    public SymbolMatchedEvent(Object source, String str, int start, int end) {
+    public SymbolMatchedEvent(Object source, String str, String normalizedStr, int start, int end) {
         this.source = source;
         this.str = str;
+        this.normalizedStr = normalizedStr;
         this.start = start;
         this.end = end;
     }
@@ -67,6 +70,14 @@ public class SymbolMatchedEvent {
      */
     public String getStr() {
         return str;
+    }
+
+    /**
+     * Gets the normalized symbol string.
+     * @return the initial value
+     */
+    public String getNormalizedStr() {
+        return normalizedStr;
     }
 
     /**
