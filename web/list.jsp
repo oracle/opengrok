@@ -19,8 +19,8 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
-
 Portions Copyright 2011 Jens Elkner.
+Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page errorPage="error.jsp" import="
@@ -123,7 +123,8 @@ document.pageReady.push(function() { pageReadyList();});
                 }
 %>
 <%
-    if (readMes.get(i).toLowerCase().endsWith(".md")) {
+    String lcName = readMes.get(i).toLowerCase();
+    if (lcName.endsWith(".md") || lcName.endsWith(".markdown")) {
     %><div id="src<%=i%>" data-markdown>
         <div class="markdown-heading">
             <h3><%= readMes.get(i) %></h3>
