@@ -27,6 +27,7 @@
 # Supported Deployment Engines:
 #   - Tomcat 8
 #   - Glassfish
+#   - Resin
 #
 # Supported Environment Variables:
 #   - OPENGROK_NON_INTERACTIVE    Suppress Progress and Warnings Messages (*)
