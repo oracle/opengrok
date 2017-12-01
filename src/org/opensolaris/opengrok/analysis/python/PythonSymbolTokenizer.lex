@@ -27,10 +27,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.python;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class PythonSymbolTokenizer
@@ -43,18 +41,23 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-
 %state STRING LSTRING SCOMMENT QSTRING LQSTRING
 
+%include Common.lexh
+%include Python.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
+{Identifier} {
+    String id = yytext();
                 if(!Consts.kwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
-                        return yystate(); }
-              }
+                        return yystate();
+                }
+ }
+
+ {Number}        {}
+
  \"     { yybegin(STRING); }
  \"\"\" { yybegin(LSTRING); }
  \'     { yybegin(QSTRING); }
@@ -63,25 +66,30 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
  }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
- \n     { yybegin(YYINITIAL); }
-}
-
-<LSTRING> {
- \"\"\" { yybegin(YYINITIAL); }
+ {EOL}  { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
- \n     { yybegin(YYINITIAL); }
+ {EOL}  { yybegin(YYINITIAL); }
+}
+
+<LSTRING> {
+ \\[\"\\]    {}
+ \"\"\" { yybegin(YYINITIAL); }
 }
 
 <LQSTRING> {
+ \\[\'\\]    {}
  \'\'\' { yybegin(YYINITIAL); }
 }
 
 <SCOMMENT> {
- \n    { yybegin(YYINITIAL);}
+ {WhiteSpace}    {}
+ {EOL}    { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, LSTRING, SCOMMENT, QSTRING , LQSTRING> {
