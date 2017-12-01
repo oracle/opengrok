@@ -60,11 +60,7 @@ File = [a-zA-Z]{FNameChar}* "." ("vb"|"cls"|"frm"|"vbs"|"bas"|"ctl")
 
 {Identifier} {
     String id = yytext();
-    if (id.length() > 1) {
-        writeSymbol(id, Consts.reservedKeywords, yyline, false);
-    } else {
-        out.write(id);
-    }
+    writeSymbol(id, Consts.reservedKeywords, yyline, false);
 }
 
 "<" ({File}|{FPath}) ">" {
