@@ -880,7 +880,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </condition>
     </target>
 
-    <target name="check_testplugins_jar" description="check if plugins.jar was generated">
+    <target name="check_testplugins_jar" description="check if testplugins.jar was generated">
         <available
             file="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/testplugins.jar"
             type="file" property="testplugins_exists">
