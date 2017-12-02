@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -103,7 +104,7 @@ public class IndexerRepoTest {
     @Test
     public void testSymlinks() throws IndexerException, IOException {
 
-        final String symlink = "symlink";
+        final String SYMLINK = "symlink";
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // Set source root to pristine directory so that there is only one
@@ -116,7 +117,7 @@ public class IndexerRepoTest {
                 realSource.getPath());
 
         // Create symlink from source root to the real repository.
-        String symlinkPath = sourceRoot.toString() + File.separator + symlink;
+        String symlinkPath = sourceRoot.toString() + File.separator + SYMLINK;
         Files.createSymbolicLink(Paths.get(symlinkPath), Paths.get(realSource.getPath()));
 
         env.setSourceRoot(sourceRoot.toString());
@@ -144,12 +145,14 @@ public class IndexerRepoTest {
         List<RepositoryInfo> repos = env.getRepositories();
         assertEquals(repos.size(), 1);
         RepositoryInfo repo = repos.get(0);
-        assertEquals("/" + symlink, repo.getDirectoryNameRelative());
-        assertEquals(sourceRoot.toString() + File.separator + "symlink",
-                repo.getDirectoryName());
+        assertEquals("/" + SYMLINK, repo.getDirectoryNameRelative());
+        String epath = sourceRoot.toString() + File.separator + SYMLINK;
+        String apath = repo.getDirectoryName();
+        assertTrue("Should match (with macOS leeway):\n" + epath + "\nv.\n" +
+            apath, epath.equals(apath) || apath.equals("/private" + epath));
 
         // Check that history exists for a file in the repository.
-        File repoRoot = new File(env.getSourceRootFile(), symlink);
+        File repoRoot = new File(env.getSourceRootFile(), SYMLINK);
         File fileInRepo = new File(repoRoot, "main.c");
         assertTrue(fileInRepo.exists());
         assertTrue(HistoryGuru.getInstance().hasHistory(fileInRepo));

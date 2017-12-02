@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -78,7 +79,7 @@ public class PerforceRepositoryTest {
             return;
         }
         PerforceRepository instance = new PerforceRepository();
-        instance.setDirectoryName(root.getAbsolutePath());
+        instance.setDirectoryName(new File(root.getAbsolutePath()));
         instance.update();
     }
 
@@ -89,7 +90,7 @@ public class PerforceRepositoryTest {
         }
 
         PerforceRepository instance = new PerforceRepository();
-        instance.setDirectoryName(root.getAbsolutePath());
+        instance.setDirectoryName(new File(root.getAbsolutePath()));
 
         for (File f : files) {
             if (instance.fileHasHistory(f)) {

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.search.context;
@@ -127,6 +128,9 @@ public class HistoryContext {
      */
     private boolean getHistoryContext(
             History in, String path, Writer out, List<Hit> hits, String wcontext) {
+        if (in == null) {
+            throw new IllegalArgumentException("`in' is null");
+        }
         if ((out == null) == (hits == null)) {
             // There should be exactly one destination for the output. If
             // none or both are specified, it's a bug.
