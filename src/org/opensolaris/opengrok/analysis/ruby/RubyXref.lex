@@ -121,7 +121,7 @@ import org.opensolaris.opengrok.web.Util;
         h = getNewHelper();
     }
 
-    protected void popHelper() {
+    public void popHelper() {
         h = helpers.pop();
     }
 

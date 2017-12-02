@@ -39,6 +39,7 @@ import org.opensolaris.opengrok.util.RegexUtils;
  */
 interface RubyLexer extends JFlexJointLexer {
     void maybeIntraState();
+    void popHelper();
 }
 
 /**
@@ -188,6 +189,12 @@ class RubyLexHelper implements Resettable {
      */
     public void qop(boolean doWrite, String capture, int namelength,
         boolean nointerp) throws IOException {
+
+        // N.b. the following will write anyway -- despite any `doWrite'
+        // setting -- if interpolation is truly ending, but that is OK as a
+        // quote-like operator is not starting in that case.
+        if (maybeEndInterpolation(capture)) return;
+
         // If namelength is positive, allow that a non-zero-width word boundary
         // character may have needed to be matched since jflex does not conform
         // with \b as a zero-width simple word boundary. Excise it into
@@ -272,6 +279,8 @@ class RubyLexHelper implements Resettable {
      * to output.
      */
     public void hqopPunc(String capture) throws IOException {
+        if (maybeEndInterpolation(capture)) return;
+
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
@@ -293,6 +302,8 @@ class RubyLexHelper implements Resettable {
      * parts to output.
      */
     public void hqopSymbol(String capture) throws IOException {
+        if (maybeEndInterpolation(capture)) return;
+
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
@@ -452,12 +463,19 @@ class RubyLexHelper implements Resettable {
      * {@code nendbrace}.
      * @return true if the interpolation state should end
      */
-    public boolean maybeEndInterpolation(String capture) {
+    public boolean maybeEndInterpolation(String capture) throws IOException {
         if (nendbrace <= 0) {
             return false;
         }
         if (capture.startsWith("}")) {
             if (--nendbrace <= 0) {
+                int rem = capture.length() - 1;
+                String opener = capture.substring(0, 1);
+                lexer.popHelper();
+                lexer.yypop();
+                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+                lexer.offerNonword(opener);
+                if (rem > 0) lexer.yypushback(rem);
                 return true;
             }
         } else if (capture.startsWith("{")) {
