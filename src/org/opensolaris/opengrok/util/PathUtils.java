@@ -1,0 +1,167 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+package org.opensolaris.opengrok.util;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
+
+/**
+ * Represents a container for file system paths-related utility methods.
+ */
+public class PathUtils {
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(PathUtils.class);
+
+    /**
+     * Calls
+     * {@link #getRelativeToCanonical(java.lang.String, java.lang.String, java.util.Set)}
+     * with {@code path}, {@code canonical}, and {@code allowedSymlinks=null}
+     * (to disable validation of links).
+     * @param path a non-canonical (or canonical) path to compare
+     * @param canonical a canonical path to compare against
+     * @return a relative path determined as described for
+     * {@link #getRelativeToCanonical(java.lang.String, java.lang.String, java.util.Set)}
+     * when {@code allowedSymlinks==null} -- or {@code path} if no canonical
+     * relativity is found.
+     * @throws IOException if an error occurs determining canonical paths
+     * for portions of {@code path}
+     */
+    public static String getRelativeToCanonical(String path, String canonical)
+        throws IOException {
+        return getRelativeToCanonical(path, canonical, null);
+    }
+
+    /**
+     * Determine a relative path comparing {@code path} to {@code canonical},
+     * with an algorithm that can handle the possibility of one or more
+     * symbolic links as components of {@code path}.
+     * <p>
+     * When {@code allowedSymlinks} is not null, any symbolic links as
+     * components of {@code path} (below {@code canonical}) are required to
+     * match an element of {@code allowedSymlinks}.
+     * <p>
+     * E.g., with {@code path="/var/opengrok/src/proj_a"} and
+     * {@code canonical="/private/var/opengrok/src"} where /var is linked to
+     * /private/var and where /var/opengrok/src/proj_a is linked to /proj/a,
+     * the function will return {@code "proj_a"} as a relative path.
+     * <p>
+     * The algorithm will have evaluated canonical paths upward from
+     * (non-canonical) /var/opengrok/src/proj_a (a.k.a. /proj/a) to find a
+     * canonical similarity at /var/opengrok/src (a.k.a.
+     * /private/var/opengrok/src).
+     * @param path a non-canonical (or canonical) path to compare
+     * @param canonical a canonical path to compare against
+     * @param allowedSymlinks optional set of allowed symbolic links, so that
+     * any links encountered within {@code path} and not covered by the set
+     * will abort the algorithm
+     * @return a relative path determined as described above -- or {@code path}
+     * if no canonical relativity is found or if symbolic-link checking is
+     * active and encounters an ineligible link.
+     * @throws IOException if an error occurs determining canonical paths
+     * for portions of {@code path}
+     */
+    public static String getRelativeToCanonical(String path, String canonical,
+        Set<String> allowedSymlinks)
+            throws IOException {
+
+        if (path.equals(canonical)) return "";
+
+        String path0 = path.replace('\\', '/');
+        String normCanonical0 = canonical.replace('\\', File.separatorChar);
+        String normCanonical = normCanonical0.endsWith(File.separator) ?
+            normCanonical0 : normCanonical0 + File.separator;
+        Deque<String> tail = null;
+
+        File iterPath = new File(path0);
+        while (iterPath != null) {
+            String iterCanon = iterPath.getCanonicalPath();
+
+            // optional symbolic-link check
+            if (allowedSymlinks != null) {
+                String iterOriginal = iterPath.getPath();
+                if (Files.isSymbolicLink(Paths.get(iterOriginal)) &&
+                    !isAllowedSymlink(iterCanon, allowedSymlinks)) {
+
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format(
+                                "%1$s is prohibited symlink", iterOriginal));
+                    }
+                    return path;
+                }
+            }
+
+            String rel = null;
+            if (iterCanon.startsWith(normCanonical)) {
+                rel = iterCanon.substring(normCanonical.length());
+            } else if (normCanonical.equals(iterCanon + File.separator)) {
+                rel = "";
+            }
+            if (rel != null) {
+                if (tail != null) {
+                    while (tail.size() > 0) {
+                        rel = Paths.get(rel, tail.pop()).toString();
+                    }
+                }
+                return rel;
+            }
+
+            if (tail == null) tail = new LinkedList<>();
+            tail.push(iterPath.getName());
+            iterPath = iterPath.getParentFile();
+        }
+
+        // `path' is not found to be relative to `canonical', so return as is.
+        return path;
+    }
+
+    private static boolean isAllowedSymlink(String canonicalFile,
+        Set<String> allowedSymlinks) {
+        for (String allowedSymlink : allowedSymlinks) {
+            String canonicalLink;
+            try {
+                canonicalLink = new File(allowedSymlink).getCanonicalPath();
+            } catch (IOException e) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("unresolvable symlink: %s",
+                        allowedSymlink));
+                }
+                continue;
+            }
+            if (canonicalFile.equals(canonicalLink)) return true;
+        }
+        return false;
+    }
+
+    /** private to enforce singleton */
+    private PathUtils() {
+    }
+}
