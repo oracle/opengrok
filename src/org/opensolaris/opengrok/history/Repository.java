@@ -526,4 +526,25 @@ public abstract class Repository extends RepositoryInfo {
         }
         return RepoCommand;
     }
+
+    protected String getRepoRelativePath(final File file)
+            throws IOException {
+
+        String filename = file.getPath();
+        String repoDirName = getDirectoryName();
+
+        String abs = file.getCanonicalPath();
+        if (abs.startsWith(repoDirName)) {
+            if (abs.length() > repoDirName.length()) {
+                filename = abs.substring(repoDirName.length() + 1);
+            }
+        } else {
+            abs = file.getAbsolutePath();
+            if (abs.startsWith(repoDirName) && abs.length() >
+                repoDirName.length()) {
+                filename = abs.substring(repoDirName.length() + 1);
+            }
+        }
+        return filename;
+    }
 }

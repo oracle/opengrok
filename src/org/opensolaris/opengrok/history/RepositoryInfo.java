@@ -19,14 +19,21 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.ClassUtil;
+import org.opensolaris.opengrok.util.PathUtils;
 
 /**
  * Class to contain the common info for a repository. This object will live on
@@ -36,6 +43,9 @@ import org.opensolaris.opengrok.util.ClassUtil;
  * @author Trond Norbye
  */
 public class RepositoryInfo implements Serializable {
+
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(RepositoryInfo.class);
 
     static {
         ClassUtil.remarkTransientFields(RepositoryInfo.class);
@@ -110,12 +120,28 @@ public class RepositoryInfo implements Serializable {
      * @param dir the new name of the root directory. Can be absolute
      * path or relative to source root.
      */
-    public void setDirectoryName(String dir) {
+    public void setDirectoryName(File dir) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (dir.startsWith(env.getSourceRootPath())) {
-            this.directoryNameRelative = dir.substring(env.getSourceRootPath().length());
+        String rootPath = env.getSourceRootPath();
+        String path;
+        String originalPath = dir.getPath();
+        try {
+            path = PathUtils.getRelativeToCanonical(originalPath, rootPath);
+            // N.b. OpenGrok has a weird convention that
+            // `directoryNameRelative' must start with a '/', as it is
+            // elsewhere directly appended to env.getSourceRootPath() and
+            // also stored as such.
+            if (!path.equals(originalPath)) path = File.separator + path;
+        } catch (IOException e) {
+            path = originalPath;
+            LOGGER.log(Level.SEVERE, String.format(
+                "Failed to get canonical path for {0}", path), e);
+        }
+
+        if (path.startsWith(rootPath)) {
+            this.directoryNameRelative = path.substring(rootPath.length());
         } else {
-            this.directoryNameRelative = dir;
+            this.directoryNameRelative = path;
         }
     }
 
