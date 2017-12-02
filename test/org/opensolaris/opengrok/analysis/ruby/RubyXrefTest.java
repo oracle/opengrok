@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import org.junit.Test;
@@ -69,6 +70,26 @@ public class RubyXrefTest {
         String ostr = new String(baos.toByteArray(), "UTF-8");
         String estr = new String(baosExp.toByteArray(), "UTF-8");
         assertLinesEqual("Ruby xref", estr, ostr);
+    }
+
+    @Test
+    public void colonQuoteAfterInterpolation() throws IOException {
+        final String RUBY_COLON_QUOTE =
+            "\"from #{logfn}:\"\n";
+        RubyXref xref = new RubyXref(new StringReader(RUBY_COLON_QUOTE));
+
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        String xout = out.toString();
+
+        final String xexpected = "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+                + "<span class=\"s\">&quot;from #{</span>"
+                + "<a href=\"/source/s?defs=logfn\" "
+                + "class=\"intelliWindow-symbol\" "
+                + "data-definition-place=\"undefined-in-file\">logfn</a>"
+                + "<span class=\"s\">}:&quot;</span>\n" +
+            "<a class=\"l\" name=\"2\" href=\"#2\">2</a>\n";
+        assertLinesEqual("Ruby colon-quote", xexpected, xout);
     }
 
     private void writeRubyXref(InputStream iss, PrintStream oss)

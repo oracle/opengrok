@@ -184,3 +184,5 @@ over?
 STDIN
 bd
 reset
+log_lines	# 177:puts "Last #{log_lines} lines from #{logfn}:"
+logfn
