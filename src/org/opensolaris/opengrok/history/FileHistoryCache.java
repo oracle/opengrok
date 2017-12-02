@@ -631,6 +631,11 @@ class FileHistoryCache implements HistoryCache {
         return dir.exists();
     }
 
+    @Override
+    public boolean hasCacheForFile(File file) throws HistoryException {
+        return getCachedFile(file).exists();
+    }
+
     public String getRepositoryHistDataDirname(Repository repository) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String repoDirBasename;
@@ -645,7 +650,7 @@ class FileHistoryCache implements HistoryCache {
         }
 
         return env.getDataRootPath() + File.separatorChar
-            + this.historyCacheDirName
+            + FileHistoryCache.historyCacheDirName
             + repoDirBasename;
     }
 
