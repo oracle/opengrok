@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.csharp;
@@ -35,11 +36,8 @@ public class CSharpAnalyzerFactory extends FileAnalyzerFactory {
         "CS"
     };
 
-    private static final String[] MAGICS = {
-    };
-
     public CSharpAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.python;
@@ -45,7 +46,8 @@ public class PythonAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] MAGICS = {
         "#!/usr/bin/env python",
         "#!/usr/bin/python",
-        "#!/bin/python"
+        "#!/bin/python",
+        "#!python"
     };
 
     public PythonAnalyzerFactory() {
