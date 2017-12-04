@@ -78,7 +78,7 @@ public class PathUtilsTest {
 
     @Test
     public void shouldHandleLinksOfArbitraryDepthWithValidation()
-            throws IOException {
+            throws IOException, ForbiddenSymlinkException {
         // Create real directories
         File sourceRoot = createTemporaryDirectory("srcroot");
         assertTrue("sourceRoot.isDirectory()", sourceRoot.isDirectory());
@@ -119,10 +119,15 @@ public class PathUtilsTest {
 
         // Test v. realDir1 canonical with validation and no allowed links
         Set<String> allowedSymLinks = new HashSet<>();
-        rel = PathUtils.getRelativeToCanonical(sympath.toString(),
-            realDir1Canon, allowedSymLinks);
-        assertEquals("because no links allowed, arg1 is returned fully",
-            sympath.toString(), rel);
+        ForbiddenSymlinkException expex = null;
+        try {
+            PathUtils.getRelativeToCanonical(sympath.toString(), realDir1Canon,
+                allowedSymLinks);
+        } catch (ForbiddenSymlinkException e) {
+            expex = e;
+        }
+        Assert.assertNotNull("because no links allowed, arg1 is returned fully",
+            expex);
 
         // Test v. realDir1 canonical with validation and an allowed link
         allowedSymLinks.add(symlink2.getPath());

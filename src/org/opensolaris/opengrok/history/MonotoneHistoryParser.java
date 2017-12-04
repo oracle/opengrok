@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 
 /**
  * Class used to parse the history log from Monotone
@@ -168,7 +169,8 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                                 String path = env.getPathRelativeToSourceRoot(
                                     file);
                                 entry.addFile(path.intern());
-                            } catch (FileNotFoundException e) { // NOPMD
+                            } catch (FileNotFoundException|
+                                ForbiddenSymlinkException e) { // NOPMD
                                 // If the file is not located under the source root, ignore it
                             }
                         }
