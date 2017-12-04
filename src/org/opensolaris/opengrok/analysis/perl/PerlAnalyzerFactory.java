@@ -48,7 +48,8 @@ public class PerlAnalyzerFactory extends FileAnalyzerFactory {
         "#!/usr/bin/env perl",
         "#!/usr/bin/perl",
         "#!/usr/local/bin/perl",
-        "#!/bin/perl"
+        "#!/bin/perl",
+        "#!perl",
     };
 
     public PerlAnalyzerFactory() {
