@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 
 /**
  * Parse a stream of mercurial log comments.
@@ -143,7 +144,8 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                         try {
                             String path = env.getPathRelativeToSourceRoot(f);
                             entry.addFile(path.intern());
-                        } catch (FileNotFoundException e) { // NOPMD
+                        } catch (FileNotFoundException|
+                            ForbiddenSymlinkException e) { // NOPMD
                             // If the file is not located under the source root,
                             // ignore it (bug #11664).
                         }

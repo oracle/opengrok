@@ -100,6 +100,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.opensolaris.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.PathUtils;
 
 /**
@@ -371,11 +372,14 @@ public final class RuntimeEnvironment {
      * source root.
      *
      * @param file A file to resolve
-     * @throws IOException If an IO error occurs
-     * @throws FileNotFoundException If the file is not relative to source root
      * @return Path relative to source root
+     * @throws IOException If an IO error occurs
+     * @throws FileNotFoundException if the file is not relative to source root
+     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
+     * an ineligible link
      */
-    public String getPathRelativeToSourceRoot(File file) throws IOException {
+    public String getPathRelativeToSourceRoot(File file)
+            throws IOException, ForbiddenSymlinkException {
         return getPathRelativeToSourceRoot(file, 0);
     }
 
@@ -386,11 +390,14 @@ public final class RuntimeEnvironment {
      *
      * @param file A file to resolve
      * @param stripCount Number of characters past source root to strip
-     * @throws IOException If an IO error occurs
-     * @throws FileNotFoundException If the file is not relative to source root
      * @return Path relative to source root
+     * @throws IOException if an IO error occurs
+     * @throws FileNotFoundException if the file is not relative to source root
+     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
+     * an ineligible link
      */
-    public String getPathRelativeToSourceRoot(File file, int stripCount) throws IOException {
+    public String getPathRelativeToSourceRoot(File file, int stripCount)
+            throws IOException, ForbiddenSymlinkException {
         String sourceRoot = getSourceRootPath();
         if (sourceRoot == null) {
             throw new FileNotFoundException("Source Root Not Found");
@@ -1324,9 +1331,12 @@ public final class RuntimeEnvironment {
         for (RepositoryInfo r : getRepositories()) {
             Project proj;
             String repoPath;
-
-            repoPath = getPathRelativeToSourceRoot(
+            try {
+                repoPath = getPathRelativeToSourceRoot(
                     new File(r.getDirectoryName()), 0);
+            } catch (ForbiddenSymlinkException e) {
+                continue;
+            }
 
             if ((proj = Project.getProject(repoPath)) != null) {
                 List<RepositoryInfo> values = repository_map.get(proj);

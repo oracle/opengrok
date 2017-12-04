@@ -66,6 +66,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.opensolaris.opengrok.util.FileUtilities;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
@@ -1075,7 +1076,8 @@ public class RuntimeEnvironmentTest {
      * @throws java.io.IOException
      */
     @Test
-    public void testGetPathRelativeToSourceRoot() throws IOException {
+    public void testGetPathRelativeToSourceRoot() throws IOException,
+            ForbiddenSymlinkException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // Create and set source root.
@@ -1101,14 +1103,14 @@ public class RuntimeEnvironmentTest {
                 Paths.get(realDir.getPath()));
         assertTrue(symlink.exists());
         env.setAllowedSymlinks(new HashSet<>());
-        IOException exexp = null;
+        ForbiddenSymlinkException expex = null;
         try {
             env.getPathRelativeToSourceRoot(symlink);
-        } catch (IOException e) {
-            exexp = e;
+        } catch (ForbiddenSymlinkException e) {
+            expex = e;
         }
         assertTrue("getPathRelativeToSourceRoot() should have thrown " +
-            "IOexception for symlink that is not allowed", exexp != null);
+            "IOexception for symlink that is not allowed", expex != null);
 
         // Allow the symlink and retest.
         env.setAllowedSymlinks(new HashSet<>(Arrays.asList(symlink.getPath())));

@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import org.opensolaris.opengrok.util.ClassUtil;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 
 /**
  * Placeholder for the information that builds up a project
@@ -316,7 +317,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
             ret = getProject(RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file));
         } catch (FileNotFoundException e) { // NOPMD
             // ignore if not under source root
-        } catch (IOException e) { // NOPMD
+        } catch (IOException|ForbiddenSymlinkException e) { // NOPMD
             // problem has already been logged, just return null
         }
         return ret;
