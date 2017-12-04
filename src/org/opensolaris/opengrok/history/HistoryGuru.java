@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -49,6 +50,7 @@ import org.opensolaris.opengrok.configuration.Configuration.RemoteSCM;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.PathUtils;
 import org.opensolaris.opengrok.util.Statistics;
 
 /**
@@ -75,6 +77,12 @@ public final class HistoryGuru {
      * map of repositories, with {@code DirectoryName} as key
      */
     private Map<String, Repository> repositories = new ConcurrentHashMap<>();
+
+    /**
+     * set of repository roots (using ConcurrentHashMap but a throwaway value)
+     * with parent of {@code DirectoryName} as key
+     */
+    private Map<String, String> repositoryRoots = new ConcurrentHashMap<>();
 
     private final int scanningDepth;
     
@@ -296,6 +304,23 @@ public final class HistoryGuru {
     }
 
     /**
+     * Does the history cache contain entry for this directory ?
+     * @param file
+     * @return true if there is cache, false otherwise
+     */
+    public boolean hasCacheForFile(File file) {
+        if (!useCache()) {
+            return false;
+        }
+
+        try {
+            return historyCache.hasCacheForFile(file);
+        } catch (HistoryException ex) {
+            return false;
+        }
+    }
+
+    /**
      * Check if we can annotate the specified file.
      *
      * @param file the file to check
@@ -392,14 +417,17 @@ public final class HistoryGuru {
                         }
                     }
                 } else {
-                    repository.setDirectoryName(path);
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
                         LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
                                 new Object[]{repository.getClass().getName(), path});
                     }
 
                     repoList.add(new RepositoryInfo(repository));
-                    repositories.put(repository.getDirectoryName(), repository);
+                    String repoDirectoryName = repository.getDirectoryName();
+                    File repoDirectoryFile = new File(repoDirectoryName);
+                    String repoDirParent = repoDirectoryFile.getParent();
+                    repositoryRoots.put(repoDirParent, "");
+                    repositories.put(repoDirectoryName, repository);
 
                     // @TODO: Search only for one type of repository - the one found here
                     if (recursiveSearch && repository.supportsSubRepositories()) {
@@ -812,20 +840,28 @@ public final class HistoryGuru {
     }
 
     protected Repository getRepository(File path) {
-        File file;
-
-        try {
-            file = path.getCanonicalFile();
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to get canonical path for " + path, e);
-            return null;
-        }
+        File file = path;
+        Set<String> rootKeys = repositoryRoots.keySet();
 
         while (file != null) {
-            Repository r = repositories.get(file.getAbsolutePath());
-            if (r != null) {
-                return r;
+            String nextPath = file.getPath();
+            for (String rootKey : rootKeys) {
+                String rel;
+                try {
+                    rel = PathUtils.getRelativeToCanonical(nextPath, rootKey);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING,
+                        "Failed to get relative to canonical for " + nextPath,
+                        e);
+                    return null;
+                }
+                String inRootPath = Paths.get(rootKey, rel).toString();
+                Repository r = repositories.get(inRootPath);
+                if (r != null) {
+                    return r;
+                }
             }
+
             file = file.getParentFile();
         }
 

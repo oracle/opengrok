@@ -54,6 +54,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /*
@@ -146,8 +147,14 @@ class FileHistoryCache implements HistoryCache {
             RuntimeEnvironment env,
             Repository repository, History history) throws IOException {
 
-        String repodir = env.getPathRelativeToSourceRoot(
-            new File(repository.getDirectoryName()));
+        String repodir;
+        try {
+            repodir = env.getPathRelativeToSourceRoot(
+                new File(repository.getDirectoryName()));
+        } catch (ForbiddenSymlinkException e) {
+            // already logged by PathUtils
+            return false;
+        }
         String shortestfile = filename.substring(repodir.length() + 1);
 
         return (history.isRenamed(shortestfile));
@@ -203,7 +210,7 @@ class FileHistoryCache implements HistoryCache {
                 sb.append(DIRECTORY_FILE_PREFIX);
             }
             sb.append(".gz");
-        } catch (IOException e) {
+        } catch (IOException|ForbiddenSymlinkException e) {
             throw new HistoryException("Failed to get path relative to " +
                     "source root for " + file, e);
         }
@@ -364,17 +371,17 @@ class FileHistoryCache implements HistoryCache {
     }
 
     private void finishStore(Repository repository, String latestRev) {
-        File file = new File(getRepositoryHistDataDirname(repository));
-        // If the history was not created for some reason (e.g. temporary
-        // failure), do not create the CachedRevision file as this would
-        // create confusion (once it starts working again).
-        if (file.isDirectory()) {
+        String histDir = getRepositoryHistDataDirname(repository);
+        if (histDir == null || !(new File(histDir)).isDirectory()) {
+            LOGGER.log(Level.WARNING,
+                "Could not store history for repo {0}",
+                repository.getDirectoryName());
+        } else {
             storeLatestCachedRevision(repository, latestRev);
+            LOGGER.log(Level.FINE,
+                "Done storing history for repo {0}",
+                repository.getDirectoryName());
         }
-
-        LOGGER.log(Level.FINE,
-            "Done storing history for repo {0}",
-            new Object[] {repository.getDirectoryName()});
     }
 
     /**
@@ -620,15 +627,20 @@ class FileHistoryCache implements HistoryCache {
         }
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File dir = env.getDataRootFile();
-        dir = new File(dir, this.historyCacheDirName);
+        dir = new File(dir, FileHistoryCache.historyCacheDirName);
         try {
             dir = new File(dir, env.getPathRelativeToSourceRoot(
                 new File(repos.getDirectoryName())));
-        } catch (IOException e) {
+        } catch (IOException|ForbiddenSymlinkException e) {
             throw new HistoryException("Could not resolve " +
                     repos.getDirectoryName()+" relative to source root", e);
         }
         return dir.exists();
+    }
+
+    @Override
+    public boolean hasCacheForFile(File file) throws HistoryException {
+        return getCachedFile(file).exists();
     }
 
     public String getRepositoryHistDataDirname(Repository repository) {
@@ -642,16 +654,20 @@ class FileHistoryCache implements HistoryCache {
             LOGGER.log(Level.WARNING, "Could not resolve " +
                 repository.getDirectoryName()+" relative to source root", ex);
             return null;
+        } catch (ForbiddenSymlinkException ex) {
+            LOGGER.log(Level.FINE, "forbidden symbolic link", ex);
+            return null;
         }
 
         return env.getDataRootPath() + File.separatorChar
-            + this.historyCacheDirName
+            + FileHistoryCache.historyCacheDirName
             + repoDirBasename;
     }
 
     private String getRepositoryCachedRevPath(Repository repository) {
-        return getRepositoryHistDataDirname(repository)
-            + File.separatorChar + latestRevFileName;
+        String histDir = getRepositoryHistDataDirname(repository);
+        if (histDir == null) return null;
+        return histDir + File.separatorChar + latestRevFileName;
     }
 
     /**
@@ -685,8 +701,15 @@ class FileHistoryCache implements HistoryCache {
         String rev = null;
         BufferedReader input;
 
+        String revPath = getRepositoryCachedRevPath(repository);
+        if (revPath == null) {
+            LOGGER.log(Level.WARNING, "no rev path for {0}",
+                repository.getDirectoryName());
+            return null;
+        }
+
         try {
-            input = new BufferedReader(new FileReader(getRepositoryCachedRevPath(repository)));
+            input = new BufferedReader(new FileReader(revPath));
             try {
                 rev = input.readLine();
             } catch (java.io.IOException e) {
@@ -700,8 +723,8 @@ class FileHistoryCache implements HistoryCache {
                 }
             }
         } catch (java.io.FileNotFoundException e) {
-            LOGGER.log(Level.FINE, "not loading latest cached revision file from {0}",
-                getRepositoryCachedRevPath(repository));
+            LOGGER.log(Level.FINE,
+                "not loading latest cached revision file from {0}", revPath);
             return null;
         }
 
@@ -719,16 +742,22 @@ class FileHistoryCache implements HistoryCache {
 
     @Override
     public void clear(Repository repository) {
-        // remove the file cached last revision (done separately in case
-        // it gets ever moved outside of the hierarchy)
-        File cachedRevFile = new File(getRepositoryCachedRevPath(repository));
-        cachedRevFile.delete();
+        String revPath = getRepositoryCachedRevPath(repository);
+        if (revPath != null) {
+            // remove the file cached last revision (done separately in case
+            // it gets ever moved outside of the hierarchy)
+            File cachedRevFile = new File(revPath);
+            cachedRevFile.delete();
+        }
 
-        // Remove all files which constitute the history cache.
-        try {
-            IOUtils.removeRecursive(Paths.get(getRepositoryHistDataDirname(repository)));
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
+        String histDir = getRepositoryHistDataDirname(repository);
+        if (histDir != null) {
+            // Remove all files which constitute the history cache.
+            try {
+                IOUtils.removeRecursive(Paths.get(histDir));
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "tried removeRecursive()", ex);
+            }
         }
     }
 
