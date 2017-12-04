@@ -57,7 +57,12 @@ public class PathUtils {
      */
     public static String getRelativeToCanonical(String path, String canonical)
         throws IOException {
-        return getRelativeToCanonical(path, canonical, null);
+        try {
+            return getRelativeToCanonical(path, canonical, null);
+        } catch (ForbiddenSymlinkException e) {
+            // should not get here with allowedSymlinks==null
+            return path;
+        }
     }
 
     /**
@@ -84,14 +89,15 @@ public class PathUtils {
      * any links encountered within {@code path} and not covered by the set
      * will abort the algorithm
      * @return a relative path determined as described above -- or {@code path}
-     * if no canonical relativity is found or if symbolic-link checking is
-     * active and encounters an ineligible link.
+     * if no canonical relativity is found
      * @throws IOException if an error occurs determining canonical paths
      * for portions of {@code path}
+     * @throws ForbiddenSymlinkException if symbolic-link checking is active
+     * and it encounters an ineligible link
      */
     public static String getRelativeToCanonical(String path, String canonical,
         Set<String> allowedSymlinks)
-            throws IOException {
+            throws IOException, ForbiddenSymlinkException {
 
         if (path.equals(canonical)) return "";
 
@@ -110,12 +116,10 @@ public class PathUtils {
                 String iterOriginal = iterPath.getPath();
                 if (Files.isSymbolicLink(Paths.get(iterOriginal)) &&
                     !isAllowedSymlink(iterCanon, allowedSymlinks)) {
-
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format(
-                                "%1$s is prohibited symlink", iterOriginal));
-                    }
-                    return path;
+                    String format = String.format("%1$s is prohibited symlink",
+                        iterOriginal);
+                    LOGGER.finest(format);
+                    throw new ForbiddenSymlinkException(format);
                 }
             }
 

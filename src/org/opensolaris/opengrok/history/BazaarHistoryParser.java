@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 
 /**
  * Parse a stream of Bazaar log comments.
@@ -168,8 +169,12 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                         }
 
                         File f = new File(myDir, s);
-                        String name = env.getPathRelativeToSourceRoot(f);
-                        entry.addFile(name.intern());
+                        try {
+                            String name = env.getPathRelativeToSourceRoot(f);
+                            entry.addFile(name.intern());
+                        } catch (ForbiddenSymlinkException e) {
+                            // ignored (and already logged by PathUtils)
+                        }
                     }
                     break;
                 default:
