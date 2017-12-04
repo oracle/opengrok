@@ -101,13 +101,20 @@ public class PathUtils {
 
         if (path.equals(canonical)) return "";
 
-        String path0 = path.replace('\\', '/');
-        String normCanonical0 = canonical.replace('\\', File.separatorChar);
-        String normCanonical = normCanonical0.endsWith(File.separator) ?
-            normCanonical0 : normCanonical0 + File.separator;
+        // The following fixup of \\ is really to allow
+        // IndexDatabaseTest.testGetDefinitions() to succeed on Linux or macOS.
+        // That test has an assertion that operation is the "same for windows
+        // delimiters" and passes a path with backslashes. On Windows, the
+        // following fixup would not be needed, since File and Paths recognize
+        // backslash as a delimiter. On Linux and macOS, any backslash needs to
+        // be normalized.
+        path = path.replace('\\', File.separatorChar);
+        canonical = canonical.replace('\\', File.separatorChar);
+        String normCanonical = canonical.endsWith(File.separator) ?
+            canonical : canonical + File.separator;
         Deque<String> tail = null;
 
-        File iterPath = new File(path0);
+        File iterPath = new File(path);
         while (iterPath != null) {
             String iterCanon = iterPath.getCanonicalPath();
 
