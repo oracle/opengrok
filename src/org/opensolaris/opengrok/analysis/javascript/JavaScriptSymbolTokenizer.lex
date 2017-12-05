@@ -27,10 +27,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.javascript;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class JavaScriptSymbolTokenizer
@@ -63,11 +61,12 @@ super(in);
 }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
 }
 
