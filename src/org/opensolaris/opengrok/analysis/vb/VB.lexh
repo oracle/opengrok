@@ -1,0 +1,78 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ *
+ * ##Legal Notices
+ * Microsoft and any contributors grant you a license to the Microsoft documentation and other content
+ * in this repository under the [Creative Commons Attribution 4.0 International Public License](https://creativecommons.org/licenses/by/4.0/legalcode),
+ * see the [LICENSE](LICENSE) file, and grant you a license to any code in the repository under the [MIT License](https://opensource.org/licenses/MIT), see the
+ * [LICENSE-CODE](LICENSE-CODE) file.
+ *
+ * Microsoft, Windows, Microsoft Azure and/or other Microsoft products and services referenced in the documentation
+ * may be either trademarks or registered trademarks of Microsoft in the United States and/or other countries.
+ * The licenses for this project do not grant you rights to use any Microsoft names, logos, or trademarks.
+ * Microsoft's general trademark guidelines can be found at http://go.microsoft.com/fwlink/?LinkID=254653.
+ *
+ * Privacy information can be found at https://privacy.microsoft.com/en-us/
+ *
+ * Microsoft and any contributors reserve all others rights, whether under their respective copyrights, patents,
+ * or trademarks, whether by implication, estoppel or otherwise.
+ */
+
+/*
+ * For historical reasons, VBXref does not link identifiers of length=1
+ */
+Identifier = ([a-zA-Z] [a-zA-Z0-9_]* | [_] [a-zA-Z0-9_]+)
+
+Number = [\-]? ({Numeric_integer} | {Numeric_fp} | {Hexadecimal} | {Binary} |
+    {Octal}) {Literal_type_suffix}?
+DIGIT = [0-9]
+HEXDIG = [0-9A-Fa-f]
+BINDIG = [01]
+OCTDIG = [0-7]
+
+/*
+ * "Numeric, no fractional part"
+ */
+Numeric_integer = {DIGIT} ([_]* {DIGIT})*
+/*
+ * "Numeric, fractional part"
+ */
+Numeric_fp = {Numeric_integer} "." {Numeric_integer}
+/*
+ * "Hexadecimal (base 16)"
+ */
+Hexadecimal = [&][Hh] {HEXDIG} ([_]* {HEXDIG})*
+/*
+ * "Binary (base 2)"
+ */
+Binary = [&][Bb] {BINDIG} ([_]* {BINDIG})*
+/*
+ * "Octal (base 8)"
+ */
+Octal = [&][Oo] {OCTDIG} ([_]* {OCTDIG})*
+
+/*
+ * "Literal type character"
+ */
+Literal_type_suffix = ([Ss] | [Ii] | [Ll] | [Dd] | [Ff] | [Rr] | [Uu][IiLlSs] |
+    [Cc] | "%" | "&" | "@" | "!" | "#" | "$")
