@@ -70,9 +70,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
 
 {Identifier} {
     String id = yytext();
-    // N.b. for historical reasons, ErlangXref does not link identifiers of
-    // length=1
-    if (id.length() > 1) {
+    if (!id.equals("_")) {
         writeSymbol(id, Consts.kwd, yyline);
     } else {
         out.write(id);

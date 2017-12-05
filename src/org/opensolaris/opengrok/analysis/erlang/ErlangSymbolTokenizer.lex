@@ -54,7 +54,7 @@ super(in);
 
 {Identifier} {
     String id = yytext();
-                if (id.length() > 1 && !Consts.kwd.contains(id)) {
+                if (!id.equals("_") && !Consts.kwd.contains(id)) {
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate();
                 }
