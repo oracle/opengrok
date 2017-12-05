@@ -47,7 +47,7 @@ Or if you want to use junit testing + javadoc generation target, you can try:
 
 If the build is successful, you should have javadoc in <code>dist/javadoc</code> directory & junit test results in <code>build/test/results/*.xml</code> directory.
 
-For other setup & development tools like findbugs, checkstyle, pmd, ... please refer to [https://github.com/OpenGrok/OpenGrok/blob/master/README.txt README.txt] in the downloaded/cloned sources.
+For other setup & development tools like findbugs, checkstyle, pmd, ... please refer to [https://github.com/OpenGrok/OpenGrok/blob/master/README.md README.md] in the downloaded/cloned sources.
 
 Note that there is an experimental maven build system being implemented. If you want to help with it, we'd only be glad.
 
