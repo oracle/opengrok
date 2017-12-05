@@ -63,13 +63,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
 
 {Identifier} {
     String id = yytext();
-    // N.b. for historical reasons, JavaScriptXref does not link Idneitifers of
-    // length=1
-    if (id.length() > 1) {
-        writeSymbol(id, Consts.kwd, yyline);
-    } else {
-        out.write(id);
-    }
+    writeSymbol(id, Consts.kwd, yyline);
 }
 
 "<" ({File}|{FPath}) ">" {
