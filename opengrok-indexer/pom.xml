@@ -110,6 +110,13 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 </excludes>
             </testResource>
             <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/erlang/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/erlang/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/fortran/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/fortran/</directory>
                 <excludes>
