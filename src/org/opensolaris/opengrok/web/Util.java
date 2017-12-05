@@ -20,7 +20,9 @@
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
+
 package org.opensolaris.opengrok.web;
 
 import java.io.File;
@@ -83,6 +85,27 @@ public final class Util {
     }
 
     /**
+     * Calls
+     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * with {@code q}, a transient {@link StringBuilder}, and true.
+     * @param q a character sequence
+     * @return a string representing the character sequence in HTML
+     */
+    public static String prehtmlize(CharSequence q) {
+        StringBuilder sb = new StringBuilder(q.length() * 2);
+        try {
+            htmlize(q, sb, true);
+        } catch (IOException ioe) {
+            // IOException cannot happen when the destination is a
+            // StringBuilder. Wrap in an AssertionError so that callers
+            // don't have to check for an IOException that should never
+            // happen.
+            throw new AssertionError("StringBuilder threw IOException", ioe);
+        }
+        return sb.toString();
+    }
+
+    /**
      * Return a string which represents a <code>CharSequence</code> in HTML.
      *
      * @param q a character sequence
@@ -108,13 +131,29 @@ public final class Util {
      *
      * @param q a character sequence to escape
      * @param dest where to append the character sequence to
+     * @param pre a value indicating whether the output is pre-formatted -- if
+     * true then LFs will not be converted to &lt;br&gt; elements
+     * @throws IOException if an error occurred when writing to {@code dest}
+     */
+    public static void htmlize(CharSequence q, Appendable dest, boolean pre)
+            throws IOException {
+        for (int i = 0; i < q.length(); i++) {
+            htmlize(q.charAt(i), dest, pre);
+        }
+    }
+
+    /**
+     * Calls
+     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * with {@code q}, {@code dest}, and false.
+     *
+     * @param q a character sequence to escape
+     * @param dest where to append the character sequence to
      * @throws IOException if an error occurred when writing to {@code dest}
      */
     public static void htmlize(CharSequence q, Appendable dest)
             throws IOException {
-        for (int i = 0; i < q.length(); i++) {
-            htmlize(q.charAt(i), dest);
-        }
+        htmlize(q, dest, false);
     }
 
     /**
@@ -133,7 +172,7 @@ public final class Util {
             len = cs.length;
         }
         for (int i = 0; i < len; i++) {
-            htmlize(cs[i], dest);
+            htmlize(cs[i], dest, false);
         }
     }
 
@@ -143,10 +182,19 @@ public final class Util {
      *
      * @param c the character to append
      * @param dest where to append the character to
+     * @param pre a value indicating whether the output is pre-formatted -- if
+     * true then LFs will not be converted to &lt;br&gt; elements
      * @throws IOException if an error occurred when writing to {@code dest}
      */
-    private static void htmlize(char c, Appendable dest) throws IOException {
+    private static void htmlize(char c, Appendable dest, boolean pre)
+            throws IOException {
         switch (c) {
+            case '\'':
+                dest.append("&apos;");
+                break;
+            case '"':
+                dest.append("&quot;");
+                break;
             case '&':
                 dest.append("&amp;");
                 break;
@@ -157,7 +205,11 @@ public final class Util {
                 dest.append("&lt;");
                 break;
             case '\n':
-                dest.append("<br/>");
+                if (pre) {
+                    dest.append(c);                
+                } else {
+                    dest.append("<br/>");
+                }
                 break;
             default:
                 dest.append(c);
@@ -837,7 +889,7 @@ public final class Util {
             sb.append(Util.htmlize(line1.substring(m + 1, line1.length())));
             ret[0] = sb.toString();
         } else {
-            ret[0] = line1.toString(); // no change
+            ret[0] = Util.htmlize(line1.toString()); // no change
         }
 
         // added
@@ -850,7 +902,7 @@ public final class Util {
             sb.append(Util.htmlize(line2.substring(n + 1, line2.length())));
             ret[1] = sb.toString();
         } else {
-            ret[1] = line2.toString(); // no change
+            ret[1] = Util.htmlize(line2.toString()); // no change
         }
 
         return ret;
