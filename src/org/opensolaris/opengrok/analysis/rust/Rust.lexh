@@ -1,0 +1,43 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").  
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2016 Nikolay Denev.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+Identifier = ([\p{XID_Start}][\p{XID_Continue}]* | [_][\p{XID_Continue}]+)
+
+HEXDIG = [0-9A-Fa-f]
+DIGIT  = [0-9]
+OCTDIG = [0-7]
+BINDIG = [01]
+
+Integer_suffix = [_]* ("u8" | "i8" | "u16" | "i16" | "u32" | "i32" | "u64" |
+    "i64" | "isize" | "usize")
+Fp_suffix = [_]* ("f32" | "f64")
+Decimal_integer = {DIGIT} ([_]*{DIGIT})* {Integer_suffix}?
+Hex_integer = 0[x] {HEXDIG} ([_]*{HEXDIG})* {Integer_suffix}?
+Octal_integer = 0[o] {OCTDIG} ([_]*{OCTDIG})* {Integer_suffix}?
+Binary_integer = 0[b] {BINDIG} ([_]*{BINDIG})* {Integer_suffix}?
+Floating_point = ({DIGIT} ([_]*{DIGIT})* \. {DIGIT} ([_]*{DIGIT})* |
+    {DIGIT} ([_]*{DIGIT})*) ([eE][+-]?{DIGIT}+)? {Fp_suffix}?
+Number = ({Decimal_integer} | {Hex_integer} | {Octal_integer} |
+    {Binary_integer} | {Floating_point})

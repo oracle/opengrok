@@ -138,6 +138,13 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 </excludes>
             </testResource>
             <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/rust/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/rust/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/haskell/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/haskell/</directory>
                 <excludes>
