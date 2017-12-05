@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.golang;
@@ -60,5 +61,50 @@ public class Consts {
         kwd.add("switch");
         kwd.add("type");
         kwd.add("var");
+
+        kwd.add("_");	// Blank identifier
+
+        kwd.add("bool");	// Predeclared identifiers: Types
+        kwd.add("byte");	// Predeclared identifiers: Types
+        kwd.add("complex64");	// Predeclared identifiers: Types
+        kwd.add("complex128");	// Predeclared identifiers: Types
+        kwd.add("error");	// Predeclared identifiers: Types
+        kwd.add("float32");	// Predeclared identifiers: Types
+        kwd.add("float64");	// Predeclared identifiers: Types
+        kwd.add("int");	// Predeclared identifiers: Types
+        kwd.add("int8");	// Predeclared identifiers: Types
+        kwd.add("int16");	// Predeclared identifiers: Types
+        kwd.add("int32");	// Predeclared identifiers: Types
+        kwd.add("int64");	// Predeclared identifiers: Types
+        kwd.add("rune");	// Predeclared identifiers: Types
+        kwd.add("string");	// Predeclared identifiers: Types
+        kwd.add("uint");	// Predeclared identifiers: Types
+        kwd.add("uint8");	// Predeclared identifiers: Types
+        kwd.add("uint16");	// Predeclared identifiers: Types
+        kwd.add("uint32");	// Predeclared identifiers: Types
+        kwd.add("uint64");	// Predeclared identifiers: Types
+        kwd.add("uintptr");	// Predeclared identifiers: Types
+
+        kwd.add("true");	// Predeclared identifiers: Constants
+        kwd.add("false");	// Predeclared identifiers: Constants
+        kwd.add("iota");	// Predeclared identifiers: Constants
+
+        kwd.add("nil");	// Predeclared identifiers: Zero value
+
+        kwd.add("append");	// Predeclared identifiers: Functions
+        kwd.add("cap");	// Predeclared identifiers: Functions
+        kwd.add("close");	// Predeclared identifiers: Functions
+        kwd.add("complex");	// Predeclared identifiers: Functions
+        kwd.add("copy");	// Predeclared identifiers: Functions
+        kwd.add("delete");	// Predeclared identifiers: Functions
+        kwd.add("imag");	// Predeclared identifiers: Functions
+        kwd.add("len");	// Predeclared identifiers: Functions
+        kwd.add("make");	// Predeclared identifiers: Functions
+        kwd.add("new");	// Predeclared identifiers: Functions
+        kwd.add("panic");	// Predeclared identifiers: Functions
+        kwd.add("print");	// Predeclared identifiers: Functions
+        kwd.add("println");	// Predeclared identifiers: Functions
+        kwd.add("real");	// Predeclared identifiers: Functions
+        kwd.add("recover");	// Predeclared identifiers: Functions
     }
 }

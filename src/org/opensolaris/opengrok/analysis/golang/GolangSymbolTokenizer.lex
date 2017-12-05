@@ -27,12 +27,12 @@
  */
 
 package org.opensolaris.opengrok.analysis.golang;
+
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 /**
  * @author Patrick Lundquist
  */
-
 %%
 %public
 %class GolangSymbolTokenizer
@@ -45,10 +45,10 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
-
 %state STRING COMMENT SCOMMENT QSTRING
 
+%include Common.lexh
+%include Golang.lexh
 %%
 
 <YYINITIAL> {
@@ -59,6 +59,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
             return yystate();
         }
     }
+    {Number}    {}
     \"   { yybegin(STRING);   }
     \'   { yybegin(QSTRING);  }
     "/*" { yybegin(COMMENT);  }
@@ -66,12 +67,13 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
 }
 
 <STRING> {
-    \"   { yybegin(YYINITIAL); }
-    \\\\ | \\\" {}
+    \\[\"\\]    {}
+    \"    { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
-    \' { yybegin(YYINITIAL); }
+    \\[\'\\]    {}
+    \'    { yybegin(YYINITIAL); }
 }
 
 <COMMENT> {
@@ -79,9 +81,10 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
 }
 
 <SCOMMENT> {
-    \n { yybegin(YYINITIAL); }
+    {EOL} { yybegin(YYINITIAL); }
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+{WhiteSpace}    {}
 [^] {}
 }
