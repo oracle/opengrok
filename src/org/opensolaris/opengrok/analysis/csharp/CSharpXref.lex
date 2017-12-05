@@ -64,13 +64,7 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
 
 {Identifier} {
     String id = yytext();
-    // N.b. for historical reasons, CSharpXref does not link identifiers of
-    // length=1.
-    if (id.length() > 1) {
-        writeSymbol(id, Consts.kwd, yyline);
-    } else {
-        out.write(id);
-    }
+    writeSymbol(id, Consts.kwd, yyline);
 }
 
 "<" ({File} | {FPath}) ">" {
