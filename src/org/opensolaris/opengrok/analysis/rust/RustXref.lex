@@ -80,13 +80,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
     \; { endScope(); writeUnicodeChar(yycharat(0)); }
     {Identifier} {
         String id = yytext();
-        // For historical reasons, RustXref does not link identifiers of
-        // length=1
-        if (id.length() > 1) {
-            writeSymbol(id, Consts.kwd, yyline);
-        } else {
-            out.write(id);
-        }
+        writeSymbol(id, Consts.kwd, yyline);
     }
     "<" ({File}|{FPath}) ">" {
         out.write("&lt;");
