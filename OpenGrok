@@ -43,6 +43,7 @@
 #                                 options for CTags program (for its --options
 #                                 switch), default is DATA_ROOT/etc/ctags.config
 #   - OPENGROK_MANDOC             Full path to mandoc(1) binary
+#   - OPENGROK_LOCKING            Lucene SimpleFSLockFactory on|off (default off)
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
@@ -855,6 +856,7 @@ CommonInvocation()
 	${RENAMED_FILES_HISTORY}					\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
+        ${OPENGROK_LOCKING:+--lock} ${OPENGROK_LOCKING}        		\
         ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\
         ${OPENGROK_MANDOC:+--mandoc} ${OPENGROK_MANDOC}			\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
@@ -1032,8 +1034,7 @@ case "${1}" in
     update)
         ValidateConfiguration
         CreateRuntimeRequirements
-        UpdateGeneratedData
-        UpdateDescriptionCache
+        UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     updateQuietly)
@@ -1041,8 +1042,7 @@ case "${1}" in
         CreateRuntimeRequirements
         QUIET="-q"
         VERBOSE=""
-        UpdateGeneratedData
-        UpdateDescriptionCache
+        UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     updateDesc)
@@ -1066,8 +1066,7 @@ case "${1}" in
         fi
         ValidateConfiguration
         CreateRuntimeRequirements
-        UpdateGeneratedData
-        UpdateDescriptionCache
+        UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     indexpart)
@@ -1105,3 +1104,4 @@ case "${1}" in
         Usage
         ;;
 esac
+exit $?

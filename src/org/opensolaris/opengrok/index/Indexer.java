@@ -276,6 +276,7 @@ public final class Indexer {
             
         } catch (ParseException e) {
             System.err.println("** " +e.getMessage());
+            System.exit(1);
         } catch (IndexerException ex) {
             LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
             System.err.println(openGrok.getUsage());
