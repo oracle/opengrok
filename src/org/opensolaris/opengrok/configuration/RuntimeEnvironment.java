@@ -1663,7 +1663,7 @@ public final class RuntimeEnvironment {
      */
     synchronized public AuthorizationFramework getAuthorizationFramework() {
         if (authFramework == null) {
-            authFramework = new AuthorizationFramework(threadConfig.get().getPluginDirectory());
+            authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
         }
         return authFramework;
     }
@@ -1750,6 +1750,7 @@ public final class RuntimeEnvironment {
 
         // set the new plugin directory and reload the authorization framework
         getAuthorizationFramework().setPluginDirectory(config.getPluginDirectory());
+        getAuthorizationFramework().setStack(config.getPluginStack());
         getAuthorizationFramework().reload();
     }
 

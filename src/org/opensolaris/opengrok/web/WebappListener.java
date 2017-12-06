@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
@@ -80,7 +80,7 @@ public final class WebappListener
          * (reading the configuration) failed then the plugin directory is
          * possibly {@code null} causing the framework to allow every request.
          */
-        env.setAuthorizationFramework(new AuthorizationFramework(env.getPluginDirectory()));
+        env.setAuthorizationFramework(new AuthorizationFramework(env.getPluginDirectory(), env.getPluginStack()));
 
         String address = context.getInitParameter("ConfigAddress");
         if (address != null && address.length() > 0) {

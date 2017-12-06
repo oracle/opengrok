@@ -86,11 +86,6 @@ public final class AuthorizationFramework {
      * stored in HTTP session.
      *
      * Starting at 0 and increases with every reload.
-     *
-     * External consumers should call RuntimeEnvironment.getPluginVersion() 
-     * to get this number.
-     *
-     * @see RuntimeEnvironment#getPluginVersion()
      */
     private long pluginVersion = 0;
 
@@ -550,7 +545,7 @@ public final class AuthorizationFramework {
         });
 
         // clone a new stack not interfering with the current stack
-        AuthorizationStack newStack = RuntimeEnvironment.getInstance().getPluginStack().clone();
+        AuthorizationStack newStack = getStack().clone();
 
         // load all other possible plugin classes
         loadClasses(newStack,
@@ -595,7 +590,6 @@ public final class AuthorizationFramework {
      * Assumes the {@code lock} is held for reading.
      *
      * @return the current version number
-     * @see RuntimeEnvironment#getPluginVersion()
      */
     private long getPluginVersion() {
         return pluginVersion;
@@ -642,9 +636,9 @@ public final class AuthorizationFramework {
      * <h3>Order of plugin invocation</h3>
      *
      * <p>
-     * The order of plugin invocation is given by the configuration
-     * {@link RuntimeEnvironment#getPluginStack()} and appropriate actions are
-     * taken when traversing the stack with set of keywords, such as:</p>
+     * The order of plugin invocation is given by the stack and appropriate
+     * actions are taken when traversing the stack with set of keywords,
+     * such as:</p>
      *
      * <h4>required</h4>
      * Failure of such a plugin will ultimately lead to the authorization

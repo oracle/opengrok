@@ -107,15 +107,8 @@ public class AuthorizationFrameworkReloadTest {
         stack.add(new AuthorizationPlugin(AuthControlFlag.REQUIRED, 
                 "opengrok.auth.plugin.FalsePlugin"));
         stack.setForProjects(projectName);
-        RuntimeEnvironment re = RuntimeEnvironment.getInstance();
-        // Unfortunately even though the AuthorizationFramework is instantiated with given stack,
-        // this does not work because the reload() method called from the constructor grabs
-        // the stack from RuntimeEnvironment and not from the AuthorizationFramework itself.
-        re.setPluginStack(stack);
-        re.setPluginDirectory(pluginDirectory.getPath());
-        
         AuthorizationFramework framework = 
-                new AuthorizationFramework(pluginDirectory.getPath());
+                new AuthorizationFramework(pluginDirectory.getPath(), stack);
         
         // Perform simple sanity check before long run is entered. If this fails,
         // it will be waste of time to continue with the test.
@@ -125,13 +118,14 @@ public class AuthorizationFrameworkReloadTest {
         
         // Create a thread that does reload() every now and then.
         runThread = true;
+        final int maxReloadSleep = 10;
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (runThread) {
                     framework.reload();
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep((long) (Math.random() % maxReloadSleep) + 1);
                     } catch (InterruptedException ex) {
                     }
                 }
@@ -142,12 +136,12 @@ public class AuthorizationFrameworkReloadTest {
         reloads = stats.getRequest("authorization_stack_reload");
         assertNotNull(reloads);
         // Process number or requests and check that framework decision is consistent.
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1000; i++) {
             req = new DummyHttpServletRequest();
             assertFalse(framework.isAllowed(req, p));
             try {
-                // XXX random sleep
-                Thread.sleep(50);
+                // Should run more frequently than the thread performing reload().
+                Thread.sleep((long) (Math.random() % (maxReloadSleep / 3)) + 1);
             } catch (InterruptedException ex) {
             }
         }
