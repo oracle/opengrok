@@ -906,7 +906,7 @@ and setup (calls Ant for certain actions).
 
 #### 8.9.1 Unit Testing
 
-You can test the code at the moment by running `./mvn test` which will execute *all* tests.
+You can test the code at the moment by running `./mvnw test` which will execute *all* tests.
 Conditionally, if you don't have every type of repository installed, you can set it to unit-test only those which are
 found to be working on your system.
 
