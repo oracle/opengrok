@@ -76,12 +76,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
 {Identifier} {
     String id = yytext();
-    // For historical reasons, JavaXref does not link identifiers of length=1
-    if (id.length() > 1) {
-        writeSymbol(id, Consts.kwd, yyline);
-    } else {
-        out.write(id);
-    }
+    writeSymbol(id, Consts.kwd, yyline);
 }
 
 "<" ({File}|{FPath}) ">" {
