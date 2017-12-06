@@ -17,11 +17,13 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
+import java.io.IOException;
 import java.util.TreeSet;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -151,15 +153,17 @@ public class StatsMessageTest {
     }
 
     @Test
-    public void testInvalidReload() {
-        Message m = new StatsMessage();
+    public void testInvalidReload() throws Exception {
+        StatsMessage m = new StatsMessage();
         m.setText("reload");
-        env.getConfiguration().setStatisticsFilePath("/file/that/doesnot/exists");
+        m.setStatisticsFilePath("/file/that/doesnot/exists");
 
+        IOException expex = null;
         try {
             m.apply(env);
-            Assert.fail("Should throw an exception");
-        } catch (Exception ex) {
+        } catch (IOException ex) {
+            expex = ex;
         }
+        Assert.assertNotNull("Should throw an IOException", expex);
     }
 }

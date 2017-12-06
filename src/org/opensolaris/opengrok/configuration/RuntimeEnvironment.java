@@ -1828,7 +1828,7 @@ public final class RuntimeEnvironment {
                                 handleMessage(m, output);
                             }
                         } catch (SocketException e) {
-                            LOGGER.log(Level.FINE, "SocketException: {0}",
+                            LOGGER.log(Level.INFO, "SocketException: {0}",
                                 e.getMessage());
                         } catch (IOException e) {
                             LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
