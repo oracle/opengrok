@@ -27,50 +27,83 @@
  */
 
 package org.opensolaris.opengrok.analysis.lua;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 /**
  * @author Evan Kinney
  */
-
 %%
 %public
 %class LuaXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
+    int bracketLevel;
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
   @Override
   protected void setLineNumber(int x) { yyline = x; }
+
+    @Override
+    public void reset() {
+        super.reset();
+        bracketLevel = 0;
+    }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
-File = [a-zA-Z]{FNameChar}* "." ("lua"|"txt"|"htm"|"html"|"diff"|"patch")
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
+File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
+    [Hh][Tt][Mm][Ll]? | [Dd][Ii][Ff][Ff] | [Pp][Aa][Tt][Cc][Hh])
 
 %state STRING LSTRING COMMENT SCOMMENT QSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Lua.lexh
 %%
 <YYINITIAL> {
     {Identifier} {
         String id = yytext();
         writeSymbol(id, Consts.kwd, yyline);
     }
-    {Number}     { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
-    \"           { yybegin(STRING); out.write("<span class=\"s\">\"");                         }
-    "[["         { yybegin(LSTRING); out.write("<span class=\"s\">[[");                        }
-    \'           { yybegin(QSTRING); out.write("<span class=\"s\">\'");                        }
-    "--[["         { yybegin(COMMENT); out.write("<span class=\"c\">--[[");                        }
-    "--"         { yybegin(SCOMMENT); out.write("<span class=\"c\">--");                       }
+    {Number}     {
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
+        out.write(yytext());
+        disjointSpan(null);
+    }
+    \"           {
+        pushSpan(STRING, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext()));
+    }
+    "[" [=]* "["    {
+        String capture = yytext();
+        bracketLevel = LuaUtils.countOpeningLongBracket(capture);
+        pushSpan(LSTRING, HtmlConsts.STRING_CLASS);
+        out.write(capture);
+    }
+    \'           {
+        pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext()));
+    }
+    "--[" [=]* "["    {
+        String capture = yytext();
+        String bracket = capture.substring(2);
+        bracketLevel = LuaUtils.countOpeningLongBracket(bracket);
+        pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+        out.write(capture);
+    }
+    "--"         {
+        pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+        out.write(yytext());
+    }
 }
 
 "<" ({File}|{FPath}) ">" {
@@ -87,40 +120,59 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 }
 
 <STRING> {
-    \" {WhiteSpace} \" { out.write(yytext()); }
-    \"                 { yybegin(YYINITIAL); out.write("\"</span>"); }
-    \\\\               { out.write("\\\\"); }
-    \\\"               { out.write("\\\""); }
+    \\[\"\\] |
+    \" {WhiteSpace} \"    { out.write(htmlize(yytext())); }
+    \"    {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
 }
 
 <QSTRING> {
-    "\\\\"             { out.write("\\\\");                         }
-    "\\'"              { out.write("\\\'");                         }
-    \' {WhiteSpace} \' { out.write(yytext());                       }
-    \'                 { yybegin(YYINITIAL); out.write("'</span>"); }
+    \\[\'\\] |
+    \' {WhiteSpace} \'    { out.write(htmlize(yytext())); }
+    \'    {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
 }
 
-<LSTRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
- "]]" { yybegin(YYINITIAL); out.write("]]</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+<LSTRING, COMMENT> {
+    "]" [=]* "]"    {
+        String capture = yytext();
+        out.write(capture);
+        if (LuaUtils.isClosingLongBracket(capture, bracketLevel)) yypop();
+    }
+}
+
+<STRING, QSTRING, LSTRING> {
+    {WhspChar}*{EOL}    {
+        disjointSpan(null);
+        startNewLine();
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
 }
 
 <COMMENT> {
-    "--]]"               { yybegin(YYINITIAL); out.write("--]]</span>"); }
+    {WhspChar}*{EOL}    {
+        disjointSpan(null);
+        startNewLine();
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+    }
 }
 
 <SCOMMENT> {
-    {WhspChar}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine(); }
+    {WhspChar}*{EOL}    {
+        yypop();
+        startNewLine();
+    }
 }
 
 <YYINITIAL, STRING, LSTRING, COMMENT, SCOMMENT, QSTRING> {
-    "&"                { out.write( "&amp;");           }
-    "<"                { out.write( "&lt;");            }
-    ">"                { out.write( "&gt;");            }
-    {WhspChar}*{EOL} { startNewLine();                }
+    [&<>\'\"]          { out.write(htmlize(yytext())); }
+    {WhspChar}*{EOL}   { startNewLine(); }
     {WhiteSpace}       { out.write(yytext());           }
+    [!-~]              { out.write(yytext()); }
     [^\n]              { writeUnicodeChar(yycharat(0)); }
 }
 
@@ -135,11 +187,18 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
         out.write(path);
         out.write("</a>");
     }
-    {BrowseableURI}    {
-        String url = yytext();
-        out.write("<a href=\"");
-        out.write(url); out.write("\">");
-        out.write(url); out.write("</a>");
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        writeEMailAddress(yytext());
     }
-    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
+}
+
+<STRING, LSTRING, COMMENT, SCOMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }

@@ -27,12 +27,13 @@
  */
 
 package org.opensolaris.opengrok.analysis.lua;
+
+import java.io.IOException;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 /**
  * @author Evan Kinney
  */
-
 %%
 %public
 %class LuaSymbolTokenizer
@@ -44,11 +45,20 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
+%{
+    int bracketLevel;
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        bracketLevel = 0;
+    }
+%}
 
 %state STRING LSTRING COMMENT SCOMMENT QSTRING
 
+%include Common.lexh
+%include Lua.lexh
 %%
 
 <YYINITIAL> {
@@ -59,34 +69,47 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
             return yystate();
         }
     }
+    {Number}    {}
     \"     { yybegin(STRING);   }
-    "[["   { yybegin(LSTRING);  }
+    "[" [=]* "["    {
+        String capture = yytext();
+        bracketLevel = LuaUtils.countOpeningLongBracket(capture);
+        yybegin(LSTRING);
+    }
     \'     { yybegin(QSTRING);  }
-    "--[[" { yybegin(COMMENT);  }
+    "--[" [=]* "["    {
+        String capture = yytext();
+        String bracket = capture.substring(2);
+        bracketLevel = LuaUtils.countOpeningLongBracket(bracket);
+        yybegin(COMMENT);
+    }
     "--"   { yybegin(SCOMMENT); }
 }
 
 <STRING> {
+    \\[\"\\]    {}
     \"   { yybegin(YYINITIAL); }
-    \\\\ | \\\" {}
-}
-
-<LSTRING> {
-    "]]" { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
+    \\[\'\\]    {}
     \' { yybegin(YYINITIAL); }
 }
 
-<COMMENT> {
-    "]]" { yybegin(YYINITIAL); }
+<LSTRING, COMMENT> {
+    "]" [=]* "]"    {
+        String capture = yytext();
+        if (LuaUtils.isClosingLongBracket(capture, bracketLevel)) {
+            yybegin(YYINITIAL);
+        }
+    }
 }
 
 <SCOMMENT> {
-    \n { yybegin(YYINITIAL); }
+    {WhspChar}*{EOL} { yybegin(YYINITIAL); }
 }
 
 <YYINITIAL, STRING, LSTRING, COMMENT, SCOMMENT, QSTRING> {
+{WhiteSpace}    {}
 [^] {}
 }
