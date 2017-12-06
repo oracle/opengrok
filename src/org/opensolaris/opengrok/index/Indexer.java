@@ -276,6 +276,7 @@ public final class Indexer {
             
         } catch (ParseException e) {
             System.err.println("** " +e.getMessage());
+            System.exit(1);
         } catch (IndexerException ex) {
             LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
             System.err.println(openGrok.getUsage());
@@ -339,8 +340,8 @@ public final class Indexer {
     public static String[] parseOptions(String[] argv) throws ParseException {
         String[] usage = { "--help" };
         String program = "opengrok.jar";
-        String[] onOff = {ON, OFF};
-        String[] remoteRepoChoices = {ON, OFF, DIRBASED, UIONLY};
+        final String[] ON_OFF = {ON, OFF};
+        final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
 
         if (argv.length == 0) {
             argv = usage;  // will force usage output
@@ -467,12 +468,12 @@ public final class Indexer {
                 cfg.getIgnoredNames().add((String)pattern);
             });
 
-            parser.on("-l", "--lock", "=on/off", onOff, Boolean.class,
-                "Turn on/off locking of the Lucene database during index generation.").Do( v -> {
+            parser.on("-l", "--lock", "=on|off", ON_OFF, Boolean.class,
+                "Turn on|off locking of the Lucene database during index generation.").Do( v -> {
                 cfg.setUsingLuceneLocking((Boolean)v);
             });
 
-            parser.on("--leadingWildCards", "=on/off", onOff, Boolean.class, 
+            parser.on("--leadingWildCards", "=on|off", ON_OFF, Boolean.class,
                 "Allow or disallow leading wildcards in a search.").Do( v -> {
                 cfg.setAllowLeadingWildcard((Boolean)v);
             });
@@ -510,7 +511,7 @@ public final class Indexer {
                 runIndex = false;
             });
 
-            parser.on("-O", "--optimize", "=on/off", onOff, Boolean.class,
+            parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
                 "Turn on/off the optimization of the index database",
                 "as part of the indexing step.").
                 Do( v -> {
@@ -560,7 +561,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-Q", "--quickScan",  "=on/off", onOff, Boolean.class,
+            parser.on("-Q", "--quickScan",  "=on|off", ON_OFF, Boolean.class,
                 "Turn on/off quick context scan. By default, only the first",
                 "1024k of a file is scanned, and a '[..all..]' link is inserted",
                 "when the file is bigger. Activating this may slow the server down.",
@@ -578,7 +579,8 @@ public final class Indexer {
                 // Already handled above. This populates usage.
             });
 
-            parser.on("-r", "--remote", "=on|off|uionly|dirbased", remoteRepoChoices,
+            parser.on("-r", "--remote", "=on|off|uionly|dirbased",
+                REMOTE_REPO_CHOICES,
                 "Specify support for remote SCM systems.",
                 "      on - allow retrieval for remote SCM systems.",
                 "     off - ignore SCM for remote systems.",
@@ -599,7 +601,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--renamedHistory", "=on/off", onOff, Boolean.class,
+            parser.on("--renamedHistory", "=on|off", ON_OFF, Boolean.class,
                 "Enable or disable generating history for renamed files.",
                 "If set to on, makes history indexing slower for repositories",
                 "with lots of renamed files.").Do( v -> {
