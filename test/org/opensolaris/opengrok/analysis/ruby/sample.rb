@@ -174,3 +174,4 @@ ensure
   system("stty -raw echo")
 end
 print "\n"
+print 'http://example.com'

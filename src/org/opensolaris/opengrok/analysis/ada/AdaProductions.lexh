@@ -141,27 +141,27 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 <YYINITIAL> {
     {Identifier}    {
         String id = yytext();
-        if (takeSymbol(id, 0, false) && returnOnSymbol()) {
+        if (offerSymbol(id, 0, false) && returnOnSymbol()) {
             return yystate();
         }
     }
 
     {Character_literal}    {
-        h.takeLiteral(yytext(), HtmlConsts.SPAN_S, HtmlConsts.ZSPAN);
+        h.takeLiteral(yytext(), HtmlConsts.STRING_CLASS);
     }
 
     {Numeric_literal}    {
-        h.takeLiteral(yytext(), HtmlConsts.SPAN_N, HtmlConsts.ZSPAN);
+        h.takeLiteral(yytext(), HtmlConsts.NUMBER_CLASS);
     }
 
     {String_literal}    {
-        h.takeLiteral(yytext(), HtmlConsts.SPAN_S, HtmlConsts.ZSPAN);
+        h.takeLiteral(yytext(), HtmlConsts.STRING_CLASS);
     }
 
     {Comment_token}    {
         yypush(SCOMMENT);
-        take(HtmlConsts.SPAN_C);
-        takeNonword(yytext());
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        offerNonword(yytext());
     }
 }
 
@@ -171,7 +171,7 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
         String capture = yytext();
         yypushback(capture.length());
         yypop();
-        take(HtmlConsts.ZSPAN);
+        disjointSpan(null);
     }
 }
 
@@ -184,16 +184,16 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 
 <YYINITIAL, SCOMMENT> {
     [\&\<\>\"\']    {
-        takeNonword(yytext());
+        offerNonword(yytext());
     }
 
     // Only one whitespace char at a time
     {WhspChar}    {
-        take(yytext());
+        offer(yytext());
     }
 
     [!-~]    {
-        take(yytext());
+        offer(yytext());
     }
 
     [^\n\r]    {
@@ -205,19 +205,19 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 <SCOMMENT> {
     {FPath}    {
         if (takeAllContent()) {
-            take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
+            offer(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
         }
     }
 
     {File}    {
         if (takeAllContent()) {
             String path = yytext();
-            take("<a href=\"" + getUrlPrefix() + "path=");
-            take(path);
+            offer("<a href=\"" + getUrlPrefix() + "path=");
+            offer(path);
             appendProject();
-            take("\">");
-            take(path);
-            take("</a>");
+            offer("\">");
+            offer(path);
+            offer("</a>");
         }
     }
 

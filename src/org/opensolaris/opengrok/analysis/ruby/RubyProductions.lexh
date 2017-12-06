@@ -239,7 +239,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 <YYINITIAL, INTRA> {
     [\\] {EOL}    {
         maybeIntraState();
-        take("\\");
+        offer("\\");
         startNewLine();
     }
 
@@ -251,7 +251,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     {Instance_var} | {Class_var} | {Global_var} | {Symbol}    {
         maybeIntraState();
         String id = yytext();
-        if (takeSymbol(id, 0, true) && returnOnSymbol()) {
+        if (offerSymbol(id, 0, true) && returnOnSymbol()) {
             return yystate();
         }
     }
@@ -259,14 +259,14 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     {Local_var} | {Method_name}    {
         maybeIntraState();
         String id = yytext();
-        if (takeSymbol(id, 0, false) && returnOnSymbol()) {
+        if (offerSymbol(id, 0, false) && returnOnSymbol()) {
             return yystate();
         }
     }
 
     {SPIdentifier}    {
         maybeIntraState();
-        takeKeyword(yytext());
+        offerKeyword(yytext());
     }
 
     {Modules_nested}    {
@@ -276,24 +276,24 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
     {Character_literal}    {
         maybeIntraState();
-        take(HtmlConsts.SPAN_S);
-        takeNonword(yytext());
-        take(HtmlConsts.ZSPAN);
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offerNonword(yytext());
+        disjointSpan(null);
     }
 
     {Numeric_literal}    {
         maybeIntraState();
-        take(HtmlConsts.SPAN_N);
-        takeNonword(yytext());
-        take(HtmlConsts.ZSPAN);
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
+        offerNonword(yytext());
+        disjointSpan(null);
     }
 
     \"    { h.qop(yytext(), 0, false); }
     \'    { h.qop(yytext(), 0, true); }
     \#    {
         yypush(SCOMMENT);
-        take(HtmlConsts.SPAN_C);
-        takeNonword(yytext());
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        offerNonword(yytext());
     }
 
     // Quote with two character names plus possibly a {WxSigils} spacer
@@ -312,14 +312,14 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
     // POD-end without having seen POD-begin is akin to a one-line comment
     ^ {POD_end} [^\n\r]*    {
-        takeNonword(yytext());
+        offerNonword(yytext());
     }
 
     // POD start
     ^ {POD_begin}   {
         yypush(POD);
-        take(HtmlConsts.SPAN_C);
-        take(yytext());
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        offer(yytext());
     }
 
     [\{\}]    {
@@ -327,9 +327,9 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
         if (h.maybeEndInterpolation(capture)) {
             popHelper();
             yypop();
-            take(HtmlConsts.SPAN_S);
+            disjointSpan(HtmlConsts.STRING_CLASS);
         }
-        takeNonword(capture);
+        offerNonword(capture);
     }
 }
 
@@ -337,8 +337,8 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
     "/"    {
         // OK to pass a fake "m/" with doWrite=false
         h.qop(false, "m/", 1, false);
-        take(HtmlConsts.SPAN_S);
-        take(yytext());
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer(yytext());
     }
 }
 
@@ -368,7 +368,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
         String capture = yytext();
         if (takeAllContent()) {
             String boundary = capture.substring(0, 1);
-            takeNonword(boundary);
+            offerNonword(boundary);
         }
         h.hqopSymbol(capture.substring(1));
     }
@@ -376,14 +376,14 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
 <QUO, QUOxN, QUOxL, QUOxLxN, HERE, HEREin> {
     \\ \S    {
-        takeNonword(yytext());
+        offerNonword(yytext());
     }
 }
 
 <QUO, QUOxL> {
     "#{"    {
-        takeNonword(yytext());
-        take(HtmlConsts.ZSPAN);
+        offerNonword(yytext());
+        disjointSpan(null);
         yypush(YYINITIAL);
         pushHelper();
         h.interpop();
@@ -393,11 +393,11 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 <QUO, QUOxN, QUOxL, QUOxLxN> {
     {Quo0}    {
         String capture = yytext();
-        takeNonword(capture);
+        offerNonword(capture);
         if (h.maybeEndQuote(capture)) {
             yypop();
             if (h.areModifiersOK()) yypush(QM);
-            take(HtmlConsts.ZSPAN);
+            disjointSpan(null);
         }
     }
 }
@@ -405,16 +405,16 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 <QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
     {WhiteSpace}{EOL} |
     {EOL} {
-        take(HtmlConsts.ZSPAN);
+        disjointSpan(null);
         startNewLine();
-        take(HtmlConsts.SPAN_S);
+        disjointSpan(HtmlConsts.STRING_CLASS);
     }
 }
 
 <QM> {
     // /PAT/imxouesn
     [a-z]    {
-        take(yytext());
+        offer(yytext());
     }
 
     // anything else ends the quote-modifiers state
@@ -427,8 +427,8 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 <POD> {
     ^ {POD_end} [^\n\r]*    {
         yypop();
-        takeNonword(yytext());
-        take(HtmlConsts.ZSPAN);
+        offerNonword(yytext());
+        disjointSpan(null);
     }
 
     {WhiteSpace}{EOL} |
@@ -443,7 +443,7 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
         String capture = yytext();
         yypushback(capture.length());
         yypop();
-        take(HtmlConsts.ZSPAN);
+        disjointSpan(null);
     }
 }
 
@@ -465,17 +465,17 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
     [&<>\"\']    {
         maybeIntraState();
-        takeNonword(yytext());
+        offerNonword(yytext());
     }
 
     // Only one whitespace char at a time or else {WxSigils} can be broken
     {WhspChar}    {
-        take(yytext());
+        offer(yytext());
     }
 
     [!-~]    {
         maybeIntraState();
-        take(yytext());
+        offer(yytext());
     }
 
     [^\n\r]    {
@@ -488,31 +488,46 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 <SCOMMENT, POD, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
     {FPath}    {
         if (takeAllContent()) {
-            take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
+            offer(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
         }
     }
 
     {File}    {
         if (takeAllContent()) {
             String path = yytext();
-            take("<a href=\"" + getUrlPrefix() + "path=");
-            take(path);
+            offer("<a href=\"" + getUrlPrefix() + "path=");
+            offer(path);
             appendProject();
-            take("\">");
-            take(path);
-            take("</a>");
-        }
-    }
-
-    {BrowseableURI}    {
-        if (takeAllContent()) {
-            appendLink(yytext(), true);
+            offer("\">");
+            offer(path);
+            offer("</a>");
         }
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
         if (takeAllContent()) {
             writeEMailAddress(yytext());
+        }
+    }
+}
+
+<SCOMMENT, POD, HERE, HERExN, HEREin, HEREinxN> {
+    {BrowseableURI}    {
+        if (takeAllContent()) {
+            appendLink(yytext(), true, null);
+        }
+        // no skipLink() needed except in QUO* states
+    }
+}
+
+<QUO, QUOxN> {
+    {BrowseableURI}    {
+        String capture = yytext();
+        Pattern collateralCapture = h.getCollateralCapturePattern();
+        if (takeAllContent()) {
+            appendLink(capture, true, collateralCapture);
+        } else {
+            skipLink(capture, collateralCapture);
         }
     }
 }

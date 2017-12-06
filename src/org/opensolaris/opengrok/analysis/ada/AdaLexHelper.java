@@ -25,44 +25,12 @@ package org.opensolaris.opengrok.analysis.ada;
 
 import java.io.IOException;
 import org.opensolaris.opengrok.analysis.Resettable;
+import org.opensolaris.opengrok.analysis.JFlexJointLexer;
 
 /**
  * Represents an API for object's using {@link AdaLexHelper}
  */
-interface AdaLexListener {
-    void take(String value) throws IOException;
-    void takeNonword(String value) throws IOException;
-
-    /**
-     * Passes a text fragment that is syntactically a symbol for processing.
-     * @param value the excised symbol
-     * @param captureOffset the offset from yychar where {@code value} began
-     * @param ignoreKwd a value indicating whether keywords should be ignored
-     * @return true if the {@code value} was not in keywords or if the
-     * {@code ignoreKwd} was true
-     */
-    boolean takeSymbol(String value, int captureOffset, boolean ignoreKwd)
-        throws IOException;
-
-    /**
-     * Indicates that something unusual happened where normally a symbol would
-     * have been written.
-     */
-    void skipSymbol();
-
-    /**
-     * Passes a text fragment that is syntactically a keyword symbol for
-     * processing
-     * @param value the excised symbol
-     */
-    void takeKeyword(String value) throws IOException;
-
-    /**
-     * Indicates that the current line is ended.
-     *
-     * @throws IOException thrown on error when handling the EOL
-     */
-    void startNewLine() throws IOException;
+interface AdaLexer extends JFlexJointLexer {
 }
 
 /**
@@ -70,13 +38,13 @@ interface AdaLexListener {
  */
 class AdaLexHelper implements Resettable {
 
-    private final AdaLexListener listener;
+    private final AdaLexer lexer;
 
-    public AdaLexHelper(AdaLexListener listener) {
-        if (listener == null) {
-            throw new IllegalArgumentException("`listener' is null");
+    public AdaLexHelper(AdaLexer lexer) {
+        if (lexer == null) {
+            throw new IllegalArgumentException("`lexer' is null");
         }
-        this.listener = listener;
+        this.lexer = lexer;
     }
 
     /**
@@ -91,10 +59,10 @@ class AdaLexHelper implements Resettable {
      * Write {@code value} to output -- if it contains any EOLs then the
      * {@code startNewLine()} is called in lieu of outputting EOL.
      */
-    public void takeLiteral(String value, String linePrefix, String lineSuffix)
+    public void takeLiteral(String value, String className)
             throws IOException {
 
-        if (linePrefix != null) listener.take(linePrefix);
+        lexer.disjointSpan(className);
 
         int off = 0;
         do {
@@ -103,7 +71,7 @@ class AdaLexHelper implements Resettable {
             ni = value.indexOf("\n", off);
             if (ri == -1 && ni == -1) {
                 String sub = value.substring(off);
-                listener.takeNonword(sub);
+                lexer.offerNonword(sub);
                 break;
             }
             if (ri != -1 && ni != -1) {
@@ -122,13 +90,13 @@ class AdaLexHelper implements Resettable {
             }
 
             String sub = value.substring(off, i);
-            listener.takeNonword(sub);
-            if (lineSuffix != null) listener.take(lineSuffix);
-            listener.startNewLine();
-            if (linePrefix != null) listener.take(linePrefix);
+            lexer.offerNonword(sub);
+            lexer.disjointSpan(null);
+            lexer.startNewLine();
+            lexer.disjointSpan(className);
             off = i + w;
         } while (off < value.length());
 
-        if (lineSuffix != null) listener.take(lineSuffix);
+        lexer.disjointSpan(null);
     }
 }

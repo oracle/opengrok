@@ -68,11 +68,23 @@ public final class StringUtils {
     private static final String FNAME_CHARS_PAT =
         "[a-zA-Z0-9_\\-\\.]";
 
-    private static final Pattern FNAME_CHARS_ANYMATCH =
-        Pattern.compile(FNAME_CHARS_PAT);
-
     private static final Pattern FNAME_CHARS_STARTSMATCH =
         Pattern.compile("^" + FNAME_CHARS_PAT);
+
+    /**
+     * Matches one of the same possible characters as CommonPath.lexh's {FPath}:
+     * <pre>
+     * {@code
+     * [a-zA-Z0-9_\-\./]
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    private static final String FPATH_CHAR_PAT =
+        "[a-zA-Z0-9_\\-\\./]";
+
+    private static final Pattern FPATH_CHAR_STARTSMATCH =
+        Pattern.compile("^" + FPATH_CHAR_PAT);
 
     /**
      * Matches one of the same¹ possible characters as Common.lexh's {URIChar}:
@@ -89,14 +101,11 @@ public final class StringUtils {
     private static final String URI_CHARS_PAT =
         "[a-zA-Z0-9\\-\\._~%:/\\?\\#\\[\\]@!\\$&\\'\\(\\)\\*\\+,;=]";
 
-    private static final Pattern URI_CHARS_ANYMATCH =
-        Pattern.compile(URI_CHARS_PAT);
-
     private static final Pattern URI_CHARS_STARTSMATCH =
         Pattern.compile("^" + URI_CHARS_PAT);
 
+    /** Private to enforce singleton */
     private StringUtils() {
-        // Only static utility methods
     }
 
     /**
@@ -196,18 +205,8 @@ public final class StringUtils {
     }
 
     /**
-     * Determines if the {@code value} contains characters matching
-     * Common.lexh's {FNameChar}.
-     * @param value the input to test
-     * @return true if {@code value} matches anywhere
-     */
-    public static boolean containsFnameChars(String value) {
-        return FNAME_CHARS_ANYMATCH.matcher(value).matches();
-    }
-
-    /**
      * Determines if the {@code value} starts with characters matching
-     * Common.lexh's {FNameChar}.
+     * CommonPath.lexh's {FNameChar}.
      * @param value the input to test
      * @return true if {@code value} matches at its start
      */
@@ -216,18 +215,8 @@ public final class StringUtils {
     }
 
     /**
-     * Determines if the {@code value} contains characters matching
-     * RFC-3986 and Common.lexh's definitions for allowable URI characters.
-     * @param value the input to test
-     * @return true if {@code value} matches anywhere
-     */
-    public static boolean containsURIChars(String value) {
-        return URI_CHARS_ANYMATCH.matcher(value).matches();
-    }
-
-    /**
      * Determines if the {@code value} starts with characters matching
-     * RFC-3986 and Common.lexh's definitions for allowable URI characters.
+     * RFC-3986 and CommonPath.lexh's definitions for allowable URI characters.
      * @param value the input to test
      * @return true if {@code value} matches at its start
      */
@@ -287,5 +276,39 @@ public final class StringUtils {
         Matcher m = pattern.matcher(value);
         if (!m.find()) return -1;
         return m.start();
+    }
+
+    /**
+     * Determines if the {@code value} starts with a character in
+     * CommonPath.lexh's {FPath}.
+     * @param value the input to test
+     * @return true if {@code value} matches at its start
+     */
+    public static boolean startsWithFpathChar(String value) {
+        return FPATH_CHAR_STARTSMATCH.matcher(value).matches();
+    }
+
+    /**
+     * Determines if the specified pattern, {@code pat}, matches the specified
+     * {@code capture}, and computes an eligible pushback.
+     * @param capture a defined input
+     * @param pat a pattern, or null to skip computation
+     * @return a positive value if {@code pat} matches in {@code capture} at or
+     * after the second character to indicate the number of characters to
+     * pushback including the first-matched character; otherwise 0 to indicate
+     * no match or a match at the 0-th character. (The 0-th chracter is
+     * ineligible for fear of looping non-stop upon pushing back the entire
+     * {@code yytext()}.)
+     */
+    public static int countPushback(String capture, Pattern pat) {
+        if (pat != null) {
+            int o = StringUtils.patindexOf(capture, pat);
+            if (o >= 0) {
+                int n = capture.length() - o;
+                // Push back if positive, but not if equal to the full length.
+                if (n > 0 && n < capture.length()) return n;
+            }
+        }
+        return 0;
     }
 }

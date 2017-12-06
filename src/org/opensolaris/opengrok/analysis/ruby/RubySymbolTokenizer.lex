@@ -30,7 +30,9 @@ package org.opensolaris.opengrok.analysis.ruby;
 
 import java.io.IOException;
 import java.util.Stack;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
@@ -38,7 +40,7 @@ import org.opensolaris.opengrok.web.Util;
 %public
 %class RubySymbolTokenizer
 %extends JFlexTokenizer
-%implements RubyLexListener
+%implements RubyLexer
 %unicode
 %int
 %char
@@ -63,15 +65,16 @@ import org.opensolaris.opengrok.web.Util;
         super.reset();
         if (helpers != null) helpers.clear();
         h.reset();
+        lastSymbol = null;
     }
 
     @Override
-    public void take(String value) throws IOException {
+    public void offer(String value) throws IOException {
         // noop
     }
 
     @Override
-    public void takeNonword(String value) throws IOException {
+    public void offerNonword(String value) throws IOException {
         // noop
     }
 
@@ -80,7 +83,7 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public boolean takeSymbol(String value, int captureOffset,
+    public boolean offerSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
         if (h.nameLength(value) <= 1) {
@@ -102,12 +105,17 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public void takeKeyword(String value) throws IOException {
+    public void offerKeyword(String value) throws IOException {
         lastSymbol = null;
     }
 
     @Override
     public void startNewLine() throws IOException {
+        // noop
+    }
+
+    @Override
+    public void disjointSpan(String className) throws IOException {
         // noop
     }
 
@@ -146,9 +154,14 @@ import org.opensolaris.opengrok.web.Util;
 
     protected void appendProject() { /* noop */ }
 
-    protected void appendLink(String s, boolean b) { /* noop */ }
+    protected void appendLink(String s, boolean b, Pattern p) { /* noop */ }
 
     protected void writeEMailAddress(String s) { /* noop */ }
+
+    protected void skipLink(String url, Pattern p) {
+        int n = StringUtils.countPushback(url, p);
+        if (n > 0) yypushback(n);
+    }
 %}
 
 %include Common.lexh

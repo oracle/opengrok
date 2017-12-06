@@ -29,7 +29,9 @@
 package org.opensolaris.opengrok.analysis.perl;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
@@ -37,7 +39,7 @@ import org.opensolaris.opengrok.web.Util;
 %public
 %class PerlSymbolTokenizer
 %extends JFlexTokenizer
-%implements PerlLexListener
+%implements PerlLexer
 %unicode
 %int
 %char
@@ -60,15 +62,16 @@ import org.opensolaris.opengrok.web.Util;
     public void reset() throws IOException {
         super.reset();
         h.reset();
+        lastSymbol = null;
     }
 
     @Override
-    public void take(String value) throws IOException {
+    public void offer(String value) throws IOException {
         // noop
     }
 
     @Override
-    public void takeNonword(String value) throws IOException {
+    public void offerNonword(String value) throws IOException {
         // noop
     }
 
@@ -77,7 +80,7 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public boolean takeSymbol(String value, int captureOffset,
+    public boolean offerSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
         if (ignoreKwd || !Consts.kwd.contains(value)) {
@@ -97,7 +100,7 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public void takeKeyword(String value) throws IOException {
+    public void offerKeyword(String value) throws IOException {
         lastSymbol = null;
     }
 
@@ -107,10 +110,15 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
+    public void disjointSpan(String className) throws IOException {
+        // noop
+    }
+
+    @Override
     public void abortQuote() throws IOException {
         yypop();
         if (h.areModifiersOK()) yypush(QM);
-        take(HtmlConsts.ZSPAN);
+        disjointSpan(null);
     }
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does
@@ -131,9 +139,14 @@ import org.opensolaris.opengrok.web.Util;
 
     protected void appendProject() { /* noop */ }
 
-    protected void appendLink(String s, boolean b) { /* noop */ }
+    protected void appendLink(String s, boolean b, Pattern p) { /* noop */ }
 
     protected void writeEMailAddress(String s) { /* noop */ }
+
+    protected void skipLink(String url, Pattern p) {
+        int n = StringUtils.countPushback(url, p);
+        if (n > 0) yypushback(n);
+    }
 %}
 
 %include Common.lexh

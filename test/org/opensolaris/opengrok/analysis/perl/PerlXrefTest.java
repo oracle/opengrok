@@ -46,18 +46,31 @@ public class PerlXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
+        writeAndCompare("org/opensolaris/opengrok/analysis/perl/sample.pl",
+            "org/opensolaris/opengrok/analysis/perl/samplexrefres.html");
+    }
+
+    @Test
+    public void shouldCloseTruncateStringSpan() throws IOException {
+        writeAndCompare("org/opensolaris/opengrok/analysis/perl/truncated.pl",
+            "org/opensolaris/opengrok/analysis/perl/truncated_xrefres.html");
+    }
+
+    private void writeAndCompare(String sourceResource, String resultResource)
+        throws IOException {
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/perl/sample.pl");
-        assertNotNull("sample.pl should get-as-stream", res);
+            sourceResource);
+        assertNotNull(sourceResource + " should get-as-stream", res);
         writePerlXref(res, new PrintStream(baos));
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/perl/samplexrefres.html");
-        assertNotNull("samplexrefres.html should get-as-stream", exp);
+            resultResource);
+        assertNotNull(resultResource + " should get-as-stream", exp);
         copyStream(exp, baosExp);
         exp.close();
         baosExp.close();
@@ -68,11 +81,10 @@ public class PerlXrefTest {
         assertLinesEqual("Perl xref", estr, ostr);
     }
 
-    private void writePerlXref(InputStream iss, PrintStream oss) throws IOException {
-        InputStream begin = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/perl/samplebeginhtml.txt");
-        assertNotNull("samplebeginhtml.txt should get-as-stream", begin);
-        copyStream(begin, oss);
+    private void writePerlXref(InputStream iss, PrintStream oss)
+        throws IOException {
+
+        oss.print(getHtmlBegin());
 
         Writer sw = new StringWriter();
         PerlAnalyzerFactory fac = new PerlAnalyzerFactory();
@@ -81,10 +93,7 @@ public class PerlXrefTest {
             new InputStreamReader(iss, "UTF-8"), sw));
         oss.print(sw.toString());
 
-        InputStream end = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/perl/sampleendhtml.txt");
-        assertNotNull("sampleendhtml.txt should get-as-stream", end);
-        copyStream(end, oss);
+        oss.print(getHtmlEnd());
     }
 
     private void copyStream(InputStream iss, OutputStream oss) throws IOException {
@@ -96,5 +105,22 @@ public class PerlXrefTest {
                 oss.write(buffer, 0, read);
             }
         } while (read >= 0);
+    }
+
+    private static String getHtmlBegin() {
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n" +
+            "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
+            "<html xmlns=\"http://www.w3.org/1999/xhtml\"" +
+            " xml:lang=\"en\" lang=\"en\"\n" +
+            "      class=\"xref\">\n" +
+            "<head>\n" +
+            "<title>sampleTest.pl - OpenGrok cross reference" +
+            " for /sampleTest.pl</title></head><body>\n";
+    }
+
+    private static String getHtmlEnd() {
+        return "</body>\n" +
+            "</html>\n";
     }
 }
