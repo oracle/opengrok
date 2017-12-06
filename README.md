@@ -684,16 +684,16 @@ being executed on) under the `dist/` directory.
 
 ### 8.1 Unit testing
 
-**Note**: For full coverage report your system has to provide proper junit test
-environment, that would mean:
+**Note**: For full coverage report, a proper junit test environment is required.
+That would mean:
 
-  * you have to use Ant 1.9 and above
-  * at least `junit-4.12.jar` has to be in ant's classpath (e.g. in `./lib`)
-
-  * your `PATH` must contain directory with exuberant ctags binary
+  * You have to use Ant 1.9 and above
+  * At least `junit-4.12.jar` and its dependencies have to be in ant's
+    classpath (e.g. in `./lib`). The test task will download them automatically.
+  * Your `PATH` must contain directory with exuberant ctags binary
     * **Note**: make sure that the directory which contains exuberant ctags binary
       is prepended before the directory with plain ctags program.
-  * your `PATH` variable must contain directories which contain binaries of
+  * Your `PATH` variable must contain directories which contain binaries of
     appropriate SCM software which means commands hg, sccs, cvs, git, bzr, svn
     (svnadmin too). They must be available for the full report.
 
