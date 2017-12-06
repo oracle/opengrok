@@ -93,6 +93,13 @@ public class IndexDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexDatabase.class);
 
+    /**
+     * Formerly, every delete issued an IndexWriter commit(). This is a first
+     * draft of a policy value used to flush -- not commit -- deleted items
+     * periodically.
+     */
+    private static final int MAX_BUFFERED_DELETE_TERMS = 200;
+
     private Project project;
     private FSDirectory indexDirectory;    
     private IndexWriter writer;
@@ -381,6 +388,7 @@ public class IndexDatabase {
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setRAMBufferSizeMB(env.getRamBufferSize());
+            iwc.setMaxBufferedDeleteTerms(MAX_BUFFERED_DELETE_TERMS);
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
 
@@ -627,8 +635,6 @@ public class IndexDatabase {
         }
 
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));        
-        writer.prepareCommit();
-        writer.commit();
 
         removeXrefFile(path);
         if (removeHistory) {
