@@ -383,6 +383,7 @@ public class IndexDatabase {
             }
         }
 
+        IOException writerException = null;
         try {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
@@ -455,14 +456,25 @@ public class IndexDatabase {
                     reader.close();
                 }
             }
+
+            try {
+                writer.commit();
+            } catch (IOException e) {
+                writerException = e;
+                LOGGER.log(Level.WARNING,
+                    "An error occured while committing writer", e);
+            }
         } finally {
-            if (writer != null) {
-                try {
-                    writer.prepareCommit();
-                    writer.commit();
-                    writer.close();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occured while closing writer", e);
+            try {
+                if (writer != null) writer.close();
+            } catch (IOException e) {
+                if (writerException != null) writerException = e;
+                LOGGER.log(Level.WARNING,
+                    "An error occured while closing writer", e);
+            } finally {
+                writer = null;
+                synchronized (lock) {
+                    running = false;
                 }
             }
 
@@ -472,13 +484,13 @@ public class IndexDatabase {
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING,
                         "An error occured while closing ctags process", e);
+                } finally {
+                    ctags = null;
                 }
             }
-
-            synchronized (lock) {
-                running = false;
-            }
         }
+
+        if (writerException != null) throw writerException;
 
         if (!isInterrupted() && isDirty()) {
             if (env.isOptimizeDatabase()) {
