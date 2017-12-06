@@ -30,7 +30,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -45,7 +44,6 @@ public class AuthorizationFrameworkTest {
 
     private static final Random RANDOM = new Random();
 
-    private AuthorizationFramework framework;
     private final StackSetup setup;
 
     public AuthorizationFrameworkTest(StackSetup setup) {
@@ -651,7 +649,7 @@ public class AuthorizationFrameworkTest {
 
     @Test
     public void testPluginsGeneric() {
-        framework.setStack(setup.stack);
+        AuthorizationFramework framework = new AuthorizationFramework(null, setup.stack);
         framework.loadAllPlugins(setup.stack);
 
         boolean actual;
@@ -670,11 +668,6 @@ public class AuthorizationFrameworkTest {
                         actual);
             }
         }
-    }
-
-    @Before
-    public void setUp() {
-        framework = new AuthorizationFramework(null);
     }
 
     static private Project createAllowedProject() {
@@ -782,7 +775,6 @@ public class AuthorizationFrameworkTest {
             }
 
         };
-
     }
 
     static public class TestCase {

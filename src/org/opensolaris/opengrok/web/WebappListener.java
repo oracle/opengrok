@@ -81,6 +81,7 @@ public final class WebappListener
          * possibly {@code null} causing the framework to allow every request.
          */
         env.setAuthorizationFramework(new AuthorizationFramework(env.getPluginDirectory(), env.getPluginStack()));
+        env.getAuthorizationFramework().reload();
 
         String address = context.getInitParameter("ConfigAddress");
         if (address != null && address.length() > 0) {

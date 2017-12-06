@@ -39,11 +39,6 @@ import org.opensolaris.opengrok.web.Statistics;
 /**
  * Test behavior of AuthorizationFramework {@code reload()} w.r.t. HTTP sessions.
  * 
- * Note that the tests are accompanied with noise when reloading since
- * the plugin directory contains classes of other tests from this package
- * which the authorization framework is trying (unsuccessfully, since they
- * do not implement the plugin interface) to load.
- * 
  * @author Vladimir Kotal
  */
 public class AuthorizationFrameworkReloadTest {
@@ -66,6 +61,8 @@ public class AuthorizationFrameworkReloadTest {
     public void testReloadSimple() {
         DummyHttpServletRequest req = new DummyHttpServletRequest();
         AuthorizationFramework framework = new AuthorizationFramework(pluginDirectory.getPath());
+        framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
+        framework.reload();
         Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
         
         // Ensure the framework was setup correctly.
@@ -109,6 +106,8 @@ public class AuthorizationFrameworkReloadTest {
         stack.setForProjects(projectName);
         AuthorizationFramework framework = 
                 new AuthorizationFramework(pluginDirectory.getPath(), stack);
+        framework.setLoadClasses(false); // to avoid noise when loading classes of other tests
+        framework.reload();
         
         // Perform simple sanity check before long run is entered. If this fails,
         // it will be waste of time to continue with the test.
@@ -157,5 +156,21 @@ public class AuthorizationFrameworkReloadTest {
         reloads = stats.getRequest("authorization_stack_reload") - reloads;
         System.out.println("number of reloads: " + reloads);
         assertTrue(reloads > 0);
+    }
+    
+    @Test
+    public void testSetLoadClasses() {
+        AuthorizationFramework framework = new AuthorizationFramework();
+        assertTrue(framework.isLoadClassesEnabled());
+        framework.setLoadClasses(false);
+        assertFalse(framework.isLoadClassesEnabled());
+    }
+    
+    @Test
+    public void testSetLoadJars() {
+        AuthorizationFramework framework = new AuthorizationFramework();
+        assertTrue(framework.isLoadJarsEnabled());
+        framework.setLoadJars(false);
+        assertFalse(framework.isLoadJarsEnabled());
     }
 }

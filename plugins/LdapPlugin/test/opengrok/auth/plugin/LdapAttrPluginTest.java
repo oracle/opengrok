@@ -80,7 +80,8 @@ public class LdapAttrPluginTest {
 
         plugin.load(parameters);
 
-        framework = new AuthorizationFramework(null);
+        framework = new AuthorizationFramework();
+        framework.reload();
     }
 
     private void prepareRequest(String username, String mail, String... ous) {

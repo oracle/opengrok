@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
@@ -187,7 +187,8 @@ public class PageConfigTest {
          *  - disabling "mercurial"
          * </pre>
          */
-        env.setAuthorizationFramework(new AuthorizationFramework(null));
+        env.setAuthorizationFramework(new AuthorizationFramework());
+        env.getAuthorizationFramework().reload();
         env.getAuthorizationFramework().getStack()
                 .add(new AuthorizationPlugin(AuthControlFlag.REQUIRED, new TestPlugin() {
                     @Override

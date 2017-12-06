@@ -74,6 +74,11 @@ public final class AuthorizationFramework {
      * Stack of available plugins/stacks in the order of the execution.
      */
     AuthorizationStack stack;
+    /**
+     * New stack. This is set by {@code setStack()} and used for delayed
+     * reconfiguration in {@code reload()}.
+     */
+    AuthorizationStack newStack;
 
     /**
      * Lock for safe reloads.
@@ -89,6 +94,20 @@ public final class AuthorizationFramework {
      */
     private long pluginVersion = 0;
 
+    /**
+     * Whether to load plugins from class files and jar files.
+     */
+    private boolean loadClasses = true;
+    private boolean loadJars = true;
+    
+    /**
+     * Create a new instance of authorization framework with no plugin
+     * directory and the default plugin stack.
+     */
+    public AuthorizationFramework() {
+        this(null);
+    }
+    
     /**
      * Create a new instance of authorization framework with the plugin
      * directory and the default plugin stack.
@@ -109,7 +128,6 @@ public final class AuthorizationFramework {
     public AuthorizationFramework(String path, AuthorizationStack stack) {
         this.stack = stack;
         setPluginDirectory(path);
-        reload();
     }
 
     /**
@@ -136,6 +154,38 @@ public final class AuthorizationFramework {
      */
     public void setPluginDirectory(String directory) {
         setPluginDirectory(directory != null ? new File(directory) : null);
+    }
+
+    /**
+     * Make {@code reload()} search for plugins in class files.
+     * @param flag true or false
+     */
+    public void setLoadClasses(boolean flag) {
+        loadClasses = flag;
+    }
+    
+    /**
+     * Whether to search for plugins in class files.
+     * @return true if enabled, false otherwise
+     */
+    public boolean isLoadClassesEnabled() {
+        return loadClasses;
+    }
+    
+    /**
+     * Make {@code reload()} search for plugins in jar files.
+     * @param flag true or false
+     */
+    public void setLoadJars(boolean flag) {
+        loadJars = flag;
+    }
+    
+    /**
+     * Whether to search for plugins in class files.
+     * @return true if enabled, false otherwise
+     */
+    public boolean isLoadJarsEnabled() {
+        return loadJars;
     }
 
     /**
@@ -248,17 +298,13 @@ public final class AuthorizationFramework {
     }
 
     /**
-     * Set the internal stack to this new value.
+     * Set new value of the authorization stack. This will come into effect
+     * only after {@code reload()} is called.
      *
      * @param s new stack to be used
      */
     public void setStack(AuthorizationStack s) {
-        lock.writeLock().lock();
-        try {
-            this.stack = s;
-        } finally {
-            lock.writeLock().unlock();
-        }
+        this.newStack = s;
     }
 
     /**
@@ -438,20 +484,19 @@ public final class AuthorizationFramework {
     }
 
     /**
-     * Traverse list of files which possibly contain a java class and then
-     * traverse a list of jar files to load all classes which are contained
-     * within them into the given stack. Each class is loaded with
-     * {@link #handleLoadClass(String)} which delegates the loading to the
-     * custom class loader {@link #loadClass(String)}.
+     * Traverse list of files which possibly contain a java class 
+     * to load all classes which are contained within them into the given stack.
+     * Each class is loaded with {@link #handleLoadClass(String)} which
+     * delegates the loading to the custom class loader
+     * {@link #loadClass(String)}.
      *
      * @param stack the stack where to add the loaded classes
      * @param classfiles list of files which possibly contain a java class
-     * @param jarfiles list of jar files containing java classes
      *
      * @see #handleLoadClass(String)
      * @see #loadClass(String)
      */
-    private void loadClasses(AuthorizationStack stack, List<File> classfiles, List<File> jarfiles) {
+    private void loadClassFiles(AuthorizationStack stack, List<File> classfiles) {
         IAuthorizationPlugin pf;
         
         for (File file : classfiles) {
@@ -467,6 +512,23 @@ public final class AuthorizationFramework {
                 }
             }
         }
+    }
+
+    /**
+     * Traverse list of jar files to load all classes which are contained within
+     * them into the given stack.
+     * Each class is loaded with {@link #handleLoadClass(String)} which
+     * delegates the loading to the custom class loader
+     * {@link #loadClass(String)}.
+     * 
+     * @param stack the stack where to add the loaded classes
+     * @param jarfiles list of jar files containing java classes
+     * 
+     * @see #handleLoadClass(String)
+     * @see #loadClass(String)
+     */
+    private void loadJarFiles(AuthorizationStack stack, List<File> jarfiles) {
+        IAuthorizationPlugin pf;
 
         for (File file : jarfiles) {
             try (JarFile jar = new JarFile(file)) {
@@ -544,16 +606,24 @@ public final class AuthorizationFramework {
             }
         });
 
-        // clone a new stack not interfering with the current stack
-        AuthorizationStack newStack = getStack().clone();
-
-        // load all other possible plugin classes
-        loadClasses(newStack,
-                IOUtils.listFilesRec(pluginDirectory, ".class"),
-                IOUtils.listFiles(pluginDirectory, ".jar"));
+        AuthorizationStack newLocalStack;
+        if (this.newStack == null) {
+            // Clone a new stack not interfering with the current stack.
+            newLocalStack = getStack().clone();
+        } else {
+            newLocalStack = this.newStack.clone();
+        }
+        
+        // Load all other possible plugin classes.
+        if (isLoadClassesEnabled()) {
+            loadClassFiles(newLocalStack, IOUtils.listFilesRec(pluginDirectory, ".class"));
+        }
+        if (isLoadJarsEnabled()) {
+            loadJarFiles(newLocalStack, IOUtils.listFiles(pluginDirectory, ".jar"));
+        }
 
         // fire load events
-        loadAllPlugins(newStack);
+        loadAllPlugins(newLocalStack);
 
         AuthorizationStack oldStack;
         /**
@@ -566,7 +636,7 @@ public final class AuthorizationFramework {
         lock.writeLock().lock();
         try {
             oldStack = stack;
-            stack = newStack;
+            stack = newLocalStack;
             
             // increase the current plugin version tracked by the framework
             increasePluginVersion();

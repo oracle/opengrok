@@ -266,7 +266,8 @@ public class ProjectHelperTestBase {
         Assert.assertNotNull("Repository map should not be null", env.getProjectRepositoriesMap());
         Assert.assertEquals("Repository map should contain 20 project", 20, env.getProjectRepositoriesMap().size());
 
-        env.setAuthorizationFramework(new AuthorizationFramework(null));
+        env.setAuthorizationFramework(new AuthorizationFramework());
+        env.getAuthorizationFramework().reload();
 
         IAuthorizationPlugin plugin = new TestPlugin() {
             @Override
