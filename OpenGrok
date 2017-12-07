@@ -43,7 +43,8 @@
 #                                 options for CTags program (for its --options
 #                                 switch), default is DATA_ROOT/etc/ctags.config
 #   - OPENGROK_MANDOC             Full path to mandoc(1) binary
-#   - OPENGROK_LOCKING            Lucene SimpleFSLockFactory on|off (default off)
+#   - OPENGROK_LOCKING            Locking mode on|off|simple|native (default off)
+#                                 ("on" is an alias for "simple")
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase

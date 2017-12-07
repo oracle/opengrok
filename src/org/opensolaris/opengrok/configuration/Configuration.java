@@ -168,7 +168,18 @@ public final class Configuration {
     private String webappLAF;
     private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
+    /**
+     * @deprecated This is kept around so not to break object deserialization.
+     * <p>Anyone who is using `--lock on` will now be setting
+     * {@link #luceneLocking} and resetting this field back to its default
+     * value. This should mean that the configuration is written leaving out
+     * this deprecated property; so after some time it can be retired with the
+     * expectation that zero or a miniscule number of production configurations
+     * still have this deprecated property.
+     */
+    @Deprecated
     private boolean usingLuceneLocking;
+    private String luceneLocking = LuceneLockName.OFF;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
     private boolean tagsEnabled;
@@ -913,16 +924,35 @@ public final class Configuration {
         this.optimizeDatabase = optimizeDatabase;
     }
 
+    @Deprecated
     public boolean isUsingLuceneLocking() {
-        return usingLuceneLocking;
+        return LuceneLockName.SIMPLE.equals(luceneLocking) ||
+            LuceneLockName.ON.equals(luceneLocking);
     }
 
+    @Deprecated
     public boolean getUsingLuceneLocking() {
-        return usingLuceneLocking;
+        return isUsingLuceneLocking();
     }
 
+    @Deprecated
     public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        this.usingLuceneLocking = useLuceneLocking;
+        setLuceneLocking(useLuceneLocking ? LuceneLockName.ON :
+            LuceneLockName.OFF);
+    }
+
+    public String getLuceneLocking() {
+        return luceneLocking;
+    }
+
+    /**
+     * @param value off|on|simple|native where "on" is an alias for "simple".
+     * Any other value is a fallback alias for "off" (with a logged warning).
+     */
+    public void setLuceneLocking(String value) {
+        this.luceneLocking = value;
+        // Set the following to default(boolean) regardless of `value'.
+        this.usingLuceneLocking = false;
     }
 
     public void setCompressXref(boolean compressXref) {

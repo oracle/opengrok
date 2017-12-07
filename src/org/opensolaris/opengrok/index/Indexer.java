@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Configuration;
+import org.opensolaris.opengrok.configuration.LuceneLockName;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.messages.Message;
@@ -342,6 +343,9 @@ public final class Indexer {
         String program = "opengrok.jar";
         final String[] ON_OFF = {ON, OFF};
         final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
+        final String[] LUCENE_LOCKS = {LuceneLockName.ON,
+            LuceneLockName.OFF, LuceneLockName.SIMPLE,
+            LuceneLockName.NATIVE};
 
         if (argv.length == 0) {
             argv = usage;  // will force usage output
@@ -468,9 +472,11 @@ public final class Indexer {
                 cfg.getIgnoredNames().add((String)pattern);
             });
 
-            parser.on("-l", "--lock", "=on|off", ON_OFF, Boolean.class,
-                "Turn on|off locking of the Lucene database during index generation.").Do( v -> {
-                cfg.setUsingLuceneLocking((Boolean)v);
+            parser.on("-l", "--lock", "=on|off|simple|native", LUCENE_LOCKS,
+                "Set OpenGrok/Lucene locking mode of the Lucene database",
+                "during index generation. \"on\" is an alias for \"simple\".",
+                "Default is off.").Do( v -> {
+                cfg.setLuceneLocking((String)v);
             });
 
             parser.on("--leadingWildCards", "=on|off", ON_OFF, Boolean.class,

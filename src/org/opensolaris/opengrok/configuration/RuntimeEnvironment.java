@@ -1047,12 +1047,8 @@ public final class RuntimeEnvironment {
         threadConfig.get().setOptimizeDatabase(optimizeDatabase);
     }
 
-    public boolean isUsingLuceneLocking() {
-        return threadConfig.get().isUsingLuceneLocking();
-    }
-
-    public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        threadConfig.get().setUsingLuceneLocking(useLuceneLocking);
+    public String getLuceneLocking() {
+        return threadConfig.get().getLuceneLocking();
     }
 
     public boolean isIndexVersionedFilesOnly() {

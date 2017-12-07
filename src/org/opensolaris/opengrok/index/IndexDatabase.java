@@ -65,6 +65,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
+import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
@@ -73,6 +74,7 @@ import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.configuration.LuceneLockName;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.messages.Message;
@@ -142,7 +144,7 @@ public class IndexDatabase {
      */
     public IndexDatabase(Project project) throws IOException {
         this.project = project;
-        lockfact = SimpleFSLockFactory.INSTANCE;
+        lockfact = NoLockFactory.INSTANCE;
         initialize();
     }
 
@@ -271,9 +273,7 @@ public class IndexDatabase {
                 }
             }            
 
-            if (!env.isUsingLuceneLocking()) {
-                lockfact = NoLockFactory.INSTANCE;
-            }
+            lockfact = pickLockFactory(env);
             indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);            
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
@@ -1327,5 +1327,22 @@ public class IndexDatabase {
 
         // no Xref for this analyzer
         return null;
+    }
+
+    LockFactory pickLockFactory(RuntimeEnvironment env) {
+        String luceneLocking = env.getLuceneLocking();
+        switch (luceneLocking) {
+            case LuceneLockName.OFF:
+                return NoLockFactory.INSTANCE;
+            case LuceneLockName.ON:
+            case LuceneLockName.SIMPLE:
+                return SimpleFSLockFactory.INSTANCE;
+            case LuceneLockName.NATIVE:
+                return NativeFSLockFactory.INSTANCE;
+            default:
+                LOGGER.log(Level.WARNING, "Unknown Lucene locking mode: {0}",
+                    luceneLocking);
+                return NoLockFactory.INSTANCE;
+        }
     }
 }
