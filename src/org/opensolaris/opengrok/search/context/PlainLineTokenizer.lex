@@ -394,7 +394,7 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
 %}
 
 //WhiteSpace     = [ \t\f\r]+|\n
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+Identifier = [a-zA-Z\p{Letter}_] [a-zA-Z\p{Letter}0-9\p{Number}_]*
 Number = [0-9]+|[0-9]+\.[0-9]+| "0[xX]" [0-9a-fA-F]+
 Printable = [\@\$\%\^\&\-+=\?\.\:]
 
