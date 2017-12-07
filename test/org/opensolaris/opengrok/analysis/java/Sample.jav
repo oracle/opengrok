@@ -64,7 +64,7 @@ public class Sample {
         try { 
             // Try block to handle code that may cause exception
             num1 = 0;
-            num2 = 62 / num1;
+            num2 = 62 * 0xFFFF / num1;
             System.out.println("Try block message");
         } catch (ArithmeticException e) { 
             // This block is to catch divide-by-zero error
@@ -74,3 +74,4 @@ public class Sample {
     }
     
 }
+/*http://example.com*/

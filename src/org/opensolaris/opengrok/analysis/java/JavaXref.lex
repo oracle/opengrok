@@ -27,18 +27,16 @@
  */
 
 package org.opensolaris.opengrok.analysis.java;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class JavaXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
@@ -52,11 +50,11 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-
-File = [a-zA-Z]{FNameChar}* "." ("java"|"properties"|"props"|"xml"|"conf"|"txt"|"htm"|"html"|"ini"|"jnlp"|"jad"|"diff"|"patch")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
+File = [a-zA-Z]{FNameChar}* "." ([Jj][Aa][Vv][Aa] |
+    [Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] | [Pp][Rr][Oo][Pp][Ss] |
+    [Xx][Mm][Ll] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
+    [Ii][Nn][Ii] | [Jj][Nn][Ll][Pp] | [Jj][Aa][Dd] | [Dd][Ii][Ff][Ff] |
+    [Pp][Aa][Tt][Cc][Hh])
 
 JavadocWithClassArg = "@throws" | "@exception"
 JavadocWithParamNameArg = "@param"
@@ -69,6 +67,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Java.lexh
 %%
 <YYINITIAL>{
  \{     { incScope(); writeUnicodeChar(yycharat(0)); }
@@ -96,31 +95,57 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 /*{Hier}
         { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
 */
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+{Number}        {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- "/**" / [^/] { yybegin(JAVADOC);out.write("<span class=\"c\">/**");}
- "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
- "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
+ \"     {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'     {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ "/**" / [^/] {
+    pushSpan(JAVADOC, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
+ "/*"   {
+    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
+ "//"   {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \\[\"\\] |
+ \" {WhiteSpace} \"  { out.write(htmlize(yytext())); }
+ \"     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <QSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { yybegin(YYINITIAL); out.write("'</span>"); }
+ \\[\'\\] |
+ \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
+ \'     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <COMMENT, JAVADOC> {
-"*/"    { yybegin(YYINITIAL); out.write("*/</span>"); }
+"*/"    {
+    out.write(yytext());
+    yypop();
+ }
 }
 
 <JAVADOC> {
@@ -140,23 +165,21 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
 <SCOMMENT> {
   {WhspChar}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
+    yypop();
     startNewLine();
   }
 }
 
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING, JAVADOC> {
+<STRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
 {FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
@@ -170,12 +193,26 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         out.write(path);
         out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<STRING, SCOMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<COMMENT, JAVADOC> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }
