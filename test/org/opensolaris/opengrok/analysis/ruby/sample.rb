@@ -175,3 +175,5 @@ ensure
 end
 print "\n"
 print 'http://example.com'
+puts "Last #{log_lines} lines from #{logfn}:"
+print "\n"

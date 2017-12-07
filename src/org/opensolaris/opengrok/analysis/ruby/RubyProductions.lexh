@@ -324,12 +324,9 @@ Here_EOF3 = [\`][^\r\n\`]*[\`]
 
     [\{\}]    {
         String capture = yytext();
-        if (h.maybeEndInterpolation(capture)) {
-            popHelper();
-            yypop();
-            disjointSpan(HtmlConsts.STRING_CLASS);
+        if (!h.maybeEndInterpolation(capture)) {
+            offerNonword(capture);
         }
-        offerNonword(capture);
     }
 }
 
