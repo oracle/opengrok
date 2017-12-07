@@ -154,10 +154,16 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 RuntimeEnvironment.getInstance().getSourceRootPath().length(),
                 repos.getDateFormat());
 
-        Executor executor = repos.getHistoryLogExecutor(file, sinceRevision,
-                numEntries);
-        int status = executor.exec(true, this);
+        Executor executor;
+        try {
+            executor = repos.getHistoryLogExecutor(file, sinceRevision,
+                    numEntries);
+        } catch (IOException e) {
+            throw new HistoryException("Failed to get history for: \"" +
+                    file.getAbsolutePath() + "\"", e);
+        }
 
+        int status = executor.exec(true, this);
         if (status != 0) {
             throw new HistoryException("Failed to get history for: \"" +
                     file.getAbsolutePath() + "\" Exit code: " + status);

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -79,6 +80,7 @@ import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
@@ -376,6 +378,7 @@ public class IndexDatabase {
             }
         }
 
+        IOException writerException = null;
         try {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
@@ -447,30 +450,42 @@ public class IndexDatabase {
                     reader.close();
                 }
             }
+
+            try {
+                writer.commit();
+            } catch (IOException e) {
+                writerException = e;
+                LOGGER.log(Level.WARNING,
+                    "An error occured while committing writer", e);
+            }
         } finally {
-            if (writer != null) {
-                try {
-                    writer.prepareCommit();
-                    writer.commit();
-                    writer.close();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occured while closing writer", e);
+            Ctags finishingCtags = ctags;
+            ctags = null;
+
+            try {
+                if (writer != null) writer.close();
+            } catch (IOException e) {
+                if (writerException == null) writerException = e;
+                LOGGER.log(Level.WARNING,
+                    "An error occured while closing writer", e);
+            } finally {
+                writer = null;
+                synchronized (lock) {
+                    running = false;
                 }
             }
 
-            if (ctags != null) {
+            if (finishingCtags != null) {
                 try {
-                    ctags.close();
+                    finishingCtags.close();
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING,
                         "An error occured while closing ctags process", e);
                 }
             }
-
-            synchronized (lock) {
-                running = false;
-            }
         }
+
+        if (writerException != null) throw writerException;
 
         if (!isInterrupted() && isDirty()) {
             if (env.isOptimizeDatabase()) {
@@ -1219,7 +1234,13 @@ public class IndexDatabase {
     public static Definitions getDefinitions(File file)
             throws IOException, ParseException, ClassNotFoundException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String path = env.getPathRelativeToSourceRoot(file);
+        String path;
+        try {
+            path = env.getPathRelativeToSourceRoot(file);
+        } catch (ForbiddenSymlinkException e) {
+            // (already logged by PathUtils)
+            return null;
+        }
         //sanitize windows path delimiters
         //in order not to conflict with Lucene escape character
         path=path.replace("\\", "/");

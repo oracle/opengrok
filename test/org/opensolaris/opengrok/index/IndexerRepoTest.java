@@ -18,26 +18,44 @@
  */
 
 /*
- * Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
+import java.io.File;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.history.MercurialRepositoryTest;
+import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
- * Test cleanup of renamed thread pool after indexing.
+ * Test indexer w.r.t. repositories.
  *
  * @author Vladimir Kotal
  */
@@ -76,6 +94,78 @@ public class IndexerRepoTest {
         }
     }
 
+    /**
+     * Test that symlinked directories from source root get their relative
+     * path set correctly in RepositoryInfo objects.
+     * @throws org.opensolaris.opengrok.index.IndexerException
+     * @throws java.io.IOException
+     */
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @Test
+    public void testSymlinks() throws IndexerException, IOException {
+
+        final String SYMLINK = "symlink";
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // Set source root to pristine directory so that there is only one
+        // repository to deal with (which makes this faster and easier to write)
+        // and clone the mercurial repository outside of the source root.
+        File realSource = FileUtilities.createTemporaryDirectory("real");
+        File sourceRoot = FileUtilities.createTemporaryDirectory("src");
+        MercurialRepositoryTest.runHgCommand(sourceRoot,
+                "clone", repository.getSourceRoot() + File.separator + "mercurial",
+                realSource.getPath());
+
+        // Create symlink from source root to the real repository.
+        String symlinkPath = sourceRoot.toString() + File.separator + SYMLINK;
+        Files.createSymbolicLink(Paths.get(symlinkPath), Paths.get(realSource.getPath()));
+
+        env.setSourceRoot(sourceRoot.toString());
+        env.setDataRoot(repository.getDataRoot());
+        // Need to have history cache enabled in order to perform scan of repositories.
+        env.setHistoryEnabled(true);
+        // Normally the Indexer would add the symlink automatically.
+        env.setAllowedSymlinks(new HashSet<String>(Arrays.asList(symlinkPath)));
+
+        // Do a rescan of the projects, and only that (we don't care about
+        // the other aspects of indexing in this test case).
+        Indexer.getInstance().prepareIndexer(
+                env,
+                true, // search for repositories
+                true, // scan and add projects
+                null, // no default project
+                false, // don't list files
+                false, // don't create dictionary
+                null, // subFiles - not needed since we don't list files
+                null, // repositories - not needed when not refreshing history
+                new ArrayList<>(), // don't zap cache
+                false); // don't list repos
+
+        // Check the respository paths.
+        List<RepositoryInfo> repos = env.getRepositories();
+        assertEquals(repos.size(), 1);
+        RepositoryInfo repo = repos.get(0);
+        assertEquals("/" + SYMLINK, repo.getDirectoryNameRelative());
+        String epath = sourceRoot.toString() + File.separator + SYMLINK;
+        String apath = repo.getDirectoryName();
+        assertTrue("Should match (with macOS leeway):\n" + epath + "\nv.\n" +
+            apath, epath.equals(apath) || apath.equals("/private" + epath));
+
+        // Check that history exists for a file in the repository.
+        File repoRoot = new File(env.getSourceRootFile(), SYMLINK);
+        File fileInRepo = new File(repoRoot, "main.c");
+        assertTrue(fileInRepo.exists());
+        assertTrue(HistoryGuru.getInstance().hasHistory(fileInRepo));
+        assertTrue(HistoryGuru.getInstance().hasCacheForFile(fileInRepo));
+
+        // cleanup
+        IOUtils.removeRecursive(realSource.toPath());
+        IOUtils.removeRecursive(sourceRoot.toPath());
+    }
+
+    /**
+     * Test cleanup of renamed thread pool after indexing with -H.
+     */
     @Test
     public void testMainWithH() throws IOException {
         System.out.println("Generate index by using command line options with -H");
@@ -91,6 +181,9 @@ public class IndexerRepoTest {
         }
     }
 
+    /**
+     * Test cleanup of renamed thread pool after indexing without -H.
+     */
     @Test
     public void testMainWithoutH() throws IOException {
         System.out.println("Generate index by using command line options without -H");
