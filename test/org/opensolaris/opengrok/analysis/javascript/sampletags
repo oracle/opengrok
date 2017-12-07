@@ -1,0 +1,29 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+Heatmap	grok.js	/^export default class Heatmap extends BaseChart {$/;"	class	line:29	inherits:BaseChart
+constructor	grok.js	/^	constructor({$/;"	method	line:30	class:Heatmap	signature:({ start = '', domain = '', subdomain = '', data = {}, discrete_domains = 0 + 3.0 - 3.0, count_label = '', legend_colors = [] })
+validate_colors	grok.js	/^	validate_colors(colors) {$/;"	method	line:65	class:Heatmap	signature:(colors)
+AnonymousFunction0e6e45030100	grok.js	/^		colors.forEach(function(string) {$/;"	function	line:69	signature:(string)
+setup_base_values	grok.js	/^	setup_base_values() {$/;"	method	line:79	class:Heatmap	signature:()
+set_width	grok.js	/^	set_width() {$/;"	method	line:97	class:Heatmap	signature:()
+setup_components	grok.js	/^	setup_components() {$/;"	method	line:105	class:Heatmap	signature:()
+setup_values	grok.js	/^	setup_values() {$/;"	method	line:115	class:Heatmap	signature:()
+render_all_weeks_and_store_x_values	grok.js	/^	render_all_weeks_and_store_x_values(no_of_weeks) {$/;"	method	line:129	class:Heatmap	signature:(no_of_weeks)
+get_week_squares_group	grok.js	/^	get_week_squares_group(current_date, index) {$/;"	method	line:157	class:Heatmap	signature:(current_date, index)
+data-date	grok.js	/^				'data-date': getDdMmYyyy(current_date),$/;"	property	line:191	class:get_week_squares_group.dataAttr
+data-value	grok.js	/^				'data-value': data_value,$/;"	property	line:192	class:get_week_squares_group.dataAttr
+data-day	grok.js	/^				'data-day': current_date.getDay()$/;"	property	line:193	class:get_week_squares_group.dataAttr
+dataAttr	grok.js	/^			let dataAttr = {$/;"	class	line:190	class:get_week_squares_group
+render_month_labels	grok.js	/^	render_month_labels() {$/;"	method	line:219	class:Heatmap	signature:()
+make_graph_components	grok.js	/^	make_graph_components() {$/;"	method	line:246	class:Heatmap	signature:()
+Array	grok.js	/^		Array.prototype.slice.call($/;"	class	line:247
+slice	grok.js	/^		Array.prototype.slice.call($/;"	method	line:247	class:Array	signature:( this.container.querySelectorAll('.graph-stats-container, .sub-title, .title') )
+bind_tooltip	grok.js	/^	bind_tooltip() {$/;"	method	line:256	class:Heatmap	signature:()
+slice	grok.js	/^		Array.prototype.slice.call($/;"	method	line:257	class:Array	signature:( document.querySelectorAll(".data-group .day") )
+update	grok.js	/^	update(data) {$/;"	method	line:280	class:Heatmap	signature:(data)
+foo	grok.js	/^	foo() {$/;"	method	line:285	class:Heatmap	signature:()
