@@ -1059,7 +1059,7 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment.getInstance().loadStatistics();
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testLoadNullStatisticsFile() throws IOException, ParseException {
         RuntimeEnvironment.getInstance().loadStatistics((File) null);
     }

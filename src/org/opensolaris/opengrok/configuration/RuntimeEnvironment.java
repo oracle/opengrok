@@ -39,6 +39,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
@@ -1620,10 +1621,17 @@ public final class RuntimeEnvironment {
      * @throws ParseException
      */
     public void loadStatistics() throws IOException, ParseException {
-        if (getConfiguration().getStatisticsFilePath() == null) {
+        String statsPath = getConfiguration().getStatisticsFilePath();
+        if (statsPath == null) {
             throw new FileNotFoundException("Statistics file is not set (null)");
         }
-        loadStatistics(new File(getConfiguration().getStatisticsFilePath()));
+        File statsFile = new File(statsPath);
+        if (statsFile.exists()) {
+            loadStatistics(statsFile);
+        } else {
+            LOGGER.log(Level.INFO, "Statistics file does not exist: {0}",
+                statsPath);
+        }
     }
 
     /**
@@ -1635,7 +1643,7 @@ public final class RuntimeEnvironment {
      */
     public void loadStatistics(File in) throws IOException, ParseException {
         if (in == null) {
-            throw new FileNotFoundException("Statistics file is not set (null)");
+            throw new IllegalArgumentException("`in' is null");
         }
         try (FileInputStream ifstream = new FileInputStream(in)) {
             loadStatistics(ifstream);
@@ -1819,6 +1827,9 @@ public final class RuntimeEnvironment {
                                 Message m = ((Message) obj);
                                 handleMessage(m, output);
                             }
+                        } catch (SocketException e) {
+                            LOGGER.log(Level.INFO, "SocketException: {0}",
+                                e.getMessage());
                         } catch (IOException e) {
                             LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
                         } catch (RuntimeException e) {
@@ -1973,7 +1984,7 @@ public final class RuntimeEnvironment {
                 LOGGER.log(Level.WARNING, "Cannot join WatchDogService thread: ", ex);
             }
         }
-        LOGGER.log(Level.INFO, "Watchdog stoped");
+        LOGGER.log(Level.INFO, "Watchdog stopped");
     }
 
     public void startExpirationTimer() {

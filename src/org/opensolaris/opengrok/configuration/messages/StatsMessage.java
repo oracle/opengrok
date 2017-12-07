@@ -17,11 +17,13 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -39,11 +41,38 @@ public class StatsMessage extends Message {
 
     static final List<String> ALLOWED_OPTIONS = Arrays.asList(new String[]{"get", "reload", "clean"});
 
+    private String statisticsFilePath;
+
+    /**
+     * @return the statisticsFilePath
+     */
+    public String getStatisticsFilePath() {
+        return statisticsFilePath;
+    }
+
+    /**
+     * Sets the statisticsFilePath
+     * @param path a defined value or null
+     */
+    public void setStatisticsFilePath(String path) {
+        this.statisticsFilePath = path;
+    }
+
     @Override
     protected byte[] applyMessage(RuntimeEnvironment env) throws IOException, ParseException {
+        String statsFilePath = getStatisticsFilePath();
+
         if (getText().equalsIgnoreCase("reload")) {
-            env.loadStatistics();
+            if (statsFilePath != null) {
+                env.loadStatistics(new File(statsFilePath));
+                env.getConfiguration().setStatisticsFilePath(statsFilePath);
+            } else {
+                env.loadStatistics();
+            }
         } else if (getText().equalsIgnoreCase("clean")) {
+            if (statsFilePath != null) {
+                env.getConfiguration().setStatisticsFilePath(statsFilePath);
+            }
             env.setStatistics(new Statistics());
         }
         return Util.statisticToJson(env.getStatistics()).toJSONString().getBytes();
