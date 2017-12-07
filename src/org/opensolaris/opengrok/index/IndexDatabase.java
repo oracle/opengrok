@@ -96,9 +96,17 @@ public class IndexDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexDatabase.class);
 
+    /**
+     * Formerly, every delete issued an IndexWriter commit(). This is a first
+     * draft of a policy value used to flush -- not commit -- deleted Lucene
+     * items periodically.
+     */
+    private static final int MAX_BUFFERED_DELETE_TERMS = 200;
+
     private Project project;
     private FSDirectory indexDirectory;    
     private IndexWriter writer;
+    private PendingFileCompleter completer;
     private TermsEnum uidIter;
     private IgnoredNames ignoredNames;
     private Filter includedNames;
@@ -377,14 +385,16 @@ public class IndexDatabase {
             }
         }
 
-        IOException writerException = null;
+        IOException finishingException = null;
         try {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setRAMBufferSizeMB(env.getRamBufferSize());
+            iwc.setMaxBufferedDeleteTerms(MAX_BUFFERED_DELETE_TERMS);
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
+            completer = new PendingFileCompleter();
 
             if (directories.isEmpty()) {
                 if (project == null) {
@@ -451,20 +461,19 @@ public class IndexDatabase {
             }
 
             try {
-                writer.commit();
+                finishWriting();
             } catch (IOException e) {
-                writerException = e;
-                LOGGER.log(Level.WARNING,
-                    "An error occured while committing writer", e);
+                finishingException = e;
             }
         } finally {
             Ctags finishingCtags = ctags;
             ctags = null;
 
+            completer = null;
             try {
                 if (writer != null) writer.close();
             } catch (IOException e) {
-                if (writerException == null) writerException = e;
+                if (finishingException == null) finishingException = e;
                 LOGGER.log(Level.WARNING,
                     "An error occured while closing writer", e);
             } finally {
@@ -484,7 +493,7 @@ public class IndexDatabase {
             }
         }
 
-        if (writerException != null) throw writerException;
+        if (finishingException != null) throw finishingException;
 
         if (!isInterrupted() && isDirty()) {
             if (env.isOptimizeDatabase()) {
@@ -604,7 +613,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Remove xref file for given path
+     * Queue the removal of xref file for given path
      * @param path path to file under source root
      */
     private void removeXrefFile(String path) {
@@ -614,18 +623,9 @@ public class IndexDatabase {
         } else {
             xrefFile = new File(xrefDir, path);
         }
-        File parent = xrefFile.getParentFile();
-
-        if (!xrefFile.delete() && xrefFile.exists()) {
-            LOGGER.log(Level.INFO, "Failed to remove obsolete xref-file: {0}",
-                xrefFile.getAbsolutePath());
-        }
-
-        // Remove the parent directory if it's empty.
-        if (parent.delete()) {
-            LOGGER.log(Level.FINE, "Removed empty xref dir:{0}",
-                parent.getAbsolutePath());
-        }
+        PendingFileDeletion pending = new PendingFileDeletion(
+            xrefFile.getAbsolutePath());
+        completer.add(pending);
     }
 
     private void removeHistoryFile(String path) {
@@ -647,8 +647,6 @@ public class IndexDatabase {
         }
 
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));        
-        writer.prepareCommit();
-        writer.commit();
 
         removeXrefFile(path);
         if (removeHistory) {
@@ -1306,7 +1304,10 @@ public class IndexDatabase {
     private Writer getXrefWriter(FileAnalyzer fa, String path) throws IOException {
         Genre g = fa.getFactory().getGenre();
         if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
-            File xrefFile = new File(xrefDir, path);
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            boolean compressed = env.isCompressXref();
+            File xrefFile = new File(xrefDir, path + (compressed ? ".gz" : ""));
+
             // If mkdirs() returns false, the failure is most likely
             // because the file already exists. But to check for the
             // file first and only add it if it doesn't exists would
@@ -1315,14 +1316,17 @@ public class IndexDatabase {
                 assert xrefFile.getParentFile().exists();
             }
 
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            // Write to a pending file for later renaming.
+            String xrefAbs = xrefFile.getAbsolutePath();
+            File transientXref = new File(xrefAbs +
+                PendingFileCompleter.PENDING_EXTENSION);
+            PendingFileRenaming ren = new PendingFileRenaming(xrefAbs,
+                transientXref.getAbsolutePath());
+            completer.add(ren);
 
-            boolean compressed = env.isCompressXref();
-            File file = new File(xrefDir, path + (compressed ? ".gz" : ""));
-            return new BufferedWriter(new OutputStreamWriter(
-                    compressed ?
-                        new GZIPOutputStream(new FileOutputStream(file)) :
-                        new FileOutputStream(file)));
+            return new BufferedWriter(new OutputStreamWriter(compressed ?
+                new GZIPOutputStream(new FileOutputStream(transientXref)) :
+                new FileOutputStream(transientXref)));
         }
 
         // no Xref for this analyzer
@@ -1343,6 +1347,28 @@ public class IndexDatabase {
                 LOGGER.log(Level.WARNING, "Unknown Lucene locking mode: {0}",
                     luceneLocking);
                 return NoLockFactory.INSTANCE;
+        }
+    }
+
+    private void finishWriting() throws IOException {
+        boolean hasPendingCommit = false;
+        try {
+            writer.prepareCommit();
+            hasPendingCommit = true;
+
+            int n = completer.complete();
+            LOGGER.log(Level.FINE, "completed {0} file(s)", n);
+
+            // Just before commit(), reset the `hasPendingCommit' flag,
+            // since after commit() is called, there is no need for
+            // rollback() regardless of success.
+            hasPendingCommit = false;
+            writer.commit();
+        } catch (IOException e) {
+            if (hasPendingCommit) writer.rollback();
+            LOGGER.log(Level.WARNING,
+                "An error occured while finishing writer and completer", e);
+            throw e;
         }
     }
 }
