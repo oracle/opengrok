@@ -349,9 +349,8 @@ public class IndexDatabase {
      * Update the content of this index database
      *
      * @throws IOException if an error occurs
-     * @throws HistoryException if an error occurs when accessing the history
      */
-    public void update() throws IOException, HistoryException {
+    public void update() throws IOException {
         synchronized (lock) {
             if (running) {
                 throw new IOException("Indexer already running!");
@@ -402,7 +401,15 @@ public class IndexDatabase {
                 }
 
                 if (env.isHistoryEnabled()) {
-                    HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
+                    try {
+                        HistoryGuru.getInstance().ensureHistoryCacheExists(
+                            sourceRoot);
+                    } catch (HistoryException ex) {
+                        String exmsg = String.format(
+                            "Failed to ensureHistoryCacheExists() for %s",
+                            sourceRoot);
+                        LOGGER.log(Level.WARNING, exmsg, ex);
+                    }
                 }
 
                 String startuid = Util.path2uid(dir, "");
