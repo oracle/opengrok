@@ -427,11 +427,7 @@ public final class HistoryGuru {
                     }
 
                     repoList.add(new RepositoryInfo(repository));
-                    String repoDirectoryName = repository.getDirectoryName();
-                    File repoDirectoryFile = new File(repoDirectoryName);
-                    String repoDirParent = repoDirectoryFile.getParent();
-                    repositoryRoots.put(repoDirParent, "");
-                    repositories.put(repoDirectoryName, repository);
+                    putRepository(repository);
 
                     // @TODO: Search only for one type of repository - the one found here
                     if (recursiveSearch && repository.supportsSubRepositories()) {
@@ -882,6 +878,11 @@ public final class HistoryGuru {
         for (String repo : repos) {
             repositories.remove(repo);
         }
+
+        // Re-map the repository roots.
+        repositoryRoots.clear();
+        List<Repository> ccopy = new ArrayList<>(repositories.values());
+        ccopy.forEach((repo) -> { putRepository(repo); });
     }
 
     /**set
@@ -923,6 +924,7 @@ public final class HistoryGuru {
      */
     public void invalidateRepositories(Collection<? extends RepositoryInfo> repos) {
         if (repos == null || repos.isEmpty()) {
+            repositoryRoots.clear();
             repositories.clear();
             return;
         }
@@ -985,11 +987,25 @@ public final class HistoryGuru {
         }
         executor.shutdown();
 
+        repositoryRoots.clear();
         repositories.clear();
-        repositories.putAll(newrepos);
+        newrepos.forEach((_key, repo) -> { putRepository(repo); });
 
         if (verbose) {
             elapsed.report(LOGGER, "done invalidating repositories");
         }
+    }
+
+    /**
+     * Adds the specified {@code repository} to this instance's repository map
+     * and repository-root map (if not already there).
+     * @param repository a defined instance
+     */
+    private void putRepository(Repository repository) {
+        String repoDirectoryName = repository.getDirectoryName();
+        File repoDirectoryFile = new File(repoDirectoryName);
+        String repoDirParent = repoDirectoryFile.getParent();
+        repositoryRoots.put(repoDirParent, "");
+        repositories.put(repoDirectoryName, repository);
     }
 }
