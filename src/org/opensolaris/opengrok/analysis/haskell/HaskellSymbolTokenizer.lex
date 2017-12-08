@@ -46,6 +46,7 @@ super(in);
 %char
 
 Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
+Number = (0[xX][0-9a-fA-F]+|0[oO][0-7]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 
 %state STRING CHAR COMMENT BCOMMENT
 
@@ -59,6 +60,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
             return yystate();
         }
     }
+    {Number}    {}
     \"   { yybegin(STRING);   }
     \'   { yybegin(CHAR);     }
     "--" { yybegin(COMMENT);  }

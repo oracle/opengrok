@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.haskell;
@@ -57,5 +58,7 @@ public class Consts {
         kwd.add("then");
         kwd.add("type");
         kwd.add("where");
+
+        kwd.add("_");	// 2.4 Identifiers and Operators
     }
 }
