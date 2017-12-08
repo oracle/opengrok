@@ -1,0 +1,49 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+lic01	grok.json	/^	"lic01" : "CDDL HEADER START",$/;"	string	line:2
+lic02	grok.json	/^	"lic02" : "",$/;"	string	line:3
+lic03	grok.json	/^	"lic03" : "The contents of this file are subject to the terms of the",$/;"	string	line:4
+lic04	grok.json	/^	"lic04" : "Common Development and Distribution License (the \\"License\\").",$/;"	string	line:5
+lic05	grok.json	/^	"lic05" : "You may not use this file except in compliance with the License.",$/;"	string	line:6
+lic06	grok.json	/^	"lic06" : "",$/;"	string	line:7
+lic07	grok.json	/^	"lic07" : "See LICENSE.txt included in this distribution for the specific",$/;"	string	line:8
+lic08	grok.json	/^	"lic08" : "language governing permissions and limitations under the License.",$/;"	string	line:9
+lic09	grok.json	/^	"lic09" : "",$/;"	string	line:10
+lic10	grok.json	/^	"lic10" : "When distributing Covered Code, include this CDDL HEADER in each",$/;"	string	line:11
+lic11	grok.json	/^	"lic11" : "file and include the License file at LICENSE.txt.",$/;"	string	line:12
+lic12	grok.json	/^	"lic12" : "If applicable, add the following below this CDDL HEADER, with the",$/;"	string	line:13
+lic13	grok.json	/^	"lic13" : "fields enclosed by brackets \\"[]\\" replaced with your own identifying",$/;"	string	line:14
+lic14	grok.json	/^	"lic14" : "information: Portions Copyright [yyyy] [name of copyright owner]",$/;"	string	line:15
+lic15	grok.json	/^	"lic15" : "",$/;"	string	line:16
+lic16	grok.json	/^	"lic16" : "CDDL HEADER END",$/;"	string	line:17
+spc01	grok.json	/^	"spc01" : null,$/;"	null	line:18
+cpy01	grok.json	/^	"cpy01" : "Copyright (c) 2017, Chris Fraire <cfraire@me.com>.",$/;"	string	line:19
+0	grok.json	/^	"strings" : ["\\u002F", "\\u002f", "\\\/", "\/", "\\uD834\\uDD1E", "\\"", "\\'",$/;"	string	line:20	array:strings
+1	grok.json	/^	"strings" : ["\\u002F", "\\u002f", "\\\/", "\/", "\\uD834\\uDD1E", "\\"", "\\'",$/;"	string	line:20	array:strings
+2	grok.json	/^	"strings" : ["\\u002F", "\\u002f", "\\\/", "\/", "\\uD834\\uDD1E", "\\"", "\\'",$/;"	string	line:20	array:strings
+3	grok.json	/^	"strings" : ["\\u002F", "\\u002f", "\\\/", "\/", "\\uD834\\uDD1E", "\\"", "\\'",$/;"	string	line:20	array:strings
+4	grok.json	/^	"strings" : ["\\u002F", "\\u002f", "\\\/", "\/", "\\uD834\\uDD1E", "\\"", "\\'",$/;"	string	line:20	array:strings
+5	grok.json	/^	"strings" : ["\\u002F", "\\u002f", "\\\/", "\/", "\\uD834\\uDD1E", "\\"", "\\'",$/;"	string	line:20	array:strings
+6	grok.json	/^	"strings" : ["\\u002F", "\\u002f", "\\\/", "\/", "\\uD834\\uDD1E", "\\"", "\\'",$/;"	string	line:20	array:strings
+7	grok.json	/^	    "\\\\"],$/;"	string	line:21	array:strings
+strings	grok.json	/^	"strings" : ["\\u002F", "\\u002f", "\\\/", "\/", "\\uD834\\uDD1E", "\\"", "\\'",$/;"	array	line:20
+spc02	grok.json	/^	"spc02" : null,$/;"	null	line:22
+0	grok.json	/^	"numbers" : [ 0, -1, 1.2, -2.4, -1e5, 1e-6, 20.5e97, -33.2e-4 ],$/;"	number	line:23	array:numbers
+1	grok.json	/^	"numbers" : [ 0, -1, 1.2, -2.4, -1e5, 1e-6, 20.5e97, -33.2e-4 ],$/;"	number	line:23	array:numbers
+2	grok.json	/^	"numbers" : [ 0, -1, 1.2, -2.4, -1e5, 1e-6, 20.5e97, -33.2e-4 ],$/;"	number	line:23	array:numbers
+3	grok.json	/^	"numbers" : [ 0, -1, 1.2, -2.4, -1e5, 1e-6, 20.5e97, -33.2e-4 ],$/;"	number	line:23	array:numbers
+4	grok.json	/^	"numbers" : [ 0, -1, 1.2, -2.4, -1e5, 1e-6, 20.5e97, -33.2e-4 ],$/;"	number	line:23	array:numbers
+5	grok.json	/^	"numbers" : [ 0, -1, 1.2, -2.4, -1e5, 1e-6, 20.5e97, -33.2e-4 ],$/;"	number	line:23	array:numbers
+6	grok.json	/^	"numbers" : [ 0, -1, 1.2, -2.4, -1e5, 1e-6, 20.5e97, -33.2e-4 ],$/;"	number	line:23	array:numbers
+7	grok.json	/^	"numbers" : [ 0, -1, 1.2, -2.4, -1e5, 1e-6, 20.5e97, -33.2e-4 ],$/;"	number	line:23	array:numbers
+numbers	grok.json	/^	"numbers" : [ 0, -1, 1.2, -2.4, -1e5, 1e-6, 20.5e97, -33.2e-4 ],$/;"	array	line:23
+spc03	grok.json	/^	"spc03" : null,$/;"	null	line:24
+0	grok.json	/^	"booleans" : [ true, false ],$/;"	bool	line:25	array:booleans
+1	grok.json	/^	"booleans" : [ true, false ],$/;"	bool	line:25	array:booleans
+booleans	grok.json	/^	"booleans" : [ true, false ],$/;"	array	line:25
+END	grok.json	/^	"END" : ""$/;"	string	line:26
