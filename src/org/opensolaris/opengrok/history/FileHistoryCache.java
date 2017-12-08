@@ -191,7 +191,8 @@ class FileHistoryCache implements HistoryCache {
      * @param file the file to find the cache for
      * @return file that might contain cached history for <code>file</code>
      */
-    private static File getCachedFile(File file) throws HistoryException {
+    private static File getCachedFile(File file) throws HistoryException,
+            ForbiddenSymlinkException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         StringBuilder sb = new StringBuilder();
@@ -210,7 +211,7 @@ class FileHistoryCache implements HistoryCache {
                 sb.append(DIRECTORY_FILE_PREFIX);
             }
             sb.append(".gz");
-        } catch (IOException|ForbiddenSymlinkException e) {
+        } catch (IOException e) {
             throw new HistoryException("Failed to get path relative to " +
                     "source root for " + file, e);
         }
@@ -343,7 +344,13 @@ class FileHistoryCache implements HistoryCache {
     private void storeFile(History histNew, File file, Repository repo,
             boolean mergeHistory) throws HistoryException {
 
-        File cacheFile = getCachedFile(file);
+        File cacheFile;
+        try {
+            cacheFile = getCachedFile(file);
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            return;
+        }
         History history = histNew;
 
         File dir = cacheFile.getParentFile();
@@ -504,7 +511,13 @@ class FileHistoryCache implements HistoryCache {
         // mkdirs() if there are multiple renamed files from single directory
         // handled in parallel.
         for (final String file : renamed_map.keySet()) {
-            File cache = getCachedFile(new File(env.getSourceRootPath() + file));
+            File cache;
+            try {
+                cache = getCachedFile(new File(env.getSourceRootPath() + file));
+            } catch (ForbiddenSymlinkException ex) {
+                LOGGER.log(Level.FINER, ex.getMessage());
+                continue;
+            }
             File dir = cache.getParentFile();
 
             if (!dir.isDirectory() && !dir.mkdirs()) {
@@ -546,7 +559,7 @@ class FileHistoryCache implements HistoryCache {
 
     @Override
     public History get(File file, Repository repository, boolean withFiles)
-            throws HistoryException {
+            throws HistoryException, ForbiddenSymlinkException {
         File cache = getCachedFile(file);
         if (isUpToDate(file, cache)) {
             try {
@@ -640,7 +653,12 @@ class FileHistoryCache implements HistoryCache {
 
     @Override
     public boolean hasCacheForFile(File file) throws HistoryException {
-        return getCachedFile(file).exists();
+        try {
+            return getCachedFile(file).exists();
+        } catch (ForbiddenSymlinkException ex) {
+            LOGGER.log(Level.FINER, ex.getMessage());
+            return false;
+        }
     }
 
     public String getRepositoryHistDataDirname(Repository repository) {
@@ -767,6 +785,9 @@ class FileHistoryCache implements HistoryCache {
         File historyFile;
         try {
             historyFile = getCachedFile(new File(env.getSourceRootPath() + path));
+        } catch (ForbiddenSymlinkException ex) {
+            LOGGER.log(Level.FINER, ex.getMessage());
+            return;
         } catch (HistoryException ex) {
             LOGGER.log(Level.WARNING, "cannot get history file for file " + path, ex);
             return;
