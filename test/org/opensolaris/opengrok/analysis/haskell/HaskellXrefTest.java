@@ -23,21 +23,23 @@
  */
 package org.opensolaris.opengrok.analysis.haskell;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.analysis.CtagsReader;
 import org.opensolaris.opengrok.analysis.Definitions;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 
 /**
  * Tests the {@link HaskellXref} class.
@@ -53,10 +55,11 @@ public class HaskellXrefTest {
         HaskellAnalyzerFactory fac = new HaskellAnalyzerFactory();
         FileAnalyzer analyzer = fac.getAnalyzer();
         analyzer.writeXref(new WriteXrefArgs(new StringReader(s), w));
-        assertEquals(
-                "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
-                + "<a href=\"/source/s?defs=putStrLn\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">putStrLn</a>"
-                + " <span class=\"s\">\"&#72;&#101;&#108;&#108;&#111;&#44; &#119;&#111;&#114;&#108;&#100;&#33;\"</span>",
+        assertLinesEqual("Haskell basicTest",
+            "<a class=\"l\" name=\"1\" href=\"#1\">1</a>" +
+            "<a href=\"/source/s?defs=putStrLn\" class=\"intelliWindow-symbol\"" +
+            " data-definition-place=\"undefined-in-file\">putStrLn</a>" +
+            " <span class=\"s\">\"Hello, world!\"</span>\n",
                 w.toString());
     }
 
@@ -112,6 +115,79 @@ public class HaskellXrefTest {
 
         String actual[] = new String(sampleOutputStream.toByteArray(), "UTF-8").split("\n");
         String expected[] = new String(expectedOutputSteam.toByteArray(), "UTF-8").split("\n");
-        assertArrayEquals(expected, actual);
+        assertLinesEqual("Haskell sampleTest()", expected, actual);
+    }
+
+    @Test
+    public void sampleTest2() throws IOException {
+        writeAndCompare("org/opensolaris/opengrok/analysis/haskell/sample2.hs",
+            "org/opensolaris/opengrok/analysis/haskell/sample2_xref.html",
+            getTagsDefinitions());
+    }
+
+    @Test
+    public void shouldCloseTruncatedStringSpan() throws IOException {
+        writeAndCompare("org/opensolaris/opengrok/analysis/haskell/truncated.hs",
+            "org/opensolaris/opengrok/analysis/haskell/truncated_xref.html",
+            null);
+    }
+
+    private void writeAndCompare(String sourceResource, String resultResource,
+        Definitions defs)
+        throws IOException {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
+
+        InputStream res = getClass().getClassLoader().getResourceAsStream(
+            sourceResource);
+        assertNotNull(sourceResource + " should get-as-stream", res);
+        writeHaskellXref(res, new PrintStream(baos), defs);
+        res.close();
+
+        InputStream exp = getClass().getClassLoader().getResourceAsStream(
+            resultResource);
+        assertNotNull(resultResource + " should get-as-stream", exp);
+        copyStream(exp, baosExp);
+        exp.close();
+        baosExp.close();
+        baos.close();
+
+        String ostr = new String(baos.toByteArray(), "UTF-8");
+        String gotten[] = ostr.split("\n");
+
+        String estr = new String(baosExp.toByteArray(), "UTF-8");
+        String expected[] = estr.split("\n");
+
+        assertLinesEqual("Haskell xref", expected, gotten);
+    }
+
+    private void copyStream(InputStream iss, OutputStream oss)
+        throws IOException {
+
+        byte buffer[] = new byte[8192];
+        int read;
+        do {
+            read = iss.read(buffer, 0, buffer.length);
+            if (read > 0) {
+                oss.write(buffer, 0, read);
+            }
+        } while (read >= 0);
+    }
+
+    private Definitions getTagsDefinitions() throws IOException {
+        InputStream res = getClass().getClassLoader().getResourceAsStream(
+            "org/opensolaris/opengrok/analysis/haskell/sampletags");
+        assertNotNull("though sampletags should stream,", res);
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            res, "UTF-8"));
+
+        CtagsReader rdr = new CtagsReader();
+        String line;
+        while ((line = in.readLine()) != null) {
+            rdr.readLine(line);
+        }
+        return rdr.getDefinitions();
     }
 }
