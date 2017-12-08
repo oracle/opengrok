@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 
 interface HistoryCache {
     /**
@@ -58,9 +59,11 @@ interface HistoryCache {
      * the implementation is allowed to skip the file list, but it doesn't
      * have to.
      * @throws HistoryException if the history cannot be fetched
+     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
+     * an ineligible link
      */
     History get(File file, Repository repository, boolean withFiles)
-            throws HistoryException;
+            throws HistoryException, ForbiddenSymlinkException;
 
     /**
      * Store the history for a repository.

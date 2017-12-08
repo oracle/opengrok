@@ -666,6 +666,10 @@ public class IndexDatabase {
         Document doc = new Document();
         try (Writer xrefOut = getXrefWriter(fa, path)) {
             analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            cleanupResources(doc);
+            return;
         } catch (Exception e) {
             LOGGER.log(Level.INFO,
                     "Skipped file ''{0}'' because the analyzer didn''t "
