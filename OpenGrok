@@ -38,6 +38,7 @@
 #   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
 #   - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
 #   - OPENGROK_SRC_ROOT		  directory with files to be indexed
+#   - OPENGROK_DATA_ROOT	  directory where index and cache files are generated
 #   - OPENGROK_CTAGS              Full path to Exuberant or Universal CTags binary
 #   - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
 #                                 options for CTags program (for its --options
@@ -223,7 +224,11 @@ DefaultInstanceConfiguration()
     # REQUIRED: OpenGrok Generate Data Root
     #           (for Lucene index and hypertext cross-references)
     #           This area is rebuilt by "update" / "updateQuietly"
-    DATA_ROOT="${OPENGROK_INSTANCE_BASE}/data"
+    if [ -n "${OPENGROK_DATA_ROOT}" ]; then
+	DATA_ROOT="${OPENGROK_DATA_ROOT}"
+    else
+	DATA_ROOT="${OPENGROK_INSTANCE_BASE}/data"
+    fi
 
     # OPTIONAL: User Provided Source Path to Description Mapping
     # 		(Tab Separated Value)
