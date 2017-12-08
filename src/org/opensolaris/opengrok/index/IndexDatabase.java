@@ -696,6 +696,10 @@ public class IndexDatabase {
                 new Object[]{path, e.getMessage()});
             cleanupResources(doc);
             throw e;
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            cleanupResources(doc);
+            return;
         } catch (Exception e) {
             LOGGER.log(Level.INFO,
                     "Skipped file ''{0}'' because the analyzer didn''t "

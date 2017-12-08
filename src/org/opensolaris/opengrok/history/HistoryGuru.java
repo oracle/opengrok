@@ -50,6 +50,7 @@ import org.opensolaris.opengrok.configuration.Configuration.RemoteSCM;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.PathUtils;
 import org.opensolaris.opengrok.util.Statistics;
 
@@ -244,7 +245,6 @@ public final class HistoryGuru {
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repo = getRepository(dir);
 
-        History history = null;
         RemoteSCM rscm = RuntimeEnvironment.getInstance().getRemoteScmSupported();
         boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY))
                 || (rscm == RemoteSCM.ON)
@@ -254,13 +254,17 @@ public final class HistoryGuru {
                 && (!repo.isRemote() || doRemote)) {
 
             if (useCache() && historyCache.supportsRepository(repo)) {
-                history = historyCache.get(file, repo, withFiles);
-            } else {
-                history = repo.getHistory(file);
+                try {
+                    return historyCache.get(file, repo, withFiles);
+                } catch (ForbiddenSymlinkException ex) {
+                    LOGGER.log(Level.FINER, ex.getMessage());
+                    return null;
+                }
             }
+            return repo.getHistory(file);
         }
 
-        return history;
+        return null;
     }
 
     /**
