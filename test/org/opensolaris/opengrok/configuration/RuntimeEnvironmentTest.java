@@ -439,9 +439,7 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testUsingLuceneLocking() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertFalse(instance.isUsingLuceneLocking());
-        instance.setUsingLuceneLocking(true);
-        assertTrue(instance.isUsingLuceneLocking());
+        assertEquals("off", instance.getLuceneLocking());
     }
 
     @Test
