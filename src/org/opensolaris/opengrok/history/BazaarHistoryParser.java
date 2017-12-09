@@ -173,7 +173,8 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                             String name = env.getPathRelativeToSourceRoot(f);
                             entry.addFile(name.intern());
                         } catch (ForbiddenSymlinkException e) {
-                            // ignored (and already logged by PathUtils)
+                            LOGGER.log(Level.FINER, e.getMessage());
+                            // ignored
                         }
                     }
                     break;

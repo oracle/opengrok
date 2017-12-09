@@ -1328,6 +1328,7 @@ public final class RuntimeEnvironment {
                 repoPath = getPathRelativeToSourceRoot(
                     new File(r.getDirectoryName()), 0);
             } catch (ForbiddenSymlinkException e) {
+                LOGGER.log(Level.FINER, e.getMessage());
                 continue;
             }
 

@@ -169,8 +169,10 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                                 String path = env.getPathRelativeToSourceRoot(
                                     file);
                                 entry.addFile(path.intern());
-                            } catch (FileNotFoundException|
-                                ForbiddenSymlinkException e) { // NOPMD
+                            } catch (ForbiddenSymlinkException e) {
+                                LOGGER.log(Level.FINER, e.getMessage());
+                                // ignore
+                            } catch (FileNotFoundException e) { // NOPMD
                                 // If the file is not located under the source root, ignore it
                             }
                         }

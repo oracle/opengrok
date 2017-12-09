@@ -199,9 +199,12 @@ public class ProjectMessage extends Message {
                                 return env.getPathRelativeToSourceRoot(
                                         new File((x).getDirectoryName())
                                 );
-                            } catch (IOException|ForbiddenSymlinkException e) {
+                            } catch (ForbiddenSymlinkException e) {
+                                LOGGER.log(Level.FINER, e.getMessage());
+                                return "";
+                            } catch (IOException e) {
                                 LOGGER.log(Level.INFO,
-                                    "cannot remove files for repository " +
+                                    "cannot remove files for repository {0}",
                                     x.getDirectoryName());
                                 // Empty output should not cause any harm
                                 // since {@code getReposFromString()} inside
