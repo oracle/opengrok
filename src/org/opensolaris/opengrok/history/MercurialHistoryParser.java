@@ -144,8 +144,10 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                         try {
                             String path = env.getPathRelativeToSourceRoot(f);
                             entry.addFile(path.intern());
-                        } catch (FileNotFoundException|
-                            ForbiddenSymlinkException e) { // NOPMD
+                        } catch (ForbiddenSymlinkException e) {
+                            LOGGER.log(Level.FINER, e.getMessage());
+                            // ignore
+                        } catch (FileNotFoundException e) { // NOPMD
                             // If the file is not located under the source root,
                             // ignore it (bug #11664).
                         }

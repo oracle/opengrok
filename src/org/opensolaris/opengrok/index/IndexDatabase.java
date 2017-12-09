@@ -1330,7 +1330,7 @@ public class IndexDatabase {
         try {
             path = env.getPathRelativeToSourceRoot(file);
         } catch (ForbiddenSymlinkException e) {
-            // (already logged by PathUtils)
+            LOGGER.log(Level.FINER, e.getMessage());
             return null;
         }
         //sanitize windows path delimiters

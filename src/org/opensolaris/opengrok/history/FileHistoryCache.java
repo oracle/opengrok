@@ -152,7 +152,7 @@ class FileHistoryCache implements HistoryCache {
             repodir = env.getPathRelativeToSourceRoot(
                 new File(repository.getDirectoryName()));
         } catch (ForbiddenSymlinkException e) {
-            // already logged by PathUtils
+            LOGGER.log(Level.FINER, e.getMessage());
             return false;
         }
         String shortestfile = filename.substring(repodir.length() + 1);
@@ -380,6 +380,9 @@ class FileHistoryCache implements HistoryCache {
     private void finishStore(Repository repository, String latestRev) {
         String histDir = getRepositoryHistDataDirname(repository);
         if (histDir == null || !(new File(histDir)).isDirectory()) {
+            // If the history was not created for some reason (e.g. temporary
+            // failure), do not create the CachedRevision file as this would
+            // create confusion (once it starts working again).
             LOGGER.log(Level.WARNING,
                 "Could not store history for repo {0}",
                 repository.getDirectoryName());
@@ -644,7 +647,10 @@ class FileHistoryCache implements HistoryCache {
         try {
             dir = new File(dir, env.getPathRelativeToSourceRoot(
                 new File(repos.getDirectoryName())));
-        } catch (IOException|ForbiddenSymlinkException e) {
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            return false;
+        } catch (IOException e) {
             throw new HistoryException("Could not resolve " +
                     repos.getDirectoryName()+" relative to source root", e);
         }
@@ -673,7 +679,7 @@ class FileHistoryCache implements HistoryCache {
                 repository.getDirectoryName()+" relative to source root", ex);
             return null;
         } catch (ForbiddenSymlinkException ex) {
-            LOGGER.log(Level.FINE, "forbidden symbolic link", ex);
+            LOGGER.log(Level.FINER, ex.getMessage());
             return null;
         }
 

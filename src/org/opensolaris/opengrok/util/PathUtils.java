@@ -172,7 +172,7 @@ public class PathUtils {
         return false;
     }
 
-    /** private to enforce singleton */
+    /** private to enforce static */
     private PathUtils() {
     }
 }
