@@ -4,18 +4,17 @@ Copyright (c) 2006, 2017 Oracle and/or its affiliates. All rights reserved.
 
 # OpenGrok - a wicked fast source browser [![Build Status](https://travis-ci.org/OpenGrok/OpenGrok.svg?branch=master)](https://travis-ci.org/OpenGrok/OpenGrok)
 
-1.  Introduction
-2.  Requirements
-3.  Usage
-4.  OpenGrok install
-5.  OpenGrok setup
-6.  Optional Command Line Interface Usage
-7.  Change web application properties or name
-8.  Information for developers
-9.  Tuning OpenGrok for large code bases
-10. Authors
-11. Contact us
-
+1.  [Introduction](#1-introduction)
+2.  [Requirements](#2-requirements)
+3.  [Usage](#3-usage)
+4.  [OpenGrok install](#4-opengrok-install)
+5.  [OpenGrok setup](#5-opengrok-setup)
+6.  [Optional Command Line Interface Usage](#6-optional-command-line-interface-usage)
+7.  [Change web application properties or name](#7-change-web-application-properties-or-name)
+8.  [Information for developers](#8-information-for-developers)
+9.  [Tuning OpenGrok for large code bases](#9-tuning-opengrok-for-large-code-bases)
+10. [Authors](#10-authors)
+11. [Contact us](#11-contact-us)
 
 ## 1. Introduction
 
