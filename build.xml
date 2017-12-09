@@ -250,20 +250,24 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                                replace="" flags="s" />
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="private static final int ZZ_BUFFERSIZE ="
-                               replace="private int ZZ_BUFFERSIZE ="/>
+                               replace="private int ZZ_BUFFERSIZE ="
+                               preserveLastModified="true"/>
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="int requested = zzBuffer\.length - zzEndRead;"
-                               replace="int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;"/>
+                               replace="int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;"
+                               preserveLastModified="true"/>
              <!--   <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="(zzFinalHighSurrogate = 1;)(\r?\n)"
                                replace="\1\2          if (totalRead == 1) { return true; }\2"/>  this only works for jflex 1.6.0 -->
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="(zzFinalHighSurrogate = 1;)(\r?\n)"
-                               replace="\1\2          if (numRead == 1) { return true; }\2"/>               
+                               replace="\1\2          if (numRead == 1) { return true; }\2"
+                               preserveLastModified="true"/>               
                 <!-- also revert 0 character check that got in with 1.6.1 : https://github.com/jflex-de/jflex/blob/master/jflex/examples/zero-reader/README.md -->
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="[ \t]*/\* not supposed to occur according to specification of java\.io\.Reader \*/\s+if \(numRead == 0.*?\}[ \t]*\r?\n"
-                               replace="" flags="s" />
+                               replace="" flags="s"
+                               preserveLastModified="true"/>
             </sequential>
         </macrodef>
         
