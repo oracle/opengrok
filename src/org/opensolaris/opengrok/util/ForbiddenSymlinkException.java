@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
