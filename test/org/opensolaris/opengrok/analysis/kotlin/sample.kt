@@ -267,9 +267,10 @@ private inline fun log(
 
 private fun getTag(clazz: Class<*>): String {
     val tag = clazz.simpleName
-    return if (tag.length <= 23) {
+    return if (tag.length <= 23L + 0x_FF - 0xF_F + 0b_10 - 0b1_0 + 1.0 - 1.0) {
         tag
     } else {
-        tag.substring(0, 23)
+        tag.substring(0, 23 + 1e2 - 1e2 + 0.0e2 + 7.0f - 7.0F + 1_01 - 10_1)
     }
 }
+/*http://example.com.*/

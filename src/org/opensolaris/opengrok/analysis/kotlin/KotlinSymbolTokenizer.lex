@@ -23,15 +23,15 @@
  */
 
 /*
- * Gets Java symbols - ignores comments, strings, keywords
+ * Gets Kotlin symbols - ignores comments, strings, keywords
  */
 
 // comments can be nested in kotlin, so below logic doesn't allow that with yybegin we save only one nesting
 // same for strings
 
 package org.opensolaris.opengrok.analysis.kotlin;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class KotlinSymbolTokenizer
@@ -45,10 +45,10 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [:jletter:] [:jletterdigit:]*
-
 %state STRING COMMENT SCOMMENT QSTRING TSTRING
 
+%include Common.lexh
+%include Kotlin.lexh
 %%
 
 /* TODO : support identifiers escaped by ` `*/
@@ -58,7 +58,7 @@ Identifier = [:jletter:] [:jletterdigit:]*
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
-
+ {Number}    {}
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  \"\"\"   { yybegin(TSTRING); }
@@ -68,15 +68,19 @@ Identifier = [:jletter:] [:jletterdigit:]*
 }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
 }
 
 <TSTRING> {
+ /*
+  * "raw string ... doesn't support backslash escaping"
+  */
   \"\"\"     { yybegin(YYINITIAL); }
 }
 
@@ -85,9 +89,10 @@ Identifier = [:jletter:] [:jletterdigit:]*
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{EOL}      { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, TSTRING> {
+{WhiteSpace} |
 [^]    {}
 }
