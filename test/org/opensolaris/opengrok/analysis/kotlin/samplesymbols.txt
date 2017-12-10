@@ -30,6 +30,7 @@ init
 assert
 tag
 length
+tag
 loggerTag
 tag
 T			# 56:inline fun <reified T:

@@ -68,7 +68,7 @@ super(in);
 }
 
 <STRING> {
- \\[\"\\]    {}
+ \\[\"\$\\]    {}
  \"     { yybegin(YYINITIAL); }
 }
 
@@ -82,6 +82,21 @@ super(in);
   * "raw string ... doesn't support backslash escaping"
   */
   \"\"\"     { yybegin(YYINITIAL); }
+}
+
+<STRING, TSTRING> {
+    /*
+     * TODO : support template expressions inside curly brackets
+     */
+    \$ {Identifier}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        String id = capture.substring(1);
+        if (!Consts.kwd.contains(id)) {
+            setAttribs(id, yychar + 1, yychar + yylength());
+            return yystate();
+       }
+    }
 }
 
 <COMMENT> {
