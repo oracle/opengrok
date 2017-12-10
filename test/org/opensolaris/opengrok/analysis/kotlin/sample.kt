@@ -274,3 +274,6 @@ private fun getTag(clazz: Class<*>): String {
     }
 }
 /*http://example.com.*/
+/* comment /* comment */
+comment
+*/

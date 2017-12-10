@@ -31,6 +31,7 @@
 
 package org.opensolaris.opengrok.analysis.kotlin;
 
+import java.io.IOException;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
@@ -44,6 +45,15 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
+%{
+    private int nestedComment;
+
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        nestedComment = 0;
+    }
+%}
 
 %state STRING COMMENT SCOMMENT QSTRING TSTRING
 
@@ -62,7 +72,6 @@ super(in);
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  \"\"\"   { yybegin(TSTRING); }
- "/*"   { yybegin(COMMENT); }
  "//"   { yybegin(SCOMMENT); }
 
 }
@@ -99,8 +108,20 @@ super(in);
     }
 }
 
+<YYINITIAL, COMMENT> {
+    "/*"    {
+        if (nestedComment++ == 0) {
+            yybegin(COMMENT);
+        }
+    }
+}
+
 <COMMENT> {
-"*/"    { yybegin(YYINITIAL);}
+"*/"    {
+    if (--nestedComment == 0) {
+        yybegin(YYINITIAL);
+    }
+ }
 }
 
 <SCOMMENT> {
