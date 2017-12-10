@@ -27,22 +27,30 @@
  */
 
 package org.opensolaris.opengrok.analysis.haskell;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 
 /**
  * @author Harry Pan
  */
-
 %%
 %public
 %class HaskellXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
+    private int nestedComment;
+
+    @Override
+    public void reset() {
+        super.reset();
+        nestedComment = 0;
+    }
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -50,50 +58,93 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
-Number = (0[xX][0-9a-fA-F]+|0[oO][0-7]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
-
 %state STRING CHAR COMMENT BCOMMENT
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Haskell.lexh
 %%
 <YYINITIAL> {
     {Identifier} {
         String id = yytext();
         writeSymbol(id, Consts.kwd, yyline);
     }
-    {Number}     { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
-    \"           { yybegin(STRING); out.write("<span class=\"s\">\"");                         }
-    \'           { yybegin(CHAR); out.write("<span class=\"s\">\'");                           }
-    "--"         { yybegin(COMMENT); out.write("<span class=\"c\">--");                        }
-    "{-"         { yybegin(BCOMMENT); out.write("<span class=\"c\">{-");                       }
+    {Number}     {
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
+        out.write(yytext());
+        disjointSpan(null);
+    }
+    \"           {
+        pushSpan(STRING, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext()));
+    }
+    \'           {
+        pushSpan(CHAR, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext()));
+    }
+    "--"         {
+        pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+        out.write(yytext());
+    }
+
+    {NotComments}    { out.write(yytext()); }
 }
 
 <STRING> {
-    \"                 { yybegin(YYINITIAL); out.write("\"</span>");               }
-    \\\\               { out.write("\\\\");                                        }
-    \\\"               { out.write("\\\"");                                        }
-    {WhspChar}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine(); }
+    \\[\"\\]    { out.write(htmlize(yytext())); }
+    \"          {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
+    /*
+     * "A string may include a 'gap'-—two backslants enclosing white
+     * characters—-which is ignored. This allows one to write long strings on
+     * more than one line by writing a backslant at the end of one line and at
+     * the start of the next." N.b. OpenGrok does not explicltly recognize the
+     * "gap" but since a STRING must end in a non-escaped quotation mark, just
+     * allow STRINGs to be multi-line regardless of syntax.
+     */
 }
 
 <CHAR> {    // we don't need to consider the case where prime is part of an identifier since it is handled above
-    ( .\' | \\.\' )    { yybegin(YYINITIAL); out.write(yytext()); out.write("</span>"); }
-    {WhspChar}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine();      }
+    \\[\'\\]    { out.write(htmlize(yytext())); }
+    \'          {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
+    /*
+     * N.b. though only a single char is valid Haskell syntax, OpenGrok just
+     * waits to end CHAR at a non-escaped apostrophe regardless of count.
+     */
 }
 
 <COMMENT> {
-    {WhspChar}*{EOL} { yybegin(YYINITIAL); out.write("</span>"); startNewLine(); }
+    {WhspChar}*{EOL}    {
+        yypop();
+        startNewLine();
+    }
+}
+
+<YYINITIAL, BCOMMENT> {
+    "{-"    {
+        if (nestedComment++ == 0) {
+            pushSpan(BCOMMENT, HtmlConsts.COMMENT_CLASS);
+        }
+        out.write(yytext());
+    }
 }
 
 <BCOMMENT> {
-    "-}" { yybegin(YYINITIAL); out.write("-}</span>"); }
+    "-}"    {
+        out.write(yytext());
+        if (--nestedComment == 0) {
+            yypop();
+        }
+    }
 }
 
-"&"                { out.write( "&amp;");           }
-"<"                { out.write( "&lt;");            }
-">"                { out.write( "&gt;");            }
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL} { startNewLine();                }
 {WhiteSpace}       { out.write(yytext());           }
 [!-~]              { out.write(yycharat(0)); }

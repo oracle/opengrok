@@ -59,7 +59,7 @@ public class HaskellXrefTest {
             "<a class=\"l\" name=\"1\" href=\"#1\">1</a>" +
             "<a href=\"/source/s?defs=putStrLn\" class=\"intelliWindow-symbol\"" +
             " data-definition-place=\"undefined-in-file\">putStrLn</a>" +
-            " <span class=\"s\">\"Hello, world!\"</span>\n",
+            " <span class=\"s\">&quot;Hello, world!&quot;</span>\n",
                 w.toString());
     }
 

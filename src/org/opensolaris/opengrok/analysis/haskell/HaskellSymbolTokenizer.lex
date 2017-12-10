@@ -27,12 +27,13 @@
  */
 
 package org.opensolaris.opengrok.analysis.haskell;
+
+import java.io.IOException;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 /**
  * @author Harry Pan
  */
-
 %%
 %public
 %class HaskellSymbolTokenizer
@@ -44,12 +45,19 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
+%{
+    private int nestedComment;
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
-Number = (0[xX][0-9a-fA-F]+|0[oO][0-7]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
+    public void reset() throws IOException {
+        super.reset();
+        nestedComment = 0;
+    }
+%}
 
 %state STRING CHAR COMMENT BCOMMENT
 
+%include Common.lexh
+%include Haskell.lexh
 %%
 
 <YYINITIAL> {
@@ -64,26 +72,40 @@ Number = (0[xX][0-9a-fA-F]+|0[oO][0-7]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0
     \"   { yybegin(STRING);   }
     \'   { yybegin(CHAR);     }
     "--" { yybegin(COMMENT);  }
-    "{-" { yybegin(BCOMMENT); }
+
+    {NotComments}    {}
 }
 
 <STRING> {
+    \\[\"\\]    {}
     \"   { yybegin(YYINITIAL); }
-    \\\" {}     // escaped double quote - don't do anything
 }
 
 <CHAR> {    // we don't need to consider the case where prime is part of an identifier since it is handled above
+    \\[\'\\]    {}
     \'   { yybegin(YYINITIAL); }
-    \\\' {}     // escaped single quote - don't do anything
 }
 
 <COMMENT> {
-    \n { yybegin(YYINITIAL); }
+    {EOL}    { yybegin(YYINITIAL); }
+}
+
+<YYINITIAL, BCOMMENT> {
+    "{-"    {
+        if (nestedComment++ == 0) {
+            yybegin(BCOMMENT);
+        }
+    }
 }
 
 <BCOMMENT> {
-    "-}" { yybegin(YYINITIAL); }
+    "-}"    {
+        if (--nestedComment == 0) {
+            yybegin(YYINITIAL);
+        }
+    }
 }
 
 // fallback
+{WhiteSpace} |
 [^] {}
