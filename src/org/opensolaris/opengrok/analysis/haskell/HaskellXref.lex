@@ -152,8 +152,24 @@ import org.opensolaris.opengrok.web.Util;
 
 <STRING, COMMENT, BCOMMENT> {
     {FPath} { out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/')); }
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
+}
+
+<STRING, COMMENT> {
     {BrowseableURI}    {
         appendLink(yytext(), true);
     }
-    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
+}
+
+<BCOMMENT> {
+    /*
+     * Right curly bracket is not a valid URI character, so it won't be in a
+     * {BrowseableURI} capture, but a hyphen is valid. Thus a nested comment
+     * ending token, -}, can hide at the end of a URI. Work around this by
+     * capturing a possibly-trailing right curly bracket, and match a special,
+     * Haskell-specific collateral capture pattern.
+     */
+    {BrowseableURI} \}?    {
+        appendLink(yytext(), true, HaskellUtils.MAYBE_END_NESTED_COMMENT);
+    }
 }
