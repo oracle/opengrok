@@ -120,9 +120,9 @@ ParamName = {Identifier} | "<" {Identifier} ">"
     out.write(yytext());
  }
 }
-/* TODO : support raw """ strings */
+
 <STRING> {
- \\[\"\\]    { out.write(htmlize(yytext())); }
+ \\[\"\$\\]    { out.write(htmlize(yytext())); }
  \"     {
     out.write(htmlize(yytext()));
     yypop();
@@ -146,6 +146,21 @@ ParamName = {Identifier} | "<" {Identifier} ">"
     out.write(htmlize(yytext()));
     yypop();
  }
+}
+
+<STRING, TSTRING> {
+    /*
+     * TODO : support template expressions inside curly brackets
+     */
+    \$ {Identifier}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        String id = capture.substring(1);
+        out.write(sigil);
+        disjointSpan(null);
+        writeSymbol(id, Consts.kwd, yyline);
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
 }
 
 <COMMENT, KDOC> {
