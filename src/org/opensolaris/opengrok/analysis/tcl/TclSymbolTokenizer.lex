@@ -57,6 +57,8 @@ Identifier = [\:\=a-zA-Z0-9_]+
               }
  \"     { yybegin(STRING); }
 "#"     { yybegin(SCOMMENT); }
+
+ \\\"    {}
 }
 
 <STRING> {

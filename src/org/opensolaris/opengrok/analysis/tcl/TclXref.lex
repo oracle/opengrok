@@ -74,6 +74,8 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 
  \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
  "#"    { yybegin(SCOMMENT);out.write("<span class=\"c\">#");}
+
+ \\\"    { out.write(htmlize(yytext())); }
 }
 
 <STRING> {
