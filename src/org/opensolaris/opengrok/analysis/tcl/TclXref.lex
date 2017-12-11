@@ -39,6 +39,14 @@ import org.opensolaris.opengrok.web.Util;
 %int
 %include CommonXref.lexh
 %{
+  private int braceCount;
+
+  @Override
+  public void reset() {
+      super.reset();
+      braceCount = 0;
+  }
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -48,7 +56,7 @@ import org.opensolaris.opengrok.web.Util;
 
 File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
-%state  STRING COMMENT SCOMMENT
+%state STRING COMMENT SCOMMENT BRACES VARSUB2
 
 %include Common.lexh
 %include CommonURI.lexh
@@ -57,17 +65,19 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 %%
 <YYINITIAL>{
 
-{Identifier} {
-    String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+ [\{]    {
+    out.write(yytext());
+    ++braceCount;
+    yypush(BRACES);
+ }
 }
 
- {Number}        {
+<YYINITIAL, BRACES> {
+ {Number}    {
     disjointSpan(HtmlConsts.NUMBER_CLASS);
     out.write(yytext());
     disjointSpan(null);
  }
-
  \"     {
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
     out.write(htmlize(yytext()));
@@ -76,17 +86,88 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
     pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
     out.write(yytext());
  }
+ {WordOperators}    {
+    out.write(htmlize(yytext()));
+ }
+}
 
- \\\"    { out.write(htmlize(yytext())); }
+<YYINITIAL, STRING, BRACES> {
+    {Backslash_sub}    {
+        out.write(htmlize(yytext()));
+    }
+    {Backslash_nl}    {
+        String capture = yytext();
+        String esc = capture.substring(0, 1);
+        String whsp = capture.substring(1);
+        out.write(esc);
+        TclUtils.writeWhitespace(this, whsp);
+    }
+    {Varsub1}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        String name = capture.substring(1);
+        out.write(sigil);
+        writeSymbol(name, Consts.kwd, yyline);
+    }
+    {Varsub2}    {
+        // TclXref could get away without VARSUB2 as a state, but for ease in
+        // comparing to TclSymbolTokenizer, it is modeled here too.
+        yypush(VARSUB2);
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        int lparen_i = capture.indexOf("(");
+        String name1 = capture.substring(1, lparen_i);
+        yypushback(capture.length() - lparen_i - 1);
+        out.write(sigil);
+        if (name1.length() > 0) {
+            writeSymbol(name1, Consts.kwd, yyline);
+        }
+        out.write("(");
+    }
+    {Varsub3}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 2);
+        String name = capture.substring(2, capture.length() - 1);
+        String endtoken = capture.substring(capture.length() - 1);
+        out.write(sigil);
+        writeSymbol(name, Consts.kwd, yyline);
+        out.write(endtoken);
+    }
+}
+
+<VARSUB2> {
+    {name_unit}+    {
+        String name2 = yytext();
+        yypop();
+        writeSymbol(name2, Consts.kwd, yyline);
+    }
+}
+
+<YYINITIAL, BRACES> {
+    {OrdinaryWord}    {
+        String id = yytext();
+        writeSymbol(id, Consts.kwd, yyline);
+    }
 }
 
 <STRING> {
- \\[\"\\] |
- \" {WhiteSpace} \"    { out.write(htmlize(yytext())); }
  \"     {
     out.write(htmlize(yytext()));
     yypop();
  }
+}
+
+<BRACES> {
+    [\}]    {
+        if (--braceCount == 0) {
+            yypop();
+        }
+        out.write(yytext());
+    }
+    [\{]    {
+        ++braceCount;
+        out.write(yytext());
+    }
 }
 
 <SCOMMENT> {
@@ -96,7 +177,7 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
   }
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT> {
+<YYINITIAL, STRING, COMMENT, SCOMMENT, BRACES> {
 [&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL} { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
