@@ -599,6 +599,21 @@ It would look like this:
 (this will map extension `.cs` to `PlainAnalyzer`)
 You should even be able to override OpenGroks analyzers using this option.
 
+### 5.7 Logging
+
+Both indexer and web app emit extensive log messages.
+
+OpenGrok is shipped with the `logging.properties` file that contains logging
+configuration.
+
+The `OpenGrok` shell script will automatically use this file
+if found under the base directory. It can also be set using the
+`OPENGROK_LOGGER_CONFIG_PATH` environment variable.
+
+If not using the shell script, the path to the configuration file can be
+set using the `-Djava.util.logging.config.file=/PATH/TO/MY/logging.properties`
+java parameter.
+
 
 ## 6. Optional Command Line Interface Usage
 
