@@ -66,7 +66,7 @@ Note that OpenGrok script expects the directory <code>/var/opengrok</code> to be
 
 ==== <u>Step.2</u> - Populate DATA_ROOT Directory, let the indexer generate the project XML config file, update configuration.xml to your web app ====
 
-Second step is to just run the indexing (can take a lot of time). After this is done, indexer automatically attempts to upload newly generated configuration to the web application. Most probably you will not be able to use {Opengrok before this is done.
+Second step is to just run the indexing (can take a lot of time). After this is done, indexer automatically attempts to upload newly generated configuration to the web application. Most probably you will not be able to use {Opengrok before this is done. <code>OPENGROK_CTAGS</code> environment variable can be used to tell {Opengrok which ctags implementation to use for indexing.
 
 Please change to opengrok directory (can vary on your system)
 
@@ -79,6 +79,10 @@ and run, if your SRC_ROOT is prepared under <code>/var/opengrok/src</code>
 otherwise (if SRC_ROOT is in different directory) run:
 
  $ ./OpenGrok index <absolute_path_to_your_SRC_ROOT>
+
+specify alternative ctags binary:
+
+ $ OPENGROK_CTAGS=<absolute_path_to_ctags_binary> ./OpenGrok index
 
 NOTE: Please DON'T use symlinks to /var/opengrok/src - rather use above command with parameter.
 
