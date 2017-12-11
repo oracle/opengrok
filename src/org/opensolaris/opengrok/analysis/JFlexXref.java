@@ -270,16 +270,28 @@ public abstract class JFlexXref extends JFlexStateStacker {
             throws IOException {
 
         int n = 0;
-        if (doEndingPushback) {
-            n = StringUtils.countURIEndingPushback(url);
-        }
-        int ccn = StringUtils.countPushback(url, collateralCapture);
-        if (ccn > n) n = ccn;
-        // Push back if positive, but not if equal to the current length.
-        if (n > 0 && n < url.length()) {
-            yypushback(n);
-            url = url.substring(0, url.length() - n);
-        }
+        int subn;
+        do {
+            // An ending-pushback could be present before a collateral capture,
+            // so detect both in a loop (on a shrinking `url') until no more
+            // shrinking should occur.
+
+            subn = 0;
+            if (doEndingPushback) {
+                subn = StringUtils.countURIEndingPushback(url);
+            }
+            int ccn = StringUtils.countPushback(url, collateralCapture);
+            if (ccn > subn) subn = ccn;
+
+            // Push back if positive, but not if equal to the current length.
+            if (subn > 0 && subn < url.length()) {
+                url = url.substring(0, url.length() - subn);
+                n += subn;
+            } else {
+                subn = 0;
+            }
+        } while (subn != 0);
+        if (n > 0) yypushback(n);
 
         out.write("<a href=\"");
         out.write(Util.formQuoteEscape(url));
