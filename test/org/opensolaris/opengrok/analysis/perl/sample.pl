@@ -382,3 +382,4 @@ for my $k (grep /=/, split /;/, $d, -1) {
 "left",  "middle", "right"
 .
 print "1\n";
+print 'http://example.com';

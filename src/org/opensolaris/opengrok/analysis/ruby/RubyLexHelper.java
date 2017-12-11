@@ -31,50 +31,15 @@ import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.Resettable;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.analysis.JFlexJointLexer;
+import org.opensolaris.opengrok.util.RegexUtils;
 
 /**
  * Represents an API for object's using {@link RubyLexHelper}
  */
-interface RubyLexListener {
-    void yypush(int state);
-    void yypop() throws IOException;
-    void yybegin(int state);
-    void yypushback(int numChars);
+interface RubyLexer extends JFlexJointLexer {
     void maybeIntraState();
-
-    void take(String value) throws IOException;
-    void takeNonword(String value) throws IOException;
-
-    /**
-     * Passes a text fragment that is syntactically a symbol for processing.
-     * @param value the excised symbol
-     * @param captureOffset the offset from yychar where {@code value} began
-     * @param ignoreKwd a value indicating whether keywords should be ignored
-     * @return true if the {@code value} was not in keywords or if the
-     * {@code ignoreKwd} was true
-     */
-    boolean takeSymbol(String value, int captureOffset, boolean ignoreKwd)
-        throws IOException;
-
-    /**
-     * Indicates that something unusual happened where normally a symbol would
-     * have been written.
-     */
-    void skipSymbol();
-
-    /**
-     * Passes a text fragment that is syntactically a keyword symbol for
-     * processing
-     * @param value the excised symbol
-     */
-    void takeKeyword(String value) throws IOException;
-
-    /**
-     * Indicates that the current line is ended.
-     *
-     * @throws IOException thrown on error when handling the EOL
-     */
-    void startNewLine() throws IOException;
+    void popHelper();
 }
 
 /**
@@ -86,7 +51,7 @@ class RubyLexHelper implements Resettable {
     private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
         "^[a-zA-Z0-9_\u00160-\u0255]+");
 
-    private final RubyLexListener listener;
+    private final RubyLexer lexer;
 
     private final int QUOxLxN;
     private final int QUOxN;
@@ -134,13 +99,19 @@ class RubyLexHelper implements Resettable {
      */
     private int nendbrace;
 
+    /**
+     * When matching a quoting construct, a Pattern to identify collateral
+     * capture characters is stored.
+     */
+    private Pattern collateralCapture;
+
     public RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
-	    RubyLexListener listener,
+	    RubyLexer lexer,
         int hERE, int hERExN, int hEREin, int hEREinxN) {
-        if (listener == null) {
-            throw new IllegalArgumentException("`listener' is null");
+        if (lexer == null) {
+            throw new IllegalArgumentException("`lexer' is null");
         }
-        this.listener = listener;
+        this.lexer = lexer;
         this.QUOxLxN = qUOxLxN;
         this.QUOxN = qUOxN;
         this.QUOxL = qUOxL;
@@ -156,6 +127,7 @@ class RubyLexHelper implements Resettable {
      */
     @Override
     public void reset() {
+        collateralCapture = null;
         endqchar = '\0';
         if (hereSettings != null) hereSettings.clear();
         nendbrace = 0;
@@ -217,6 +189,12 @@ class RubyLexHelper implements Resettable {
      */
     public void qop(boolean doWrite, String capture, int namelength,
         boolean nointerp) throws IOException {
+
+        // N.b. the following will write anyway -- despite any `doWrite'
+        // setting -- if interpolation is truly ending, but that is OK as a
+        // quote-like operator is not starting in that case.
+        if (maybeEndInterpolation(capture)) return;
+
         // If namelength is positive, allow that a non-zero-width word boundary
         // character may have needed to be matched since jflex does not conform
         // with \b as a zero-width simple word boundary. Excise it into
@@ -228,16 +206,17 @@ class RubyLexHelper implements Resettable {
             postop = capture.substring(qopname.length());
         }
         nendqchar = 1;
+        collateralCapture = null;
 
         char opc = postop.charAt(0);
         setEndQuoteChar(opc);
         setState(postop, nointerp);
 
         if (doWrite) {
-            listener.takeNonword(qopname);
-            listener.skipSymbol();
-            listener.take(HtmlConsts.SPAN_S);
-            listener.takeNonword(postop);
+            lexer.offerNonword(qopname);
+            lexer.skipSymbol();
+            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+            lexer.offerNonword(postop);
         }
     }
 
@@ -249,9 +228,9 @@ class RubyLexHelper implements Resettable {
         boolean nolink = false;
 
         // "no link" for values in the rules for "string links" if `postop'
-        // is file- or URI-like.
-        if (StringUtils.startsWithFnameChars(postop) ||
-            StringUtils.startsWithURIChars(postop)) {
+        // starts path-like or with the e-mail delimiter.
+        if (StringUtils.startsWithFpathChar(postop) ||
+            postop.startsWith("@")) {
             nolink = true;
         }
 
@@ -260,8 +239,8 @@ class RubyLexHelper implements Resettable {
         } else {
             state = nolink ? QUOxL : QUO;
         }
-        listener.maybeIntraState();
-        listener.yypush(state);
+        lexer.maybeIntraState();
+        lexer.yypush(state);
     }
 
     /**
@@ -300,6 +279,8 @@ class RubyLexHelper implements Resettable {
      * to output.
      */
     public void hqopPunc(String capture) throws IOException {
+        if (maybeEndInterpolation(capture)) return;
+
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
@@ -308,10 +289,10 @@ class RubyLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        listener.takeNonword(lede);
+        lexer.offerNonword(lede);
         takeWhitespace(intervening);
-        listener.take(HtmlConsts.SPAN_S);
-        listener.take("/");
+        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+        lexer.offer("/");
     }
 
     /**
@@ -321,6 +302,8 @@ class RubyLexHelper implements Resettable {
      * parts to output.
      */
     public void hqopSymbol(String capture) throws IOException {
+        if (maybeEndInterpolation(capture)) return;
+
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
         String preceding = capture.substring(0, capture.length() - 1);
@@ -329,10 +312,10 @@ class RubyLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        listener.takeSymbol(lede, 0, false);
+        lexer.offerSymbol(lede, 0, false);
         takeWhitespace(intervening);
-        listener.take(HtmlConsts.SPAN_S);
-        listener.take("/");
+        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+        lexer.offer("/");
     }
 
     /**
@@ -342,21 +325,21 @@ class RubyLexHelper implements Resettable {
     private void takeWhitespace(String whsp) throws IOException {
         int i;
         if ((i = whsp.indexOf("\n")) == -1) {
-            listener.take(whsp);
+            lexer.offer(whsp);
         } else {
             int numlf = 1, off = i + 1;
             while ((i = whsp.indexOf("\n", off)) != -1) {
                 ++numlf;
                 off = i + 1;
             }
-            while (numlf-- > 0) listener.startNewLine();
-            if (off < whsp.length()) listener.take(whsp.substring(off));
+            while (numlf-- > 0) lexer.startNewLine();
+            if (off < whsp.length()) lexer.offer(whsp.substring(off));
         }
     }
 
     /**
      * Parses a Here-document declaration, and takes the {@code capture} using
-     * {@link RubyLexListener#takeNonword(java.lang.String)}. If the
+     * {@link RubyLexer#offerNonword(java.lang.String)}. If the
      * declaration is valid, {@code hereSettings} will have been appended.
      */
     public void hop(String capture) throws IOException {
@@ -364,7 +347,7 @@ class RubyLexHelper implements Resettable {
             throw new IllegalArgumentException("bad HERE: " + capture);
         }
 
-        listener.takeNonword(capture);
+        lexer.offerNonword(capture);
         if (hereSettings == null) hereSettings = new LinkedList<>();
 
         String remaining = capture;
@@ -428,8 +411,8 @@ class RubyLexHelper implements Resettable {
     public boolean maybeStartHere() throws IOException {
         if (hereSettings != null && hereSettings.size() > 0) {
             HereDocSettings settings = hereSettings.peek();
-            listener.yypush(settings.state);
-            listener.take(HtmlConsts.SPAN_S);
+            lexer.yypush(settings.state);
+            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
             return true;
         }
         return false;
@@ -446,20 +429,20 @@ class RubyLexHelper implements Resettable {
 
         boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
-            listener.take(HtmlConsts.ZSPAN);
+            lexer.disjointSpan(null);
             didZspan = true;
             hereSettings.remove();
         }
 
-        listener.takeNonword(capture);
+        lexer.offerNonword(capture);
 
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
-            listener.yybegin(settings.state);
-            if (didZspan) listener.take(HtmlConsts.SPAN_S);
+            lexer.yybegin(settings.state);
+            if (didZspan) lexer.disjointSpan(HtmlConsts.STRING_CLASS);
             return false;
         } else {
-            listener.yypop();
+            lexer.yypop();
             return true;
         }
     }
@@ -480,12 +463,19 @@ class RubyLexHelper implements Resettable {
      * {@code nendbrace}.
      * @return true if the interpolation state should end
      */
-    public boolean maybeEndInterpolation(String capture) {
+    public boolean maybeEndInterpolation(String capture) throws IOException {
         if (nendbrace <= 0) {
             return false;
         }
         if (capture.startsWith("}")) {
             if (--nendbrace <= 0) {
+                int rem = capture.length() - 1;
+                String opener = capture.substring(0, 1);
+                lexer.popHelper();
+                lexer.yypop();
+                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+                lexer.offerNonword(opener);
+                if (rem > 0) lexer.yypushback(rem);
                 return true;
             }
         } else if (capture.startsWith("{")) {
@@ -502,13 +492,13 @@ class RubyLexHelper implements Resettable {
         int o = 0, i;
         while (o < capture.length() && (i = capture.indexOf(SEP, o)) != -1) {
             String module = capture.substring(o, i);
-            listener.takeSymbol(module, o, false); 
-            listener.takeNonword(SEP);
+            lexer.offerSymbol(module, o, false);
+            lexer.offerNonword(SEP);
             o = i + 2;
         }
         if (o < capture.length()) {
             String module = capture.substring(o);
-            listener.takeSymbol(module, o, false); 
+            lexer.offerSymbol(module, o, false);
         }
     }
 
@@ -526,6 +516,26 @@ class RubyLexHelper implements Resettable {
             --len;
         }
         return len;
+    }
+
+    /**
+     * Gets a pattern to match the collateral capture for the current quoting
+     * state or null if there is no active quoting state.
+     * @return a defined pattern or null
+     */
+    public Pattern getCollateralCapturePattern() {
+        if (endqchar == '\0') return null;
+        if (collateralCapture != null) return collateralCapture;
+
+        StringBuilder patb = new StringBuilder("[");
+        patb.append(Pattern.quote(String.valueOf(endqchar)));
+        if (nestqchar != '\0') {
+            patb.append(Pattern.quote(String.valueOf(nestqchar)));
+        }
+        patb.append("]");
+        patb.append(RegexUtils.getNotFollowingEscapePattern());
+        collateralCapture = Pattern.compile(patb.toString());
+        return collateralCapture;
     }
 
     private class HereDocSettings {

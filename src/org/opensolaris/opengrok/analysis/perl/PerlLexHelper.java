@@ -31,43 +31,14 @@ import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.Resettable;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.analysis.JFlexJointLexer;
+import org.opensolaris.opengrok.util.RegexUtils;
 
 /**
  * Represents an API for object's using {@link PerlLexHelper}
  */
-interface PerlLexListener {
-    void yypush(int state);
-    void yypop() throws IOException;
-    void yybegin(int state);
-    void yypushback(int numChars);
+interface PerlLexer extends JFlexJointLexer {
     void maybeIntraState();
-
-    void take(String value) throws IOException;
-    void takeNonword(String value) throws IOException;
-
-    /**
-     * Passes a text fragment that is syntactically a symbol for processing.
-     * @param value the excised symbol
-     * @param captureOffset the offset from yychar where {@code value} began
-     * @param ignoreKwd a value indicating whether keywords should be ignored
-     * @return true if the {@code value} was not in keywords or if the
-     * {@code ignoreKwd} was true
-     */
-    boolean takeSymbol(String value, int captureOffset, boolean ignoreKwd)
-            throws IOException;
-
-    /**
-     * Indicates that something unusual happened where normally a symbol would
-     * have been written.
-     */
-    void skipSymbol();
-
-    /**
-     * Passes a text fragment that is syntactically a keyword symbol for
-     * processing
-     * @param value the excised symbol
-     */
-    void takeKeyword(String value) throws IOException;
 
     /**
      * Indicates that a premature end of quoting occurred. Everything up to the
@@ -75,13 +46,6 @@ interface PerlLexListener {
      * indicated via {@link yypushback}.
      */
     void abortQuote() throws IOException;
-
-    /**
-     * Indicates that the current line is ended.
-     *
-     * @throws IOException thrown on error when handling the EOL
-     */
-    void startNewLine() throws IOException;
 }
 
 /**
@@ -94,7 +58,7 @@ class PerlLexHelper implements Resettable {
     private final static Pattern HERE_TERMINATOR_MATCH = Pattern.compile(
         "^[a-zA-Z0-9_]+");
 
-    private final PerlLexListener listener;
+    private final PerlLexer lexer;
 
     private final int QUOxLxN;
     private final int QUOxN;
@@ -150,13 +114,19 @@ class PerlLexHelper implements Resettable {
      */
     private boolean waitq;
 
+    /**
+     * When matching a quoting construct, a Pattern to identify collateral
+     * capture characters is stored.
+     */
+    private Pattern collateralCapture;
+
     public PerlLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
-        PerlLexListener listener,
+        PerlLexer lexer,
         int hERE, int hERExN, int hEREin, int hEREinxN) {
-        if (listener == null) {
-            throw new IllegalArgumentException("`listener' is null");
+        if (lexer == null) {
+            throw new IllegalArgumentException("`lexer' is null");
         }
-        this.listener = listener;
+        this.lexer = lexer;
         this.QUOxLxN = qUOxLxN;
         this.QUOxN = qUOxN;
         this.QUOxL = qUOxL;
@@ -172,6 +142,7 @@ class PerlLexHelper implements Resettable {
      */
     @Override
     public void reset() {
+        collateralCapture = null;
         endqchar = '\0';
         if (hereSettings != null) hereSettings.clear();
         nendqchar = 0;
@@ -235,7 +206,7 @@ class PerlLexHelper implements Resettable {
 
     /**
      * Starts a quote-like operator as specified in a syntax fragment,
-     * {@code op}, and gives the {@code op} for the {@code listener} to take.
+     * {@code op}, and gives the {@code op} for the {@code lexer} to take.
      */
     public void qop(String op, int namelength, boolean nointerp)
         throws IOException {
@@ -244,7 +215,7 @@ class PerlLexHelper implements Resettable {
 
     /**
      * Starts a quote-like operator as specified in a syntax fragment,
-     * {@code op}, and gives the {@code capture} for the {@code listener} to
+     * {@code op}, and gives the {@code capture} for the {@code lexer} to
      * take if {@code doWrite} is true.
      */
     public void qop(boolean doWrite, String capture, int namelength,
@@ -264,6 +235,7 @@ class PerlLexHelper implements Resettable {
         }
         waitq = false;
         nendqchar = 1;
+        collateralCapture = null;
 
         switch (qopname) {
             case "tr":
@@ -283,14 +255,14 @@ class PerlLexHelper implements Resettable {
         setState(ltpostop, nointerp);
 
         if (doWrite) {
-            listener.takeNonword(boundary);
+            lexer.offerNonword(boundary);
             if (qopname.length() > 0) {
-                listener.takeSymbol(qopname, boundary.length(), false);
+                lexer.offerSymbol(qopname, boundary.length(), false);
             } else {
-                listener.skipSymbol();
+                lexer.skipSymbol();
             }
-            listener.take(HtmlConsts.SPAN_S);
-            listener.takeNonword(postop);
+            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+            lexer.offerNonword(postop);
         }
     }
 
@@ -302,9 +274,9 @@ class PerlLexHelper implements Resettable {
         boolean nolink = false;
 
         // "no link" for values in the rules for "string links" if `ltpostop'
-        // is file- or URI-like.
-        if (StringUtils.startsWithFnameChars(ltpostop) ||
-            StringUtils.startsWithURIChars(ltpostop)) {
+        // starts path-like or with the e-mail delimiter.
+        if (StringUtils.startsWithFpathChar(ltpostop) ||
+            ltpostop.startsWith("@")) {
             nolink = true;
         }
 
@@ -313,8 +285,8 @@ class PerlLexHelper implements Resettable {
         } else {
             state = nolink ? QUOxL : QUO;
         }
-        listener.maybeIntraState();
-        listener.yypush(state);
+        lexer.maybeIntraState();
+        lexer.yypush(state);
     }
 
     /**
@@ -361,10 +333,10 @@ class PerlLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        listener.takeNonword(lede);
+        lexer.offerNonword(lede);
         takeWhitespace(intervening);
-        listener.take(HtmlConsts.SPAN_S);
-        listener.take("/");
+        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+        lexer.offer("/");
     }
 
     /**
@@ -382,10 +354,10 @@ class PerlLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        listener.takeSymbol(lede, 0, false);
+        lexer.offerSymbol(lede, 0, false);
         takeWhitespace(intervening);
-        listener.take(HtmlConsts.SPAN_S);
-        listener.take("/");
+        lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+        lexer.offer("/");
     }
 
     /**
@@ -395,21 +367,21 @@ class PerlLexHelper implements Resettable {
     private void takeWhitespace(String whsp) throws IOException {
         int i;
         if ((i = whsp.indexOf("\n")) == -1) {
-            listener.take(whsp);
+            lexer.offer(whsp);
         } else {
             int numlf = 1, off = i + 1;
             while ((i = whsp.indexOf("\n", off)) != -1) {
                 ++numlf;
                 off = i + 1;
             }
-            while (numlf-- > 0) listener.startNewLine();
-            if (off < whsp.length()) listener.take(whsp.substring(off));
+            while (numlf-- > 0) lexer.startNewLine();
+            if (off < whsp.length()) lexer.offer(whsp.substring(off));
         }
     }
 
     /**
      * Parses a Here-document declaration, and takes the {@code capture} using
-     * {@link PerlLexListener#takeNonword(java.lang.String)}. If the
+     * {@link PerlLexer#offerNonword(java.lang.String)}. If the
      * declaration is valid, {@code hereSettings} will have been appended.
      */
     public void hop(String capture) throws IOException {
@@ -417,7 +389,7 @@ class PerlLexHelper implements Resettable {
             throw new IllegalArgumentException("bad HERE: " + capture);
         }
 
-        listener.takeNonword(capture);
+        lexer.offerNonword(capture);
         if (hereSettings == null) hereSettings = new LinkedList<>();
 
         String remaining = capture;
@@ -486,8 +458,8 @@ class PerlLexHelper implements Resettable {
     public boolean maybeStartHere() throws IOException {
         if (hereSettings != null && hereSettings.size() > 0) {
             HereDocSettings settings = hereSettings.peek();
-            listener.yypush(settings.state);
-            listener.take(HtmlConsts.SPAN_S);
+            lexer.yypush(settings.state);
+            lexer.disjointSpan(HtmlConsts.STRING_CLASS);
             return true;
         }
         return false;
@@ -504,20 +476,20 @@ class PerlLexHelper implements Resettable {
 
         boolean didZspan = false;
         if (trimmed.equals(settings.terminator)) {
-            listener.take(HtmlConsts.ZSPAN);
+            lexer.disjointSpan(null);
             didZspan = true;
             hereSettings.remove();
         }
 
-        listener.takeNonword(capture);
+        lexer.offerNonword(capture);
 
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
-            listener.yybegin(settings.state);
-            if (didZspan) listener.take(HtmlConsts.SPAN_S);
+            lexer.yybegin(settings.state);
+            if (didZspan) lexer.disjointSpan(HtmlConsts.STRING_CLASS);
             return false;
         } else {
-            listener.yypop();
+            lexer.yypop();
             return true;
         }
     }
@@ -534,10 +506,10 @@ class PerlLexHelper implements Resettable {
         String sigil = capture.substring(0, 1);
 
         if (capture.charAt(0) == endqchar) {
-            listener.skipSymbol();
-            listener.takeNonword(sigil);
-            if (maybeEndQuote(sigil)) listener.abortQuote();
-            listener.yypushback(capture.length() - 1);
+            lexer.skipSymbol();
+            lexer.offerNonword(sigil);
+            if (maybeEndQuote(sigil)) lexer.abortQuote();
+            lexer.yypushback(capture.length() - 1);
             return;
         }
 
@@ -547,9 +519,9 @@ class PerlLexHelper implements Resettable {
 
         int ohnooo;
         if ((ohnooo = id.indexOf(endqchar)) == -1) {
-            listener.takeNonword(sigil);
-            listener.take(s0);
-            listener.takeSymbol(id, sigil.length() + s0.length(), true);
+            lexer.offerNonword(sigil);
+            lexer.offer(s0);
+            lexer.offerSymbol(id, sigil.length() + s0.length(), true);
         } else {
             // If the identifier contains the end quoting character, then it
             // may or may not parse in Perl. Treat everything before the first
@@ -565,16 +537,16 @@ class PerlLexHelper implements Resettable {
             String w0 = id.substring(0, ohnooo);
             String p0 = id.substring(ohnooo, ohnooo + 1);
             String w1 = id.substring(ohnooo + 1);
-            listener.takeNonword(sigil);
-            listener.take(s0);
+            lexer.offerNonword(sigil);
+            lexer.offer(s0);
             if (w0.length() > 0) {
-                listener.takeSymbol(w0, sigil.length() + s0.length(), true);
+                lexer.offerSymbol(w0, sigil.length() + s0.length(), true);
             } else {
-                listener.skipSymbol();
+                lexer.skipSymbol();
             }
-            listener.takeNonword(p0);
-            if (maybeEndQuote(p0)) listener.abortQuote();
-            listener.yypushback(w1.length());
+            lexer.offerNonword(p0);
+            if (maybeEndQuote(p0)) lexer.abortQuote();
+            lexer.yypushback(w1.length());
         }
     }
 
@@ -609,14 +581,14 @@ class PerlLexHelper implements Resettable {
         String id = ltinterior1.substring(0, ltinterior1.length() -
             s2.length());
 
-        listener.takeNonword(sigil);
-        listener.take(s0);
-        listener.takeNonword(lpunc);
-        listener.take(s1);
-        listener.takeSymbol(id, sigil.length() + s0.length() +
+        lexer.offerNonword(sigil);
+        lexer.offer(s0);
+        lexer.offerNonword(lpunc);
+        lexer.offer(s1);
+        lexer.offerSymbol(id, sigil.length() + s0.length() +
             lpunc.length() + s1.length(), true);
-        listener.take(s2);
-        listener.takeNonword(rpunc);
+        lexer.offer(s2);
+        lexer.offerNonword(rpunc);
     }
 
     /**
@@ -626,19 +598,39 @@ class PerlLexHelper implements Resettable {
      */
     public void specialID(String capture) throws IOException {
         if (capture.indexOf(endqchar) == -1) {
-            listener.takeKeyword(capture);
+            lexer.offerKeyword(capture);
         } else {
             for (int i = 0; i < capture.length(); ++i) {
                 char c = capture.charAt(i);
                 String w = new String(new char[] {c});
-                listener.takeNonword(w);
+                lexer.offerNonword(w);
                 if (maybeEndQuote(w)) {
-                    listener.abortQuote();
-                    listener.yypushback(capture.length() - i - 1);
+                    lexer.abortQuote();
+                    lexer.yypushback(capture.length() - i - 1);
                     break;
                 }
             }
         }
+    }
+
+    /**
+     * Gets a pattern to match the collateral capture for the current quoting
+     * state or null if there is no active quoting state. 
+     * @return a defined pattern or null
+     */
+    public Pattern getCollateralCapturePattern() {
+        if (endqchar == '\0') return null;
+        if (collateralCapture != null) return collateralCapture;
+
+        StringBuilder patb = new StringBuilder("[");
+        patb.append(Pattern.quote(String.valueOf(endqchar)));
+        if (nestqchar != '\0') {
+            patb.append(Pattern.quote(String.valueOf(nestqchar)));
+        }
+        patb.append("]");
+        patb.append(RegexUtils.getNotFollowingEscapePattern());
+        collateralCapture = Pattern.compile(patb.toString());
+        return collateralCapture;
     }
 
     class HereDocSettings {

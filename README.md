@@ -4,18 +4,17 @@ Copyright (c) 2006, 2017 Oracle and/or its affiliates. All rights reserved.
 
 # OpenGrok - a wicked fast source browser [![Build Status](https://travis-ci.org/OpenGrok/OpenGrok.svg?branch=master)](https://travis-ci.org/OpenGrok/OpenGrok)
 
-1.  Introduction
-2.  Requirements
-3.  Usage
-4.  OpenGrok install
-5.  OpenGrok setup
-6.  Optional Command Line Interface Usage
-7.  Change web application properties or name
-8.  Information for developers
-9.  Tuning OpenGrok for large code bases
-10. Authors
-11. Contact us
-
+1.  [Introduction](#1-introduction)
+2.  [Requirements](#2-requirements)
+3.  [Usage](#3-usage)
+4.  [OpenGrok install](#4-opengrok-install)
+5.  [OpenGrok setup](#5-opengrok-setup)
+6.  [Optional Command Line Interface Usage](#6-optional-command-line-interface-usage)
+7.  [Change web application properties or name](#7-change-web-application-properties-or-name)
+8.  [Information for developers](#8-information-for-developers)
+9.  [Tuning OpenGrok for large code bases](#9-tuning-opengrok-for-large-code-bases)
+10. [Authors](#10-authors)
+11. [Contact us](#11-contact-us)
 
 ## 1. Introduction
 
@@ -600,6 +599,21 @@ It would look like this:
 (this will map extension `.cs` to `PlainAnalyzer`)
 You should even be able to override OpenGroks analyzers using this option.
 
+### 5.7 Logging
+
+Both indexer and web app emit extensive log messages.
+
+OpenGrok is shipped with the `logging.properties` file that contains logging
+configuration.
+
+The `OpenGrok` shell script will automatically use this file
+if found under the base directory. It can also be set using the
+`OPENGROK_LOGGER_CONFIG_PATH` environment variable.
+
+If not using the shell script, the path to the configuration file can be
+set using the `-Djava.util.logging.config.file=/PATH/TO/MY/logging.properties`
+java parameter.
+
 
 ## 6. Optional Command Line Interface Usage
 
@@ -684,16 +698,16 @@ being executed on) under the `dist/` directory.
 
 ### 8.1 Unit testing
 
-**Note**: For full coverage report your system has to provide proper junit test
-environment, that would mean:
+**Note**: For full coverage report, a proper junit test environment is required.
+That would mean:
 
-  * you have to use Ant 1.9 and above
-  * at least `junit-4.12.jar` has to be in ant's classpath (e.g. in `./lib`)
-
-  * your `PATH` must contain directory with exuberant ctags binary
+  * You have to use Ant 1.9 and above
+  * At least `junit-4.12.jar` and its dependencies have to be in ant's
+    classpath (e.g. in `./lib`). The test task will download them automatically.
+  * Your `PATH` must contain directory with exuberant ctags binary
     * **Note**: make sure that the directory which contains exuberant ctags binary
       is prepended before the directory with plain ctags program.
-  * your `PATH` variable must contain directories which contain binaries of
+  * Your `PATH` variable must contain directories which contain binaries of
     appropriate SCM software which means commands hg, sccs, cvs, git, bzr, svn
     (svnadmin too). They must be available for the full report.
 
@@ -906,7 +920,7 @@ and setup (calls Ant for certain actions).
 
 #### 8.9.1 Unit Testing
 
-You can test the code at the moment by running `./mvn test` which will execute *all* tests.
+You can test the code at the moment by running `./mvnw test` which will execute *all* tests.
 Conditionally, if you don't have every type of repository installed, you can set it to unit-test only those which are
 found to be working on your system.
 

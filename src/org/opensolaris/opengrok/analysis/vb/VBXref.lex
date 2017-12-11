@@ -23,20 +23,18 @@
  */
 
 /*
- * Cross reference a Java file
+ * Cross reference a VB file
  */
 
 package org.opensolaris.opengrok.analysis.vb;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class VBXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
 %ignorecase
 %int
@@ -49,24 +47,20 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-
 File = [a-zA-Z]{FNameChar}* "." ("vb"|"cls"|"frm"|"vbs"|"bas"|"ctl")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
-
 
 %state  STRING COMMENT
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include VB.lexh
 %%
 <YYINITIAL>{
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.getReservedKeywords(), yyline);
+    writeSymbol(id, Consts.reservedKeywords, yyline, false);
 }
 
 "<" ({File}|{FPath}) ">" {
@@ -85,32 +79,46 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 /*{Hier}
         { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
 */
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+ {Number}        {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
- \"   { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'   { yybegin(COMMENT);out.write("<span class=\"c\">\'");}
+ \"   {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'   {
+    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(htmlize(yytext()));
+ }
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
-  \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
-  \\\\   { out.write("\\\\"); }
- \\\"   { yybegin(YYINITIAL); out.write("\\\"</span>"); }
- 
+ \"\" |
+ \" {WhiteSpace} \"    { out.write(htmlize(yytext())); }
+ \"     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+ {WhspChar}*{EOL}    {
+    disjointSpan(null);
+    startNewLine();
+    disjointSpan(HtmlConsts.STRING_CLASS);
+ }
 }
 
 <COMMENT> {
   {WhspChar}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
+    yypop();
     startNewLine();
   }
 }
 
 
 <YYINITIAL, STRING, COMMENT> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }

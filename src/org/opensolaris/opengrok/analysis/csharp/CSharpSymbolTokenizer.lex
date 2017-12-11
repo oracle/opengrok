@@ -27,10 +27,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.csharp;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class CSharpSymbolTokenizer
@@ -42,18 +40,24 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 
 %state STRING COMMENT SCOMMENT QSTRING VSTRING
 
+%include Common.lexh
+%include CSharp.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
+{Identifier} {
+    String id = yytext();
                 if(!Consts.kwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
-                        return yystate(); }
-              }
+                        return yystate();
+                }
+ }
+
+ {Number}    {}
+
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  "/*"   { yybegin(COMMENT); }
@@ -62,16 +66,19 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
-}
-
-<VSTRING> {
-"@\""  { yybegin(YYINITIAL);}
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
+}
+
+<VSTRING> {
+ \\ |
+ \"\"    {}
+ \"    { yybegin(YYINITIAL);}
 }
 
 <COMMENT> {
@@ -79,9 +86,11 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{CsharpEOL}    { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, VSTRING> {
+{WhiteSpace}    {}
+
 [^]    {}
 }

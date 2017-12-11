@@ -159,14 +159,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     "||" |
     {ProtoAttr}    {
         yyjump(YYINITIAL);
-        takeNonword(yytext());
+        offerNonword(yytext());
     }
     // Part 2 of syntax that jumps back to YYINITIAL. Since this does a
     // look-ahead, keep it apart from "part 1" which uses OR-syntax ("|") --
     // as it seems the look-ahead would apply to all cases.
     "}" / {MaybeWhsp} {EOL}    {
         yyjump(YYINITIAL);
-        takeNonword(yytext());
+        offerNonword(yytext());
     }
 
  "<<"[~]? {MaybeWhsp} ({HereEOF1}|{HereEOF2}|{HereEOF3}|{HereEOF4})    {
@@ -176,7 +176,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  {Identifier}    {
     maybeIntraState();
     String id = yytext();
-    if (takeSymbol(id, 0, false) && returnOnSymbol()) {
+    if (offerSymbol(id, 0, false) && returnOnSymbol()) {
         return yystate();
     }
  }
@@ -184,32 +184,32 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  "<" ({File} | {FPath}) ">"    {
     maybeIntraState();
     if (takeAllContent()) {
-        takeNonword("<");
+        offerNonword("<");
         String path = yytext();
         path = path.substring(1, path.length() - 1);
-        take("<a href=\"" + getUrlPrefix() + "path=");
-        take(path);
+        offer("<a href=\"" + getUrlPrefix() + "path=");
+        offer(path);
         appendProject();
-        take("\">");
-        take(path);
-        take("</a>");
-        takeNonword(">");
+        offer("\">");
+        offer(path);
+        offer("</a>");
+        offerNonword(">");
     }
  }
 
  {Number}    {
     maybeIntraState();
-    take(HtmlConsts.SPAN_N);
-    takeNonword(yytext());
-    take(HtmlConsts.ZSPAN);
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    offerNonword(yytext());
+    disjointSpan(null);
  }
 
  [\"\`] { h.qop(yytext(), 0, false); }
  \'     { h.qop(yytext(), 0, true); }
  \#     {
         yypush(SCOMMENT);
-        take(HtmlConsts.SPAN_C);
-        takeNonword(yytext());
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        offerNonword(yytext());
  }
 
  // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
@@ -243,7 +243,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  ^ "-" [qmsy] |
  {WxSigils} "-" [qmsy]    {
     maybeIntraState();
-    takeNonword(yytext());
+    offerNonword(yytext());
  }
  // q//, m//, s//, y// and variants -- all with 1 character names
  ^ {MSapos} |
@@ -263,14 +263,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
  // seeing POD-end without having seen POD-start is akin to a one-line comment
  ^ {PodEND} [^\n\r]*    {
-        takeNonword(yytext());
+        offerNonword(yytext());
  }
 
  // POD start
  ^ "=" [a-zA-Z_] [a-zA-Z0-9_]*    {
         yypush(POD);
-        take(HtmlConsts.SPAN_C);
-        take(yytext());
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        offer(yytext());
  }
 
  // FORMAT start
@@ -285,10 +285,10 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         String initial = capture.substring(0, capture.length() -
             following.length());
 
-        takeKeyword(initial);
-        takeNonword(following);
+        offerKeyword(initial);
+        offerNonword(following);
         // start a pseudo-"string"
-        take(HtmlConsts.SPAN_S);
+        disjointSpan(HtmlConsts.STRING_CLASS);
     }
  }
 }
@@ -297,8 +297,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     "/"    {
         // OK to pass a fake "m/" with doWrite=false
         h.qop(false, "m/", 1, false);
-        take(HtmlConsts.SPAN_S);
-        take(yytext());
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        offer(yytext());
     }
 }
 
@@ -328,7 +328,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         String capture = yytext();
         if (takeAllContent()) {
             String boundary = capture.substring(0, 1);
-            takeNonword(boundary);
+            offerNonword(boundary);
         }
         h.hqopSymbol(capture.substring(1));
     }
@@ -383,7 +383,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
 <FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HEREin> {
     \\ \S    {
-        takeNonword(yytext());
+        offerNonword(yytext());
     }
 }
 
@@ -391,11 +391,11 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     {Quo0} |
     \w    {
         String capture = yytext();
-        takeNonword(capture);
+        offerNonword(capture);
         if (h.maybeEndQuote(capture)) {
             yypop();
             if (h.areModifiersOK()) yypush(QM);
-            take(HtmlConsts.ZSPAN);
+            disjointSpan(null);
         }
     }
 }
@@ -403,9 +403,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
     {WhiteSpace}{EOL} |
     {EOL} {
-        take(HtmlConsts.ZSPAN);
+        disjointSpan(null);
         startNewLine();
-        take(HtmlConsts.SPAN_S);
+        disjointSpan(HtmlConsts.STRING_CLASS);
     }
 }
 
@@ -416,7 +416,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     // tr/SEARCHLIST/REPLACEMENTLIST/cdsr
     // y/SEARCHLIST/REPLACEMENTLIST/cdsr
     [a-z]    {
-        take(yytext());
+        offer(yytext());
     }
 
     // anything else ends the quote-modifiers state
@@ -429,8 +429,8 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <POD> {
   ^ {PodEND} [^\n\r]*    {
     yypop();
-    takeNonword(yytext());
-    take(HtmlConsts.ZSPAN);
+    offerNonword(yytext());
+    disjointSpan(null);
   }
 
   {WhiteSpace}{EOL} |
@@ -443,15 +443,15 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     // terminate a format
     ^ "." / {MaybeWhsp} {EOL}    {
         yypop();
-        takeNonword(yytext());
-        take(HtmlConsts.ZSPAN);
+        offerNonword(yytext());
+        disjointSpan(null);
     }
 
     // "A comment, indicated by putting a '#' in the first column."
-    ^ "#" [^\n\r]*    {
-        take(HtmlConsts.SPAN_C);
-        takeNonword(yytext());
-        take(HtmlConsts.ZSPAN);
+    ^ "#"    {
+        yypush(SCOMMENT);
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        offerNonword(yytext());
     }
 
     // The other two types of line in a format FORMLIST -- "a 'picture' line
@@ -466,7 +466,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     String capture = yytext();
     yypushback(capture.length());
     yypop();
-    take(HtmlConsts.ZSPAN);
+    disjointSpan(null);
   }
 }
 
@@ -486,17 +486,17 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     HERE, HERExN, HEREin, HEREinxN> {
  [&<>\"\']      {
         maybeIntraState();
-        takeNonword(yytext());
+        offerNonword(yytext());
  }
 
  // Only one whitespace char at a time or else {WxSigils} can be broken
  {WhspChar}     {
-        take(yytext());
+        offer(yytext());
  }
 
  [!-~]          {
         maybeIntraState();
-        take(yytext());
+        offer(yytext());
  }
 
  [^\n\r]          {
@@ -509,31 +509,46 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <SCOMMENT, POD, FMT, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
     {FPath}    {
         if (takeAllContent()) {
-            take(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
+            offer(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
         }
     }
 
     {File}    {
         if (takeAllContent()) {
             String path = yytext();
-            take("<a href=\"" + getUrlPrefix() + "path=");
-            take(path);
+            offer("<a href=\"" + getUrlPrefix() + "path=");
+            offer(path);
             appendProject();
-            take("\">");
-            take(path);
-            take("</a>");
-        }
-    }
-
-    {BrowseableURI}    {
-        if (takeAllContent()) {
-            appendLink(yytext(), true);
+            offer("\">");
+            offer(path);
+            offer("</a>");
         }
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
         if (takeAllContent()) {
             writeEMailAddress(yytext());
+        }
+    }
+}
+
+<SCOMMENT, POD, FMT, HERE, HERExN, HEREin, HEREinxN> {
+    {BrowseableURI}    {
+        if (takeAllContent()) {
+            appendLink(yytext(), true, null);
+        }
+        // no skipLink() needed except in QUO* states
+    }
+}
+
+<QUO, QUOxN> {
+    {BrowseableURI}    {
+        String capture = yytext();
+        Pattern collateralCapture = h.getCollateralCapturePattern();
+        if (takeAllContent()) {
+            appendLink(capture, true, collateralCapture);
+        } else {
+            skipLink(yytext(), collateralCapture);
         }
     }
 }

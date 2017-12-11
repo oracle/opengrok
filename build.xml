@@ -119,6 +119,8 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
     <property name="junit.version" value="4.12"/>
     <property name="junit.jar" value="junit-${junit.version}.jar"/>
+    <property name="hamcrest.version" value="1.3"/>
+    <property name="hamcrest.jar" value="hamcrest-core-${hamcrest.version}.jar"/>
 
     <property name="mvn.repository" value="http://repo1.maven.org/maven2"/>
 
@@ -248,20 +250,24 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                                replace="" flags="s" />
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="private static final int ZZ_BUFFERSIZE ="
-                               replace="private int ZZ_BUFFERSIZE ="/>
+                               replace="private int ZZ_BUFFERSIZE ="
+                               preserveLastModified="true"/>
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="int requested = zzBuffer\.length - zzEndRead;"
-                               replace="int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;"/>
+                               replace="int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;"
+                               preserveLastModified="true"/>
              <!--   <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="(zzFinalHighSurrogate = 1;)(\r?\n)"
                                replace="\1\2          if (totalRead == 1) { return true; }\2"/>  this only works for jflex 1.6.0 -->
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="(zzFinalHighSurrogate = 1;)(\r?\n)"
-                               replace="\1\2          if (numRead == 1) { return true; }\2"/>               
+                               replace="\1\2          if (numRead == 1) { return true; }\2"
+                               preserveLastModified="true"/>               
                 <!-- also revert 0 character check that got in with 1.6.1 : https://github.com/jflex-de/jflex/blob/master/jflex/examples/zero-reader/README.md -->
                 <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
                                match="[ \t]*/\* not supposed to occur according to specification of java\.io\.Reader \*/\s+if \(numRead == 0.*?\}[ \t]*\r?\n"
-                               replace="" flags="s" />
+                               replace="" flags="s"
+                               preserveLastModified="true"/>
             </sequential>
         </macrodef>
         
@@ -565,7 +571,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </condition>
     </target>
 
-    <target name="download-junit" depends="-check-junit" if="junit_not_downloaded">
+    <target name="download-junit" depends="-check-junit,download-hamcrest" if="junit_not_downloaded">
         <delete>
             <fileset dir="lib">
                 <include name="junit-*.jar"/>
@@ -573,6 +579,27 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </delete>
         <get src="${mvn.repository}/junit/junit/${junit.version}/${junit.jar}"
              dest="lib/${junit.jar}" verbose="true" usetimestamp="true"/>
+    </target>
+
+    <target name="-check-hamcrest" description="Check that hamcrest jar file is present">
+        <available file="${hamcrest.jar}" type="file" property="hamcrest.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>
+        <condition property="hamcrest_not_downloaded">
+            <not>
+                <isset property="hamcrest.jar.present"/>
+            </not>
+        </condition>
+    </target>
+
+    <target name="download-hamcrest" depends="-check-hamcrest" if="hamcrest_not_downloaded">
+        <delete>
+            <fileset dir="lib">
+                <include name="hamcrest-*.jar"/>
+            </fileset>
+        </delete>
+        <get src="${mvn.repository}/org/hamcrest/hamcrest-core/${hamcrest.version}/${hamcrest.jar}"
+             dest="lib/${hamcrest.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="-post-jar" depends="-copy-lib-without-netbeans">
@@ -863,7 +890,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </jacoco:report>
     </target>
 
-    <target name="-pre-compile-test" depends="-check-junit"><!-- depends="-set-jacocoagent"> -->
+    <target name="-pre-compile-test" depends="download-junit"><!-- depends="-set-jacocoagent"> -->
     </target>
 
     <!-- <target name="-pre-compile-test-single" depends="-set-jacocoagent"/> -->
@@ -880,7 +907,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </condition>
     </target>
 
-    <target name="check_testplugins_jar" description="check if plugins.jar was generated">
+    <target name="check_testplugins_jar" description="check if testplugins.jar was generated">
         <available
             file="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/testplugins.jar"
             type="file" property="testplugins_exists">

@@ -1,0 +1,25 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+State	grok.rs	/^enum State {$/;"	enum	line:25
+Escape	grok.rs	/^    Escape,$/;"	enumerator	line:27	enum:State
+HexFirst	grok.rs	/^    HexFirst,$/;"	enumerator	line:29	enum:State
+HexSecond	grok.rs	/^    HexSecond(char),$/;"	enumerator	line:31	enum:State
+Literal	grok.rs	/^    Literal,$/;"	enumerator	line:33	enum:State
+unescape	grok.rs	/^pub fn unescape(s: &str) -> Vec<u8> {$/;"	function	line:41	signature:(s: &str) -> Vec<u8>
+bytes	grok.rs	/^    let mut bytes = vec![];$/;"	variables	line:44
+state	grok.rs	/^    let mut state = Literal;$/;"	variables	line:45
+tests	grok.rs	/^mod tests {$/;"	module	line:105
+b	grok.rs	/^    fn b(bytes: &'static [u8]) -> Vec<u8> {$/;"	function	line:108	module:tests	signature:(bytes: &'static [u8]) -> Vec<u8>
+unescape_nul	grok.rs	/^    fn unescape_nul() {$/;"	function	line:113	module:tests	signature:()
+unescape_nl	grok.rs	/^    fn unescape_nl() {$/;"	function	line:118	module:tests	signature:()
+unescape_tab	grok.rs	/^    fn unescape_tab() {$/;"	function	line:123	module:tests	signature:()
+unescape_carriage	grok.rs	/^    fn unescape_carriage() {$/;"	function	line:128	module:tests	signature:()
+unescape_nothing_simple	grok.rs	/^    fn unescape_nothing_simple() {$/;"	function	line:133	module:tests	signature:()
+unescape_nothing_hex0	grok.rs	/^    fn unescape_nothing_hex0() {$/;"	function	line:138	module:tests	signature:()
+unescape_nothing_hex1	grok.rs	/^    fn unescape_nothing_hex1() {$/;"	function	line:143	module:tests	signature:()
+unescape_nothing_hex2	grok.rs	/^    fn unescape_nothing_hex2() {$/;"	function	line:148	module:tests	signature:()

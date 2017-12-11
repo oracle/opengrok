@@ -27,10 +27,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.javascript;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class JavaScriptSymbolTokenizer
@@ -44,10 +42,9 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_$] [a-zA-Z0-9_$]*
-
 %state STRING COMMENT SCOMMENT QSTRING
 
+%include JavaScript.lexh
 %%
 
 <YYINITIAL> {
@@ -56,6 +53,7 @@ Identifier = [a-zA-Z_$] [a-zA-Z0-9_$]*
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
+ {Number}    {}
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  "/*"   { yybegin(COMMENT); }
@@ -63,11 +61,12 @@ Identifier = [a-zA-Z_$] [a-zA-Z0-9_$]*
 }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
 }
 

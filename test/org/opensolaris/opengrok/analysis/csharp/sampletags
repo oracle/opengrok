@@ -1,0 +1,37 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+Dbg	grok.cs	/^using Dbg = System.Management.Automation.Diagnostics;$/;"	typedef	line:39
+Microsoft.PowerShell	grok.cs	/^namespace Microsoft.PowerShell$/;"	namespace	line:43
+Serialization	grok.cs	/^    internal class Serialization$/;"	class	line:52	namespace:Microsoft.PowerShell
+DataFormat	grok.cs	/^        internal enum DataFormat$/;"	enum	line:61	class:Microsoft.PowerShell.Serialization
+Text	grok.cs	/^            Text = 0,$/;"	enumerator	line:69	enum:Microsoft.PowerShell.Serialization.DataFormat
+XML	grok.cs	/^            XML = 1,$/;"	enumerator	line:77	enum:Microsoft.PowerShell.Serialization.DataFormat
+None	grok.cs	/^            None = 2$/;"	enumerator	line:84	enum:Microsoft.PowerShell.Serialization.DataFormat
+Serialization	grok.cs	/^        Serialization(DataFormat dataFormat, string streamName)$/;"	method	line:90	class:Microsoft.PowerShell.Serialization	signature:(DataFormat dataFormat, string streamName)
+XmlCliTag	grok.cs	/^        protected static string XmlCliTag = "#< CLIXML";$/;"	field	line:100	class:Microsoft.PowerShell.Serialization
+streamName	grok.cs	/^        protected string streamName;$/;"	field	line:102	class:Microsoft.PowerShell.Serialization
+format	grok.cs	/^        protected DataFormat format;$/;"	field	line:103	class:Microsoft.PowerShell.Serialization
+WrappedSerializer	grok.cs	/^    class WrappedSerializer : Serialization$/;"	class	line:109	namespace:Microsoft.PowerShell	inherits:Serialization
+WrappedSerializer	grok.cs	/^        WrappedSerializer(DataFormat dataFormat, string streamName, TextWriter output)$/;"	method	line:112	class:Microsoft.PowerShell.WrappedSerializer	signature:(DataFormat dataFormat, string streamName, TextWriter output)
+Serialize	grok.cs	/^        Serialize(object o)$/;"	method	line:141	class:Microsoft.PowerShell.WrappedSerializer	signature:(object o)
+Serialize	grok.cs	/^        Serialize(object o, string streamName)$/;"	method	line:148	class:Microsoft.PowerShell.WrappedSerializer	signature:(object o, string streamName)
+End	grok.cs	/^        End()$/;"	method	line:172	class:Microsoft.PowerShell.WrappedSerializer	signature:()
+textWriter	grok.cs	/^        internal TextWriter textWriter;$/;"	field	line:194	class:Microsoft.PowerShell.WrappedSerializer
+_xmlWriter	grok.cs	/^        private XmlWriter _xmlWriter;$/;"	field	line:195	class:Microsoft.PowerShell.WrappedSerializer
+_xmlSerializer	grok.cs	/^        private Serializer _xmlSerializer;$/;"	field	line:196	class:Microsoft.PowerShell.WrappedSerializer
+_firstCall	grok.cs	/^        private bool _firstCall = true;$/;"	field	line:197	class:Microsoft.PowerShell.WrappedSerializer
+WrappedDeserializer	grok.cs	/^    class WrappedDeserializer : Serialization$/;"	class	line:203	namespace:Microsoft.PowerShell	inherits:Serialization
+WrappedDeserializer	grok.cs	/^        WrappedDeserializer(DataFormat dataFormat, string streamName, TextReader input)$/;"	method	line:206	class:Microsoft.PowerShell.WrappedDeserializer	signature:(DataFormat dataFormat, string streamName, TextReader input)
+Deserialize	grok.cs	/^        Deserialize()$/;"	method	line:243	class:Microsoft.PowerShell.WrappedDeserializer	signature:()
+AtEnd	grok.cs	/^        AtEnd$/;"	property	line:285	class:Microsoft.PowerShell.WrappedDeserializer
+End	grok.cs	/^        End()$/;"	method	line:314	class:Microsoft.PowerShell.WrappedDeserializer	signature:()
+textReader	grok.cs	/^        internal TextReader textReader;$/;"	field	line:329	class:Microsoft.PowerShell.WrappedDeserializer
+_xmlReader	grok.cs	/^        private XmlReader _xmlReader;$/;"	field	line:330	class:Microsoft.PowerShell.WrappedDeserializer
+_xmlDeserializer	grok.cs	/^        private Deserializer _xmlDeserializer;$/;"	field	line:331	class:Microsoft.PowerShell.WrappedDeserializer
+_firstLine	grok.cs	/^        private string _firstLine;$/;"	field	line:332	class:Microsoft.PowerShell.WrappedDeserializer
+_atEnd	grok.cs	/^        private bool _atEnd;$/;"	field	line:333	class:Microsoft.PowerShell.WrappedDeserializer

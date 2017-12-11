@@ -44,27 +44,30 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-/* TODO : add unicode support */
-Identifier = [a-zA-Z_$] [a-zA-Z0-9_$]*
-
 %state STRING
 
+%include Json.lexh
 %%
 
 //TODO improve per http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
+{Identifier} {
+    String id = yytext();
                 if(!Consts.kwd.contains(id)){
                         setAttribs(id, yychar, yychar + yylength());
-                        return yystate(); }
-              }
+                        return yystate();
+		}
+ }
+
+ {Number}        {}
+
  \"     { yybegin(STRING); }
 }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <YYINITIAL, STRING> {

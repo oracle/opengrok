@@ -40,12 +40,20 @@ public class RubyAnalyzerFactory extends FileAnalyzerFactory {
         "RB",
         "RUBY"
     };
+    private static final String[] MAGICS = {
+        "#!/usr/bin/env ruby",
+        "#!/usr/bin/ruby",
+        "#!/usr/local/bin/ruby",
+        "#!/bin/ruby",
+        "#!ruby",
+    };
 
     /**
      * Creates a new instance of {@link RubyAnalyzerFactory}.
      */
     public RubyAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN,
+            name);
     }
 
     /**

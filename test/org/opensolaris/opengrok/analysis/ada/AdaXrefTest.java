@@ -64,12 +64,8 @@ public class AdaXrefTest {
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
-        String gotten[] = ostr.split("\n");
-
         String estr = new String(baosExp.toByteArray(), "UTF-8");
-        String expected[] = estr.split("\n");
-
-        assertLinesEqual("Ada xref", expected, gotten);
+        assertLinesEqual("Ada xref", estr, ostr);
     }
 
     private void writeAdaXref(InputStream iss, PrintStream oss) throws IOException {

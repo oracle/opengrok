@@ -19,9 +19,10 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- *
  * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
+
 package org.opensolaris.opengrok.search;
 
 import java.io.BufferedReader;
@@ -163,11 +164,11 @@ public final class Results {
             out.write(xrefPrefixE);
             out.write(Util.URIEncodePath(parent));
             out.write("/\">");
-            out.write(parent); // htmlize ???
+            out.write(htmlize(parent));
             out.write("/</a>");
             if (sh.desc != null) {
                 out.write(" - <i>");
-                out.write(sh.desc.get(parent)); // htmlize ???
+                out.write(htmlize(sh.desc.get(parent)));
                 out.write("</i>");
             }
             JSONArray messages;
@@ -206,7 +207,7 @@ public final class Results {
                     }
                 }
                 out.write(">");
-                out.write(rpath.substring(rpath.lastIndexOf('/') + 1)); // htmlize ???
+                out.write(htmlize(rpath.substring(rpath.lastIndexOf('/') + 1)));
                 out.write("</a>");
                 out.write("</td><td><tt class=\"con\">");
                 if (sh.sourceContext != null) {
@@ -248,5 +249,9 @@ public final class Results {
                 out.write("</tt></td></tr>\n");
             }
         }
+    }
+
+    private static String htmlize(String raw) {
+        return Util.htmlize(raw);
     }
 }

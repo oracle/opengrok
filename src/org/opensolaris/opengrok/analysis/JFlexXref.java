@@ -270,21 +270,28 @@ public abstract class JFlexXref extends JFlexStateStacker {
             throws IOException {
 
         int n = 0;
-        if (doEndingPushback) {
-            n = StringUtils.countURIEndingPushback(url);
-        }
-        if (collateralCapture != null) {
-            int o = StringUtils.patindexOf(url, collateralCapture);
-            if (o > 0) {
-                int ccn = url.length() - o;
-                if (ccn > n) n = ccn;
+        int subn;
+        do {
+            // An ending-pushback could be present before a collateral capture,
+            // so detect both in a loop (on a shrinking `url') until no more
+            // shrinking should occur.
+
+            subn = 0;
+            if (doEndingPushback) {
+                subn = StringUtils.countURIEndingPushback(url);
             }
-        }
-        // Push back if positive, but not if equal to the current length.
-        if (n > 0 && n < url.length()) {
-            yypushback(n);
-            url = url.substring(0, url.length() - n);
-        }
+            int ccn = StringUtils.countPushback(url, collateralCapture);
+            if (ccn > subn) subn = ccn;
+
+            // Push back if positive, but not if equal to the current length.
+            if (subn > 0 && subn < url.length()) {
+                url = url.substring(0, url.length() - subn);
+                n += subn;
+            } else {
+                subn = 0;
+            }
+        } while (subn != 0);
+        if (n > 0) yypushback(n);
 
         out.write("<a href=\"");
         out.write(Util.formQuoteEscape(url));
@@ -418,6 +425,15 @@ public abstract class JFlexXref extends JFlexStateStacker {
             out.write(String.format(HtmlConsts.SPAN_FMT, className));
         }
         disjointSpanClassName = className;
+    }
+
+    /**
+     * Gets the argument from the last call to
+     * {@link #disjointSpan(java.lang.String)}.
+     * @return a defined value or null
+     */
+    public String getDisjointSpanClassName() {
+        return disjointSpanClassName;
     }
 
     /**
@@ -566,9 +582,7 @@ public abstract class JFlexXref extends JFlexStateStacker {
      * @return String with escaped html characters
      */
     protected String htmlize(String raw) {
-        return raw.replace("&", "&amp;").replace("<", "&lt;")
-                .replace(">", "&gt;").replace("\"", "&quot;")
-                .replace("'", "&apos;");
+        return Util.prehtmlize(raw);
     }
 
     /**

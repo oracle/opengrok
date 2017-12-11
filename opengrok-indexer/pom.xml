@@ -96,6 +96,20 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 </excludes>
             </testResource>
             <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/clojure/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/clojure/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/csharp/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/csharp/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/document/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/document/</directory>
                 <excludes>
@@ -103,8 +117,50 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 </excludes>
             </testResource>
             <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/erlang/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/erlang/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/fortran/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/fortran/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/golang/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/golang/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/lua/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/lua/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/java/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/java/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/javascript/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/javascript/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/json/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/json/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
@@ -124,8 +180,22 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 </excludes>
             </testResource>
             <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/python/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/python/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/ruby/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/ruby/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/rust/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/rust/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
@@ -140,6 +210,20 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/java/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/java/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/sh/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/sh/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/vb/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/vb/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>

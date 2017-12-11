@@ -27,18 +27,16 @@
  */
 
 package org.opensolaris.opengrok.analysis.erlang;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class ErlangXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
@@ -49,36 +47,34 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-ErlangWhspChar     = ({WhspChar} | [\u{B}])
-ErlangWhiteSpace   = {ErlangWhspChar}+ | {WhiteSpace}
-Identifier = [a-zA-Z_] [a-zA-Z0-9_@]+
-
 IncludeDirective = (include|include_lib)
-//PPDirective = (define|undef|ifdef|else|endif)
-//Directive = (module|author|compile|export|import)
 
-// ErlChar = \$ASCII
-ErlInt = ([12][0-9]|3[0-6]|[1-9])#[0-9]+
-
-File = [a-zA-Z]{FNameChar}* "." ("erl"|"hrl"|"app"|"asn"|"yrl"|"asn1"|"xml"|"html")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ]*)?
+File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
+    [Aa][Ss][Nn] | [Yy][Rr][Ll] | [Aa][Ss][Nn][1] | [Xx][Mm][Ll] |
+    [Hh][Tt][Mm][Ll]?)
 
 %state  STRING COMMENT QATOM
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Erlang.lexh
 %%
 <YYINITIAL>{
 
 "?" {Identifier} {  // Macros
-    out.write("<span class=\"xm\">"); out.write(yytext()); out.write("</span>");
+    disjointSpan(HtmlConsts.MACRO_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
 }
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    if (!id.equals("_")) {
+        writeSymbol(id, Consts.kwd, yyline);
+    } else {
+        out.write(id);
+    }
 }
 
 "-" {IncludeDirective} "(" ({File}|{FPath}) ")." {
@@ -94,44 +90,70 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
         out.write("&gt;");
 }
 
-{ErlInt}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+^"-" {Identifier} {
+    String capture = yytext();
+    String punc = capture.substring(0, 1);
+    String id = capture.substring(1);
+    out.write(punc);
+    writeSymbol(id, Consts.modules_kwd, yyline);
+}
 
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'     { yybegin(QATOM);out.write("<span class=\"s\">\'");}
- "%"   { yybegin(COMMENT);out.write("<span class=\"c\">%");}
+{ErlInt} |
+    {Number}    {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+}
+
+ \"     {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+
+ \'     {
+    pushSpan(QATOM, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+
+ "%"    {
+    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
 }
 
 <STRING> {
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \\[\"\\]    { out.write(htmlize(yytext())); }
+ \"    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <QATOM> {
- \'     { yybegin(YYINITIAL); out.write("\'</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\'   { out.write("\\\'"); }
+ \\[\'\\]    { out.write(htmlize(yytext())); }
+ \'    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <COMMENT> {
   {ErlangWhspChar}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
+    yypop();
     startNewLine();
   }
 }
 
 <YYINITIAL, STRING, COMMENT, QATOM> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {ErlangWhspChar}*{EOL}      { startNewLine(); }
  {ErlangWhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
- .      { writeUnicodeChar(yycharat(0)); }
+
+ [^]    { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, STRING, QATOM> {
+<STRING, COMMENT, QATOM> {
 {FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
@@ -145,12 +167,20 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ
         out.write(path);
         out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<STRING, COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<QATOM> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+    }
 }

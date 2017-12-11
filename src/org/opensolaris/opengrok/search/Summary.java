@@ -1,5 +1,6 @@
 /*
  * Copyright 2005 The Apache Software Foundation
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +18,13 @@ package org.opensolaris.opengrok.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.opensolaris.opengrok.web.Util;
 
 /** A document summary dynamically generated to match a query. */
 public class Summary {
 
-    public static String htmlize(String q) {
-        StringBuilder sb = new StringBuilder(q.length() * 2);
-        char c;
-        for(int i=0; i < q.length() ; i++) {
-            c = q.charAt(i);
-            if (c == '&') {
-                sb.append("&amp;");
-            } else if(c == '>') {
-                sb.append("&gt;");
-            } else if(c == '<') {
-                sb.append("&lt;");
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
+    protected static String htmlize(String q) {
+        return Util.prehtmlize(q);
     }
 
     /** A fragment of text within a summary. */

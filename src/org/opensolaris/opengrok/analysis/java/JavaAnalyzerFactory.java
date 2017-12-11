@@ -34,6 +34,7 @@ public class JavaAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
         "JAVA",
         "AIDL",
+        "JAV" // This just supports OpenGrok's own .jav test files
     };
 
     public JavaAnalyzerFactory() {

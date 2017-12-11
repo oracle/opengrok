@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.erlang;
@@ -31,34 +32,52 @@ import java.util.Set;
   */
 public class Consts{
     public static final Set<String> kwd = new HashSet<String>() ;
+    public static final Set<String> modules_kwd = new HashSet<String>() ;
     static {
-        kwd.add("after");
-        kwd.add("begin");
-        kwd.add("case");
-        kwd.add("try");
-        kwd.add("cond");
-        kwd.add("catch");
-        kwd.add("andalso");
-        kwd.add("orelse");
-        kwd.add("end");
-        kwd.add("fun");
-        kwd.add("if");
-        kwd.add("let");
-        kwd.add("of");
-        kwd.add("query");
-        kwd.add("receive");
-        kwd.add("when");
-        kwd.add("bnot");
-        kwd.add("not");
-        kwd.add("div");
-        kwd.add("rem");
-        kwd.add("band");
-        kwd.add("and");
-        kwd.add("bor");
-        kwd.add("bxor");
-        kwd.add("bsl");
-        kwd.add("bsr");
-        kwd.add("or");
-        kwd.add("xor");
+        kwd.add("after");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("and");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("andalso");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("band");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("begin");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("bnot");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("bor");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("bsl");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("bsr");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("bxor");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("case");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("catch");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("cond");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("div");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("end");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("fun");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("if");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("let");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("not");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("of");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("or");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("orelse");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("receive");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("rem");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("try");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("when");	// Ref. 9.1 "1.5 Reserved Words"
+        kwd.add("xor");	// Ref. 9.1 "1.5 Reserved Words"
+
+        kwd.add("query");	// pre-existing here of unknown provenance
+
+        modules_kwd.add("behavior");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("behaviour");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("callback");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("compile");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("define");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("export");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("file");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("import");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("include");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("module");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("on_load");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("record");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("spec");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("type");	// Ref. 9.1 "5.2 Module Attributes"
+        modules_kwd.add("vsn");	// Ref. 9.1 "5.2 Module Attributes"
     }
 }

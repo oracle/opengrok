@@ -23,6 +23,7 @@
  */
 package org.opensolaris.opengrok.analysis.haskell;
 
+import java.io.BufferedReader;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.io.IOException;
@@ -30,15 +31,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
-
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import static org.opensolaris.opengrok.util.CustomAssertions.assertSymbolStream;
 
 /**
  * Tests the {@link HaskellSymbolTokenizer} class.
@@ -46,8 +47,6 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
  * @author Harry Pan
  */
 public class HaskellSymbolTokenizerTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(HaskellSymbolTokenizerTest.class);
 
     private final FileAnalyzer analyzer;
 
@@ -85,5 +84,33 @@ public class HaskellSymbolTokenizerTest {
                     "x'y'", "f'", "g'h", "f'", "g'h" // line 6
                 },
                 termsFor);
+    }
+
+    /**
+     * Test sample2.hs v. sample2symbols.txt
+     * @throws java.lang.Exception thrown on error
+     */
+    @Test
+    public void testHaskellSymbolStream() throws Exception {
+        InputStream pyres = getClass().getClassLoader().getResourceAsStream(
+            "org/opensolaris/opengrok/analysis/haskell/sample2.hs");
+        assertNotNull("despite sample.py as resource,", pyres);
+        InputStream symres = getClass().getClassLoader().getResourceAsStream(
+            "org/opensolaris/opengrok/analysis/haskell/sample2symbols.txt");
+        assertNotNull("despite samplesymbols.txt as resource,", symres);
+
+        List<String> expectedSymbols = new ArrayList<>();
+        try (BufferedReader wdsr = new BufferedReader(new InputStreamReader(
+            symres, "UTF-8"))) {
+            String line;
+            while ((line = wdsr.readLine()) != null) {
+                int hasho = line.indexOf('#');
+                if (hasho != -1) line = line.substring(0, hasho);
+                expectedSymbols.add(line.trim());
+            }
+        }
+
+        assertSymbolStream(HaskellSymbolTokenizer.class, pyres,
+            expectedSymbols);
     }
 }

@@ -27,10 +27,9 @@
  */
 
 package org.opensolaris.opengrok.analysis.clojure;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class ClojureSymbolTokenizer
@@ -45,31 +44,42 @@ super(in);
 
 %{
     private int nestedComment;
-%}
 
-Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        nestedComment = 0;
+    }
+%}
 
 %state STRING COMMENT SCOMMENT
 
+%include Common.lexh
+%include Clojure.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
-              if (!Consts.kwd.contains(id.toLowerCase())) {
+{Identifier} {
+    String id = yytext();
+              if (!Consts.kwd.contains(id)) {
                         setAttribs(id, yychar, yychar + yylength());
-                        return yystate(); }
+                        return yystate();
               }
+ }
+
+ {Number}    {}
+
  \"     { yybegin(STRING); }
 ";"     { yybegin(SCOMMENT); }
 }
 
 <STRING> {
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
+ \\[\"\\]    {}
 }
 
 <YYINITIAL, COMMENT> {
- "#|"    { yybegin(COMMENT); ++nestedComment; }
+ "#|"   { if (nestedComment++ == 0) { yybegin(COMMENT); } }
 }
 
 <COMMENT> {
@@ -77,9 +87,11 @@ Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{EOL}   { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT> {
+{WhiteSpace}    {}
+
 [^]    {}
 }

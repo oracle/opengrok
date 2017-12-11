@@ -23,19 +23,18 @@
  */
 
 /*
- * Gets Java symbols - ignores comments, strings, keywords
+ * Gets VB symbols - ignores comments, strings, keywords
  */
 
 package org.opensolaris.opengrok.analysis.vb;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class VBSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
+%ignorecase
 %init{
 super(in);
 %init}
@@ -43,29 +42,34 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-
 %state STRING COMMENT
 
+%include Common.lexh
+%include VB.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
-                if(!Consts.getReservedKeywords().contains(id)){
+{Identifier} {
+    String id = yytext();
+                if (!Consts.reservedKeywords.contains(id.toLowerCase())) {
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
+
+ {Number}    {}
+
  \"     { yybegin(STRING); }
  \'     { yybegin(COMMENT); }
 }
 
 <STRING> {
+   \"\"    {}
    \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <COMMENT> {
-\n      { yybegin(YYINITIAL);}
+{WhiteSpace}    {}
+{EOL}     { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT> {
