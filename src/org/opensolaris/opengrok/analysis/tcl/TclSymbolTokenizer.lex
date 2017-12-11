@@ -27,10 +27,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.tcl;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class TclSymbolTokenizer
@@ -43,10 +41,10 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-Identifier = [\:\=a-zA-Z0-9_]+
-
 %state STRING COMMENT SCOMMENT
 
+%include Common.lexh
+%include Tcl.lexh
 %%
 
 <YYINITIAL> {
@@ -55,6 +53,7 @@ Identifier = [\:\=a-zA-Z0-9_]+
                     setAttribs(id, yychar, yychar + yylength());
                     return yystate(); }
               }
+ {Number}    {}
  \"     { yybegin(STRING); }
 "#"     { yybegin(SCOMMENT); }
 
@@ -62,14 +61,15 @@ Identifier = [\:\=a-zA-Z0-9_]+
 }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{EOL}      { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT> {
+{WhiteSpace} |
 [^]    {}
 }
