@@ -24,16 +24,14 @@
 
 package org.opensolaris.opengrok.analysis.kotlin;
 
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class KotlinXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
 %ignorecase
 %int
@@ -42,6 +40,14 @@ import org.opensolaris.opengrok.web.Util;
   /* Must match {WhiteSpace} regex */
   private final static String WHITE_SPACE = "[ \\t\\f]+";
 
+  private int nestedComment;
+
+  @Override
+  public void reset() {
+      super.reset();
+      nestedComment = 0;
+  }
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -49,12 +55,11 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-/* TODO: prohibit '$' in identifiers? */
-Identifier = [:jletter:] [:jletterdigit:]*
-
-File = [a-zA-Z]{FNameChar}* "." ("java"|"properties"|"props"|"xml"|"conf"|"txt"|"htm"|"html"|"ini"|"jnlp"|"jad"|"diff"|"patch")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
+File = [a-zA-Z]{FNameChar}* "." ([Jj][Aa][Vv][Aa] |
+    [Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] | [Pp][Rr][Oo][Pp][Ss] |
+    [Xx][Mm][Ll] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
+    [Ii][Nn][Ii] | [Jj][Nn][Ll][Pp] | [Jj][Aa][Dd] | [Dd][Ii][Ff][Ff] |
+    [Pp][Aa][Tt][Cc][Hh])
 
 KdocWithClassArg = "@throws" | "@exception"
 KdocWithParamNameArg = "@param"
@@ -67,6 +72,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Kotlin.lexh
 %%
 <YYINITIAL>{
  \{     { incScope(); writeUnicodeChar(yycharat(0)); }
@@ -91,41 +97,105 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         out.write("&gt;");
 }
 
-/*{Hier}
-        { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
-*/
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+ {Number}        {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
-\"\"\"  { yybegin(TSTRING);out.write("<span class=\"s\">\"\"\"");}
- "/**" / [^/] { yybegin(KDOC);out.write("<span class=\"c\">/**");}
- "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
- "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
+ \"     {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'     {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \"\"\"    {
+    pushSpan(TSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ "/**" / [^/]    {
+    if (nestedComment++ == 0) {
+        pushSpan(KDOC, HtmlConsts.COMMENT_CLASS);
+    }
+    out.write(yytext());
+ }
+ "//"    {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
 }
-/* TODO : support raw """ strings */
+
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \\[\"\$\\]    { out.write(htmlize(yytext())); }
+ \"     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <QSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { yybegin(YYINITIAL); out.write("'</span>"); }
+ \\[\'\\] |
+ \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
+ \'     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <TSTRING> {
-"\\\\" { out.write("\\\\"); }
- "\\\"" { out.write("\\\""); }
- \"\"\" { yybegin(YYINITIAL); out.write("\"\"\"</span>"); }
+ /*
+  * "raw string ... doesn't support backslash escaping"
+  */
+ \"\"\"    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+}
+
+<STRING, TSTRING> {
+    /*
+     * TODO : support template expressions inside curly brackets
+     */
+    \$ {Identifier}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        String id = capture.substring(1);
+        out.write(sigil);
+        disjointSpan(null);
+        writeSymbol(id, Consts.kwd, yyline);
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
+
+    {WhspChar}*{EOL} {
+        disjointSpan(null);
+        startNewLine();
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
+}
+
+<YYINITIAL, COMMENT, KDOC> {
+    "/*"    {
+        if (nestedComment++ == 0) {
+            pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+        }
+        out.write(yytext());
+    }
 }
 
 <COMMENT, KDOC> {
-"*/"    { yybegin(YYINITIAL); out.write("*/</span>"); }
+"*/"    {
+    out.write(yytext());
+    if (--nestedComment == 0) {
+        yypop();
+    }
+ }
+ {WhspChar}*{EOL} {
+    disjointSpan(null);
+    startNewLine();
+    disjointSpan(HtmlConsts.COMMENT_CLASS);
+ }
 }
 
 <KDOC> {
@@ -145,23 +215,22 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
 <SCOMMENT> {
   {WhspChar}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
+    yypop();
     startNewLine();
   }
 }
 
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, KDOC, TSTRING> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
+
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING, TSTRING, KDOC> {
+<STRING, COMMENT, SCOMMENT, QSTRING, TSTRING, KDOC> {
 {FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
@@ -175,12 +244,20 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         out.write(path);
         out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<STRING, SCOMMENT, QSTRING, TSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<COMMENT, KDOC> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+    }
 }

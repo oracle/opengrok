@@ -23,15 +23,16 @@
  */
 
 /*
- * Gets Java symbols - ignores comments, strings, keywords
+ * Gets Kotlin symbols - ignores comments, strings, keywords
  */
 
 // comments can be nested in kotlin, so below logic doesn't allow that with yybegin we save only one nesting
 // same for strings
 
 package org.opensolaris.opengrok.analysis.kotlin;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class KotlinSymbolTokenizer
@@ -44,11 +45,20 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
+%{
+    private int nestedComment;
 
-Identifier = [:jletter:] [:jletterdigit:]*
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        nestedComment = 0;
+    }
+%}
 
 %state STRING COMMENT SCOMMENT QSTRING TSTRING
 
+%include Common.lexh
+%include Kotlin.lexh
 %%
 
 /* TODO : support identifiers escaped by ` `*/
@@ -58,36 +68,67 @@ Identifier = [:jletter:] [:jletterdigit:]*
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
-
+ {Number}    {}
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  \"\"\"   { yybegin(TSTRING); }
- "/*"   { yybegin(COMMENT); }
  "//"   { yybegin(SCOMMENT); }
 
 }
 
 <STRING> {
+ \\[\"\$\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
 }
 
 <TSTRING> {
+ /*
+  * "raw string ... doesn't support backslash escaping"
+  */
   \"\"\"     { yybegin(YYINITIAL); }
 }
 
+<STRING, TSTRING> {
+    /*
+     * TODO : support template expressions inside curly brackets
+     */
+    \$ {Identifier}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        String id = capture.substring(1);
+        if (!Consts.kwd.contains(id)) {
+            setAttribs(id, yychar + 1, yychar + yylength());
+            return yystate();
+       }
+    }
+}
+
+<YYINITIAL, COMMENT> {
+    "/*"    {
+        if (nestedComment++ == 0) {
+            yybegin(COMMENT);
+        }
+    }
+}
+
 <COMMENT> {
-"*/"    { yybegin(YYINITIAL);}
+"*/"    {
+    if (--nestedComment == 0) {
+        yybegin(YYINITIAL);
+    }
+ }
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{EOL}      { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, TSTRING> {
+{WhiteSpace} |
 [^]    {}
 }
