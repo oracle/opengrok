@@ -310,3 +310,7 @@ private object TorrentBroadcast extends Logging {
     SparkEnv.get.blockManager.master.removeBroadcast(id, removeFromDriver, blocking)
   }
 }
+/*http://example.com.*/
+/* comment /* comment */
+comment
+*/

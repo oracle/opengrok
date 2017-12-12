@@ -27,8 +27,9 @@
  */
 
 package org.opensolaris.opengrok.analysis.scala;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class ScalaSymbolTokenizer
@@ -40,6 +41,15 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
+%{
+    private int nestedComment;
+
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        nestedComment = 0;
+    }
+%}
 
 %state STRING COMMENT SCOMMENT QSTRING
 
@@ -56,21 +66,33 @@ super(in);
  {Number}    {}
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
- "/*"   { yybegin(COMMENT); }
  "//"   { yybegin(SCOMMENT); }
 }
 
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
 }
 
+<YYINITIAL, COMMENT> {
+    "/*"    {
+        if (nestedComment++ == 0) {
+            yybegin(COMMENT);
+        }
+    }
+}
+
 <COMMENT> {
-"*/"    { yybegin(YYINITIAL);}
+ "*/"    {
+    if (--nestedComment == 0) {
+        yybegin(YYINITIAL);
+    }
+ }
 }
 
 <SCOMMENT> {
