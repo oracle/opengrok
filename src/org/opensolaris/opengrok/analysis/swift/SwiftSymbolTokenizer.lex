@@ -27,8 +27,8 @@
  */
 
 package org.opensolaris.opengrok.analysis.swift;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class SwiftSymbolTokenizer
@@ -42,7 +42,7 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-%state STRING COMMENT SCOMMENT QSTRING TSTRING
+%state STRING COMMENT SCOMMENT TSTRING
 
 %include Common.lexh
 %include Swift.lexh
@@ -59,21 +59,15 @@ super(in);
  {Number}    {}
 
  \"     { yybegin(STRING); }
- \'     { yybegin(QSTRING); }
  \"\"\"   { yybegin(TSTRING); }
  "/*"   { yybegin(COMMENT); }
  "//"   { yybegin(SCOMMENT); }
 
 }
 
-/* TODO : support raw """ strings */
 <STRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
-}
-
-<QSTRING> {
- \'     { yybegin(YYINITIAL); }
 }
 
 <TSTRING> {
@@ -88,7 +82,7 @@ super(in);
  {WhspChar}*{EOL}    { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, TSTRING> {
+<YYINITIAL, STRING, COMMENT, SCOMMENT, TSTRING> {
 {WhiteSpace} |
 [^]    {}
 }
