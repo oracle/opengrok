@@ -23,11 +23,8 @@
  */
 
 /*
- * Gets Java symbols - ignores comments, strings, keywords
+ * Gets Swift symbols - ignores comments, strings, keywords
  */
-
-// comments can be nested in kotlin, so below logic doesn't allow that with yybegin we save only one nesting
-// same for strings
 
 package org.opensolaris.opengrok.analysis.swift;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
@@ -45,11 +42,10 @@ super(in);
 %include CommonTokenizer.lexh
 %char
 
-/* TODO add unicode as stated in https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/LexicalStructure.html#//apple_ref/swift/grammar/identifier-head */
-Identifier = [:jletter:] [:jletterdigit:]*
-
 %state STRING COMMENT SCOMMENT QSTRING TSTRING
 
+%include Common.lexh
+%include Swift.lexh
 %%
 
 /* TODO : support identifiers escaped by ` `*/
@@ -59,6 +55,8 @@ Identifier = [:jletter:] [:jletterdigit:]*
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
+
+ {Number}    {}
 
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
@@ -87,9 +85,10 @@ Identifier = [:jletter:] [:jletterdigit:]*
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+ {WhspChar}*{EOL}    { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, TSTRING> {
+{WhiteSpace} |
 [^]    {}
 }

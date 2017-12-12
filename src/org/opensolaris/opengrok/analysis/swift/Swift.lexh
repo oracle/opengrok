@@ -1,0 +1,40 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").  
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+/*
+ * TODO add unicode as stated in
+ * https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/LexicalStructure.html#//apple_ref/swift/grammar/identifier-head
+ */
+
+/* TODO: prohibit '$' in identifiers? */
+Identifier = [:jletter:] [:jletterdigit:]*
+
+Number = ({binary} | {octal} | {hexadecimal} | \-?({decimal} | {floating}))
+binary = 0[bB][01_][01_]*
+octal = 0[oO][0-7][0-7_]*
+hexadecimal = 0[xX] {hexadecimal0}
+hexadecimal0 = [0-9a-fA-F][0-9a-fA-F_]*
+decimal = [0-9][0-9_]*
+floating = ({decimal} ("." {decimal})? ([eE] [\+\-]? {decimal})? |
+    {hexadecimal} ("." {hexadecimal0})? ([pP] [\+\-]? {decimal})?)

@@ -49,12 +49,7 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-/* TODO: prohibit '$' in identifiers? */
-Identifier = [:jletter:] [:jletterdigit:]*
-
 File = [a-zA-Z]{FNameChar}* "." ("java"|"properties"|"props"|"xml"|"conf"|"txt"|"htm"|"html"|"ini"|"jnlp"|"jad"|"diff"|"patch")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
 
 /* TODO support markdown in comments
 SdocWithClassArg = "@throws" | "@exception"
@@ -69,6 +64,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Swift.lexh
 %%
 <YYINITIAL>{
  \{     { incScope(); writeUnicodeChar(yycharat(0)); }
