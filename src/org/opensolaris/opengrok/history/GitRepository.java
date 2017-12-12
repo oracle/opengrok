@@ -17,8 +17,9 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -31,7 +32,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -116,11 +116,7 @@ public class GitRepository extends Repository {
     Executor getHistoryLogExecutor(final File file, String sinceRevision)
             throws IOException {
 
-        String abs = file.getCanonicalPath();
-        String filename = "";
-        if (abs.length() > getDirectoryName().length()) {
-            filename = abs.substring(getDirectoryName().length() + 1);
-        }
+        String filename = getRepoRelativePath(file);
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);

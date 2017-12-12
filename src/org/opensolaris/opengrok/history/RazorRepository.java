@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 /* Portions Copyright 2008 Peter Bray */
 package org.opensolaris.opengrok.history;
@@ -157,13 +158,12 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    public void setDirectoryName(String directoryName) {
-        super.setDirectoryName(directoryName);
-        File opengrokBaseDirectory = new File(directoryName);
+    public void setDirectoryName(File directory) {
+        super.setDirectoryName(directory);
         opengrokSourceRootDirectoryPath
-                = opengrokBaseDirectory.getParentFile().getAbsolutePath();
+                = directory.getParentFile().getAbsolutePath();
         razorGroupBaseDirectoryPath
-                = new File(directoryName, RAZOR_DIR).getAbsolutePath();
+                = new File(directory, RAZOR_DIR).getAbsolutePath();
     }
 
     public String getOpengrokSourceRootDirectoryPath() {
