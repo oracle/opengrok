@@ -77,6 +77,18 @@ ParamName = {Identifier} | "<" {Identifier} ">"
     writeSymbol(id, Consts.kwd, yyline);
 }
 
+ [`] {Identifier} [`]    {
+    String capture = yytext();
+    String id = capture.substring(1, capture.length() - 1);
+    out.write("`");
+    writeSymbol(id, null, yyline);
+    out.write("`");
+ }
+
+ {ImplicitIdentifier} {
+    writeKeyword(yytext(), yyline);
+ }
+
 "<" ({File}|{FPath}) ">" {
         out.write("&lt;");
         String path = yytext();

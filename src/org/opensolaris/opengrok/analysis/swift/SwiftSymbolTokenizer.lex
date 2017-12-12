@@ -56,6 +56,17 @@ super(in);
                         return yystate(); }
               }
 
+ [`] {Identifier} [`]    {
+    String capture = yytext();
+    String id = capture.substring(1, capture.length() - 1);
+    setAttribs(id, yychar + 1, yychar + 1 + id.length());
+    return yystate();
+ }
+
+ {ImplicitIdentifier} {
+    // noop
+ }
+
  {Number}    {}
 
  \"     { yybegin(STRING); }

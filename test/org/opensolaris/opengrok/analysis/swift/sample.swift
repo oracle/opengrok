@@ -212,5 +212,6 @@ public class D2PDatePicker: UIView {
     }
     */
 
+    private Int `class`
 }
 /*http://example.com.*/
