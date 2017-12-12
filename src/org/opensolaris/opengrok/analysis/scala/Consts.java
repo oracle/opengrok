@@ -31,7 +31,6 @@ import java.util.Set;
 public class Consts{
     public static final Set<String> kwd = new HashSet<String>() ;
     static {
-        //Note that keywords with 1 letter will be ignored since we need at least 2 chars per identifier
         kwd.add("abstract");
         kwd.add("case");
         kwd.add("catch");
@@ -70,6 +69,7 @@ public class Consts{
         kwd.add("while");
         kwd.add("with");
         kwd.add("yield");
-    }
 
+        kwd.add("_");	// "Lexical syntax ... reserved words"
+    }
 }

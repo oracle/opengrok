@@ -1,0 +1,60 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+
+Number = [\-]? ({integerLiteral} | {floatingPointLiteral})
+/*
+ * Numeric Literal ::= [‘-’] integerLiteral
+ *                  |  [‘-’] floatingPointLiteral
+ *
+ * integerLiteral  ::=  (decimalNumeral | hexNumeral) [‘L’ | ‘l’]
+ * decimalNumeral  ::=  ‘0’ | nonZeroDigit {digit}
+ * hexNumeral      ::=  ‘0’ (‘x’ | ‘X’) hexDigit {hexDigit}
+ * digit           ::=  ‘0’ | nonZeroDigit
+ * nonZeroDigit    ::=  ‘1’ | … | ‘9’
+ * hexDigit        ::= ‘0’ | … | ‘9’ | ‘A’ | … | ‘F’ | ‘a’ | … | ‘f’
+ */
+integerLiteral = ({decimalNumeral} | {hexNumeral}) [Ll]?
+decimalNumeral = ([0] | {nonZeroDigit} {digit}*)
+hexNumeral = [0][xX] {hexDigit}+
+digit = [0-9]
+nonZeroDigit = [1-9]
+hexDigit = [0-9A-Fa-f]
+
+/*
+ * floatingPointLiteral  ::=
+ *     digit {digit} ‘.’ digit {digit} [exponentPart] [floatType]
+ *     |  ‘.’ digit {digit} [exponentPart] [floatType]
+ *     |  digit {digit} exponentPart [floatType]
+ *     |  digit {digit} [exponentPart] floatType
+ * exponentPart          ::=  (‘E’ | ‘e’) [‘+’ | ‘-’] digit {digit}
+ * floatType             ::=  ‘F’ | ‘f’ | ‘D’ | ‘d’
+ */
+floatingPointLiteral = ({digit}+ "." {digit}+ {exponentPart}? {floatType}? |
+    "." {digit}+ {exponentPart}? {floatType}? |
+    {digit}+ {exponentPart} {floatType}? |
+    {digit}+ {exponentPart}? {floatType})
+exponentPart = [Ee] [\+\-]? {digit}+
+floatType = [FfDd]
