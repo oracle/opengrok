@@ -39,6 +39,14 @@ import org.opensolaris.opengrok.web.Util;
   /* Must match {WhiteSpace} regex */
   private final static String WHITE_SPACE = "[ \\t\\f]+";
 
+  private int nestedComment;
+
+  @Override
+  public void reset() {
+      super.reset();
+      nestedComment = 0;
+  }
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -120,11 +128,9 @@ ParamName = {Identifier} | "<" {Identifier} ">"
     out.write(htmlize(yytext()));
  }
  "/**" / [^/]    {
-    pushSpan(SDOC, HtmlConsts.COMMENT_CLASS);
-    out.write(yytext());
- }
- "/*"    {
-    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    if (nestedComment++ == 0) {
+        pushSpan(SDOC, HtmlConsts.COMMENT_CLASS);
+    }
     out.write(yytext());
  }
  "//"    {
@@ -148,10 +154,34 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  }
 }
 
+<STRING, TSTRING> {
+    {WhspChar}*{EOL}    {
+        disjointSpan(null);
+        startNewLine();
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
+}
+
+<YYINITIAL, COMMENT, SDOC> {
+ "/*"    {
+    if (nestedComment++ == 0) {
+        pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    }
+    out.write(yytext());
+ }
+}
+
 <COMMENT, SDOC> {
  "*/"    {
     out.write(yytext());
-    yypop();
+    if (--nestedComment == 0) {
+        yypop();
+    }
+ }
+ {WhspChar}*{EOL}    {
+    disjointSpan(null);
+    startNewLine();
+    disjointSpan(HtmlConsts.COMMENT_CLASS);
  }
 }
 
