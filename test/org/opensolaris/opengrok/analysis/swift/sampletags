@@ -1,0 +1,31 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+D2PDatePickerDelegate	grok.swift	/^public protocol D2PDatePickerDelegate: class {$/;"	protocol	line:31
+didChange	grok.swift	/^    func didChange(toDate date: Date)$/;"	function	line:32
+D2PDatePicker	grok.swift	/^public class D2PDatePicker: UIView {$/;"	class	line:35
+delegate	grok.swift	/^    public weak var delegate: D2PDatePickerDelegate?$/;"	variable	line:37
+private weak var topView	grok.swift	/^    @IBOutlet private weak var topView:UIView!$/;"	variable	line:39
+private weak var middleView	grok.swift	/^    @IBOutlet private weak var middleView:UIView!$/;"	variable	line:40
+private weak var bottomView	grok.swift	/^    @IBOutlet private weak var bottomView:UIView!$/;"	variable	line:41
+private weak var dayNextBtn	grok.swift	/^    @IBOutlet private weak var dayNextBtn:UIButton!$/;"	variable	line:43
+private weak var dayPrevBtn	grok.swift	/^    @IBOutlet private weak var dayPrevBtn:UIButton!$/;"	variable	line:44
+private weak var monthNextBtn	grok.swift	/^    @IBOutlet private weak var monthNextBtn:UIButton!$/;"	variable	line:46
+private weak var monthPrevBtn	grok.swift	/^    @IBOutlet private weak var monthPrevBtn:UIButton!$/;"	variable	line:47
+private weak var yearNextBtn	grok.swift	/^    @IBOutlet private weak var yearNextBtn:UIButton!$/;"	variable	line:49
+private weak var yearPrevBtn	grok.swift	/^    @IBOutlet private weak var yearPrevBtn:UIButton!$/;"	variable	line:50
+private  weak var dayView	grok.swift	/^    @IBOutlet private  weak var dayView:DayView!$/;"	variable	line:52
+private weak var monthView	grok.swift	/^    @IBOutlet private weak var monthView:MonthView!$/;"	variable	line:53
+private weak var yearView	grok.swift	/^    @IBOutlet private weak var yearView:YearView!$/;"	variable	line:54
+selectedDate	grok.swift	/^    private var selectedDate:Date! = Date() {$/;"	variable	line:57
+mainColor	grok.swift	/^    public var mainColor: UIColor! = UIColor(red:0.99, green:0.28, blue:0.25, alpha:1.0) { \/\/ /;"	variable	line:84
+awakeFromNib	grok.swift	/^    override public func awakeFromNib() {$/;"	function	line:98
+set	grok.swift	/^    public func set(toDate date: Date) {$/;"	function	line:142
+setLabel	grok.swift	/^    private func setLabel(toDate date: Date) {$/;"	function	line:147
+formatter	grok.swift	/^        let formatter = DateFormatter()$/;"	variable	line:148
+changeDate	grok.swift	/^    @objc private func changeDate(btn: UIButton) {$/;"	function	line:165
+draw	grok.swift	/^    override func draw(_ rect: CGRect) {$/;"	function	line:210

@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.swift;
 
@@ -127,5 +128,7 @@ public class Consts {
         kwd.add("unowned");
         kwd.add("weak");
         kwd.add("willSet");
+
+        kwd.add("_");	// 4.0.3 "Keywords ... used in patterns"
     }
 }

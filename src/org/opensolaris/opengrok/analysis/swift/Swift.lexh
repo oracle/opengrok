@@ -1,0 +1,56 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").  
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+Identifier = {identifier0} {identifier_n}*
+
+identifier0 = ([a-zA-Z_] | [\u{00A8}\u{00AA}\u{00AD}\u{00AF}] |
+    [\u{00B2}–\u{00B5}] | [\u{00B7}–\u{00BA}] | [\u{00BC}–\u{00BE}] |
+    [\u{00C0}–\u{00D6}] | [\u{00D8}–\u{00F6}] | [\u{00F8}–\u{00FF}] |
+    [\u{0100}–\u{02FF}] | [\u{0370}–\u{167F}] | [\u{1681}–\u{180D}] |
+    [\u{180F}–\u{1DBF}] | [\u{1E00}–\u{1FFF}] | [\u{200B}–\u{200D}] |
+    [\u{202A}–\u{202E}] | [\u{203F}–\u{2040}] | [\u{2054}] |
+    [\u{2060}–\u{206F}] | [\u{2070}–\u{20CF}] | [\u{2100}–\u{218F}] |
+    [\u{2460}–\u{24FF}] | [\u{2776}–\u{2793}] | [\u{2C00}–\u{2DFF}] |
+    [\u{2E80}–\u{2FFF}] | [\u{3004}–\u{3007}] | [\u{3021}–\u{302F}] |
+    [\u{3031}–\u{303F}] | [\u{3040}–\u{D7FF}] | [\u{F900}–\u{FD3D}] |
+    [\u{FD40}–\u{FDCF}] | [\u{FDF0}–\u{FE1F}] | [\u{FE30}–\u{FE44}] |
+    [\u{FE47}–\u{FFFD}] | [\u{10000}–\u{1FFFD}] | [\u{20000}–\u{2FFFD}] |
+    [\u{30000}–\u{3FFFD}] | [\u{40000}–\u{4FFFD}] | [\u{50000}–\u{5FFFD}] |
+    [\u{60000}–\u{6FFFD}] | [\u{70000}–\u{7FFFD}] | [\u{80000}–\u{8FFFD}] |
+    [\u{90000}–\u{9FFFD}] | [\u{A0000}–\u{AFFFD}] | [\u{B0000}–\u{BFFFD}] |
+    [\u{C0000}–\u{CFFFD}] | [\u{D0000}–\u{DFFFD}] | [\u{E0000}–\u{EFFFD}])
+
+identifier_n = ([0-9] | [\u{0300}–\u{036F}] | [\u{1DC0}–\u{1DFF}] |
+    [\u{20D0}–\u{20FF}] | [\u{FE20}–\u{FE2F}] | {identifier0})
+
+ImplicitIdentifier = \$ [0-9]+
+
+Number = ({binary} | {octal} | {hexadecimal} | \-?({decimal} | {floating}))
+binary = 0[bB][01_][01_]*
+octal = 0[oO][0-7][0-7_]*
+hexadecimal = 0[xX] {hexadecimal0}
+hexadecimal0 = [0-9a-fA-F][0-9a-fA-F_]*
+decimal = [0-9][0-9_]*
+floating = ({decimal} ("." {decimal})? ([eE] [\+\-]? {decimal})? |
+    {hexadecimal} ("." {hexadecimal0})? ([pP] [\+\-]? {decimal})?)
