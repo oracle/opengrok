@@ -51,7 +51,16 @@ super(in);
     }
 %}
 
-%state STRING COMMENT SCOMMENT QSTRING
+/*
+ * STRING : string literal
+ * ISTRING : string literal with interpolation
+ * MSTRING : multi-line string literal
+ * IMSTRING : multi-line string literal with interpolation
+ * QSTRING : character literal
+ * SCOMMENT : single-line comment
+ * COMMENT : multi-line comment
+ */
+%state STRING ISTRING MSTRING IMSTRING QSTRING SCOMMENT COMMENT
 
 %include Common.lexh
 %include Scala.lexh
@@ -64,14 +73,31 @@ super(in);
                         return yystate(); }
               }
  {Number}    {}
- \"     { yybegin(STRING); }
+ ([fs] | "raw") \"    { yybegin(ISTRING); }
+ {Identifier}? \"    { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
+ ([fs] | "raw") \"\"\"    { yybegin(IMSTRING); }
+ {Identifier}? \"\"\" { yybegin(MSTRING); }
  "//"   { yybegin(SCOMMENT); }
 }
 
-<STRING> {
+<STRING, ISTRING> {
  \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
+}
+
+<ISTRING, IMSTRING> {
+    /*
+     * TODO : support "arbitrary expressions" inside curly brackets
+     */
+    \$ {Identifier}    {
+        String capture = yytext();
+        String id = capture.substring(1);
+        if (!Consts.kwd.contains(id)) {
+            setAttribs(id, yychar + 1, yychar + yylength());
+            return yystate();
+       }
+    }
 }
 
 <QSTRING> {
@@ -79,6 +105,15 @@ super(in);
  \'     { yybegin(YYINITIAL); }
 }
 
+<MSTRING, IMSTRING> {
+ /*
+  * For multi-line string, "Unicode escapes work as everywhere else, but none
+  * of the escape sequences [in 'Escape Sequences'] are interpreted."
+  */
+ \"\"\"    {
+    yybegin(YYINITIAL);;
+ }
+}
 <YYINITIAL, COMMENT> {
     "/*"    {
         if (nestedComment++ == 0) {
@@ -99,7 +134,7 @@ super(in);
 {EOL}      { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, ISTRING, MSTRING, IMSTRING, COMMENT, SCOMMENT, QSTRING> {
 {WhiteSpace} |
 [^]    {}
 }

@@ -28,6 +28,7 @@
 
 package org.opensolaris.opengrok.analysis.scala;
 
+import java.io.IOException;
 import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
@@ -56,6 +57,15 @@ import org.opensolaris.opengrok.web.Util;
   protected int getLineNumber() { return yyline; }
   @Override
   protected void setLineNumber(int x) { yyline = x; }
+
+  private void pushQuotedString(int state, String capture) throws IOException {
+      int qoff = capture.indexOf("\"");
+      String id = capture.substring(0, qoff);
+      String quotes = capture.substring(qoff);
+      out.write(id);
+      pushSpan(state, HtmlConsts.STRING_CLASS);
+      out.write(htmlize(quotes));
+  }
 %}
 
 File = [a-zA-Z]{FNameChar}* "." ([Ss][Cc][Aa][Ll][Aa] |
@@ -70,7 +80,17 @@ JavadocWithParamNameArg = "@param"
 ClassName = ({Identifier} ".")* {Identifier}
 ParamName = {Identifier} | "<" {Identifier} ">"
 
-%state  STRING COMMENT SCOMMENT QSTRING JAVADOC
+/*
+ * STRING : string literal
+ * ISTRING : string literal with interpolation
+ * MSTRING : multi-line string literal
+ * IMSTRING : multi-line string literal with interpolation
+ * QSTRING : character literal
+ * SCOMMENT : single-line comment
+ * COMMENT : multi-line comment
+ * JAVADOC : multi-line comment with JavaDoc conventions
+ */
+%state STRING ISTRING MSTRING IMSTRING QSTRING SCOMMENT COMMENT JAVADOC
 
 %include Common.lexh
 %include CommonURI.lexh
@@ -106,13 +126,21 @@ ParamName = {Identifier} | "<" {Identifier} ">"
     disjointSpan(null);
  }
 
- \"     {
-    pushSpan(STRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+ ([fs] | "raw") \"    {
+    pushQuotedString(ISTRING, yytext());
+ }
+ {Identifier}? \"    {
+    pushQuotedString(STRING, yytext());
  }
  \'     {
     pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
     out.write(htmlize(yytext()));
+ }
+ ([fs] | "raw") \"\"\"    {
+    pushQuotedString(IMSTRING, yytext());
+ }
+ {Identifier}? \"\"\"    {
+    pushQuotedString(MSTRING, yytext());
  }
  "/**" / [^/] {
     if (nestedComment++ == 0) {
@@ -126,7 +154,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  }
 }
 
-<STRING> {
+<STRING, ISTRING> {
  \\[\"\\]    { out.write(htmlize(yytext())); }
  \"     {
     out.write(htmlize(yytext()));
@@ -134,9 +162,35 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  }
 }
 
+<ISTRING, IMSTRING> {
+    /*
+     * TODO : support "arbitrary expressions" inside curly brackets
+     */
+    \$ {Identifier}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        String id = capture.substring(1);
+        out.write(sigil);
+        disjointSpan(null);
+        writeSymbol(id, Consts.kwd, yyline);
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
+}
+
 <QSTRING> {
  \\[\'\\]    { out.write(htmlize(yytext())); }
  \'     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+}
+
+<MSTRING, IMSTRING> {
+ /*
+  * For multi-line string, "Unicode escapes work as everywhere else, but none
+  * of the escape sequences [in 'Escape Sequences'] are interpreted."
+  */
+ \"\"\"    {
     out.write(htmlize(yytext()));
     yypop();
  }
@@ -188,7 +242,8 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 }
 
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
+<YYINITIAL, STRING, ISTRING, MSTRING, IMSTRING, COMMENT, SCOMMENT, QSTRING,
+    JAVADOC> {
 [&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
@@ -196,7 +251,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
+<STRING, MSTRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
 {FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
@@ -216,9 +271,15 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         }
 }
 
-<STRING, SCOMMENT, QSTRING> {
+<STRING, MSTRING, QSTRING, SCOMMENT> {
     {BrowseableURI}    {
         appendLink(yytext(), true);
+    }
+}
+
+<ISTRING, IMSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, ScalaUtils.DOLLAR_SIGN);
     }
 }
 
