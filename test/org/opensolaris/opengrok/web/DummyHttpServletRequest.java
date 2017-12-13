@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -32,10 +32,13 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionContext;
+import static org.opensolaris.opengrok.util.RandomString.generate;
 
 /**
  * <p>
@@ -55,7 +58,99 @@ import javax.servlet.http.HttpSession;
 public class DummyHttpServletRequest implements HttpServletRequest {
 
     private final Map<String, Object> attrs = new HashMap<String, Object>();
+    
+    private class DummyHttpSession implements HttpSession {
+        private Map<String, Object> attrs = new HashMap<>();
 
+        @Override
+        public long getCreationTime() {
+            return 0;
+        }
+
+        @Override
+        public String getId() {
+            return generate(32, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.");
+        }
+
+        @Override
+        public long getLastAccessedTime() {
+            return 0;
+        }
+
+        @Override
+        public ServletContext getServletContext() {
+            return (ServletContext) DummyHttpServletRequest.this;
+        }
+
+        @Override
+        public void setMaxInactiveInterval(int i) {
+        }
+
+        @Override
+        public int getMaxInactiveInterval() {
+            return 3600;
+        }
+
+        @SuppressWarnings("deprecation")
+        public HttpSessionContext getSessionContext() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Object getAttribute(String string) {
+            return attrs.get(string);
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public Object getValue(String string) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Enumeration getAttributeNames() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public String[] getValueNames() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setAttribute(String string, Object o) {
+            attrs.put(string, o);
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public void putValue(String string, Object o) {
+        }
+
+        @Override
+        public void removeAttribute(String string) {
+            attrs.remove(string);
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public void removeValue(String string) {
+        }
+
+        @Override
+        public void invalidate() {
+            attrs = new HashMap<String, Object>();
+        }
+
+        @Override
+        public boolean isNew() {
+            return true;
+        }
+    };
+    
+    private HttpSession session;
+    
     @Override
     public String getAuthType() {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -153,14 +248,21 @@ public class DummyHttpServletRequest implements HttpServletRequest {
 
     @Override
     public HttpSession getSession(boolean bln) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (bln) {
+            session = new DummyHttpSession();
+        }
+        
+        return session;
     }
 
     @Override
     public HttpSession getSession() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (session == null) {
+            session = new DummyHttpSession();
+        }
+        return session;
     }
-
+    
     @Override
     public boolean isRequestedSessionIdValid() {
         throw new UnsupportedOperationException("Not supported yet.");

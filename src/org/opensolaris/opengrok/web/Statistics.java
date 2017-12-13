@@ -108,6 +108,15 @@ public class Statistics {
         val += 1;
         requestCategories.put(category, val);
     }
+    
+    /**
+     * Get value of given counter
+     * @param category
+     * @return Long value
+     */
+    synchronized public Long getRequest(String category) {
+        return requestCategories.get(category);
+    }
 
     /**
      * Adds a request's process time into given category.

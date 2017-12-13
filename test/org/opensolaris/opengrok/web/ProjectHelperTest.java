@@ -61,7 +61,7 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         List<RepositoryInfo> oldRepositories = new ArrayList<>(env.getRepositories());
         Set<Group> oldGroups = new TreeSet<>(env.getGroups());
         Map<Project, List<RepositoryInfo>> oldMap = new TreeMap<>(getRepositoriesMap());
-        env.getAuthorizationFramework().removeAll(env.getAuthorizationFramework().getStack());
+        env.getAuthorizationFramework().removeAll();
         env.setSourceRoot("/src"); // needed for setDirectoryName() below
 
         cfg = PageConfig.get(getRequest());

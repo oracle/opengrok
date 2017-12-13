@@ -1657,23 +1657,13 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Return the current plugin version tracked by the authorization framework.
-     *
-     * @return the version
-     * @see AuthorizationFramework#getPluginVersion()
-     */
-    public int getPluginVersion() {
-        return getAuthorizationFramework().getPluginVersion();
-    }
-
-    /**
      * Return the authorization framework used in this environment.
      *
      * @return the framework
      */
     synchronized public AuthorizationFramework getAuthorizationFramework() {
         if (authFramework == null) {
-            authFramework = new AuthorizationFramework(threadConfig.get().getPluginDirectory());
+            authFramework = new AuthorizationFramework(getPluginDirectory(), getPluginStack());
         }
         return authFramework;
     }
@@ -1686,7 +1676,7 @@ public final class RuntimeEnvironment {
      */
     synchronized public void setAuthorizationFramework(AuthorizationFramework fw) {
         if (this.authFramework != null) {
-            this.authFramework.removeAll(this.authFramework.getStack());
+            this.authFramework.removeAll();
         }
         this.authFramework = fw;
     }
@@ -1760,6 +1750,7 @@ public final class RuntimeEnvironment {
 
         // set the new plugin directory and reload the authorization framework
         getAuthorizationFramework().setPluginDirectory(config.getPluginDirectory());
+        getAuthorizationFramework().setStack(config.getPluginStack());
         getAuthorizationFramework().reload();
     }
 

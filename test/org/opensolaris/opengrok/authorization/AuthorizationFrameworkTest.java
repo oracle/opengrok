@@ -30,7 +30,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -43,9 +42,8 @@ import org.opensolaris.opengrok.web.DummyHttpServletRequest;
 @RunWith(Parameterized.class)
 public class AuthorizationFrameworkTest {
 
-    private static final Random random = new Random();
+    private static final Random RANDOM = new Random();
 
-    private AuthorizationFramework framework;
     private final StackSetup setup;
 
     public AuthorizationFrameworkTest(StackSetup setup) {
@@ -651,7 +649,7 @@ public class AuthorizationFrameworkTest {
 
     @Test
     public void testPluginsGeneric() {
-        framework.setStack(setup.stack);
+        AuthorizationFramework framework = new AuthorizationFramework(null, setup.stack);
         framework.loadAllPlugins(setup.stack);
 
         boolean actual;
@@ -672,11 +670,6 @@ public class AuthorizationFrameworkTest {
         }
     }
 
-    @Before
-    public void setUp() {
-        framework = new AuthorizationFramework(null);
-    }
-
     static private Project createAllowedProject() {
         Project p = new Project("allowed" + "_" + "project" + Math.random());
         return p;
@@ -688,12 +681,12 @@ public class AuthorizationFrameworkTest {
     }
 
     static private Group createAllowedGroup() {
-        Group g = new Group("allowed" + "_" + "group_" + random.nextInt());
+        Group g = new Group("allowed" + "_" + "group_" + RANDOM.nextInt());
         return g;
     }
 
     static private Group createUnallowedGroup() {
-        Group g = new Group("not_allowed" + "_" + "group_" + random.nextInt());
+        Group g = new Group("not_allowed" + "_" + "group_" + RANDOM.nextInt());
         return g;
     }
 
@@ -782,7 +775,6 @@ public class AuthorizationFrameworkTest {
             }
 
         };
-
     }
 
     static public class TestCase {
