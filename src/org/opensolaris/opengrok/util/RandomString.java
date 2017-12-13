@@ -31,7 +31,7 @@ public final class RandomString {
     
     private RandomString() {
         // Throw an exception if this ever *is* called.
-	throw new AssertionError("Instantiating utility class " + getClass());
+        throw new AssertionError("Instantiating utility class " + getClass());
     }
 
     public static String generateLower(int length) {
