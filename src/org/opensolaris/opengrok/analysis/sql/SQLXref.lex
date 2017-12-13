@@ -55,8 +55,9 @@ import org.opensolaris.opengrok.web.Util;
 Sign = "+" | "-"
 SimpleNumber = [0-9]+ | [0-9]+ "." [0-9]* | [0-9]* "." [0-9]+
 ScientificNumber = ({SimpleNumber} [eE] {Sign}? [0-9]+)
+BinaryConstant = [0][xX] [0-9a-fA-F]*
 
-Number = {Sign}? ({SimpleNumber} | {ScientificNumber})
+Number = {Sign}? ({SimpleNumber} | {ScientificNumber} | {BinaryConstant})
 
 Identifier = [a-zA-Z] [a-zA-Z0-9_]*
 
