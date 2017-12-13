@@ -41,7 +41,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 
@@ -49,7 +48,6 @@ public class LdapAttrPluginTest {
 
     private HttpServletRequest dummyRequest;
     private LdapAttrPlugin plugin;
-    private AuthorizationFramework framework;
 
     private static File whitelistFile;
 
@@ -78,9 +76,6 @@ public class LdapAttrPluginTest {
         parameters.put(LdapAttrPlugin.ATTR_PARAM, "mail");
 
         plugin.load(parameters);
-
-        framework = new AuthorizationFramework();
-        framework.reload();
     }
 
     private void prepareRequest(String username, String mail, String... ous) {
