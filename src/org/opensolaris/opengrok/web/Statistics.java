@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
@@ -31,6 +31,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
+ * Framework for statistics gathering. So far used only by the webapp.
  *
  * @author Krystof Tulinger
  */
@@ -111,7 +112,7 @@ public class Statistics {
     
     /**
      * Get value of given counter
-     * @param category
+     * @param category category
      * @return Long value
      */
     synchronized public Long getRequest(String category) {
