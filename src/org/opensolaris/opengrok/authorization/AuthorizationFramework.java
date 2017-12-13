@@ -100,6 +100,9 @@ public final class AuthorizationFramework {
     private boolean loadClasses = true;
     private boolean loadJars = true;
     
+    // HTTP session attribute that holds plugin version 
+    private final static String SESSION_VERSION = "opengrok-authorization-session-version";
+    
     /**
      * Create a new instance of authorization framework with no plugin
      * directory and the default plugin stack.
@@ -674,9 +677,6 @@ public final class AuthorizationFramework {
         this.pluginVersion++;
     }
 
-    // HTTP session attribute that holds plugin version 
-    private final static String SESSION_VERSION = "opengrok-authorization-session-version";
-    
     /**
      * Is this session marked as invalid?
      *
