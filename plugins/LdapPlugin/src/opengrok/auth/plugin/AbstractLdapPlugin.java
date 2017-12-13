@@ -226,8 +226,6 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     @SuppressWarnings("unchecked")
     private void ensureSessionExists(HttpServletRequest req) {
-        User user;
-        
         if (req.getSession() == null) {
             // old/invalid request (should not happen)
             return;
@@ -235,6 +233,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
         
         // The cast to User should not be problem as this object is stored
         // in the request itself (as opposed to in the session).
+        User user;
         if ((user = (User) req.getAttribute(UserPlugin.REQUEST_ATTR)) == null) {
             updateSession(req, null, false);
             return;
