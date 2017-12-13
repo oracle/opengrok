@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2014, 2017 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.search.SearchEngine;
 public class JSONSearchServlet extends HttpServlet {
 
     private static final long serialVersionUID = -1675062445999680962L;
-    private static final Base64Converter conv = new Base64Converter();
+    private static final Base64Converter BASE64CONV = new Base64Converter();
     private static final int MAX_RESULTS = 1000; // hard coded limit
     private static final String PARAM_FREETEXT = "freetext";
     private static final String PARAM_DEF = "def";
@@ -49,6 +49,7 @@ public class JSONSearchServlet extends HttpServlet {
     private static final String PARAM_START = "start";
     private static final String PARAM_MAXRESULTS = "maxresults";
     private static final String PARAM_PROJECT = "project";
+    private static final String PARAM_TYPE = "type";
     private static final String ATTRIBUTE_DIRECTORY = "directory";
     private static final String ATTRIBUTE_FILENAME = "filename";
     private static final String ATTRIBUTE_LINENO = "lineno";
@@ -73,6 +74,7 @@ public class JSONSearchServlet extends HttpServlet {
         String path = req.getParameter(PARAM_PATH);
         String hist = req.getParameter(PARAM_HIST);
         String projects[] = req.getParameterValues(PARAM_PROJECT);
+        String type = req.getParameter(PARAM_TYPE);
 
         if (freetext != null) {
             freetext = URLDecoder.decode(freetext);
@@ -109,6 +111,13 @@ public class JSONSearchServlet extends HttpServlet {
             result.put(PARAM_HIST, hist);
         }
 
+        if (type != null) {
+            type = URLDecoder.decode(type);
+            engine.setType(type);
+            valid = true;
+            result.put(PARAM_TYPE, type);
+        }
+        
         if (!valid) {
             return;
         }
@@ -141,7 +150,7 @@ public class JSONSearchServlet extends HttpServlet {
                 hitJson.put(ATTRIBUTE_FILENAME,
                         JSONObject.escape(hit.getFilename()));
                 hitJson.put(ATTRIBUTE_LINENO, hit.getLineno());
-                hitJson.put(ATTRIBUTE_LINE, conv.encode(hit.getLine()));
+                hitJson.put(ATTRIBUTE_LINE, BASE64CONV.encode(hit.getLine()));
                 hitJson.put(ATTRIBUTE_PATH, hit.getPath());
                 resultsArray.add(hitJson);
             }
@@ -172,7 +181,9 @@ public class JSONSearchServlet extends HttpServlet {
      * @return The integer value of the request param if present or the
      *         defaultValue if none is present.
      */
-    private static Integer getIntParameter(final HttpServletRequest request, final String paramName, final Integer defaultValue) {
+    private static Integer getIntParameter(final HttpServletRequest request,
+            final String paramName, final Integer defaultValue) {
+        
         final String paramValue = request.getParameter(paramName);
         if (paramValue == null) {
             return defaultValue;
