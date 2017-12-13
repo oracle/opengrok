@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.scala;
 
@@ -55,6 +56,7 @@ public class Consts{
         kwd.add("override");
         kwd.add("package");
         kwd.add("private");
+        kwd.add("protected");
         kwd.add("return");
         kwd.add("sealed");
         kwd.add("super");
