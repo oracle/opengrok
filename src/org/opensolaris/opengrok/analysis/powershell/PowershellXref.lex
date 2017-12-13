@@ -23,13 +23,13 @@
  */
 
 package org.opensolaris.opengrok.analysis.powershell;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+
 import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.web.Util;
 import java.util.Stack;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-
 %%
 %public
 %class PoshXref
@@ -166,6 +166,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  * States:
  * STRING   - double-quoted string, ex: "hello, world!"
  * QSTRING  - single-quoted string, ex: 'hello, world!'
+ * COMMENT - multiple-line comment.
  * SCOMMENT - single-line comment, ex: # this is a comment
  * SUBSHELL - commands executed in a sub-shell,
  *               example 1: (echo $header; cat file.txt)
@@ -362,11 +363,6 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 }
 
 <STRING, SCOMMENT, QSTRING> {
-
-{BrowseableURI}    {
-            appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
@@ -380,4 +376,22 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
         popstate();
     }
     return YYEOF;
+}
+
+<STRING, SCOMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, PoshUtils.STRINGLITERAL_APOS_DELIMITER);
+    }
+}
+
+<COMMENT> {
+    {BrowseableURI} \>?    {
+        appendLink(yytext(), true, PoshUtils.MAYBE_END_MULTILINE_COMMENT);
+    }
 }

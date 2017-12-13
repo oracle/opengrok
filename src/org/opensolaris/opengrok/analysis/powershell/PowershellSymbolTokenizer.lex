@@ -23,14 +23,13 @@
  */
 
 package org.opensolaris.opengrok.analysis.powershell;
-import java.io.IOException;
-import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class PoshSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
+%ignorecase
 %init{
 super(in);
 %init}
@@ -44,6 +43,15 @@ ComplexVariable = [\$] "{" [^}]+  "}"
 Label =  {WhspChar}* ":" {Identifier}
 DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
 
+/*
+ * States:
+ * STRING   - double-quoted string, ex: "hello, world!"
+ * QSTRING  - single-quoted string, ex: 'hello, world!'
+ * COMMENT - multiple-line comment.
+ * SCOMMENT - single-line comment, ex: # this is a comment
+ * HERESTRING  - here-string, example: cat @" ... "@
+ * HEREQSTRING - here-string, example: cat @' ... '@
+ */
 %state STRING COMMENT SCOMMENT QSTRING HERESTRING HEREQSTRING
 
 %include Common.lexh
