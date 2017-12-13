@@ -78,9 +78,13 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_]*
         disjointSpan(null);
     }
 
-    "'"    {
+    [nN]? "'"    {
+        String capture = yytext();
+        String prefix = capture.substring(0, capture.length() - 1);
+        String rest = capture.substring(prefix.length());
+        out.write(prefix);
         pushSpan(STRING, HtmlConsts.STRING_CLASS);
-        out.write(htmlize(yytext()));
+        out.write(htmlize(rest));
     }
 
     \"    {
