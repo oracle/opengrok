@@ -161,7 +161,9 @@ ParamName = {Identifier} | "<" {Identifier} ">"
     pushQuotedString(MSTRING, yytext());
  }
  "/*" "*"+ "/"    {
+    disjointSpan(HtmlConsts.COMMENT_CLASS);
     out.write(yytext());
+    disjointSpan(null);
  }
  "/*" "*"+    {
     if (nestedComment++ == 0) {
