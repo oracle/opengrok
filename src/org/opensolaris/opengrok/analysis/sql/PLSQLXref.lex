@@ -63,6 +63,7 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_$#]*
 %state STRING QUOTED_IDENTIFIER SINGLE_LINE_COMMENT BRACKETED_COMMENT
 
 %include Common.lexh
+%include CommonURI.lexh
 %%
 
 <YYINITIAL> {
@@ -140,4 +141,22 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_$#]*
     {WhiteSpace}  { out.append(yytext()); }
     [ \t\f\r!-~]  { out.append(yycharat(0)); }
     [^\n]      { writeUnicodeChar(yycharat(0)); }
+}
+
+<STRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
+    }
+}
+
+<QUOTED_IDENTIFIER, SINGLE_LINE_COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<BRACKETED_COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+    }
 }

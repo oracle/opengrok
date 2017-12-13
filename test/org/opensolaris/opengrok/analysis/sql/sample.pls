@@ -519,3 +519,7 @@ create or replace package body ut_suite_builder is
 
 end ut_suite_builder;
 /
+/*http://example.com.*/
+/* comment /* comment */
+comment
+*/
