@@ -298,7 +298,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 }
 
 <SCOMMENT> {
- {EOL} { popstate(); startNewLine(); }
+ {WhspChar}*{EOL}    { popstate(); startNewLine(); }
 }
 
 <SUBSHELL> {
@@ -355,8 +355,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
     "&"     {out.write( "&amp;");}
     "<"     {out.write( "&lt;");}
     ">"     {out.write( "&gt;");}
-    {WhiteSpace}{EOL} |
-        {EOL}    { startNewLine(); }
+    {WhspChar}*{EOL}    { startNewLine(); }
     {WhiteSpace}   { out.write(yytext()); }
     [!-~]   { out.write(yycharat(0)); }
     [^\n]   { writeUnicodeChar(yycharat(0)); }
