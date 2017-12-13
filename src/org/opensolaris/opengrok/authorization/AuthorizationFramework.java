@@ -688,8 +688,9 @@ public final class AuthorizationFramework {
     private boolean isSessionInvalid(HttpSession session) {
         long version;
         
-        if (session.getAttribute(SESSION_VERSION) == null)
+        if (session.getAttribute(SESSION_VERSION) == null) {
             return true;
+	}
         
         version = (long) session.getAttribute(SESSION_VERSION);
         return version != getPluginVersion();
