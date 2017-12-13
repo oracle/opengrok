@@ -72,12 +72,36 @@ super(in);
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
+
+ {BacktickIdentifier} {
+    String capture = yytext();
+    String id = capture.substring(1, capture.length() - 1);
+    if (!Consts.kwd.contains(id)) {
+        setAttribs(id, yychar + 1, yychar + 1 + id.length());
+        return yystate();
+    }
+ }
+
+ {OpSuffixIdentifier}    {
+    String capture = yytext();
+    int uoff = capture.lastIndexOf("_");
+    // ctags include the "_" in the symbol, so follow that too.
+    String id = capture.substring(0, uoff + 1);
+    if (!Consts.kwd.contains(id)) {
+        setAttribs(id, yychar, yychar + id.length());
+        return yystate();
+    }
+ }
+
  {Number}    {}
  ([fs] | "raw") \"    { yybegin(ISTRING); }
  {Identifier}? \"    { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
  ([fs] | "raw") \"\"\"    { yybegin(IMSTRING); }
  {Identifier}? \"\"\" { yybegin(MSTRING); }
+ "/*" "*"+ "/"    {
+    // noop
+ }
  "//"   { yybegin(SCOMMENT); }
 }
 
@@ -115,7 +139,7 @@ super(in);
  }
 }
 <YYINITIAL, COMMENT> {
-    "/*"    {
+    "/*" "*"*    {
         if (nestedComment++ == 0) {
             yybegin(COMMENT);
         }
@@ -132,6 +156,12 @@ super(in);
 
 <SCOMMENT> {
 {EOL}      { yybegin(YYINITIAL);}
+}
+
+<YYINITIAL> {
+ {OpIdentifier}    {
+    // noop
+ }
 }
 
 <YYINITIAL, STRING, ISTRING, MSTRING, IMSTRING, COMMENT, SCOMMENT, QSTRING> {

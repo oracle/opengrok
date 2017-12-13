@@ -104,6 +104,24 @@ ParamName = {Identifier} | "<" {Identifier} ">"
     writeSymbol(id, Consts.kwd, yyline);
 }
 
+ {BacktickIdentifier} {
+    String capture = yytext();
+    String id = capture.substring(1, capture.length() - 1);
+    out.write("`");
+    writeSymbol(id, null, yyline);
+    out.write("`");
+ }
+
+ {OpSuffixIdentifier}    {
+    String capture = yytext();
+    int uoff = capture.lastIndexOf("_");
+    // ctags include the "_" in the symbol, so follow that too.
+    String id = capture.substring(0, uoff + 1);
+    String rest = capture.substring(uoff + 1);
+    writeSymbol(id, Consts.kwd, yyline);
+    out.write(htmlize(rest));
+ }
+
 "<" ({File}|{FPath}) ">" {
         out.write("&lt;");
         String path = yytext();
@@ -142,7 +160,10 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  {Identifier}? \"\"\"    {
     pushQuotedString(MSTRING, yytext());
  }
- "/**" / [^/] {
+ "/*" "*"+ "/"    {
+    out.write(yytext());
+ }
+ "/*" "*"+    {
     if (nestedComment++ == 0) {
         pushSpan(JAVADOC, HtmlConsts.COMMENT_CLASS);
     }
@@ -241,6 +262,11 @@ ParamName = {Identifier} | "<" {Identifier} ">"
   }
 }
 
+<YYINITIAL> {
+ {OpIdentifier}    {
+    out.write(htmlize(yytext()));
+ }
+}
 
 <YYINITIAL, STRING, ISTRING, MSTRING, IMSTRING, COMMENT, SCOMMENT, QSTRING,
     JAVADOC> {

@@ -22,7 +22,48 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+/*
+ * id  ::=  plainid
+ *      |  ‘`’ { charNoBackQuoteOrNewline | UnicodeEscape | charEscapeSeq } ‘`’
+ * plainid ::=  upper idrest
+ *          |  varid
+ *          |  op
+ * varid ::=  lower idrest
+ * op  ::=  opchar {opchar}
+ */
+Identifier = {plainid_mod1}
+OpSuffixIdentifier = {plainid_mod2}
+OpIdentifier = {op}
+BacktickIdentifier = [`] ({charNoBackQuoteOrNewline} | {UnicodeEscape} |
+    {charEscapeSeq})+ [`]
+plainid_mod1 = ({upper} | {lower}) {idrest_char}*
+plainid_mod2 = ({upper} | {lower}) {idrest_char}* "_" {op}
+op = {opchar}+
+/*
+ * opchar ::= // printableChar not matched by (whiteSpace | upper | lower |
+ *     // letter | digit | paren | delim)
+ * opchar ::= Unicode_Sm | Unicode_So ; N.b. [cfraire] I believe the definition
+ *    from 2.12 where the exclusion parenthetical above contains
+ *    "opchar | Unicode_Sm | Unicode_So" is a typo and this is the proper form.
+ * printableChar ::= // all characters in [\u0020, \u007F] inclusive
+ */
+opchar = ([[\u{0020}-\u{007F}]--[\sA-Z\$_\p{Lu}a-z\p{Ll}\p{Lo}\p{Lt}\p{Nl}0-9\(\)\[\]\{\}`\'\"\.;,]] |
+    [\p{Sm}\p{So}])
+/*
+ * upper   ::=  ‘A’ | … | ‘Z’ | ‘$’ | ‘_’  // and Unicode category Lu
+ * lower   ::=  ‘a’ | … | ‘z’ // and Unicode category Ll
+ * idrest  ::=  {letter | digit} [‘_’ op]
+ * letter  ::=  upper | lower // and Unicode categories Lo, Lt, Nl
+ * UnicodeEscape ::= ‘\’ ‘u’ {‘u’} hexDigit hexDigit hexDigit hexDigit
+ * charEscapeSeq    ::= ‘\’ (‘b’ | ‘t’ | ‘n’ | ‘f’ | ‘r’ | ‘"’ | ‘'’ | ‘\’)
+ */
+upper = [A-Z\$_\p{Lu}]
+lower = [a-z\p{Ll}]
+idrest_char = ({letter} | {digit}) // N.b. here OpenGrok ignores the op suffix
+letter = ({upper} | {lower} | [\p{Lo}\p{Lt}\p{Nl}])
+charNoBackQuoteOrNewline = [[^]--[\n\r`]]
+UnicodeEscape = \\ [u]+ {hexDigit}{4}
+charEscapeSeq = \\ [btnfr\"\'\\]
 
 Number = [\-]? ({integerLiteral} | {floatingPointLiteral})
 /*

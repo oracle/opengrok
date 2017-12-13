@@ -296,7 +296,7 @@ private object TorrentBroadcast extends Logging {
     val obj = Utils.tryWithSafeFinally {
       serIn.readObject[T]()
     } {
-      serIn.close()
+      serIn.`close`()
     }
     obj
   }
@@ -309,8 +309,11 @@ private object TorrentBroadcast extends Logging {
     logDebug(s"http://example.com?$id")
     SparkEnv.get.blockManager.master.removeBroadcast(id, removeFromDriver, blocking)
   }
+
+  /*http://example.com.*/
+  /* comment /* comment */
+  comment
+  */
+
+  def unary_~ = 0
 }
-/*http://example.com.*/
-/* comment /* comment */
-comment
-*/
