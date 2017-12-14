@@ -1,7 +1,9 @@
 === Slack ===
 
 http://opengrok.slack.com <br>
-(ask for invite on below list) <br>
+use shared invite: https://join.slack.com/t/opengrok/shared_invite/enQtMjg1OTQ3MTU1MTIwLWE2Yzk1ZTAyMmE3NzAxNzAyYjIzMjA3OGMyZGQ0MjM1MjE0M2U1OGIxYjRhNzVhOTQxOTU0MzRmNzg0NzJmMDg
+(valid until 13.1.2018, please create an issue for a new one)
+(or ask for (new) shared invite on below list) <br>
 http://opengrok.slackarchive.com <br>
 
 === Chat ===
