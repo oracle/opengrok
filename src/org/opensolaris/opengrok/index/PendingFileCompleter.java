@@ -25,13 +25,18 @@ package org.opensolaris.opengrok.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -52,6 +57,25 @@ public class PendingFileCompleter {
 
     private static final Logger LOGGER =
         LoggerFactory.getLogger(PendingFileCompleter.class);
+
+    /**
+     * Descending path segment length comparator
+     */
+    private static final Comparator<File> DESC_PATHLEN_COMPARATOR =
+        (File f1, File f2) -> {
+            String s1 = f1.getAbsolutePath();
+            String s2 = f2.getAbsolutePath();
+            int n1 = countPathSegments(s1);
+            int n2 = countPathSegments(s2);
+            // DESC: s2 no. of segments <=> s1 no. of segments
+            int cmp = Integer.compare(n2, n1);
+            if (cmp != 0) return cmp;
+
+            // the Comparator must also be "consistent with equals", so check
+            // string contents too when (length)cmp == 0. (ASC: s1 <=> s2.)
+            cmp = s1.compareTo(s2);
+            return cmp;
+    };
 
     private final Set<PendingFileDeletion> deletions = new HashSet<>();
 
@@ -125,6 +149,8 @@ public class PendingFileCompleter {
         int numPending = renames.size();
         int numFailures = 0;
 
+        if (numPending < 1) return 0;
+
         List<PendingFileRenamingExec> pendingExecs = renames.
             parallelStream().map(f ->
             new PendingFileRenamingExec(f.getTransientPath(),
@@ -168,6 +194,8 @@ public class PendingFileCompleter {
         int numPending = deletions.size();
         int numFailures = 0;
 
+        if (numPending < 1) return 0;
+
         List<PendingFileDeletionExec> pendingExecs = deletions.
             parallelStream().map(f ->
             new PendingFileDeletionExec(f.getAbsolutePath())).collect(
@@ -186,6 +214,10 @@ public class PendingFileCompleter {
             }));
         deletions.clear();
 
+        List<PendingFileDeletionExec> successes = bySuccess.getOrDefault(
+            Boolean.TRUE, null);
+        if (successes != null) tryDeleteParents(successes);
+
         List<PendingFileDeletionExec> failures = bySuccess.getOrDefault(
             Boolean.FALSE, null);
         if (failures != null && failures.size() > 0) {
@@ -202,15 +234,12 @@ public class PendingFileCompleter {
 
     private void doDelete(PendingFileDeletionExec del) throws IOException {
         File f = new File(del.absolutePath + PENDING_EXTENSION);
+        File parent = f.getParentFile();
+        del.absoluteParent = parent;
+
         doDelete(f);
         f = new File(del.absolutePath);
         doDelete(f);
-
-        File parent = f.getParentFile();
-        if (parent.delete()) {
-            LOGGER.log(Level.FINE, "Removed empty parent dir: {0}",
-                parent.getAbsolutePath());
-        }
     }
 
     private void doDelete(File f) {
@@ -237,8 +266,111 @@ public class PendingFileCompleter {
         }
     }
 
+    private void tryDeleteParents(List<PendingFileDeletionExec> dels) {
+        Set<File> parents = new TreeSet<>(DESC_PATHLEN_COMPARATOR);
+        dels.forEach((del) -> { parents.add(del.absoluteParent); });
+
+        for (File dir : parents) {
+            Set<File> children = findFilelessChildren(dir);
+            children.forEach((childDir) -> {
+                tryDeleteDirectory(childDir);
+            });
+
+            tryDeleteDirectory(dir);
+        }
+    }
+
+    private void tryDeleteDirectory(File dir) {
+        if (dir.delete()) {
+            LOGGER.log(Level.FINE, "Removed empty parent dir: {0}",
+                dir.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Determines a DESC ordered set of eligible file-less child directories
+     * for cleaning up.
+     */
+    private Set<File> findFilelessChildren(File directory) {
+        SkeletonDirs ret = new SkeletonDirs();
+        findFilelessChildrenDeep(ret, directory);
+
+        Set<File> parents = new TreeSet<>(DESC_PATHLEN_COMPARATOR);
+        // N.b. the `ineligible' field is not relevant here but only during
+        // recursion. `childDirs' contains eligible directories.
+        parents.addAll(ret.childDirs);
+        return parents;
+    }
+
+    /**
+     * Recursive method used by {@link #findFilelessChildren(java.io.File)}.
+     */
+    private void findFilelessChildrenDeep(SkeletonDirs ret, File directory) {
+
+        if (!directory.exists()) return;
+        String dirPath = directory.getAbsolutePath();
+        boolean topLevelIneligible = false;
+        boolean didLogFileTopLevelIneligible = false;
+
+        try {
+            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
+                Paths.get(dirPath));
+            for (Path path : directoryStream) {
+                File f = path.toFile();
+                if (f.isFile()) {
+                    topLevelIneligible = true;
+                    if (!didLogFileTopLevelIneligible && LOGGER.isLoggable(
+                        Level.FINEST)) {
+                        didLogFileTopLevelIneligible = true; // just once is OK
+                        LOGGER.log(Level.FINEST, "not file-less due to: {0}",
+                            f.getAbsolutePath());
+                    }
+                } else {
+                    findFilelessChildrenDeep(ret, f);
+                    if (!ret.ineligible) {
+                        ret.childDirs.add(f);
+                    } else {
+                        topLevelIneligible = true;
+                        if (LOGGER.isLoggable(Level.FINEST)) {
+                            LOGGER.log(Level.FINEST,
+                                "its children prevent delete: {0}",
+                                f.getAbsolutePath());
+                        }
+                    }
+
+                    // Reset this flag so that other potential, eligible
+                    // children are evaluated.
+                    ret.ineligible = false;
+                }
+            }
+        } catch (IOException ex) {
+            topLevelIneligible = true;
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "Failed to stream directory:" +
+                    directory, ex);
+            }
+        }
+
+        ret.ineligible = topLevelIneligible;
+    }
+
+    /**
+     * Counts segments arising from {@code File.separatorChar} or '\\'
+     * @param path
+     * @return a natural number
+     */
+    private static int countPathSegments(String path) {
+        int n = 1;
+        for (int i = 0; i < path.length(); ++i) {
+            char c = path.charAt(i);
+            if (c == File.separatorChar || c == '\\') ++n;
+        }
+        return n;
+    }
+
     private class PendingFileDeletionExec {
         public String absolutePath;
+        public File absoluteParent;
         public IOException exception;
         public PendingFileDeletionExec(String absolutePath) {
             this.absolutePath = absolutePath;
@@ -253,5 +385,14 @@ public class PendingFileCompleter {
             this.source = source;
             this.target = target;
         }
+    }
+
+    /**
+     * Represents a collection of file-less directories which should also be
+     * deleted for cleanliness.
+     */
+    private class SkeletonDirs {
+        public boolean ineligible; // a flag used during recursion
+        public List<File> childDirs = new ArrayList<>();
     }
 }
