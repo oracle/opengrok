@@ -473,6 +473,10 @@ public class IndexDatabase {
             } catch (IOException e) {
                 finishingException = e;
             }
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.SEVERE,
+                "Failed with unexpected RuntimeException", ex);
+            throw ex;
         } finally {
             Ctags finishingCtags = ctags;
             ctags = null;
@@ -1372,7 +1376,7 @@ public class IndexDatabase {
             // rollback() regardless of success.
             hasPendingCommit = false;
             writer.commit();
-        } catch (IOException e) {
+        } catch (RuntimeException|IOException e) {
             if (hasPendingCommit) writer.rollback();
             LOGGER.log(Level.WARNING,
                 "An error occured while finishing writer and completer", e);
