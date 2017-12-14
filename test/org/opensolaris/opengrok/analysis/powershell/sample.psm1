@@ -463,7 +463,7 @@ function Install-LabCAMachine
             'Months' { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * (365/12) * 24) }
             'Weeks'  { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * 7 * 24) }
             'Days'   { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * 24) }
-            'Hours'  { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits) }
+            'Hours'  { $CRLOverlapUnitsHours = [int]([int]${param}.CRLOverlapUnits) }
         }
     }
     #...

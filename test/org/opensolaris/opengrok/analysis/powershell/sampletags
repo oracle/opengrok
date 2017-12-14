@@ -191,4 +191,5 @@ CRLOverlapUnitsHours	grok.psm1	/^            'Years'  { $CRLOverlapUnitsHours = 
 CRLOverlapUnitsHours	grok.psm1	/^            'Months' { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * (365\/12) * 2/;"	variable	line:463
 CRLOverlapUnitsHours	grok.psm1	/^            'Weeks'  { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * 7 * 24) }$/;"	variable	line:464
 CRLOverlapUnitsHours	grok.psm1	/^            'Days'   { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * 24) }$/;"	variable	line:465
-CRLOverlapUnitsHours	grok.psm1	/^            'Hours'  { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits) }$/;"	variable	line:466
+{param}	grok.psm1	/^            'Hours'  { $CRLOverlapUnitsHours = [int]([int]${param}.CRLOverlapUnits) }$/;"	variable	line:466
+CRLOverlapUnitsHours	grok.psm1	/^            'Hours'  { $CRLOverlapUnitsHours = [int]([int]${param}.CRLOverlapUnits) }$/;"	variable	line:466

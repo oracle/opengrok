@@ -23,7 +23,9 @@
  */
 
 package org.opensolaris.opengrok.analysis.powershell;
+
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import java.util.regex.Matcher;
 %%
 %public
 %class PoshSymbolTokenizer
@@ -36,106 +38,183 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
+%{
+    private boolean onCertainlyPublish(String symbol, int yyoffset) {
+        return onPossiblyPublish(symbol, yyoffset, true);
+    }
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_-]*
-SimpleVariable  = [\$] [a-zA-Z_] [a-zA-Z0-9_:-]*
-ComplexVariable = [\$] "{" [^}]+  "}"
-Label =  {WhspChar}* ":" {Identifier}
-DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
+    private boolean onPossiblyPublish(String symbol, int yyoffset) {
+        return onPossiblyPublish(symbol, yyoffset, false);
+    }
+
+    private boolean onPossiblyPublish(String symbol, int yyoffset,
+        boolean skipKeywordCheck) {
+        if (skipKeywordCheck || !Consts.poshkwd.contains(symbol.
+            toLowerCase())) {
+            setAttribs(symbol, yychar + yyoffset, yychar + yyoffset +
+                symbol.length());
+            return true;
+        }
+        return false;
+    }
+%}
 
 /*
  * States:
+ * DATATYPE - bracketed .NET datatype specification
  * STRING   - double-quoted string, ex: "hello, world!"
  * QSTRING  - single-quoted string, ex: 'hello, world!'
  * COMMENT - multiple-line comment.
  * SCOMMENT - single-line comment, ex: # this is a comment
+ * SUBSHELL - commands executed in a sub-shell,
+ *               example 1: (echo $header; cat file.txt)
  * HERESTRING  - here-string, example: cat @" ... "@
  * HEREQSTRING - here-string, example: cat @' ... '@
  */
-%state STRING COMMENT SCOMMENT QSTRING HERESTRING HEREQSTRING
+%state DATATYPE STRING COMMENT SCOMMENT QSTRING SUBSHELL HERESTRING HEREQSTRING
 
 %include Common.lexh
+%include Powershell.lexh
 %%
 
-<YYINITIAL> {
- ^ {Label} {
-    String id = yytext();
-    setAttribs(id, yychar, yychar + yylength());
-    return yystate();
- } 
+<STRING> {
+ {ComplexVariable}    {
+    int startOffset = 2;            // trim away the "${" prefix
+    int endOffset = yylength() - 1; // trim away the "}" suffix
+    String id = yytext().substring(startOffset, endOffset);
+    if (onPossiblyPublish(id, startOffset)) return yystate();
+ }
+ {SimpleVariable}    {
+    int startOffset = 1;	// trim away the "$" prefix
+    String id = yytext().substring(startOffset);
+    if (onPossiblyPublish(id, startOffset)) return yystate();
+ }
+}
 
- {Identifier} | {SimpleVariable} | {ComplexVariable} {
+<YYINITIAL, SUBSHELL> {
+ ^ {Label}    {
     String id = yytext();
-    if(!Consts.poshkwd.contains(id.toLowerCase())){
-        setAttribs(id, yychar, yychar + yylength());
+    if (onPossiblyPublish(id, 0)) return yystate();
+ }
+ {Break} |
+ {Continue}    {
+    String capture = yytext();
+    Matcher m = PoshUtils.GOTO_LABEL.matcher(capture);
+    if (m.find()) {
+        String label   = m.group(3);
+        onCertainlyPublish(label, yychar + yylength() - label.length());
+        return yystate();
+    }
+ }
+
+ {DataType}    {
+    yypushback(yytext().length());
+    yypush(DATATYPE);
+ }
+
+ {ComplexVariable}    {
+    int startOffset = 2;	// trim away the "${" prefix
+    String id = yytext().substring(startOffset, yylength() - 1);
+    if (onPossiblyPublish(id, startOffset)) return yystate();
+ }
+ {SimpleVariable}    {
+    int startOffset = 1;	// trim away the "$" prefix
+    String id = yytext().substring(startOffset);
+    if (onPossiblyPublish(id, startOffset)) return yystate();
+ }
+
+ {Operator}    {
+    String capture = yytext();
+    int startOffset = 1;	// trim away the "-" prefix
+    String id = capture.substring(startOffset);
+    if (!Consts.poshkwd.contains(capture.toLowerCase()) &&
+        onPossiblyPublish(id, startOffset)) {
         return yystate(); 
     }
  }
- {DataType} { return yystate(); }
 
- \"     { yybegin(STRING); }
- \'     { yybegin(QSTRING); }
- "#"    { yybegin(SCOMMENT); }
- "<#"   { yybegin(COMMENT); }
- \@\"   { yybegin(HERESTRING); }
- \@\'   { yybegin(HEREQSTRING); }
+ {Number}    {}
+
+ \"     { yypush(STRING); }
+ \'     { yypush(QSTRING); }
+ "#"    { yypush(SCOMMENT); }
+ "<#"   { yypush(COMMENT); }
+ \@\"   { yypush(HERESTRING); }
+ \@\'   { yypush(HEREQSTRING); }
+}
+
+<YYINITIAL, SUBSHELL, DATATYPE> {
+ {Identifier}    {
+    String id = yytext();
+    if (onPossiblyPublish(id, 0)) return yystate();
+ }
+}
+
+<DATATYPE> {
+ "]"    {
+    yypushback(yytext().length());
+    yypop();
+ }
 }
 
 <STRING> {
- {SimpleVariable} {
-    setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
-    return yystate();
- }
-
- {ComplexVariable} {
-    int startOffset = 2;            // trim away the "${" prefix
-    int endOffset = yylength() - 1; // trim away the "}" suffix
-    setAttribs(yytext().substring(startOffset, endOffset),
-               yychar + startOffset,
-               yychar + endOffset);
-    return yystate();
- }
-
  [`]\"    {}
- \"     { yybegin(YYINITIAL); }
+ \"     { yypop(); }
 }
 
 <QSTRING> {
  \'\'    {}
- \'      { yybegin(YYINITIAL); }
+ \'      { yypop(); }
 }
 
 <COMMENT> {
- "#>"    { yybegin(YYINITIAL);}
+ "#>"    { yypop();}
 }
 
 <SCOMMENT> {
- {EOL}   { yybegin(YYINITIAL);}
+ {EOL}   { yypop();}
+}
+
+<SUBSHELL> {
+  \)    { yypop(); }
 }
 
 <HERESTRING> {
- {SimpleVariable} {
-    setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
-    return yystate();
+  "`$"    {}
+
+ {SimpleVariable}    {
+    int startOffset = 1;	// trim away the "$" prefix
+    String id = yytext().substring(startOffset);
+    if (onPossiblyPublish(id, startOffset)) return yystate();
  }
 
- {ComplexVariable} {
+ {ComplexVariable}    {
     int startOffset = 2;            // trim away the "${" prefix
     int endOffset = yylength() - 1; // trim away the "}" suffix
-    setAttribs(yytext().substring(startOffset, endOffset),
-               yychar + startOffset,
-               yychar + endOffset);
-    return yystate();
+    String id = yytext().substring(startOffset, endOffset);
+    if (onPossiblyPublish(id, startOffset)) return yystate();
  }
 
- ^ \"\@     { yybegin(YYINITIAL); }
+ ^ \"\@     { yypop(); }
 }
 
 <HEREQSTRING> {
- ^ "'@"     { yybegin(YYINITIAL); }
+ ^ "'@"     { yypop(); }
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING, HEREQSTRING> {
+<YYINITIAL, SUBSHELL> {
+  /* Don't enter new state if special character is escaped. */
+  \\` | \\\( | \\\) | \\\\ | \\\{ |
+  \\\" | \\' | \\\$ | \\\#    {}
+
+  /* $# should not start a comment. */
+  "$#" {}
+
+  \$ ? \( { yypush(SUBSHELL); }
+}
+
+<YYINITIAL, DATATYPE, SUBSHELL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING,
+    HEREQSTRING> {
 {WhiteSpace} |
 [^]    {}
 }

@@ -62,6 +62,18 @@ public class PoshUtils {
     public static final Pattern MAYBE_END_MULTILINE_COMMENT =
         Pattern.compile("\\#?>");
 
+    /**
+     * Matches a PowerShell break or continue statement with word label:
+     * <pre>
+     * {@code
+     * (break|continue)(\s+)(\w+)
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    public static final Pattern GOTO_LABEL =
+       Pattern.compile("(break|continue)(\\s+)(\\w+)");
+
     /** private to enforce static */
     private PoshUtils() {
     }
