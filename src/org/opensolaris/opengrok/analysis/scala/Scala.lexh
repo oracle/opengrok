@@ -1,0 +1,101 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ */
+
+/*
+ * id  ::=  plainid
+ *      |  ‘`’ { charNoBackQuoteOrNewline | UnicodeEscape | charEscapeSeq } ‘`’
+ * plainid ::=  upper idrest
+ *          |  varid
+ *          |  op
+ * varid ::=  lower idrest
+ * op  ::=  opchar {opchar}
+ */
+Identifier = {plainid_mod1}
+OpSuffixIdentifier = {plainid_mod2}
+OpIdentifier = {op}
+BacktickIdentifier = [`] ({charNoBackQuoteOrNewline} | {UnicodeEscape} |
+    {charEscapeSeq})+ [`]
+plainid_mod1 = ({upper} | {lower}) {idrest_char}*
+plainid_mod2 = ({upper} | {lower}) {idrest_char}* "_" {op}
+op = {opchar}+
+/*
+ * opchar ::= // printableChar not matched by (whiteSpace | upper | lower |
+ *     // letter | digit | paren | delim)
+ * opchar ::= Unicode_Sm | Unicode_So ; N.b. [cfraire] I believe the definition
+ *    from 2.12 where the exclusion parenthetical above contains
+ *    "opchar | Unicode_Sm | Unicode_So" is a typo and this is the proper form.
+ * printableChar ::= // all characters in [\u0020, \u007F] inclusive
+ */
+opchar = ([[\u{0020}-\u{007F}]--[\sA-Z\$_\p{Lu}a-z\p{Ll}\p{Lo}\p{Lt}\p{Nl}0-9\(\)\[\]\{\}`\'\"\.;,]] |
+    [\p{Sm}\p{So}])
+/*
+ * upper   ::=  ‘A’ | … | ‘Z’ | ‘$’ | ‘_’  // and Unicode category Lu
+ * lower   ::=  ‘a’ | … | ‘z’ // and Unicode category Ll
+ * idrest  ::=  {letter | digit} [‘_’ op]
+ * letter  ::=  upper | lower // and Unicode categories Lo, Lt, Nl
+ * UnicodeEscape ::= ‘\’ ‘u’ {‘u’} hexDigit hexDigit hexDigit hexDigit
+ * charEscapeSeq    ::= ‘\’ (‘b’ | ‘t’ | ‘n’ | ‘f’ | ‘r’ | ‘"’ | ‘'’ | ‘\’)
+ */
+upper = [A-Z\$_\p{Lu}]
+lower = [a-z\p{Ll}]
+idrest_char = ({letter} | {digit}) // N.b. here OpenGrok ignores the op suffix
+letter = ({upper} | {lower} | [\p{Lo}\p{Lt}\p{Nl}])
+charNoBackQuoteOrNewline = [[^]--[\n\r`]]
+UnicodeEscape = \\ [u]+ {hexDigit}{4}
+charEscapeSeq = \\ [btnfr\"\'\\]
+
+Number = [\-]? ({integerLiteral} | {floatingPointLiteral})
+/*
+ * Numeric Literal ::= [‘-’] integerLiteral
+ *                  |  [‘-’] floatingPointLiteral
+ *
+ * integerLiteral  ::=  (decimalNumeral | hexNumeral) [‘L’ | ‘l’]
+ * decimalNumeral  ::=  ‘0’ | nonZeroDigit {digit}
+ * hexNumeral      ::=  ‘0’ (‘x’ | ‘X’) hexDigit {hexDigit}
+ * digit           ::=  ‘0’ | nonZeroDigit
+ * nonZeroDigit    ::=  ‘1’ | … | ‘9’
+ * hexDigit        ::= ‘0’ | … | ‘9’ | ‘A’ | … | ‘F’ | ‘a’ | … | ‘f’
+ */
+integerLiteral = ({decimalNumeral} | {hexNumeral}) [Ll]?
+decimalNumeral = ([0] | {nonZeroDigit} {digit}*)
+hexNumeral = [0][xX] {hexDigit}+
+digit = [0-9]
+nonZeroDigit = [1-9]
+hexDigit = [0-9A-Fa-f]
+
+/*
+ * floatingPointLiteral  ::=
+ *     digit {digit} ‘.’ digit {digit} [exponentPart] [floatType]
+ *     |  ‘.’ digit {digit} [exponentPart] [floatType]
+ *     |  digit {digit} exponentPart [floatType]
+ *     |  digit {digit} [exponentPart] floatType
+ * exponentPart          ::=  (‘E’ | ‘e’) [‘+’ | ‘-’] digit {digit}
+ * floatType             ::=  ‘F’ | ‘f’ | ‘D’ | ‘d’
+ */
+floatingPointLiteral = ({digit}+ "." {digit}+ {exponentPart}? {floatType}? |
+    "." {digit}+ {exponentPart}? {floatType}? |
+    {digit}+ {exponentPart} {floatType}? |
+    {digit}+ {exponentPart}? {floatType})
+exponentPart = [Ee] [\+\-]? {digit}+
+floatType = [FfDd]
