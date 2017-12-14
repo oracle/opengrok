@@ -4,6 +4,7 @@
 
 - [Per project properties](#per-project-properties)
   * [Setup](#setup)
+  * [List of tunables](#list-of-tunables)
 
 # Per project properties
 
@@ -21,3 +22,7 @@
    </void>
   </void>
 ```
+
+## List of tunables
+
+- `navigateWindowEnabled` : enable navigate window when browsing xrefs
