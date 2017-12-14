@@ -75,10 +75,10 @@ DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
 
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
- \@\"   { yybegin(HERESTRING); }
- \@\'   { yybegin(HEREQSTRING); }
  "#"    { yybegin(SCOMMENT); }
  "<#"   { yybegin(COMMENT); }
+ \@\"   { yybegin(HERESTRING); }
+ \@\'   { yybegin(HEREQSTRING); }
 }
 
 <STRING> {
@@ -96,8 +96,21 @@ DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
     return yystate();
  }
 
+ [`]\"    {}
  \"     { yybegin(YYINITIAL); }
- \\\\ | \\\" | \`\"     {}
+}
+
+<QSTRING> {
+ \'\'    {}
+ \'      { yybegin(YYINITIAL); }
+}
+
+<COMMENT> {
+ "#>"    { yybegin(YYINITIAL);}
+}
+
+<SCOMMENT> {
+ {EOL}   { yybegin(YYINITIAL);}
 }
 
 <HERESTRING> {
@@ -115,30 +128,14 @@ DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
     return yystate();
  }
 
- \"\@     { yybegin(YYINITIAL); }
- [^\r\n]+ {}
+ ^ \"\@     { yybegin(YYINITIAL); }
 }
 
 <HEREQSTRING> {
- \'\@     { yybegin(YYINITIAL); }
- [^\r\n]+ {}
-}
-
-<QSTRING> {
- \'      { yybegin(YYINITIAL); }
- \\\\ | \\\' | \`\'     {}
-}
-
-<COMMENT> {
- "#>"    { yybegin(YYINITIAL);}
- [^\r\n]+ {}
-}
-
-<SCOMMENT> {
- {EOL}   { yybegin(YYINITIAL);}
+ ^ "'@"     { yybegin(YYINITIAL); }
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING, HEREQSTRING> {
-{WhiteSpace}    {}
+{WhiteSpace} |
 [^]    {}
 }

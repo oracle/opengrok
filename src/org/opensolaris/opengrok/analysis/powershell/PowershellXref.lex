@@ -25,7 +25,8 @@
 package org.opensolaris.opengrok.analysis.powershell;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 import java.util.Stack;
 import java.util.regex.Pattern;
@@ -33,19 +34,17 @@ import java.util.regex.Matcher;
 %%
 %public
 %class PoshXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
 %ignorecase
 %int
 %include CommonXref.lexh
 %{
-  private final Stack<Integer> stateStack = new Stack<Integer>();
   private final Stack<String> styleStack = new Stack<String>();
 
   @Override
   public void reset() {
       super.reset();
-      stateStack.clear();
       styleStack.clear();
   }
 
@@ -82,34 +81,22 @@ import java.util.regex.Matcher;
     writeSymbol(id, Consts.poshkwd, yyline, false, true);
   }
 
-  private void pushstate(int state, String style) throws IOException {
-    if (!styleStack.empty()) {
-      out.write("</span>");
-    }
-    if (style == null) {
-      out.write("<span>");
-    } else {
-      out.write("<span class=\"" + style + "\">");
-    }
-    stateStack.push(yystate());
-    styleStack.push(style);
-    yybegin(state);
+  @Override
+  public void pushSpan(int newState, String className) throws IOException {
+      super.pushSpan(newState, className);
+      styleStack.push(className);
   }
 
-  private void popstate() throws IOException {
-    out.write("</span>");
-    yybegin(stateStack.pop());
-    styleStack.pop();
-    if (!styleStack.empty()) {
-      String style = styleStack.peek();
-      if (style == null) {
-        out.write("<span>");
-      } else {
-        out.write("<span class=\"" + style + "\">");
+  @Override
+  public void yypop() throws IOException {
+      super.yypop();
+      styleStack.pop();
+
+      if (!styleStack.empty()) {
+          String style = styleStack.peek();
+          disjointSpan(style);
       }
-    }
   }
-
 %}
 
 Identifier = [a-zA-Z_] [a-zA-Z0-9_-]*
@@ -268,42 +255,76 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
     writeSymbol(id, Consts.poshkwd, yyline, false, false);
  }
 
- {Number} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+ {Number}    {
+    String lastClassName = getDisjointSpanClassName();
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(lastClassName);
+ }
 
- \" { pushstate(STRING, "s"); out.write(yytext()); }
- \' { pushstate(QSTRING, "s"); out.write(yytext()); }
+ \"    {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'    {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
 
- \# { pushstate(SCOMMENT, "c"); out.write(yytext()); }
- \<\# { pushstate(COMMENT, "c"); out.write(yytext()); }
+ \#    {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
+ \<\#    {
+    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(htmlize(yytext()));
+ }
 
- \@\" { pushstate(HERESTRING, "s"); out.write(yytext()); }
- \@\' { pushstate(HEREQSTRING, "s"); out.write(yytext()); }
+ \@\"    {
+    pushSpan(HERESTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \@\'    {
+    pushSpan(HEREQSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
 }
 
 <STRING> {
- \" {WhspChar}* \"  { out.write(yytext()); }
- \\ { out.write(yytext()); }
- \" { out.write(yytext()); popstate(); }
+ [`]\"    { out.write(htmlize(yytext())); }
+ \"    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <QSTRING> {
- \' {WhspChar}* \' { out.write(yytext()); }
- \\ { out.write("\\"); }
- \' { out.write(yytext()); popstate(); }
+ \'\'    { out.write(htmlize(yytext())); }
+ \'    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <COMMENT> {
- \#\>    { out.write(yytext()); popstate(); }
- [^\r\n] { out.write(yytext()); }
- {EOL}   { startNewLine(); }
+ \#\>    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <SCOMMENT> {
- {WhspChar}*{EOL}    { popstate(); startNewLine(); }
+ {WhspChar}*{EOL}    {
+    yypop();
+    startNewLine();
+ }
 }
 
 <SUBSHELL> {
-  \)   { out.write(yytext()); popstate(); }
+  \)    {
+    out.write(yytext());
+    yypop();
+  }
 }
 
 <HERESTRING> {
@@ -312,32 +333,35 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
    
   \` ({SimpleVariable} | {ComplexVariable}) { out.write(yytext()); }
 
-  {ComplexVariable} {
-     emitComplexVariable();
-  }
   {SimpleVariable} {
      emitSimpleVariable();
   }
-  ^ \"\@  { out.write(yytext()); popstate(); }
-  [^\r\n] { out.write(yytext()); }
-  {EOL}   { startNewLine(); }
+
+  {ComplexVariable} {
+     emitComplexVariable();
+  }
+  ^ \"\@    {
+    out.write(htmlize(yytext()));
+    yypop();
+  }
 }
 
 <HEREQSTRING> {
-  ^ "'@"  { out.write(yytext()); popstate(); }
-  [^\r\n]+  { out.write(yytext()); }
-  {EOL}   { startNewLine(); }
+  ^ "'@"    {
+    out.write(yytext());
+    yypop();
+  }
 }
 
 <YYINITIAL, SUBSHELL> {
   /* Don't enter new state if special character is escaped. */
-  \\` | \\\( | \\\) | \\\\ | \\\{ { out.write(yytext()); }
-  \\\" | \\' | \\\$ | \\\# { out.write(yytext()); }
+  \\` | \\\( | \\\) | \\\\ | \\\{ |
+  \\\" | \\' | \\\$ | \\\#    { out.write(htmlize(yytext())); }
 
   /* $# should not start a comment. */
   "$#" { out.write(yytext()); }
 
-  \$ ? \( { pushstate(SUBSHELL, null); out.write(yytext()); }
+  \$ ? \( { pushSpan(SUBSHELL, null); out.write(yytext()); }
 }
 
 <YYINITIAL, SUBSHELL, STRING, SCOMMENT, QSTRING> {
@@ -353,9 +377,11 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
     {AnyFPath}
             {out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
-    "&"     {out.write( "&amp;");}
-    "<"     {out.write( "&lt;");}
-    ">"     {out.write( "&gt;");}
+}
+
+<YYINITIAL, SUBSHELL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING,
+    HEREQSTRING> {
+    [&<>\'\"]    { out.write(htmlize(yytext())); }
     {WhspChar}*{EOL}    { startNewLine(); }
     {WhiteSpace}   { out.write(yytext()); }
     [!-~]   { out.write(yycharat(0)); }
@@ -367,15 +393,6 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
         {
           writeEMailAddress(yytext());
         }
-}
-
-<<EOF>> {
-    // If we reach EOF while being in a nested state, pop all the way up
-    // the initial state so that we close open HTML tags.
-    while (!stateStack.isEmpty()) {
-        popstate();
-    }
-    return YYEOF;
 }
 
 <STRING, SCOMMENT> {
