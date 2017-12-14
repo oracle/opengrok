@@ -8,6 +8,8 @@
 
 # Per project properties
 
+Each project can have its own set of properties. These control various aspects of how the project (plus its repositories) is handled.
+
 ## Setup
 
 ```
