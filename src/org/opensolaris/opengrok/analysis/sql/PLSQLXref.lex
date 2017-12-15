@@ -23,22 +23,27 @@
  */
 
 package org.opensolaris.opengrok.analysis.sql;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class PLSQLXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
 %ignorecase
 %int
 %include CommonXref.lexh
 %{
     private int commentLevel;
+
+    @Override
+    public void reset() {
+        super.reset();
+        commentLevel = 0;
+    }
 
   // TODO move this into an include file when bug #16053 is fixed
   @Override
@@ -58,6 +63,7 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_$#]*
 %state STRING QUOTED_IDENTIFIER SINGLE_LINE_COMMENT BRACKETED_COMMENT
 
 %include Common.lexh
+%include CommonURI.lexh
 %%
 
 <YYINITIAL> {
@@ -67,58 +73,94 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_$#]*
     }
 
     {Number} {
-        out.append("<span class=\"n\">").append(yytext()).append("</span>");
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
+        out.write(yytext());
+        disjointSpan(null);
     }
 
-    "'" { yybegin(STRING); out.append("<span class=\"s\">'"); }
+    [nN]? "'"    {
+        String capture = yytext();
+        String prefix = capture.substring(0, capture.length() - 1);
+        String rest = capture.substring(prefix.length());
+        out.write(prefix);
+        pushSpan(STRING, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(rest));
+    }
 
-    \" { yybegin(QUOTED_IDENTIFIER); out.append("<span class=\"s\">\""); }
+    \"    {
+        pushSpan(QUOTED_IDENTIFIER, HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext()));
+    }
 
-    "--" { yybegin(SINGLE_LINE_COMMENT); out.append("<span class=\"c\">--"); }
-
-    "/*" {
-        yybegin(BRACKETED_COMMENT);
-        commentLevel = 1;
-        out.append("<span class=\"c\">/*");
+    "--"    {
+        pushSpan(SINGLE_LINE_COMMENT, HtmlConsts.COMMENT_CLASS);
+        out.write(yytext());
     }
 }
 
 <STRING> {
-    "''" { out.append("''"); }
-    "'"   { yybegin(YYINITIAL); out.append("'</span>"); }
+    "''"    { out.write(htmlize(yytext())); }
+    "'"    {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
 }
 
 <QUOTED_IDENTIFIER> {
-    \"\" { out.append("\"\""); }
-    \"   { yybegin(YYINITIAL); out.append("\"</span>"); }
+    \"\"    { out.write(htmlize(yytext())); }
+    \"    {
+        out.write(htmlize(yytext()));
+        yypop();
+    }
 }
 
 <SINGLE_LINE_COMMENT> {
-    {EOL} {
-        yybegin(YYINITIAL);
-        out.append("</span>");
+    {WhspChar}*{EOL} {
+        yypop();
         startNewLine();
     }
 }
 
+<YYINITIAL, BRACKETED_COMMENT> {
+    "/*" {
+        if (commentLevel++ == 0) {
+            pushSpan(BRACKETED_COMMENT, HtmlConsts.COMMENT_CLASS);
+        }
+        out.write(yytext());
+    }
+}
+
 <BRACKETED_COMMENT> {
-    "/*" { out.append(yytext()); commentLevel++; }
     "*/" {
-        commentLevel--;
-        out.append(yytext());
-        if (commentLevel == 0) {
-            yybegin(YYINITIAL);
-            out.append("</span>");
+        out.write(yytext());
+        if (--commentLevel == 0) {
+            yypop();
         }
     }
 }
 
 <YYINITIAL, STRING, QUOTED_IDENTIFIER, SINGLE_LINE_COMMENT, BRACKETED_COMMENT> {
-    "&"    { out.append( "&amp;"); }
-    "<"    { out.append( "&lt;"); }
-    ">"    { out.append( "&gt;"); }
-    {WhspChar}*{EOL}     { startNewLine(); }
+    [&<>\'\"]    { out.write(htmlize(yytext())); }
+    {WhspChar}*{EOL}    { startNewLine(); }
     {WhiteSpace}  { out.append(yytext()); }
     [ \t\f\r!-~]  { out.append(yycharat(0)); }
     [^\n]      { writeUnicodeChar(yycharat(0)); }
+}
+
+<STRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
+    }
+}
+
+<QUOTED_IDENTIFIER, SINGLE_LINE_COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<BRACKETED_COMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+    }
 }
