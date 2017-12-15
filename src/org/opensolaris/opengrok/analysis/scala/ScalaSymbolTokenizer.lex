@@ -23,12 +23,13 @@
  */
 
 /*
- * Gets Java symbols - ignores comments, strings, keywords
+ * Gets Scala symbols - ignores comments, strings, keywords
  */
 
 package org.opensolaris.opengrok.analysis.scala;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class ScalaSymbolTokenizer
@@ -40,11 +41,29 @@ super(in);
 %int
 %include CommonTokenizer.lexh
 %char
+%{
+    private int nestedComment;
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        nestedComment = 0;
+    }
+%}
 
-%state STRING COMMENT SCOMMENT QSTRING
+/*
+ * STRING : string literal
+ * ISTRING : string literal with interpolation
+ * MSTRING : multi-line string literal
+ * IMSTRING : multi-line string literal with interpolation
+ * QSTRING : character literal
+ * SCOMMENT : single-line comment
+ * COMMENT : multi-line comment
+ */
+%state STRING ISTRING MSTRING IMSTRING QSTRING SCOMMENT COMMENT
 
+%include Common.lexh
+%include Scala.lexh
 %%
 
 <YYINITIAL> {
@@ -53,29 +72,99 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
                         setAttribs(id, yychar, yychar + yylength());
                         return yystate(); }
               }
- \"     { yybegin(STRING); }
+
+ {BacktickIdentifier} {
+    String capture = yytext();
+    String id = capture.substring(1, capture.length() - 1);
+    if (!Consts.kwd.contains(id)) {
+        setAttribs(id, yychar + 1, yychar + 1 + id.length());
+        return yystate();
+    }
+ }
+
+ {OpSuffixIdentifier}    {
+    String capture = yytext();
+    int uoff = capture.lastIndexOf("_");
+    // ctags include the "_" in the symbol, so follow that too.
+    String id = capture.substring(0, uoff + 1);
+    if (!Consts.kwd.contains(id)) {
+        setAttribs(id, yychar, yychar + id.length());
+        return yystate();
+    }
+ }
+
+ {Number}    {}
+ ([fs] | "raw") \"    { yybegin(ISTRING); }
+ {Identifier}? \"    { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
- "/*"   { yybegin(COMMENT); }
+ ([fs] | "raw") \"\"\"    { yybegin(IMSTRING); }
+ {Identifier}? \"\"\" { yybegin(MSTRING); }
+ "/*" "*"+ "/"    {
+    // noop
+ }
  "//"   { yybegin(SCOMMENT); }
 }
 
-<STRING> {
+<STRING, ISTRING> {
+ \\[\"\\]    {}
  \"     { yybegin(YYINITIAL); }
-\\\\ | \\\"     {}
+}
+
+<ISTRING, IMSTRING> {
+    /*
+     * TODO : support "arbitrary expressions" inside curly brackets
+     */
+    \$ {Identifier}    {
+        String capture = yytext();
+        String id = capture.substring(1);
+        if (!Consts.kwd.contains(id)) {
+            setAttribs(id, yychar + 1, yychar + yylength());
+            return yystate();
+       }
+    }
 }
 
 <QSTRING> {
+ \\[\'\\]    {}
  \'     { yybegin(YYINITIAL); }
 }
 
+<MSTRING, IMSTRING> {
+ /*
+  * For multi-line string, "Unicode escapes work as everywhere else, but none
+  * of the escape sequences [in 'Escape Sequences'] are interpreted."
+  */
+ \"\"\"    {
+    yybegin(YYINITIAL);;
+ }
+}
+<YYINITIAL, COMMENT> {
+    "/*" "*"*    {
+        if (nestedComment++ == 0) {
+            yybegin(COMMENT);
+        }
+    }
+}
+
 <COMMENT> {
-"*/"    { yybegin(YYINITIAL);}
+ "*/"    {
+    if (--nestedComment == 0) {
+        yybegin(YYINITIAL);
+    }
+ }
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{EOL}      { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL> {
+ {OpIdentifier}    {
+    // noop
+ }
+}
+
+<YYINITIAL, STRING, ISTRING, MSTRING, IMSTRING, COMMENT, SCOMMENT, QSTRING> {
+{WhiteSpace} |
 [^]    {}
 }

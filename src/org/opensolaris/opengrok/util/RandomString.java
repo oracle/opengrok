@@ -17,17 +17,23 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
-package opengrok.auth.plugin.util;
+package org.opensolaris.opengrok.util;
 
 /**
+ * Utility class that can generate various random strings.
  *
- * @author ktulinge
+ * @author Krystof Tulinger
  */
-public class Strings {
+public final class RandomString {
     
+    private RandomString() {
+        // Throw an exception if this ever *is* called.
+        throw new AssertionError("Instantiating utility class " + getClass());
+    }
+
     public static String generateLower(int length) {
         return generate(length, "abcdefghijklmnopqrstuvwxyz");
     }

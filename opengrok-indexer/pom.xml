@@ -201,6 +201,27 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 </excludes>
             </testResource>
             <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/scala/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/scala/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/sql/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/tcl/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/tcl/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/haskell/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/haskell/</directory>
                 <excludes>
@@ -217,6 +238,13 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/sh/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/sh/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/swift/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/swift/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>

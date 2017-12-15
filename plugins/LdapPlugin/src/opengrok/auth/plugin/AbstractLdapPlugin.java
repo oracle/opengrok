@@ -35,14 +35,12 @@ import opengrok.auth.plugin.ldap.LdapFacade;
 import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Abstract class for all plug-ins working with LDAP. Takes care of
  * <ul>
  * <li>controlling the established session</li>
  * <li>controlling if the session belongs to the user</li>
- * <li>controlling plug-in version</li>
  * </ul>
  *
  * <p>
@@ -63,9 +61,9 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     protected static final String CONFIGURATION_PARAM = "configuration";
     protected static final String FAKE_PARAM = "fake";
 
-    protected String SESSION_USERNAME = "opengrok-group-plugin-username";
-    protected String SESSION_ESTABLISHED = "opengrok-group-plugin-session-established";
-    protected String SESSION_VERSION = "opengrok-group-plugin-session-version";
+    private final static String SESSION_PREFIX = "opengrok-abstract-ldap-plugin-";
+    protected String SESSION_USERNAME = SESSION_PREFIX + "username";
+    protected String SESSION_ESTABLISHED = SESSION_PREFIX + "session-established";
 
     /**
      * Configuration for the LDAP servers.
@@ -86,7 +84,6 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     public AbstractLdapPlugin() {
         SESSION_USERNAME += "-" + nextId;
         SESSION_ESTABLISHED += "-" + nextId;
-        SESSION_VERSION += "-" + nextId;
         nextId++;
     }
 
@@ -197,11 +194,8 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @return true if it does; false otherwise
      */
     protected boolean isSameUser(String sessionUsername, String authUser) {
-        if (sessionUsername != null
-                && sessionUsername.equals(authUser)) {
-            return true;
-        }
-        return false;
+        return sessionUsername != null
+                && sessionUsername.equals(authUser);
     }
 
     /**
@@ -214,7 +208,6 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     protected boolean sessionExists(HttpServletRequest req) {
         return req != null && req.getSession() != null
                 && req.getSession().getAttribute(SESSION_ESTABLISHED) != null
-                && req.getSession().getAttribute(SESSION_VERSION) != null
                 && req.getSession().getAttribute(SESSION_USERNAME) != null;
     }
 
@@ -233,14 +226,16 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     @SuppressWarnings("unchecked")
     private void ensureSessionExists(HttpServletRequest req) {
-        User user;
         if (req.getSession() == null) {
             // old/invalid request (should not happen)
             return;
         }
-
+        
+        // The cast to User should not be problem as this object is stored
+        // in the request itself (as opposed to in the session).
+        User user;
         if ((user = (User) req.getAttribute(UserPlugin.REQUEST_ATTR)) == null) {
-            updateSession(req, null, false, getPluginVersion());
+            updateSession(req, null, false);
             return;
         }
 
@@ -248,9 +243,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
                 // we've already filled the groups and projects
                 && (boolean) req.getSession().getAttribute(SESSION_ESTABLISHED)
                 // the session belongs to the user from the request
-                && isSameUser((String) req.getSession().getAttribute(SESSION_USERNAME), user.getUsername())
-                // and this is not a case when we want to renew all sessions
-                && !isSessionInvalidated(req)) {
+                && isSameUser((String) req.getSession().getAttribute(SESSION_USERNAME), user.getUsername())) {
             /**
              * The session is already filled so no need to
              * {@link #updateSession()}
@@ -258,7 +251,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
             return;
         }
 
-        updateSession(req, user.getUsername(), false, getPluginVersion());
+        updateSession(req, user.getUsername(), false);
 
         if (ldap == null) {
             return;
@@ -266,7 +259,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
 
         fillSession(req, user);
 
-        updateSession(req, user.getUsername(), true, getPluginVersion());
+        updateSession(req, user.getUsername(), true);
     }
 
     /**
@@ -275,44 +268,12 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @param req the request
      * @param username new username
      * @param established new value for established
-     * @param sessionV new value for session version
      */
     protected void updateSession(HttpServletRequest req,
             String username,
-            boolean established,
-            int sessionV) {
+            boolean established) {
         setSessionEstablished(req, established);
         setSessionUsername(req, username);
-        setSessionVersion(req, sessionV);
-    }
-
-    /**
-     * Is this session marked as invalid?
-     *
-     * @param req the request
-     * @return true if it is; false otherwise
-     */
-    protected boolean isSessionInvalidated(HttpServletRequest req) {
-        Integer version;
-        if ((version = (Integer) req.getAttribute(SESSION_VERSION)) != null) {
-            return version != getPluginVersion();
-        }
-        if ((version = (Integer) req.getSession().getAttribute(SESSION_VERSION)) != null) {
-            req.setAttribute(SESSION_VERSION, version);
-            return version != getPluginVersion();
-        }
-        return true;
-    }
-
-    /**
-     * Set session version into the session.
-     *
-     * @param req request containing the session
-     * @param value the value
-     */
-    protected void setSessionVersion(HttpServletRequest req, Integer value) {
-        req.getSession().setAttribute(SESSION_VERSION, value);
-        req.setAttribute(SESSION_VERSION, value);
     }
 
     /**
@@ -333,15 +294,6 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     protected void setSessionUsername(HttpServletRequest req, String value) {
         req.getSession().setAttribute(SESSION_USERNAME, value);
-    }
-
-    /**
-     * Return the current plug-in version tracked by the authorization framework.
-     *
-     * @return the version
-     */
-    protected static int getPluginVersion() {
-        return RuntimeEnvironment.getInstance().getPluginVersion();
     }
 
     @Override

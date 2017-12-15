@@ -27,21 +27,26 @@
  */
 
 package org.opensolaris.opengrok.analysis.tcl;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class TclXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
+  private int braceCount;
+
+  @Override
+  public void reset() {
+      super.reset();
+      braceCount = 0;
+  }
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -49,51 +54,131 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-Identifier = [\:\=a-zA-Z0-9_]+
-
 File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
-Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
-
-%state  STRING COMMENT SCOMMENT
+%state STRING COMMENT SCOMMENT BRACES VARSUB2
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Tcl.lexh
 %%
 <YYINITIAL>{
 
-{Identifier} {
-    String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+ [\{]    {
+    out.write(yytext());
+    ++braceCount;
+    yypush(BRACES);
+ }
 }
 
-{Number}        { out.write("<span class=\"n\">");
-                  out.write(yytext());
-                  out.write("</span>"); }
+<YYINITIAL, BRACES> {
+ {Number}    {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
+ \"     {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ "#"    {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
+ {WordOperators}    {
+    out.write(htmlize(yytext()));
+ }
+}
 
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- "#"    { yybegin(SCOMMENT);out.write("<span class=\"c\">#");}
+<YYINITIAL, STRING, BRACES> {
+    {Backslash_sub}    {
+        out.write(htmlize(yytext()));
+    }
+    {Backslash_nl}    {
+        String capture = yytext();
+        String esc = capture.substring(0, 1);
+        String whsp = capture.substring(1);
+        out.write(esc);
+        TclUtils.writeWhitespace(this, whsp);
+    }
+    {Varsub1}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        String name = capture.substring(1);
+        out.write(sigil);
+        writeSymbol(name, Consts.kwd, yyline);
+    }
+    {Varsub2}    {
+        // TclXref could get away without VARSUB2 as a state, but for ease in
+        // comparing to TclSymbolTokenizer, it is modeled here too.
+        yypush(VARSUB2);
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        int lparen_i = capture.indexOf("(");
+        String name1 = capture.substring(1, lparen_i);
+        yypushback(capture.length() - lparen_i - 1);
+        out.write(sigil);
+        if (name1.length() > 0) {
+            writeSymbol(name1, Consts.kwd, yyline);
+        }
+        out.write("(");
+    }
+    {Varsub3}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 2);
+        String name = capture.substring(2, capture.length() - 1);
+        String endtoken = capture.substring(capture.length() - 1);
+        out.write(sigil);
+        writeSymbol(name, Consts.kwd, yyline);
+        out.write(endtoken);
+    }
+}
+
+<VARSUB2> {
+    {name_unit}+    {
+        String name2 = yytext();
+        yypop();
+        writeSymbol(name2, Consts.kwd, yyline);
+    }
+}
+
+<YYINITIAL, BRACES> {
+    {OrdinaryWord}    {
+        String id = yytext();
+        writeSymbol(id, Consts.kwd, yyline);
+    }
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext()); }
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \"     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+}
+
+<BRACES> {
+    [\}]    {
+        if (--braceCount == 0) {
+            yypop();
+        }
+        out.write(yytext());
+    }
+    [\{]    {
+        ++braceCount;
+        out.write(yytext());
+    }
 }
 
 <SCOMMENT> {
-  {EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
+  {WhspChar}*{EOL}    {
+    yypop();
     startNewLine();
   }
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+<YYINITIAL, STRING, COMMENT, SCOMMENT, BRACES> {
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL} { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }

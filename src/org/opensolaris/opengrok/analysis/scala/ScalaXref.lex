@@ -27,36 +27,52 @@
  */
 
 package org.opensolaris.opengrok.analysis.scala;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class ScalaXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
-%ignorecase
 %int
 %include CommonXref.lexh
 %{
   /* Must match {WhiteSpace} regex */
   private final static String WHITE_SPACE = "[ \\t\\f]+";
 
+  private int nestedComment;
+
+  @Override
+  public void reset() {
+      super.reset();
+      nestedComment = 0;
+  }
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
   @Override
   protected void setLineNumber(int x) { yyline = x; }
+
+  private void pushQuotedString(int state, String capture) throws IOException {
+      int qoff = capture.indexOf("\"");
+      String id = capture.substring(0, qoff);
+      String quotes = capture.substring(qoff);
+      out.write(id);
+      pushSpan(state, HtmlConsts.STRING_CLASS);
+      out.write(htmlize(quotes));
+  }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-
-File = [a-zA-Z]{FNameChar}* "." ("scala"|"properties"|"props"|"xml"|"conf"|"txt"|"htm"|"html"|"ini"|"jnlp"|"jad"|"diff"|"patch")
-
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
+File = [a-zA-Z]{FNameChar}* "." ([Ss][Cc][Aa][Ll][Aa] |
+    [Pp][Rr][Oo][Pp][Ee][Rr][Tt][Ii][Ee][Ss] | [Pp][Rr][Oo][Pp][Ss] |
+    [Xx][Mm][Ll] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] | [Hh][Tt][Mm][Ll]? |
+    [Ii][Nn][Ii] | [Jj][Nn][Ll][Pp] | [Jj][Aa][Dd] | [Dd][Ii][Ff][Ff] |
+    [Pp][Aa][Tt][Cc][Hh])
 
 JavadocWithClassArg = "@throws" | "@exception"
 JavadocWithParamNameArg = "@param"
@@ -64,11 +80,22 @@ JavadocWithParamNameArg = "@param"
 ClassName = ({Identifier} ".")* {Identifier}
 ParamName = {Identifier} | "<" {Identifier} ">"
 
-%state  STRING COMMENT SCOMMENT QSTRING JAVADOC
+/*
+ * STRING : string literal
+ * ISTRING : string literal with interpolation
+ * MSTRING : multi-line string literal
+ * IMSTRING : multi-line string literal with interpolation
+ * QSTRING : character literal
+ * SCOMMENT : single-line comment
+ * COMMENT : multi-line comment
+ * JAVADOC : multi-line comment with JavaDoc conventions
+ */
+%state STRING ISTRING MSTRING IMSTRING QSTRING SCOMMENT COMMENT JAVADOC
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Scala.lexh
 %%
 <YYINITIAL>{
 
@@ -76,6 +103,24 @@ ParamName = {Identifier} | "<" {Identifier} ">"
     String id = yytext();
     writeSymbol(id, Consts.kwd, yyline);
 }
+
+ {BacktickIdentifier} {
+    String capture = yytext();
+    String id = capture.substring(1, capture.length() - 1);
+    out.write("`");
+    writeSymbol(id, null, yyline);
+    out.write("`");
+ }
+
+ {OpSuffixIdentifier}    {
+    String capture = yytext();
+    int uoff = capture.lastIndexOf("_");
+    // ctags include the "_" in the symbol, so follow that too.
+    String id = capture.substring(0, uoff + 1);
+    String rest = capture.substring(uoff + 1);
+    writeSymbol(id, Consts.kwd, yyline);
+    out.write(htmlize(rest));
+ }
 
 "<" ({File}|{FPath}) ">" {
         out.write("&lt;");
@@ -93,31 +138,108 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 /*{Hier}
         { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
 */
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+ {Number}        {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- "/**" / [^/] { yybegin(JAVADOC);out.write("<span class=\"c\">/**");}
- "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
- "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
+ ([fs] | "raw") \"    {
+    pushQuotedString(ISTRING, yytext());
+ }
+ {Identifier}? \"    {
+    pushQuotedString(STRING, yytext());
+ }
+ \'     {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ ([fs] | "raw") \"\"\"    {
+    pushQuotedString(IMSTRING, yytext());
+ }
+ {Identifier}? \"\"\"    {
+    pushQuotedString(MSTRING, yytext());
+ }
+ "/*" "*"+ "/"    {
+    disjointSpan(HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
+ "/*" "*"+    {
+    if (nestedComment++ == 0) {
+        pushSpan(JAVADOC, HtmlConsts.COMMENT_CLASS);
+    }
+    out.write(yytext());
+ }
+ "//"   {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
 }
 
-<STRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+<STRING, ISTRING> {
+ \\[\"\\]    { out.write(htmlize(yytext())); }
+ \"     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+}
+
+<ISTRING, IMSTRING> {
+    /*
+     * TODO : support "arbitrary expressions" inside curly brackets
+     */
+    \$ {Identifier}    {
+        String capture = yytext();
+        String sigil = capture.substring(0, 1);
+        String id = capture.substring(1);
+        out.write(sigil);
+        disjointSpan(null);
+        writeSymbol(id, Consts.kwd, yyline);
+        disjointSpan(HtmlConsts.STRING_CLASS);
+    }
 }
 
 <QSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { yybegin(YYINITIAL); out.write("'</span>"); }
+ \\[\'\\]    { out.write(htmlize(yytext())); }
+ \'     {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+}
+
+<MSTRING, IMSTRING> {
+ /*
+  * For multi-line string, "Unicode escapes work as everywhere else, but none
+  * of the escape sequences [in 'Escape Sequences'] are interpreted."
+  */
+ \"\"\"    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+}
+
+<YYINITIAL, COMMENT, JAVADOC> {
+    "/*"    {
+        if (nestedComment++ == 0) {
+            pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+        }
+        out.write(yytext());
+    }
 }
 
 <COMMENT, JAVADOC> {
-"*/"    { yybegin(YYINITIAL); out.write("*/</span>"); }
+ "*/"    {
+    out.write(yytext());
+    if (--nestedComment == 0) {
+        yypop();
+    }
+ }
+ {WhspChar}*{EOL}    {
+    disjointSpan(null);
+    startNewLine();
+    disjointSpan(HtmlConsts.COMMENT_CLASS);
+ }
 }
 
 <JAVADOC> {
@@ -137,23 +259,27 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
 <SCOMMENT> {
   {WhspChar}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
+    yypop();
     startNewLine();
   }
 }
 
+<YYINITIAL> {
+ {OpIdentifier}    {
+    out.write(htmlize(yytext()));
+ }
+}
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+<YYINITIAL, STRING, ISTRING, MSTRING, IMSTRING, COMMENT, SCOMMENT, QSTRING,
+    JAVADOC> {
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING, JAVADOC> {
+<STRING, MSTRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
 {FPath}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
@@ -167,12 +293,26 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         out.write(path);
         out.write("</a>");}
 
-{BrowseableURI}    {
-          appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
+}
+
+<STRING, MSTRING, QSTRING, SCOMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
+    }
+}
+
+<ISTRING, IMSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, ScalaUtils.DOLLAR_SIGN);
+    }
+}
+
+<COMMENT, JAVADOC> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+    }
 }
