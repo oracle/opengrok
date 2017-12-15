@@ -228,11 +228,17 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 }
 
 <STRING> {
- [`]\"    { out.write(htmlize(yytext())); }
- \"    {
+ [`][\"\$`] |
+ \"\"    { out.write(htmlize(yytext())); }
+
+ \$? \"    {
     out.write(htmlize(yytext()));
     yypop();
  }
+}
+
+<STRING, HERESTRING> {
+ "$("    { pushSpan(SUBSHELL, null); out.write(yytext()); }
 }
 
 <QSTRING> {
@@ -291,13 +297,12 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <YYINITIAL, SUBSHELL> {
   /* Don't enter new state if special character is escaped. */
-  \\` | \\\( | \\\) | \\\\ | \\\{ |
-  \\\" | \\' | \\\$ | \\\#    { out.write(htmlize(yytext())); }
+  [`][`\(\)\{\}\"\'\$\#\\]    { out.write(htmlize(yytext())); }
 
   /* $# should not start a comment. */
-  "$#" { out.write(yytext()); }
+  "$#"    { out.write(yytext()); }
 
-  \$ ? \( { pushSpan(SUBSHELL, null); out.write(yytext()); }
+  \$ ? \(    { pushSpan(SUBSHELL, null); out.write(yytext()); }
 }
 
 <YYINITIAL, SUBSHELL, STRING, SCOMMENT, QSTRING> {

@@ -203,6 +203,7 @@ Write-LogFunctionEntry	# 210:    Write-LogFunctionEntry
 Message
 Message
 machine
+name
 Message
 role
 machine
@@ -276,12 +277,18 @@ Administrator
 Password
 Message
 machine
+name
 Message
 machine
+DomainName
 Message
+username
 Message
+Password
 Message
+ForestAdminUserName
 Message
+ForestAdminPassword
 Add
 machine
 Name
@@ -394,6 +401,7 @@ cnotin
 knownParameters
 Message
 keySet
+Key
 unkownParFound
 unkownParFound	# 319:    if ($unkownParFound)
 Message
@@ -406,6 +414,7 @@ Message
 Message		# 334:    Write-Debug -Message
 Message
 machine
+name
 Message
 machine
 Roles
@@ -428,7 +437,10 @@ Property
 Key
 Message
 key
+Key
+PadRight
 key
+Value
 message
 Message
 role
@@ -437,12 +449,14 @@ ContainsKey
 CACommonName
 Length
 Message
+CACommonName
 role
 Properties
 ContainsKey
 CACommonName
 Length
 Message
+CACommonName
 role		# 369:    if ($role.Name -eq 'CaRoot')
 Name
 CAType
@@ -464,20 +478,25 @@ CryptoProviderName
 combination
 CryptoProviderName
 Message
+CryptoProviderName
 availableCombinations
-n
+CryptoProviderName
 HashAlgorithmName
 combination
 HashAlgorithmName
 Message
+HashAlgorithmName
+CryptoProviderName
 combination
-n
+HashAlgorithmName
 KeyLength
 combination
 KeyLength
 Message
+KeyLength
+CryptoProviderName
 combination
-n
+KeyLength
 role
 Properties
 ContainsKey
@@ -543,3 +562,4 @@ CRLOverlapUnitsHours
 CRLOverlapUnits
 CRLOverlapUnitsHours
 CRLOverlapUnits
+ls

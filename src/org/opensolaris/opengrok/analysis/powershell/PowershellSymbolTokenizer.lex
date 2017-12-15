@@ -158,8 +158,14 @@ super(in);
 }
 
 <STRING> {
- [`]\"    {}
- \"     { yypop(); }
+ [`][\"\$`] |
+ \"\"    {}
+
+ \$? \"     { yypop(); }
+}
+
+<STRING, HERESTRING> {
+ "$("    { yypush(SUBSHELL); }
 }
 
 <QSTRING> {
@@ -204,13 +210,12 @@ super(in);
 
 <YYINITIAL, SUBSHELL> {
   /* Don't enter new state if special character is escaped. */
-  \\` | \\\( | \\\) | \\\\ | \\\{ |
-  \\\" | \\' | \\\$ | \\\#    {}
+  [`][`\(\)\{\}\"\'\$\#\\]    {}
 
   /* $# should not start a comment. */
-  "$#" {}
+  "$#"    {}
 
-  \$ ? \( { yypush(SUBSHELL); }
+  \$ ? \(    { yypush(SUBSHELL); }
 }
 
 <YYINITIAL, DATATYPE, SUBSHELL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING,
