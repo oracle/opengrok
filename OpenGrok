@@ -110,6 +110,8 @@
 #                                 increase it to 256MB, but do increase JVM to
 #                                 4/8/16GB ! Lucene defaults to 8 threads.
 #                                 Increase JVM memory as noted using JAVA_OPTS
+#   - OPENGROK_PARALLELISM        Default is 0, meaning that parallelism is
+#                                   determined from available processors.
 #   - OPENGROK_LOGGER_CONFIG_PATH Set path to custom logging.properties file.
 #   - OPENGROK_SUBVERSION_USERNAME name of the user that should be used for
 #                                 fetching the history from subversion
@@ -862,6 +864,7 @@ CommonInvocation()
         ${OPENGROK_MANDOC:+--mandoc} ${OPENGROK_MANDOC}			\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
+        ${OPENGROK_PARALLELISM:+--threads} ${OPENGROK_PARALLELISM}	\
         ${READ_XML_CONF}                                        	\
         ${WEBAPP_CONFIG}						\
         ${WEBAPP_CONTEXT}						\

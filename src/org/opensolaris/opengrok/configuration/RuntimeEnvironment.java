@@ -1059,6 +1059,17 @@ public final class RuntimeEnvironment {
         threadConfig.get().setIndexVersionedFilesOnly(indexVersionedFilesOnly);
     }
 
+    /**
+     * Gets the value of {@link Configuration#getIndexingParallelism()} -- or
+     * if zero, then as a default gets the number of available processors.
+     * @return a natural number &gt;= 1
+     */
+    public int getIndexingParallelism() {
+        int parallelism = threadConfig.get().getIndexingParallelism();
+        return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
+            parallelism;
+    }
+
     public boolean isTagsEnabled() {
         return threadConfig.get().isTagsEnabled();
     }

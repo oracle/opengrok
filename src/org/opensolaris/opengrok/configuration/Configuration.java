@@ -182,6 +182,7 @@ public final class Configuration {
     private String luceneLocking = LuceneLockName.OFF;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
+    private int indexingParallelism;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
@@ -969,6 +970,14 @@ public final class Configuration {
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         this.indexVersionedFilesOnly = indexVersionedFilesOnly;
+    }
+
+    public int getIndexingParallelism() {
+        return indexingParallelism;
+    }
+
+    public void setIndexingParallelism(int value) {
+        this.indexingParallelism = value > 0 ? value : 0;
     }
 
     public boolean isTagsEnabled() {

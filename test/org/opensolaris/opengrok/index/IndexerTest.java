@@ -72,19 +72,27 @@ public class IndexerTest {
 
     TestRepository repository;
     private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
+    private static IndexerParallelizer parallelizer;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         assertTrue("No point in running indexer tests without valid ctags",
-                RuntimeEnvironment.getInstance().validateExuberantCtags());
-        RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
+            env.validateExuberantCtags());
+        RepositoryFactory.initializeIgnoredNames(env);
+
+        parallelizer = new IndexerParallelizer(env);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
+        if (parallelizer != null) {
+            parallelizer.close();
+            parallelizer = null;
+        }
     }
 
     @Before
@@ -114,7 +122,7 @@ public class IndexerTest {
             env.setHistoryEnabled(false);
             Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
                     false, false, null, null, new ArrayList<>(), false);
-            Indexer.getInstance().doIndexerExecution(true, 1, null, null);
+            Indexer.getInstance().doIndexerExecution(true, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }
@@ -262,14 +270,14 @@ public class IndexerTest {
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals(2, listener.files.size());
             repository.purgeData();
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(true);
             idb = new IndexDatabase(project);
             listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals(1, listener.files.size());
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
         } else {
@@ -350,7 +358,7 @@ public class IndexerTest {
         assertNotNull(idb);
         RemoveIndexChangeListener listener = new RemoveIndexChangeListener();
         idb.addIndexChangedListener(listener);
-        idb.update();
+        idb.update(parallelizer);
         Assert.assertEquals(5, listener.filesToAdd.size());
         listener.reset();
 
@@ -366,7 +374,7 @@ public class IndexerTest {
         fw.close();
 
         // reindex
-        idb.update();
+        idb.update(parallelizer);
         // Make sure that the file was actually processed.
         assertEquals(1, listener.removedFiles.size());
         assertEquals(1, listener.filesToAdd.size());
@@ -408,7 +416,7 @@ public class IndexerTest {
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals(1, listener.files.size());
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -433,14 +441,14 @@ public class IndexerTest {
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals(1, listener.files.size());
             listener.reset();
             repository.addDummyFile(ppath);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals("No new file added", 1, listener.files.size());
             repository.removeDummyFile(ppath);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals("Didn't remove the dummy file", 0, listener.files.size());
             assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
         } else {
@@ -481,7 +489,7 @@ public class IndexerTest {
                 MyIndexChangeListener listener = new MyIndexChangeListener();
                 idb.addIndexChangedListener(listener);
                 System.out.println("Trying to index a special file - FIFO in this case.");
-                idb.update();
+                idb.update(parallelizer);
                 assertEquals(0, listener.files.size());
             } else {
                 System.out.println("Skipping test. Could not find a ctags I could use in path.");

@@ -86,7 +86,6 @@ public final class Indexer {
     private static boolean searchRepositories = false;
     private static boolean noindex = false;
 
-    private static int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
     private static String configFilename = null;
     private static int status = 0;
 
@@ -259,8 +258,7 @@ public final class Indexer {
             // And now index it all.
             if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
                 IndexChangedListener progress = new DefaultIndexChangedListener();
-                getInstance().doIndexerExecution(update, noThreads, subFiles,
-                        progress);
+                getInstance().doIndexerExecution(update, subFiles, progress);
             }
 
             writeConfigToFile(env, configFilename);
@@ -651,9 +649,9 @@ public final class Indexer {
 
             parser.on("-T", "--threads", "=number", Integer.class,
                 "The number of threads to use for index generation.",
-                "By default the number of threads will be set to the",
-                "number of available CPUs.").Do( threadCount -> {
-                noThreads = (Integer)threadCount;
+                "By default the number of threads will be set to the number",
+                "of available CPUs.").Do( threadCount -> {
+                cfg.setIndexingParallelism((Integer)threadCount);
             });
 
             parser.on("-t", "--tabSize", "=number", Integer.class,
@@ -975,24 +973,23 @@ public final class Indexer {
      * if any).
      * 
      * @param update if addOption to true, index database is updated, otherwise optimized
-     * @param noThreads number of threads in the pool that participate in the indexing
      * @param subFiles index just some subdirectories
      * @param progress object to receive notifications as indexer progress is made
      */
-    public void doIndexerExecution(final boolean update, int noThreads, List<String> subFiles,
-            IndexChangedListener progress)
+    public void doIndexerExecution(final boolean update, List<String> subFiles,
+        IndexChangedListener progress)
             throws IOException {
         Statistics elapsed = new Statistics();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
         LOGGER.info("Starting indexing");
 
-        ExecutorService executor = Executors.newFixedThreadPool(noThreads);
+        IndexerParallelizer parallelizer = new IndexerParallelizer(env);
 
         if (subFiles == null || subFiles.isEmpty()) {
             if (update) {
-                IndexDatabase.updateAll(executor, progress);
+                IndexDatabase.updateAll(parallelizer, progress);
             } else if (env.isOptimizeDatabase()) {
-                IndexDatabase.optimizeAll(executor);
+                IndexDatabase.optimizeAll(parallelizer);
             }
         } else {
             List<IndexDatabase> dbs = new ArrayList<>();
@@ -1026,12 +1023,12 @@ public final class Indexer {
             for (final IndexDatabase db : dbs) {
                 final boolean optimize = env.isOptimizeDatabase();
                 db.addIndexChangedListener(progress);
-                executor.submit(new Runnable() {
+                parallelizer.getFixedExecutor().submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             if (update) {
-                                db.update();
+                                db.update(parallelizer);
                             } else if (optimize) {
                                 db.optimize();
                             }
@@ -1045,11 +1042,12 @@ public final class Indexer {
             }
         }
 
-        executor.shutdown();
-        while (!executor.isTerminated()) {
+        parallelizer.getFixedExecutor().shutdown();
+        while (!parallelizer.getFixedExecutor().isTerminated()) {
             try {
                 // Wait forever
-                executor.awaitTermination(999, TimeUnit.DAYS);
+                parallelizer.getFixedExecutor().awaitTermination(999,
+                    TimeUnit.DAYS);
             } catch (InterruptedException exp) {
                 LOGGER.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
@@ -1062,6 +1060,11 @@ public final class Indexer {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE,
                     "destroying of renamed thread pool failed", ex);
+        }
+        try {
+            parallelizer.close();
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "parallelizer.close() failed", ex);
         }
         elapsed.report(LOGGER, "Done indexing data of all repositories");
     }

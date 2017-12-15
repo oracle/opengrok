@@ -47,7 +47,7 @@ import org.opensolaris.opengrok.util.TestRepository;
 public class IndexDatabaseTest {
 
     private static TestRepository repository;
-
+    private static IndexerParallelizer parallelizer;
     private final static String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
     public IndexDatabaseTest() {
@@ -69,6 +69,8 @@ public class IndexDatabaseTest {
         env.setProjectsEnabled(true);
         RepositoryFactory.initializeIgnoredNames(env);
 
+        parallelizer = new IndexerParallelizer(env);
+
         // Note that all tests in this class share the index created below.
         // Ergo, if they need to modify it, this has to be done in such a way
         // so that it does not affect other tests, no matter in which order
@@ -77,12 +79,17 @@ public class IndexDatabaseTest {
         indexer.prepareIndexer(
                 env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
                 false, false, null, null, new ArrayList<String>(), false);
-        indexer.doIndexerExecution(true, 1, null, null);
+        indexer.doIndexerExecution(true, null, null);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
         repository.destroy();
+
+        if (parallelizer != null) {
+            parallelizer.close();
+            parallelizer = null;
+        }
     }
 
     @Test
@@ -164,7 +171,7 @@ public class IndexDatabaseTest {
         File file = new File(repository.getSourceRoot(), projectName + File.separator + fileName);
         file.delete();
         Assert.assertFalse("file " + fileName + " not removed", file.exists());
-        idb.update();
+        idb.update(parallelizer);
 
         // Check that the data for the file has been removed.
         checkDataExistence(projectName + File.separator + fileName, false);

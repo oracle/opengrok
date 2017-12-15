@@ -58,6 +58,14 @@ public class Ctags {
 
     private boolean junit_testing = false;
 
+    public boolean isClosed() {
+        return ctags != null && !ctags.isAlive();
+    }
+
+    public String getBinary() {
+        return binary;
+    }
+
     public void setBinary(String binary) {
         this.binary = binary;
     }

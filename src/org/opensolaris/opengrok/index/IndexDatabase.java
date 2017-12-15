@@ -38,10 +38,14 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -83,6 +87,7 @@ import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.util.ObjectPool;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -103,6 +108,9 @@ public class IndexDatabase {
      */
     private static final int MAX_BUFFERED_DELETE_TERMS = 200;
 
+    private static final Comparator<File> FILENAME_COMPARATOR =
+        (File p1, File p2) -> p1.getName().compareTo(p2.getName());
+
     private Project project;
     private FSDirectory indexDirectory;    
     private IndexWriter writer;
@@ -113,22 +121,16 @@ public class IndexDatabase {
     private AnalyzerGuru analyzerGuru;
     private File xrefDir;
     private boolean interrupted;
-    private List<IndexChangedListener> listeners;
+    private CopyOnWriteArrayList<IndexChangedListener> listeners;
     private File dirtyFile;
     private final Object lock = new Object();
     private boolean dirty;
     private boolean running;
     private List<String> directories;
-    private static final Comparator<File> fileComparator = new Comparator<File>() {
-        @Override
-        public int compare(File p1, File p2) {
-            return p1.getName().compareTo(p2.getName());
-        }
-    };
-    private Ctags ctags;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
-    
+    private IndexerParallelizer parallelizer;
+
     // Directory where we store indexes
     public static final String INDEX_DIR = "index";
     public static final String XREF_DIR = "xref";
@@ -160,21 +162,23 @@ public class IndexDatabase {
      * Update the index database for all of the projects. Print progress to
      * standard out.
      *
-     * @param executor An executor to run the job
+     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    public static void updateAll(ExecutorService executor) throws IOException {
-        updateAll(executor, null);
+    public static void updateAll(IndexerParallelizer parallelizer)
+            throws IOException {
+        updateAll(parallelizer, null);
     }
 
     /**
      * Update the index database for all of the projects
      *
-     * @param executor An executor to run the job
+     * @param parallelizer a defined instance
      * @param listener where to signal the changes to the database
      * @throws IOException if an error occurs
      */
-    static void updateAll(ExecutorService executor, IndexChangedListener listener) throws IOException {
+    static void updateAll(IndexerParallelizer parallelizer,
+        IndexChangedListener listener) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -192,11 +196,11 @@ public class IndexDatabase {
                 db.addIndexChangedListener(listener);
             }
 
-            executor.submit(new Runnable() {
+            parallelizer.getFixedExecutor().submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        db.update();
+                        db.update(parallelizer);
                     } catch (Throwable e) {
                         LOGGER.log(Level.SEVERE, "Problem updating lucene index database: ", e);
                     }
@@ -208,12 +212,13 @@ public class IndexDatabase {
     /**
      * Update the index database for a number of sub-directories
      *
-     * @param executor An executor to run the job
+     * @param parallelizer a defined instance
      * @param listener where to signal the changes to the database
      * @param paths list of paths to be indexed
      * @throws IOException if an error occurs
      */
-    public static void update(ExecutorService executor, IndexChangedListener listener, List<String> paths) throws IOException {
+    public static void update(IndexerParallelizer parallelizer,
+        IndexChangedListener listener, List<String> paths) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -251,11 +256,11 @@ public class IndexDatabase {
 
             for (final IndexDatabase db : dbs) {
                 db.addIndexChangedListener(listener);
-                executor.submit(new Runnable() {
+                parallelizer.getFixedExecutor().submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            db.update();
+                            db.update(parallelizer);
                         } catch (Throwable e) {
                             LOGGER.log(Level.SEVERE, "An error occured while updating index", e);
                         }
@@ -289,7 +294,7 @@ public class IndexDatabase {
             if (env.isGenerateHtml()) {
                 xrefDir = new File(env.getDataRootFile(), XREF_DIR);
             }
-            listeners = new ArrayList<>();
+            listeners = new CopyOnWriteArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
             dirty = dirtyFile.exists();
             directories = new ArrayList<>();
@@ -323,11 +328,14 @@ public class IndexDatabase {
     private int getFileCount(File sourceRoot, String dir) throws IOException {
         int file_cnt = 0;
         if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+            IndexDownArgs args = new IndexDownArgs();
+            args.count_only = true;
+
             LOGGER.log(Level.INFO, "Counting files in {0} ...", dir);
-            file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
+            indexDown(sourceRoot, dir, args);
             LOGGER.log(Level.INFO,
                     "Need to process: {0} files for {1}",
-                    new Object[]{file_cnt, dir});
+                    new Object[]{args.cur_count, dir});
         }
 
         return file_cnt;
@@ -356,9 +364,11 @@ public class IndexDatabase {
     /**
      * Update the content of this index database
      *
+     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    public void update() throws IOException {
+    public void update(IndexerParallelizer parallelizer)
+            throws IOException {
         synchronized (lock) {
             if (running) {
                 throw new IOException("Indexer already running!");
@@ -367,22 +377,8 @@ public class IndexDatabase {
             interrupted = false;
         }
 
+        this.parallelizer = parallelizer;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String ctgs = env.getCtags();
-        if (ctgs != null) {
-            ctags = new Ctags();
-            ctags.setBinary(ctgs);
-        }
-        if (ctags == null) {
-            LOGGER.severe("Unable to run ctags! searching definitions will not work!");
-        }
-
-        if (ctags != null) {
-            String filename = env.getCTagsExtraOptionsFile();
-            if (filename != null) {
-                ctags.setCTagsExtraOptionsFile(filename);
-            }
-        }
 
         IOException finishingException = null;
         try {
@@ -434,7 +430,7 @@ public class IndexDatabase {
                 }
                 
                 try {
-                    if (numDocs > 0) {
+                    if (terms != null) {
                         uidIter = terms.iterator();
                         TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
                         if (stat == TermsEnum.SeekStatus.END) {
@@ -446,8 +442,15 @@ public class IndexDatabase {
                     }
 
                     // The actual indexing happens in indexDown().
-                    indexDown(sourceRoot, dir, false, 0,
-                            getFileCount(sourceRoot, dir));
+
+                    IndexDownArgs args = new IndexDownArgs();
+                    args.est_total = getFileCount(sourceRoot, dir);
+
+                    args.cur_count = 0;
+                    indexDown(sourceRoot, dir, args);
+
+                    args.cur_count = 0;
+                    indexParallel(args);
 
                     // Remove data for the trailing terms that indexDown()
                     // did not traverse. These correspond to files that have been
@@ -478,9 +481,6 @@ public class IndexDatabase {
                 "Failed with unexpected RuntimeException", ex);
             throw ex;
         } finally {
-            Ctags finishingCtags = ctags;
-            ctags = null;
-
             completer = null;
             try {
                 if (writer != null) writer.close();
@@ -492,15 +492,6 @@ public class IndexDatabase {
                 writer = null;
                 synchronized (lock) {
                     running = false;
-                }
-            }
-
-            if (finishingCtags != null) {
-                try {
-                    finishingCtags.close();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING,
-                        "An error occured while closing ctags process", e);
                 }
             }
         }
@@ -518,10 +509,11 @@ public class IndexDatabase {
     /**
      * Optimize all index databases
      *
-     * @param executor An executor to run the job
+     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    static void optimizeAll(ExecutorService executor) throws IOException {
+    static void optimizeAll(IndexerParallelizer parallelizer)
+            throws IOException {
         List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
@@ -535,11 +527,11 @@ public class IndexDatabase {
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (db.isDirty()) {
-                executor.submit(new Runnable() {
+                parallelizer.getFixedExecutor().submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            db.update();
+                            db.update(parallelizer);
                         } catch (Throwable e) {
                             LOGGER.log(Level.SEVERE,
                                 "Problem updating lucene index database: ", e);
@@ -645,8 +637,8 @@ public class IndexDatabase {
     }
 
     /**
-     * Remove a stale file (uidIter.term().text()) from the index database,
-     * history cache and xref.
+     * Remove a stale file (uidIter.term().text()) from the index database and
+     * history cache, and queue the removal of xref.
      *
      * @param removeHistory if false, do not remove history cache for this file
      * @throws java.io.IOException if an error occurs
@@ -676,9 +668,11 @@ public class IndexDatabase {
      *
      * @param file The file to add
      * @param path The path to the file (from source root)
+     * @param ctags a defined instance to use (only if its binary is not null)
      * @throws java.io.IOException if an error occurs
      */
-    private void addFile(File file, String path) throws IOException {
+    private void addFile(File file, String path, Ctags ctags)
+            throws IOException {
         FileAnalyzer fa;
         try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
             fa = AnalyzerGuru.getAnalyzer(in, path);
@@ -687,7 +681,7 @@ public class IndexDatabase {
         for (IndexChangedListener listener : listeners) {
             listener.fileAdd(path, fa.getClass().getSimpleName());
         }
-        fa.setCtags(ctags);
+        if (ctags.getBinary() != null) fa.setCtags(ctags);
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
         fa.setFoldingEnabled(RuntimeEnvironment.getInstance().isFoldingEnabled());
@@ -700,10 +694,14 @@ public class IndexDatabase {
                     "Skipped file ''{0}'' because the analyzer didn''t "
                     + "understand it.",
                     path);
-            LOGGER.log(Level.FINE,
-                    "Exception from analyzer " + fa.getClass().getName(), e);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Exception from analyzer " +
+                    fa.getClass().getName(), e);
+            }
             cleanupResources(doc);
             return;
+        } finally {
+            fa.setCtags(null);
         }
 
         try {
@@ -727,7 +725,7 @@ public class IndexDatabase {
      *
      * @param doc the document whose resources to clean up
      */
-    private void cleanupResources(Document doc) {
+    private static void cleanupResources(Document doc) {
         for (IndexableField f : doc) {
             // If the field takes input from a reader, close the reader.
             IOUtils.close(f.readerValue());
@@ -894,49 +892,44 @@ public class IndexDatabase {
     }
 
     /**
-     * Generate indexes recursively
-     *
+     * Executes the first, serial stage of indexing, recursively.
+     * <p>Files at least are counted, and if {@code count_only} is false then
+     * any deleted or updated files (based on comparison to the Lucene index)
+     * are passed to {@link #removeFile(boolean)}. New or updated files are
+     * noted for indexing.
      * @param dir the root indexDirectory to generate indexes for
      * @param parent path to parent directory
-     * @param count_only if true will just traverse the source root and count
-     * files
-     * @param cur_count current file count during the traversal of the tree
-     * @param est_total estimate total files to process
-     * @return current file count
+     * @param args arguments to control execution and for collecting a list of
+     * files for indexing
      */
-    private int indexDown(File dir, String parent, boolean count_only,
-        int cur_count, int est_total) throws IOException {
+    private void indexDown(File dir, String parent, IndexDownArgs args)
+            throws IOException {
 
-        int lcur_count = cur_count;
         if (isInterrupted()) {
-            return lcur_count;
+            return;
         }
 
         if (!accept(dir)) {
-            return lcur_count;
+            return;
         }
 
         File[] files = dir.listFiles();
         if (files == null) {
             LOGGER.log(Level.SEVERE, "Failed to get file listing for: {0}",
-                dir.getAbsolutePath());
-            return lcur_count;
+                dir.getPath());
+            return;
         }
-        Arrays.sort(files, fileComparator);
+        Arrays.sort(files, FILENAME_COMPARATOR);
 
         for (File file : files) {
             if (accept(dir, file)) {
                 String path = parent + '/' + file.getName();
 
                 if (file.isDirectory()) {
-                    lcur_count = indexDown(file, path, count_only, lcur_count, est_total);
+                    indexDown(file, path, args);
                 } else {
-                    lcur_count++;
-                    if (count_only) {
-                        continue;
-                    }
-
-                    printProgress(lcur_count, est_total);
+                    args.cur_count++;
+                    if (args.count_only) continue;
 
                     if (uidIter != null) {
                         String uid = Util.path2uid(path,
@@ -975,18 +968,74 @@ public class IndexDatabase {
                             continue;
                         }
                     }
-                    try {
-                        addFile(file, path);
-                    } catch (Exception e) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to add file " + file.getAbsolutePath(),
-                                e);
-                    }
+
+                    args.works.add(new IndexFileWork(file, path));
                 }
             }
         }
+    }
 
-        return lcur_count;
+    /**
+     * Executes the second, parallel stage of indexing.
+     * @param args contains a list of files to index, found during the earlier
+     * stage
+     */
+    private void indexParallel(IndexDownArgs args) throws IOException {
+
+        int worksCount = args.works.size();
+        if (worksCount < 1) return;
+
+        AtomicInteger successCounter = new AtomicInteger();
+        AtomicInteger currentCounter = new AtomicInteger();
+        ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
+
+        Map<Boolean, List<IndexFileWork>> bySuccess = null;
+        try {
+            bySuccess = parallelizer.getForkJoinPool().submit(() ->
+                args.works.parallelStream().collect(
+                Collectors.groupingByConcurrent((x) -> {
+                    Ctags pctags = null;
+                    try {
+                        pctags = ctagsPool.get();
+                        addFile(x.file, x.path, pctags);
+                        successCounter.incrementAndGet();
+                        return true;
+                    } catch (RuntimeException|IOException e) {
+                        x.exception = e;
+                        return false;
+                    } finally {
+                        if (pctags != null) {
+                            ctagsPool.release(pctags);
+                        }
+                        int ncount = currentCounter.incrementAndGet();
+                        printProgress(ncount, worksCount);
+                    }
+                }))).get();
+        } catch (InterruptedException|ExecutionException e) {
+            int successCount = successCounter.intValue();
+            double successPct = 100.0 * successCount / worksCount;
+            String exmsg = String.format(
+                "%d successes (%.1f%%) after aborting parallel-indexing",
+                successCount, successPct);
+            LOGGER.log(Level.SEVERE, exmsg, e);
+        }
+
+        args.cur_count = currentCounter.intValue();
+
+        // Start with failureCount=worksCount, and then subtract successes.
+        int failureCount = worksCount;
+        if (bySuccess != null) {
+            List<IndexFileWork> successes = bySuccess.getOrDefault(
+                Boolean.TRUE, null);
+            if (successes != null) failureCount -= successes.size();
+        }
+        if (failureCount > 0) {
+            double pctFailed = 100.0 * failureCount / worksCount;
+            String exmsg = String.format(
+                "%d failures (%.1f%%) while parallel-indexing",
+                failureCount, pctFailed);
+            LOGGER.log(Level.WARNING, exmsg);
+        }
     }
 
     /**
@@ -1319,13 +1368,14 @@ public class IndexDatabase {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             boolean compressed = env.isCompressXref();
             File xrefFile = new File(xrefDir, path + (compressed ? ".gz" : ""));
+            File parentFile = xrefFile.getParentFile();
 
             // If mkdirs() returns false, the failure is most likely
             // because the file already exists. But to check for the
             // file first and only add it if it doesn't exists would
             // only increase the file IO...
-            if (!xrefFile.getParentFile().mkdirs()) {
-                assert xrefFile.getParentFile().exists();
+            if (!parentFile.mkdirs()) {
+                assert parentFile.exists();
             }
 
             // Write to a pending file for later renaming.
@@ -1381,6 +1431,24 @@ public class IndexDatabase {
             LOGGER.log(Level.WARNING,
                 "An error occured while finishing writer and completer", e);
             throw e;
+        }
+    }
+
+    private class IndexDownArgs {
+        boolean count_only;
+        int cur_count;
+        int est_total;
+        final List<IndexFileWork> works = new ArrayList<>();
+    }
+
+    private class IndexFileWork {
+        final File file;
+        final String path;
+        Exception exception;
+
+        public IndexFileWork(File file, String path) {
+            this.file = file;
+            this.path = path;
         }
     }
 }

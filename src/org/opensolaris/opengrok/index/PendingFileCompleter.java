@@ -45,8 +45,24 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 /**
  * Represents a tracker of pending file deletions and renamings that can later
  * be executed.
+ * <p>
+ * {@link PendingFileCompleter} is not generally thread-safe, as only
+ * {@link #add(org.opensolaris.opengrok.index.PendingFileRenaming)} is expected
+ * to be run in parallel; that method is thread-safe -- but only among other
+ * callers of the same method.
+ * <p>
+ * No methods are thread-safe between each other. E.g.,
+ * {@link #complete()} should only be called by a single thread after all
+ * additions of {@link PendingFileDeletion}s and {@link PendingFileRenaming}s
+ * are indicated.
+ * <p>
+ * {@link #add(org.opensolaris.opengrok.index.PendingFileDeletion)} should only
+ * be called in serial from a single thread in an isolated stage.
+ * <p>
+ * {@link #add(org.opensolaris.opengrok.index.PendingFileRenaming)}, as noted,
+ * can be called in parallel in an isolated stage.
  */
-public class PendingFileCompleter {
+class PendingFileCompleter {
 
     /**
      * An extension that should be used as the suffix of files for
@@ -57,6 +73,8 @@ public class PendingFileCompleter {
 
     private static final Logger LOGGER =
         LoggerFactory.getLogger(PendingFileCompleter.class);
+
+    private final Object INSTANCE_LOCK = new Object();
 
     /**
      * Descending path segment length comparator
@@ -93,27 +111,20 @@ public class PendingFileCompleter {
     }
 
     /**
-     * Removes the specified element from this instance's set if it is present.
-     * @param e element to be removed to this set
-     * @return {@code true} if this instance's set did not already contain the
-     * specified element
-     */
-    public boolean remove(PendingFileDeletion e) {
-        return deletions.remove(e);
-    }
-
-    /**
      * Adds the specified element to this instance's set if it is not already
      * present, and also remove any pending deletion for the same absolute
-     * path.
+     * path -- all in a thread-safe manner among other callers of this same
+     * method (and only this method).
      * @param e element to be added to this set
      * @return {@code true} if this instance's set did not already contain the
      * specified element
      */
     public boolean add(PendingFileRenaming e) {
-        boolean rc = renames.add(e);
-        deletions.remove(new PendingFileDeletion(e.getAbsolutePath()));
-        return rc;
+        synchronized(INSTANCE_LOCK) {
+            boolean rc = renames.add(e);
+            deletions.remove(new PendingFileDeletion(e.getAbsolutePath()));
+            return rc;
+        }
     }
 
     /**
