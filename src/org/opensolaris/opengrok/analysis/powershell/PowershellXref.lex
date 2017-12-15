@@ -94,7 +94,6 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 /*
  * States:
- * DATATYPE - bracketed .NET datatype specification
  * STRING   - double-quoted string, ex: "hello, world!"
  * QSTRING  - single-quoted string, ex: 'hello, world!'
  * COMMENT - multiple-line comment.
@@ -103,8 +102,11 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  *               example 1: (echo $header; cat file.txt)
  * HERESTRING  - here-string, example: cat @" ... "@
  * HEREQSTRING - here-string, example: cat @' ... '@
+ * DATATYPE - bracketed .NET datatype specification
+ * DOTSYNTAX - await possible dot syntax -- e.g. property or methods
  */
-%state DATATYPE STRING COMMENT SCOMMENT QSTRING SUBSHELL HERESTRING HEREQSTRING
+%state STRING COMMENT SCOMMENT QSTRING SUBSHELL HERESTRING HEREQSTRING
+%state DATATYPE DOTSYNTAX
 
 %include Common.lexh
 %include CommonURI.lexh
@@ -156,16 +158,23 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  }
 
  {DataType}    {
-    yypushback(yytext().length());
+    yypushback(yylength());
     pushSpan(DATATYPE, null);
  }
+}
 
+<YYINITIAL, SUBSHELL, DOTSYNTAX> {
  {ComplexVariable}    {
     emitComplexVariable();
+    if (yystate() != DOTSYNTAX) pushSpan(DOTSYNTAX, null);
  }
  {SimpleVariable}    {
     emitSimpleVariable();
+    if (yystate() != DOTSYNTAX) pushSpan(DOTSYNTAX, null);
  }
+}
+
+<YYINITIAL, SUBSHELL> {
  {Operator}    {
     String capture = yytext();
     if (Consts.poshkwd.contains(capture.toLowerCase())) {
@@ -213,7 +222,18 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  }
 }
 
-<YYINITIAL, SUBSHELL, DATATYPE> {
+<DOTSYNTAX> {
+ "."    {
+    out.write(yytext());
+ }
+
+ [^]    {
+    yypushback(yylength());
+    yypop();
+ }
+}
+
+<YYINITIAL, SUBSHELL, DATATYPE, DOTSYNTAX> {
  {Identifier}    {
     String id = yytext();
     writeSymbol(id, Consts.poshkwd, yyline, false);
@@ -222,7 +242,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <DATATYPE> {
  "]"    {
-    yypushback(yytext().length());
+    yypushback(yylength());
     yypop();
  }
 }

@@ -193,3 +193,5 @@ CRLOverlapUnitsHours	grok.psm1	/^            'Weeks'  { $CRLOverlapUnitsHours = 
 CRLOverlapUnitsHours	grok.psm1	/^            'Days'   { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits * 24) }$/;"	variable	line:465
 {param}	grok.psm1	/^            'Hours'  { $CRLOverlapUnitsHours = [int]([int]${param}.CRLOverlapUnits) }$/;"	variable	line:466
 CRLOverlapUnitsHours	grok.psm1	/^            'Hours'  { $CRLOverlapUnitsHours = [int]([int]${param}.CRLOverlapUnits) }$/;"	variable	line:466
+false	grok.psm1	/^Write-Debug $false.$true.$param$/;"	variable	line:475
+true	grok.psm1	/^$(Write-Debug $true)$/;"	variable	line:476

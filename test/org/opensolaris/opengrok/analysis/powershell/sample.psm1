@@ -471,4 +471,6 @@ function Install-LabCAMachine
 #endregion Install-LabCAMachine
 #...
 <#http://example.com.#>
-ls `$`{`}
+Write-Debug `$`{`}
+Write-Debug $false.$true.$param
+$(Write-Debug $true)

@@ -61,7 +61,6 @@ super(in);
 
 /*
  * States:
- * DATATYPE - bracketed .NET datatype specification
  * STRING   - double-quoted string, ex: "hello, world!"
  * QSTRING  - single-quoted string, ex: 'hello, world!'
  * COMMENT - multiple-line comment.
@@ -70,8 +69,11 @@ super(in);
  *               example 1: (echo $header; cat file.txt)
  * HERESTRING  - here-string, example: cat @" ... "@
  * HEREQSTRING - here-string, example: cat @' ... '@
+ * DATATYPE - bracketed .NET datatype specification
+ * DOTSYNTAX - await possible dot syntax -- e.g. property or methods
  */
-%state DATATYPE STRING COMMENT SCOMMENT QSTRING SUBSHELL HERESTRING HEREQSTRING
+%state STRING COMMENT SCOMMENT QSTRING SUBSHELL HERESTRING HEREQSTRING
+%state DATATYPE DOTSYNTAX
 
 %include Common.lexh
 %include Powershell.lexh
@@ -108,21 +110,27 @@ super(in);
  }
 
  {DataType}    {
-    yypushback(yytext().length());
+    yypushback(yylength());
     yypush(DATATYPE);
  }
+}
 
+<YYINITIAL, SUBSHELL, DOTSYNTAX> {
  {ComplexVariable}    {
     int startOffset = 2;	// trim away the "${" prefix
     String id = yytext().substring(startOffset, yylength() - 1);
     if (onPossiblyPublish(id, startOffset)) return yystate();
+    if (yystate() != DOTSYNTAX) yypush(DOTSYNTAX);
  }
  {SimpleVariable}    {
     int startOffset = 1;	// trim away the "$" prefix
     String id = yytext().substring(startOffset);
     if (onPossiblyPublish(id, startOffset)) return yystate();
+    if (yystate() != DOTSYNTAX) yypush(DOTSYNTAX);
  }
+}
 
+<YYINITIAL, SUBSHELL> {
  {Operator}    {
     String capture = yytext();
     int startOffset = 1;	// trim away the "-" prefix
@@ -143,7 +151,18 @@ super(in);
  \@\'   { yypush(HEREQSTRING); }
 }
 
-<YYINITIAL, SUBSHELL, DATATYPE> {
+<DOTSYNTAX> {
+ "."    {
+    // noop
+ }
+
+ [^]    {
+    yypushback(yylength());
+    yypop();
+ }
+}
+
+<YYINITIAL, SUBSHELL, DATATYPE, DOTSYNTAX> {
  {Identifier}    {
     String id = yytext();
     if (onPossiblyPublish(id, 0)) return yystate();
@@ -152,7 +171,7 @@ super(in);
 
 <DATATYPE> {
  "]"    {
-    yypushback(yytext().length());
+    yypushback(yylength());
     yypop();
  }
 }
