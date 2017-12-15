@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
