@@ -34,8 +34,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -210,8 +212,8 @@ public class IndexerTest {
 
     private class MyIndexChangeListener implements IndexChangedListener {
 
-        List<String> files = new ArrayList<>();
-        List<String> removedFiles = new ArrayList<>();
+        final Queue<String> files = new ConcurrentLinkedQueue<>();
+        final Queue<String> removedFiles = new ConcurrentLinkedQueue<>();
 
         @Override
         public void fileAdd(String path, String analyzer) {
@@ -232,12 +234,12 @@ public class IndexerTest {
 
         @Override
         public void fileRemoved(String path) {
-            files.remove(path);
             removedFiles.add(path);
         }
         
         public void reset() {
-            this.files = new ArrayList<>();
+            this.files.clear();
+            this.removedFiles.clear();
         }
     }
 
@@ -291,8 +293,8 @@ public class IndexerTest {
      */
     private class RemoveIndexChangeListener implements IndexChangedListener {
 
-        List<String> filesToAdd = new ArrayList<>();
-        List<String> removedFiles = new ArrayList<>();
+        final Queue<String> filesToAdd = new ConcurrentLinkedQueue<>();
+        final Queue<String> removedFiles = new ConcurrentLinkedQueue<>();
 
         @Override
         public void fileAdd(String path, String analyzer) {
@@ -325,8 +327,8 @@ public class IndexerTest {
         }
 
         public void reset() {
-            this.filesToAdd = new ArrayList<>();
-            this.removedFiles = new ArrayList<>();
+            this.filesToAdd.clear();
+            this.removedFiles.clear();
         }
     }
 
@@ -378,7 +380,7 @@ public class IndexerTest {
         // Make sure that the file was actually processed.
         assertEquals(1, listener.removedFiles.size());
         assertEquals(1, listener.filesToAdd.size());
-        assertEquals("/mercurial/bar.txt", listener.removedFiles.get(0));
+        assertEquals("/mercurial/bar.txt", listener.removedFiles.peek());
 
         testrepo.destroy();
     }
@@ -449,8 +451,11 @@ public class IndexerTest {
             assertEquals("No new file added", 1, listener.files.size());
             repository.removeDummyFile(ppath);
             idb.update(parallelizer);
-            assertEquals("Didn't remove the dummy file", 0, listener.files.size());
+            assertEquals("(added)files changed unexpectedly", 1,
+                listener.files.size());
             assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
+            assertEquals("Should have added then removed the same file",
+                listener.files.peek(), listener.removedFiles.peek());
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }
