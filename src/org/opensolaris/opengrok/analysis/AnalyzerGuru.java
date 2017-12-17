@@ -66,6 +66,7 @@ import org.opensolaris.opengrok.analysis.data.IgnorantAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.data.ImageAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.document.MandocAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.document.TroffAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.eiffel.EiffelAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.erlang.ErlangAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.ELFAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzerFactory;
@@ -251,7 +252,8 @@ public class AnalyzerGuru {
             new LuaAnalyzerFactory(),
             new PascalAnalyzerFactory(),
             new AdaAnalyzerFactory(),
-            new RubyAnalyzerFactory()
+            new RubyAnalyzerFactory(),
+            new EiffelAnalyzerFactory()
         };
 
         for (FileAnalyzerFactory analyzer : analyzers) {
