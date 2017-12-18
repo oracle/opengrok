@@ -23,15 +23,19 @@
 
 package org.opensolaris.opengrok.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
 /**
  * Represents a container for custom test assertion methods
@@ -110,19 +114,42 @@ public class CustomAssertions {
     public static void assertSymbolStream(Class<? extends JFlexTokenizer> klass,
         InputStream iss, List<String> expectedTokens) throws Exception {
 
+        byte[] inputCopy = copyStream(iss);
+        String input = new String(inputCopy, StandardCharsets.UTF_8);
+
         JFlexTokenizer tokenizer = klass.getConstructor(Reader.class).
-            newInstance(new InputStreamReader(iss, "UTF-8"));
+            newInstance(new InputStreamReader(
+            new ByteArrayInputStream(inputCopy), StandardCharsets.UTF_8));
 
         CharTermAttribute term = tokenizer.addAttribute(
             CharTermAttribute.class);
+        OffsetAttribute offs = tokenizer.addAttribute(OffsetAttribute.class);
 
         int count = 0;
+        List<String> tokens = new ArrayList<>();
         while (tokenizer.incrementToken()) {
-            assertTrue("too many tokens at term" + (1 + count) + ": " +
-                term.toString(), count < expectedTokens.size());
-            String expected = expectedTokens.get(count);
+            String termValue = term.toString();
+            tokens.add(termValue);
+
+            String cutValue = input.substring(offs.startOffset(),
+                offs.endOffset());
+            assertEquals("cut term" + (1 + count), cutValue, termValue);
+            ++count;
+        }
+
+        count = 0;
+        for (String token : tokens) {
             // 1-based offset to accord with line #
-            assertEquals("term" + (1 + count), expected, term.toString());
+            if (count >= expectedTokens.size()) {
+                printTokens(tokens);
+                assertTrue("too many tokens at term" + (1 + count) + ": " +
+                    token, count < expectedTokens.size());
+            }
+            String expected = expectedTokens.get(count);
+            if (!token.equals(expected)) {
+                printTokens(tokens);
+                assertEquals("term" + (1 + count), expected, token);
+            }
             count++;
         }
 
@@ -168,5 +195,17 @@ public class CustomAssertions {
             --numln;
         }
         return 0;
+    }
+
+    /**
+     * Outputs a token list to stdout for use in a competent diffing tool
+     * to compare to e.g. samplesymbols.txt.
+     */
+    private static void printTokens(List<String> tokens) {
+        System.out.println("BEGIN TOKENS\n=====");
+        for (int i = 0; i < tokens.size(); ++i) {
+            System.out.println(tokens.get(i));
+        }
+        System.out.println("=====\nEND TOKENS");
     }
 }

@@ -23,29 +23,27 @@
  */
 
 package org.opensolaris.opengrok.analysis.powershell;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+
 import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 import java.util.Stack;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-
 %%
 %public
 %class PoshXref
-%extends JFlexXref
+%extends JFlexXrefSimple
 %unicode
 %ignorecase
 %int
 %include CommonXref.lexh
 %{
-  private final Stack<Integer> stateStack = new Stack<Integer>();
   private final Stack<String> styleStack = new Stack<String>();
 
   @Override
   public void reset() {
       super.reset();
-      stateStack.clear();
       styleStack.clear();
   }
 
@@ -55,104 +53,36 @@ import java.util.regex.Matcher;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
 
-  private Pattern GoToLabel = Pattern.compile("(break|continue)(\\s+)(\\w+)");
-
-  private String getVariableName(String text) {
-    String name = text;
-    // Extract variable name from ${name} (complex variable)
-    if (text.startsWith("${")) {
-        name = text.substring(2,text.length()-1);
-    } else {
-        // Assuming extracting name from $name (simple variable)
-        name = text.substring(1);
-    }
-    return name;
-  }
-
   private void emitComplexVariable() throws IOException {
-    String id = getVariableName(yytext());
+    String id = yytext().substring(2, yylength() - 1);
     out.write("${");
     writeSymbol(id, Consts.poshkwd, yyline, false, true);
     out.write("}");
   }
 
   private void emitSimpleVariable() throws IOException {
-    String id = getVariableName(yytext());
+    String id = yytext().substring(1);
     out.write("$");
-    writeSymbol(id, Consts.poshkwd, yyline, false, true);
+    writeSymbol(id, Consts.poshkwd, yyline, false);
   }
 
-  private void pushstate(int state, String style) throws IOException {
-    if (!styleStack.empty()) {
-      out.write("</span>");
-    }
-    if (style == null) {
-      out.write("<span>");
-    } else {
-      out.write("<span class=\"" + style + "\">");
-    }
-    stateStack.push(yystate());
-    styleStack.push(style);
-    yybegin(state);
+  @Override
+  public void pushSpan(int newState, String className) throws IOException {
+      super.pushSpan(newState, className);
+      styleStack.push(className);
   }
 
-  private void popstate() throws IOException {
-    out.write("</span>");
-    yybegin(stateStack.pop());
-    styleStack.pop();
-    if (!styleStack.empty()) {
-      String style = styleStack.peek();
-      if (style == null) {
-        out.write("<span>");
-      } else {
-        out.write("<span class=\"" + style + "\">");
+  @Override
+  public void yypop() throws IOException {
+      super.yypop();
+      styleStack.pop();
+
+      if (!styleStack.empty()) {
+          String style = styleStack.peek();
+          disjointSpan(style);
       }
-    }
   }
-
 %}
-
-Identifier = [a-zA-Z_] [a-zA-Z0-9_-]*
-SimpleVariable  = [\$] [a-zA-Z_] [a-zA-Z0-9_:-]*
-ComplexVariable = [\$] "{" [^}]+  "}"
-Operator = "-" [a-zA-Z]+
-Label =  {WhspChar}* ":" {Identifier}
-Break = "break" {WhiteSpace} {Identifier}
-Continue = "continue" {WhiteSpace} {Identifier}
-DataType = "[" [a-zA-Z_] [\[\]a-zA-Z0-9_.-]* "]"
-
-
-/* The following should be matched by the 'Number' pattern below.
- * '\$ [0-9]+' :
- *     $1 $2 $10 ... (references to a regex match operation)
- *
- * '0[xX][0-9a-fA-F]+[lL]?' :
- *     0xA 0X12A 0x12L ... (hex values with optional 'L'ong data type)
- *
- * '(\.[0-9]+|[0-9]+(\.[0-9]*)?)' :
- *     .45 0.45 12. 34  ... (integers and real numbers)
- *
- * '([eE][+-]*[0-9]+)?' :  (optional exponential)
- *     e+12 in 32.e+12
- *     E-231 in 123.456E-231
- *
- *  '[dDlL]?' : (optional 'double' or 'long' data type designation)
- *     1.20d 1.23450e1d 1.2345e-1D
- *
- *  {MultiplierSuffix} : (optional multiplier suffix)
- *    kb, Kb, KB (kilobyte, 1024)
- *    mb, Mb, MB (megabyte, 1024 x 1024)
- *    gb, Gb, GB (gigabyte, 1024 x 1024 x 1024)
- *    tb, Tb, TB (terabyte, 1024 x 1024 x 1024 x 1024)
- *    pb, Pb, PB (petabyte, 1024 x 1024 x 1024 x 1024 x 1024)
- *
- *    1kb 1.30Dmb 0x10Gb 1.4e23Tb 0x12Lpb
- */
-RegExGroup = \$ [0-9]+
-MultiplierSuffix = ([kKmMgGtTp][bB])?
-Number = {RegExGroup} | (0[xX][0-9a-fA-F]+[lL]?|(\.[0-9]+|[0-9]+(\.[0-9]*)?)([eE][+-]*[0-9]+)?[dDlL]? ) {MultiplierSuffix}
-
-/*Number = \$? [0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+*/
 
 File = {FNameChar}+ "." ([a-zA-Z0-9]+)
 
@@ -166,30 +96,30 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  * States:
  * STRING   - double-quoted string, ex: "hello, world!"
  * QSTRING  - single-quoted string, ex: 'hello, world!'
+ * COMMENT - multiple-line comment.
  * SCOMMENT - single-line comment, ex: # this is a comment
  * SUBSHELL - commands executed in a sub-shell,
  *               example 1: (echo $header; cat file.txt)
  * HERESTRING  - here-string, example: cat @" ... "@
  * HEREQSTRING - here-string, example: cat @' ... '@
+ * DATATYPE - bracketed .NET datatype specification
+ * DOTSYNTAX - await possible dot syntax -- e.g. property or methods
  */
 %state STRING COMMENT SCOMMENT QSTRING SUBSHELL HERESTRING HEREQSTRING
+%state DATATYPE DOTSYNTAX
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Powershell.lexh
 %%
 
 <STRING>{
- {SimpleVariable} | {ComplexVariable } {
-    String id = yytext();
-    out.write("<a href=\"");
-    out.write(urlPrefix);
-    out.write("refs=");
-    out.write("&quot;" +id + "&quot;");
-    appendProject();
-    out.write("\">");
-    out.write(id);
-    out.write("</a>");
+ {ComplexVariable}    {
+    emitComplexVariable();
+ }
+ {SimpleVariable}    {
+    emitSimpleVariable();
  }
 }
 
@@ -200,143 +130,199 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 }
 
 <YYINITIAL, SUBSHELL> {
- ^ {Label} { 
+ ^ {Label}    {
     out.write("<a class=\"xlbl\" name=\"");
     out.write(yytext().substring(1)); 
     out.write("\">");
     out.write(yytext()); 
     out.write("</a>");
  }
- {Break} | {Continue} {
-    Matcher m = GoToLabel.matcher(yytext());
-    String control="", space="", label="";
-    if(m.find()) {
-        control = m.group(1);
-        space   = m.group(2);
-        label   = m.group(3);
+ {Break} |
+ {Continue}    {
+    String capture = yytext();
+    Matcher m = PoshUtils.GOTO_LABEL.matcher(capture);
+    if (!m.find()) {
+        out.write(htmlize(capture));
+    } else {
+        String control = m.group(1);
+        String space   = m.group(2);
+        String label   = m.group(3);
+        writeSymbol(control, Consts.poshkwd, yyline, false);
+        out.write(space);
+        out.write("<a class=\"d intelliWindow-symbol\" href=\"#");
+        out.write(label);
+        out.write("\" data-definition-place=\"defined-in-file\">");
+        out.write(label);
+        out.write("</a>");
     }
-    writeSymbol(control, Consts.poshkwd, yyline, false, false);
-    out.write(space);
-    out.write("<a class=\"d intelliWindow-symbol\" href=\"#");
-    out.write(label);
-    out.write("\" data-definition-place=\"defined-in-file\">");
-    out.write(label);
-    out.write("</a>");
  }
- {DataType} {
-    String dataType = yytext();
 
-    // strip off outer '[' and ']' and massage letter size
-    String id = dataType.substring(1, dataType.length()-1).toLowerCase();
-    
-    // Check for array data type indicator ([]) and strip off
-    int pos = id.indexOf("[]");
-    if (pos != -1) {
-        id = id.substring(0,pos);
-    }
-    // Dynamically add data type to constant
-    // list so they do not turn into links.
-    if (!Consts.poshkwd.contains(id)) {
-        Consts.poshkwd.add(id);
-    }
-    out.write("[");
-    writeSymbol(id, Consts.poshkwd, yyline, false, false);
-    if (pos != -1) {
-        out.write("[]");
-    }
-    out.write("]");
+ {DataType}    {
+    yypushback(yylength());
+    pushSpan(DATATYPE, null);
  }
- {ComplexVariable} {
+}
+
+<YYINITIAL, SUBSHELL, DOTSYNTAX> {
+ {ComplexVariable}    {
     emitComplexVariable();
+    if (yystate() != DOTSYNTAX) pushSpan(DOTSYNTAX, null);
  }
- {SimpleVariable} {
+ {SimpleVariable}    {
     emitSimpleVariable();
+    if (yystate() != DOTSYNTAX) pushSpan(DOTSYNTAX, null);
  }
- {Identifier} | {Operator} {
-    String id = yytext();
-    
-    /* Dynamically add cmdlet options (eg. -option) 
-     * to keywords so they don't turn into links.
-     */
-    if (id.startsWith("-")) {
-       String cmdletOption = id.toLowerCase();
-       if (!Consts.poshkwd.contains(cmdletOption)) {
-          Consts.poshkwd.add(cmdletOption);
-       }
+}
+
+<YYINITIAL, SUBSHELL> {
+ {Operator}    {
+    String capture = yytext();
+    if (Consts.poshkwd.contains(capture.toLowerCase())) {
+        writeKeyword(capture, yyline);
+    } else {
+        String sigil = capture.substring(0, 1);
+        String id = capture.substring(1);
+        out.write(sigil);
+        writeSymbol(id, Consts.poshkwd, yyline, false);
     }
-    writeSymbol(id, Consts.poshkwd, yyline, false, false);
  }
 
- {Number} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+ {Number}    {
+    String lastClassName = getDisjointSpanClassName();
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(lastClassName);
+ }
 
- \" { pushstate(STRING, "s"); out.write(yytext()); }
- \' { pushstate(QSTRING, "s"); out.write(yytext()); }
+ \"    {
+    pushSpan(STRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'    {
+    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
 
- \# { pushstate(SCOMMENT, "c"); out.write(yytext()); }
- \<\# { pushstate(COMMENT, "c"); out.write(yytext()); }
+ \#    {
+    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(yytext());
+ }
+ \<\#    {
+    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+    out.write(htmlize(yytext()));
+ }
 
- \@\" { pushstate(HERESTRING, "s"); out.write(yytext()); }
- \@\' { pushstate(HEREQSTRING, "s"); out.write(yytext()); }
+ \@\"    {
+    pushSpan(HERESTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \@\'    {
+    pushSpan(HEREQSTRING, HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+}
+
+<DOTSYNTAX> {
+ "."    {
+    out.write(yytext());
+ }
+
+ [^]    {
+    yypushback(yylength());
+    yypop();
+ }
+}
+
+<YYINITIAL, SUBSHELL, DATATYPE, DOTSYNTAX> {
+ {Identifier}    {
+    String id = yytext();
+    writeSymbol(id, Consts.poshkwd, yyline, false);
+ }
+}
+
+<DATATYPE> {
+ "]"    {
+    yypushback(yylength());
+    yypop();
+ }
 }
 
 <STRING> {
- \" {WhspChar}* \"  { out.write(yytext()); }
- \\ { out.write(yytext()); }
- \" { out.write(yytext()); popstate(); }
+ [`][\"\$`] |
+ \"\"    { out.write(htmlize(yytext())); }
+
+ \$? \"    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
+}
+
+<STRING, HERESTRING> {
+ "$("    { pushSpan(SUBSHELL, null); out.write(yytext()); }
 }
 
 <QSTRING> {
- \' {WhspChar}* \' { out.write(yytext()); }
- \\ { out.write("\\"); }
- \' { out.write(yytext()); popstate(); }
+ \'\'    { out.write(htmlize(yytext())); }
+ \'    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <COMMENT> {
- \#\>    { out.write(yytext()); popstate(); }
- [^\r\n] { out.write(yytext()); }
- {EOL}   { startNewLine(); }
+ \#\>    {
+    out.write(htmlize(yytext()));
+    yypop();
+ }
 }
 
 <SCOMMENT> {
- {EOL} { popstate(); startNewLine(); }
+ {WhspChar}*{EOL}    {
+    yypop();
+    startNewLine();
+ }
 }
 
 <SUBSHELL> {
-  \)   { out.write(yytext()); popstate(); }
+  \)    {
+    out.write(yytext());
+    yypop();
+  }
 }
 
 <HERESTRING> {
   // Match escaped dollar sign of variable 
   // (eg. `$var) so it does not turn into web-link.
-   
-  \` ({SimpleVariable} | {ComplexVariable}) { out.write(yytext()); }
+  "`$"    { out.write(yytext()); }
 
-  {ComplexVariable} {
-     emitComplexVariable();
-  }
-  {SimpleVariable} {
+  {SimpleVariable}    {
      emitSimpleVariable();
   }
-  ^ \"\@  { out.write(yytext()); popstate(); }
-  [^\r\n] { out.write(yytext()); }
-  {EOL}   { startNewLine(); }
+
+  {ComplexVariable}    {
+     emitComplexVariable();
+  }
+  ^ \"\@    {
+    out.write(htmlize(yytext()));
+    yypop();
+  }
 }
 
 <HEREQSTRING> {
-  ^ "'@"  { out.write(yytext()); popstate(); }
-  [^\r\n]+  { out.write(yytext()); }
-  {EOL}   { startNewLine(); }
+  ^ "'@"    {
+    out.write(yytext());
+    yypop();
+  }
 }
 
 <YYINITIAL, SUBSHELL> {
   /* Don't enter new state if special character is escaped. */
-  \\` | \\\( | \\\) | \\\\ | \\\{ { out.write(yytext()); }
-  \\\" | \\' | \\\$ | \\\# { out.write(yytext()); }
+  [`][`\(\)\{\}\"\'\$\#\\]    { out.write(htmlize(yytext())); }
 
   /* $# should not start a comment. */
-  "$#" { out.write(yytext()); }
+  "$#"    { out.write(yytext()); }
 
-  \$ ? \( { pushstate(SUBSHELL, null); out.write(yytext()); }
+  \$ ? \(    { pushSpan(SUBSHELL, null); out.write(yytext()); }
 }
 
 <YYINITIAL, SUBSHELL, STRING, SCOMMENT, QSTRING> {
@@ -352,33 +338,38 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
     {AnyFPath}
             {out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
-    "&"     {out.write( "&amp;");}
-    "<"     {out.write( "&lt;");}
-    ">"     {out.write( "&gt;");}
-    {WhiteSpace}{EOL} |
-        {EOL}    { startNewLine(); }
+}
+
+<YYINITIAL, DATATYPE, SUBSHELL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING,
+    HEREQSTRING> {
+    [&<>\'\"]    { out.write(htmlize(yytext())); }
+    {WhspChar}*{EOL}    { startNewLine(); }
     {WhiteSpace}   { out.write(yytext()); }
     [!-~]   { out.write(yycharat(0)); }
     [^\n]   { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
-
-{BrowseableURI}    {
-            appendLink(yytext(), true);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           writeEMailAddress(yytext());
         }
 }
 
-<<EOF>> {
-    // If we reach EOF while being in a nested state, pop all the way up
-    // the initial state so that we close open HTML tags.
-    while (!stateStack.isEmpty()) {
-        popstate();
+<STRING, SCOMMENT> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true);
     }
-    return YYEOF;
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        appendLink(yytext(), true, PoshUtils.STRINGLITERAL_APOS_DELIMITER);
+    }
+}
+
+<COMMENT> {
+    {BrowseableURI} \>?    {
+        appendLink(yytext(), true, PoshUtils.MAYBE_END_MULTILINE_COMMENT);
+    }
 }
