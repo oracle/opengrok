@@ -39,6 +39,10 @@ The following table lists all supported formats and OpenGrok version in which th
 |0.13
 |"ERL", "HRL", "ESCRIPT"
 |-
+|Eiffel
+|1.1
+|"E"
+|-
 |Fortran
 |0.XXX
 |"F","F90","INC"
