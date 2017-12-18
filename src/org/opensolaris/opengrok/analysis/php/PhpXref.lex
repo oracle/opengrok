@@ -48,6 +48,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
   private final static Set<String> PSEUDO_TYPES;
   private final Stack<String> popStrings = new Stack<>();
@@ -120,6 +121,22 @@ import org.opensolaris.opengrok.web.HtmlConsts;
         || state == ATTRIBUTE_DOUBLE    || state == HTMLCOMMENT
         || state == YYINITIAL;
   }
+
+  protected void chkLOC() {
+      switch (yystate()) {
+          case HTMLCOMMENT:
+          case SCOMMENT:
+          case COMMENT:
+          case DOCCOMMENT:
+          case DOCCOM_TYPE_THEN_NAME:
+          case DOCCOM_NAME:
+          case DOCCOM_TYPE:
+              break;
+          default:
+              phLOC();
+              break;
+      }
+  }
 %}
 
 Identifier = [a-zA-Z_\u007F-\u10FFFF] [a-zA-Z0-9_\u007F-\u10FFFF]*
@@ -170,7 +187,11 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 %include CommonPath.lexh
 %%
 <YYINITIAL> { //HTML
-    "<" | "</"      { onNonSymbolMatched(yytext(), yychar); yypush(TAG_NAME); }
+    "<" | "</"      {
+        chkLOC();
+        onNonSymbolMatched(yytext(), yychar);
+        yypush(TAG_NAME);
+    }
 
     "<!--" {
         onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
@@ -181,6 +202,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <TAG_NAME> {
     {HtmlName} {
+        chkLOC();
         String lastClassName = getDisjointSpanClassName();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
@@ -189,6 +211,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     {HtmlName}:{HtmlName} {
+        chkLOC();
         String lastClassName = getDisjointSpanClassName();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         int i = 0;
@@ -205,11 +228,13 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <AFTER_TAG_NAME> {
     {HtmlName} {
+        chkLOC();
         //attribute
         onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
     }
 
     "=" {WhspChar}* (\" | \')? {
+        chkLOC();
         char attributeDelim = yycharat(yylength()-1);
         onNonSymbolMatched("=", yychar);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
@@ -225,11 +250,16 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <TAG_NAME, AFTER_TAG_NAME> {
-    ">"     { onNonSymbolMatched(yytext(), yychar); yypop(); } //to YYINITIAL
+    ">"     {
+        chkLOC();
+        onNonSymbolMatched(yytext(), yychar);
+        yypop(); //to YYINITIAL
+    }
 }
 
 <YYINITIAL, TAG_NAME, AFTER_TAG_NAME> {
     {OpeningTag}    {
+        chkLOC();
         onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
         yypush(IN_SCRIPT); }
 }
@@ -245,11 +275,26 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         onDisjointSpanChanged(null, yychar);
         yypop();
     }
-    ">"     { onNonSymbolMatched(yytext(), yychar); onDisjointSpanChanged(null, yychar); yypop(); yypop(); } //pop twice
+    ">"     {
+        chkLOC();
+        onNonSymbolMatched(yytext(), yychar);
+        onDisjointSpanChanged(null, yychar);
+        //pop twice
+        yypop();
+        yypop();
+    }
 }
 
-<ATTRIBUTE_DOUBLE>\" { onNonSymbolMatched(yytext(), yychar); onDisjointSpanChanged(null, yychar); yypop(); }
-<ATTRIBUTE_SINGLE>\' { onNonSymbolMatched(yytext(), yychar); onDisjointSpanChanged(null, yychar); yypop(); }
+<ATTRIBUTE_DOUBLE>\" {
+    chkLOC();
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar); yypop();
+}
+<ATTRIBUTE_SINGLE>\' {
+    chkLOC();
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar); yypop();
+}
 
 <ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE> {
     {WhspChar}* {EOL} {
@@ -261,6 +306,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE> {
     {OpeningTag} {
+        chkLOC();
         onDisjointSpanChanged(null, yychar);
         onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
         yypush(IN_SCRIPT, HtmlConsts.STRING_CLASS);
@@ -289,6 +335,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <IN_SCRIPT> {
     "$" {Identifier} {
+        chkLOC();
         //we ignore keywords if the identifier starts with one of variable chars
         String id = yytext().substring(1);
         onNonSymbolMatched("$", yychar);
@@ -296,10 +343,12 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     {Identifier} {
+        chkLOC();
         onFilteredSymbolMatched(yytext(), yychar, Consts.kwd);
     }
 
     \( {WhspChar}* {CastTypes} {WhspChar}* \) {
+        chkLOC();
         onNonSymbolMatched("(", yychar);
         int i = 1, j;
         while (isTabOrSpace(i)) { onNonSymbolMatched(yycharat(i++), yychar); }
@@ -312,6 +361,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     b? \" {
+        chkLOC();
         yypush(STRING);
         if (yycharat(0) == 'b') { onNonSymbolMatched('b', yychar); }
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
@@ -319,6 +369,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     b? \' {
+        chkLOC();
         yypush(QSTRING);
         if (yycharat(0) == 'b') { onNonSymbolMatched('b', yychar); }
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
@@ -326,12 +377,14 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     [`]    {
+        chkLOC();
         yypush(BACKQUOTE);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
     }
 
     b? "<<<" {WhspChar}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
+        chkLOC();
         if (yycharat(0) == 'b') { onNonSymbolMatched('b', yychar); }
         onNonSymbolMatched("<<<", yychar);
         int i = yycharat(0) == 'b' ? 4 : 3, j = yylength()-1;
@@ -362,6 +415,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     {Number}   {
+        chkLOC();
         String lastClassName = getDisjointSpanClassName();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
@@ -385,8 +439,13 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         onNonSymbolMatched(yytext(), yychar);
     }
 
-    \{         { onNonSymbolMatched(yytext(), yychar); yypush(IN_SCRIPT); }
+    \{         {
+        chkLOC();
+        onNonSymbolMatched(yytext(), yychar);
+        yypush(IN_SCRIPT);
+    }
     \}         {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
         if (!this.stack.empty() && !isHtmlState(this.stack.peek()))
             yypop(); //may pop STRINGEXPR/HEREDOC/BACKQUOTE
@@ -399,6 +458,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     {ClosingTag} {
+        chkLOC();
         onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
         while (!isHtmlState(yystate()))
             yypop();
@@ -406,31 +466,49 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 } //end of IN_SCRIPT
 
 <STRING> {
-    \\\" { onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar); }
-    \" { onNonSymbolMatched(yytext(), yychar); onDisjointSpanChanged(null, yychar); yypop(); }
+    \\\"    {
+        chkLOC();
+        onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
+    }
+    \"    {
+        chkLOC();
+        onNonSymbolMatched(yytext(), yychar);
+        onDisjointSpanChanged(null, yychar); yypop();
+    }
 }
 
 <BACKQUOTE> {
-    "\\`" { onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar); }
-    "`" { onNonSymbolMatched("`", yychar); onDisjointSpanChanged(null, yychar); yypop(); }
+    "\\`"    {
+        chkLOC();
+        onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
+    }
+    "`"    {
+        chkLOC();
+        onNonSymbolMatched("`", yychar);
+        onDisjointSpanChanged(null, yychar); yypop();
+    }
 }
 
 <STRING, BACKQUOTE, HEREDOC> {
     "\\{" {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
     }
 
     {DoubleQuoteEscapeSequences} {
+        chkLOC();
         onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
     }
 
     "$"     {
+        chkLOC();
         onDisjointSpanChanged(null, yychar);
         onNonSymbolMatched("$", yychar);
         yypush(STRINGVAR, HtmlConsts.STRING_CLASS);
     }
 
     "${" {
+        chkLOC();
         onDisjointSpanChanged(null, yychar);
         onNonSymbolMatched(yytext(), yychar);
         yypush(STRINGEXPR, HtmlConsts.STRING_CLASS);
@@ -442,6 +520,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
      * put more restrictions on the {$ scripting mode than on the
      * "${" {Identifer} "[" scripting mode, but that's not relevant here */
     "{$" {
+        chkLOC();
         onDisjointSpanChanged(null, yychar);
         onNonSymbolMatched("{", yychar);
         yypushback(1);
@@ -451,13 +530,19 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <QSTRING> {
     {SingleQuoteEscapeSequences} {
+        chkLOC();
         onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
     }
 
-    \'      { onNonSymbolMatched("'", yychar); onDisjointSpanChanged(null, yychar); yypop(); }
+    \'      {
+        chkLOC();
+        onNonSymbolMatched("'", yychar);
+        onDisjointSpanChanged(null, yychar); yypop();
+    }
 }
 
 <HEREDOC, NOWDOC>^{Identifier} ";"? {EOL}  {
+    chkLOC();
     int i = yylength() - 1;
     boolean hasSemi = false;
     while (yycharat(i) == '\n' || yycharat(i) == '\r') { i--; }
@@ -484,9 +569,13 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <STRINGVAR> {
-    {Identifier}    { onFilteredSymbolMatched(yytext(), yychar, null); }
+    {Identifier}    {
+        chkLOC();
+        onFilteredSymbolMatched(yytext(), yychar, null);
+    }
 
     \[ {Number} \] {
+        chkLOC();
         onNonSymbolMatched("[", yychar);
         String lastClassName = getDisjointSpanClassName();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
@@ -497,6 +586,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     \[ {Identifier} \] {
+        chkLOC();
         //then the identifier is actually a string!
         onNonSymbolMatched("[", yychar);
         String lastClassName = getDisjointSpanClassName();
@@ -508,6 +598,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     \[ "$" {Identifier} \] {
+        chkLOC();
         onNonSymbolMatched("[$", yychar);
         onFilteredSymbolMatched(yytext().substring(2, yylength()-1), yychar, null);
         onNonSymbolMatched("]", yychar);
@@ -515,6 +606,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     "->" {Identifier} {
+        chkLOC();
         onNonSymbolMatched(yytext().substring(0, 2), yychar);
         onFilteredSymbolMatched(yytext().substring(2), yychar, null);
         yypop(); //because "$arr->a[0]" is the same as $arr->a . "[0]"
@@ -525,10 +617,11 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <STRINGEXPR> {
     {Identifier} {
+        chkLOC();
         onFilteredSymbolMatched(yytext(), yychar, null);
     }
-    \}  { onNonSymbolMatched('}', yychar); yypop(); }
-    \[  { onNonSymbolMatched('[', yychar); yybegin(IN_SCRIPT); } /* don't push. when we find '}'
+    \}  { chkLOC(); onNonSymbolMatched('}', yychar); yypop(); }
+    \[  { chkLOC(); onNonSymbolMatched('[', yychar); yybegin(IN_SCRIPT); } /* don't push. when we find '}'
                                                  * and we pop we want to go to
                                                  * STRING/HEREDOC, not back to
                                                  * STRINGEXPR */
@@ -618,29 +711,36 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 }
 
-<YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE, HTMLCOMMENT, IN_SCRIPT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
+<YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE,
+    ATTRIBUTE_SINGLE, HTMLCOMMENT, IN_SCRIPT, STRING, QSTRING, BACKQUOTE,
+    HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
+
     {WhspChar}* {EOL} {
         onEndOfLineMatched(yytext(), yychar);
     }
-    [^\n]       { onNonSymbolMatched(yytext(), yychar); }
+    [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+    [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <YYINITIAL, HTMLCOMMENT, SCOMMENT, COMMENT, DOCCOMMENT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC> {
     {FPath}
-            { onPathlikeMatched(yytext(), '/', false, yychar);}
+            { chkLOC(); onPathlikeMatched(yytext(), '/', false, yychar); }
 
     {File}
             {
+            chkLOC();
             String path = yytext();
             onFilelikeMatched(path, yychar);
     }
 
     {BrowseableURI}    {
+              chkLOC();
               onUriMatched(yytext(), yychar);
             }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
             {
+            chkLOC();
             onEmailAddressMatched(yytext(), yychar);
             }
 }

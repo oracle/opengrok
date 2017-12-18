@@ -43,6 +43,19 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
+%{
+    protected void chkLOC() {
+        switch (yystate()) {
+            case COMMENT:
+            case SCOMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
+    }
+%}
 
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 
@@ -57,16 +70,18 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 %include CommonPath.lexh
 %%
 <YYINITIAL>{
- "begin"     { onScopeChanged(ScopeAction.INC, yytext(), yychar); }
- "end"     { onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
- \;     { onScopeChanged(ScopeAction.END, yytext(), yychar); }
+ "begin"    { chkLOC(); onScopeChanged(ScopeAction.INC, yytext(), yychar); }
+ "end"      { chkLOC(); onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
+ \;         { chkLOC(); onScopeChanged(ScopeAction.END, yytext(), yychar); }
 
 {Identifier} {
+    chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.kwd);
 }
 
 "<" ({File}|{FPath}) ">" {
+        chkLOC();
         onNonSymbolMatched("<", yychar);
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -75,12 +90,14 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 }
 
  {Number}        {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
+    chkLOC();
     yybegin(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched("\"", yychar);
@@ -103,19 +120,21 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 }
 
 <STRING> {
- \" {WhspChar}+ \"    { onNonSymbolMatched(yytext(), yychar); }
+ \" {WhspChar}+ \"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    chkLOC();
     yybegin(YYINITIAL);
     onNonSymbolMatched("\"", yychar);
     onDisjointSpanChanged(null, yychar);
  }
- \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <QSTRING> {
- \\[\'\\]    { onNonSymbolMatched(yytext(), yychar); }
- \' {WhspChar}+ \'    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\'\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
+ \' {WhspChar}+ \'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'     {
+    chkLOC();
     yybegin(YYINITIAL);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
@@ -142,25 +161,29 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
 {FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+        { chkLOC(); onPathlikeMatched(yytext(), '/', false, yychar); }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {BrowseableURI}    {
+          chkLOC();
           onUriMatched(yytext(), yychar);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }

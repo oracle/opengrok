@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     private int nestedComment;
 
@@ -60,6 +61,17 @@ import org.opensolaris.opengrok.web.HtmlConsts;
         onDisjointSpanChanged(null, yychar);
         super.yypop();
     }
+
+    protected void chkLOC() {
+        switch (yystate()) {
+            case COMMENT:
+            case BCOMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
+    }
 %}
 
 %state STRING CHAR COMMENT BCOMMENT
@@ -71,20 +83,24 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 %%
 <YYINITIAL> {
     {Identifier} {
+        chkLOC();
         String id = yytext();
         onFilteredSymbolMatched(id, yychar, Consts.kwd);
     }
     {Number}     {
+        chkLOC();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
         onDisjointSpanChanged(null, yychar);
     }
     \"           {
+        chkLOC();
         yypush(STRING);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
     }
     \'           {
+        chkLOC();
         yypush(CHAR);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
@@ -95,12 +111,13 @@ import org.opensolaris.opengrok.web.HtmlConsts;
         onNonSymbolMatched(yytext(), yychar);
     }
 
-    {NotComments}    { onNonSymbolMatched(yytext(), yychar); }
+    {NotComments}    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING> {
-    \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
+    \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
     \"          {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
@@ -115,8 +132,9 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 }
 
 <CHAR> {    // we don't need to consider the case where prime is part of an identifier since it is handled above
-    \\[\'\\]    { onNonSymbolMatched(yytext(), yychar); }
+    \\[\'\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
     \'          {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
@@ -153,17 +171,23 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 }
 
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
-[^\n]              { onNonSymbolMatched(yytext(), yychar); }
+[[\s]--[\n]]        { onNonSymbolMatched(yytext(), yychar); }
+[^\n]               { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 
 <STRING, COMMENT, BCOMMENT> {
-    {FPath} { onPathlikeMatched(yytext(), '/', false, yychar); }
+    {FPath}    {
+        chkLOC();
+        onPathlikeMatched(yytext(), '/', false, yychar);
+    }
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        chkLOC();
         onEmailAddressMatched(yytext(), yychar);
     }
 }
 
 <STRING, COMMENT> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }

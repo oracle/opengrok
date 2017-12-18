@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
   private int nestedComment;
 
@@ -52,6 +53,17 @@ import org.opensolaris.opengrok.web.HtmlConsts;
   public void reset() {
       super.reset();
       nestedComment = 0;
+  }
+
+  protected void chkLOC() {
+      switch (yystate()) {
+          case COMMENT:
+          case SCOMMENT:
+              break;
+          default:
+              phLOC();
+              break;
+      }
   }
 %}
 
@@ -70,17 +82,20 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 <YYINITIAL>{
 
 {Identifier} {
+    chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.kwd);
 }
 
  {Number}        {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
+    chkLOC();
     yybegin(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched("\"", yychar);
@@ -93,13 +108,14 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 }
 
 <STRING> {
- \" {WhspChar}+ \"    { onNonSymbolMatched(yytext(), yychar); }
+ \" {WhspChar}+ \"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    chkLOC();
     yybegin(YYINITIAL);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
- \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <YYINITIAL, COMMENT> {
@@ -128,25 +144,31 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, SCOMMENT> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+    chkLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {BrowseableURI}    {
+          chkLOC();
           onUriMatched(yytext(), yychar);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }

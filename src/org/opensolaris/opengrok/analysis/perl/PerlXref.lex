@@ -42,10 +42,11 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 %char
 %init{
     h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-        HERE, HERExN, HEREin, HEREinxN);
+        HERE, HERExN, HEREin, HEREinxN, SCOMMENT, POD);
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     private final PerlLexHelper h;
 

@@ -68,6 +68,7 @@ public class TroffAnalyzer extends TextAnalyzer {
                 Xrefer xref = writeXref(args);
 
                 addNumLines(doc, xref.getLineNumber());
+                addLOC(doc, xref.getLOC());
             }
         }
     }

@@ -108,6 +108,7 @@ Character_constant = \' [^\']+ \'
 %%
 <YYINITIAL> {
     {Identifier}    {
+        h.chkLOC();
         String id = yytext();
         if (offerSymbol(id, 0, false) && returnOnSymbol()) {
             return yystate();
@@ -115,12 +116,14 @@ Character_constant = \' [^\']+ \'
     }
 
     {Number}    {
+        h.chkLOC();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
     }
 
     {Character_constant}    {
+        h.chkLOC();
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
@@ -133,11 +136,13 @@ Character_constant = \' [^\']+ \'
     }
 
     \"    {
+        h.chkLOC();
         yypush(STRING);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
     }
     \" {Vstring_alpha}* [\[\{]    {
+        h.chkLOC();
         h.vop(yytext());
     }
 }
@@ -152,6 +157,7 @@ Character_constant = \' [^\']+ \'
 
 <STRING> {
     \"    {
+        h.chkLOC();
         offer(yytext());
         onDisjointSpanChanged(null, yychar);
         yypop();
@@ -166,6 +172,7 @@ Character_constant = \' [^\']+ \'
 
 <VSTRING> {
     [\]\}] {Vstring_alpha}* \"    {
+        h.chkLOC();
         h.maybeEndVerbatim(yytext());
     }
 }
@@ -180,11 +187,13 @@ Character_constant = \' [^\']+ \'
 
 <YYINITIAL, SCOMMENT, STRING, VSTRING> {
     {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
-    [^]    { offer(yytext()); }
+    \s    { offer(yytext()); }
+    [^]    { h.chkLOC(); offer(yytext()); }
 }
 
 <SCOMMENT, STRING, VSTRING> {
     {BrowseableURI}    {
+        h.chkLOC();
         if (takeAllContent()) {
             onUriMatched(yytext(), yychar);
         }

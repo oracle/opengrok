@@ -256,6 +256,15 @@ public class FileAnalyzer extends Analyzer {
         doc.add(new StoredField(QueryBuilder.NUML, value));
     }
 
+    /**
+     * Add a field to store document lines-of-code.
+     * @param doc the target document
+     * @param value the loc
+     */
+    protected void addLOC(Document doc, int value)  {
+        doc.add(new StoredField(QueryBuilder.LOC, value));
+    }
+
     private JFlexTokenizer createPlainSymbolTokenizer() {
         return new JFlexTokenizer(new PlainSymbolTokenizer(
             FileAnalyzer.dummyReader));

@@ -44,6 +44,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
   /* Must match {WhspChar}+ regex */
   private final static String WHITE_SPACE = "[ \\t\\f]+";
@@ -70,6 +71,18 @@ import org.opensolaris.opengrok.web.HtmlConsts;
       yypush(state);
       onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
       onNonSymbolMatched(quotes, yychar);
+  }
+
+  protected void chkLOC() {
+      switch (yystate()) {
+          case SCOMMENT:
+          case COMMENT:
+          case JAVADOC:
+              break;
+          default:
+              phLOC();
+              break;
+      }
   }
 %}
 
@@ -105,11 +118,13 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 <YYINITIAL>{
 
 {Identifier} {
+    chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.kwd);
 }
 
  {BacktickIdentifier} {
+    chkLOC();
     String capture = yytext();
     String id = capture.substring(1, capture.length() - 1);
     onNonSymbolMatched("`", yychar);
@@ -118,6 +133,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  }
 
  {OpSuffixIdentifier}    {
+    chkLOC();
     String capture = yytext();
     int uoff = capture.lastIndexOf("_");
     // ctags include the "_" in the symbol, so follow that too.
@@ -128,6 +144,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  }
 
 "<" ({File}|{FPath}) ">" {
+        chkLOC();
         onNonSymbolMatched("<", yychar);
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -139,26 +156,32 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         { onPathlikeMatched(yytext(), '.', false, yychar); }
 */
  {Number}        {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
 
  ([fs] | "raw") \"    {
+    chkLOC();
     pushQuotedString(ISTRING, yytext());
  }
  {Identifier}? \"    {
+    chkLOC();
     pushQuotedString(STRING, yytext());
  }
  \'     {
+    chkLOC();
     yypush(QSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
  ([fs] | "raw") \"\"\"    {
+    chkLOC();
     pushQuotedString(IMSTRING, yytext());
  }
  {Identifier}? \"\"\"    {
+    chkLOC();
     pushQuotedString(MSTRING, yytext());
  }
  "/*" "*"+ "/"    {
@@ -181,8 +204,9 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 }
 
 <STRING, ISTRING> {
- \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -193,6 +217,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
      * TODO : support "arbitrary expressions" inside curly brackets
      */
     \$ {Identifier}    {
+        chkLOC();
         String capture = yytext();
         String sigil = capture.substring(0, 1);
         String id = capture.substring(1);
@@ -204,8 +229,9 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 }
 
 <QSTRING> {
- \\[\'\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\'\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -217,6 +243,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
   * of the escape sequences [in 'Escape Sequences'] are interpreted."
   */
  \"\"\"    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -270,6 +297,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
 <YYINITIAL> {
  {OpIdentifier}    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
  }
 }
@@ -277,33 +305,40 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 <YYINITIAL, STRING, ISTRING, MSTRING, IMSTRING, COMMENT, SCOMMENT, QSTRING,
     JAVADOC> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, MSTRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+    chkLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, MSTRING, QSTRING, SCOMMENT> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }
 
 <ISTRING, IMSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, ScalaUtils.DOLLAR_SIGN);
     }
 }

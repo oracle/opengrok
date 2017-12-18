@@ -42,18 +42,20 @@ class EiffelLexHelper implements Resettable {
     private final EiffelLexer lexer;
 
     private final int VSTRING;
+    private final int SCOMMENT;
 
     /**
      * When matching a Verbatim_string, the expected closer is stored here.
      */
     private String vstring_closer;
 
-    public EiffelLexHelper(int vSTRING, EiffelLexer lexer) {
+    public EiffelLexHelper(int vSTRING, int sCOMMENT, EiffelLexer lexer) {
         if (lexer == null) {
             throw new IllegalArgumentException("`lexer' is null");
         }
         this.lexer = lexer;
         this.VSTRING = vSTRING;
+        this.SCOMMENT = sCOMMENT;
     }
 
     /**
@@ -120,5 +122,14 @@ class EiffelLexHelper implements Resettable {
             vstring_closer = null;
         }
         if (npushback > 0) lexer.yypushback(npushback);
+    }
+
+    /**
+     * Calls {@link EiffelLexer#phLOC()} if the yystate is not SCOMMENT.
+     */
+    public void chkLOC() {
+        if (lexer.yystate() != SCOMMENT) {
+            lexer.phLOC();
+        }
     }
 }

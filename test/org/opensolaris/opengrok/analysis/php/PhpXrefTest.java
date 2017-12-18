@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.analysis.CtagsReader;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
@@ -58,11 +59,13 @@ public class PhpXrefTest {
         Writer w = new StringWriter();
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
         FileAnalyzer analyzer = fac.getAnalyzer();
-        analyzer.writeXref(new WriteXrefArgs(new StringReader(s), w));
+        WriteXrefArgs xargs = new WriteXrefArgs(new StringReader(s), w);
+        Xrefer xref = analyzer.writeXref(xargs);
         assertEquals(
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> <a href=\"/"
                 + "source/s?defs=foo\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">foo</a> <a href=\"/source/s?defs=bar\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">bar</a>",
                 w.toString());
+        assertEquals("PHP LOC", 1, xref.getLOC());
     }
 
     @Test
@@ -71,7 +74,8 @@ public class PhpXrefTest {
         Writer w = new StringWriter();
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
         FileAnalyzer analyzer = fac.getAnalyzer();
-        analyzer.writeXref(new WriteXrefArgs(new StringReader(s), w));
+        WriteXrefArgs xargs = new WriteXrefArgs(new StringReader(s), w);
+        Xrefer xref =  analyzer.writeXref(xargs);
         assertLinesEqual("PHP quoting",
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> "
                 + "<a href=\"/source/s?defs=define\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">define</a>(<span class=\"s\">&quot;FOO&quot;</span>, <span class=\"s\">&apos;BAR<strong>\\&apos;</strong>&quot;&apos;</span>); "
@@ -80,10 +84,11 @@ public class PhpXrefTest {
                 + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&apos;&apos;</span>; "
                 + "$<a href=\"/source/s?defs=hola\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">hola</a>=<span class=\"s\">&quot;&quot;</span>;",
                 w.toString());
+        assertEquals("PHP LOC", 1, xref.getLOC());
     }
 
 
-    public void writePhpXref(InputStream is, PrintStream os) throws IOException {
+    public int writePhpXref(InputStream is, PrintStream os) throws IOException {
         os.println(
                 "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
                 + "href=\"http://localhost:8080/source/default/style.css\" /><title>PHP Xref Test</title></head>");
@@ -96,9 +101,10 @@ public class PhpXrefTest {
         wargs.setDefs(getTagsDefinitions());
         analyzer.setScopesEnabled(true);
         analyzer.setFoldingEnabled(true);
-        analyzer.writeXref(wargs);
+        Xrefer xref = analyzer.writeXref(wargs);
         os.print(w.toString());
         os.println("</pre></div></body></html>");
+        return xref.getLOC();
     }
 
     public void main(String args[]) throws IOException {
@@ -119,8 +125,9 @@ public class PhpXrefTest {
                 "org/opensolaris/opengrok/analysis/php/sample.php");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
+        int actLOC;
         try {
-            writePhpXref(res, new PrintStream(baos));
+            actLOC = writePhpXref(res, new PrintStream(baos));
         } finally {
             res.close();
         }
@@ -132,6 +139,7 @@ public class PhpXrefTest {
         String gotten[] = new String(baos.toByteArray(), "UTF-8").split("\n");
         String expected[] = new String(expbytes, "UTF-8").split("\n");
         assertLinesEqual("PHP xref", expected, gotten);
+        assertEquals("PHP LOC", 29, actLOC);
 
         assertEquals(expected.length, gotten.length);
     }

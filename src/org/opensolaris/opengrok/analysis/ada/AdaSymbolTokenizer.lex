@@ -41,7 +41,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 %int
 %char
 %init{
-    h = new AdaLexHelper(this);
+    h = new AdaLexHelper(SCOMMENT, this);
     yyline = 1;
 %init}
 %include CommonLexer.lexh
@@ -96,6 +96,11 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 
     @Override
     public void disjointSpan(String className) throws IOException {
+        // noop
+    }
+
+    @Override
+    public void phLOC() {
         // noop
     }
 

@@ -40,6 +40,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     private int commentLevel;
 
@@ -53,6 +54,17 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     public void yypop() throws IOException {
         onDisjointSpanChanged(null, yychar);
         super.yypop();
+    }
+
+    protected void chkLOC() {
+        switch (yystate()) {
+            case SINGLE_LINE_COMMENT:
+            case BRACKETED_COMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
     }
 %}
 
@@ -73,17 +85,20 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_]*
 
 <YYINITIAL> {
     {Identifier} {
+        chkLOC();
         String id = yytext();
         onFilteredSymbolMatched(id, yychar, Consts.getReservedKeywords());
     }
 
     {Number} {
+        chkLOC();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
         onDisjointSpanChanged(null, yychar);
     }
 
     [nN]? "'"    {
+        chkLOC();
         String capture = yytext();
         String prefix = capture.substring(0, capture.length() - 1);
         String rest = capture.substring(prefix.length());
@@ -94,6 +109,7 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_]*
     }
 
     \"    {
+        chkLOC();
         yypush(QUOTED_IDENTIFIER);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
@@ -107,16 +123,18 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_]*
 }
 
 <STRING> {
-    "''"    { onNonSymbolMatched(yytext(), yychar); }
+    "''"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
     "'"    {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
 }
 
 <QUOTED_IDENTIFIER> {
-    \"\"    { onNonSymbolMatched(yytext(), yychar); }
+    \"\"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
     \"    {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
@@ -150,17 +168,20 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_]*
 
 <YYINITIAL, STRING, QUOTED_IDENTIFIER, SINGLE_LINE_COMMENT, BRACKETED_COMMENT> {
     {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
-    [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+    [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+    [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
     }
 }
 
 <QUOTED_IDENTIFIER, SINGLE_LINE_COMMENT> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }

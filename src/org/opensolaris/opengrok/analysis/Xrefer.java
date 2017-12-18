@@ -47,6 +47,12 @@ public interface Xrefer extends Resettable {
      */
     int getLineNumber();
 
+    /**
+     * Gets the document physical lines-of-code count.
+     * @return a number greater than or equal to 0
+     */
+    int getLOC();
+
     void setAnnotation(Annotation annotation);
 
     /**

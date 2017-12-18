@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     protected Stack<RubyLexHelper> helpers;
 
@@ -120,7 +121,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 
     protected RubyLexHelper getNewHelper() {
         return new RubyLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-            HERE, HERExN, HEREin, HEREinxN);
+            HERE, HERExN, HEREin, HEREinxN, SCOMMENT, POD);
     }
 
     protected boolean takeAllContent() {

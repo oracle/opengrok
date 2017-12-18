@@ -68,6 +68,7 @@ public class MandocAnalyzer extends TextAnalyzer {
                 Xrefer xref = writeXref(args);
 
                 addNumLines(doc, xref.getLineNumber());
+                addLOC(doc, xref.getLOC());
             }
         }
     }

@@ -61,6 +61,8 @@ class RubyLexHelper implements Resettable {
     private final int HERExN;
     private final int HEREin;
     private final int HERE;
+    private final int SCOMMENT;
+    private final int POD;
 
     private Queue<HereDocSettings> hereSettings;
 
@@ -107,7 +109,8 @@ class RubyLexHelper implements Resettable {
 
     public RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
 	    RubyLexer lexer,
-        int hERE, int hERExN, int hEREin, int hEREinxN) {
+        int hERE, int hERExN, int hEREin, int hEREinxN, int sCOMMENT,
+        int pOD) {
         if (lexer == null) {
             throw new IllegalArgumentException("`lexer' is null");
         }
@@ -120,6 +123,8 @@ class RubyLexHelper implements Resettable {
         this.HERExN = hERExN;
         this.HEREin = hEREin;
         this.HERE = hERE;
+        this.SCOMMENT = sCOMMENT;
+        this.POD = pOD;
     }
 
     /**
@@ -536,6 +541,16 @@ class RubyLexHelper implements Resettable {
         patb.append(RegexUtils.getNotFollowingEscapePattern());
         collateralCapture = Pattern.compile(patb.toString());
         return collateralCapture;
+    }
+
+    /**
+     * Calls {@link RubyLexer#phLOC()} if the yystate is not SCOMMENT or POD.
+     */
+    public void chkLOC() {
+        int yystate = lexer.yystate();
+        if (yystate != SCOMMENT && yystate != POD) {
+            lexer.phLOC();
+        }
     }
 
     private class HereDocSettings {

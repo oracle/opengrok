@@ -45,11 +45,23 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     @Override
     public void yypop() throws IOException {
         onDisjointSpanChanged(null, yychar);
         super.yypop();
+    }
+
+    protected void chkLOC() {
+        switch (yystate()) {
+            case COMMENT:
+            case SCOMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
     }
 %}
 
@@ -63,16 +75,18 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
 %include CSharp.lexh
 %%
 <YYINITIAL>{
- \{     { onScopeChanged(ScopeAction.INC, yytext(), yychar); }
- \}     { onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
- \;     { onScopeChanged(ScopeAction.END, yytext(), yychar); }
+ \{     { chkLOC(); onScopeChanged(ScopeAction.INC, yytext(), yychar); }
+ \}     { chkLOC(); onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
+ \;     { chkLOC(); onScopeChanged(ScopeAction.END, yytext(), yychar); }
 
 {Identifier} {
+    chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.kwd);
 }
 
 "<" ({File} | {FPath}) ">" {
+        chkLOC();
         onNonSymbolMatched("<", yychar);
         String path = yytext().substring(1, yylength() - 1);
         onFilelikeMatched(path, yychar + 1);
@@ -83,17 +97,20 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
     { onPathlikeMatched(yytext(), '.', false, yychar);}
 */
 {Number}        {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
+    chkLOC();
     yypush(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
  \'     {
+    chkLOC();
     yypush(QSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -109,6 +126,7 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
     onNonSymbolMatched(yytext(), yychar);
  }
  "@\""  {
+    chkLOC();
     yypush(VSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -117,8 +135,9 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
 
 <STRING> {
  \\[\"\\] |
- \" {WhspChar}+ \"    { onNonSymbolMatched(yytext(), yychar); }
+ \" {WhspChar}+ \"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -126,8 +145,9 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
 
 <QSTRING> {
  \\[\'\\] |
- \' {WhspChar}+ \'    { onNonSymbolMatched(yytext(), yychar); }
+ \' {WhspChar}+ \'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -135,8 +155,9 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
 
 <VSTRING> {
  \\ |
- \"\"    { onNonSymbolMatched(yytext(), yychar); }
+ \"\"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"       {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -158,27 +179,33 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, VSTRING> {
 {WhspChar}*{CsharpEOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, SCOMMENT, QSTRING, VSTRING> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+    chkLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, SCOMMENT, VSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }
@@ -191,6 +218,7 @@ File = [a-zA-Z]{FNameChar}* "." ([cChHtTsS]|[cC][sS])
 
 <QSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
     }
 }

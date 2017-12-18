@@ -41,10 +41,11 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 %int
 %char
 %init{
-    h = new AdaLexHelper(this);
+    h = new AdaLexHelper(SCOMMENT, this);
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     private final AdaLexHelper h;
 

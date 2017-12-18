@@ -61,6 +61,16 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     private int scopeLevel;
 
     /**
+     * The following field is set to {@code true} (via
+     * {@link #sourceCodeSeen(org.opensolaris.opengrok.analysis.SourceCodeSeenEvent)})
+     * when applicable during lexing before a call to {@link #startNewLine()}
+     * so that the lines-of-code count is also incremented.
+     */
+    private boolean didSeePhysicalLOC;
+
+    private int loc;
+
+    /**
      * See {@link RuntimeEnvironment#getUserPage()}. Per default initialized in
      * the constructor and here to be consistent and avoid lot of unnecessary
      * lookups.
@@ -124,7 +134,9 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     @Override
     public void reset() {
         annotation = null;
+        didSeePhysicalLOC = false;
         disjointSpanClassName = null;
+        loc = 0;
         scopes = new Scopes();
         scope = null;
         scopeLevel = 0;
@@ -136,8 +148,18 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * of the instance's {@link ScanningSymbolMatcher}.
      * @return yyline
      */
+    @Override
     public int getLineNumber() {
         return matcher.getLineNumber();
+    }
+
+    /**
+     * Gets the determined count of physical lines-of-code.
+     * @return lines-of-code count
+     */
+    @Override
+    public int getLOC() {
+        return loc;
     }
 
     @Override
@@ -185,6 +207,17 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * Sets a value indicating that source code was encountered such that
+     * {@link #getLOC()} will be incremented upon the next
+     * {@link #startNewLine()} or at end-of-file.
+     * @param evt ignored
+     */
+    @Override
+    public void sourceCodeSeen(SourceCodeSeenEvent evt) {
+        didSeePhysicalLOC = true;
     }
 
     @Override
@@ -463,18 +496,32 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
         while (!matcher.emptyStack()) {
             matcher.yypop();
         }
+
+        // Account for dangling line of code. Unlike line number, LOC is
+        // incremented post- rather than pre-.
+        if (didSeePhysicalLOC) {
+            ++loc;
+            didSeePhysicalLOC = false;
+        }
     }
 
     /**
      * Terminate the current line and insert preamble for the next line. The
-     * line count will be incremented.
-     *
+     * line count is taken from {@link ScanningSymbolMatcher#getLineNumber()}.
+     * The lines-of-code count may be incremented if {@link #didSeePhysicalLOC}
+     * has been set to {@code true} (after which it will be reset to
+     * {@code false}).
      * @throws IOException on error when writing the xref
      */
     public void startNewLine() throws IOException {
         String iconId = null;
         int line = matcher.getLineNumber();
         boolean skipNl = false;
+
+        if (didSeePhysicalLOC) {
+            ++loc;
+            didSeePhysicalLOC = false;
+        }
 
         if (scopesEnabled) {
             startScope();

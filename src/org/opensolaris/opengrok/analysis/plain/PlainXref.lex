@@ -37,24 +37,30 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
+
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
 %include CommonLaxFPath.lexh
 %%
 {File} | {RelaxedMiddleFPath}
-        {String s=yytext();
+        {
+        phLOC();
+        String s=yytext();
         onFilelikeMatched(s, yychar);
  }
 
 {BrowseableURI}    {
+          phLOC();
           onUriMatched(yytext(), yychar);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          phLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 
@@ -63,7 +69,8 @@ File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 // this rule, we avoid much of the backtracking and speed up the parsing
 // (in some cases from hours to seconds!). This rule will not interfere with
 // the rules above because JFlex always picks the longest match.
-{FNameChar}+    { onNonSymbolMatched(yytext(), yychar); }
+{FNameChar}+    { phLOC(); onNonSymbolMatched(yytext(), yychar); }
 
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
-[^\n]       { onNonSymbolMatched(yytext(), yychar); }
+[[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+[^\n]    { phLOC(); onNonSymbolMatched(yytext(), yychar); }

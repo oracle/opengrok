@@ -129,6 +129,7 @@ public class PlainAnalyzer extends TextAnalyzer {
                 }
 
                 addNumLines(doc, xref.getLineNumber());
+                addLOC(doc, xref.getLOC());
             }
         }
     }

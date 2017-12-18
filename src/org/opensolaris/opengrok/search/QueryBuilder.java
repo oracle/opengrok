@@ -51,6 +51,7 @@ public class QueryBuilder {
     public static final String TYPE = "type";
     public static final String SCOPES = "scopes";
     public static final String NUML = "numl";
+    public static final String LOC = "loc";
     /**
      * Fields we use in lucene internal ones
      */

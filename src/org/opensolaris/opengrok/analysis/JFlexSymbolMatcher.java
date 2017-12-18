@@ -104,6 +104,20 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     }
 
     /**
+     * Raises
+     * {@link SymbolMatchedListener#sourceCodeSeen(org.opensolaris.opengrok.analysis.SourceCodeSeenEvent)}
+     * for all subscribed listeners in turn.
+     * @param start the source code start position
+     */
+    protected void onSourceCodeSeen(int start) {
+        SymbolMatchedListener l = symbolListener;
+        if (l != null) {
+            SourceCodeSeenEvent evt = new SourceCodeSeenEvent(this, start);
+            l.sourceCodeSeen(evt);
+        }
+    }
+
+    /**
      * Calls {@link #onNonSymbolMatched(java.lang.String, int)} with the
      * {@link String#valueOf(char)} {@code c} and {@code start}.
      * @param c the text character

@@ -29,20 +29,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.opensolaris.opengrok.analysis.CtagsReader;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link RubyXref} class.
@@ -52,25 +54,24 @@ public class RubyXrefTest {
     @Test
     public void sampleTest() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             "org/opensolaris/opengrok/analysis/ruby/sample.rb");
         assertNotNull("though sample.rb should stream,", res);
-        writeRubyXref(res, new PrintStream(baos));
+        int actLOC = writeRubyXref(res, new PrintStream(baos));
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
             "org/opensolaris/opengrok/analysis/ruby/ruby_xrefres.html");
         assertNotNull("ruby_xrefres.html should stream,", exp);
-        copyStream(exp, baosExp);
+        byte[] expbytes = copyStream(exp);
         exp.close();
-        baosExp.close();
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
-        String estr = new String(baosExp.toByteArray(), "UTF-8");
+        String estr = new String(expbytes, "UTF-8");
         assertLinesEqual("Ruby xref", estr, ostr);
+        assertEquals("Ruby LOC", 159, actLOC);
     }
 
     @Test
@@ -82,6 +83,7 @@ public class RubyXrefTest {
 
         StringWriter out = new StringWriter();
         xref.write(out);
+        int actLOC = xref.getLOC();
         String xout = out.toString();
 
         final String xexpected = "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
@@ -92,10 +94,11 @@ public class RubyXrefTest {
                 + "<span class=\"s\">}:&quot;</span>\n" +
             "<a class=\"l\" name=\"2\" href=\"#2\">2</a>\n";
         assertLinesEqual("Ruby colon-quote", xexpected, xout);
+        assertEquals("Ruby colon-quote LOC", 1, actLOC);
     }
 
-    private void writeRubyXref(InputStream iss, PrintStream oss)
-        throws IOException {
+    private int writeRubyXref(InputStream iss, PrintStream oss)
+            throws IOException {
         oss.print(getHtmlBegin());
 
         Writer sw = new StringWriter();
@@ -104,22 +107,11 @@ public class RubyXrefTest {
         WriteXrefArgs wargs = new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw);
         wargs.setDefs(getTagsDefinitions());
-        analyzer.writeXref(wargs);
+        Xrefer xref = analyzer.writeXref(wargs);
 
         oss.print(sw.toString());
         oss.print(getHtmlEnd());
-    }
-
-    private void copyStream(InputStream iss, OutputStream oss)
-        throws IOException {
-        byte buffer[] = new byte[8192];
-        int read;
-        do {
-            read = iss.read(buffer, 0, buffer.length);
-            if (read > 0) {
-                oss.write(buffer, 0, read);
-            }
-        } while (read >= 0);
+        return xref.getLOC();
     }
 
     private Definitions getTagsDefinitions() throws IOException {

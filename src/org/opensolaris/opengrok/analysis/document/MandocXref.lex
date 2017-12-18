@@ -43,6 +43,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+// do not include CommonXref.lexh in JFlexNonXref subclasses
 %{
     protected boolean didStartTee;
     protected boolean didStartMandoc;
@@ -97,20 +98,23 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
             // nothing we can do here
         }
     }
-    if (usePlain) {
-        try {
-            StringReader rdr = new StringReader(plainbuf.toString());
-            plainbuf = new StringWriter();
+    try {
+        StringReader rdr = new StringReader(plainbuf.toString());
+        plainbuf = new StringWriter();
 
-            JFlexXref plainxref = new JFlexXref(new PlainXref(rdr));
-            plainxref.setProject(this.project);
-            plainxref.setAnnotation(this.annotation);
-            plainxref.write(plainbuf);
+        JFlexXref plainxref = new JFlexXref(new PlainXref(rdr));
+        plainxref.setProject(this.project);
+        plainxref.setAnnotation(this.annotation);
+        plainxref.write(plainbuf);
+
+        loc = plainxref.getLOC();
+
+        if (usePlain) {
             String result = plainbuf.toString();
             out.write(result);
-        } catch (IOException e) {
-            // nothing we can do here
         }
+    } catch (IOException e) {
+        // nothing we can do here
     }
 
     didStartTee = false;
@@ -126,7 +130,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
         setLineNumber(++yyline);
     }
 
-    {WhiteSpace} |
+    {WhspChar}+ |
     \w+ |
     [^]    {
         writeTee();
