@@ -34,6 +34,7 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.IteratorReader;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
@@ -51,10 +52,20 @@ public class PlainAnalyzer extends TextAnalyzer {
 
     /**
      * Creates a new instance of PlainAnalyzer
-     * @param factory name of factory
+     * @param factory defined instance for the analyzer
      */
     protected PlainAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+    }
+
+    /**
+     * Creates a new instance of {@link PlainAnalyzer}.
+     * @param factory defined instance for the analyzer
+     * @param symbolTokenizer defined instance for the analyzer
+     */
+    protected PlainAnalyzer(FileAnalyzerFactory factory,
+        JFlexTokenizer symbolTokenizer) {
+        super(factory, symbolTokenizer);
     }
 
     /**
@@ -83,8 +94,9 @@ public class PlainAnalyzer extends TextAnalyzer {
             if (defs != null && defs.numberOfSymbols() > 0) {
                 doc.add(new TextField(QueryBuilder.DEFS, new IteratorReader(defs.getSymbols())));
                 //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
-                TextField ref=new TextField(QueryBuilder.REFS,this.SymbolTokenizer);
-                this.SymbolTokenizer.setReader(getReader(src.getStream()));
+                TextField ref = new TextField(QueryBuilder.REFS,
+                    this.symbolTokenizer);
+                this.symbolTokenizer.setReader(getReader(src.getStream()));
                 doc.add(ref);
                 byte[] tags = defs.serialize();
                 doc.add(new StoredField(QueryBuilder.TAGS, tags));                

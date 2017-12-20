@@ -46,16 +46,13 @@ import org.opensolaris.opengrok.web.Util;
 %init{
     h = new AdaLexHelper(this);
 %init}
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
     private final AdaLexHelper h;
 
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-
+    /**
+     * Resets the Ada tracked state after {@link #reset()}.
+     */
     @Override
     public void reset() {
         super.reset();

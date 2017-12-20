@@ -370,18 +370,6 @@ public abstract class JFlexXref extends JFlexStateStacker {
     public abstract void yyreset(Reader reader);
 
     /**
-     * Get the value of {@code yyline}.
-     * @return line number
-     */
-    protected abstract int getLineNumber();
-
-    /**
-     * Set the value of {@code yyline}.
-     * @param x line number
-     */
-    protected abstract void setLineNumber(int x);
-
-    /**
      * start new analysis
      * @param newState state to begin from
      */
@@ -400,12 +388,6 @@ public abstract class JFlexXref extends JFlexStateStacker {
      * @return id of state
      */
     public abstract int yystate();
-
-    /**
-     * Gets the YYEOF value.
-     * @return YYEOF
-     */
-    public abstract int getYYEOF();
 
     /**
      * Writes the closing of an open span tag previously opened by this method

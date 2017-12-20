@@ -27,18 +27,17 @@
  */
 
 package org.opensolaris.opengrok.analysis.pascal;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class PascalSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %init{
-super(in);
 %init}
 %unicode
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
@@ -50,7 +49,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar, yychar + yylength());
                         return yystate(); }
               }
  \"     { yybegin(STRING); }

@@ -24,17 +24,16 @@
 
 package org.opensolaris.opengrok.analysis.sh;
 
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class ShSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 %state STRING COMMENT SCOMMENT QSTRING
@@ -47,7 +46,7 @@ super(in);
 {Identifier}    {
     String id = yytext();
                 if(!Consts.shkwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar, yychar + yylength());
                         return yystate(); }
               }
  {Number}    {}
@@ -71,14 +70,14 @@ super(in);
 
 <STRING> {
 "$" {Identifier}    {
-    setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
+    onSymbolMatched(yytext().substring(1), yychar + 1, yychar + yylength());
     return yystate();
  }
 
 "${" {Identifier} "}"    {
     int startOffset = 2;            // trim away the "${" prefix
     int endOffset = yylength() - 1; // trim away the "}" suffix
-    setAttribs(yytext().substring(startOffset, endOffset),
+    onSymbolMatched(yytext().substring(startOffset, endOffset),
                yychar + startOffset,
                yychar + endOffset);
     return yystate();

@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexXref
 %unicode
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{ 
   int p;
   int span;
@@ -56,12 +56,6 @@ import org.opensolaris.opengrok.web.Util;
         out.write("</div><pre>");
   }
 
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-  
   // Q&D methods to assure well-formed documents
   protected void closePara() throws IOException {
       if (p > 0) {

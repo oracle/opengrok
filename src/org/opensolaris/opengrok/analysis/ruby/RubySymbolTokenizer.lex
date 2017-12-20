@@ -31,24 +31,22 @@ package org.opensolaris.opengrok.analysis.ruby;
 import java.io.IOException;
 import java.util.Stack;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class RubySymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %implements RubyLexer
 %unicode
 %int
 %char
 %init{
-    super(in);
     h = getNewHelper();
 %init}
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %{
     protected Stack<RubyLexHelper> helpers;
 
@@ -57,11 +55,10 @@ import org.opensolaris.opengrok.web.Util;
     private String lastSymbol;
 
     /**
-     * Reinitialize the tokenizer with new reader.
-     * @throws java.io.IOException in case of I/O error
+     * Reset the Ruby tracked state after {@link #reset()}.
      */
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         if (helpers != null) helpers.clear();
         h.reset();
@@ -90,8 +87,8 @@ import org.opensolaris.opengrok.web.Util;
             lastSymbol = null;
         } else if (ignoreKwd || !Consts.kwd.contains(value)) {
             lastSymbol = value;
-            setAttribs(value, yychar + captureOffset, yychar + captureOffset +
-                value.length());
+            onSymbolMatched(value, yychar + captureOffset, yychar +
+                captureOffset + value.length());
             return true;
         } else {
             lastSymbol = null;

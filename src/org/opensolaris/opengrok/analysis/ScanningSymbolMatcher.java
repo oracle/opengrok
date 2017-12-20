@@ -18,13 +18,16 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-%{
-    /**
-     * Gets the YYEOF value.
-     * @return YYEOF
-     */
-    public int getYYEOF() { return YYEOF; }
-%}
+package org.opensolaris.opengrok.analysis;
+
+/**
+ * Represents an API for a resettable {@link JFlexLexer} that exposes its YYEOF
+ * value and publishes {@link SymbolMatchedEvent}s.
+ */
+public interface ScanningSymbolMatcher extends JFlexStackingLexer, Resettable,
+    SymbolMatchedPublisher {
+}

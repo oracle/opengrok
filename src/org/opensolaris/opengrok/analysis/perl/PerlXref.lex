@@ -47,16 +47,13 @@ import org.opensolaris.opengrok.web.Util;
     h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
         HERE, HERExN, HEREin, HEREinxN);
 %init}
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
     private final PerlLexHelper h;
 
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-
+    /**
+     * Resets the Perl tracked state after {@link #reset()}.
+     */
     @Override
     public void reset() {
         super.reset();

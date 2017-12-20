@@ -23,22 +23,18 @@
  */
 
 package org.opensolaris.opengrok.analysis.document;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
-
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 
 %public
 %class TroffFullTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %caseless
 %char
 
@@ -53,9 +49,13 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 \\f[ABCIR]  {}
 ^"...\\\"" {}
 
-\\&.        {setAttribs(".", yychar, yychar + yylength()); return yystate();}
+\\&.        {
+    onSymbolMatched(".", yychar, yychar + yylength()); return yystate();
+}
+
 {Identifier}|{Number}|{Printable} {
-    setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
     return yystate();
 }
+
 [^]    {}

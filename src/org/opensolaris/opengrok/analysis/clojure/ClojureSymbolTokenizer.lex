@@ -28,25 +28,23 @@
 
 package org.opensolaris.opengrok.analysis.clojure;
 
-import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class ClojureSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 %{
     private int nestedComment;
 
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         nestedComment = 0;
     }
@@ -62,7 +60,7 @@ super(in);
 {Identifier} {
     String id = yytext();
               if (!Consts.kwd.contains(id)) {
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar, yychar + yylength());
                         return yystate();
               }
  }

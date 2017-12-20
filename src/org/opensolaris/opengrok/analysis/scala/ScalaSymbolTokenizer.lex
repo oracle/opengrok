@@ -28,24 +28,22 @@
 
 package org.opensolaris.opengrok.analysis.scala;
 
-import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class ScalaSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %init{
-super(in);
 %init}
 %unicode
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 %{
     private int nestedComment;
 
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         nestedComment = 0;
     }
@@ -69,7 +67,7 @@ super(in);
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar, yychar + yylength());
                         return yystate(); }
               }
 
@@ -77,7 +75,7 @@ super(in);
     String capture = yytext();
     String id = capture.substring(1, capture.length() - 1);
     if (!Consts.kwd.contains(id)) {
-        setAttribs(id, yychar + 1, yychar + 1 + id.length());
+        onSymbolMatched(id, yychar + 1, yychar + 1 + id.length());
         return yystate();
     }
  }
@@ -88,7 +86,7 @@ super(in);
     // ctags include the "_" in the symbol, so follow that too.
     String id = capture.substring(0, uoff + 1);
     if (!Consts.kwd.contains(id)) {
-        setAttribs(id, yychar, yychar + id.length());
+        onSymbolMatched(id, yychar, yychar + id.length());
         return yystate();
     }
  }
@@ -118,7 +116,7 @@ super(in);
         String capture = yytext();
         String id = capture.substring(1);
         if (!Consts.kwd.contains(id)) {
-            setAttribs(id, yychar + 1, yychar + yylength());
+            onSymbolMatched(id, yychar + 1, yychar + yylength());
             return yystate();
        }
     }

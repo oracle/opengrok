@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexXrefSimple
 %unicode
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
   /**
    * Stores the number of hashes beginning and ending a raw string or raw byte
@@ -55,12 +55,6 @@ import org.opensolaris.opengrok.web.Util;
       rawHashCount = 0;
       nestedComment = 0;
   }
-
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
 %}
 
 File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |

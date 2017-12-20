@@ -35,6 +35,7 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertSymbolStream;
 
@@ -48,11 +49,12 @@ public class PerlSymbolTokenizerTest {
      * one single implementation class with the specified input text and
      * expected tokens.
      */
-    private void testOffsetAttribute(Class<? extends JFlexTokenizer> klass,
+    private void testOffsetAttribute(Class<? extends JFlexSymbolMatcher> klass,
             String inputText, String[] expectedTokens)
             throws Exception {
-        JFlexTokenizer tokenizer = klass.getConstructor(Reader.class)
-                .newInstance(new StringReader(inputText));
+        JFlexSymbolMatcher matcher = klass.getConstructor(Reader.class).
+                newInstance(new StringReader(inputText));
+        JFlexTokenizer tokenizer = new JFlexTokenizer(matcher);
 
         CharTermAttribute term = tokenizer.addAttribute(CharTermAttribute.class);
         OffsetAttribute offset = tokenizer.addAttribute(OffsetAttribute.class);

@@ -27,18 +27,17 @@
  */
 
 package org.opensolaris.opengrok.analysis.c;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class CSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 %state STRING COMMENT SCOMMENT QSTRING
@@ -50,7 +49,7 @@ super(in);
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)) {
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar, yychar + yylength());
                         return yystate(); }
               }
 

@@ -28,7 +28,7 @@
 
 package org.opensolaris.opengrok.analysis.golang;
 
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 
 /**
  * @author Patrick Lundquist
@@ -36,13 +36,12 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class GolangSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 %state STRING COMMENT SCOMMENT QSTRING
@@ -55,7 +54,7 @@ super(in);
     {Identifier} {
         String id = yytext();
         if (!Consts.kwd.contains(id)) {
-            setAttribs(id, yychar, yychar + yylength());
+            onSymbolMatched(id, yychar, yychar + yylength());
             return yystate();
         }
     }

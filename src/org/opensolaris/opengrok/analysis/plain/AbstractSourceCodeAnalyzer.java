@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -27,6 +28,7 @@ import java.io.Reader;
 import java.io.Writer;
 import org.apache.lucene.document.Document;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
@@ -53,10 +55,12 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
 
     /**
      * Creates a new instance of abstract analyzer
-     * @param factory for which analyzer to create this
+     * @param factory defined instance for the analyzer
+     * @param symbolTokenizer defined instance for the analyzer
      */
-    protected AbstractSourceCodeAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
+    protected AbstractSourceCodeAnalyzer(FileAnalyzerFactory factory,
+        JFlexTokenizer symbolTokenizer) {
+        super(factory, symbolTokenizer);
     }
     
     /**

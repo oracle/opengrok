@@ -29,18 +29,16 @@
 
 package org.opensolaris.opengrok.analysis.rust;
 
-import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class RustSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %init{
-super(in);
 %init}
 %unicode
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 %{
   /**
@@ -52,7 +50,7 @@ super(in);
   int nestedComment;
 
   @Override
-  public void reset() throws IOException {
+  public void reset() {
       super.reset();
       rawHashCount = 0;
       nestedComment = 0;
@@ -69,7 +67,7 @@ super(in);
 {Identifier} {
     String id = yytext();
                 if(!Consts.kwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar, yychar + yylength());
                         return yystate();
                 }
  }

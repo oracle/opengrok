@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexXrefSimple
 %unicode
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
   /* Must match {WhiteSpace} regex */
   private final static String WHITE_SPACE = "[ \\t\\f]+";
@@ -51,12 +51,6 @@ import org.opensolaris.opengrok.web.Util;
       super.reset();
       nestedComment = 0;
   }
-
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
 
   private void pushQuotedString(int state, String capture) throws IOException {
       int qoff = capture.indexOf("\"");

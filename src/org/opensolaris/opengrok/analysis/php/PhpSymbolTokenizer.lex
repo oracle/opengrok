@@ -27,19 +27,21 @@
  */
 
 package org.opensolaris.opengrok.analysis.php;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import java.util.*;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class PhpSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 %ignorecase
 %{
@@ -54,6 +56,12 @@ super(in);
             "false", "true", "self", "callable"
         }
     ));
+  }
+
+  @Override
+  protected void clearStack() {
+      super.clearStack();
+      docLabels.clear();
   }
 
   private boolean isTabOrSpace(int i) {
@@ -109,13 +117,14 @@ DocParamWithName = "uses"
 <IN_SCRIPT> {
     "$" {Identifier} {
         //we ignore keywords if the identifier starts with one of variable chars
-        setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
+        onSymbolMatched(yytext().substring(1), yychar + 1, yychar +
+            yylength());
         return yystate();
     }
 
     {Identifier} {
         if (!Consts.kwd.contains(yytext())) {
-            setAttribs(yytext(), yychar, yychar + yylength());
+            onSymbolMatched(yytext(), yychar, yychar + yylength());
             return yystate();
         }
     }
@@ -208,7 +217,7 @@ DocParamWithName = "uses"
 
 <STRINGVAR> {
     {Identifier} {
-        setAttribs(yytext(), yychar, yychar + yylength());
+        onSymbolMatched(yytext(), yychar, yychar + yylength());
         return yystate();
     }
 
@@ -222,14 +231,15 @@ DocParamWithName = "uses"
     }
 
     \[ "$" {Identifier} \] {
-        setAttribs(yytext().substring(2, yylength()-1), yychar + 2,
+        onSymbolMatched(yytext().substring(2, yylength()-1), yychar + 2,
                 yychar + yylength() - 1);
         yypop();
         return yystate();
     }
 
     "->" {Identifier} {
-        setAttribs(yytext().substring(2), yychar + 2, yychar + yylength());
+        onSymbolMatched(yytext().substring(2), yychar + 2, yychar +
+            yylength());
         yypop(); //because "$arr->a[0]" is the same as $arr->a . "[0]"
         return yystate();
     }
@@ -239,7 +249,7 @@ DocParamWithName = "uses"
 
 <STRINGEXPR> {
     {Identifier} {
-        setAttribs(yytext(), yychar, yychar + yylength());
+        onSymbolMatched(yytext(), yychar, yychar + yylength());
         return yystate();
     }
     \}  { yypop(); }
@@ -286,7 +296,7 @@ DocParamWithName = "uses"
 
     {Identifier} {
         if (!PSEUDO_TYPES.contains(yytext().toLowerCase())) {
-            setAttribs(yytext(), yychar, yychar + yylength());
+            onSymbolMatched(yytext(), yychar, yychar + yylength());
             return yystate();
         }
     }
@@ -296,7 +306,8 @@ DocParamWithName = "uses"
 
 <DOCCOM_NAME> {
     "$" {Identifier} {
-        setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
+        onSymbolMatched(yytext().substring(1), yychar + 1, yychar +
+            yylength());
         yybegin(DOCCOMMENT);
         return yystate();
     }

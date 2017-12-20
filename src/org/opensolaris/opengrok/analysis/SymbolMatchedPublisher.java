@@ -21,10 +21,26 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-%{
+package org.opensolaris.opengrok.analysis;
+
+// "How do I make a Class extend Observable when it has extended another class too?"
+// Answered by adamski, https://stackoverflow.com/users/127479/adamski,
+// https://stackoverflow.com/a/1658735/933163,
+// https://stackoverflow.com/questions/1658702/how-do-i-make-a-class-extend-observable-when-it-has-extended-another-class-too
+
+/**
+ * Represents an API for a publisher for {@link SymbolMatchedEvent}s.
+ */
+public interface SymbolMatchedPublisher {
     /**
-     * Gets the YYEOF value.
-     * @return YYEOF
+     * Adds a listener for the publisher.
+     * @param l the listener
      */
-    public int getYYEOF() { return YYEOF; }
-%}
+    void addSymbolMatchedListener(SymbolMatchedListener l);
+
+    /**
+     * Removes a listener from the publisher.
+     * @param l the listener
+     */
+    void removeSymbolMatchedListener(SymbolMatchedListener l);
+}

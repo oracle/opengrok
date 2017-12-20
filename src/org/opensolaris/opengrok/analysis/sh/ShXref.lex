@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexXrefSimple
 %unicode
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
   private final Stack<String> styleStack = new Stack<String>();
 
@@ -46,17 +46,21 @@ import org.opensolaris.opengrok.web.Util;
   private String heredocStopWord;
   private boolean heredocStripLeadingTabs;
 
+  /**
+   * Resets the sh tracked state after {@link #reset()}.
+   */
+  @Override
+  public void reset() {
+      super.reset();
+      heredocStopWord = null;
+      heredocStripLeadingTabs = false;
+  }
+
   @Override
   protected void clearStack() {
       super.clearStack();
       styleStack.clear();
   }
-
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
 
   @Override
   public void pushSpan(int newState, String className) throws IOException {

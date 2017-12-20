@@ -38,7 +38,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 %extends JFlexXref
 %unicode
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
     protected boolean didStartTee;
     protected boolean didStartMandoc;
@@ -56,12 +56,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
         while(yylex() != YYEOF) {
         }
     }
-
-    // TODO move this into an include file when bug #16053 is fixed
-    @Override
-    protected int getLineNumber() { return yyline; }
-    @Override
-    protected void setLineNumber(int x) { yyline = x; }
 
     protected void startTee() throws IOException {
         plainbuf = new StringWriter();

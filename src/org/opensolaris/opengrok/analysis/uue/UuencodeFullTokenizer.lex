@@ -24,28 +24,35 @@
  */
 
 package org.opensolaris.opengrok.analysis.uue;
-import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
-
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
-
 %public
 %class UuencodeFullTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %caseless
 %char
 %{
   boolean b64;
   boolean modeFound;
   boolean nameFound;
+
+  /**
+   * Resets the uuencode tracked state after
+   * {@link JFlexSymbolMatcher#reset()}.
+   */
+  @Override
+  public void reset() {
+      super.reset();
+      b64 = false;
+      modeFound = false;
+      nameFound = false;
+  }
 %}
 
 //WhiteSpace     = [ \t\f\r]+|\n
@@ -64,12 +71,12 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     nameFound = false;
     yybegin(BEGIN);
     yypushback(1);
-    setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
     return yystate();
   }
 
   {Identifier}|{Number}|{Printable} {
-    setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
     return yystate();
   }
 
@@ -87,7 +94,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     if (b64)
       yybegin(YYINITIAL);
     b64 = true;
-    setAttribs(yytext(), yychar, yychar + yylength());
+    onSymbolMatched(yytext(), yychar, yychar + yylength());
     return yystate();
   }
   "base64 " {
@@ -96,7 +103,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     else
       yybegin(YYINITIAL);
     yypushback(1);
-    setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
     return yystate();
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
@@ -106,7 +113,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
   " " { if (modeFound) yybegin(NAME); }
   {Identifier}|{Number}|{Printable} {
     modeFound = true;
-    setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
     return yystate();
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
@@ -121,7 +128,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
   }
   {Identifier}|{Number}|{Printable} {
     nameFound = true;
-    setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
     return yystate();
   }
   [^\n] { yybegin(YYINITIAL); yypushback(1); }
@@ -133,7 +140,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     String t = yytext();
     if (t.equals("end") && !b64) {
       yybegin(YYINITIAL);
-      setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
+      onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
       return yystate();
     } else if (t.equals("====") && b64)
       yybegin(YYINITIAL);

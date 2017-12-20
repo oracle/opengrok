@@ -41,7 +41,7 @@ import org.opensolaris.opengrok.web.Util;
 %extends JFlexXrefSimple
 %unicode
 %int
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
   private static final Pattern MATCH_INCLUDE = Pattern.compile(
       "^(#.*)(include)(.*)([<\"])(.*)([>\"])$");
@@ -51,12 +51,6 @@ import org.opensolaris.opengrok.web.Util;
   private static final int INCL_PUNC0_G = 4;
   private static final int INCL_PATH_G = 5;
   private static final int INCL_PUNCZ_G = 6;
-
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
 %}
 
 File = [a-zA-Z]{FNameChar}* "." ([cChHsStT] | [Cc][Oo][Nn][Ff] |

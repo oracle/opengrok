@@ -47,18 +47,15 @@ import org.opensolaris.opengrok.web.Util;
 %init{
     h = getNewHelper();
 %init}
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
     protected Stack<RubyLexHelper> helpers;
 
     private RubyLexHelper h;
 
-    // TODO move this into an include file when bug #16053 is fixed
-    @Override
-    protected int getLineNumber() { return yyline; }
-    @Override
-    protected void setLineNumber(int x) { yyline = x; }
-
+    /**
+     * Resets the Ruby tracked state after {@link #reset()}.
+     */
     @Override
     public void reset() {
         super.reset();
