@@ -403,7 +403,8 @@ public final class RuntimeEnvironment {
         for (String allowedSymlink : getAllowedSymlinks()) {
             String allowedTarget = new File(allowedSymlink).getCanonicalPath();
             if (canonicalPath.startsWith(allowedTarget)) {
-                return canonicalPath.substring(allowedTarget.length()
+                return allowedSymlink.substring(sourceRoot.length()) +
+                       canonicalPath.substring(allowedTarget.length()
                         + stripCount);
             }
         }
