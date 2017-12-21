@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -49,6 +50,8 @@ import org.opensolaris.opengrok.configuration.Configuration.RemoteSCM;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
+import org.opensolaris.opengrok.util.PathUtils;
 import org.opensolaris.opengrok.util.Statistics;
 
 /**
@@ -75,6 +78,12 @@ public final class HistoryGuru {
      * map of repositories, with {@code DirectoryName} as key
      */
     private Map<String, Repository> repositories = new ConcurrentHashMap<>();
+
+    /**
+     * set of repository roots (using ConcurrentHashMap but a throwaway value)
+     * with parent of {@code DirectoryName} as key
+     */
+    private Map<String, String> repositoryRoots = new ConcurrentHashMap<>();
 
     private final int scanningDepth;
     
@@ -236,7 +245,6 @@ public final class HistoryGuru {
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repo = getRepository(dir);
 
-        History history = null;
         RemoteSCM rscm = RuntimeEnvironment.getInstance().getRemoteScmSupported();
         boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY))
                 || (rscm == RemoteSCM.ON)
@@ -246,13 +254,17 @@ public final class HistoryGuru {
                 && (!repo.isRemote() || doRemote)) {
 
             if (useCache() && historyCache.supportsRepository(repo)) {
-                history = historyCache.get(file, repo, withFiles);
-            } else {
-                history = repo.getHistory(file);
+                try {
+                    return historyCache.get(file, repo, withFiles);
+                } catch (ForbiddenSymlinkException ex) {
+                    LOGGER.log(Level.FINER, ex.getMessage());
+                    return null;
+                }
             }
+            return repo.getHistory(file);
         }
 
-        return history;
+        return null;
     }
 
     /**
@@ -293,6 +305,23 @@ public final class HistoryGuru {
                 || (RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.UIONLY)
                 || (RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.DIRBASED)
                 || !repo.isRemote());
+    }
+
+    /**
+     * Does the history cache contain entry for this directory ?
+     * @param file
+     * @return true if there is cache, false otherwise
+     */
+    public boolean hasCacheForFile(File file) {
+        if (!useCache()) {
+            return false;
+        }
+
+        try {
+            return historyCache.hasCacheForFile(file);
+        } catch (HistoryException ex) {
+            return false;
+        }
     }
 
     /**
@@ -392,14 +421,13 @@ public final class HistoryGuru {
                         }
                     }
                 } else {
-                    repository.setDirectoryName(path);
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
                         LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
                                 new Object[]{repository.getClass().getName(), path});
                     }
 
                     repoList.add(new RepositoryInfo(repository));
-                    repositories.put(repository.getDirectoryName(), repository);
+                    putRepository(repository);
 
                     // @TODO: Search only for one type of repository - the one found here
                     if (recursiveSearch && repository.supportsSubRepositories()) {
@@ -812,20 +840,28 @@ public final class HistoryGuru {
     }
 
     protected Repository getRepository(File path) {
-        File file;
-
-        try {
-            file = path.getCanonicalFile();
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to get canonical path for " + path, e);
-            return null;
-        }
+        File file = path;
+        Set<String> rootKeys = repositoryRoots.keySet();
 
         while (file != null) {
-            Repository r = repositories.get(file.getAbsolutePath());
-            if (r != null) {
-                return r;
+            String nextPath = file.getPath();
+            for (String rootKey : rootKeys) {
+                String rel;
+                try {
+                    rel = PathUtils.getRelativeToCanonical(nextPath, rootKey);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING,
+                        "Failed to get relative to canonical for " + nextPath,
+                        e);
+                    return null;
+                }
+                String inRootPath = Paths.get(rootKey, rel).toString();
+                Repository r = repositories.get(inRootPath);
+                if (r != null) {
+                    return r;
+                }
             }
+
             file = file.getParentFile();
         }
 
@@ -842,6 +878,11 @@ public final class HistoryGuru {
         for (String repo : repos) {
             repositories.remove(repo);
         }
+
+        // Re-map the repository roots.
+        repositoryRoots.clear();
+        List<Repository> ccopy = new ArrayList<>(repositories.values());
+        ccopy.forEach((repo) -> { putRepository(repo); });
     }
 
     /**set
@@ -883,6 +924,7 @@ public final class HistoryGuru {
      */
     public void invalidateRepositories(Collection<? extends RepositoryInfo> repos) {
         if (repos == null || repos.isEmpty()) {
+            repositoryRoots.clear();
             repositories.clear();
             return;
         }
@@ -945,11 +987,25 @@ public final class HistoryGuru {
         }
         executor.shutdown();
 
+        repositoryRoots.clear();
         repositories.clear();
-        repositories.putAll(newrepos);
+        newrepos.forEach((_key, repo) -> { putRepository(repo); });
 
         if (verbose) {
             elapsed.report(LOGGER, "done invalidating repositories");
         }
+    }
+
+    /**
+     * Adds the specified {@code repository} to this instance's repository map
+     * and repository-root map (if not already there).
+     * @param repository a defined instance
+     */
+    private void putRepository(Repository repository) {
+        String repoDirectoryName = repository.getDirectoryName();
+        File repoDirectoryFile = new File(repoDirectoryName);
+        String repoDirParent = repoDirectoryFile.getParent();
+        repositoryRoots.put(repoDirParent, "");
+        repositories.put(repoDirectoryName, repository);
     }
 }
