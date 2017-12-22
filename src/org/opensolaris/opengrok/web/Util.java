@@ -85,9 +85,36 @@ public final class Util {
     }
 
     /**
+     * Return a string that represents <code>s</code> in HTML by calling
+     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * with {@code s}, a transient {@link StringBuilder}, and {@code true}.
+     * <p>
+     * (N.b. if no special characters are present, {@code s} is returned as is,
+     * without the expensive call.)
+     *
+     * @param s a defined string
+     * @return a string representing the character sequence in HTML
+     */
+    public static String prehtmlize(String s) {
+        if (!needsHtmlize(s, true)) return s;
+
+        StringBuilder sb = new StringBuilder(s.length() * 2);
+        try {
+            htmlize(s, sb, true);
+        } catch (IOException ioe) {
+            // IOException cannot happen when the destination is a
+            // StringBuilder. Wrap in an AssertionError so that callers
+            // don't have to check for an IOException that should never
+            // happen.
+            throw new AssertionError("StringBuilder threw IOException", ioe);
+        }
+        return sb.toString();
+    }
+
+    /**
      * Calls
      * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
-     * with {@code q}, a transient {@link StringBuilder}, and true.
+     * with {@code q}, a transient {@link StringBuilder}, and {@code true}.
      * @param q a character sequence
      * @return a string representing the character sequence in HTML
      */
@@ -106,7 +133,38 @@ public final class Util {
     }
 
     /**
-     * Return a string which represents a <code>CharSequence</code> in HTML.
+     * Return a string that represents a <code>CharSequence</code> in HTML by
+     * calling
+     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * with {@code s}, a transient {@link StringBuilder}, and {@code false}.
+     * <p>
+     * (N.b. if no special characters are present, {@code s} is returned as is,
+     * without the expensive call.)
+     *
+     * @param s a defined string
+     * @return a string representing the character sequence in HTML
+     */
+    public static String htmlize(String s) {
+        if (!needsHtmlize(s, false)) return s;
+
+        StringBuilder sb = new StringBuilder(s.length() * 2);
+        try {
+            htmlize(s, sb, false);
+        } catch (IOException ioe) {
+            // IOException cannot happen when the destination is a
+            // StringBuilder. Wrap in an AssertionError so that callers
+            // don't have to check for an IOException that should never
+            // happen.
+            throw new AssertionError("StringBuilder threw IOException", ioe);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Return a string which represents a <code>CharSequence</code> in HTML by
+     * calling
+     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * with {@code q}, a transient {@link StringBuilder}, and {@code false}.
      *
      * @param q a character sequence
      * @return a string representing the character sequence in HTML
@@ -114,7 +172,7 @@ public final class Util {
     public static String htmlize(CharSequence q) {
         StringBuilder sb = new StringBuilder(q.length() * 2);
         try {
-            htmlize(q, sb);
+            htmlize(q, sb, false);
         } catch (IOException ioe) {
             // IOException cannot happen when the destination is a
             // StringBuilder. Wrap in an AssertionError so that callers
@@ -127,7 +185,9 @@ public final class Util {
 
     /**
      * Append a character sequence to the given destination whereby special
-     * characters for HTML are escaped accordingly.
+     * characters for HTML are escaped accordingly via a call to
+     * {@link #htmlize(char, java.lang.Appendable, boolean)} with (each)
+     * {@code char}, {@code dest}, and {@code pre}.
      *
      * @param q a character sequence to escape
      * @param dest where to append the character sequence to
@@ -145,7 +205,7 @@ public final class Util {
     /**
      * Calls
      * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
-     * with {@code q}, {@code dest}, and false.
+     * with {@code q}, {@code dest}, and {@code false}.
      *
      * @param q a character sequence to escape
      * @param dest where to append the character sequence to
@@ -185,6 +245,7 @@ public final class Util {
      * @param pre a value indicating whether the output is pre-formatted -- if
      * true then LFs will not be converted to &lt;br&gt; elements
      * @throws IOException if an error occurred when writing to {@code dest}
+     * @see #needsHtmlize(char, boolean)
      */
     private static void htmlize(char c, Appendable dest, boolean pre)
             throws IOException {
@@ -214,6 +275,35 @@ public final class Util {
             default:
                 dest.append(c);
         }
+    }
+
+    /**
+     * Determine if a character is a special character needing HTML escaping.
+     * @param c the character to examine
+     * @param pre a value indicating whether the output is pre-formatted -- if
+     * true then LFs will not be converted to &lt;br&gt; elements
+     * @see #htmlize(char, java.lang.Appendable, boolean)
+     */
+    private static boolean needsHtmlize(char c, boolean pre) {
+        switch (c) {
+            case '\'':
+            case '"':
+            case '&':
+            case '>':
+            case '<':
+                return true;
+            case '\n':
+                if (!pre) return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean needsHtmlize(CharSequence q, boolean pre) {
+        for (int i = 0; i < q.length(); ++i) {
+            if (needsHtmlize(q.charAt(i), pre)) return true;
+        }
+        return false;
     }
 
     private static final String versionP = htmlize(Info.getRevision());
