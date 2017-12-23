@@ -23,6 +23,7 @@
  */
 package org.opensolaris.opengrok.analysis.php;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,8 +37,13 @@ import java.io.Writer;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.analysis.CtagsReader;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link PhpXref} class.
@@ -77,7 +83,7 @@ public class PhpXrefTest {
     }
 
 
-    public static void writePhpXref(InputStream is, PrintStream os) throws IOException {
+    public void writePhpXref(InputStream is, PrintStream os) throws IOException {
         os.println(
                 "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
                 + "href=\"http://localhost:8080/source/default/style.css\" /><title>PHP Xref Test</title></head>");
@@ -85,13 +91,17 @@ public class PhpXrefTest {
         Writer w = new StringWriter();
         PhpAnalyzerFactory fac = new PhpAnalyzerFactory();
         FileAnalyzer analyzer = fac.getAnalyzer();
-        analyzer.writeXref(new WriteXrefArgs(
-            new InputStreamReader(is, "UTF-8"), w));
+        WriteXrefArgs wargs = new WriteXrefArgs(
+            new InputStreamReader(is, "UTF-8"), w);
+        wargs.setDefs(getTagsDefinitions());
+        analyzer.setScopesEnabled(true);
+        analyzer.setFoldingEnabled(true);
+        analyzer.writeXref(wargs);
         os.print(w.toString());
         os.println("</pre></div></body></html>");
     }
 
-    public static void main(String args[]) throws IOException {
+    public void main(String args[]) throws IOException {
         InputStream is = null;
         if (args.length == 0) {
             is = PhpXrefTest.class.getClassLoader().getResourceAsStream(
@@ -108,7 +118,6 @@ public class PhpXrefTest {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
                 "org/opensolaris/opengrok/analysis/php/sample.php");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
 
         try {
             writePhpXref(res, new PrintStream(baos));
@@ -118,27 +127,32 @@ public class PhpXrefTest {
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
                 "org/opensolaris/opengrok/analysis/php/sampleXrefRes.html");
-
-        try {
-            byte buffer[] = new byte[8192];
-            int read;
-            do {
-                read = exp.read(buffer, 0, buffer.length);
-                if (read > 0) {
-                    baosExp.write(buffer, 0, read);
-                }
-            } while (read >= 0);
-        } finally {
-            baosExp.close();
-        }
+        byte[] expbytes = copyStream(exp);
 
         String gotten[] = new String(baos.toByteArray(), "UTF-8").split("\n");
-        String expected[] = new String(baosExp.toByteArray(), "UTF-8").split("\n");
+        String expected[] = new String(expbytes, "UTF-8").split("\n");
+        assertLinesEqual("PHP xref", expected, gotten);
 
         assertEquals(expected.length, gotten.length);
 
         for (int i = 0; i < gotten.length; i++) {
             assertEquals(expected[i], gotten[i]);
         }
+    }
+
+    private Definitions getTagsDefinitions() throws IOException {
+        InputStream res = getClass().getClassLoader().getResourceAsStream(
+            "org/opensolaris/opengrok/analysis/php/sampletags");
+        assertNotNull("though sampletags should stream,", res);
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+            res, "UTF-8"));
+
+        CtagsReader rdr = new CtagsReader();
+        String line;
+        while ((line = in.readLine()) != null) {
+            rdr.readLine(line);
+        }
+        return rdr.getDefinitions();
     }
 }
