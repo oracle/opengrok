@@ -23,32 +23,35 @@
 
 package org.opensolaris.opengrok.analysis;
 
-// "How do I make a Class extend Observable when it has extended another class too?"
-// Answered by adamski, https://stackoverflow.com/users/127479/adamski,
-// https://stackoverflow.com/a/1658735/933163,
-// https://stackoverflow.com/questions/1658702/how-do-i-make-a-class-extend-observable-when-it-has-extended-another-class-too
-
 /**
- * Represents an event raised when a symbol matcher matches a string that
- * might be published as a symbol.
+ * Represents an event raised when a symbol matcher matches a path-like string
+ * that would not be published as a symbol.
  */
-public class SymbolMatchedEvent {
+public class PathlikeMatchedEvent {
 
     private final Object source;
     private final String str;
+    private final char sep;
+    private final boolean canonicalize;
     private final int start;
     private final int end;
 
     /**
-     * Initializes an immutable instance of {@link SymbolMatchedEvent}.
+     * Initializes an immutable instance of {@link PathlikeMatchedEvent}.
      * @param source the event source
-     * @param str the symbol string
-     * @param start the symbol start position
-     * @param end the symbol end position
+     * @param str the path text string
+     * @param sep the path separator
+     * @param canonicalize a value indicating whether the path should be
+     * canonicalized
+     * @param start the text start position
+     * @param end the text end position
      */
-    public SymbolMatchedEvent(Object source, String str, int start, int end) {
+    public PathlikeMatchedEvent(Object source, String str, char sep,
+        boolean canonicalize, int start, int end) {
         this.source = source;
         this.str = str;
+        this.sep = sep;
+        this.canonicalize = canonicalize;
         this.start = start;
         this.end = end;
     }
@@ -62,7 +65,7 @@ public class SymbolMatchedEvent {
     }
 
     /**
-     * Gets the symbol string.
+     * Gets the path text string.
      * @return the initial value
      */
     public String getStr() {
@@ -70,7 +73,7 @@ public class SymbolMatchedEvent {
     }
 
     /**
-     * Gets the symbol start position.
+     * Gets the text start position.
      * @return the initial value
      */
     public int getStart() {
@@ -78,10 +81,26 @@ public class SymbolMatchedEvent {
     }
 
     /**
-     * Gets the symbol end position.
+     * Gets the text end position.
      * @return the initial value
      */
     public int getEnd() {
         return end;
+    }
+
+    /**
+     * Gets the path separator.
+     * @return the initial value
+     */
+    public char getSep() {
+        return sep;
+    }
+
+    /**
+     * Gets a value indicating whether the path should be canonicalized.
+     * @return the initial value
+     */
+    public boolean getCanonicalize() {
+        return canonicalize;
     }
 }

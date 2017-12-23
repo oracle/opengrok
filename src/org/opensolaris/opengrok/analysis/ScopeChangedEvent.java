@@ -23,31 +23,30 @@
 
 package org.opensolaris.opengrok.analysis;
 
-// "How do I make a Class extend Observable when it has extended another class too?"
-// Answered by adamski, https://stackoverflow.com/users/127479/adamski,
-// https://stackoverflow.com/a/1658735/933163,
-// https://stackoverflow.com/questions/1658702/how-do-i-make-a-class-extend-observable-when-it-has-extended-another-class-too
-
 /**
- * Represents an event raised when a symbol matcher matches a string that
- * might be published as a symbol.
+ * Represents an event raised when a language lexer indicates that scope has
+ * changed.
  */
-public class SymbolMatchedEvent {
+public class ScopeChangedEvent {
 
     private final Object source;
+    private final ScopeAction action;
     private final String str;
     private final int start;
     private final int end;
 
     /**
-     * Initializes an immutable instance of {@link SymbolMatchedEvent}.
+     * Initializes an immutable instance of {@link ScopeChangedEvent}.
      * @param source the event source
-     * @param str the symbol string
-     * @param start the symbol start position
-     * @param end the symbol end position
+     * @param action the scope change action
+     * @param str the text string
+     * @param start the text start position
+     * @param end the text end position
      */
-    public SymbolMatchedEvent(Object source, String str, int start, int end) {
+    public ScopeChangedEvent(Object source, ScopeAction action, String str,
+        int start, int end) {
         this.source = source;
+        this.action = action;
         this.str = str;
         this.start = start;
         this.end = end;
@@ -62,15 +61,23 @@ public class SymbolMatchedEvent {
     }
 
     /**
-     * Gets the symbol string.
+     * Gets the scope change action.
      * @return the initial value
+     */
+    public ScopeAction getAction() {
+        return action;
+    }
+
+    /**
+     * Gets the text string.
+     * @return the text string
      */
     public String getStr() {
         return str;
     }
 
     /**
-     * Gets the symbol start position.
+     * Gets the text start position.
      * @return the initial value
      */
     public int getStart() {
@@ -78,7 +85,7 @@ public class SymbolMatchedEvent {
     }
 
     /**
-     * Gets the symbol end position.
+     * Gets the text end position.
      * @return the initial value
      */
     public int getEnd() {

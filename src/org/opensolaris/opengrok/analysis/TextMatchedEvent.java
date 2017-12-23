@@ -23,32 +23,42 @@
 
 package org.opensolaris.opengrok.analysis;
 
-// "How do I make a Class extend Observable when it has extended another class too?"
-// Answered by adamski, https://stackoverflow.com/users/127479/adamski,
-// https://stackoverflow.com/a/1658735/933163,
-// https://stackoverflow.com/questions/1658702/how-do-i-make-a-class-extend-observable-when-it-has-extended-another-class-too
-
 /**
  * Represents an event raised when a symbol matcher matches a string that
- * might be published as a symbol.
+ * would not be published as a symbol.
  */
-public class SymbolMatchedEvent {
+public class TextMatchedEvent {
 
     private final Object source;
     private final String str;
+    private final EmphasisHint hint;
     private final int start;
     private final int end;
 
     /**
-     * Initializes an immutable instance of {@link SymbolMatchedEvent}.
+     * Initializes an immutable instance of {@link TextMatchedEvent}.
      * @param source the event source
-     * @param str the symbol string
-     * @param start the symbol start position
-     * @param end the symbol end position
+     * @param str the text string
+     * @param start the text start position
+     * @param end the text end position
      */
-    public SymbolMatchedEvent(Object source, String str, int start, int end) {
+    public TextMatchedEvent(Object source, String str, int start, int end) {
+        this(source, str, EmphasisHint.NONE, start, end);
+    }
+
+    /**
+     * Initializes an immutable instance of {@link TextMatchedEvent}.
+     * @param source the event source
+     * @param str the text string
+     * @param hint the text hint
+     * @param start the text start position
+     * @param end the text end position
+     */
+    public TextMatchedEvent(Object source, String str, EmphasisHint hint,
+        int start, int end) {
         this.source = source;
         this.str = str;
+        this.hint = hint;
         this.start = start;
         this.end = end;
     }
@@ -62,7 +72,7 @@ public class SymbolMatchedEvent {
     }
 
     /**
-     * Gets the symbol string.
+     * Gets the text string.
      * @return the initial value
      */
     public String getStr() {
@@ -70,7 +80,7 @@ public class SymbolMatchedEvent {
     }
 
     /**
-     * Gets the symbol start position.
+     * Gets the text start position.
      * @return the initial value
      */
     public int getStart() {
@@ -78,10 +88,18 @@ public class SymbolMatchedEvent {
     }
 
     /**
-     * Gets the symbol end position.
+     * Gets the text end position.
      * @return the initial value
      */
     public int getEnd() {
         return end;
+    }
+
+    /**
+     * Gets the text hint.
+     * @return the initial value
+     */
+    public EmphasisHint getHint() {
+        return hint;
     }
 }

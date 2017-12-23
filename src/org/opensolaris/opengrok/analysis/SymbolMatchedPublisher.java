@@ -43,4 +43,16 @@ public interface SymbolMatchedPublisher {
      * @param l the listener
      */
     void removeSymbolMatchedListener(SymbolMatchedListener l);
+
+    /**
+     * Adds a listener for the publisher.
+     * @param l the listener
+     */
+    void addNonSymbolMatchedListener(NonSymbolMatchedListener l);
+
+    /**
+     * Removes a listener from the publisher.
+     * @param l the listener
+     */
+    void removeNonSymbolMatchedListener(NonSymbolMatchedListener l);
 }

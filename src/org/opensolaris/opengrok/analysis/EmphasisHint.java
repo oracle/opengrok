@@ -18,16 +18,17 @@
  */
 
 /*
- * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
 
 /**
- * Represents an API for a {@link Resettable} {@link JFlexStackingLexer} that
- * publishes as a {@link SymbolMatchedPublisher}.
+ * Represents a hint from a language lexer for emphasis of non-symbolic
+ * matches.
  */
-public interface ScanningSymbolMatcher extends JFlexStackingLexer, Resettable,
-    SymbolMatchedPublisher {
+public enum EmphasisHint {
+    NONE,
+    EM,
+    STRONG
 }
