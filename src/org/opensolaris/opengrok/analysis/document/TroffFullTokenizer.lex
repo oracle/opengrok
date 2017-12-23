@@ -50,11 +50,11 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 ^"...\\\"" {}
 
 \\&.        {
-    onSymbolMatched(".", yychar, yychar + yylength()); return yystate();
+    onSymbolMatched(".", yychar); return yystate();
 }
 
 {Identifier}|{Number}|{Printable} {
-    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar);
     return yystate();
 }
 

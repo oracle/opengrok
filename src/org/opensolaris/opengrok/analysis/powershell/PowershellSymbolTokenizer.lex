@@ -50,8 +50,7 @@ import java.util.regex.Matcher;
         boolean skipKeywordCheck) {
         if (skipKeywordCheck || !Consts.poshkwd.contains(symbol.
             toLowerCase())) {
-            onSymbolMatched(symbol, yychar + yyoffset, yychar + yyoffset +
-                symbol.length());
+            onSymbolMatched(symbol, yychar + yyoffset);
             return true;
         }
         return false;

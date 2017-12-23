@@ -49,7 +49,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
  ^[^ \t\f\r\n]+ { yybegin(SCOMMENT); }
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id.toLowerCase())) {
-                        onSymbolMatched(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
 

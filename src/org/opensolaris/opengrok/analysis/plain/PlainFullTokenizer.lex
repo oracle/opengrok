@@ -46,8 +46,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 %%
 {Identifier}|{Number}|{Printable} { // below assumes locale from the shell/container, instead of just US
-    onSymbolMatched(yytext().toLowerCase(Locale.getDefault()), yychar,
-        yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(Locale.getDefault()), yychar);
     return yystate();
 }
 [^]    {}

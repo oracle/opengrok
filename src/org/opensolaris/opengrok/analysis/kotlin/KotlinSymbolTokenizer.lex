@@ -63,7 +63,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)){
-                        onSymbolMatched(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
  {Number}    {}
@@ -100,7 +100,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
         String sigil = capture.substring(0, 1);
         String id = capture.substring(1);
         if (!Consts.kwd.contains(id)) {
-            onSymbolMatched(id, yychar + 1, yychar + yylength());
+            onSymbolMatched(id, yychar + 1);
             return yystate();
        }
     }

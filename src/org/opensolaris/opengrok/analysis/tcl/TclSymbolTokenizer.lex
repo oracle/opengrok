@@ -86,7 +86,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
         String sigil = capture.substring(0, 1);
         String name = capture.substring(1);
         if (!Consts.kwd.contains(name)) {
-            onSymbolMatched(name, yychar + 1, yychar + yylength());
+            onSymbolMatched(name, yychar + 1);
             return yystate();
         }
     }
@@ -97,7 +97,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
         String name1 = capture.substring(1, lparen_i);
         yypushback(capture.length() - lparen_i - 1);
         if (name1.length() > 0 && !Consts.kwd.contains(name1)) {
-            onSymbolMatched(name1, yychar + 1, yychar + lparen_i);
+            onSymbolMatched(name1, yychar + 1);
             return yystate();
         }
     }
@@ -105,7 +105,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
         String capture = yytext();
         String name = capture.substring(2, capture.length() - 1);
         if (!Consts.kwd.contains(name)) {
-            onSymbolMatched(name, yychar + 2, yychar + yylength() - 1);
+            onSymbolMatched(name, yychar + 2);
             return yystate();
         }
     }
@@ -116,7 +116,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
         String name2 = yytext();
         yypop();
         if (!Consts.kwd.contains(name2)) {
-            onSymbolMatched(name2, yychar, yychar + yylength());
+            onSymbolMatched(name2, yychar);
             return yystate();
         }
     }
@@ -126,7 +126,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
     {OrdinaryWord}    {
         String id = yytext();
         if (!Consts.kwd.contains(id)) {
-            onSymbolMatched(id, yychar, yychar + yylength());
+            onSymbolMatched(id, yychar);
             return yystate();
         }
     }

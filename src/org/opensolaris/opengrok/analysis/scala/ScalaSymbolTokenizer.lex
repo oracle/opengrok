@@ -67,7 +67,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)){
-                        onSymbolMatched(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
 
@@ -75,7 +75,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
     String capture = yytext();
     String id = capture.substring(1, capture.length() - 1);
     if (!Consts.kwd.contains(id)) {
-        onSymbolMatched(id, yychar + 1, yychar + 1 + id.length());
+        onSymbolMatched(id, yychar + 1);
         return yystate();
     }
  }
@@ -86,7 +86,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
     // ctags include the "_" in the symbol, so follow that too.
     String id = capture.substring(0, uoff + 1);
     if (!Consts.kwd.contains(id)) {
-        onSymbolMatched(id, yychar, yychar + id.length());
+        onSymbolMatched(id, yychar);
         return yystate();
     }
  }
@@ -116,7 +116,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
         String capture = yytext();
         String id = capture.substring(1);
         if (!Consts.kwd.contains(id)) {
-            onSymbolMatched(id, yychar + 1, yychar + yylength());
+            onSymbolMatched(id, yychar + 1);
             return yystate();
        }
     }

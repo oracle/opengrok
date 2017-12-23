@@ -45,7 +45,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!CxxConsts.kwd.contains(id)) {
-                        onSymbolMatched(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
 

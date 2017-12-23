@@ -71,12 +71,12 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     nameFound = false;
     yybegin(BEGIN);
     yypushback(1);
-    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar);
     return yystate();
   }
 
   {Identifier}|{Number}|{Printable} {
-    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar);
     return yystate();
   }
 
@@ -94,7 +94,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     if (b64)
       yybegin(YYINITIAL);
     b64 = true;
-    onSymbolMatched(yytext(), yychar, yychar + yylength());
+    onSymbolMatched(yytext(), yychar);
     return yystate();
   }
   "base64 " {
@@ -103,7 +103,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     else
       yybegin(YYINITIAL);
     yypushback(1);
-    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar);
     return yystate();
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
@@ -113,7 +113,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
   " " { if (modeFound) yybegin(NAME); }
   {Identifier}|{Number}|{Printable} {
     modeFound = true;
-    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar);
     return yystate();
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
@@ -128,7 +128,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
   }
   {Identifier}|{Number}|{Printable} {
     nameFound = true;
-    onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
+    onSymbolMatched(yytext().toLowerCase(), yychar);
     return yystate();
   }
   [^\n] { yybegin(YYINITIAL); yypushback(1); }
@@ -140,7 +140,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     String t = yytext();
     if (t.equals("end") && !b64) {
       yybegin(YYINITIAL);
-      onSymbolMatched(yytext().toLowerCase(), yychar, yychar + yylength());
+      onSymbolMatched(yytext().toLowerCase(), yychar);
       return yystate();
     } else if (t.equals("====") && b64)
       yybegin(YYINITIAL);

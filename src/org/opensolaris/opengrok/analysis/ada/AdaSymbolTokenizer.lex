@@ -80,8 +80,7 @@ import org.opensolaris.opengrok.web.Util;
             throws IOException {
         if (ignoreKwd || !Consts.kwd.contains(value.toLowerCase())) {
             lastSymbol = value;
-            onSymbolMatched(value, yychar + captureOffset, yychar +
-                captureOffset + value.length());
+            onSymbolMatched(value, yychar + captureOffset);
             return true;
         } else {
             lastSymbol = null;

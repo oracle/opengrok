@@ -53,7 +53,7 @@ Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
 <YYINITIAL> {
 {Identifier} {String id = yytext();
               if (!Consts.kwd.contains(id.toLowerCase())) {
-                        onSymbolMatched(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
  \"     { yybegin(STRING); }

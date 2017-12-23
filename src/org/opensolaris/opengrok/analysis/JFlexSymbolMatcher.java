@@ -51,10 +51,10 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * for all subscribed listeners in turn.
      * @param str the symbol string
      * @param start the symbol start position
-     * @param end the symbol end position
      */
-    protected void onSymbolMatched(String str, int start, int end) {
-        SymbolMatchedEvent evt = new SymbolMatchedEvent(this, str, start, end);
+    protected void onSymbolMatched(String str, int start) {
+        SymbolMatchedEvent evt = new SymbolMatchedEvent(this, str, start,
+            start + str.length());
 
         listeners.forEach((l) -> {
             l.symbolMatched(evt);

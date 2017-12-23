@@ -117,14 +117,13 @@ DocParamWithName = "uses"
 <IN_SCRIPT> {
     "$" {Identifier} {
         //we ignore keywords if the identifier starts with one of variable chars
-        onSymbolMatched(yytext().substring(1), yychar + 1, yychar +
-            yylength());
+        onSymbolMatched(yytext().substring(1), yychar + 1);
         return yystate();
     }
 
     {Identifier} {
         if (!Consts.kwd.contains(yytext())) {
-            onSymbolMatched(yytext(), yychar, yychar + yylength());
+            onSymbolMatched(yytext(), yychar);
             return yystate();
         }
     }
@@ -217,7 +216,7 @@ DocParamWithName = "uses"
 
 <STRINGVAR> {
     {Identifier} {
-        onSymbolMatched(yytext(), yychar, yychar + yylength());
+        onSymbolMatched(yytext(), yychar);
         return yystate();
     }
 
@@ -231,15 +230,13 @@ DocParamWithName = "uses"
     }
 
     \[ "$" {Identifier} \] {
-        onSymbolMatched(yytext().substring(2, yylength()-1), yychar + 2,
-                yychar + yylength() - 1);
+        onSymbolMatched(yytext().substring(2, yylength()-1), yychar + 2);
         yypop();
         return yystate();
     }
 
     "->" {Identifier} {
-        onSymbolMatched(yytext().substring(2), yychar + 2, yychar +
-            yylength());
+        onSymbolMatched(yytext().substring(2), yychar + 2);
         yypop(); //because "$arr->a[0]" is the same as $arr->a . "[0]"
         return yystate();
     }
@@ -249,7 +246,7 @@ DocParamWithName = "uses"
 
 <STRINGEXPR> {
     {Identifier} {
-        onSymbolMatched(yytext(), yychar, yychar + yylength());
+        onSymbolMatched(yytext(), yychar);
         return yystate();
     }
     \}  { yypop(); }
@@ -296,7 +293,7 @@ DocParamWithName = "uses"
 
     {Identifier} {
         if (!PSEUDO_TYPES.contains(yytext().toLowerCase())) {
-            onSymbolMatched(yytext(), yychar, yychar + yylength());
+            onSymbolMatched(yytext(), yychar);
             return yystate();
         }
     }
@@ -306,8 +303,7 @@ DocParamWithName = "uses"
 
 <DOCCOM_NAME> {
     "$" {Identifier} {
-        onSymbolMatched(yytext().substring(1), yychar + 1, yychar +
-            yylength());
+        onSymbolMatched(yytext().substring(1), yychar + 1);
         yybegin(DOCCOMMENT);
         return yystate();
     }

@@ -40,7 +40,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 //TODO decide if we should let one char symbols
 [a-zA-Z_] [a-zA-Z0-9_]+ {
-    onSymbolMatched(yytext(), yychar, yychar + yylength());
+    onSymbolMatched(yytext(), yychar);
     return yystate();
 }
 

@@ -87,8 +87,7 @@ import org.opensolaris.opengrok.web.Util;
             lastSymbol = null;
         } else if (ignoreKwd || !Consts.kwd.contains(value)) {
             lastSymbol = value;
-            onSymbolMatched(value, yychar + captureOffset, yychar +
-                captureOffset + value.length());
+            onSymbolMatched(value, yychar + captureOffset);
             return true;
         } else {
             lastSymbol = null;

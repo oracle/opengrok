@@ -51,7 +51,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 {Identifier} {
     String id = yytext();
                 if (!Consts.reservedKeywords.contains(id.toLowerCase())) {
-                        onSymbolMatched(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
 

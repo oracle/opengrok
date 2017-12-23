@@ -54,7 +54,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 {Identifier} {
     String id = yytext();
                 if (!id.equals("_") && !Consts.kwd.contains(id)) {
-                        onSymbolMatched(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate();
                 }
  }
@@ -64,7 +64,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
     String punc = capture.substring(0, 1);
     String id = capture.substring(1);
     if (!Consts.modules_kwd.contains(id)) {
-        onSymbolMatched(id, yychar + 1, yychar + yylength());
+        onSymbolMatched(id, yychar + 1);
         return yystate();
     }
 }

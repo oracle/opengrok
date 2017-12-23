@@ -46,7 +46,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 {Identifier}    {
     String id = yytext();
                 if(!Consts.shkwd.contains(id)){
-                        onSymbolMatched(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
  {Number}    {}
@@ -70,16 +70,15 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 
 <STRING> {
 "$" {Identifier}    {
-    onSymbolMatched(yytext().substring(1), yychar + 1, yychar + yylength());
+    onSymbolMatched(yytext().substring(1), yychar + 1);
     return yystate();
  }
 
 "${" {Identifier} "}"    {
     int startOffset = 2;            // trim away the "${" prefix
     int endOffset = yylength() - 1; // trim away the "}" suffix
-    onSymbolMatched(yytext().substring(startOffset, endOffset),
-               yychar + startOffset,
-               yychar + endOffset);
+    onSymbolMatched(yytext().substring(startOffset, endOffset), yychar +
+        startOffset);
     return yystate();
  }
 

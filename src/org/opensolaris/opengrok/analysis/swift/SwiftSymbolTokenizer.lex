@@ -60,14 +60,14 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id)){
-                        onSymbolMatched(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
 
  [`] {Identifier} [`]    {
     String capture = yytext();
     String id = capture.substring(1, capture.length() - 1);
-    onSymbolMatched(id, yychar + 1, yychar + 1 + id.length());
+    onSymbolMatched(id, yychar + 1);
     return yystate();
  }
 
