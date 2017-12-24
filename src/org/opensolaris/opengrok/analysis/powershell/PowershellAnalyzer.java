@@ -51,8 +51,13 @@ public class PowershellAnalyzer extends AbstractSourceCodeAnalyzer {
         return true;
     }
     
+    /**
+     * Creates a wrapped {@link PoshXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new PoshXref(reader);
+        return new JFlexXref(new PoshXref(reader));
     }
 }

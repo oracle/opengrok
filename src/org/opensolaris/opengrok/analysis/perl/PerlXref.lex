@@ -29,16 +29,13 @@
 package org.opensolaris.opengrok.analysis.perl;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class PerlXref
-%extends JFlexXref
+%extends JFlexSymbolMatcher
 %implements PerlLexer
 %unicode
 %int
@@ -46,13 +43,14 @@ import org.opensolaris.opengrok.web.Util;
 %init{
     h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
         HERE, HERExN, HEREin, HEREinxN);
+    yyline = 1;
 %init}
 %include CommonLexer.lexh
 %{
     private final PerlLexHelper h;
 
     /**
-     * Resets the Perl tracked state after {@link #reset()}.
+     * Resets the Perl tracked state; {@inheritDoc}
      */
     @Override
     public void reset() {
@@ -62,19 +60,7 @@ import org.opensolaris.opengrok.web.Util;
 
     @Override
     public void offer(String value) throws IOException {
-        out.write(value);
-    }
-
-    @Override
-    public void offerNonword(String value) throws IOException {
-        out.write(htmlize(value));
-    }
-
-    public void takeUnicode(String value) throws IOException {
-        for (int i = 0; i < value.length(); i++){
-            char c = value.charAt(i);
-            writeUnicodeChar(c);
-        }
+        onNonSymbolMatched(value, yychar);
     }
 
     @Override
@@ -83,13 +69,13 @@ import org.opensolaris.opengrok.web.Util;
             throws IOException {
         if (ignoreKwd) {
             if (value.length() > 1) {
-                return writeSymbol(value, null, yyline);
+                return onFilteredSymbolMatched(value, yychar, null);
             } else {
-                out.write(value);
+                onNonSymbolMatched(value, yychar);
                 return false;
             }
         } else {
-            return writeSymbol(value, Consts.kwd, yyline);
+            return onFilteredSymbolMatched(value, yychar, Consts.kwd);
         }
     }
 
@@ -100,14 +86,24 @@ import org.opensolaris.opengrok.web.Util;
 
     @Override
     public void offerKeyword(String value) throws IOException {
-        writeKeyword(value, yyline);
+        onKeywordMatched(value, yychar);
+    }
+
+    @Override
+    public void startNewLine() throws IOException {
+        onEndOfLineMatched("\n", yychar);
+    }
+
+    @Override
+    public void disjointSpan(String className) throws IOException {
+        onDisjointSpanChanged(className, yychar);
     }
 
     @Override
     public void abortQuote() throws IOException {
         yypop();
         if (h.areModifiersOK()) yypush(QM);
-        disjointSpan(null);
+        onDisjointSpanChanged(null, yychar);
     }
 
     // If the state is YYINITIAL, then transitions to INTRA; otherwise does
@@ -123,8 +119,6 @@ import org.opensolaris.opengrok.web.Util;
     protected boolean returnOnSymbol() {
         return false;
     }
-
-    protected String getUrlPrefix() { return urlPrefix; }
 
     protected void skipLink(String s, Pattern p) { /* noop */ }
 %}

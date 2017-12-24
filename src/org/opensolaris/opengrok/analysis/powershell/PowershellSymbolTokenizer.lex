@@ -33,6 +33,7 @@ import java.util.regex.Matcher;
 %unicode
 %ignorecase
 %init{
+    yyline = 1;
 %init}
 %int
 %include CommonLexer.lexh
@@ -237,6 +238,6 @@ import java.util.regex.Matcher;
 
 <YYINITIAL, DATATYPE, SUBSHELL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING,
     HEREQSTRING> {
-{WhiteSpace} |
+{WhspChar}+ |
 [^]    {}
 }

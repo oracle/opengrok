@@ -28,10 +28,10 @@
 
 package org.opensolaris.opengrok.analysis.lua;
 
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 
 /**
  * @author Evan Kinney
@@ -39,9 +39,13 @@ import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class LuaXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %int
+%char
+%init{
+    yyline = 1;
+%init}
 %include CommonLexer.lexh
 %{
     int bracketLevel;
@@ -50,6 +54,12 @@ import org.opensolaris.opengrok.web.Util;
     public void reset() {
         super.reset();
         bracketLevel = 0;
+    }
+
+    @Override
+    public void yypop() throws IOException {
+        onDisjointSpanChanged(null, yychar);
+        super.yypop();
     }
 %}
 
@@ -66,67 +76,67 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 <YYINITIAL> {
     {Identifier} {
         String id = yytext();
-        writeSymbol(id, Consts.kwd, yyline);
+        onFilteredSymbolMatched(id, yychar, Consts.kwd);
     }
     {Number}     {
-        disjointSpan(HtmlConsts.NUMBER_CLASS);
-        out.write(yytext());
-        disjointSpan(null);
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
+        onDisjointSpanChanged(null, yychar);
     }
     \"           {
-        pushSpan(STRING, HtmlConsts.STRING_CLASS);
-        out.write(htmlize(yytext()));
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
     "[" [=]* "["    {
         String capture = yytext();
         bracketLevel = LuaUtils.countOpeningLongBracket(capture);
-        pushSpan(LSTRING, HtmlConsts.STRING_CLASS);
-        out.write(capture);
+        yypush(LSTRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(capture, yychar);
     }
     \'           {
-        pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
-        out.write(htmlize(yytext()));
+        yypush(QSTRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
     "--[" [=]* "["    {
         String capture = yytext();
         String bracket = capture.substring(2);
         bracketLevel = LuaUtils.countOpeningLongBracket(bracket);
-        pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
-        out.write(capture);
+        yypush(COMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        onNonSymbolMatched(capture, yychar);
     }
     "--"         {
-        pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
-        out.write(yytext());
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
 }
 
 "<" ({File}|{FPath}) ">" {
-    out.write("&lt;");
+    onNonSymbolMatched("<", yychar);
     String path = yytext();
     path = path.substring(1, path.length() - 1);
-    out.write("<a href=\""+urlPrefix+"path=");
-    out.write(path);
-    appendProject();
-    out.write("\">");
-    out.write(path);
-    out.write("</a>");
-    out.write("&gt;");
+    onFilelikeMatched(path, yychar + 1);
+    onNonSymbolMatched(">", yychar + 1 + path.length());
 }
 
 <STRING> {
     \\[\"\\] |
-    \" {WhiteSpace} \"    { out.write(htmlize(yytext())); }
+    \" {WhspChar}+ \"    { onNonSymbolMatched(yytext(), yychar); }
     \"    {
-        out.write(htmlize(yytext()));
+        onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
 }
 
 <QSTRING> {
     \\[\'\\] |
-    \' {WhiteSpace} \'    { out.write(htmlize(yytext())); }
+    \' {WhspChar}+ \'    { onNonSymbolMatched(yytext(), yychar); }
     \'    {
-        out.write(htmlize(yytext()));
+        onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
 }
@@ -134,65 +144,57 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 <LSTRING, COMMENT> {
     "]" [=]* "]"    {
         String capture = yytext();
-        out.write(capture);
+        onNonSymbolMatched(capture, yychar);
         if (LuaUtils.isClosingLongBracket(capture, bracketLevel)) yypop();
     }
 }
 
 <STRING, QSTRING, LSTRING> {
     {WhspChar}*{EOL}    {
-        disjointSpan(null);
-        startNewLine();
-        disjointSpan(HtmlConsts.STRING_CLASS);
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     }
 }
 
 <COMMENT> {
     {WhspChar}*{EOL}    {
-        disjointSpan(null);
-        startNewLine();
-        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
     }
 }
 
 <SCOMMENT> {
     {WhspChar}*{EOL}    {
         yypop();
-        startNewLine();
+        onEndOfLineMatched(yytext(), yychar);
     }
 }
 
 <YYINITIAL, STRING, LSTRING, COMMENT, SCOMMENT, QSTRING> {
-    [&<>\'\"]          { out.write(htmlize(yytext())); }
-    {WhspChar}*{EOL}   { startNewLine(); }
-    {WhiteSpace}       { out.write(yytext());           }
-    [!-~]              { out.write(yytext()); }
-    [^\n]              { writeUnicodeChar(yycharat(0)); }
+    {WhspChar}*{EOL}   { onEndOfLineMatched(yytext(), yychar); }
+    [^\n]              { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, LSTRING, COMMENT, SCOMMENT, QSTRING> {
-    {FPath} { out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/')); }
+    {FPath}    { onPathlikeMatched(yytext(), '/', false, yychar); }
     {File} {
         String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
+        onFilelikeMatched(path, yychar);
     }
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
-        writeEMailAddress(yytext());
+        onEmailAddressMatched(yytext(), yychar);
     }
 }
 
 <STRING, LSTRING, COMMENT, SCOMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true);
+        onUriMatched(yytext(), yychar);
     }
 }
 <QSTRING> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+        onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
     }
 }

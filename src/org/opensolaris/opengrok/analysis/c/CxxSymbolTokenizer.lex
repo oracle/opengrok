@@ -31,6 +31,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %extends JFlexSymbolMatcher
 %unicode
 %init{
+    yyline = 1;
 %init}
 %int
 %include CommonLexer.lexh
@@ -80,6 +81,6 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-{WhiteSpace}    {}
+{WhspChar}+    {}
 [^]    {}
 }

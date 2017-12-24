@@ -213,10 +213,10 @@ class RubyLexHelper implements Resettable {
         setState(postop, nointerp);
 
         if (doWrite) {
-            lexer.offerNonword(qopname);
+            lexer.offer(qopname);
             lexer.skipSymbol();
             lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-            lexer.offerNonword(postop);
+            lexer.offer(postop);
         }
     }
 
@@ -289,7 +289,7 @@ class RubyLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offerNonword(lede);
+        lexer.offer(lede);
         takeWhitespace(intervening);
         lexer.disjointSpan(HtmlConsts.STRING_CLASS);
         lexer.offer("/");
@@ -339,7 +339,7 @@ class RubyLexHelper implements Resettable {
 
     /**
      * Parses a Here-document declaration, and takes the {@code capture} using
-     * {@link RubyLexer#offerNonword(java.lang.String)}. If the
+     * {@link RubyLexer#offer(java.lang.String)}. If the
      * declaration is valid, {@code hereSettings} will have been appended.
      */
     public void hop(String capture) throws IOException {
@@ -347,7 +347,7 @@ class RubyLexHelper implements Resettable {
             throw new IllegalArgumentException("bad HERE: " + capture);
         }
 
-        lexer.offerNonword(capture);
+        lexer.offer(capture);
         if (hereSettings == null) hereSettings = new LinkedList<>();
 
         String remaining = capture;
@@ -434,7 +434,7 @@ class RubyLexHelper implements Resettable {
             hereSettings.remove();
         }
 
-        lexer.offerNonword(capture);
+        lexer.offer(capture);
 
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
@@ -474,7 +474,7 @@ class RubyLexHelper implements Resettable {
                 lexer.popHelper();
                 lexer.yypop();
                 lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-                lexer.offerNonword(opener);
+                lexer.offer(opener);
                 if (rem > 0) lexer.yypushback(rem);
                 return true;
             }
@@ -493,7 +493,7 @@ class RubyLexHelper implements Resettable {
         while (o < capture.length() && (i = capture.indexOf(SEP, o)) != -1) {
             String module = capture.substring(o, i);
             lexer.offerSymbol(module, o, false);
-            lexer.offerNonword(SEP);
+            lexer.offer(SEP);
             o = i + 2;
         }
         if (o < capture.length()) {

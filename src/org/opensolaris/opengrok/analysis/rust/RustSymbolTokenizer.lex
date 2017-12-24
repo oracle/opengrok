@@ -35,6 +35,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %class RustSymbolTokenizer
 %extends JFlexSymbolMatcher
 %init{
+    yyline = 1;
 %init}
 %unicode
 %int
@@ -115,7 +116,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 }
 
 <SCOMMENT> {
-{WhiteSpace}    {}
+{WhspChar}+    {}
 {EOL}      { yybegin(YYINITIAL);}
 }
 

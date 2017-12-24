@@ -46,8 +46,13 @@ public class HaskellAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }    
 
+    /**
+     * Creates a wrapped {@link HaskellXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new HaskellXref(reader);
+        return new JFlexXref(new HaskellXref(reader));
     }
 }

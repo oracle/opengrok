@@ -255,14 +255,14 @@ class PerlLexHelper implements Resettable {
         setState(ltpostop, nointerp);
 
         if (doWrite) {
-            lexer.offerNonword(boundary);
+            lexer.offer(boundary);
             if (qopname.length() > 0) {
                 lexer.offerSymbol(qopname, boundary.length(), false);
             } else {
                 lexer.skipSymbol();
             }
             lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-            lexer.offerNonword(postop);
+            lexer.offer(postop);
         }
     }
 
@@ -333,7 +333,7 @@ class PerlLexHelper implements Resettable {
 
         // OK to pass a fake "m/" with doWrite=false
         qop(false, "m/", 1, false);
-        lexer.offerNonword(lede);
+        lexer.offer(lede);
         takeWhitespace(intervening);
         lexer.disjointSpan(HtmlConsts.STRING_CLASS);
         lexer.offer("/");
@@ -381,7 +381,7 @@ class PerlLexHelper implements Resettable {
 
     /**
      * Parses a Here-document declaration, and takes the {@code capture} using
-     * {@link PerlLexer#offerNonword(java.lang.String)}. If the
+     * {@link PerlLexer#offer(java.lang.String)}. If the
      * declaration is valid, {@code hereSettings} will have been appended.
      */
     public void hop(String capture) throws IOException {
@@ -389,7 +389,7 @@ class PerlLexHelper implements Resettable {
             throw new IllegalArgumentException("bad HERE: " + capture);
         }
 
-        lexer.offerNonword(capture);
+        lexer.offer(capture);
         if (hereSettings == null) hereSettings = new LinkedList<>();
 
         String remaining = capture;
@@ -481,7 +481,7 @@ class PerlLexHelper implements Resettable {
             hereSettings.remove();
         }
 
-        lexer.offerNonword(capture);
+        lexer.offer(capture);
 
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
@@ -507,7 +507,7 @@ class PerlLexHelper implements Resettable {
 
         if (capture.charAt(0) == endqchar) {
             lexer.skipSymbol();
-            lexer.offerNonword(sigil);
+            lexer.offer(sigil);
             if (maybeEndQuote(sigil)) lexer.abortQuote();
             lexer.yypushback(capture.length() - 1);
             return;
@@ -519,7 +519,7 @@ class PerlLexHelper implements Resettable {
 
         int ohnooo;
         if ((ohnooo = id.indexOf(endqchar)) == -1) {
-            lexer.offerNonword(sigil);
+            lexer.offer(sigil);
             lexer.offer(s0);
             lexer.offerSymbol(id, sigil.length() + s0.length(), true);
         } else {
@@ -537,14 +537,14 @@ class PerlLexHelper implements Resettable {
             String w0 = id.substring(0, ohnooo);
             String p0 = id.substring(ohnooo, ohnooo + 1);
             String w1 = id.substring(ohnooo + 1);
-            lexer.offerNonword(sigil);
+            lexer.offer(sigil);
             lexer.offer(s0);
             if (w0.length() > 0) {
                 lexer.offerSymbol(w0, sigil.length() + s0.length(), true);
             } else {
                 lexer.skipSymbol();
             }
-            lexer.offerNonword(p0);
+            lexer.offer(p0);
             if (maybeEndQuote(p0)) lexer.abortQuote();
             lexer.yypushback(w1.length());
         }
@@ -581,14 +581,14 @@ class PerlLexHelper implements Resettable {
         String id = ltinterior1.substring(0, ltinterior1.length() -
             s2.length());
 
-        lexer.offerNonword(sigil);
+        lexer.offer(sigil);
         lexer.offer(s0);
-        lexer.offerNonword(lpunc);
+        lexer.offer(lpunc);
         lexer.offer(s1);
         lexer.offerSymbol(id, sigil.length() + s0.length() +
             lpunc.length() + s1.length(), true);
         lexer.offer(s2);
-        lexer.offerNonword(rpunc);
+        lexer.offer(rpunc);
     }
 
     /**
@@ -603,7 +603,7 @@ class PerlLexHelper implements Resettable {
             for (int i = 0; i < capture.length(); ++i) {
                 char c = capture.charAt(i);
                 String w = new String(new char[] {c});
-                lexer.offerNonword(w);
+                lexer.offer(w);
                 if (maybeEndQuote(w)) {
                     lexer.abortQuote();
                     lexer.yypushback(capture.length() - i - 1);

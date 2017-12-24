@@ -28,20 +28,32 @@
 
 package org.opensolaris.opengrok.analysis.java;
 
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opensolaris.opengrok.analysis.ScopeAction;
+import org.opensolaris.opengrok.analysis.EmphasisHint;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class JavaXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %int
+%char
+%init{
+    yyline = 1;
+%init}
 %include CommonLexer.lexh
 %{
   /* Must match {WhiteSpace} regex */
   private final static String WHITE_SPACE = "[ \\t\\f]+";
+
+  @Override
+  public void yypop() throws IOException {
+      onDisjointSpanChanged(null, yychar);
+      super.yypop();
+  }
 %}
 
 File = [a-zA-Z]{FNameChar}* "." ([Jj][Aa][Vv][Aa] |
@@ -64,149 +76,142 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 %include Java.lexh
 %%
 <YYINITIAL>{
- \{     { incScope(); writeUnicodeChar(yycharat(0)); }
- \}     { decScope(); writeUnicodeChar(yycharat(0)); }
- \;     { endScope(); writeUnicodeChar(yycharat(0)); }
+ \{     { onScopeChanged(ScopeAction.INC, yytext(), yychar); }
+ \}     { onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
+ \;     { onScopeChanged(ScopeAction.END, yytext(), yychar); }
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    onFilteredSymbolMatched(id, yychar, Consts.kwd);
 }
 
 "<" ({File}|{FPath}) ">" {
-        out.write("&lt;");
+        onNonSymbolMatched("<", yychar);
         String path = yytext();
         path = path.substring(1, path.length() - 1);
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
-        out.write("&gt;");
+        onFilelikeMatched(path, yychar + 1);
+        onNonSymbolMatched(">", yychar + 1 + path.length());
 }
 
 /*{Hier}
-        { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
+        { onPathlikeMatched(yytext(), '.', false, yychar); }
 */
 {Number}        {
-    disjointSpan(HtmlConsts.NUMBER_CLASS);
-    out.write(yytext());
-    disjointSpan(null);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
-    pushSpan(STRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(STRING);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  \'     {
-    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(QSTRING);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  "/**" / [^/] {
-    pushSpan(JAVADOC, HtmlConsts.COMMENT_CLASS);
-    out.write(yytext());
+    yypush(JAVADOC);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  "/*"   {
-    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(yytext());
+    yypush(COMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  "//"   {
-    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(yytext());
+    yypush(SCOMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <STRING> {
  \\[\"\\] |
- \" {WhiteSpace} \"  { out.write(htmlize(yytext())); }
+ \" {WhspChar}+ \"    { onNonSymbolMatched(yytext(), yychar); }
  \"     {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <QSTRING> {
  \\[\'\\] |
- \' {WhiteSpace} \' { out.write(htmlize(yytext())); }
+ \' {WhspChar}+ \'    { onNonSymbolMatched(yytext(), yychar); }
  \'     {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <COMMENT, JAVADOC> {
 "*/"    {
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <JAVADOC> {
-  {JavadocWithParamNameArg} {WhiteSpace} {ParamName} |
-  {JavadocWithClassArg} {WhiteSpace} {ClassName} {
+  {JavadocWithParamNameArg} {WhspChar}+ {ParamName} |
+  {JavadocWithClassArg} {WhspChar}+ {ClassName} {
     String text = yytext();
     String[] tokens = text.split(WHITE_SPACE, 2);
-    out.append("<strong>").append(tokens[0]).append("</strong>");
-    out.append(text.substring(tokens[0].length(), text.length() -
-        tokens[1].length()));
-    out.append("<em>").append(tokens[1]).append("</em>");
+    onNonSymbolMatched(tokens[0], EmphasisHint.STRONG, yychar);
+    onNonSymbolMatched(text.substring(tokens[0].length(), text.length() -
+        tokens[1].length()), yychar);
+    onNonSymbolMatched(tokens[1], EmphasisHint.EM, yychar);
   }
   "@" {Identifier} {
-    out.append("<strong>").append(yytext()).append("</strong>");
+    onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
   }
 }
 
 <SCOMMENT> {
   {WhspChar}*{EOL} {
     yypop();
-    startNewLine();
+    onEndOfLineMatched(yytext(), yychar);
   }
 }
 
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
-[&<>\'\"]    { out.write(htmlize(yytext())); }
-{WhspChar}*{EOL}      { startNewLine(); }
- {WhiteSpace}   { out.write(yytext()); }
- [!-~]  { out.write(yycharat(0)); }
- [^\n]      { writeUnicodeChar(yycharat(0)); }
+{WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+ [^\n]    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
 {FPath}
-        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+        { onPathlikeMatched(yytext(), '/', false, yychar); }
 
 {File}
         {
         String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");}
+        onFilelikeMatched(path, yychar);
+ }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          writeEMailAddress(yytext());
+          onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, SCOMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true);
+        onUriMatched(yytext(), yychar);
     }
 }
 
 <COMMENT, JAVADOC> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+        onUriMatched(yytext(), yychar, StringUtils.END_C_COMMENT);
     }
 }
 
 <QSTRING> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+        onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
     }
 }

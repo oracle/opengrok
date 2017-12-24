@@ -70,12 +70,12 @@ public class UuencodeAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create a {@link UuencodeXref} instance.
+     * Creates a wrapped {@link UuencodeXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new UuencodeXref(reader);
+        return new JFlexXref(new UuencodeXref(reader));
     }
 }

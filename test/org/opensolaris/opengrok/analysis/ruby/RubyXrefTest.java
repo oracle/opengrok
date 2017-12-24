@@ -40,6 +40,7 @@ import static org.junit.Assert.assertNotNull;
 import org.opensolaris.opengrok.analysis.CtagsReader;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 
@@ -76,7 +77,8 @@ public class RubyXrefTest {
     public void colonQuoteAfterInterpolation() throws IOException {
         final String RUBY_COLON_QUOTE =
             "\"from #{logfn}:\"\n";
-        RubyXref xref = new RubyXref(new StringReader(RUBY_COLON_QUOTE));
+        JFlexXref xref = new JFlexXref(new RubyXref(new StringReader(
+            RUBY_COLON_QUOTE)));
 
         StringWriter out = new StringWriter();
         xref.write(out);

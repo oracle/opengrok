@@ -28,15 +28,19 @@
 
 package org.opensolaris.opengrok.analysis.tcl;
 
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class TclXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %int
+%char
+%init{
+    yyline = 1;
+%init}
 %include CommonLexer.lexh
 %{
   private int braceCount;
@@ -45,6 +49,37 @@ import org.opensolaris.opengrok.web.Util;
   public void reset() {
       super.reset();
       braceCount = 0;
+  }
+
+  @Override
+  public void yypop() throws IOException {
+      onDisjointSpanChanged(null, yychar);
+      super.yypop();
+  }
+
+  /**
+   * Write {@code whsp} to the {@code xref} output -- if the whitespace does
+   * not contain any LFs then the full String is written; otherwise, pre-LF
+   * spaces are condensed as usual.
+   * @param xref the target instance
+   * @param whsp a defined whitespace capture
+   * @throws java.io.IOException if an output error occurs
+   */
+  private void writeWhitespace(String whsp) throws IOException {
+      int i;
+      if ((i = whsp.indexOf("\n")) == -1) {
+          onNonSymbolMatched(whsp, yychar);
+      } else {
+          int numlf = 1, off = i + 1;
+          while ((i = whsp.indexOf("\n", off)) != -1) {
+              ++numlf;
+              off = i + 1;
+          }
+          while (numlf-- > 0) onEndOfLineMatched("\n", yychar);
+          if (off < whsp.length()) {
+              onNonSymbolMatched(whsp.substring(off), yychar);
+          }
+      }
   }
 %}
 
@@ -60,7 +95,7 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 <YYINITIAL>{
 
  [\{]    {
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
     ++braceCount;
     yypush(BRACES);
  }
@@ -68,40 +103,42 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
 <YYINITIAL, BRACES> {
  {Number}    {
-    disjointSpan(HtmlConsts.NUMBER_CLASS);
-    out.write(yytext());
-    disjointSpan(null);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
  }
  \"     {
-    pushSpan(STRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(STRING);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  "#"    {
-    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(yytext());
+    yypush(SCOMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  {WordOperators}    {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <YYINITIAL, STRING, BRACES> {
     {Backslash_sub}    {
-        out.write(htmlize(yytext()));
+        onNonSymbolMatched(yytext(), yychar);
     }
     {Backslash_nl}    {
         String capture = yytext();
         String esc = capture.substring(0, 1);
         String whsp = capture.substring(1);
-        out.write(esc);
-        TclUtils.writeWhitespace(this, whsp);
+        onNonSymbolMatched(esc, yychar);
+        writeWhitespace(whsp);
     }
     {Varsub1}    {
         String capture = yytext();
         String sigil = capture.substring(0, 1);
         String name = capture.substring(1);
-        out.write(sigil);
-        writeSymbol(name, Consts.kwd, yyline);
+        onNonSymbolMatched(sigil, yychar);
+        onFilteredSymbolMatched(name, yychar, Consts.kwd);
     }
     {Varsub2}    {
         // TclXref could get away without VARSUB2 as a state, but for ease in
@@ -112,20 +149,20 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
         int lparen_i = capture.indexOf("(");
         String name1 = capture.substring(1, lparen_i);
         yypushback(capture.length() - lparen_i - 1);
-        out.write(sigil);
+        onNonSymbolMatched(sigil, yychar);
         if (name1.length() > 0) {
-            writeSymbol(name1, Consts.kwd, yyline);
+            onFilteredSymbolMatched(name1, yychar, Consts.kwd);
         }
-        out.write("(");
+        onNonSymbolMatched("(", yychar);
     }
     {Varsub3}    {
         String capture = yytext();
         String sigil = capture.substring(0, 2);
         String name = capture.substring(2, capture.length() - 1);
         String endtoken = capture.substring(capture.length() - 1);
-        out.write(sigil);
-        writeSymbol(name, Consts.kwd, yyline);
-        out.write(endtoken);
+        onNonSymbolMatched(sigil, yychar);
+        onFilteredSymbolMatched(name, yychar, Consts.kwd);
+        onNonSymbolMatched(endtoken, yychar);
     }
 }
 
@@ -133,20 +170,20 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
     {name_unit}+    {
         String name2 = yytext();
         yypop();
-        writeSymbol(name2, Consts.kwd, yyline);
+        onFilteredSymbolMatched(name2, yychar, Consts.kwd);
     }
 }
 
 <YYINITIAL, BRACES> {
     {OrdinaryWord}    {
         String id = yytext();
-        writeSymbol(id, Consts.kwd, yyline);
+        onFilteredSymbolMatched(id, yychar, Consts.kwd);
     }
 }
 
 <STRING> {
  \"     {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
@@ -156,49 +193,42 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
         if (--braceCount == 0) {
             yypop();
         }
-        out.write(yytext());
+        onNonSymbolMatched(yytext(), yychar);
     }
     [\{]    {
         ++braceCount;
-        out.write(yytext());
+        onNonSymbolMatched(yytext(), yychar);
     }
 }
 
 <SCOMMENT> {
   {WhspChar}*{EOL}    {
     yypop();
-    startNewLine();
+    onEndOfLineMatched(yytext(), yychar);
   }
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, BRACES> {
-[&<>\'\"]    { out.write(htmlize(yytext())); }
-{WhspChar}*{EOL} { startNewLine(); }
- {WhiteSpace}   { out.write(yytext()); }
- [!-~]  { out.write(yycharat(0)); }
- [^\n]      { writeUnicodeChar(yycharat(0)); }
+{WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+ [^\n]    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, SCOMMENT> {
 {FPath}
-        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+        { onPathlikeMatched(yytext(), '/', false, yychar); }
 
 {File}
         {
         String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");}
+        onFilelikeMatched(path, yychar);
+ }
 
 {BrowseableURI}    {
-          appendLink(yytext(), true);
+          onUriMatched(yytext(), yychar);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          writeEMailAddress(yytext());
+          onEmailAddressMatched(yytext(), yychar);
         }
 }

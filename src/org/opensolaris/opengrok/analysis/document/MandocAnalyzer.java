@@ -31,10 +31,10 @@ import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
@@ -71,12 +71,12 @@ public class MandocAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create a {@link MandocXref} instance.
+     * Creates a wrapped {@link MandocXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
     @Override
-    protected JFlexXref newXref(Reader reader) {
+    protected Xrefer newXref(Reader reader) {
         return new MandocXref(reader);
     }
 }

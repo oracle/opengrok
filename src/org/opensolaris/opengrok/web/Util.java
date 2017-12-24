@@ -80,6 +80,18 @@ public final class Util {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
+    /**
+     * Matches a character that is not ASCII alpha-numeric or underscore:
+     * <pre>
+     * {@code
+     * [^A-Za-z0-9_]
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    private final static Pattern NON_ASCII_ALPHA_NUM = Pattern.compile(
+        "[^A-Za-z0-9_]");
+
     private Util() {
         // singleton
     }
@@ -130,6 +142,27 @@ public final class Util {
             throw new AssertionError("StringBuilder threw IOException", ioe);
         }
         return sb.toString();
+    }
+
+    /**
+     * Append to {@code dest} the UTF-8 URL-encoded representation of
+     * {@code str}, within explicit quotes (%22) to accommodate Lucene querying
+     * if {@code str} contains any character that is not ASCII-alphanumeric or
+     * underscore.
+     * @param str a defined instance
+     * @param dest a defined target
+     * @throws IOException
+     */
+    public static void qurlencode(String str, Appendable dest)
+            throws IOException {
+        if (NON_ASCII_ALPHA_NUM.matcher(str).find()) {
+            final String UQUOTE = "%22";
+            dest.append(UQUOTE);
+            URIEncode(str, dest);
+            dest.append(UQUOTE);
+        } else {
+            URIEncode(str, dest);
+        }
     }
 
     /**
@@ -185,9 +218,8 @@ public final class Util {
 
     /**
      * Append a character sequence to the given destination whereby special
-     * characters for HTML are escaped accordingly via a call to
-     * {@link #htmlize(char, java.lang.Appendable, boolean)} with (each)
-     * {@code char}, {@code dest}, and {@code pre}.
+     * characters for HTML or characters that are not printable ASCII are
+     * escaped accordingly.
      *
      * @param q a character sequence to escape
      * @param dest where to append the character sequence to
@@ -218,7 +250,8 @@ public final class Util {
 
     /**
      * Append a character array to the given destination whereby special
-     * characters for HTML are escaped accordingly.
+     * characters for HTML or characters that are not printable ASCII are
+     * escaped accordingly.
      *
      * @param cs characters to escape
      * @param length max. number of characters to append, starting from index 0.
@@ -238,7 +271,8 @@ public final class Util {
 
     /**
      * Append a character to the given destination whereby special characters
-     * special for HTML are escaped accordingly.
+     * special for HTML or characters that are not printable ASCII are
+     * escaped accordingly.
      *
      * @param c the character to append
      * @param dest where to append the character to
@@ -273,12 +307,19 @@ public final class Util {
                 }
                 break;
             default:
-                dest.append(c);
+                if ((c >= ' ' && c <= '~') || (c < ' ' &&
+                    Character.isWhitespace(c))) {
+                    dest.append(c);
+                } else {
+                    dest.append("&#").append(Integer.toString(c)).append(';');
+                }
+                break;
         }
     }
 
     /**
-     * Determine if a character is a special character needing HTML escaping.
+     * Determine if a character is a special character needing HTML escaping or
+     * is a character that is not printable ASCII.
      * @param c the character to examine
      * @param pre a value indicating whether the output is pre-formatted -- if
      * true then LFs will not be converted to &lt;br&gt; elements
@@ -295,7 +336,11 @@ public final class Util {
             case '\n':
                 if (!pre) return true;
             default:
-                return false;
+                if ((c >= ' ' && c <= '~') || (c < ' ' &&
+                    Character.isWhitespace(c))) {
+                    return false;
+                }
+                return true;
         }
     }
 
@@ -838,13 +883,26 @@ public final class Util {
      */
     public static String URIEncode(String q) {
         try {
-            return q == null ? "" : URLEncoder.encode(q, "UTF-8");
+            return q == null ? "" : URLEncoder.encode(q, UTF8.name());
         } catch (UnsupportedEncodingException e) {
             // Should not happen. UTF-8 must be supported by JVMs.
             LOGGER.log(
                     Level.WARNING, "Failed to URL-encode UTF-8: ", e);
         }
         return null;
+    }
+
+    /**
+     * Append to {@code dest} the UTF-8 URL-encoded representation of
+     * {@code str}.
+     * @param str a defined instance
+     * @param dest a defined target
+     * @throws IOException
+     */
+    public static void URIEncode(String str, Appendable dest)
+            throws IOException {
+        String uenc = URIEncode(str);
+        dest.append(uenc);
     }
 
     /**

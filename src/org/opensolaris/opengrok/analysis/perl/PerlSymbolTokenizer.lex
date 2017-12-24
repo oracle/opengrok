@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class PerlSymbolTokenizer
@@ -45,6 +44,7 @@ import org.opensolaris.opengrok.web.Util;
 %init{
     h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
         HERE, HERExN, HEREin, HEREinxN);
+    yyline = 1;
 %init}
 %include CommonLexer.lexh
 %{
@@ -53,7 +53,7 @@ import org.opensolaris.opengrok.web.Util;
     private String lastSymbol;
 
     /**
-     * Resets the Perl tracked state after {@link #reset()}.
+     * Resets the Perl tracked state; {@inheritDoc}
      */
     public void reset() {
         super.reset();
@@ -63,15 +63,6 @@ import org.opensolaris.opengrok.web.Util;
 
     @Override
     public void offer(String value) throws IOException {
-        // noop
-    }
-
-    @Override
-    public void offerNonword(String value) throws IOException {
-        // noop
-    }
-
-    public void takeUnicode(String value) throws IOException {
         // noop
     }
 
@@ -129,14 +120,6 @@ import org.opensolaris.opengrok.web.Util;
     protected boolean returnOnSymbol() {
         return lastSymbol != null;
     }
-
-    protected String getUrlPrefix() { return null; }
-
-    protected void appendProject() { /* noop */ }
-
-    protected void appendLink(String s, boolean b, Pattern p) { /* noop */ }
-
-    protected void writeEMailAddress(String s) { /* noop */ }
 
     protected void skipLink(String url, Pattern p) {
         int n = StringUtils.countPushback(url, p);

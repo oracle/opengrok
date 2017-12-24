@@ -39,6 +39,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %extends JFlexSymbolMatcher
 %unicode
 %init{
+    yyline = 1;
 %init}
 %int
 %include CommonLexer.lexh
@@ -93,7 +94,7 @@ CastTypes = "int"|"integer"|"real"|"double"|"float"|"string"|"binary"|"array"
 DoubleQuoteEscapeSequences = \\ (([nrtfve\\$]) | ([xX] [0-9a-fA-F]{1,2}) |  ([0-7]{1,3}))
 SingleQuoteEscapeSequences = \\ [\\\']
 
-DocPreviousChar = "*" | {WhiteSpace}
+DocPreviousChar = "*" | {WhspChar}+
 
 DocParamWithType = "return" | "throws" | "throw" | "var" | "see"  //"see" can take a URL
 DocParamWithTypeAndName = "param" | "global" | "property" | "property-read"
@@ -267,15 +268,15 @@ DocParamWithName = "uses"
 
 <DOCCOMMENT> {
     /* change relatively to xref -- we also consume the whitespace after */
-    {DocPreviousChar} "@" {DocParamWithType} {WhiteSpace} {
+    {DocPreviousChar} "@" {DocParamWithType} {WhspChar}+    {
         yybegin(DOCCOM_TYPE);
     }
 
-    {DocPreviousChar} "@" {DocParamWithTypeAndName} {WhiteSpace} {
+    {DocPreviousChar} "@" {DocParamWithTypeAndName} {WhspChar}+    {
         yybegin(DOCCOM_TYPE_THEN_NAME);
     }
 
-    {DocPreviousChar} "@" {DocParamWithName} {WhiteSpace} {
+    {DocPreviousChar} "@" {DocParamWithName} {WhspChar}+    {
         yybegin(DOCCOM_NAME);
     }
 }
@@ -287,7 +288,7 @@ DocParamWithName = "uses"
 
     [\[\]\|\(\)] { }
 
-    {WhiteSpace} {
+    {WhspChar}+    {
         yybegin(yystate() == DOCCOM_TYPE_THEN_NAME ? DOCCOM_NAME : DOCCOMMENT);
     }
 
@@ -318,8 +319,6 @@ DocParamWithName = "uses"
 
 <YYINITIAL, IN_SCRIPT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
     {WhspChar}* {EOL} { }
-    {WhiteSpace}    { }
-    [!-~]   { }
     [^\n]       { }
 }
 

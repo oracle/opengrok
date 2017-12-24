@@ -45,8 +45,13 @@ public class PerlAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }
     
+    /**
+     * Creates a wrapped {@link PerlXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new PerlXref(reader);
+        return new JFlexXref(new PerlXref(reader));
     }
 }

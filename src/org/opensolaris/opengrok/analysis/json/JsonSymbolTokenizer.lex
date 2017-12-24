@@ -36,6 +36,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %unicode
 %buffer 32766
 %init{
+    yyline = 1;
 %init}
 %int
 %include CommonLexer.lexh

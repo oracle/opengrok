@@ -35,6 +35,7 @@ import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
@@ -70,12 +71,12 @@ public class TroffAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create a {@link TroffXref} instance.
+     * Creates a wrapped {@link TroffXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
     @Override
-    protected JFlexXref newXref(Reader reader) {
+    protected Xrefer newXref(Reader reader) {
         return new TroffXref(reader);
     }
 }

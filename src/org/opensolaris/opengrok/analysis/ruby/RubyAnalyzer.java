@@ -47,12 +47,12 @@ public class RubyAnalyzer extends AbstractSourceCodeAnalyzer {
     }
 
     /**
-     * Creates a new instance of {@link RubyXref}.
+     * Creates a wrapped instance of {@link RubyXref}.
      * @param reader an instance passed to the new {@link RubyXref}
-     * @return a new {@link RubyXref}
+     * @return a defined instance
      */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new RubyXref(reader);
+        return new JFlexXref(new RubyXref(reader));
     }
 }

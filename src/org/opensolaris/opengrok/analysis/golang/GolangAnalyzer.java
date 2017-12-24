@@ -46,8 +46,13 @@ public class GolangAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }   
 
+    /**
+     * Creates a wrapped {@link GolangXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new GolangXref(reader);
+        return new JFlexXref(new GolangXref(reader));
     }
 }

@@ -24,18 +24,17 @@
 package org.opensolaris.opengrok.analysis.eiffel;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class EiffelXref
-%extends JFlexXref
+%extends JFlexSymbolMatcher
 %implements EiffelLexer
+%char
 %init{
     h = new EiffelLexHelper(VSTRING, this);
+    yyline = 1;
 %init}
 %unicode
 %ignorecase
@@ -45,7 +44,7 @@ import org.opensolaris.opengrok.web.Util;
     private final EiffelLexHelper h;
 
     /**
-     * Resets the Eiffel tracked state after {@link #reset()}.
+     * Resets the Eiffel tracked state; {@inheritDoc}
      */
     @Override
     public void reset() {
@@ -55,19 +54,7 @@ import org.opensolaris.opengrok.web.Util;
 
     @Override
     public void offer(String value) throws IOException {
-        out.write(value);
-    }
-
-    @Override
-    public void offerNonword(String value) throws IOException {
-        out.write(htmlize(value));
-    }
-
-    public void takeUnicode(String value) throws IOException {
-        for (int i = 0; i < value.length(); i++){
-            char c = value.charAt(i);
-            writeUnicodeChar(c);
-        }
+        onNonSymbolMatched(value, yychar);
     }
 
     @Override
@@ -75,9 +62,9 @@ import org.opensolaris.opengrok.web.Util;
         boolean ignoreKwd)
             throws IOException {
         if (ignoreKwd) {
-            return writeSymbol(value, null, yyline, false);
+            return onFilteredSymbolMatched(value, yychar, null, false);
         } else {
-            return writeSymbol(value, Consts.kwd, yyline, false);
+            return onFilteredSymbolMatched(value, yychar, Consts.kwd, false);
         }
     }
 
@@ -88,7 +75,17 @@ import org.opensolaris.opengrok.web.Util;
 
     @Override
     public void offerKeyword(String value) throws IOException {
-        writeKeyword(value, yyline);
+        onKeywordMatched(value, yychar);
+    }
+
+    @Override
+    public void startNewLine() throws IOException {
+        onEndOfLineMatched("\n", yychar);
+    }
+
+    @Override
+    public void disjointSpan(String className) throws IOException {
+        onDisjointSpanChanged(className, yychar);
     }
 
     protected boolean takeAllContent() {
@@ -98,8 +95,6 @@ import org.opensolaris.opengrok.web.Util;
     protected boolean returnOnSymbol() {
         return false;
     }
-
-    protected String getUrlPrefix() { return urlPrefix; }
 %}
 
 /*

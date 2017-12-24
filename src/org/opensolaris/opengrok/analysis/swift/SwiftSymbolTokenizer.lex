@@ -34,6 +34,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %class SwiftSymbolTokenizer
 %extends JFlexSymbolMatcher
 %init{
+    yyline = 1;
 %init}
 %unicode
 %buffer 32766
@@ -113,6 +114,6 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, TSTRING> {
-{WhiteSpace} |
+{WhspChar}+ |
 [^]    {}
 }

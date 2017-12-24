@@ -32,6 +32,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %unicode
 %ignorecase
 %init{
+    yyline = 1;
 %init}
 %int
 %include CommonLexer.lexh
@@ -71,7 +72,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 }
 
 <SCOMMENT> {
-{WhiteSpace}    {}
+{WhspChar}+    {}
 {EOL}    { yybegin(YYINITIAL);}
 }
 

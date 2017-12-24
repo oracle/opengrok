@@ -26,43 +26,48 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
+import java.io.Writer;
+import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.history.Annotation;
 
 /**
- * Represents an API for an extension of {@link JFlexLexer} that needs to track
- * a state stack.
+ * Represents an API for lexers that write a cross-reference document.
  */
-public interface JFlexStackingLexer extends JFlexLexer {
+public interface Xrefer extends Resettable {
 
     /**
-     * Saves current {@link #yystate()} to stack, and enters the specified
-     * {@code newState} with {@link #yybegin(int)}.
-     * @param newState state id
+     * Get generated scopes.
+     * @return scopes for current line
      */
-    void yypush(int newState);
+    Scopes getScopes();
+
+    void setAnnotation(Annotation annotation);
 
     /**
-     * Pops the last state from the stack, and enters the state with
-     * {@link #yybegin(int)}.
-     * @throws IOException if any error occurs while effecting the pop
+     * set definitions
+     * @param defs definitions
      */
-    void yypop() throws IOException;
+    void setDefs(Definitions defs);
+
+    void setProject(Project project);
 
     /**
-     * Gets the YYEOF value.
-     * @return YYEOF
+     * set folding of code
+     * @param foldingEnabled whether to fold or not
      */
-    int getYYEOF();
+    void setFoldingEnabled(boolean foldingEnabled);
 
     /**
-     * Gets the yyline value.
-     * @return yyline
+     * set scopes
+     * @param scopesEnabled if they should be enabled or disabled
      */
-    int getLineNumber();
+    void setScopesEnabled(boolean scopesEnabled);
 
     /**
-     * Tests if the instance's state stack is empty.
-     * @return {@code true} if the stack contains no items; {@code false}
-     * otherwise.
+     * Write xref to the specified {@code Writer}.
+     *
+     * @param out xref destination
+     * @throws IOException on error when writing the xref
      */
-    boolean emptyStack();
+    void write(Writer out) throws IOException;
 }

@@ -63,12 +63,12 @@ public class XMLAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create an {@link XMLXref} instance.
+     * Creates a wrapped {@link XMLXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new XMLXref(reader);
+        return new JFlexXref(new XMLXref(reader));
     }
 }

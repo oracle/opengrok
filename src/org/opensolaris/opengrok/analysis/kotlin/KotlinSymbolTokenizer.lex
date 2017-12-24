@@ -37,6 +37,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %class KotlinSymbolTokenizer
 %extends JFlexSymbolMatcher
 %init{
+    yyline = 1;
 %init}
 %unicode
 %buffer 32766
@@ -127,6 +128,6 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, TSTRING> {
-{WhiteSpace} |
+{WhspChar}+ |
 [^]    {}
 }

@@ -34,6 +34,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %class ScalaSymbolTokenizer
 %extends JFlexSymbolMatcher
 %init{
+    yyline = 1;
 %init}
 %unicode
 %int
@@ -163,6 +164,6 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 }
 
 <YYINITIAL, STRING, ISTRING, MSTRING, IMSTRING, COMMENT, SCOMMENT, QSTRING> {
-{WhiteSpace} |
+{WhspChar}+ |
 [^]    {}
 }

@@ -45,9 +45,14 @@ public class PascalAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }       
 
+    /**
+     * Creates a wrapped {@link PascalXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new PascalXref(reader);
+        return new JFlexXref(new PascalXref(reader));
     }
     
     @Override

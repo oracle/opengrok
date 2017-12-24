@@ -48,9 +48,14 @@ public class CAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }
         
+    /**
+     * Creates a wrapped {@link CXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new CXref(reader);
+        return new JFlexXref(new CXref(reader));
     }
     
     @Override

@@ -40,14 +40,6 @@ public interface JFlexJointLexer extends JFlexStackingLexer {
     void offer(String value) throws IOException;
 
     /**
-     * Passes non-symbolic fragment for processing, with a hint that it
-     * contains non-word-like characters.
-     * @param value the excised fragment
-     * @throws IOException if an error occurs while accepting
-     */
-    void offerNonword(String value) throws IOException;
-
-    /**
      * Passes a text fragment that is syntactically a symbol for processing.
      * @param value the excised symbol
      * @param captureOffset the offset from yychar where {@code value} began

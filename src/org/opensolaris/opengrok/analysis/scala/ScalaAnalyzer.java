@@ -45,8 +45,13 @@ public class ScalaAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }
     
+    /**
+     * Creates a wrapped {@link ScalaXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new ScalaXref(reader);
+        return new JFlexXref(new ScalaXref(reader));
     }
 }

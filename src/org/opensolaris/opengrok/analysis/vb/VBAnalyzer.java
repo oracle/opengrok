@@ -45,8 +45,13 @@ public class VBAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }    
 
+    /**
+     * Creates a wrapped {@link VBXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new VBXref(reader);
+        return new JFlexXref(new VBXref(reader));
     }
 }

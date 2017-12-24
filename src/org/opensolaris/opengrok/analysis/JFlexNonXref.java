@@ -22,42 +22,57 @@
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
+
 package org.opensolaris.opengrok.analysis;
 
+import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Set;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.Util;
 
 /**
- * @author Lubos Kosco
+ * Represents a base class for non-traditional xref lexers whose
+ * cross-references are not straight-forward representations of source code but
+ * instead are attempts to show derived presentations (e.g. a visual
+ * representation of troff or mandoc(5)).
+ * <p>
+ * This approach is controversial (see
+ * <a href="https://github.com/oracle/opengrok/issues/33">
+ * "man pages are not cross-referenced"</a>,
+ * <a href="https://github.com/oracle/opengrok/issues/393">
+ * "man2html rendering of sh.1 shows garbage"</a>,
+ * <a href="https://github.com/oracle/opengrok/issues/433">
+ * "Annotate for man pages does not work"</a>,
+ * <a href="https://github.com/oracle/opengrok/issues/553">
+ * "man page garbled"</a>) and probably should be considered deprecated as a
+ * candidate for future removal in favor of a feature described by
+ * <a href="https://github.com/kahatlen">kahatlen</a>:
+ * <p>
+ * "The [troff or mandoc(5)] xref could show the markup, and then there could
+ * be a button you could click to see the rendered output."
  */
-public class JFlexXref implements Xrefer, SymbolMatchedListener,
-        NonSymbolMatchedListener {
+public abstract class JFlexNonXref extends JFlexStateStacker
+        implements Xrefer {
 
-    /**
-     * Used to indicate pre-formatted output with
-     * {@link Util#htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
-     */
-    private final static boolean PRE = true;
-
-    private final ScanningSymbolMatcher matcher;
-    private Writer out;
-    private final String urlPrefix =
-        RuntimeEnvironment.getInstance().getUrlPrefix();
-    private Annotation annotation;
-    private Project project;
-    private Definitions defs;
+    protected Writer out;
+    protected String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
+    protected Annotation annotation;
+    protected Project project;
+    protected Definitions defs;
     private boolean scopesEnabled;
     private boolean foldingEnabled;
 
     private boolean scopeOpen;
-    private Scopes scopes = new Scopes();
-    private Scope scope;
+    protected Scopes scopes = new Scopes();
+    protected Scope scope;
     private int scopeLevel;
 
     /**
@@ -67,7 +82,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      *
      * @see #startNewLine()
      */
-    private String userPageLink;
+    protected String userPageLink;
     /**
      * See {@link RuntimeEnvironment#getUserPageSuffix()}. Per default
      * initialized in the constructor and here to be consistent and avoid lot of
@@ -75,7 +90,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      *
      * @see #startNewLine()
      */
-    private String userPageSuffix;
+    protected String userPageSuffix;
 
     /**
      * The span class name from the last call to
@@ -83,20 +98,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      */
     private String disjointSpanClassName;
 
-    /**
-     * Initialize an instance, passing a {@link ScanningSymbolMatcher} which
-     * will be owned by the {@link JFlexXref}.
-     * @param matcher a defined instance
-     */
-    public JFlexXref(ScanningSymbolMatcher matcher) {
-        if (matcher == null) {
-            throw new IllegalArgumentException("`matcher' is null");
-        }
-        this.matcher = matcher;
-        matcher.addSymbolMatchedListener(this);
-        matcher.addNonSymbolMatchedListener(this);
-        // The xrefer will own the matcher, so we won't have to unsubscribe.
-
+    protected JFlexNonXref() {
         userPageLink = RuntimeEnvironment.getInstance().getUserPage();
         if (userPageLink != null && userPageLink.length() == 0) {
             userPageLink = null;
@@ -107,37 +109,39 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
         }
     }
 
-    public void setReader(Reader input) {
-        if (input == null) {
-            throw new IllegalArgumentException("`input' is null");
-        }
-        matcher.yyreset(input);
-        matcher.reset();
+    /**
+     * Reinitialize the xref with new contents.
+     *
+     * @param contents a char buffer with text to analyze
+     * @param length the number of characters to use from the char buffer
+     */
+    public void reInit(char[] contents, int length) {
+        reInit(new CharArrayReader(contents, 0, length));
     }
 
     /**
-     * Resets the instance.
-     * Normally, it only makes sense to call this method after calling
-     * {@link #setReader(java.io.Reader)} to reset the instance's
-     * {@link ScanningSymbolMatcher} first as well.
+     * Reinitialize the lexer with new reader.
+     *
+     * @param reader new reader for this lexer
+     */
+    public void reInit(Reader reader) {
+        this.yyreset(reader);
+        reset();
+    }
+
+    /**
+     * Resets the xref tracked state; {@inheritDoc}
      */
     @Override
     public void reset() {
+        super.reset();
+
         annotation = null;
         disjointSpanClassName = null;
         scopes = new Scopes();
         scope = null;
         scopeLevel = 0;
         scopeOpen = false;
-    }
-
-    /**
-     * Gets the line number from {@link ScanningSymbolMatcher#getLineNumber()}
-     * of the instance's {@link ScanningSymbolMatcher}.
-     * @return yyline
-     */
-    public int getLineNumber() {
-        return matcher.getLineNumber();
     }
 
     @Override
@@ -149,7 +153,6 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * set definitions
      * @param defs definitions
      */
-    @Override
     public void setDefs(Definitions defs) {
         this.defs = defs;
     }
@@ -163,7 +166,6 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * set scopes
      * @param scopesEnabled if they should be enabled or disabled
      */
-    @Override
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
     }
@@ -172,203 +174,55 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * set folding of code
      * @param foldingEnabled whether to fold or not
      */
-    @Override
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = foldingEnabled;
     }
 
-    @Override
-    public void symbolMatched(SymbolMatchedEvent evt) {
-        try {
-            JFlexXrefUtils.writeSymbol(out, defs, urlPrefix, project,
-                evt.getStr(), null, matcher.getLineNumber(), false, false);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+    /**
+     * Calls {@link #appendLink(java.lang.String, boolean)} with {@code url}
+     * and false.
+     * @param url the URL to append
+     * @throws IOException if an error occurs while appending
+     */
+    protected void appendLink(String url) throws IOException {
+        appendLink(url, false);
     }
 
-    @Override
-    public void nonSymbolMatched(TextMatchedEvent evt) {
-        String str = evt.getStr();
-        try {
-            switch (evt.getHint()) {
-                case EM:
-                    out.write("<em>");
-                    Util.htmlize(str, out, PRE);
-                    out.write("</em>");
-                    break;
-                case STRONG:
-                    out.write("<strong>");
-                    Util.htmlize(str, out, PRE);
-                    out.write("</strong>");
-                    break;
-                case NONE:
-                default:
-                    Util.htmlize(str, out, PRE);
-                    break;
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    /**
+     * Calls
+     * {@link #appendLink(java.lang.String, boolean, java.util.regex.Pattern)}
+     * with {@code url}, {@code doEndingPushback}, and null.
+     * @param url the URL to append
+     * @param doEndingPushback a value indicating whether to test the
+     * {@code url} with
+     * {@link StringUtils#countURIEndingPushback(java.lang.String)}
+     * @throws IOException if an error occurs while appending
+     */
+    protected void appendLink(String url, boolean doEndingPushback)
+        throws IOException {
 
-    @Override
-    public void keywordMatched(TextMatchedEvent evt) {
-        try {
-            writeKeyword(evt.getStr(), matcher.getLineNumber());
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void endOfLineMatched(TextMatchedEvent evt) {
-        try {
-            startNewLine();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void disjointSpanChanged(DisjointSpanChangedEvent evt) {
-        try {
-            disjointSpan(evt.getDisjointSpanClassName());
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void linkageMatched(LinkageMatchedEvent evt) {
-        String str = evt.getStr();
-        String lstr = evt.getLinkStr();
-        LinkageType linkageType = evt.getLinkageType();
-        try {
-            switch (linkageType) {
-                case EMAIL:
-                    writeEMailAddress(str);
-                    break;
-                case LABEL:
-                    // Only PowerShell seems to be using this.
-                    out.write("<a class=\"xlbl\" name=\"");
-                    Util.URIEncode(lstr, out);
-                    out.write("\">");
-                    Util.htmlize(str, out, PRE);
-                    out.write("</a>");
-                    break;
-                case LABELDEF:
-                    // Only PowerShell seems to be using this.
-                    JFlexXrefUtils.writeSameFileLinkSymbol(out, str);
-                    break;
-                case FILELIKE:
-                    out.write("<a href=\"");
-                    out.write(urlPrefix);
-                    out.write("path=");
-                    /*
-                     * Maybe in the future the following should properly be
-                     * qurlencode(), but just htmlize() it for now.
-                     */
-                    Util.htmlize(lstr, out);
-                    JFlexXrefUtils.appendProject(out, project);
-                    out.write("\">");
-                    Util.htmlize(str, out, PRE);
-                    out.write("</a>");
-                    break;
-                case PATHLIKE:
-                    out.write(Util.breadcrumbPath(urlPrefix + "path=", str,
-                        '/'));
-                    break;
-                case QUERY:
-                    out.write("<a href=\"");
-                    out.write(urlPrefix);
-                    out.write("q=");
-                    Util.qurlencode(lstr, out);
-                    JFlexXrefUtils.appendProject(out, project);
-                    out.write("\">");
-                    Util.htmlize(str, out, PRE);
-                    out.write("</a>");
-                    break;
-                case REFS:
-                    out.write("<a href=\"");
-                    out.write(urlPrefix);
-                    out.write("refs=");
-                    Util.qurlencode(lstr, out);
-                    JFlexXrefUtils.appendProject(out, project);
-                    out.write("\">");
-                    Util.htmlize(str, out, PRE);
-                    out.write("</a>");
-                    break;
-                case URI:
-                    appendLink(str);
-                    break;
-                default:
-                    throw new UnsupportedOperationException("LinkageType" +
-                        linkageType);
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void pathlikeMatched(PathlikeMatchedEvent evt) {
-        String str = evt.getStr();
-        String breadcrumbPath = Util.breadcrumbPath(urlPrefix + "path=", str,
-            evt.getSep(), getProjectPostfix(true), evt.getCanonicalize());
-        try {
-            out.write(breadcrumbPath);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void scopeChanged(ScopeChangedEvent evt) {
-        ScopeAction action = evt.getAction();
-        switch (action) {
-            case INC:
-                incScope();
-                break;
-            case DEC:
-                decScope();
-                break;
-            case END:
-                endScope();
-                break;
-            default:
-                throw new UnsupportedOperationException("ScopeAction " +
-                    action);
-        }
-
-        //
-        // TODO: maybe retire this odd convention which I've kept to minimize
-        // test differences.
-        //
-        String str = evt.getStr();
-        try {
-            if (str.length() > 1) {
-                out.write(str);
-            } else if (str.length() > 0) {
-                writeUnicodeChar(str.charAt(0));
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+        appendLink(url, doEndingPushback, null);
     }
 
     /**
      * Calls
      * {@link JFlexXrefUtils#appendLink(java.io.Writer, org.opensolaris.opengrok.analysis.JFlexLexer, java.lang.String, boolean, java.util.regex.Pattern)}
-     * with the active {@link Writer}, the instance's
-     * {@link ScanningSymbolMatcher}, {@code url}, {@code false}, and
-     * {@code null}.
+     * with the active {@link Writer}, the field {@code matcher}, {@code url},
+     * {@code doEndingPushback}, and {@code collateralCapture}.
      * @param url the URL to append
+     * @param doEndingPushback a value indicating whether to test the
+     * {@code url} with
+     * {@link StringUtils#countURIEndingPushback(java.lang.String)}
+     * @param collateralCapture optional pattern to indicate characters which
+     * may have been captured as valid URI characters but in a particular
+     * context should mark the start of a pushback
      * @throws IOException if an error occurs while appending
      */
-    protected void appendLink(String url)
+    protected void appendLink(String url, boolean doEndingPushback,
+        Pattern collateralCapture)
             throws IOException {
-        JFlexXrefUtils.appendLink(out, matcher, url, false, null);
+        JFlexXrefUtils.appendLink(out, this, url, doEndingPushback,
+            collateralCapture);
     }
 
     protected String getProjectPostfix(boolean encoded) {
@@ -378,7 +232,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
 
     protected void startScope() {
         Scope newScope = JFlexXrefUtils.maybeNewScope(scopesEnabled, scope,
-            matcher, defs);
+            this, defs);
         if (newScope != null) {
             scope = newScope;
             scopeLevel = 0;
@@ -395,7 +249,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
         if (scope != null && scopeLevel > 0) {
             scopeLevel--;
             if (scopeLevel == 0) {
-                scope.setLineTo(matcher.getLineNumber());
+                scope.setLineTo(getLineNumber());
                 scopes.addScope(scope);
                 scope = null;
             }
@@ -404,7 +258,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
 
     protected void endScope() {
         if (scope != null && scopeLevel == 0) {
-            scope.setLineTo(matcher.getLineNumber());
+            scope.setLineTo(getLineNumber());
             scopes.addScope(scope);
             scope = null;
         }
@@ -414,7 +268,6 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * Get generated scopes.
      * @return scopes for current line
      */
-    @Override
     public Scopes getScopes() {
         return scopes;
     }
@@ -431,9 +284,18 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * close an open tag.
      * @throws IOException if an output error occurs
      */
-    private void disjointSpan(String className) throws IOException {
+    public void disjointSpan(String className) throws IOException {
         disjointSpanClassName = JFlexXrefUtils.disjointSpan(out, className,
             disjointSpanClassName);
+    }
+
+    /**
+     * Gets the argument from the last call to
+     * {@link #disjointSpan(java.lang.String)}.
+     * @return a defined value or null
+     */
+    public String getDisjointSpanClassName() {
+        return disjointSpanClassName;
     }
 
     /**
@@ -442,13 +304,12 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * @param out xref destination
      * @throws IOException on error when writing the xref
      */
-    @Override
     public void write(Writer out) throws IOException {
         this.out = out;
         JFlexXrefUtils.writeSymbolTable(out, defs);
+        setLineNumber(1);
         startNewLine();
-        while (matcher.yylex() != matcher.getYYEOF()) {
-            // NOPMD while statement intentionally empty
+        while (yylex() != getYYEOF()) { // NOPMD while statement intentionally empty
             // nothing to do here, yylex() will do the work
         }
 
@@ -460,9 +321,18 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
             scopeOpen = false;
         }
 
-        while (!matcher.emptyStack()) {
-            matcher.yypop();
+        while (!stack.empty()) {
+            yypop();
         }
+    }
+
+    /**
+     * Calls {@link Util#prehtmlize(java.lang.String)}.
+     * @param raw Raw string
+     * @return String with escaped characters
+     */
+    protected String htmlize(String raw) {
+        return Util.prehtmlize(raw);
     }
 
     /**
@@ -473,8 +343,9 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      */
     public void startNewLine() throws IOException {
         String iconId = null;
-        int line = matcher.getLineNumber();
+        int line = getLineNumber();
         boolean skipNl = false;
+        setLineNumber(line + 1);
 
         if (scopesEnabled) {
             startScope();
@@ -489,13 +360,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
                     out.write("\n<span id='");
                     out.write(scopeId);
                     out.write("' class='scope-head'><span class='scope-signature'>");
-                    /*
-                     * It seems scope.getSignature() is sometimes null, so the
-                     * following can create values with "null" in the
-                     * concatenated string -- and tests are expecting that.
-                     */
-                    Util.htmlize(scope.getName() + scope.getSignature(), out,
-                        PRE);
+                    out.write(htmlize(scope.getName() + scope.getSignature()));
                     out.write("</span>");
                     iconId = scopeId + "_fold_icon";
                     skipNl = true;
@@ -529,6 +394,59 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     }
 
     /**
+     * Write a symbol and generate links as appropriate.
+     *
+     * @param symbol the symbol to write
+     * @param keywords a set of keywords recognized by this analyzer (no links
+     * will be generated if the symbol is a keyword)
+     * @param line the line number on which the symbol appears
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected boolean writeSymbol(String symbol, Set<String> keywords, int line)
+            throws IOException {
+        return writeSymbol(symbol, keywords, line, true, false);
+    }
+
+    /**
+     * Write a symbol and generate links as appropriate.
+     *
+     * @param symbol the symbol to write
+     * @param keywords a set of keywords recognized by this analyzer (no links
+     * will be generated if the symbol is a keyword)
+     * @param line the line number on which the symbol appears
+     * @param caseSensitive Whether the keyword list is case sensitive
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected boolean writeSymbol(String symbol, Set<String> keywords, int line,
+        boolean caseSensitive) throws IOException {
+        return writeSymbol(symbol, keywords, line, caseSensitive, false);
+    }
+    
+    /**
+     * Write a symbol and generate links as appropriate.
+     *
+     * @param symbol the symbol to write
+     * @param keywords a set of keywords recognized by this analyzer (no links
+     * will be generated if the symbol is a keyword)
+     * @param line the line number on which the symbol appears
+     * @param caseSensitive Whether the keyword list is case sensitive
+     * @param isKeyword Whether the symbol is certainly a keyword without
+     * bothering to look up in a defined {@code keywords}
+     * @return true if the {@code symbol} was not in {@code keywords} or if
+     * {@code keywords} was null and if-and-only-if {@code isKeyword} is false
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected boolean writeSymbol(String symbol, Set<String> keywords, int line,
+        boolean caseSensitive, boolean isKeyword) throws IOException {
+        return JFlexXrefUtils.writeSymbol(out, defs, urlPrefix, project,
+            symbol, keywords, line, caseSensitive, isKeyword);
+    }
+
+    /**
      * Writes a keyword symbol.
      *
      * @param symbol the symbol to write
@@ -536,8 +454,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * @throws IOException if an error occurs while writing to the stream
      */
     protected void writeKeyword(String symbol, int line) throws IOException {
-        JFlexXrefUtils.writeSymbol(out, defs, urlPrefix, project,
-            symbol, null, line, false, true);
+        writeSymbol(symbol, null, line, false, true);
     }
 
     /**

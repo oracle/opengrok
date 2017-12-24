@@ -45,8 +45,13 @@ public class PythonAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }
     
+    /**
+     * Creates a wrapped {@link PythonXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new PythonXref(reader);
+        return new JFlexXref(new PythonXref(reader));
     }
 }

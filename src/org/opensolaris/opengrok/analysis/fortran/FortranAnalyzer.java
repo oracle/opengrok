@@ -41,8 +41,13 @@ public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }
     
+    /**
+     * Creates a wrapped {@link FortranXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new FortranXref(reader);
+        return new JFlexXref(new FortranXref(reader));
     }
 }

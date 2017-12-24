@@ -31,7 +31,6 @@ package org.opensolaris.opengrok.analysis.ada;
 import java.io.IOException;
 import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class AdaSymbolTokenizer
@@ -43,6 +42,7 @@ import org.opensolaris.opengrok.web.Util;
 %char
 %init{
     h = new AdaLexHelper(this);
+    yyline = 1;
 %init}
 %include CommonLexer.lexh
 %{
@@ -51,7 +51,7 @@ import org.opensolaris.opengrok.web.Util;
     private String lastSymbol;
 
     /**
-     * Resets the Ada tracked state after {@link #reset()}.
+     * Resets the Ada tracked state; {@inheritDoc}
      */
     @Override
     public void reset() {
@@ -62,15 +62,6 @@ import org.opensolaris.opengrok.web.Util;
 
     @Override
     public void offer(String value) throws IOException {
-        // noop
-    }
-
-    @Override
-    public void offerNonword(String value) throws IOException {
-        // noop
-    }
-
-    public void takeUnicode(String value) throws IOException {
         // noop
     }
 
@@ -115,14 +106,6 @@ import org.opensolaris.opengrok.web.Util;
     protected boolean returnOnSymbol() {
         return lastSymbol != null;
     }
-
-    protected String getUrlPrefix() { return null; }
-
-    protected void appendProject() { /* noop */ }
-
-    protected void appendLink(String s, boolean b) { /* noop */ }
-
-    protected void writeEMailAddress(String s) { /* noop */ }
 %}
 
 %include Common.lexh

@@ -30,6 +30,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %class PlainSymbolTokenizer
 %extends JFlexSymbolMatcher
 %init{
+    yyline = 1;
 %init}
 %unicode
 %buffer 32766

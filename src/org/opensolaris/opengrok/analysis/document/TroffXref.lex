@@ -24,18 +24,21 @@
  */
 
 package org.opensolaris.opengrok.analysis.document;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.JFlexNonXref;
 import java.io.IOException;
 import java.io.Writer;
-import java.io.Reader;
+import org.opensolaris.opengrok.analysis.JFlexXrefUtils;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class TroffXref
-%extends JFlexXref
+%extends JFlexNonXref
 %unicode
 %int
+%char
+%init{
+    yyline = 1;
+%init}
 %include CommonLexer.lexh
 %{ 
   int p;
@@ -47,7 +50,6 @@ import org.opensolaris.opengrok.web.Util;
         p = 0;
         span = 0;
         div = 0;
-        yyline++;
         this.out = out;
 
         out.write("</pre><div id=\"man\">");
@@ -198,7 +200,7 @@ T[\{\}] {}
         String path = yytext();
         out.write("<a href=\""+urlPrefix+"path=");
         out.write(path);
-        appendProject();
+        JFlexXrefUtils.appendProject(out, project);
         out.write("\">");
         out.write(path);
         out.write("</a>");}
@@ -212,6 +214,6 @@ T[\{\}] {}
 ">"     {out.write( "&gt;");}
 "&"     {out.write( "&amp;");}
 {EOL}   { out.write("\n"); yyline++;}
-{WhiteSpace}    { out.write(' '); }
+{WhspChar}+    { out.write(' '); }
 [!-~]   { out.write(yycharat(0)); }
 [^\n]      { writeUnicodeChar(yycharat(0)); }

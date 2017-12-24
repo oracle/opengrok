@@ -28,9 +28,9 @@
 
 package org.opensolaris.opengrok.analysis.haskell;
 
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 
 /**
  * @author Harry Pan
@@ -38,9 +38,13 @@ import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class HaskellXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %int
+%char
+%init{
+    yyline = 1;
+%init}
 %include CommonLexer.lexh
 %{
     private int nestedComment;
@@ -49,6 +53,12 @@ import org.opensolaris.opengrok.web.Util;
     public void reset() {
         super.reset();
         nestedComment = 0;
+    }
+
+    @Override
+    public void yypop() throws IOException {
+        onDisjointSpanChanged(null, yychar);
+        super.yypop();
     }
 %}
 
@@ -62,33 +72,36 @@ import org.opensolaris.opengrok.web.Util;
 <YYINITIAL> {
     {Identifier} {
         String id = yytext();
-        writeSymbol(id, Consts.kwd, yyline);
+        onFilteredSymbolMatched(id, yychar, Consts.kwd);
     }
     {Number}     {
-        disjointSpan(HtmlConsts.NUMBER_CLASS);
-        out.write(yytext());
-        disjointSpan(null);
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
+        onDisjointSpanChanged(null, yychar);
     }
     \"           {
-        pushSpan(STRING, HtmlConsts.STRING_CLASS);
-        out.write(htmlize(yytext()));
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
     \'           {
-        pushSpan(CHAR, HtmlConsts.STRING_CLASS);
-        out.write(htmlize(yytext()));
+        yypush(CHAR);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
     "--"         {
-        pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
-        out.write(yytext());
+        yypush(COMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
 
-    {NotComments}    { out.write(yytext()); }
+    {NotComments}    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING> {
-    \\[\"\\]    { out.write(htmlize(yytext())); }
+    \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
     \"          {
-        out.write(htmlize(yytext()));
+        onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
     /*
@@ -102,9 +115,9 @@ import org.opensolaris.opengrok.web.Util;
 }
 
 <CHAR> {    // we don't need to consider the case where prime is part of an identifier since it is handled above
-    \\[\'\\]    { out.write(htmlize(yytext())); }
+    \\[\'\\]    { onNonSymbolMatched(yytext(), yychar); }
     \'          {
-        out.write(htmlize(yytext()));
+        onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
     /*
@@ -116,42 +129,42 @@ import org.opensolaris.opengrok.web.Util;
 <COMMENT> {
     {WhspChar}*{EOL}    {
         yypop();
-        startNewLine();
+        onEndOfLineMatched(yytext(), yychar);
     }
 }
 
 <YYINITIAL, BCOMMENT> {
     "{-"    {
         if (nestedComment++ == 0) {
-            pushSpan(BCOMMENT, HtmlConsts.COMMENT_CLASS);
+            yypush(BCOMMENT);
+            onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
         }
-        out.write(yytext());
+        onNonSymbolMatched(yytext(), yychar);
     }
 }
 
 <BCOMMENT> {
     "-}"    {
-        out.write(yytext());
+        onNonSymbolMatched(yytext(), yychar);
         if (--nestedComment == 0) {
             yypop();
         }
     }
 }
 
-[&<>\'\"]    { out.write(htmlize(yytext())); }
-{WhspChar}*{EOL} { startNewLine();                }
-{WhiteSpace}       { out.write(yytext());           }
-[!-~]              { out.write(yycharat(0)); }
-[^\n]              { writeUnicodeChar(yycharat(0)); }
+{WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+[^\n]              { onNonSymbolMatched(yytext(), yychar); }
 
 <STRING, COMMENT, BCOMMENT> {
-    {FPath} { out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/')); }
-    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
+    {FPath} { onPathlikeMatched(yytext(), '/', false, yychar); }
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        onEmailAddressMatched(yytext(), yychar);
+    }
 }
 
 <STRING, COMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true);
+        onUriMatched(yytext(), yychar);
     }
 }
 
@@ -164,6 +177,6 @@ import org.opensolaris.opengrok.web.Util;
      * Haskell-specific collateral capture pattern.
      */
     {BrowseableURI} \}?    {
-        appendLink(yytext(), true, HaskellUtils.MAYBE_END_NESTED_COMMENT);
+        onUriMatched(yytext(), yychar, HaskellUtils.MAYBE_END_NESTED_COMMENT);
     }
 }

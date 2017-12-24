@@ -40,6 +40,7 @@ import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.NullWriter;
 
@@ -69,13 +70,13 @@ public class PlainAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create a {@link PlainXref} instance.
+     * Creates a wrapped {@link PlainXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
     @Override
-    protected JFlexXref newXref(Reader reader) {
-        return new PlainXref(reader);
+    protected Xrefer newXref(Reader reader) {
+        return new JFlexXref(new PlainXref(reader));
     }
 
     @Override
@@ -117,7 +118,7 @@ public class PlainAnalyzer extends TextAnalyzer {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setDefs(defs);
                 args.setProject(project);
-                JFlexXref xref = writeXref(args);
+                Xrefer xref = writeXref(args);
             
                 Scopes scopes = xref.getScopes();
                 if (scopes.size() > 0) {

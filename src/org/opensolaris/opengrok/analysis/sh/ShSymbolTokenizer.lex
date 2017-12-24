@@ -31,6 +31,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %extends JFlexSymbolMatcher
 %unicode
 %init{
+    yyline = 1;
 %init}
 %int
 %include CommonLexer.lexh
@@ -60,7 +61,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
  {Unary_op_req_lookahead} $    {
     // noop
  }
- {WhiteSpace} {Unary_op_char} / ")"    {
+ {WhspChar}+ {Unary_op_char} / ")"    {
     // noop
  }
  {Binary_op}    {
@@ -92,7 +93,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 }
 
 <SCOMMENT> {
-{WhiteSpace}    {}
+{WhspChar}+    {}
 {EOL}      { yybegin(YYINITIAL);}
 }
 

@@ -45,11 +45,11 @@ public class EiffelAnalyzer extends AbstractSourceCodeAnalyzer {
     }
 
     /**
-     * Creates a new {@link EiffelXref} instance.
+     * Creates a wrapped {@link EiffelXref} instance.
      * @return a defined instance
      */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new EiffelXref(reader);
+        return new JFlexXref(new EiffelXref(reader));
     }
 }

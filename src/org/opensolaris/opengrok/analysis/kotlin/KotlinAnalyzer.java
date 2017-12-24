@@ -45,9 +45,14 @@ public class KotlinAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }
 
+    /**
+     * Creates a wrapped {@link KotlinXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new KotlinXref(reader);
+        return new JFlexXref(new KotlinXref(reader));
     }
     
     @Override

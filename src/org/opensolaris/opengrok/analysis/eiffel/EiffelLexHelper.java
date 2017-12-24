@@ -94,7 +94,7 @@ class EiffelLexHelper implements Resettable {
 
         lexer.yypush(VSTRING);
         lexer.disjointSpan(HtmlConsts.STRING_CLASS);
-        lexer.offerNonword(opener);
+        lexer.offer(opener);
     }
 
     /**
@@ -110,10 +110,10 @@ class EiffelLexHelper implements Resettable {
         int npushback;
         if (!capture.startsWith(vstring_closer)) {
             // Nope--so just write the double quote, and push back the rest.
-            lexer.offerNonword(capture.substring(0, 1));
+            lexer.offer(capture.substring(0, 1));
             npushback = capture.length() - 1;
         } else {
-            lexer.offerNonword(vstring_closer);
+            lexer.offer(vstring_closer);
             lexer.disjointSpan(null);
             lexer.yypop();
             npushback = capture.length() - vstring_closer.length();

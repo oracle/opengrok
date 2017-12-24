@@ -45,9 +45,14 @@ public class SwiftAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }
 
+    /**
+     * Creates a wrapped {@link SwiftXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new SwiftXref(reader);
+        return new JFlexXref(new SwiftXref(reader));
     }
     
     @Override

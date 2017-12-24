@@ -24,17 +24,21 @@
 
 package org.opensolaris.opengrok.analysis.sql;
 
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class PLSQLXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %ignorecase
 %int
+%char
+%init{
+    yyline = 1;
+%init}
 %include CommonLexer.lexh
 %{
     private int commentLevel;
@@ -43,6 +47,12 @@ import org.opensolaris.opengrok.web.Util;
     public void reset() {
         super.reset();
         commentLevel = 0;
+    }
+
+    @Override
+    public void yypop() throws IOException {
+        onDisjointSpanChanged(null, yychar);
+        super.yypop();
     }
 %}
 
@@ -63,47 +73,50 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_$#]*
 <YYINITIAL> {
     {Identifier} {
         String id = yytext();
-        writeSymbol(id, Consts.getReservedKeywords(), yyline);
+        onFilteredSymbolMatched(id, yychar, Consts.getReservedKeywords());
     }
 
     {Number} {
-        disjointSpan(HtmlConsts.NUMBER_CLASS);
-        out.write(yytext());
-        disjointSpan(null);
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
+        onDisjointSpanChanged(null, yychar);
     }
 
     [nN]? "'"    {
         String capture = yytext();
         String prefix = capture.substring(0, capture.length() - 1);
         String rest = capture.substring(prefix.length());
-        out.write(prefix);
-        pushSpan(STRING, HtmlConsts.STRING_CLASS);
-        out.write(htmlize(rest));
+        onNonSymbolMatched(prefix, yychar);
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(rest, yychar);
     }
 
     \"    {
-        pushSpan(QUOTED_IDENTIFIER, HtmlConsts.STRING_CLASS);
-        out.write(htmlize(yytext()));
+        yypush(QUOTED_IDENTIFIER);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
 
     "--"    {
-        pushSpan(SINGLE_LINE_COMMENT, HtmlConsts.COMMENT_CLASS);
-        out.write(yytext());
+        yypush(SINGLE_LINE_COMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
 }
 
 <STRING> {
-    "''"    { out.write(htmlize(yytext())); }
+    "''"    { onNonSymbolMatched(yytext(), yychar); }
     "'"    {
-        out.write(htmlize(yytext()));
+        onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
 }
 
 <QUOTED_IDENTIFIER> {
-    \"\"    { out.write(htmlize(yytext())); }
+    \"\"    { onNonSymbolMatched(yytext(), yychar); }
     \"    {
-        out.write(htmlize(yytext()));
+        onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
 }
@@ -111,22 +124,23 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_$#]*
 <SINGLE_LINE_COMMENT> {
     {WhspChar}*{EOL} {
         yypop();
-        startNewLine();
+        onEndOfLineMatched(yytext(), yychar);
     }
 }
 
 <YYINITIAL, BRACKETED_COMMENT> {
     "/*" {
         if (commentLevel++ == 0) {
-            pushSpan(BRACKETED_COMMENT, HtmlConsts.COMMENT_CLASS);
+            yypush(BRACKETED_COMMENT);
+            onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
         }
-        out.write(yytext());
+        onNonSymbolMatched(yytext(), yychar);
     }
 }
 
 <BRACKETED_COMMENT> {
     "*/" {
-        out.write(yytext());
+        onNonSymbolMatched(yytext(), yychar);
         if (--commentLevel == 0) {
             yypop();
         }
@@ -134,27 +148,24 @@ Identifier = [a-zA-Z] [a-zA-Z0-9_$#]*
 }
 
 <YYINITIAL, STRING, QUOTED_IDENTIFIER, SINGLE_LINE_COMMENT, BRACKETED_COMMENT> {
-    [&<>\'\"]    { out.write(htmlize(yytext())); }
-    {WhspChar}*{EOL}    { startNewLine(); }
-    {WhiteSpace}  { out.append(yytext()); }
-    [ \t\f\r!-~]  { out.append(yycharat(0)); }
-    [^\n]      { writeUnicodeChar(yycharat(0)); }
+    {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+    [^\n]    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
+        onUriMatched(yytext(), yychar, SQLUtils.STRINGLITERAL_APOS_DELIMITER);
     }
 }
 
 <QUOTED_IDENTIFIER, SINGLE_LINE_COMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true);
+        onUriMatched(yytext(), yychar);
     }
 }
 
 <BRACKETED_COMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+        onUriMatched(yytext(), yychar, StringUtils.END_C_COMMENT);
     }
 }

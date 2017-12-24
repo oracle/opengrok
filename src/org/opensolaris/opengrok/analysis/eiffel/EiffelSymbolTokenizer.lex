@@ -24,9 +24,7 @@
 package org.opensolaris.opengrok.analysis.eiffel;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
 %%
 %public
@@ -35,6 +33,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 %implements EiffelLexer
 %init{
     h = new EiffelLexHelper(VSTRING, this);
+    yyline = 1;
 %init}
 %unicode
 %ignorecase
@@ -47,7 +46,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     private String lastSymbol;
 
     /**
-     * Resets the Eiffel tracked state after {@link #reset()}.
+     * Resets the Eiffel tracked state; {@inheritDoc}
      */
     @Override
     public void reset() {
@@ -58,15 +57,6 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 
     @Override
     public void offer(String value) throws IOException {
-        // noop
-    }
-
-    @Override
-    public void offerNonword(String value) throws IOException {
-        // noop
-    }
-
-    public void takeUnicode(String value) throws IOException {
         // noop
     }
 
@@ -111,14 +101,6 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     protected boolean returnOnSymbol() {
         return lastSymbol != null;
     }
-
-    protected String getUrlPrefix() { return null; }
-
-    protected void appendProject() { /* noop */ }
-
-    protected void appendLink(String s, boolean b) { /* noop */ }
-
-    protected void writeEMailAddress(String s) { /* noop */ }
 %}
 
 /*

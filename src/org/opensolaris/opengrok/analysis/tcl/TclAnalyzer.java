@@ -41,8 +41,13 @@ public class TclAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }    
 
+    /**
+     * Creates a wrapped {@link TclXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new TclXref(reader);
+        return new JFlexXref(new TclXref(reader));
     }
 }

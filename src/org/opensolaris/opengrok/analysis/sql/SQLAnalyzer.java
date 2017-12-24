@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.sql;
 
@@ -33,8 +34,13 @@ public class SQLAnalyzer extends PlainAnalyzer {
         super(factory);
     }
 
+    /**
+     * Creates a wrapped {@link SQLXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new SQLXref(reader);
+        return new JFlexXref(new SQLXref(reader));
     }
 }

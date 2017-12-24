@@ -48,9 +48,14 @@ public class RustAnalyzer extends AbstractSourceCodeAnalyzer {
             FileAnalyzer.dummyReader)));
     }    
 
+    /**
+     * Creates a wrapped {@link RustXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new RustXref(reader);
+        return new JFlexXref(new RustXref(reader));
     }
 
     @Override

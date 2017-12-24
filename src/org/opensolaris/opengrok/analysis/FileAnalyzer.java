@@ -213,7 +213,7 @@ public class FileAnalyzer extends Analyzer {
      * @return the instance used to write the cross-referencing
      * @throws java.io.IOException if an error occurs
      */
-    public JFlexXref writeXref(WriteXrefArgs args) throws IOException {
+    public Xrefer writeXref(WriteXrefArgs args) throws IOException {
         throw new UnsupportedOperationException(
             "Base FileAnalyzer cannot write xref");
     }

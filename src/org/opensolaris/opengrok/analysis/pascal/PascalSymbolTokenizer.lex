@@ -34,6 +34,7 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %class PascalSymbolTokenizer
 %extends JFlexSymbolMatcher
 %init{
+    yyline = 1;
 %init}
 %unicode
 %int

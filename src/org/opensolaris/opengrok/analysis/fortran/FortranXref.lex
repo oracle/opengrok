@@ -27,18 +27,28 @@
  */
 package org.opensolaris.opengrok.analysis.fortran;
 
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
-import org.opensolaris.opengrok.util.StringUtils;
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class FortranXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %ignorecase
 %int
+%char
+%init{
+    yyline = 1;
+%init}
 %include CommonLexer.lexh
+%{
+    @Override
+    public void yypop() throws IOException {
+        onDisjointSpanChanged(null, yychar);
+        super.yypop();
+    }
+%}
 
 File = [a-zA-Z]{FNameChar}* ".inc"
 
@@ -51,122 +61,120 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 %%
 <YYINITIAL>{
  ^{Label} {
-    disjointSpan(HtmlConsts.NUMBER_CLASS);
-    out.write(yytext());
-    disjointSpan(null);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
  }
  ^[^ \t\f\r\n]+ {
-    pushSpan(LCOMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(LCOMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
 }
 
 {Identifier} {
     String id = yytext();
     // For historical reasons, FortranXref doesn't link identifiers of length=1
     if (id.length() > 1) {
-        writeSymbol(id, Consts.kwd, yyline, false);
+        onFilteredSymbolMatched(id, yychar, Consts.kwd, false);
     } else {
-        out.write(id);
+        onNonSymbolMatched(id, yychar);
     }
 }
 
 "<" ({File}|{FPath}) ">" {
-    out.write("&lt;");
+    onNonSymbolMatched("<", yychar);
     String file = yytext();
     file = file.substring(1, file.length() - 1);
-    out.write("<a href=\""+urlPrefix+"path=");
-    out.write(file);out.write("\">");
-    out.write(file);out.write("</a>");
-    out.write("&gt;");
+    onFilelikeMatched(file, yychar + 1);
+    onNonSymbolMatched(">", yychar + 1 + file.length());
 }
 
 /*{Hier}
-        { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
+        { onPathlikeMatched(yytext(), '.', false, yychar); }
 */
 {Number}        {
-    disjointSpan(HtmlConsts.NUMBER_CLASS);
-    out.write(yytext());
-    disjointSpan(null);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
-    pushSpan(STRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(STRING);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  \'     {
-    pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(QSTRING);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  \!     {
-    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(SCOMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <STRING> {
- \"\"    { out.write(htmlize(yytext()));}
+ \"\"    { onNonSymbolMatched(yytext(), yychar); }
  \"     {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <QSTRING> {
- \'\'    { out.write(htmlize(yytext())); }
+ \'\'    { onNonSymbolMatched(yytext(), yychar); }
  \'     {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <STRING, QSTRING> {
     {WhspChar}*{EOL}    {
-        disjointSpan(null);
-        startNewLine();
-        disjointSpan(HtmlConsts.STRING_CLASS);
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     }
 }
 
 <SCOMMENT, LCOMMENT> {
     {WhspChar}*{EOL}    {
         yypop();
-        startNewLine();
+        onEndOfLineMatched(yytext(), yychar);
     }
 }
 
 <YYINITIAL, STRING, SCOMMENT, QSTRING, LCOMMENT> {
-[&<>\'\"]    { out.write(htmlize(yytext())); }
-{WhspChar}*{EOL}      { startNewLine(); }
- {WhiteSpace}   { out.write(yytext()); }
- [!-~]  { out.write(yycharat(0)); }
- [^\n]      { writeUnicodeChar(yycharat(0)); }
+{WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+ [^\n]      { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <SCOMMENT, STRING, QSTRING> {
 {FPath}
-        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+        { onPathlikeMatched(yytext(), '/', false, yychar); }
 
 {File}
         {
         String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);out.write("\">");
-        out.write(path);out.write("</a>");}
+        onFilelikeMatched(path, yychar);
+ }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          writeEMailAddress(yytext());
+          onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <SCOMMENT, STRING> {
     {BrowseableURI}    {
-        appendLink(yytext(), true);
+        onUriMatched(yytext(), yychar);
     }
 }
 
 <QSTRING> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, FortranUtils.CHARLITERAL_APOS_DELIMITER);
+        onUriMatched(yytext(), yychar, FortranUtils.CHARLITERAL_APOS_DELIMITER);
     }
 }

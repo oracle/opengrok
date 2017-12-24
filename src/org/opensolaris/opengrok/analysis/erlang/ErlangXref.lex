@@ -28,17 +28,28 @@
 
 package org.opensolaris.opengrok.analysis.erlang;
 
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class ErlangXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %int
+%char
+%init{
+    yyline = 1;
+%init}
 %include CommonLexer.lexh
+%{
+    @Override
+    public void yypop() throws IOException {
+        onDisjointSpanChanged(null, yychar);
+        super.yypop();
+    }
+%}
 
 IncludeDirective = (include|include_lib)
 
@@ -56,76 +67,83 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
 <YYINITIAL>{
 
 "?" {Identifier} {  // Macros
-    disjointSpan(HtmlConsts.MACRO_CLASS);
-    out.write(yytext());
-    disjointSpan(null);
+    onDisjointSpanChanged(HtmlConsts.MACRO_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
 }
 
 {Identifier} {
     String id = yytext();
     if (!id.equals("_")) {
-        writeSymbol(id, Consts.kwd, yyline);
+        onFilteredSymbolMatched(id, yychar, Consts.kwd);
     } else {
-        out.write(id);
+        onNonSymbolMatched(id, yychar);
     }
 }
 
 "-" {IncludeDirective} "(" ({File}|{FPath}) ")." {
-        out.write("&lt;");
-        String path = yytext();
-        path = path.substring(1, path.length() - 1);
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
-        out.write("&gt;");
+        String capture = yytext();
+        String parenth = capture.substring(capture.indexOf("("));
+        String opening = capture.substring(0, yylength() - parenth.length());
+        String lparen = parenth.substring(0, 1);
+        int rpos = parenth.indexOf(")");
+        String rparen = parenth.substring(rpos);
+        String path = parenth.substring(lparen.length(), rpos);
+
+        onNonSymbolMatched(opening.substring(0, 1), yychar);
+        onSymbolMatched(opening.substring(1), yychar + 1);
+        onNonSymbolMatched(lparen, yychar + opening.length());
+        onFilelikeMatched(path, yychar + opening.length() + lparen.length());
+        onNonSymbolMatched(rparen, yychar + opening.length() +
+            lparen.length() + path.length());
 }
 
 ^"-" {Identifier} {
     String capture = yytext();
     String punc = capture.substring(0, 1);
     String id = capture.substring(1);
-    out.write(punc);
-    writeSymbol(id, Consts.modules_kwd, yyline);
+    onNonSymbolMatched(punc, yychar);
+    onFilteredSymbolMatched(id, yychar + punc.length(), Consts.modules_kwd);
 }
 
 {ErlInt} |
     {Number}    {
-    disjointSpan(HtmlConsts.NUMBER_CLASS);
-    out.write(yytext());
-    disjointSpan(null);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar + yylength());
 }
 
  \"     {
-    pushSpan(STRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(STRING);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
 
  \'     {
-    pushSpan(QATOM, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(QATOM);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
 
  "%"    {
-    pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(yytext());
+    yypush(COMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <STRING> {
- \\[\"\\]    { out.write(htmlize(yytext())); }
+ \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
  \"    {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <QATOM> {
- \\[\'\\]    { out.write(htmlize(yytext())); }
+ \\[\'\\]    { onNonSymbolMatched(yytext(), yychar); }
  \'    {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
@@ -133,47 +151,39 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
 <COMMENT> {
   {ErlangWhspChar}*{EOL} {
     yypop();
-    startNewLine();
+    onEndOfLineMatched(yytext(), yychar);
   }
 }
 
 <YYINITIAL, STRING, COMMENT, QATOM> {
-[&<>\'\"]    { out.write(htmlize(yytext())); }
-{ErlangWhspChar}*{EOL}      { startNewLine(); }
- {ErlangWhiteSpace}   { out.write(yytext()); }
- [!-~]  { out.write(yycharat(0)); }
-
- [^]    { writeUnicodeChar(yycharat(0)); }
+{ErlangWhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+ [^]    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, QATOM> {
 {FPath}
-        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+        { onPathlikeMatched(yytext(), '/', false, yychar); }
 
 {File}
         {
         String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");}
+        onFilelikeMatched(path, yychar);
+ }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          writeEMailAddress(yytext());
+          onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, COMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true);
+        onUriMatched(yytext(), yychar);
     }
 }
 
 <QATOM> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+        onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
     }
 }
