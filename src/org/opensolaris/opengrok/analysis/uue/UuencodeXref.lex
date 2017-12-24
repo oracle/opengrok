@@ -24,12 +24,13 @@
  */
 
 package org.opensolaris.opengrok.analysis.uue;
+
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.Reader;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class UuencodeXref
@@ -60,7 +61,7 @@ import org.opensolaris.opengrok.web.Util;
   ^ ( "begin " | "begin-base64 " ) {
     yybegin(MODE);
     yypushback(1);
-    out.write("<strong>" + yytext() + "</strong>");
+    out.append("<strong>").append(yytext()).append("</strong>");
   }
 
   {BrowseableURI}    {
@@ -84,7 +85,7 @@ import org.opensolaris.opengrok.web.Util;
   [^ \n]+ " " {
     yybegin(NAME);
     yypushback(1);
-    out.write("<i>" + yytext() + "</i>");
+    out.append("<em>").append(yytext()).append("</em>");
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
 }
@@ -99,7 +100,7 @@ import org.opensolaris.opengrok.web.Util;
 	      t.replaceAll("\"", "&quot;").replaceAll("&", "&amp;"));
     appendProject();
     out.write("\">" + t + "</a>");
-    out.write("<span class='c'>");
+    disjointSpan(HtmlConsts.COMMENT_CLASS);
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
 }
@@ -108,7 +109,8 @@ import org.opensolaris.opengrok.web.Util;
   ^ ( "end" | "====" ) \n {
     yybegin(YYINITIAL);
     yypushback(1);
-    out.write("</span>" + "<strong>" + yytext() + "</strong>");
+    disjointSpan(null);
+    out.append("<strong>").append(yytext()).append("</strong>");
   }
 
   "<"     {out.write( "&lt;");}
