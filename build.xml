@@ -286,6 +286,8 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         <run-jflex dir="${gen.analysis.dir}/c" name="CXref"/>
         <run-jflex dir="${gen.analysis.dir}/c" name="CxxSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/c" name="CxxXref"/>
+        <run-jflex dir="${gen.analysis.dir}/eiffel" name="EiffelSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/eiffel" name="EiffelXref"/>
         <run-jflex dir="${gen.analysis.dir}/erlang" name="ErlangSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/erlang" name="ErlangXref"/>
         <run-jflex dir="${gen.analysis.dir}/fortran" name="FortranSymbolTokenizer"/>

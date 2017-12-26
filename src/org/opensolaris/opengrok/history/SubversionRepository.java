@@ -259,6 +259,8 @@ public class SubversionRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("cat");
+        cmd.add("--non-interactive");
+        cmd.addAll(getAuthCommandLineParams());
         cmd.add("-r");
         cmd.add(rev);
         cmd.add(escapeFileName(filename));

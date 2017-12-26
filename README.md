@@ -2,7 +2,7 @@
 Copyright (c) 2006, 2017 Oracle and/or its affiliates. All rights reserved.
 
 
-# OpenGrok - a wicked fast source browser [![Build Status](https://travis-ci.org/OpenGrok/OpenGrok.svg?branch=master)](https://travis-ci.org/OpenGrok/OpenGrok)
+# OpenGrok - a wicked fast source browser [![Build Status](https://travis-ci.org/oracle/opengrok.svg?branch=master)](https://travis-ci.org/oracle/opengrok)
 
 1.  [Introduction](#1-introduction)
 2.  [Requirements](#2-requirements)

@@ -241,7 +241,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
-     * singleton pattern.
+     * singleton anti-pattern.
      */
     private RuntimeEnvironment() {
         configuration = new Configuration();
@@ -1370,9 +1370,12 @@ public final class RuntimeEnvironment {
 
     public void setConfiguration(Configuration configuration, List<String> subFileList) {
         this.configuration = configuration;
-        HistoryGuru histGuru = HistoryGuru.getInstance();
-                
+        // HistoryGuru constructor uses environment properties so register()
+        // needs to be called first.
+        // Another case where the singleton anti-pattern bites us in the back.
         register();
+        
+        HistoryGuru histGuru = HistoryGuru.getInstance();
         
         try {
             generateProjectRepositoriesMap();
