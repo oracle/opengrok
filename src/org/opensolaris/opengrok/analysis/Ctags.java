@@ -46,8 +46,15 @@ import org.opensolaris.opengrok.util.IOUtils;
 public class Ctags {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Ctags.class);
+    private static final long SIGNALWAIT_MS = 5000;
 
+    private final CtagsBuffer buffer = new CtagsBuffer();
+    private final Object syncRoot = new Object();
+    private volatile boolean closing;
+    private volatile boolean signalled;
     private Process ctags;
+    Thread errThread;
+    Thread outThread;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
@@ -77,6 +84,7 @@ public class Ctags {
     public void close() throws IOException {
         IOUtils.close(ctagsIn);
         if (ctags != null) {
+            closing = true;
             LOGGER.log(Level.FINE, "Destroying ctags command");
             ctags.destroy();
         }
@@ -292,7 +300,7 @@ public class Ctags {
         ctagsIn = new OutputStreamWriter(ctags.getOutputStream());
         ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream()));
 
-        Thread errThread = new Thread(new Runnable() {
+        errThread = new Thread(new Runnable() {
 
             @Override
             public void run() {
@@ -303,6 +311,7 @@ public class Ctags {
                     while ((s = error.readLine()) != null) {
                         sb.append(s);
                         sb.append('\n');
+                        if (closing) break;
                     }
                 } catch (IOException exp) {
                     LOGGER.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
@@ -314,6 +323,34 @@ public class Ctags {
         });
         errThread.setDaemon(true);
         errThread.start();
+
+        outThread = new Thread(() -> {
+            while (!closing) {
+                synchronized(syncRoot) {
+                    while (!signalled && !closing) {
+                        try {
+                            syncRoot.wait(SIGNALWAIT_MS);
+                        } catch (InterruptedException e) {
+                            LOGGER.log(Level.WARNING,
+                                "Ctags direct client unexpectedly interrupted");
+                        }
+                    }
+                    signalled = false;
+                }
+                if (closing) return;
+
+                CtagsReader rdr = new CtagsReader();
+                readTags(rdr);
+                Definitions defs = rdr.getDefinitions();
+                try {
+                    buffer.put(defs);
+                } catch (InterruptedException ex) {
+                    // ignore
+                }
+            }
+        });
+        outThread.setDaemon(true);
+        outThread.start();
     }
 
     public Definitions doCtags(String file) throws IOException {
@@ -338,12 +375,19 @@ public class Ctags {
 
         Definitions ret = null;
         if (file.length() > 0 && !"\n".equals(file)) {
-            //log.fine("doing >" + file + "<");
+            synchronized(syncRoot) {
+                signalled = true;
+                syncRoot.notify();
+            }
+
             ctagsIn.write(file);
             ctagsIn.flush();
-            CtagsReader rdr = new CtagsReader();
-            readTags(rdr);
-            ret = rdr.getDefinitions();
+            try {
+                ret = buffer.take();
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.WARNING,
+                    "Ctags indirect client unexpectedly interrupted");
+            }
         }
 
         return ret;
