@@ -133,6 +133,14 @@ public class AnalyzerGuru {
      */
     private static final int MARK_READ_LIMIT = 1024 * 16;
 
+    /**
+     * The number of bytes read from the start of the file for magic number or
+     * string analysis. Some {@link FileAnalyzerFactory.Matcher}
+     * implementations may read more data subsequently, but this field defines
+     * the number of bytes initially read for general matching.
+     */
+    private static final int MAGIC_BYTES_NUM = 8;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzerGuru.class);
 
     /**
@@ -216,7 +224,7 @@ public class AnalyzerGuru {
             MandocAnalyzerFactory.DEFAULT_INSTANCE,
             TroffAnalyzerFactory.DEFAULT_INSTANCE,
             new ELFAnalyzerFactory(),
-            new JavaClassAnalyzerFactory(),
+            JavaClassAnalyzerFactory.DEFAULT_INSTANCE,
             new ImageAnalyzerFactory(),
             JarAnalyzerFactory.DEFAULT_INSTANCE,
             ZipAnalyzerFactory.DEFAULT_INSTANCE,
@@ -732,12 +740,12 @@ public class AnalyzerGuru {
     private static FileAnalyzerFactory findForStream(InputStream in,
         String file) throws IOException {
 
-        in.mark(8);
-        byte[] content = new byte[8];
+        in.mark(MAGIC_BYTES_NUM);
+        byte[] content = new byte[MAGIC_BYTES_NUM];
         int len = in.read(content);
         in.reset();
 
-        if (len < 8) {
+        if (len < MAGIC_BYTES_NUM) {
             /*
              * Need at least 4 bytes to perform magic string matching.
              */
