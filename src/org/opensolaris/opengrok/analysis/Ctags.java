@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
- * Provides Ctags by having a running instance of ctags
+ * Provides Ctags by having a running subprocess of ctags.
  *
  * @author Chandan
  */
@@ -53,8 +53,8 @@ public class Ctags {
     private volatile boolean closing;
     private volatile boolean signalled;
     private Process ctags;
-    Thread errThread;
-    Thread outThread;
+    private Thread errThread;
+    private Thread outThread;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
@@ -65,8 +65,15 @@ public class Ctags {
 
     private boolean junit_testing = false;
 
+    /**
+     * Gets a value indicating if a subprocess of ctags was started and either:
+     * 1) it is not alive; or 2) any necessary supporting thread is not alive.
+     * @return {@code true} if the instance should be considered closed and no
+     * longer usable.
+     */
     public boolean isClosed() {
-        return ctags != null && !ctags.isAlive();
+        return ctags != null && (!ctags.isAlive() || outThread == null ||
+            !outThread.isAlive());
     }
 
     public String getBinary() {
