@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.clojure;
 
@@ -40,6 +41,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -53,20 +55,12 @@ import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_n
  */
 public class ClojureAnalyzerFactoryTest {
 
-    FileAnalyzer analyzer;
-    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
+    private static final String CTAGS_PROP =
+        "org.opensolaris.opengrok.analysis.Ctags";
+    private static ScheduledThreadPoolExecutor schedExecutor;
     private static Ctags ctags;
     private static TestRepository repository;
-
-    public ClojureAnalyzerFactoryTest() {
-        ClojureAnalyzerFactory analFact = new ClojureAnalyzerFactory();
-        this.analyzer = analFact.getAnalyzer();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
-        if (env.validateExuberantCtags()) {
-            this.analyzer.setCtags(new Ctags());
-        }
-    }
+    private static FileAnalyzer analyzer;
 
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {
@@ -79,18 +73,28 @@ public class ClojureAnalyzerFactoryTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        ctags = new Ctags();
+        schedExecutor = new ScheduledThreadPoolExecutor(2);
+        ctags = new Ctags(schedExecutor);
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
         repository = new TestRepository();
         repository.create(ClojureAnalyzerFactoryTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/index/source.zip"));
+
+        ClojureAnalyzerFactory analFact = new ClojureAnalyzerFactory();
+        analyzer = analFact.getAnalyzer();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setCtags(System.getProperty(CTAGS_PROP, "ctags"));
+        if (env.validateExuberantCtags()) {
+            analyzer.setCtags(new Ctags(schedExecutor));
+        }
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
         ctags.close();
         ctags = null;
+        if (schedExecutor != null) schedExecutor.shutdown();
     }
 
     /**

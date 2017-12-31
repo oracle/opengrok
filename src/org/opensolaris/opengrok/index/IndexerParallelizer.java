@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.index;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.CtagsValidator;
@@ -46,11 +47,14 @@ import org.opensolaris.opengrok.util.ObjectPool;
  */
 public class IndexerParallelizer implements AutoCloseable {
 
+    private static final int SCHED_THREAD_NUM = 2;
+
     private static final Logger LOGGER =
         LoggerFactory.getLogger(IndexerParallelizer.class);
 
     private final ExecutorService fixedExecutor;
     private final ForkJoinPool forkJoinPool;
+    private final ScheduledThreadPoolExecutor schedExecutor;
     private final ObjectPool<Ctags> ctagsPool;
 
     /**
@@ -62,8 +66,10 @@ public class IndexerParallelizer implements AutoCloseable {
 
         int indexingParallelism = env.getIndexingParallelism();
 
+        // The order of the following is important.
         this.fixedExecutor = Executors.newFixedThreadPool(indexingParallelism);
         this.forkJoinPool = new ForkJoinPool(indexingParallelism);
+        this.schedExecutor = new ScheduledThreadPoolExecutor(SCHED_THREAD_NUM);
         this.ctagsPool = new BoundedBlockingObjectPool<>(indexingParallelism,
             new CtagsValidator(), new CtagsObjectFactory(env));
     }
@@ -92,6 +98,7 @@ public class IndexerParallelizer implements AutoCloseable {
     @Override
     public void close() throws Exception {
         if (ctagsPool != null) ctagsPool.shutdown();
+        if (schedExecutor != null) schedExecutor.shutdown();
         if (forkJoinPool != null) forkJoinPool.shutdown();
         if (fixedExecutor != null) fixedExecutor.shutdown();
     }
@@ -103,8 +110,8 @@ public class IndexerParallelizer implements AutoCloseable {
      * @return a defined instance, possibly with a {@code null} ctags binary
      * setting if a value was not available from {@link RuntimeEnvironment}.
      */
-    private static Ctags getNewCtags(RuntimeEnvironment env) {
-        Ctags ctags = new Ctags();
+    private Ctags getNewCtags(RuntimeEnvironment env) {
+        Ctags ctags = new Ctags(schedExecutor);
 
         String ctagsBinary = env.getCtags();
         if (ctagsBinary == null) {

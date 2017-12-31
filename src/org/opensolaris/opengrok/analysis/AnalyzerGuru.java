@@ -383,10 +383,11 @@ public class AnalyzerGuru {
      * @param fa The analyzer to use on the file
      * @param xrefOut Where to write the xref (possibly {@code null})
      * @throws IOException If an exception occurs while collecting the data
+     * @throws InterruptedException if a timeout occurs
      */
     public void populateDocument(Document doc, File file, String path,
-            FileAnalyzer fa, Writer xrefOut)
-            throws IOException {
+        FileAnalyzer fa, Writer xrefOut) throws IOException,
+            InterruptedException {
 
         String date = DateTools.timeToString(file.lastModified(),
                 DateTools.Resolution.MILLISECOND);

@@ -17,8 +17,9 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.c;
 
@@ -33,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -55,20 +57,12 @@ import org.opensolaris.opengrok.util.TestRepository;
  */
 public class CxxAnalyzerFactoryTest {
 
-    FileAnalyzer analyzer;
-    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
+    private static final String CTAGS_PROP =
+        "org.opensolaris.opengrok.analysis.Ctags";
+    private static ScheduledThreadPoolExecutor schedExecutor;
     private static Ctags ctags;
     private static TestRepository repository;
-
-    public CxxAnalyzerFactoryTest() {
-        CxxAnalyzerFactory analFact = new CxxAnalyzerFactory();
-        this.analyzer = analFact.getAnalyzer();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
-        if (env.validateExuberantCtags()) {
-            this.analyzer.setCtags(new Ctags());
-        }
-    }
+    private static FileAnalyzer analyzer;
 
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {
@@ -81,18 +75,28 @@ public class CxxAnalyzerFactoryTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        ctags = new Ctags();
+        schedExecutor = new ScheduledThreadPoolExecutor(2);
+        ctags = new Ctags(schedExecutor);
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
         repository = new TestRepository();
         repository.create(CxxAnalyzerFactoryTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/index/source.zip"));
+
+        CxxAnalyzerFactory analFact = new CxxAnalyzerFactory();
+        analyzer = analFact.getAnalyzer();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setCtags(System.getProperty(CTAGS_PROP, "ctags"));
+        if (env.validateExuberantCtags()) {
+            analyzer.setCtags(new Ctags(schedExecutor));
+        }
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
         ctags.close();
         ctags = null;
+        if (schedExecutor != null) schedExecutor.shutdown();
     }
 
     /**

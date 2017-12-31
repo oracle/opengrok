@@ -32,6 +32,9 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -48,6 +51,16 @@ public class Ctags {
     private static final Logger LOGGER = LoggerFactory.getLogger(Ctags.class);
     private static final long SIGNALWAIT_MS = 5000;
 
+    /**
+     * Wait up to 60 seconds for ctags to run, which is a very long time for a
+     * single run but is really intended for detecting blocked ctags processes
+     * as happened with @tuxillo's testing of
+     * <a href="https://github.com/oracle/opengrok/pull/1936">
+     * Feature/deferred_ops</a>.
+     */
+    private static final long CTAGSWAIT_S = 60;
+
+    private final ScheduledThreadPoolExecutor schedExecutor;
     private final CtagsBuffer buffer = new CtagsBuffer();
     private final Object syncRoot = new Object();
     private volatile boolean closing;
@@ -64,6 +77,19 @@ public class Ctags {
     private ProcessBuilder processBuilder;
 
     private boolean junit_testing = false;
+
+    /**
+     * Initializes an instance using the specified, required executor which
+     * will be used to track ctags timeouts to avoid blockages.
+     * <p>(The {@code schedExecutor} is not owned by {@link Ctags}.)
+     * @param schedExecutor required, defined instance
+     */
+    public Ctags(ScheduledThreadPoolExecutor schedExecutor) {
+        if (schedExecutor == null) {
+            throw new IllegalArgumentException("`schedExecutor' is null");
+        }
+        this.schedExecutor = schedExecutor;
+    }
 
     /**
      * Gets a value indicating if a subprocess of ctags was started and either:
@@ -311,56 +337,33 @@ public class Ctags {
 
             @Override
             public void run() {
-                StringBuilder sb = new StringBuilder();
                 try (BufferedReader error = new BufferedReader(
                         new InputStreamReader(ctags.getErrorStream()))) {
                     String s;
                     while ((s = error.readLine()) != null) {
-                        sb.append(s);
-                        sb.append('\n');
+                        if (s.length() > 0) {
+                            LOGGER.log(Level.WARNING, "Error from ctags: {0}",
+                                s);
+                        }
                         if (closing) break;
                     }
                 } catch (IOException exp) {
                     LOGGER.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
-                }
-                if (sb.length() > 0) {
-                    LOGGER.log(Level.WARNING, "Error from ctags: {0}", sb.toString());
                 }
             }
         });
         errThread.setDaemon(true);
         errThread.start();
 
-        outThread = new Thread(() -> {
-            while (!closing) {
-                synchronized(syncRoot) {
-                    while (!signalled && !closing) {
-                        try {
-                            syncRoot.wait(SIGNALWAIT_MS);
-                        } catch (InterruptedException e) {
-                            LOGGER.log(Level.WARNING,
-                                "Ctags direct client unexpectedly interrupted");
-                        }
-                    }
-                    signalled = false;
-                }
-                if (closing) return;
-
-                CtagsReader rdr = new CtagsReader();
-                readTags(rdr);
-                Definitions defs = rdr.getDefinitions();
-                try {
-                    buffer.put(defs);
-                } catch (InterruptedException ex) {
-                    // ignore
-                }
-            }
-        });
-        outThread.setDaemon(true);
-        outThread.start();
+        if (outThread == null || !outThread.isAlive()) {
+            outThread = new Thread(() -> outThreadStart());
+            outThread.setDaemon(true);
+            outThread.start();
+        }
     }
 
-    public Definitions doCtags(String file) throws IOException {
+    public Definitions doCtags(String file) throws IOException,
+            InterruptedException {
         boolean ctagsRunning = false;
         if (ctags != null) {
             try {
@@ -380,23 +383,36 @@ public class Ctags {
             initialize();
         }
 
-        Definitions ret = null;
-        if (file.length() > 0 && !"\n".equals(file)) {
-            synchronized(syncRoot) {
-                signalled = true;
-                syncRoot.notify();
-            }
+        if (file.length() < 1 || "\n".equals(file)) return null;
 
-            ctagsIn.write(file);
-            ctagsIn.flush();
-            try {
-                ret = buffer.take();
-            } catch (InterruptedException e) {
-                LOGGER.log(Level.WARNING,
-                    "Ctags indirect client unexpectedly interrupted");
-            }
+        synchronized(syncRoot) {
+            signalled = true;
+            syncRoot.notify();
         }
 
+        Thread clientThread = Thread.currentThread();
+        ScheduledFuture futureTimeout = schedExecutor.schedule(() -> {
+            clientThread.interrupt();
+            outThread.interrupt();
+            LOGGER.log(Level.WARNING, "Ctags futureTimeout executed.");
+        }, CTAGSWAIT_S, TimeUnit.SECONDS);
+
+        Definitions ret;
+        try {
+            ctagsIn.write(file);
+            if (Thread.interrupted()) throw new InterruptedException("write()");
+            ctagsIn.flush();
+            if (Thread.interrupted()) throw new InterruptedException("flush()");
+            ret = buffer.take();
+        } finally {
+            futureTimeout.cancel(false);
+        }
+
+        /*
+         * If the timeout could not be canceled in time, then act as if no
+         * results were obtained.
+         */
+        if (Thread.interrupted()) throw new InterruptedException("late");
         return ret;
     }
 
@@ -442,15 +458,23 @@ public class Ctags {
         };
 
         CtagsReader rdr = new CtagsReader();
-        readTags(rdr);
+        try {
+            readTags(rdr);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.SEVERE, "readTags() test", ex);
+        }
         Definitions ret = rdr.getDefinitions();
         return ret;
     }
 
-    private void readTags(CtagsReader reader) {
+    private void readTags(CtagsReader reader) throws InterruptedException {
         try {
             do {
                 String tagLine = ctagsOut.readLine();
+                if (Thread.interrupted()) {
+                    throw new InterruptedException("readLine()");
+                }
+
                 //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
                     if (!junit_testing) {
@@ -480,9 +504,52 @@ public class Ctags {
 
                 reader.readLine(tagLine);
             } while (true);
+        } catch (InterruptedException e) {
+            throw e;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "CTags parsing problem: ", e);
         }
         LOGGER.severe("CTag reader cycle was interrupted!");
+    }
+
+    private void outThreadStart() {
+        while (!closing) {
+            synchronized(syncRoot) {
+                while (!signalled && !closing) {
+                    try {
+                        syncRoot.wait(SIGNALWAIT_MS);
+                    } catch (InterruptedException e) {
+                        LOGGER.log(Level.WARNING,
+                            "Ctags outThread unexpectedly interrupted--{0}",
+                            e.getMessage());
+                        /*
+                        * Terminating this thread will cause this Ctags
+                        * instance, which appears to be blocked, to be
+                        * reported as closed by isClosed().
+                        */
+                        return;
+                    }
+                }
+                signalled = false;
+            }
+            if (closing) return;
+            
+            CtagsReader rdr = new CtagsReader();
+            try {
+                readTags(rdr);
+                Definitions defs = rdr.getDefinitions();
+                buffer.put(defs);
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.WARNING,
+                    "Ctags outThread unexpectedly interrupted--{0}",
+                    ex.getMessage());
+                /*
+                * Terminating this thread will cause this Ctags instance,
+                * which appears to be blocked, to be reported as closed by
+                * isClosed().
+                */
+                return;
+            }
+        }
     }
 }

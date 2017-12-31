@@ -19,26 +19,30 @@
 
 /*
  * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
-import static org.junit.Assert.*;
 
 /**
  *
  * @author Lubos Kosco
  */
 public class CtagsTest {    
+    private static ScheduledThreadPoolExecutor schedExecutor;
     private static Ctags ctags;
     private static TestRepository repository;
 
@@ -47,7 +51,8 @@ public class CtagsTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        ctags = new Ctags();
+        schedExecutor = new ScheduledThreadPoolExecutor(2);
+        ctags = new Ctags(schedExecutor);
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
         repository = new TestRepository();
@@ -74,6 +79,7 @@ public class CtagsTest {
         ctags = null;
         repository.destroy();
         repository = null;
+        if (schedExecutor != null) schedExecutor.shutdown();
     }
 
     @Before

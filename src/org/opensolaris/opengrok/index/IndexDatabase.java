@@ -670,9 +670,10 @@ public class IndexDatabase {
      * @param path The path to the file (from source root)
      * @param ctags a defined instance to use (only if its binary is not null)
      * @throws java.io.IOException if an error occurs
+     * @throws InterruptedException if a timeout occurs
      */
     private void addFile(File file, String path, Ctags ctags)
-            throws IOException {
+            throws IOException, InterruptedException {
         FileAnalyzer fa;
         try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
             fa = AnalyzerGuru.getAnalyzer(in, path);
@@ -689,6 +690,11 @@ public class IndexDatabase {
         Document doc = new Document();
         try (Writer xrefOut = getXrefWriter(fa, path)) {
             analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "File ''{0}'' interrupted--{1}",
+                new Object[]{path, e.getMessage()});
+            cleanupResources(doc);
+            throw e;
         } catch (Exception e) {
             LOGGER.log(Level.INFO,
                     "Skipped file ''{0}'' because the analyzer didn''t "
@@ -994,21 +1000,33 @@ public class IndexDatabase {
             bySuccess = parallelizer.getForkJoinPool().submit(() ->
                 args.works.parallelStream().collect(
                 Collectors.groupingByConcurrent((x) -> {
+                    int tries = 0;
                     Ctags pctags = null;
-                    try {
-                        pctags = ctagsPool.get();
-                        addFile(x.file, x.path, pctags);
-                        successCounter.incrementAndGet();
-                        return true;
-                    } catch (RuntimeException|IOException e) {
-                        x.exception = e;
-                        return false;
-                    } finally {
-                        if (pctags != null) {
-                            ctagsPool.release(pctags);
+                    boolean ret;
+                    while (true) {
+                        try {
+                            pctags = ctagsPool.get();
+                            addFile(x.file, x.path, pctags);
+                            successCounter.incrementAndGet();
+                            ret = true;
+                        } catch (InterruptedException e) {
+                            // Allow one retry if interrupted
+                            if (++tries <= 1) continue;
+                            x.exception = e;
+                            ret = false;
+                        } catch (RuntimeException|IOException e) {
+                            x.exception = e;
+                            ret = false;
+                        } finally {
+                            if (pctags != null) {
+                                ctagsPool.release(pctags);
+                                pctags = null;
+                            }
                         }
+
                         int ncount = currentCounter.incrementAndGet();
                         printProgress(ncount, worksCount);
+                        return ret;
                     }
                 }))).get();
         } catch (InterruptedException|ExecutionException e) {

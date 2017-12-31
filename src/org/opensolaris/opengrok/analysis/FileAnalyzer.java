@@ -179,8 +179,10 @@ public class FileAnalyzer extends Analyzer {
      * @param src the input data source
      * @param xrefOut where to write the xref (may be {@code null})
      * @throws IOException if any I/O error
+     * @throws InterruptedException if a timeout occurs
      */
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+    public void analyze(Document doc, StreamSource src, Writer xrefOut)
+            throws IOException, InterruptedException {
         // not used
     }
 

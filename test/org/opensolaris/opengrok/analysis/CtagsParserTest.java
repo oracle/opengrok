@@ -17,19 +17,35 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 
 /**
  *
  * @author Lubos Kosco
  */
 public class CtagsParserTest {
+
+    private static ScheduledThreadPoolExecutor schedExecutor;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        schedExecutor = new ScheduledThreadPoolExecutor(2);
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        if (schedExecutor != null) schedExecutor.shutdown();
+    }
 
     @Test
     public void ctags_vs_universal_ctags() throws Exception {
@@ -51,7 +67,7 @@ public class CtagsParserTest {
                 + "f\tsample.c\t/^    int f;$/;\"\tlocal\tline:28\n"
                 + "main\tsample.c\t/^int main(int argc, char *argv[]) {$/;\"\tfunction\tline:41\tsignature:(int argc, char *argv[])\n"
                 + "res\tsample.c\t/^    int res;$/;\"\tlocal\tline:42";
-        Ctags lctags = new Ctags();
+        Ctags lctags = new Ctags(schedExecutor);
         Definitions ucDefs = lctags.testCtagsParser(universal_ctags_c);
 
         Definitions cDefs = lctags.testCtagsParser(ctags_c);

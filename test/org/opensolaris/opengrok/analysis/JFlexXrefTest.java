@@ -33,6 +33,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.lucene.document.Document;
 import org.junit.AfterClass;
@@ -67,6 +68,7 @@ import org.xml.sax.InputSource;
  */
 public class JFlexXrefTest {
 
+    private static ScheduledThreadPoolExecutor schedExecutor;
     private static Ctags ctags;
     private static TestRepository repository;
 
@@ -79,7 +81,8 @@ public class JFlexXrefTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        ctags = new Ctags();
+        schedExecutor = new ScheduledThreadPoolExecutor(2);
+        ctags = new Ctags(schedExecutor);
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
         repository = new TestRepository();
         repository.create(JFlexXrefTest.class.getResourceAsStream(
@@ -91,6 +94,7 @@ public class JFlexXrefTest {
         ctags.close();
         ctags = null;
         repository.destroy();
+        if (schedExecutor != null) schedExecutor.shutdown();
     }
 
     /**
@@ -354,7 +358,7 @@ public class JFlexXrefTest {
     }
 
     @Test
-    public void bug18586() throws IOException {
+    public void bug18586() throws IOException, InterruptedException {
         String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
         Reader in = new InputStreamReader(new FileInputStream(filename), "UTF-8");
         SQLXref xref = new SQLXref(in);
