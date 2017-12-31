@@ -34,6 +34,7 @@ import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +55,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory.Matcher;
 import org.opensolaris.opengrok.analysis.ada.AdaAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.BZip2AnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.GZIPAnalyzerFactory;
@@ -279,12 +281,28 @@ public class AnalyzerGuru {
 
     }
 
+    public static Map<String, FileAnalyzerFactory> getExtensionsMap() {
+        return Collections.unmodifiableMap(ext);
+    }
+
+    public static Map<String, FileAnalyzerFactory> getPrefixesMap() {
+        return Collections.unmodifiableMap(pre);
+    }
+
+    public static Map<String, FileAnalyzerFactory> getMagicsMap() {
+        return Collections.unmodifiableMap(magics);
+    }
+
+    public static List<Matcher> getAnalyzerFactoryMatchers() {
+        return Collections.unmodifiableList(matchers);
+    }
+
     public static Map<String, String> getfileTypeDescriptions() {
-        return fileTypeDescriptions;
+        return Collections.unmodifiableMap(fileTypeDescriptions);
     }
 
     public List<FileAnalyzerFactory> getAnalyzerFactories() {
-        return factories;
+        return Collections.unmodifiableList(factories);
     }
 
     /**

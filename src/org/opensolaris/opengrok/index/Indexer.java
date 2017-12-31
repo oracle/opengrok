@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.AnalyzerGuruHelp;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.LuceneLockName;
 import org.opensolaris.opengrok.configuration.Project;
@@ -89,6 +90,10 @@ public final class Indexer {
     private static boolean noindex = false;
     private static boolean awaitProfiler;
 
+    private static boolean help;
+    private static String helpUsage;
+    private static boolean helpDetailed;
+
     private static String configFilename = null;
     private static int status = 0;
 
@@ -126,6 +131,14 @@ public final class Indexer {
         try {
 
             argv = parseOptions(argv);
+            if (help) {
+                status = 1;
+                System.err.println(helpUsage);
+                if (helpDetailed) {
+                    System.err.println(AnalyzerGuruHelp.getUsage());
+                }
+                System.exit(status);
+            }
             if (awaitProfiler) pauseToAwaitProfiler();
             
             env = RuntimeEnvironment.getInstance();
@@ -371,8 +384,13 @@ public final class Indexer {
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
             parser.on("-?", "-h", "--help", "Display this usage summary.").Do( v -> {
-                parser.help();
-                System.exit(status);
+                help = true;
+                helpUsage = parser.getUsage();
+            });
+
+            parser.on("--detailed",
+                "Display additional help with -h,--help.").Do(v -> {
+                helpDetailed = true;
             });
 
             parser.on(
@@ -1110,7 +1128,7 @@ public final class Indexer {
         String in;
         do {
             System.out.print("Start profiler. Continue (Y/N)? ");
-            in = scan.nextLine().toLowerCase();
+            in = scan.nextLine().toLowerCase(Locale.ROOT);
         } while (!in.equals("y") && !in.equals("n"));
 
         if (in.equals("n")) System.exit(1);

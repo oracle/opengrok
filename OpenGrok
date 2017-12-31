@@ -139,10 +139,11 @@ Usage()
 
     exec >&2
     echo ""
-    echo "Usage: ${progname} <bootstrap|deploy|update|updateQuietly|updateDesc|usage|help>"
+    echo "Usage: ${progname} <bootstrap|deploy|update|updateQuietly|updateDesc>"
     echo "       ${progname} index [<directory>]"
     echo "       ${progname} indexpart <directory_1> [<directory_2> ..]"
     echo "       ${progname} clearHistory <src_root> <repository_name>"
+    echo "       ${progname} usage|help [--detailed]"
     echo ""
     echo "       The \"indexpart\" assumes that it will be run with configuration"
     echo "       pointed to via the OPENGROK_READ_XML_CONFIGURATION environment"
@@ -920,8 +921,9 @@ UpdateDescriptionCache()
 
 OpenGrokUsage()
 {
+    [ "$1" == "--detailed" ] && helpargs=$1
     echo "Options for opengrok.jar:" 1>&2
-    ${DO} ${JAVA} ${JAVA_OPTS} -jar "${OPENGROK_JAR}" '-?'
+    ${DO} ${JAVA} ${JAVA_OPTS} -jar "${OPENGROK_JAR}" '-?' $helpargs
 }
 
 DeployWar()
@@ -1108,7 +1110,7 @@ case "${1}" in
 	;;
 
     usage|help)
-        OpenGrokUsage
+        OpenGrokUsage $2
         Usage
         ;;
     *)

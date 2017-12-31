@@ -24,6 +24,7 @@
 
 package org.opensolaris.opengrok.analysis.document;
 
+import java.io.IOException;
 import java.io.InputStream;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
@@ -33,8 +34,18 @@ public class TroffAnalyzerFactory extends FileAnalyzerFactory {
 
     private static final String name = "Troff";
 
-    public static final Matcher MATCHER = (byte[] contents, InputStream in) ->
-        getTrueMatcher().isMagic(contents, in);
+    public static final Matcher MATCHER = new Matcher() {
+        @Override
+        public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
+                throws IOException {
+            return getTrueMatcher().isMagic(contents, in);
+        }
+
+        @Override
+        public FileAnalyzerFactory forFactory() {
+            return getTrueMatcher().forFactory();
+        }
+    };
 
     public static final TroffAnalyzerFactory DEFAULT_INSTANCE =
         new TroffAnalyzerFactory();
