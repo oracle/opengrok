@@ -65,7 +65,6 @@ include file="projects.jspf"
     PageConfig cfg = PageConfig.get(request);
 
     long starttime = System.currentTimeMillis();
-
     SearchHelper searchHelper = cfg.prepareSearch();
     request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
     request.setAttribute("search.jsp-query-start-time", starttime);
@@ -82,7 +81,7 @@ include file="projects.jspf"
         cfg.setTitle(cfg.getSearchTitle());
     }
     response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), "utf-8")));
-}
+	}
 %><%@
 
 include file="httpheader.jspf"

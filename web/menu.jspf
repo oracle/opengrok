@@ -92,8 +92,15 @@ org.opensolaris.opengrok.web.Util"
     <select tabindex="8" class="q" id="project"
         name="project" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
+<<<<<<< HEAD
         SortedSet<String> pRequested = cfg.getRequestedProjects();
         for (Group group : ph.getGroups()) {
+=======
+		SortedSet<String> pRequested = cfg.getRequestedProjects();
+		//for all searches do not display any project selected
+		if (cfg.isSearchAll()) pRequested.clear(); 
+        for ( Group group : ph.getGroups() ) {
+>>>>>>> master
             Set<Project> groupProjects = ph.getAllGrouped(group);
             if (groupProjects.size() > 0) {
                 %><optgroup label="<%= group.getName() %>"><%
@@ -106,7 +113,7 @@ org.opensolaris.opengrok.web.Util"
                 // with F5
 
                 %><option value="<%= p.getName() %>"<%
-                    if (pRequested.contains(p.getName())) {
+                    if (pRequested.contains(p.getName()) ) {
                         %> selected="selected"<%
                     }
                     if (!(messages = Util.messagesToJson(p)).isEmpty()) {
@@ -127,8 +134,8 @@ org.opensolaris.opengrok.web.Util"
             }
 
         %><option value="<%= p.getName() %>"<%
-            if (pRequested.contains(p.getName())) {
-                %> selected="selected"<%
+            if (pRequested.contains(p.getName()) ) {
+			%> selected="selected"<%
             }
             if (!(messages = Util.messagesToJson(p)).isEmpty()) {
                 %> data-messages='<%= messages %>' <%
@@ -217,10 +224,16 @@ org.opensolaris.opengrok.web.Util"
 </table>
 <div id="form-controls">
     <input tabindex="9" class="submit btn" type="submit" value="Search"/>
-    <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
+    <input tabindex="10" class="submit btn" type="button" value="Search All" onclick="javascript: SearchAll();"/>
+    <input tabindex="11" class="submit btn" onclick="javascript: clearSearchFrom();"
            type="button" value="Clear"/>
+<<<<<<< HEAD
     <input tabindex="11" class="submit btn" onclick="window.open('help.jsp', '_blank');"
            type="button" value="Help"/>
+=======
+    <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
+	<input type="hidden" id="search_all" name="search_all" value="false">
+>>>>>>> master
 </div>
 </div>
 <div id="ltbl">

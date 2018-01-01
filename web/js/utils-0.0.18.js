@@ -1881,6 +1881,12 @@ function deselectAllProjects() {
     }
 }
 
+function SearchAll() {
+ deselectAllProjects();
+ $("#search_all").val("true");
+ $( "#sbox" ).submit();
+ 
+}
 function clearSearchFrom() {
     $("#sbox input[type='text']").each(function () {
         $(this).val("");
