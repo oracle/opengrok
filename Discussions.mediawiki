@@ -1,16 +1,16 @@
-=== Slack ===
+= Slack =
 
-http://opengrok.slack.com <br>
-use shared invite: https://join.slack.com/t/opengrok/shared_invite/enQtMjg1OTQ3MTU1MTIwLWE2Yzk1ZTAyMmE3NzAxNzAyYjIzMjA3OGMyZGQ0MjM1MjE0M2U1OGIxYjRhNzVhOTQxOTU0MzRmNzg0NzJmMDg
-(valid until 13.1.2018, please create an issue for a new one)
-(or ask for (new) shared invite on below list) <br>
-http://opengrok.slackarchive.com <br>
+* http://opengrok.slack.com
+**use shared invite: https://join.slack.com/t/opengrok/shared_invite/enQtMjg1OTQ3MTU1MTIwLWE2Yzk1ZTAyMmE3NzAxNzAyYjIzMjA3OGMyZGQ0MjM1MjE0M2U1OGIxYjRhNzVhOTQxOTU0MzRmNzg0NzJmMDg
+**(valid until 13.1.2018, please create an issue for a new one)
+**(or ask for (new) shared invite on below list)
+* https://opengrok.slackarchive.io
 
-=== Chat ===
+= Chat =
 
 IRC channel #opengrok on [http://www.freenode.net Freenode]
 
-=== Mailing lists ===
+= Mailing lists =
 
 There are 2 mailing lists:
 
@@ -19,7 +19,7 @@ There are 2 mailing lists:
 
 To subscribe, send email to <nowiki><mailing_list_name></nowiki>-subscribe@yahoogroups.com
 
-==== Old archives ====
+== Old archives ==
 
 Archives of mailing lists (opengrok-dev@opensolaris.org and opengrok-discuss@opensolaris.org) prior to moving the project to github are available in compressed form on http://java.net/projects/opengrok/downloads/directory/archive-mails
 
