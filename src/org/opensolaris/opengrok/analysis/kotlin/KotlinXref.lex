@@ -202,10 +202,10 @@ ParamName = {Identifier} | "<" {Identifier} ">"
   {KdocWithClassArg} {WhiteSpace} {ClassName} {
     String text = yytext();
     String[] tokens = text.split(WHITE_SPACE, 2);
-    out.append("<strong>").append(tokens[0]).append("</strong>")
-      .append(text.substring(tokens[0].length(),
-                             text.length() - tokens[1].length()))
-      .append("<em>").append(tokens[1]).append("</em>");
+    out.append("<strong>").append(tokens[0]).append("</strong>");
+    out.append(text.substring(tokens[0].length(), text.length() -
+        tokens[1].length()));
+    out.append("<em>").append(tokens[1]).append("</em>");
   }
   "@" {Identifier} {
     out.append("<strong>").append(yytext()).append("</strong>");

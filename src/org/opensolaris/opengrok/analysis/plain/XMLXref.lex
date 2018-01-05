@@ -23,13 +23,11 @@
  */
 
 package org.opensolaris.opengrok.analysis.plain;
+
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.util.StringUtils;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class XMLXref
@@ -63,58 +61,89 @@ NameChar = {FileChar}|"."
 %%
 
 <YYINITIAL> {
- "<!--"  { yybegin(COMMENT); out.write("<span class=\"c\">&lt;!--"); }
+ "<!--"    {
+    yybegin(COMMENT);
+    disjointSpan(HtmlConsts.COMMENT_CLASS);
+    out.write(htmlize("<!--"));
+ }
  "<![CDATA[" {
     yybegin(CDATA);
-    out.write("&lt;<span class=\"n\">![CDATA[</span><span class=\"c\">");
+    out.write(htmlize("<"));
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write("![CDATA[");
+    disjointSpan(HtmlConsts.COMMENT_CLASS);
  }
- "<"    { yybegin(TAG); out.write("&lt;");}
+ "<"    { yybegin(TAG); out.write(htmlize("<")); }
 }
 
 <TAG> {
-[a-zA-Z_0-9]+{WhspChar}*\= { out.write("<b>"); out.write(yytext()); out.write("</b>"); }
-[a-zA-Z_0-9]+ { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
-\"      { yybegin(STRING); out.write("<span class=\"s\">\""); }
-\'      { yybegin(SSTRING); out.write("<span class=\"s\">'"); }
-">"      { yybegin(YYINITIAL); out.write("&gt;"); }
-"<"      { yybegin(YYINITIAL); out.write("&lt;"); }
+ [a-zA-Z_0-9]+{WhspChar}*\=    {
+    out.append("<strong>").append(yytext()).append("</strong>");
+ }
+ [a-zA-Z_0-9]+    {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
+ \"      {
+    yybegin(STRING);
+    disjointSpan(HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+ \'      {
+    yybegin(SSTRING);
+    disjointSpan(HtmlConsts.STRING_CLASS);
+    out.write(htmlize(yytext()));
+ }
+[><]    { yybegin(YYINITIAL); out.write(htmlize(yytext())); }
 }
 
 <STRING> {
- \" {WhspChar}* \"  { out.write(yytext());}
- \"     { yybegin(TAG); out.write("\"</span>"); }
-}
-
-<STRING, SSTRING, COMMENT, CDATA> {
- "<"    {out.write( "&lt;");}
- ">"    {out.write( "&gt;");}
+ \" {WhspChar}* \"  { out.write(htmlize(yytext())); }
+ \"     {
+    yybegin(TAG);
+    out.write(htmlize(yytext()));
+    disjointSpan(null);
+ }
 }
 
 <SSTRING> {
- \' {WhspChar}* \'  { out.write(yytext());}
- \'     { yybegin(TAG); out.write("'</span>"); }
+ \' {WhspChar}* \'  { out.write(htmlize(yytext())); }
+ \'     {
+    yybegin(TAG);
+    out.write(htmlize(yytext()));
+    disjointSpan(null);
+ }
 }
 
 <COMMENT> {
-"-->"     { yybegin(YYINITIAL); out.write("--&gt;</span>"); }
+ "-->"     {
+    yybegin(YYINITIAL);
+    out.write(htmlize(yytext()));
+    disjointSpan(null);
+ }
 }
 
 <CDATA> {
   "]]>" {
-    yybegin(YYINITIAL); out.write("<span class=\"n\">]]</span></span>&gt;");
+    yybegin(YYINITIAL);
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write("]]");
+    disjointSpan(null);
+    out.write(htmlize(">"));
   }
 }
 
 <YYINITIAL, COMMENT, CDATA, STRING, SSTRING, TAG> {
+[&<>\'\"]    { out.write(htmlize(yytext())); }
+
 {File}|{AlmostAnyFPath}
   {
     final String path = yytext();
     final boolean isJavaClass=StringUtils.isPossiblyJavaClass(path);
     final char separator = isJavaClass ? '.' : '/';
-    final String hyperlink =
-            Util.breadcrumbPath(urlPrefix + "path=", path, separator,
-                                getProjectPostfix(true), isJavaClass);
-    out.append(hyperlink);
+    out.write(Util.breadcrumbPath(urlPrefix + "path=", path, separator,
+        getProjectPostfix(true), isJavaClass));
   }
 
 {BrowseableURI}    {
@@ -126,7 +155,6 @@ NameChar = {FileChar}|"."
           writeEMailAddress(yytext());
         }
 
-"&"     {out.write( "&amp;");}
 {WhiteSpace}{EOL} |
     {EOL}   {startNewLine(); }
 [!-~] | {WhspChar}    {out.write(yycharat(0));}

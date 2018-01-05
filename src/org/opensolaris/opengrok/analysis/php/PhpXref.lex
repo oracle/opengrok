@@ -33,18 +33,21 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
+import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class PhpXref
-%extends PhpXrefSpanner
+%extends JFlexXref
 %unicode
 %ignorecase
 %int
 %include CommonXref.lexh
 %{
   private final static Set<String> PSEUDO_TYPES;
-  private Stack<String> docLabels = new Stack<String>();
+  private final Stack<String> popStrings = new Stack<>();
+  private final Stack<String> docLabels = new Stack<String>();
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -64,14 +67,45 @@ import org.opensolaris.opengrok.web.Util;
   @Override
   public void reset() {
       super.reset();
+      popStrings.clear();
       docLabels.clear();
+  }
+
+  /**
+   * save current yy state to stack
+   * @param newState state id
+   * @param popString string for the state
+   */
+  public void yypush(int newState, String popString) {
+      super.yypush(newState);
+      popStrings.push(popString);
+  }
+
+  /**
+   * save current yy state to stack
+   * @param newState state id
+   */
+  @Override
+  public void yypush(int newState) {
+      yypush(newState, null);
+  }
+
+  /**
+   * pop last state from stack
+   * @throws IOException in case of any I/O problem
+   */
+  @Override
+  public void yypop() throws IOException {
+      String popString = popStrings.pop();
+      if (popString != null) {
+          disjointSpan(popString);
+      }
+      super.yypop();
   }
 
   private void writeDocTag() throws IOException {
     out.write(yycharat(0));
-    out.write("<strong>");
-    out.write(Util.htmlize(yytext().substring(1)));
-    out.write("</strong>");
+    out.append("<strong>").append(Util.htmlize(yytext().substring(1))).append("</strong>");
   }
 
   private boolean isTabOrSpace(int i) {
@@ -137,42 +171,47 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     "<" | "</"      { out.write(Util.htmlize(yytext())); yypush(TAG_NAME); }
 
     "<!--" {
-        out.write("<span class=\"c\">&lt;!--");
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        out.write(htmlize(yytext()));
         yybegin(HTMLCOMMENT);
     }
 }
 
 <TAG_NAME> {
     {HtmlName} {
-        out.write("<span class=\"n\">");
+        String lastClassName = getDisjointSpanClassName();
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
         out.write(yytext());
-        out.write("</span>");
+        disjointSpan(lastClassName);
         yybegin(AFTER_TAG_NAME);
     }
 
     {HtmlName}:{HtmlName} {
-        out.write("<span class=\"n\">");
+        String lastClassName = getDisjointSpanClassName();
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
         int i = 0;
         while (yycharat(i) != ':') i++;
         out.write(yytext().substring(0,i));
-        out.write("</span>:<span class=\"n\">");
+        disjointSpan(null);
+        out.write(":");
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
         out.write(yytext().substring(i + 1));
-        out.write("</span>");
+        disjointSpan(lastClassName);
         yybegin(AFTER_TAG_NAME);
     }
 }
 
 <AFTER_TAG_NAME> {
     {HtmlName} {
-        out.write("<strong>");
-        out.write(yytext()); //attribute
-        out.write("</strong>");
+        //attribute
+        out.append("<strong>").append(yytext()).append("</strong>");
     }
 
     "=" {WhspChar}* (\" | \')? {
         char attributeDelim = yycharat(yylength()-1);
-        out.write("=<span class=\"s\">");
-        out.write(yytext().substring(1));
+        out.write("=");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        out.write(htmlize(yytext().substring(1)));
         if (attributeDelim == '\'') {
             yypush(ATTRIBUTE_SINGLE);
         } else if (attributeDelim == '"') {
@@ -184,68 +223,65 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <TAG_NAME, AFTER_TAG_NAME> {
-    ">"     { out.write("&gt;"); yypop(); } //to YYINITIAL
+    ">"     { out.write(htmlize(yytext())); yypop(); } //to YYINITIAL
 }
 
 <YYINITIAL, TAG_NAME, AFTER_TAG_NAME> {
     {OpeningTag}    {
-        out.write("<strong>");
-        out.write(Util.htmlize(yytext()));
-        out.write("</strong>");
+        out.append("<strong>").append(Util.htmlize(yytext())).append("</strong>");
         yypush(IN_SCRIPT); }
 }
 
 <ATTRIBUTE_NOQUOTE> {
     {WhspChar}* {EOL} {
-        out.write("</span>");
+        disjointSpan(null);
         startNewLine();
         yypop();
     }
     {WhiteSpace} {
         out.write(yytext());
-        out.write("</span>");
+        disjointSpan(null);
         yypop();
     }
-    ">"     { out.write("&gt;</span>"); yypop(); yypop(); } //pop twice
+    ">"     { out.write(htmlize(yytext())); disjointSpan(null); yypop(); yypop(); } //pop twice
 }
 
-<ATTRIBUTE_DOUBLE>\" { out.write("\"</span>"); yypop(); }
-<ATTRIBUTE_SINGLE>\' { out.write("'</span>"); yypop(); }
+<ATTRIBUTE_DOUBLE>\" { out.write(htmlize(yytext())); disjointSpan(null); yypop(); }
+<ATTRIBUTE_SINGLE>\' { out.write(htmlize(yytext())); disjointSpan(null); yypop(); }
 
 <ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE> {
     {WhspChar}* {EOL} {
-        out.write("</span>");
+        disjointSpan(null);
         startNewLine();
-        out.write("<span class=\"s\">");
+        disjointSpan(HtmlConsts.STRING_CLASS);
     }
 }
 
 <ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE> {
     {OpeningTag} {
-        out.write("</span><strong>");
-        out.write(Util.htmlize(yytext()));
-        out.write("</strong>");
-        yypush(IN_SCRIPT, "<span class=\"s\">");
+        disjointSpan(null);
+        out.append("<strong>").append(Util.htmlize(yytext())).append("</strong>");
+        yypush(IN_SCRIPT, HtmlConsts.STRING_CLASS);
     }
 }
 
 <HTMLCOMMENT> {
     "-->" {
-        out.write("--&gt;</span>");
+        out.write(htmlize(yytext()));
+        disjointSpan(null);
         yybegin(YYINITIAL);
     }
 
     {WhspChar}* {EOL} {
-        out.write("</span>");
+        disjointSpan(null);
         startNewLine();
-        out.write("<span class=\"c\">");
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
     }
 
     {OpeningTag} {
-        out.write("</span><strong>");
-        out.write(Util.htmlize(yytext()));
-        out.write("</strong>");
-        yypush(IN_SCRIPT, "<span class=\"c\">");
+        disjointSpan(null);
+        out.append("<strong>").append(Util.htmlize(yytext())).append("</strong>");
+        yypush(IN_SCRIPT, HtmlConsts.COMMENT_CLASS);
     }
 }
 
@@ -266,11 +302,9 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         int i = 1, j;
         while (isTabOrSpace(i)) { out.write(yycharat(i++)); }
 
-        out.write("<em>");
         j = i + 1;
         while (!isTabOrSpace(j) && yycharat(j) != ')') { j++; }
-        out.write(yytext().substring(i, j));
-        out.write("</em>");
+        out.append("<em>").append(yytext().substring(i, j)).append("</em>");
 
         out.write(yytext().substring(j, yylength()));
     }
@@ -278,20 +312,26 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     b? \" {
         yypush(STRING);
         if (yycharat(0) == 'b') { out.write('b'); }
-        out.write("<span class=\"s\">\"");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        out.write(htmlize("\""));
     }
 
     b? \' {
         yypush(QSTRING);
         if (yycharat(0) == 'b') { out.write('b'); }
-        out.write("<span class=\"s\">\'");
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        out.write(htmlize("\'"));
     }
 
-    ` { yypush(BACKQUOTE); out.write("<span class=\"s\">`"); }
+    [`]    {
+        yypush(BACKQUOTE);
+        disjointSpan(HtmlConsts.STRING_CLASS);
+        out.write(yytext());
+    }
 
     b? "<<<" {WhspChar}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
         if (yycharat(0) == 'b') { out.write('b'); }
-        out.write("&lt;&lt;&lt;");
+        out.write(htmlize("<<<"));
         int i = yycharat(0) == 'b' ? 4 : 3, j = yylength()-1;
         while (isTabOrSpace(i)) {
             out.write(yycharat(i++));
@@ -302,35 +342,53 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
             yypush(NOWDOC);
             String text = yytext().substring(i+1, j);
             this.docLabels.push(text);
-            out.write(yycharat(i));
-            out.write("<span class=\"b\">");
+            out.write(htmlize(String.valueOf(yycharat(i))));
+            disjointSpan(HtmlConsts.BOLD_CLASS);
             out.write(text);
-            out.write("</span>");
-            out.write(yycharat(i));
+            disjointSpan(null);
+            out.write(htmlize(String.valueOf(yycharat(i))));
         } else {
             yypush(HEREDOC);
             String text = yytext().substring(i, j+1);
             this.docLabels.push(text);
-            out.write("<span class=\"b\">");
+            disjointSpan(HtmlConsts.BOLD_CLASS);
             out.write(text);
-            out.write("</span>");
+            disjointSpan(null);
         }
         startNewLine();
-        out.write("<span class=\"s\">");
+        disjointSpan(HtmlConsts.STRING_CLASS);
     }
 
-    {Number}   { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+    {Number}   {
+        String lastClassName = getDisjointSpanClassName();
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
+        out.write(yytext());
+        disjointSpan(lastClassName);
+    }
 
-    "#"|"//"   { yypush(SCOMMENT); out.write("<span class=\"c\">" + yytext()); }
-    "/**"      { yypush(DOCCOMMENT); out.write("<span class=\"c\">/*"); yypushback(1); }
-    "/*"       { yypush(COMMENT); out.write("<span class=\"c\">/*"); }
+    "#"|"//"   {
+        yypush(SCOMMENT);
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        out.write(yytext());
+    }
+    "/**"      {
+        yypush(DOCCOMMENT);
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        out.write("/*");
+        yypushback(1);
+    }
+    "/*"       {
+        yypush(COMMENT);
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        out.write(yytext());
+    }
 
     \{         { out.write(yytext()); yypush(IN_SCRIPT); }
     \}         {
         out.write(yytext());
         if (!this.stack.empty() && !isHtmlState(this.stack.peek()))
             yypop(); //may pop STRINGEXPR/HEREDOC/BACKQUOTE
-        /* we don't pop unconditionally because we can exit a <?php block with
+        /* we don't pop unconditionally because we can exit a ?php block with
          * with open braces and we discard the information about the number of
          * open braces when exiting the block (see the action for {ClosingTag}
          * below. An alternative would be keeping two stacks -- one for HTML
@@ -339,22 +397,20 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     {ClosingTag} {
-        out.write("<strong>");
-        out.write(Util.htmlize(yytext()));
-        out.write("</strong>");
+        out.append("<strong>").append(Util.htmlize(yytext())).append("</strong>");
         while (!isHtmlState(yystate()))
             yypop();
     }
 } //end of IN_SCRIPT
 
 <STRING> {
-    \\\" { out.write("<strong>"); out.write(yytext()); out.write("</strong>"); }
-    \" { out.write("\"</span>"); yypop(); }
+    \\\" { out.append("<strong>").append(htmlize(yytext())).append("</strong>"); }
+    \" { out.write(htmlize(yytext())); disjointSpan(null); yypop(); }
 }
 
 <BACKQUOTE> {
-    "\\`" { out.write("<strong>"); out.write(yytext()); out.write("</strong>"); }
-    "`" { out.write("`</span>"); yypop(); }
+    "\\`" { out.append("<strong>").append(yytext()).append("</strong>"); }
+    "`" { out.write("`"); disjointSpan(null); yypop(); }
 }
 
 <STRING, BACKQUOTE, HEREDOC> {
@@ -363,20 +419,19 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     {DoubleQuoteEscapeSequences} {
-        out.write("<strong>");
-        out.write(yytext());
-        out.write("</strong>");
+        out.append("<strong>").append(htmlize(yytext())).append("</strong>");
     }
 
     "$"     {
-        out.write("</span>$");
-        yypush(STRINGVAR, "<span class=\"s\">");
+        disjointSpan(null);
+        out.write("$");
+        yypush(STRINGVAR, HtmlConsts.STRING_CLASS);
     }
 
     "${" {
-        out.write("</span>");
+        disjointSpan(null);
         out.write(yytext());
-        yypush(STRINGEXPR, "<span class=\"s\">");
+        yypush(STRINGEXPR, HtmlConsts.STRING_CLASS);
     }
 
     /* ${ is different from {$ -- for instance {$foo->bar[1]} is valid
@@ -385,21 +440,19 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
      * put more restrictions on the {$ scripting mode than on the
      * "${" {Identifer} "[" scripting mode, but that's not relevant here */
     "{$" {
-        out.write("</span>");
+        disjointSpan(null);
         out.write("{");
         yypushback(1);
-        yypush(IN_SCRIPT, "<span class=\"s\">");
+        yypush(IN_SCRIPT, HtmlConsts.STRING_CLASS);
     }
 }
 
 <QSTRING> {
     {SingleQuoteEscapeSequences} {
-        out.write("<strong>");
-        out.write(yytext());
-        out.write("</strong>");
+        out.append("<strong>").append(htmlize(yytext())).append("</strong>");
     }
 
-    \'      { out.write("'</span>"); yypop(); }
+    \'      { out.write(htmlize("'")); disjointSpan(null); yypop(); }
 }
 
 <HEREDOC, NOWDOC>^{Identifier} ";"? {EOL}  {
@@ -410,9 +463,9 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     if (yytext().substring(0, i+1).equals(this.docLabels.peek())) {
         String text = this.docLabels.pop();
         yypop();
-        out.write("</span><span class=\"b\">");
+        disjointSpan(HtmlConsts.BOLD_CLASS);
         out.write(text);
-        out.write("</span>");
+        disjointSpan(null);
         if (hasSemi) out.write(";");
         startNewLine();
     } else {
@@ -423,26 +476,32 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC>{WhspChar}* {EOL} {
-    out.write("</span>");
+    disjointSpan(null);
     startNewLine();
-    out.write("<span class=\"s\">");
+    disjointSpan(HtmlConsts.STRING_CLASS);
 }
 
 <STRINGVAR> {
     {Identifier}    { writeSymbol(yytext(), null, yyline); }
 
     \[ {Number} \] {
-        out.write("[<span class=\"n\">");
+        out.write("[");
+        String lastClassName = getDisjointSpanClassName();
+        disjointSpan(HtmlConsts.NUMBER_CLASS);
         out.write(yytext().substring(1, yylength()-1));
-        out.write("</span>]");
+        disjointSpan(lastClassName);
+        out.write("]");
         yypop(); //because "$arr[0][1]" is the same as $arr[0] . "[1]"
     }
 
     \[ {Identifier} \] {
         //then the identifier is actually a string!
-        out.write("[<span class=\"s\">");
+        out.write("[");
+        String lastClassName = getDisjointSpanClassName();
+        disjointSpan(HtmlConsts.STRING_CLASS);
         out.write(yytext().substring(1, yylength()-1));
-        out.write("</span>]");
+        disjointSpan(lastClassName);
+        out.write("]");
         yypop();
     }
 
@@ -454,7 +513,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     "->" {Identifier} {
-        out.write("-&gt;");
+        out.write(htmlize(yytext().substring(0, 2)));
         writeSymbol(yytext().substring(2), null, yyline);
         yypop(); //because "$arr->a[0]" is the same as $arr->a . "[0]"
     }
@@ -475,14 +534,13 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <SCOMMENT> {
     {ClosingTag}    {
-        out.write("</span><strong>");
-        out.write(Util.htmlize(yytext()));
-        out.write("</strong>");
+        disjointSpan(null);
+        out.append("<strong>").append(Util.htmlize(yytext())).append("</strong>");
         while (!isHtmlState(yystate()))
             yypop();
     }
     {WhspChar}* {EOL} {
-        out.write("</span>");
+        disjointSpan(null);
         startNewLine();
         yypop();
     }
@@ -522,10 +580,8 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
             j = i;
             while (j < yylength() && (c = yycharat(j)) != ')' && c != '|'
             && c != '[') { j++; }
-            out.write("<em>");
             writeSymbol(Util.htmlize(yytext().substring(i, j)),
                     PSEUDO_TYPES, yyline, false);
-            out.write("</em>");
             i = j;
         }
         yybegin(yystate() == DOCCOM_TYPE_THEN_NAME ? DOCCOM_NAME : DOCCOMMENT);
@@ -539,9 +595,8 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         int i = 0;
         do { out.write(yycharat(i++)); } while (isTabOrSpace(i));
 
-        out.write("<em>$");
+        out.write("$");
         writeSymbol(Util.htmlize(yytext().substring(i + 1)), null, yyline);
-        out.write("</em>");
         yybegin(DOCCOMMENT);
     }
 
@@ -550,24 +605,26 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <COMMENT, DOCCOMMENT> {
     {WhspChar}* {EOL} {
-        out.write("</span>");
+        disjointSpan(null);
         startNewLine();
-        out.write("<span class=\"c\">");
+        disjointSpan(HtmlConsts.COMMENT_CLASS);
     }
-    "*/"    { out.write("*/</span>"); yypop(); }
+    "*/"    {
+        out.write(yytext());
+        disjointSpan(null);
+        yypop();
+    }
 }
 
 <YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE, HTMLCOMMENT, IN_SCRIPT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
-    "&"     { out.write( "&amp;"); }
-    "<"     { out.write( "&lt;"); }
-    ">"     { out.write( "&gt;"); }
+    [&<>\'\"]    { out.write(htmlize(yytext())); }
     {WhspChar}* {EOL} {
         startNewLine();
     }
     {WhiteSpace}    {
         out.write(yytext());
     }
-    [!-~]   { out.write(yycharat(0)); }
+    [!-~]   { out.write(yytext()); }
     [^\n]       { writeUnicodeChar(yycharat(0)); }
 }
 

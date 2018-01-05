@@ -27,10 +27,9 @@
  */
 
 package org.opensolaris.opengrok.analysis.lisp;
+
 import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
+import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
 %%
 %public
@@ -75,24 +74,38 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
     writeSymbol(id, Consts.kwd, yyline);
 }
 
-{Number}        { out.write("<span class=\"n\">");
-                  out.write(yytext());
-                  out.write("</span>"); }
+ {Number}        {
+    disjointSpan(HtmlConsts.NUMBER_CLASS);
+    out.write(yytext());
+    disjointSpan(null);
+ }
 
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- ";"    { yybegin(SCOMMENT);out.write("<span class=\"c\">;");}
+ \"     {
+    yybegin(STRING);
+    disjointSpan(HtmlConsts.STRING_CLASS);
+    out.write(htmlize("\""));
+ }
+ ";"    {
+    yybegin(SCOMMENT);
+    disjointSpan(HtmlConsts.COMMENT_CLASS);
+    out.write(";");
+ }
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext()); }
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
+ \" {WhiteSpace} \"  { out.write(htmlize(yytext())); }
+ \"     {
+    yybegin(YYINITIAL);
+    out.write(htmlize(yytext()));
+    disjointSpan(null);
+ }
  \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
+ \\\"   { out.write(htmlize("\\\"")); }
 }
 
 <YYINITIAL, COMMENT> {
  "#|"   { yybegin(COMMENT);
-          if (nestedComment++ == 0) { out.write("<span class=\"c\">"); }
+          if (nestedComment++ == 0) { disjointSpan(HtmlConsts.COMMENT_CLASS); }
           out.write("#|");
         }
  }
@@ -101,22 +114,21 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
  "|#"   { out.write("|#");
           if (--nestedComment == 0) {
             yybegin(YYINITIAL);
-            out.write("</span>");
+            disjointSpan(null);
           }
         }
 }
 
 <SCOMMENT> {
   {WhspChar}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
+    yybegin(YYINITIAL);
+    disjointSpan(null);
     startNewLine();
   }
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
+[&<>\'\"]    { out.write(htmlize(yytext())); }
 {WhspChar}*{EOL} { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
