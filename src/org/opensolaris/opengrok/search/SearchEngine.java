@@ -541,11 +541,13 @@ public class SearchEngine {
                             }
                         } else {
                             LOGGER.log(Level.WARNING, "Unknown genre: {0} for {1}", new Object[]{genre, filename});
-                            hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret, scopes);
+                            hasContext |= sourceContext.getContextHits(ret,
+                                filename, tags, scopes);
                         }
                     } catch (FileNotFoundException exp) {
                         LOGGER.log(Level.WARNING, "Couldn''t read summary from {0} ({1})", new Object[]{filename, exp.getMessage()});
-                        hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret, scopes);
+                        hasContext |= sourceContext.getContextHits(ret,
+                            filename, tags, scopes);
                     }
                 }
                 if (historyContext != null) {

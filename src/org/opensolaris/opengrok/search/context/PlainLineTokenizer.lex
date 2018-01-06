@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 /**
@@ -36,7 +37,7 @@ import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
-
+import org.opensolaris.opengrok.analysis.TagDesc;
 %%
 
 %public
@@ -63,7 +64,7 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
   boolean dumpRest = false;
   Writer out;
   String url;
-  TreeMap<Integer, String[]> tags;
+  TreeMap<Integer, TagDesc> tags;
   boolean prevHi = false;
   Integer prevLn = null;
   List<Hit> hits;
@@ -104,11 +105,13 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
     }
 
 
-  public void reInit(char[] buf, int len, Writer out, String url, TreeMap<Integer, String[]> tags, Scopes scopes) {
+  public void reInit(char[] buf, int len, Writer out, String url,
+      TreeMap<Integer, TagDesc> tags, Scopes scopes) {
         reInit(new CharArrayReader(buf, 0, len), out, url, tags, scopes);
   }
 
-  public void reInit(Reader in, Writer out, String url, TreeMap<Integer, String[]> tags, Scopes scopes) {
+  public void reInit(Reader in, Writer out, String url,
+      TreeMap<Integer, TagDesc> tags, Scopes scopes) {
         yyreset(in);
 
         markedContents.setLength(0);
@@ -124,7 +127,7 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
         this.url = url;
         this.tags = tags;
         if(this.tags == null) {
-                this.tags = new TreeMap<Integer, String[]>();
+                this.tags = new TreeMap<Integer, TagDesc>();
         }
         this.scopes = scopes;
         prevHi = false;
@@ -170,8 +173,8 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                         out.write("</a>");
                         if (prevHi) {
                                 out.write(" <i> ");
-                                String[] desc = tags.remove(prevLn);
-                                out.write(desc[2]);
+                                TagDesc desc = tags.remove(prevLn);
+                                out.write(desc.type);
                                 out.write(" </i>");
                         }
                         out.write("<br/>");
@@ -220,8 +223,8 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                         Integer ln = Integer.valueOf(lineNo);
                         boolean hi = tags.containsKey(ln);
                         if (prevHi) {
-                           String[] desc = tags.remove(prevLn);
-                           hit.setTag(desc[2]);
+                           TagDesc desc = tags.remove(prevLn);
+                           hit.setTag(desc.type);
                         }
                         prevHi = hi;
                         prevLn = ln;
@@ -341,8 +344,8 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
 
                                 if (prevHi) {
                                         out.write(" <i> ");
-                                        String[] desc = tags.remove(prevLn);
-                                        out.write(desc[2]);
+                                        TagDesc desc = tags.remove(prevLn);
+                                        out.write(desc.type);
                                         out.write(" </i>");
                                 }
                                 out.write("<br/>");
@@ -350,8 +353,8 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                                formatWithNum(rest, rest+i-1, markedLine);
                                hit.setLine(sb.toString());
                                if (prevHi) {
-                                  String[] desc = tags.remove(prevLn);
-                                  hit.setTag(desc[2]);
+                                  TagDesc desc = tags.remove(prevLn);
+                                  hit.setTag(desc.type);
                                }
                                hits.add(hit);
                            }
@@ -362,30 +365,32 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
         if (tags.size() > 0) {
         if (out != null) {
            for(Integer rem : tags.keySet()) {
-                String[] desc = tags.get(rem);
+                TagDesc desc = tags.get(rem);
                 out.write("<a class=\"s\" href=\"");
                 out.write(url);
-                out.write(desc[1]);
+                out.write(desc.lineno);
                 out.write("\"><span class=\"l\">");
-                out.write(desc[1]);
+                out.write(desc.lineno);
                 out.write("</span> ");
-                out.write(Util.htmlize(desc[3]).replace(desc[0], "<b>" + desc[0] + "</b>"));
+                out.write(Util.htmlize(desc.text).replace(desc.symbol, "<b>" +
+                    desc.symbol + "</b>"));
                 out.write("</a> ");
-                if (desc[4] != null) {
+                if (desc.scope != null) {
                     out.write("<i>");
-                    out.write(desc[4]);
+                    out.write(desc.scope);
                     out.write("</i> ");
                 }
                 out.write("<i> ");
-                out.write(desc[2]);
+                out.write(desc.type);
                 out.write(" </i><br/>");
            }
         } else {
            for(Integer rem : tags.keySet()) {
-                String[] desc = tags.get(rem);
-                hit = new Hit(url, "<html>" + Util.htmlize(desc[3]).replace(desc[0], "<b>" + desc[0] + "</b>"),
-                              desc[1], false, alt);
-                hit.setTag(desc[2]);
+                TagDesc desc = tags.get(rem);
+                hit = new Hit(url, "<html>" + Util.htmlize(desc.text).replace(
+                    desc.symbol, "<b>" + desc.symbol + "</b>"), desc.lineno,
+                    false, alt);
+                hit.setTag(desc.type);
                 hits.add(hit);
            }
         }
@@ -436,8 +441,8 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
                            if(prevHi){
                                 out.write(" <i> ");
-                                String[] desc = tags.remove(prevLn);
-                                out.write(desc[2]);
+                                TagDesc desc = tags.remove(prevLn);
+                                out.write(desc.type);
                                 out.write("</i> ");
                            }
                            out.write("<br/>");
@@ -445,8 +450,8 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
                            formatWithNum(rest, endPos, markedLine);
                            hit.setLine(sb.toString());
                            if(prevHi){
-                                String[] desc = tags.remove(prevLn);
-                                hit.setTag(desc[2]);
+                                TagDesc desc = tags.remove(prevLn);
+                                hit.setTag(desc.type);
                            }
                            hits.add(hit);
                            sb.setLength(0);

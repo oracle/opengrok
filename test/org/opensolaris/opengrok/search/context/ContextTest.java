@@ -113,16 +113,43 @@ public class ContextTest {
     }
 
     /**
-     * Tests for the getContext() method.
+     * Test getContext(): limited scan, output to list.
      *
      * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
-    public void testGetContext() throws ParseException {
-        testGetContext(true, true);   // limited scan, output to list
-        testGetContext(false, true);  // unlimited scan, output to list
-        testGetContext(true, false);  // limited scan, output to writer
-        testGetContext(false, false); // unlimited scan, output to writer
+    public void testGetContext1() throws ParseException {
+        testGetContext(true, true);
+    }
+
+    /**
+     * Test getContext(): unlimited scan, output to list.
+     *
+     * @throws org.apache.lucene.queryparser.classic.ParseException
+     */
+    @Test
+    public void testGetContext2() throws ParseException {
+        testGetContext(false, true);
+    }
+
+    /**
+     * Test getContext(): limited scan, output to writer.
+     *
+     * @throws org.apache.lucene.queryparser.classic.ParseException
+     */
+    @Test
+    public void testGetContext3() throws ParseException {
+        testGetContext(true, false);
+    }
+
+    /**
+     * Test getContext() method: unlimited scan, output to writer.
+     *
+     * @throws org.apache.lucene.queryparser.classic.ParseException
+     */
+    @Test
+    public void testGetContext4() throws ParseException {
+        testGetContext(false, false);
     }
 
     /**
@@ -197,24 +224,19 @@ public class ContextTest {
         assertEquals(expectedOutput, actualOutput);
 
         // Search with no input (will search definitions)
-        in = null;
-        out = hitList ? null : new StringWriter();
-        hits = hitList ? new ArrayList<>() : null;
-        qb = new QueryBuilder().setDefs("def");
-        c = new Context(qb.build(), qb);
-        assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
-
         if (hitList) {
+            hits = new ArrayList<>();
+            qb = new QueryBuilder().setDefs("def");
+            c = new Context(qb.build(), qb);
+            assertTrue(c.getContextHits(hits, "", defs, null));
+
             assertEquals(1, hits.size());
             assertEquals("1", hits.get(0).getLineno());
-        }
 
-        expectedOutput = hitList
-                ? "text"
-                : "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> "
-                + "text</a> <i>type</i><br/>";
-        actualOutput = hitList ? hits.get(0).getLine() : out.toString();
-        assertEquals(expectedOutput, actualOutput);
+            expectedOutput = "text";
+            actualOutput = hits.get(0).getLine();
+            assertEquals(expectedOutput, actualOutput);
+        }
 
         defs = new Definitions();
         defs.addTag(2, "def", "type", "text", 0, 0);

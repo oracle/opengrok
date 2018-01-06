@@ -48,6 +48,7 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
+import org.opensolaris.opengrok.analysis.TagDesc;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -67,6 +68,7 @@ public class Context {
     private char[] buffer;
     PlainLineTokenizer tokens;
     String queryAsURI;
+    private boolean alt = true;
 
     /**
      * Map whose keys tell which fields to look for in the source file, and
@@ -83,8 +85,8 @@ public class Context {
 
     /**
      * Initializes a context generator for matchers derived from the specified
-     * {@code query} -- which might be {@code null} and result in
-     * {@link #isEmpty()} returning {@code true}.
+     * {@code query} -- which might be none and result in {@link #isEmpty()}
+     * equal to true.
      * @param query the query to generate the result for
      * @param qbuilder required builder used to create {@code query}
      */
@@ -112,6 +114,11 @@ public class Context {
         alt = !alt;
     }
 
+    /**
+     * Gets a value indicating if no matchers were derived from the initialized
+     * {@link Query}.
+     * @return {@code true} if no matchers were derived
+     */
     public boolean isEmpty() {
         return m == null;
     }
@@ -256,117 +263,68 @@ public class Context {
         queryAsURI = sb.toString();
     }
 
-    private boolean alt = true;
-
+    /**
+     * Calls
+     * {@link #getContext(java.io.Reader, java.io.Writer, java.lang.String, java.lang.String, java.lang.String, org.opensolaris.opengrok.analysis.Definitions, boolean, boolean, java.util.List, org.opensolaris.opengrok.analysis.Scopes)}
+     * with {@code in}, {@code out}, {@code urlPrefix}, {@code morePrefix},
+     * {@code path}, {@code tags}, {@code limit}, {@code isDefSearch},
+     * {@code hits}, and {@code null}.
+     * @param in required input stream to be matched
+     * @param out optional output stream to write
+     * @param urlPrefix prefix for links
+     * @param morePrefix to link to more... page
+     * @param path path of the file
+     * @param tags code definitions.
+     * @param limit should the number of matching lines be limited?
+     * @param isDefSearch a value indicating whether to always print matched
+     * contexts or only when {@link Definitions} tags apply to a line
+     * @param hits optional instance
+     * @return Did it get any matching context?
+     */
     public boolean getContext(Reader in, Writer out, String urlPrefix,
         String morePrefix, String path, Definitions tags,
         boolean limit, boolean isDefSearch, List<Hit> hits) {
         return getContext(in, out, urlPrefix, morePrefix, path, tags, limit, isDefSearch, hits, null);
     }
+
     /**
-     * ???.
-     * Closes the given <var>in</var> reader on return.
-     *
-     * @param in File to be matched
-     * @param out to write the context
+     * Look for context for this instance's initialized query in the specified
+     * input stream, and output according to the parameters.
+     * @param in required input stream to be matched (closed on return)
+     * @param out optional output stream to write
+     * @param urlPrefix prefix for links
      * @param morePrefix to link to more... page
      * @param path path of the file
-     * @param tags format to highlight defs.
+     * @param tags code definitions.
      * @param limit should the number of matching lines be limited?
+     * @param isDefSearch a value indicating whether to always print matched
+     * contexts or only when {@link Definitions} tags apply to a line
+     * @param hits optional instance
+     * @param scopes optional instance to read
      * @return Did it get any matching context?
      */
     public boolean getContext(Reader in, Writer out, String urlPrefix,
             String morePrefix, String path, Definitions tags,
             boolean limit, boolean isDefSearch, List<Hit> hits, Scopes scopes) {
+
+        if (in == null) {
+            throw new IllegalArgumentException("`in' is null");
+        }
+
         if (m == null) {
             IOUtils.close(in);
             return false;
         }
         boolean anything = false;
-        TreeMap<Integer, String[]> matchingTags = null;
+        TreeMap<Integer, TagDesc> matchingTags = null;
         String urlPrefixE =
                 (urlPrefix == null) ? "" : Util.URIEncodePath(urlPrefix);
         String pathE = Util.URIEncodePath(path);
         if (tags != null) {
-            matchingTags = new TreeMap<Integer, String[]>();
-            try {
-                for (Definitions.Tag tag : tags.getTags()) {
-                    for (int i = 0; i < m.length; i++) {
-                        if (m[i].match(tag.symbol) == LineMatcher.MATCHED) {
-                            String scope = null;
-                            String scopeUrl = null;
-                            if (scopes != null) {
-                                Scope scp = scopes.getScope(tag.line);
-                                scope = scp.getName() + "()";
-                                scopeUrl = "<a href=\"" + urlPrefixE + pathE + "#" + Integer.toString(scp.getLineFrom()) + "\">" + scope + "</a>";
-                            }
-
-                            /* desc[0] is matched symbol
-                             * desc[1] is line number
-                             * desc[2] is type
-                             * desc[3] is matching line;
-                             * desc[4] is scope
-                             */
-                            String[] desc = {
-                                tag.symbol,
-                                Integer.toString(tag.line),
-                                tag.type,
-                                tag.text,
-                                scope,
-                                };
-                            if (in == null) {
-                                if (out == null) {
-                                    Hit hit = new Hit(path,
-                                            Util.htmlize(desc[3]).replace(
-                                            desc[0], "<b>" + desc[0] + "</b>"),
-                                            desc[1], false, alt);
-                                    hits.add(hit);
-                                    anything = true;
-                                } else {
-                                    out.write("<a class=\"s\" href=\"");
-                                    out.write(urlPrefixE);
-                                    out.write(pathE);
-                                    out.write("#");
-                                    out.write(desc[1]);
-                                    out.write("\"><span class=\"l\">");
-                                    out.write(desc[1]);
-                                    out.write("</span> ");
-                                    out.write(Util.htmlize(desc[3]).replace(
-                                            desc[0], "<b>" + desc[0] + "</b>"));
-                                    out.write("</a> ");
-
-                                    if (desc[4] != null) {
-                                        out.write("<span class=\"scope\"><a href\"");
-                                        out.write(scopeUrl);
-                                        out.write("\">in ");
-                                        out.write(desc[4]);
-                                        out.write("</a></span> ");
-                                    }
-                                    out.write("<i>");
-                                    out.write(desc[2]);
-                                    out.write("</i><br/>");
-                                    anything = true;
-                                }
-                            } else {
-                                matchingTags.put(tag.line, desc);
-                            }
-                            break;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                if (hits != null) {
-                    // @todo verify why we ignore all exceptions?
-                    LOGGER.log(Level.WARNING, "Could not get context for " + path, e);
-                }
-            }
+            matchingTags = new TreeMap<>();
+            getContextTags(matchingTags, tags, scopes);
         }
-        /**
-         * Just to get the matching tag send a null in
-         */
-        if (in == null) {
-            return anything;
-        }
+
         int charsRead = 0;
         boolean truncated = false;
 
@@ -457,5 +415,75 @@ public class Context {
             }
         }
         return anything;
+    }
+
+    /**
+     * Gets matching, reportable hits from the specified {@code tags} instance.
+     * @param hits a defined instance to write
+     * @param path a defined instance to use for hit filenames
+     * @param tags a defined instance to read
+     * @param scopes optional scopes instance
+     * @return {@code true} if any tags were put to {@code hits}
+     */
+    public boolean getContextHits(List<Hit> hits, String path,
+        Definitions tags, Scopes scopes) {
+
+        Map<Integer, TagDesc> matchingTags = new TreeMap<>();
+        boolean ret = getContextTags(matchingTags, tags, scopes);
+
+        for (Map.Entry<Integer, TagDesc> entry : matchingTags.entrySet()) {
+            TagDesc desc = entry.getValue();
+            Hit hit = makeHit(path, desc);
+            hits.add(hit);
+        }
+        return ret;
+    }
+
+    /**
+     * Gets matching, reportable tags from the specified {@code tags} instance.
+     * @param matchingTags a defined instance to write
+     * @param tags a defined instance to read
+     * @param scopes optional scopes instance
+     * @return {@code true} if any tags were put to {@code matchingTags}
+     */
+    public boolean getContextTags(Map<Integer, TagDesc> matchingTags,
+        Definitions tags, Scopes scopes) {
+
+        if (m == null) {
+            return false;
+        }
+
+        boolean anything = false;
+
+        for (Definitions.Tag tag : tags.getTags()) {
+            for (LineMatcher m1 : m) {
+                if (m1.match(tag.symbol) == LineMatcher.MATCHED) {
+                    String scope = null;
+                    if (scopes != null) {
+                        Scope scp = scopes.getScope(tag.line);
+                        scope = scp.getName() + "()";
+                    }
+
+                    TagDesc desc = new TagDesc(tag.symbol,
+                        Integer.toString(tag.line), tag.type, tag.text, scope);
+                    matchingTags.put(tag.line, desc);
+                    anything = true;
+                    break;
+                }
+            }
+        }
+
+        return anything;
+    }
+
+    /**
+     * Converts the specified {@code desc} into a {@link Hit}.
+     * @param path defined instance
+     * @param desc defined instance
+     * @return defined instance
+     */
+    private Hit makeHit(String path, TagDesc desc) {
+        return new Hit(path, Util.htmlize(desc.text).replace(desc.symbol,
+            "<b>" + desc.symbol + "</b>"), desc.lineno, false, alt);
     }
 }
