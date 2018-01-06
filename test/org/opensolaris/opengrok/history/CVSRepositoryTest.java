@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -33,6 +34,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -40,8 +45,6 @@ import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
-
-import static org.junit.Assert.*;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.TestRepository;
@@ -113,7 +116,8 @@ public class CVSRepositoryTest {
      */
     private static void runCvsCommand(File reposRoot, String ... args) {
         List<String> cmdargs = new ArrayList<>();
-        cmdargs.add(CVSRepository.CMD_FALLBACK);
+        CVSRepository repo = new CVSRepository();
+        cmdargs.add(repo.getRepoCommand());
         for (String arg: args) {
             cmdargs.add(arg);
         }
