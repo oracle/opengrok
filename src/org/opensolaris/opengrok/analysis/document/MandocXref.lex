@@ -28,17 +28,21 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import org.opensolaris.opengrok.analysis.JFlexNonXref;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-
 %%
 %public
 %class MandocXref
-%extends JFlexXref
+%extends JFlexNonXref
 %unicode
 %int
-%include CommonXref.lexh
+%char
+%init{
+    yyline = 1;
+%init}
+%include CommonLexer.lexh
 %{
     protected boolean didStartTee;
     protected boolean didStartMandoc;
@@ -47,21 +51,14 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
     /**
      * As with {@link TroffXref} we do not want the initial line number
-     * written by {@link JFlexXref}.
+     * written by {@link JFlexNonXref}.
      */
     @Override
     public void write(Writer out) throws IOException {
-        yyline++;
         this.out = out;
         while(yylex() != YYEOF) {
         }
     }
-
-    // TODO move this into an include file when bug #16053 is fixed
-    @Override
-    protected int getLineNumber() { return yyline; }
-    @Override
-    protected void setLineNumber(int x) { yyline = x; }
 
     protected void startTee() throws IOException {
         plainbuf = new StringWriter();
@@ -103,9 +100,9 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
             StringReader rdr = new StringReader(plainbuf.toString());
             plainbuf = new StringWriter();
 
-            PlainXref plainxref = new PlainXref(rdr);
-            plainxref.project = this.project;
-            plainxref.annotation = this.annotation;
+            JFlexXref plainxref = new JFlexXref(new PlainXref(rdr));
+            plainxref.setProject(this.project);
+            plainxref.setAnnotation(this.annotation);
             plainxref.write(plainbuf);
             String result = plainbuf.toString();
             out.write(result);

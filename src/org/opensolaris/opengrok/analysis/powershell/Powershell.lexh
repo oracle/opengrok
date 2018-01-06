@@ -29,8 +29,8 @@ ComplexVariable = [\$] "{" [^}]+  "}"
 Label =  {WhspChar}* ":" {Identifier}
 
 Operator = "-" [a-zA-Z]+
-Break = "break" {WhiteSpace} {Identifier}
-Continue = "continue" {WhiteSpace} {Identifier}
+Break = "break" {WhspChar}+ {Identifier}
+Continue = "continue" {WhspChar}+ {Identifier}
 DataType = "[" [a-zA-Z_] [a-zA-Z0-9_.-]* "[]"? "]"
 
 /* The following should be matched by the 'Number' pattern below.

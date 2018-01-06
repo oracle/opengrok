@@ -24,31 +24,21 @@
  */
 
 package org.opensolaris.opengrok.analysis.uue;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opensolaris.opengrok.analysis.EmphasisHint;
+import org.opensolaris.opengrok.web.HtmlConsts;
 %%
 %public
 %class UuencodeXref
-%extends JFlexXref
+%extends JFlexSymbolMatcher
 %unicode
 %int
-%include CommonXref.lexh
-%{ 
-
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-  
-%}
-
-%eof{
-%eof}
+%char
+%init{
+    yyline = 1;
+%init}
+%include CommonLexer.lexh
 
 %state MODE NAME UUE
 
@@ -60,46 +50,43 @@ import org.opensolaris.opengrok.web.Util;
   ^ ( "begin " | "begin-base64 " ) {
     yybegin(MODE);
     yypushback(1);
-    out.write("<strong>" + yytext() + "</strong>");
+    onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
   }
 
   {BrowseableURI}    {
-    appendLink(yytext(), true);
+    onUriMatched(yytext(), yychar);
   }
 
-  {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ { writeEMailAddress(yytext()); }
+  {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+    onEmailAddressMatched(yytext(), yychar);
+  }
 
-  {FNameChar}+ { out.write(yytext()); }
+  {FNameChar}+ { onNonSymbolMatched(yytext(), yychar); }
 
-  "<"     {out.write( "&lt;");}
-  "&"     {out.write( "&amp;");}
-  {EOL}   {startNewLine();}
-  {WhiteSpace}   { out.write(yytext()); }
-  [!-~]   { out.write(yycharat(0)); }
-  [^\n]      { writeUnicodeChar(yycharat(0)); }
+  {EOL}    { onEndOfLineMatched(yytext(), yychar); }
+
+  {WhspChar} |
+  [^\n]    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <MODE> {
-  [ ] { out.write(yycharat(0)); }
+  [ ] { onNonSymbolMatched(yytext(), yychar); }
   [^ \n]+ " " {
     yybegin(NAME);
     yypushback(1);
-    out.write("<i>" + yytext() + "</i>");
+    onNonSymbolMatched(yytext(), EmphasisHint.EM, yychar);
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <NAME>{
-  [ ] { out.write(yycharat(0)); }
+  [ ] { onNonSymbolMatched(yytext(), yychar); }
   [^ \n]+\n {
     yybegin(UUE);
     yypushback(1);
     String t = yytext();
-    out.write("<a href=\"" + urlPrefix + "q=" +
-	      t.replaceAll("\"", "&quot;").replaceAll("&", "&amp;"));
-    appendProject();
-    out.write("\">" + t + "</a>");
-    out.write("<span class='c'>");
+    onQueryTermMatched(t, yychar);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
 }
@@ -108,11 +95,10 @@ import org.opensolaris.opengrok.web.Util;
   ^ ( "end" | "====" ) \n {
     yybegin(YYINITIAL);
     yypushback(1);
-    out.write("</span>" + "<strong>" + yytext() + "</strong>");
+    onDisjointSpanChanged(null, yychar);
+    onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
   }
 
-  "<"     {out.write( "&lt;");}
-  "&"     {out.write( "&amp;");}
-  {EOL}   {startNewLine();}
-  [^\n&<]+   { out.write(yytext()); }
+  {EOL}    {onEndOfLineMatched(yytext(), yychar); }
+  [^\n\r]+    { onNonSymbolMatched(yytext(), yychar); }
 }

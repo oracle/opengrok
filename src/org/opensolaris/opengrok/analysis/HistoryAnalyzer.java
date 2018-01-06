@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -60,9 +61,12 @@ public final class HistoryAnalyzer extends Analyzer {
      */
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {        
-        final PlainFullTokenizer plainfull = new PlainFullTokenizer(FileAnalyzer.dummyReader);
-        //we are counting position increments, this might affect the queries later and need to be in sync, especially for highlighting of results
-        return new TokenStreamComponents(plainfull, new StopFilter(plainfull, stopWords));
+        JFlexTokenizer plainfull = new JFlexTokenizer(new PlainFullTokenizer(
+            FileAnalyzer.dummyReader));
+        //we are counting position increments, this might affect the queries
+        //later and need to be in sync, especially for highlighting of results
+        return new TokenStreamComponents(plainfull, new StopFilter(plainfull,
+            stopWords));
     }
     
     @Override

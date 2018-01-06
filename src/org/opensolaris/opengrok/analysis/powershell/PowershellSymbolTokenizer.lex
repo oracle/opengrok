@@ -24,19 +24,19 @@
 
 package org.opensolaris.opengrok.analysis.powershell;
 
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import java.util.regex.Matcher;
 %%
 %public
 %class PoshSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %ignorecase
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 %{
     private boolean onCertainlyPublish(String symbol, int yyoffset) {
@@ -51,8 +51,7 @@ super(in);
         boolean skipKeywordCheck) {
         if (skipKeywordCheck || !Consts.poshkwd.contains(symbol.
             toLowerCase())) {
-            setAttribs(symbol, yychar + yyoffset, yychar + yyoffset +
-                symbol.length());
+            onSymbolMatched(symbol, yychar + yyoffset);
             return true;
         }
         return false;
@@ -239,6 +238,6 @@ super(in);
 
 <YYINITIAL, DATATYPE, SUBSHELL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING,
     HEREQSTRING> {
-{WhiteSpace} |
+{WhspChar}+ |
 [^]    {}
 }

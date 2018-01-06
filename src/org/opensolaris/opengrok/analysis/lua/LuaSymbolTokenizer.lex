@@ -28,8 +28,7 @@
 
 package org.opensolaris.opengrok.analysis.lua;
 
-import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 
 /**
  * @author Evan Kinney
@@ -37,19 +36,19 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class LuaSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 %{
     int bracketLevel;
 
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         bracketLevel = 0;
     }
@@ -65,7 +64,7 @@ super(in);
     {Identifier} {
         String id = yytext();
         if (!Consts.kwd.contains(id)) {
-            setAttribs(id, yychar, yychar + yylength());
+            onSymbolMatched(id, yychar);
             return yystate();
         }
     }
@@ -110,6 +109,6 @@ super(in);
 }
 
 <YYINITIAL, STRING, LSTRING, COMMENT, SCOMMENT, QSTRING> {
-{WhiteSpace}    {}
+{WhspChar}+    {}
 [^] {}
 }

@@ -23,22 +23,26 @@
  */
 
 package org.opensolaris.opengrok.analysis.plain;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class PlainSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %init{
-super(in);
+    yyline = 1;
 %init}
 %unicode
 %buffer 32766
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 %%
 //TODO decide if we should let one char symbols
-[a-zA-Z_] [a-zA-Z0-9_]+ {setAttribs(yytext(), yychar, yychar + yylength());
-                        return yystate(); }
+[a-zA-Z_] [a-zA-Z0-9_]+ {
+    onSymbolMatched(yytext(), yychar);
+    return yystate();
+}
+
 [^]    {}

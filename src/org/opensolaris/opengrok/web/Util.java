@@ -80,14 +80,53 @@ public final class Util {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
+    /**
+     * Matches a character that is not ASCII alpha-numeric or underscore:
+     * <pre>
+     * {@code
+     * [^A-Za-z0-9_]
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    private final static Pattern NON_ASCII_ALPHA_NUM = Pattern.compile(
+        "[^A-Za-z0-9_]");
+
     private Util() {
         // singleton
     }
 
     /**
+     * Return a string that represents <code>s</code> in HTML by calling
+     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * with {@code s}, a transient {@link StringBuilder}, and {@code true}.
+     * <p>
+     * (N.b. if no special characters are present, {@code s} is returned as is,
+     * without the expensive call.)
+     *
+     * @param s a defined string
+     * @return a string representing the character sequence in HTML
+     */
+    public static String prehtmlize(String s) {
+        if (!needsHtmlize(s, true)) return s;
+
+        StringBuilder sb = new StringBuilder(s.length() * 2);
+        try {
+            htmlize(s, sb, true);
+        } catch (IOException ioe) {
+            // IOException cannot happen when the destination is a
+            // StringBuilder. Wrap in an AssertionError so that callers
+            // don't have to check for an IOException that should never
+            // happen.
+            throw new AssertionError("StringBuilder threw IOException", ioe);
+        }
+        return sb.toString();
+    }
+
+    /**
      * Calls
      * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
-     * with {@code q}, a transient {@link StringBuilder}, and true.
+     * with {@code q}, a transient {@link StringBuilder}, and {@code true}.
      * @param q a character sequence
      * @return a string representing the character sequence in HTML
      */
@@ -106,7 +145,59 @@ public final class Util {
     }
 
     /**
-     * Return a string which represents a <code>CharSequence</code> in HTML.
+     * Append to {@code dest} the UTF-8 URL-encoded representation of
+     * {@code str}, within explicit quotes (%22) to accommodate Lucene querying
+     * if {@code str} contains any character that is not ASCII-alphanumeric or
+     * underscore.
+     * @param str a defined instance
+     * @param dest a defined target
+     * @throws IOException
+     */
+    public static void qurlencode(String str, Appendable dest)
+            throws IOException {
+        if (NON_ASCII_ALPHA_NUM.matcher(str).find()) {
+            final String UQUOTE = "%22";
+            dest.append(UQUOTE);
+            URIEncode(str, dest);
+            dest.append(UQUOTE);
+        } else {
+            URIEncode(str, dest);
+        }
+    }
+
+    /**
+     * Return a string that represents a <code>CharSequence</code> in HTML by
+     * calling
+     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * with {@code s}, a transient {@link StringBuilder}, and {@code false}.
+     * <p>
+     * (N.b. if no special characters are present, {@code s} is returned as is,
+     * without the expensive call.)
+     *
+     * @param s a defined string
+     * @return a string representing the character sequence in HTML
+     */
+    public static String htmlize(String s) {
+        if (!needsHtmlize(s, false)) return s;
+
+        StringBuilder sb = new StringBuilder(s.length() * 2);
+        try {
+            htmlize(s, sb, false);
+        } catch (IOException ioe) {
+            // IOException cannot happen when the destination is a
+            // StringBuilder. Wrap in an AssertionError so that callers
+            // don't have to check for an IOException that should never
+            // happen.
+            throw new AssertionError("StringBuilder threw IOException", ioe);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Return a string which represents a <code>CharSequence</code> in HTML by
+     * calling
+     * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
+     * with {@code q}, a transient {@link StringBuilder}, and {@code false}.
      *
      * @param q a character sequence
      * @return a string representing the character sequence in HTML
@@ -114,7 +205,7 @@ public final class Util {
     public static String htmlize(CharSequence q) {
         StringBuilder sb = new StringBuilder(q.length() * 2);
         try {
-            htmlize(q, sb);
+            htmlize(q, sb, false);
         } catch (IOException ioe) {
             // IOException cannot happen when the destination is a
             // StringBuilder. Wrap in an AssertionError so that callers
@@ -127,7 +218,8 @@ public final class Util {
 
     /**
      * Append a character sequence to the given destination whereby special
-     * characters for HTML are escaped accordingly.
+     * characters for HTML or characters that are not printable ASCII are
+     * escaped accordingly.
      *
      * @param q a character sequence to escape
      * @param dest where to append the character sequence to
@@ -145,7 +237,7 @@ public final class Util {
     /**
      * Calls
      * {@link #htmlize(java.lang.CharSequence, java.lang.Appendable, boolean)}
-     * with {@code q}, {@code dest}, and false.
+     * with {@code q}, {@code dest}, and {@code false}.
      *
      * @param q a character sequence to escape
      * @param dest where to append the character sequence to
@@ -158,7 +250,8 @@ public final class Util {
 
     /**
      * Append a character array to the given destination whereby special
-     * characters for HTML are escaped accordingly.
+     * characters for HTML or characters that are not printable ASCII are
+     * escaped accordingly.
      *
      * @param cs characters to escape
      * @param length max. number of characters to append, starting from index 0.
@@ -178,13 +271,15 @@ public final class Util {
 
     /**
      * Append a character to the given destination whereby special characters
-     * special for HTML are escaped accordingly.
+     * special for HTML or characters that are not printable ASCII are
+     * escaped accordingly.
      *
      * @param c the character to append
      * @param dest where to append the character to
      * @param pre a value indicating whether the output is pre-formatted -- if
      * true then LFs will not be converted to &lt;br&gt; elements
      * @throws IOException if an error occurred when writing to {@code dest}
+     * @see #needsHtmlize(char, boolean)
      */
     private static void htmlize(char c, Appendable dest, boolean pre)
             throws IOException {
@@ -212,8 +307,48 @@ public final class Util {
                 }
                 break;
             default:
-                dest.append(c);
+                if ((c >= ' ' && c <= '~') || (c < ' ' &&
+                    Character.isWhitespace(c))) {
+                    dest.append(c);
+                } else {
+                    dest.append("&#").append(Integer.toString(c)).append(';');
+                }
+                break;
         }
+    }
+
+    /**
+     * Determine if a character is a special character needing HTML escaping or
+     * is a character that is not printable ASCII.
+     * @param c the character to examine
+     * @param pre a value indicating whether the output is pre-formatted -- if
+     * true then LFs will not be converted to &lt;br&gt; elements
+     * @see #htmlize(char, java.lang.Appendable, boolean)
+     */
+    private static boolean needsHtmlize(char c, boolean pre) {
+        switch (c) {
+            case '\'':
+            case '"':
+            case '&':
+            case '>':
+            case '<':
+                return true;
+            case '\n':
+                if (!pre) return true;
+            default:
+                if ((c >= ' ' && c <= '~') || (c < ' ' &&
+                    Character.isWhitespace(c))) {
+                    return false;
+                }
+                return true;
+        }
+    }
+
+    private static boolean needsHtmlize(CharSequence q, boolean pre) {
+        for (int i = 0; i < q.length(); ++i) {
+            if (needsHtmlize(q.charAt(i), pre)) return true;
+        }
+        return false;
     }
 
     private static final String versionP = htmlize(Info.getRevision());
@@ -748,13 +883,26 @@ public final class Util {
      */
     public static String URIEncode(String q) {
         try {
-            return q == null ? "" : URLEncoder.encode(q, "UTF-8");
+            return q == null ? "" : URLEncoder.encode(q, UTF8.name());
         } catch (UnsupportedEncodingException e) {
             // Should not happen. UTF-8 must be supported by JVMs.
             LOGGER.log(
                     Level.WARNING, "Failed to URL-encode UTF-8: ", e);
         }
         return null;
+    }
+
+    /**
+     * Append to {@code dest} the UTF-8 URL-encoded representation of
+     * {@code str}.
+     * @param str a defined instance
+     * @param dest a defined target
+     * @throws IOException
+     */
+    public static void URIEncode(String str, Appendable dest)
+            throws IOException {
+        String uenc = URIEncode(str);
+        dest.append(uenc);
     }
 
     /**

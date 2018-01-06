@@ -165,12 +165,35 @@ public class FileAnalyzer extends Analyzer {
     /**
      * Creates a new instance of FileAnalyzer
      *
-     * @param factory name of factory to be used
+     * @param factory defined instance for the analyzer
      */
     public FileAnalyzer(FileAnalyzerFactory factory) {
         super(Analyzer.PER_FIELD_REUSE_STRATEGY);
+        if (factory == null) {
+            throw new IllegalArgumentException("`factory' is null");
+        }
         this.factory = factory;
-        SymbolTokenizer = new PlainSymbolTokenizer(dummyReader);
+        this.symbolTokenizer = createPlainSymbolTokenizer();
+    }
+
+    /**
+     * Creates a new instance of {@link FileAnalyzer}.
+     *
+     * @param factory defined instance for the analyzer
+     * @param symbolTokenizer a defined instance relevant for the file
+     */
+    protected FileAnalyzer(FileAnalyzerFactory factory,
+            JFlexTokenizer symbolTokenizer) {
+
+        super(Analyzer.PER_FIELD_REUSE_STRATEGY);
+        if (factory == null) {
+            throw new IllegalArgumentException("`factory' is null");
+        }
+        if (symbolTokenizer == null) {
+            throw new IllegalArgumentException("`symbolTokenizer' is null");
+        }
+        this.factory = factory;
+        this.symbolTokenizer = symbolTokenizer;
     }
 
     /**
@@ -206,25 +229,26 @@ public class FileAnalyzer extends Analyzer {
     }
 
     /**
-     * Derived classes should override to write a cross referenced HTML file
-     * for the specified args.
+     * Derived classes should override to write a cross referenced HTML file for
+     * the specified args.
+     *
      * @param args a defined instance
      * @return the instance used to write the cross-referencing
      * @throws java.io.IOException if an error occurs
      */
-    public JFlexXref writeXref(WriteXrefArgs args) throws IOException {
+    public Xrefer writeXref(WriteXrefArgs args) throws IOException {
         throw new UnsupportedOperationException(
-            "Base FileAnalyzer cannot write xref");
+                "Base FileAnalyzer cannot write xref");
     }
-    
+
     // you analyzer HAS to override this to get proper symbols in results
-    protected JFlexTokenizer SymbolTokenizer;
+    protected JFlexTokenizer symbolTokenizer;
 
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
             case QueryBuilder.FULL:
-                return new TokenStreamComponents(new PlainFullTokenizer(dummyReader));
+                return new TokenStreamComponents(createPlainFullTokenizer());
             case QueryBuilder.PATH:
             case QueryBuilder.PROJECT:
                 return new TokenStreamComponents(new PathTokenizer());
@@ -232,15 +256,25 @@ public class FileAnalyzer extends Analyzer {
                 return new HistoryAnalyzer().createComponents(fieldName);
             //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search 
             case QueryBuilder.REFS: {
-                return new TokenStreamComponents(SymbolTokenizer);
+                return new TokenStreamComponents(symbolTokenizer);
             }
             case QueryBuilder.DEFS:
-                return new TokenStreamComponents(new PlainSymbolTokenizer(dummyReader));
+                return new TokenStreamComponents(createPlainSymbolTokenizer());
             default:
                 LOGGER.log(
                         Level.WARNING, "Have no analyzer for: {0}", fieldName);
                 return null;
         }
+    }
+
+    private JFlexTokenizer createPlainSymbolTokenizer() {
+        return new JFlexTokenizer(new PlainSymbolTokenizer(
+                FileAnalyzer.dummyReader));
+    }
+
+    private JFlexTokenizer createPlainFullTokenizer() {
+        return new JFlexTokenizer(new PlainFullTokenizer(
+                FileAnalyzer.dummyReader));
     }
 
     @Override
@@ -253,5 +287,4 @@ public class FileAnalyzer extends Analyzer {
                 return new LowerCaseFilter(in);
         }
     }
-
 }

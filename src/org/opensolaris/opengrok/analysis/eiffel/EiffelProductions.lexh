@@ -115,27 +115,27 @@ Character_constant = \' [^\']+ \'
     }
 
     {Number}    {
-        disjointSpan(HtmlConsts.NUMBER_CLASS);
-        offerNonword(yytext());
-        disjointSpan(null);
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
     }
 
     {Character_constant}    {
-        disjointSpan(HtmlConsts.STRING_CLASS);
-        offerNonword(yytext());
-        disjointSpan(null);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
     }
 
     "--"    {
         yypush(SCOMMENT);
-        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
         offer(yytext());
     }
 
     \"    {
         yypush(STRING);
-        disjointSpan(HtmlConsts.STRING_CLASS);
-        offerNonword(yytext());
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        offer(yytext());
     }
     \" {Vstring_alpha}* [\[\{]    {
         h.vop(yytext());
@@ -144,16 +144,16 @@ Character_constant = \' [^\']+ \'
 
 <SCOMMENT> {
     {WhspChar}*{EOL}    {
-        disjointSpan(null);
+        onDisjointSpanChanged(null, yychar);
         yypop();
-        startNewLine();
+        onEndOfLineMatched(yytext(), yychar);
     }
 }
 
 <STRING> {
     \"    {
-        offerNonword(yytext());
-        disjointSpan(null);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
         yypop();
     }
     /*
@@ -172,24 +172,21 @@ Character_constant = \' [^\']+ \'
 
 <STRING, VSTRING> {
     {WhspChar}*{EOL}    {
-        disjointSpan(null);
-        startNewLine();
-        disjointSpan(HtmlConsts.STRING_CLASS);
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     }
 }
 
 <YYINITIAL, SCOMMENT, STRING, VSTRING> {
-    [&<>\'\"]    { offerNonword(yytext()); }
-    {WhspChar}*{EOL}    { startNewLine(); }
-    {WhiteSpace}    { offer(yytext()); }
-    [!-~]    { offer(yytext()); }
-    [^]    { takeUnicode(yytext()); }
+    {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+    [^]    { offer(yytext()); }
 }
 
 <SCOMMENT, STRING, VSTRING> {
     {BrowseableURI}    {
         if (takeAllContent()) {
-            appendLink(yytext(), true);
+            onUriMatched(yytext(), yychar);
         }
     }
 }

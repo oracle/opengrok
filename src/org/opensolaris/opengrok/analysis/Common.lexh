@@ -22,5 +22,4 @@
  */
 
 WhspChar    = [ \t\f]
-WhiteSpace  = {WhspChar}+
 EOL         = ([\n\r] | \r\n)

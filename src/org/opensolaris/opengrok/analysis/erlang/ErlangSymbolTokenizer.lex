@@ -28,17 +28,17 @@
 
 package org.opensolaris.opengrok.analysis.erlang;
 
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class ErlangSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 %state STRING COMMENT QATOM
@@ -55,7 +55,7 @@ super(in);
 {Identifier} {
     String id = yytext();
                 if (!id.equals("_") && !Consts.kwd.contains(id)) {
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate();
                 }
  }
@@ -65,7 +65,7 @@ super(in);
     String punc = capture.substring(0, 1);
     String id = capture.substring(1);
     if (!Consts.modules_kwd.contains(id)) {
-        setAttribs(id, yychar + 1, yychar + yylength());
+        onSymbolMatched(id, yychar + 1);
         return yystate();
     }
 }

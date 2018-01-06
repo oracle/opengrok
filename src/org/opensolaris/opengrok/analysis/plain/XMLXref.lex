@@ -23,28 +23,24 @@
  */
 
 package org.opensolaris.opengrok.analysis.plain;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.util.StringUtils;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opensolaris.opengrok.analysis.EmphasisHint;
+import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.web.HtmlConsts;
 %%
 %public
 %class XMLXref
-%extends JFlexXref
+%extends JFlexSymbolMatcher
 %unicode
 %ignorecase
 %int
-%include CommonXref.lexh
-%{
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-%}
+%char
+%init{
+    yyline = 1;
+%init}
+%include CommonLexer.lexh
+
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 
 /*
@@ -63,72 +59,98 @@ NameChar = {FileChar}|"."
 %%
 
 <YYINITIAL> {
- "<!--"  { yybegin(COMMENT); out.write("<span class=\"c\">&lt;!--"); }
+ "<!--"    {
+    yybegin(COMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched("<!--", yychar);
+ }
  "<![CDATA[" {
     yybegin(CDATA);
-    out.write("&lt;<span class=\"n\">![CDATA[</span><span class=\"c\">");
+    onNonSymbolMatched("<", yychar);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched("![CDATA[", yychar);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
  }
- "<"    { yybegin(TAG); out.write("&lt;");}
+ "<"    { yybegin(TAG); onNonSymbolMatched("<", yychar); }
 }
 
 <TAG> {
-[a-zA-Z_0-9]+{WhspChar}*\= { out.write("<b>"); out.write(yytext()); out.write("</b>"); }
-[a-zA-Z_0-9]+ { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
-\"      { yybegin(STRING); out.write("<span class=\"s\">\""); }
-\'      { yybegin(SSTRING); out.write("<span class=\"s\">'"); }
-">"      { yybegin(YYINITIAL); out.write("&gt;"); }
-"<"      { yybegin(YYINITIAL); out.write("&lt;"); }
+ [a-zA-Z_0-9]+{WhspChar}*\=    {
+    onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
+ }
+ [a-zA-Z_0-9]+    {
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
+ }
+ \"      {
+    yybegin(STRING);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+ }
+ \'      {
+    yybegin(SSTRING);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+ }
+[><]    { yybegin(YYINITIAL); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING> {
- \" {WhspChar}* \"  { out.write(yytext());}
- \"     { yybegin(TAG); out.write("\"</span>"); }
-}
-
-<STRING, SSTRING, COMMENT, CDATA> {
- "<"    {out.write( "&lt;");}
- ">"    {out.write( "&gt;");}
+ \" {WhspChar}* \"    { onNonSymbolMatched(yytext(), yychar); }
+ \"     {
+    yybegin(TAG);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
+ }
 }
 
 <SSTRING> {
- \' {WhspChar}* \'  { out.write(yytext());}
- \'     { yybegin(TAG); out.write("'</span>"); }
+ \' {WhspChar}* \'    { onNonSymbolMatched(yytext(), yychar); }
+ \'     {
+    yybegin(TAG);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
+ }
 }
 
 <COMMENT> {
-"-->"     { yybegin(YYINITIAL); out.write("--&gt;</span>"); }
+ "-->"     {
+    yybegin(YYINITIAL);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
+ }
 }
 
 <CDATA> {
   "]]>" {
-    yybegin(YYINITIAL); out.write("<span class=\"n\">]]</span></span>&gt;");
+    yybegin(YYINITIAL);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched("]]", yychar);
+    onDisjointSpanChanged(null, yychar);
+    onNonSymbolMatched(">", yychar);
   }
 }
 
 <YYINITIAL, COMMENT, CDATA, STRING, SSTRING, TAG> {
+
 {File}|{AlmostAnyFPath}
   {
     final String path = yytext();
     final boolean isJavaClass=StringUtils.isPossiblyJavaClass(path);
     final char separator = isJavaClass ? '.' : '/';
-    final String hyperlink =
-            Util.breadcrumbPath(urlPrefix + "path=", path, separator,
-                                getProjectPostfix(true), isJavaClass);
-    out.append(hyperlink);
+    onPathlikeMatched(path, separator, isJavaClass, yychar);
   }
 
 {BrowseableURI}    {
-          appendLink(yytext(), true);
+          onUriMatched(yytext(), yychar);
         }
 
 {NameChar}+ "@" {NameChar}+ "." {NameChar}+
         {
-          writeEMailAddress(yytext());
+          onEmailAddressMatched(yytext(), yychar);
         }
 
-"&"     {out.write( "&amp;");}
-{WhiteSpace}{EOL} |
-    {EOL}   {startNewLine(); }
-[!-~] | {WhspChar}    {out.write(yycharat(0));}
-[^\n]       { writeUnicodeChar(yycharat(0)); }
+{WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+[^\n]    { onNonSymbolMatched(yytext(), yychar); }
 }

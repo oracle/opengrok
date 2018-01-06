@@ -28,30 +28,37 @@
 
 package org.opensolaris.opengrok.analysis.clojure;
 
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class ClojureXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %int
-%include CommonXref.lexh
+%char
+%init{
+    yyline = 1;
+%init}
+%include CommonLexer.lexh
 %{
   private int nestedComment;
 
+  /**
+   * Resets the Clojure tracked state; {@inheritDoc}
+   */
   @Override
   public void reset() {
       super.reset();
       nestedComment = 0;
   }
 
-  // TODO move this into an include file when bug #16053 is fixed
   @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
+  public void yypop() throws IOException {
+      onDisjointSpanChanged(null, yychar);
+      super.yypop();
+  }
 %}
 
 File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
@@ -67,30 +74,32 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+    onFilteredSymbolMatched(id, yychar, Consts.kwd);
 }
 
  {Number}    {
-    disjointSpan(HtmlConsts.NUMBER_CLASS);
-    out.write(yytext());
-    disjointSpan(null);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
-    pushSpan(STRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    yypush(STRING);
+    onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  ";"    {
-    pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(yytext());
+    yypush(SCOMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <STRING> {
- \" {WhiteSpace} \" |
- \\[\"\\]    { out.write(htmlize(yytext())); }
+ \" {WhspChar}+ \" |
+ \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
  \"     {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
@@ -98,15 +107,16 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 <YYINITIAL, COMMENT> {
  "#|"   {
     if (nestedComment++ == 0) {
-        pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
+        yypush(COMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
     }
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <COMMENT> {
  "|#"   {
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
     if (--nestedComment == 0) {
         yypop();
     }
@@ -116,39 +126,31 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 <SCOMMENT> {
   {WhspChar}*{EOL} {
     yypop();
-    startNewLine();
+    onEndOfLineMatched(yytext(), yychar);
   }
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT> {
-[&<>\'\"]    { out.write(htmlize(yytext())); }
-
-{WhspChar}*{EOL} { startNewLine(); }
- {WhiteSpace}   { out.write(yytext()); }
- [!-~]  { out.write(yycharat(0)); }
- [^\n]      { writeUnicodeChar(yycharat(0)); }
+{WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+ [^\n]    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, SCOMMENT> {
 {FPath}
-        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+        { onPathlikeMatched(yytext(), '/', false, yychar); }
 
 {File}
         {
         String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");}
+        onFilelikeMatched(path, yychar);
+ }
 
 {BrowseableURI}    {
-          appendLink(yytext(), true);
+          onUriMatched(yytext(), yychar);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          writeEMailAddress(yytext());
+          onEmailAddressMatched(yytext(), yychar);
         }
 }

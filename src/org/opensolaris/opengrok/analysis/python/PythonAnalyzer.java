@@ -19,12 +19,14 @@
 
 /*
  * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.python;
 
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -36,15 +38,20 @@ public class PythonAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of PythonAnalyzer
-     * @param factory name
+     * @param factory defined instance for the analyzer
      */
     protected PythonAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer=new PythonSymbolTokenizer(FileAnalyzer.dummyReader);    
+        super(factory, new JFlexTokenizer(new PythonSymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }
     
+    /**
+     * Creates a wrapped {@link PythonXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new PythonXref(reader);
+        return new JFlexXref(new PythonXref(reader));
     }
 }

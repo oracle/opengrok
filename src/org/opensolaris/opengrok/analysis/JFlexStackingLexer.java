@@ -46,4 +46,23 @@ public interface JFlexStackingLexer extends JFlexLexer {
      * @throws IOException if any error occurs while effecting the pop
      */
     void yypop() throws IOException;
+
+    /**
+     * Gets the YYEOF value.
+     * @return YYEOF
+     */
+    int getYYEOF();
+
+    /**
+     * Gets the yyline value.
+     * @return yyline
+     */
+    int getLineNumber();
+
+    /**
+     * Tests if the instance's state stack is empty.
+     * @return {@code true} if the stack contains no items; {@code false}
+     * otherwise.
+     */
+    boolean emptyStack();
 }

@@ -36,6 +36,7 @@ import java.nio.charset.Charset;
 
 import org.apache.lucene.document.Document;
 import org.junit.Test;
+import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
 
 public class TextAnalyzerTest {
 
@@ -119,7 +120,8 @@ public class TextAnalyzerTest {
     public class TestableTextAnalyzer extends TextAnalyzer {
 
         public TestableTextAnalyzer() {
-            super(null);
+            // Using PlainAnalyzerFactory.DEFAULT_INSTANCE is OK for this test.
+            super(PlainAnalyzerFactory.DEFAULT_INSTANCE);
         }
 
         @Override

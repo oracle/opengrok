@@ -28,24 +28,23 @@
 
 package org.opensolaris.opengrok.analysis.tcl;
 
-import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class TclSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 %{
   private int braceCount;
 
   @Override
-  public void reset() throws IOException {
+  public void reset() {
       super.reset();
       braceCount = 0;
   }
@@ -88,7 +87,7 @@ super(in);
         String sigil = capture.substring(0, 1);
         String name = capture.substring(1);
         if (!Consts.kwd.contains(name)) {
-            setAttribs(name, yychar + 1, yychar + yylength());
+            onSymbolMatched(name, yychar + 1);
             return yystate();
         }
     }
@@ -99,7 +98,7 @@ super(in);
         String name1 = capture.substring(1, lparen_i);
         yypushback(capture.length() - lparen_i - 1);
         if (name1.length() > 0 && !Consts.kwd.contains(name1)) {
-            setAttribs(name1, yychar + 1, yychar + lparen_i);
+            onSymbolMatched(name1, yychar + 1);
             return yystate();
         }
     }
@@ -107,7 +106,7 @@ super(in);
         String capture = yytext();
         String name = capture.substring(2, capture.length() - 1);
         if (!Consts.kwd.contains(name)) {
-            setAttribs(name, yychar + 2, yychar + yylength() - 1);
+            onSymbolMatched(name, yychar + 2);
             return yystate();
         }
     }
@@ -118,7 +117,7 @@ super(in);
         String name2 = yytext();
         yypop();
         if (!Consts.kwd.contains(name2)) {
-            setAttribs(name2, yychar, yychar + yylength());
+            onSymbolMatched(name2, yychar);
             return yystate();
         }
     }
@@ -128,7 +127,7 @@ super(in);
     {OrdinaryWord}    {
         String id = yytext();
         if (!Consts.kwd.contains(id)) {
-            setAttribs(id, yychar, yychar + yylength());
+            onSymbolMatched(id, yychar);
             return yystate();
         }
     }
@@ -154,6 +153,6 @@ super(in);
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, BRACES> {
-{WhiteSpace} |
+{WhspChar}+ |
 [^]    {}
 }

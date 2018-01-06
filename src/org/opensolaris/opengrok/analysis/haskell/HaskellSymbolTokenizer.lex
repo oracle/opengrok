@@ -29,7 +29,7 @@
 package org.opensolaris.opengrok.analysis.haskell;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 
 /**
  * @author Harry Pan
@@ -37,18 +37,18 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
 %class HaskellSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 %{
     private int nestedComment;
 
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         nestedComment = 0;
     }
@@ -64,7 +64,7 @@ super(in);
     {Identifier} {
         String id = yytext();
         if (!Consts.kwd.contains(id)) {
-            setAttribs(id, yychar, yychar + yylength());
+            onSymbolMatched(id, yychar);
             return yystate();
         }
     }
@@ -107,5 +107,5 @@ super(in);
 }
 
 // fallback
-{WhiteSpace} |
+{WhspChar}+ |
 [^] {}

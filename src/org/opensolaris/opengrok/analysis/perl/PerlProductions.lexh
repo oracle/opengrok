@@ -58,7 +58,7 @@ SPIdentifier4 = "${^" ( "]" | "[" | [A-Z\^_?\\] ) [a-zA-Z0-9_]* "}"
 
 // prototype attribute must be recognized explicitly or else "($)" can be
 // mistaken for an SPIdentifier2
-ProtoAttr = "(" ( [\\]? {Sigils} | ";" | {WhiteSpace} )* ")"
+ProtoAttr = "(" ( [\\]? {Sigils} | ";" | {WhspChar}+ )* ")"
 
 FileExt = ("pl"|"perl"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch"|
            "PL"|"PERL"|"PM"|"CONF"|"TXT"|"HTM"|"HTML"|"XML"|"INI"|"DIFF"|"PATCH")
@@ -75,22 +75,22 @@ Quo0xHashxApos = [[\`\(\)\<\>\[\]\{\}\p{P}\p{S}]--[\#\']]
 MSapos = [ms] {MaybeWhsp} \'
 MShash = [ms]\#
 MSpunc = [ms] {MaybeWhsp} {Quo0xHashxApos}
-MSword = [ms] {WhiteSpace} \w
+MSword = [ms] {WhspChar}+ \w
 QYhash = [qy]\#
 QYpunc = [qy] {MaybeWhsp} {Quo0xHash}
-QYword = [qy] {WhiteSpace} \w
+QYword = [qy] {WhspChar}+ \w
 
 QXRapos  = "q"[xr] {MaybeWhsp} \'
 QQXRhash = "q"[qxr]\#
 QQXRPunc = "q"[qxr] {MaybeWhsp} {Quo0xHash}
-QQXRword = "q"[qxr] {WhiteSpace} \w
+QQXRword = "q"[qxr] {WhspChar}+ \w
 
 QWhash = "qw"\#
 QWpunc = "qw" {MaybeWhsp} {Quo0xHash}
-QWword = "qw" {WhiteSpace} \w
+QWword = "qw" {WhspChar}+ \w
 TRhash = "tr"\#
 TRpunc = "tr" {MaybeWhsp} {Quo0xHash}
-TRword = "tr" {WhiteSpace} \w
+TRword = "tr" {WhspChar}+ \w
 
 HereEOF1 = [\"][^\r\n\"]*[\"]
 HereEOF2 = [\`][^\r\n\`]*[\`]
@@ -159,14 +159,14 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     "||" |
     {ProtoAttr}    {
         yyjump(YYINITIAL);
-        offerNonword(yytext());
+        offer(yytext());
     }
     // Part 2 of syntax that jumps back to YYINITIAL. Since this does a
     // look-ahead, keep it apart from "part 1" which uses OR-syntax ("|") --
     // as it seems the look-ahead would apply to all cases.
     "}" / {MaybeWhsp} {EOL}    {
         yyjump(YYINITIAL);
-        offerNonword(yytext());
+        offer(yytext());
     }
 
  "<<"[~]? {MaybeWhsp} ({HereEOF1}|{HereEOF2}|{HereEOF3}|{HereEOF4})    {
@@ -184,32 +184,27 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  "<" ({File} | {FPath}) ">"    {
     maybeIntraState();
     if (takeAllContent()) {
-        offerNonword("<");
+        offer("<");
         String path = yytext();
         path = path.substring(1, path.length() - 1);
-        offer("<a href=\"" + getUrlPrefix() + "path=");
-        offer(path);
-        appendProject();
-        offer("\">");
-        offer(path);
-        offer("</a>");
-        offerNonword(">");
+        onFilelikeMatched(path, yychar);
+        offer(">");
     }
  }
 
  {Number}    {
     maybeIntraState();
-    disjointSpan(HtmlConsts.NUMBER_CLASS);
-    offerNonword(yytext());
-    disjointSpan(null);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    offer(yytext());
+    onDisjointSpanChanged(null, yychar);
  }
 
  [\"\`] { h.qop(yytext(), 0, false); }
  \'     { h.qop(yytext(), 0, true); }
  \#     {
         yypush(SCOMMENT);
-        disjointSpan(HtmlConsts.COMMENT_CLASS);
-        offerNonword(yytext());
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
  }
 
  // qq//, qx//, qw//, qr/, tr/// and variants -- all with 2 character names
@@ -243,7 +238,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
  ^ "-" [qmsy] |
  {WxSigils} "-" [qmsy]    {
     maybeIntraState();
-    offerNonword(yytext());
+    offer(yytext());
  }
  // q//, m//, s//, y// and variants -- all with 1 character names
  ^ {MSapos} |
@@ -263,18 +258,18 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
  // seeing POD-end without having seen POD-start is akin to a one-line comment
  ^ {PodEND} [^\n\r]*    {
-        offerNonword(yytext());
+        offer(yytext());
  }
 
  // POD start
  ^ "=" [a-zA-Z_] [a-zA-Z0-9_]*    {
         yypush(POD);
-        disjointSpan(HtmlConsts.COMMENT_CLASS);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
         offer(yytext());
  }
 
  // FORMAT start
- ^ {MaybeWhsp} "format" ({WhiteSpace} {Identifier})? {MaybeWhsp} "=" /
+ ^ {MaybeWhsp} "format" ({WhspChar}+ {Identifier})? {MaybeWhsp} "=" /
      {MaybeWhsp}{EOL}    {
     yypush(FMT);
     if (takeAllContent()) {
@@ -286,9 +281,9 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
             following.length());
 
         offerKeyword(initial);
-        offerNonword(following);
+        offer(following);
         // start a pseudo-"string"
-        disjointSpan(HtmlConsts.STRING_CLASS);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     }
  }
 }
@@ -297,7 +292,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     "/"    {
         // OK to pass a fake "m/" with doWrite=false
         h.qop(false, "m/", 1, false);
-        disjointSpan(HtmlConsts.STRING_CLASS);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         offer(yytext());
     }
 }
@@ -328,7 +323,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         String capture = yytext();
         if (takeAllContent()) {
             String boundary = capture.substring(0, 1);
-            offerNonword(boundary);
+            offer(boundary);
         }
         h.hqopSymbol(capture.substring(1));
     }
@@ -383,7 +378,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 
 <FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HEREin> {
     \\ \S    {
-        offerNonword(yytext());
+        offer(yytext());
     }
 }
 
@@ -391,21 +386,20 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     {Quo0} |
     \w    {
         String capture = yytext();
-        offerNonword(capture);
+        offer(capture);
         if (h.maybeEndQuote(capture)) {
             yypop();
             if (h.areModifiersOK()) yypush(QM);
-            disjointSpan(null);
+            onDisjointSpanChanged(null, yychar);
         }
     }
 }
 
 <FMT, QUO, QUOxN, QUOxL, QUOxLxN, HERE, HERExN, HEREin, HEREinxN> {
-    {WhiteSpace}{EOL} |
-    {EOL} {
-        disjointSpan(null);
-        startNewLine();
-        disjointSpan(HtmlConsts.STRING_CLASS);
+    {WhspChar}*{EOL}    {
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     }
 }
 
@@ -429,13 +423,12 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <POD> {
   ^ {PodEND} [^\n\r]*    {
     yypop();
-    offerNonword(yytext());
-    disjointSpan(null);
+    offer(yytext());
+    onDisjointSpanChanged(null, yychar);
   }
 
-  {WhiteSpace}{EOL} |
-  {EOL}    {
-    startNewLine();
+  {WhspChar}*{EOL}    {
+    onEndOfLineMatched(yytext(), yychar);
   }
 }
 
@@ -443,15 +436,15 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
     // terminate a format
     ^ "." / {MaybeWhsp} {EOL}    {
         yypop();
-        offerNonword(yytext());
-        disjointSpan(null);
+        offer(yytext());
+        onDisjointSpanChanged(null, yychar);
     }
 
     // "A comment, indicated by putting a '#' in the first column."
     ^ "#"    {
         yypush(SCOMMENT);
-        disjointSpan(HtmlConsts.COMMENT_CLASS);
-        offerNonword(yytext());
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
     }
 
     // The other two types of line in a format FORMLIST -- "a 'picture' line
@@ -461,47 +454,36 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 }
 
 <SCOMMENT> {
-  {WhiteSpace}{EOL} |
-  {EOL} {
+  {WhspChar}*{EOL}    {
     String capture = yytext();
     yypushback(capture.length());
     yypop();
-    disjointSpan(null);
+    onDisjointSpanChanged(null, yychar);
   }
 }
 
 <YYINITIAL, INTRA> {
-    {WhiteSpace}{EOL} |
-    {EOL}    {
+    {WhspChar}*{EOL}    {
         String capture = yytext();
         if (h.maybeStartHere()) {
             yypushback(capture.length());
         } else {
-            startNewLine();
+            onEndOfLineMatched(yytext(), yychar);
         }
     }
 }
 
 <YYINITIAL, INTRA, SCOMMENT, POD, FMT, QUO, QUOxN, QUOxL, QUOxLxN,
     HERE, HERExN, HEREin, HEREinxN> {
- [&<>\"\']      {
-        maybeIntraState();
-        offerNonword(yytext());
- }
 
  // Only one whitespace char at a time or else {WxSigils} can be broken
  {WhspChar}     {
         offer(yytext());
  }
-
- [!-~]          {
-        maybeIntraState();
-        offer(yytext());
- }
-
+ // Only one char at a time due to restriction on {WhspChar} above.
  [^\n\r]          {
         maybeIntraState();
-        takeUnicode(yytext());
+        offer(yytext());
  }
 }
 
@@ -509,25 +491,20 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <SCOMMENT, POD, FMT, QUO, QUOxN, HERE, HERExN, HEREin, HEREinxN> {
     {FPath}    {
         if (takeAllContent()) {
-            offer(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
+            onPathlikeMatched(yytext(), '/', false, yychar);
         }
     }
 
     {File}    {
         if (takeAllContent()) {
             String path = yytext();
-            offer("<a href=\"" + getUrlPrefix() + "path=");
-            offer(path);
-            appendProject();
-            offer("\">");
-            offer(path);
-            offer("</a>");
+            onFilelikeMatched(path, yychar);
         }
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
         if (takeAllContent()) {
-            writeEMailAddress(yytext());
+            onEmailAddressMatched(yytext(), yychar);
         }
     }
 }
@@ -535,7 +512,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
 <SCOMMENT, POD, FMT, HERE, HERExN, HEREin, HEREinxN> {
     {BrowseableURI}    {
         if (takeAllContent()) {
-            appendLink(yytext(), true, null);
+            onUriMatched(yytext(), yychar, null);
         }
         // no skipLink() needed except in QUO* states
     }
@@ -546,7 +523,7 @@ Mpunc2IN = ([!=]"~" | [\:\?\=\+\-\<\>] | "=="|"!="|"<="|">="|"<=>"|"=>")
         String capture = yytext();
         Pattern collateralCapture = h.getCollateralCapturePattern();
         if (takeAllContent()) {
-            appendLink(capture, true, collateralCapture);
+            onUriMatched(capture, yychar, collateralCapture);
         } else {
             skipLink(yytext(), collateralCapture);
         }

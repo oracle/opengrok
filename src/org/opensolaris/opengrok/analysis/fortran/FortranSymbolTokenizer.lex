@@ -24,18 +24,18 @@
 
 package org.opensolaris.opengrok.analysis.fortran;
 
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class FortranSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %ignorecase
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 // (OK to exclude LCOMMENT state used in FortranXref.)
@@ -50,7 +50,7 @@ super(in);
  ^[^ \t\f\r\n]+ { yybegin(SCOMMENT); }
 {Identifier} {String id = yytext();
                 if(!Consts.kwd.contains(id.toLowerCase())) {
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
 
@@ -72,7 +72,7 @@ super(in);
 }
 
 <SCOMMENT> {
-{WhiteSpace}    {}
+{WhspChar}+    {}
 {EOL}    { yybegin(YYINITIAL);}
 }
 

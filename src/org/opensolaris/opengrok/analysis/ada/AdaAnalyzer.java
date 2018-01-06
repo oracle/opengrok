@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.analysis.ada;
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -39,15 +40,20 @@ public class AdaAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of {@link AdaAnalyzer}
-     * @param factory
+     * @param factory defined instance for the analyzer
      */
     protected AdaAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer = new AdaSymbolTokenizer(FileAnalyzer.dummyReader);    
+        super(factory, new JFlexTokenizer(new AdaSymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }
     
+    /**
+     * Creates a wrapped {@link AdaXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new AdaXref(reader);
+        return new JFlexXref(new AdaXref(reader));
     }
 }

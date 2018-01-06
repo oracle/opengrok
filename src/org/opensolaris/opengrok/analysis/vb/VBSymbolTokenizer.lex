@@ -28,18 +28,18 @@
 
 package org.opensolaris.opengrok.analysis.vb;
 
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class VBSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %ignorecase
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 %state STRING COMMENT
@@ -52,7 +52,7 @@ super(in);
 {Identifier} {
     String id = yytext();
                 if (!Consts.reservedKeywords.contains(id.toLowerCase())) {
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
 
@@ -68,7 +68,7 @@ super(in);
 }
 
 <COMMENT> {
-{WhiteSpace}    {}
+{WhspChar}+    {}
 {EOL}     { yybegin(YYINITIAL);}
 }
 

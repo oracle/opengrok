@@ -17,8 +17,9 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -36,24 +37,34 @@ public class CompatibleAnalyser extends Analyzer {
     }
 
     @Override
-    protected TokenStreamComponents createComponents(String fieldName) {        
+    protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
             case QueryBuilder.FULL:
-                return new TokenStreamComponents(new PlainFullTokenizer(FileAnalyzer.dummyReader));
+                return new TokenStreamComponents(createPlainFullTokenizer());
             case QueryBuilder.REFS:
-                return new TokenStreamComponents(new PlainSymbolTokenizer(FileAnalyzer.dummyReader));
+                return new TokenStreamComponents(createPlainSymbolTokenizer());
             case QueryBuilder.DEFS:
-                return new TokenStreamComponents(new PlainSymbolTokenizer(FileAnalyzer.dummyReader));
+                return new TokenStreamComponents(createPlainSymbolTokenizer());
             case QueryBuilder.PATH:
             case QueryBuilder.PROJECT:
                 return new TokenStreamComponents(new PathTokenizer());
             case QueryBuilder.HIST:
                 return new HistoryAnalyzer().createComponents(fieldName);
             default:
-                return new TokenStreamComponents(new PlainFullTokenizer(FileAnalyzer.dummyReader));
+                return new TokenStreamComponents(createPlainFullTokenizer());
         }
     }
-    
+
+    private JFlexTokenizer createPlainSymbolTokenizer() {
+        return new JFlexTokenizer(new PlainSymbolTokenizer(
+                FileAnalyzer.dummyReader));
+    }
+
+    private JFlexTokenizer createPlainFullTokenizer() {
+        return new JFlexTokenizer(new PlainFullTokenizer(
+                FileAnalyzer.dummyReader));
+    }
+
     @Override
     protected TokenStream normalize(String fieldName, TokenStream in) {
         switch (fieldName) {

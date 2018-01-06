@@ -24,17 +24,17 @@
 
 package org.opensolaris.opengrok.analysis.sh;
 
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class ShSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 
 %state STRING COMMENT SCOMMENT QSTRING
@@ -47,7 +47,7 @@ super(in);
 {Identifier}    {
     String id = yytext();
                 if(!Consts.shkwd.contains(id)){
-                        setAttribs(id, yychar, yychar + yylength());
+                        onSymbolMatched(id, yychar);
                         return yystate(); }
               }
  {Number}    {}
@@ -61,7 +61,7 @@ super(in);
  {Unary_op_req_lookahead} $    {
     // noop
  }
- {WhiteSpace} {Unary_op_char} / ")"    {
+ {WhspChar}+ {Unary_op_char} / ")"    {
     // noop
  }
  {Binary_op}    {
@@ -71,16 +71,15 @@ super(in);
 
 <STRING> {
 "$" {Identifier}    {
-    setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
+    onSymbolMatched(yytext().substring(1), yychar + 1);
     return yystate();
  }
 
 "${" {Identifier} "}"    {
     int startOffset = 2;            // trim away the "${" prefix
     int endOffset = yylength() - 1; // trim away the "}" suffix
-    setAttribs(yytext().substring(startOffset, endOffset),
-               yychar + startOffset,
-               yychar + endOffset);
+    onSymbolMatched(yytext().substring(startOffset, endOffset), yychar +
+        startOffset);
     return yystate();
  }
 
@@ -94,7 +93,7 @@ super(in);
 }
 
 <SCOMMENT> {
-{WhiteSpace}    {}
+{WhspChar}+    {}
 {EOL}      { yybegin(YYINITIAL);}
 }
 

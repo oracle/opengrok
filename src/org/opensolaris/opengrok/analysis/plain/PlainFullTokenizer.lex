@@ -23,20 +23,20 @@
  */
 
 package org.opensolaris.opengrok.analysis.plain;
-import java.util.Locale;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-%%
 
+import java.util.Locale;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+%%
 %public
 %class PlainFullTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %buffer 32766
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %caseless
 %char
 
@@ -47,6 +47,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 %%
 {Identifier}|{Number}|{Printable} { // below assumes locale from the shell/container, instead of just US
-                        setAttribs(yytext().toLowerCase(Locale.getDefault()), yychar, yychar + yylength());
-                        return yystate(); }
+    onSymbolMatched(yytext().toLowerCase(Locale.getDefault()), yychar);
+    return yystate();
+}
 [^]    {}

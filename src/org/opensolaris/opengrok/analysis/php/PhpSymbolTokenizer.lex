@@ -27,19 +27,22 @@
  */
 
 package org.opensolaris.opengrok.analysis.php;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import java.util.*;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class PhpSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %unicode
 %init{
-super(in);
+    yyline = 1;
 %init}
 %int
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %char
 %ignorecase
 %{
@@ -54,6 +57,12 @@ super(in);
             "false", "true", "self", "callable"
         }
     ));
+  }
+
+  @Override
+  protected void clearStack() {
+      super.clearStack();
+      docLabels.clear();
   }
 
   private boolean isTabOrSpace(int i) {
@@ -85,7 +94,7 @@ CastTypes = "int"|"integer"|"real"|"double"|"float"|"string"|"binary"|"array"
 DoubleQuoteEscapeSequences = \\ (([nrtfve\\$]) | ([xX] [0-9a-fA-F]{1,2}) |  ([0-7]{1,3}))
 SingleQuoteEscapeSequences = \\ [\\\']
 
-DocPreviousChar = "*" | {WhiteSpace}
+DocPreviousChar = "*" | {WhspChar}+
 
 DocParamWithType = "return" | "throws" | "throw" | "var" | "see"  //"see" can take a URL
 DocParamWithTypeAndName = "param" | "global" | "property" | "property-read"
@@ -109,13 +118,13 @@ DocParamWithName = "uses"
 <IN_SCRIPT> {
     "$" {Identifier} {
         //we ignore keywords if the identifier starts with one of variable chars
-        setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
+        onSymbolMatched(yytext().substring(1), yychar + 1);
         return yystate();
     }
 
     {Identifier} {
         if (!Consts.kwd.contains(yytext())) {
-            setAttribs(yytext(), yychar, yychar + yylength());
+            onSymbolMatched(yytext(), yychar);
             return yystate();
         }
     }
@@ -208,7 +217,7 @@ DocParamWithName = "uses"
 
 <STRINGVAR> {
     {Identifier} {
-        setAttribs(yytext(), yychar, yychar + yylength());
+        onSymbolMatched(yytext(), yychar);
         return yystate();
     }
 
@@ -222,14 +231,13 @@ DocParamWithName = "uses"
     }
 
     \[ "$" {Identifier} \] {
-        setAttribs(yytext().substring(2, yylength()-1), yychar + 2,
-                yychar + yylength() - 1);
+        onSymbolMatched(yytext().substring(2, yylength()-1), yychar + 2);
         yypop();
         return yystate();
     }
 
     "->" {Identifier} {
-        setAttribs(yytext().substring(2), yychar + 2, yychar + yylength());
+        onSymbolMatched(yytext().substring(2), yychar + 2);
         yypop(); //because "$arr->a[0]" is the same as $arr->a . "[0]"
         return yystate();
     }
@@ -239,7 +247,7 @@ DocParamWithName = "uses"
 
 <STRINGEXPR> {
     {Identifier} {
-        setAttribs(yytext(), yychar, yychar + yylength());
+        onSymbolMatched(yytext(), yychar);
         return yystate();
     }
     \}  { yypop(); }
@@ -260,15 +268,15 @@ DocParamWithName = "uses"
 
 <DOCCOMMENT> {
     /* change relatively to xref -- we also consume the whitespace after */
-    {DocPreviousChar} "@" {DocParamWithType} {WhiteSpace} {
+    {DocPreviousChar} "@" {DocParamWithType} {WhspChar}+    {
         yybegin(DOCCOM_TYPE);
     }
 
-    {DocPreviousChar} "@" {DocParamWithTypeAndName} {WhiteSpace} {
+    {DocPreviousChar} "@" {DocParamWithTypeAndName} {WhspChar}+    {
         yybegin(DOCCOM_TYPE_THEN_NAME);
     }
 
-    {DocPreviousChar} "@" {DocParamWithName} {WhiteSpace} {
+    {DocPreviousChar} "@" {DocParamWithName} {WhspChar}+    {
         yybegin(DOCCOM_NAME);
     }
 }
@@ -280,13 +288,13 @@ DocParamWithName = "uses"
 
     [\[\]\|\(\)] { }
 
-    {WhiteSpace} {
+    {WhspChar}+    {
         yybegin(yystate() == DOCCOM_TYPE_THEN_NAME ? DOCCOM_NAME : DOCCOMMENT);
     }
 
     {Identifier} {
         if (!PSEUDO_TYPES.contains(yytext().toLowerCase())) {
-            setAttribs(yytext(), yychar, yychar + yylength());
+            onSymbolMatched(yytext(), yychar);
             return yystate();
         }
     }
@@ -296,7 +304,7 @@ DocParamWithName = "uses"
 
 <DOCCOM_NAME> {
     "$" {Identifier} {
-        setAttribs(yytext().substring(1), yychar + 1, yychar + yylength());
+        onSymbolMatched(yytext().substring(1), yychar + 1);
         yybegin(DOCCOMMENT);
         return yystate();
     }
@@ -311,8 +319,6 @@ DocParamWithName = "uses"
 
 <YYINITIAL, IN_SCRIPT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
     {WhspChar}* {EOL} { }
-    {WhiteSpace}    { }
-    [!-~]   { }
     [^\n]       { }
 }
 

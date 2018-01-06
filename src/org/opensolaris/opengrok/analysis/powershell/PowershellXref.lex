@@ -25,61 +25,60 @@
 package org.opensolaris.opengrok.analysis.powershell;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opensolaris.opengrok.analysis.ScopeAction;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 import java.util.Stack;
 import java.util.regex.Matcher;
 %%
 %public
 %class PoshXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %ignorecase
 %int
-%include CommonXref.lexh
+%char
+%init{
+    yyline = 1;
+%init}
+%include CommonLexer.lexh
 %{
   private final Stack<String> styleStack = new Stack<String>();
 
   @Override
-  public void reset() {
-      super.reset();
+  protected void clearStack() {
+      super.clearStack();
       styleStack.clear();
   }
 
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-
   private void emitComplexVariable() throws IOException {
     String id = yytext().substring(2, yylength() - 1);
-    out.write("${");
-    writeSymbol(id, Consts.poshkwd, yyline, false, true);
-    out.write("}");
+    onNonSymbolMatched("${", yychar);
+    onFilteredSymbolMatched(id, yychar, Consts.poshkwd, false);
+    onNonSymbolMatched("}", yychar);
   }
 
   private void emitSimpleVariable() throws IOException {
     String id = yytext().substring(1);
-    out.write("$");
-    writeSymbol(id, Consts.poshkwd, yyline, false);
+    onNonSymbolMatched("$", yychar);
+    onFilteredSymbolMatched(id, yychar, Consts.poshkwd, false);
   }
 
-  @Override
   public void pushSpan(int newState, String className) throws IOException {
-      super.pushSpan(newState, className);
+      onDisjointSpanChanged(className, yychar);
+      yypush(newState);
       styleStack.push(className);
   }
 
   @Override
   public void yypop() throws IOException {
+      onDisjointSpanChanged(null, yychar);
       super.yypop();
       styleStack.pop();
 
       if (!styleStack.empty()) {
           String style = styleStack.peek();
-          disjointSpan(style);
+          onDisjointSpanChanged(style, yychar);
       }
   }
 %}
@@ -124,36 +123,29 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 }
 
 <YYINITIAL>{
- \{     { incScope(); writeUnicodeChar(yycharat(0)); }
- \}     { decScope(); writeUnicodeChar(yycharat(0)); }
- \;     { endScope(); writeUnicodeChar(yycharat(0)); }
+ \{     { onScopeChanged(ScopeAction.INC, yytext(), yychar); }
+ \}     { onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
+ \;     { onScopeChanged(ScopeAction.END, yytext(), yychar); }
 }
 
 <YYINITIAL, SUBSHELL> {
  ^ {Label}    {
-    out.write("<a class=\"xlbl\" name=\"");
-    out.write(yytext().substring(1)); 
-    out.write("\">");
-    out.write(yytext()); 
-    out.write("</a>");
+    String capture = yytext();
+    onLabelMatched(capture, yychar, capture.substring(1));
  }
  {Break} |
  {Continue}    {
     String capture = yytext();
     Matcher m = PoshUtils.GOTO_LABEL.matcher(capture);
     if (!m.find()) {
-        out.write(htmlize(capture));
+        onNonSymbolMatched(capture, yychar);
     } else {
         String control = m.group(1);
         String space   = m.group(2);
         String label   = m.group(3);
-        writeSymbol(control, Consts.poshkwd, yyline, false);
-        out.write(space);
-        out.write("<a class=\"d intelliWindow-symbol\" href=\"#");
-        out.write(label);
-        out.write("\" data-definition-place=\"defined-in-file\">");
-        out.write(label);
-        out.write("</a>");
+        onFilteredSymbolMatched(control, yychar, Consts.poshkwd, false);
+        onNonSymbolMatched(space, yychar);
+        onLabelDefMatched(label, yychar);
     }
  }
 
@@ -178,53 +170,53 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  {Operator}    {
     String capture = yytext();
     if (Consts.poshkwd.contains(capture.toLowerCase())) {
-        writeKeyword(capture, yyline);
+        onKeywordMatched(capture, yychar);
     } else {
         String sigil = capture.substring(0, 1);
         String id = capture.substring(1);
-        out.write(sigil);
-        writeSymbol(id, Consts.poshkwd, yyline, false);
+        onNonSymbolMatched(sigil, yychar);
+        onFilteredSymbolMatched(id, yychar, Consts.poshkwd, false);
     }
  }
 
  {Number}    {
     String lastClassName = getDisjointSpanClassName();
-    disjointSpan(HtmlConsts.NUMBER_CLASS);
-    out.write(yytext());
-    disjointSpan(lastClassName);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(lastClassName, yychar);
  }
 
  \"    {
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
  }
  \'    {
     pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
  }
 
  \#    {
     pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
  \<\#    {
     pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
  }
 
  \@\"    {
     pushSpan(HERESTRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
  }
  \@\'    {
     pushSpan(HEREQSTRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <DOTSYNTAX> {
  "."    {
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
 
  [^]    {
@@ -236,7 +228,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 <YYINITIAL, SUBSHELL, DATATYPE, DOTSYNTAX> {
  {Identifier}    {
     String id = yytext();
-    writeSymbol(id, Consts.poshkwd, yyline, false);
+    onFilteredSymbolMatched(id, yychar, Consts.poshkwd, false);
  }
 }
 
@@ -249,29 +241,29 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <STRING> {
  [`][\"\$`] |
- \"\"    { out.write(htmlize(yytext())); }
+ \"\"    { onNonSymbolMatched(yytext(), yychar); }
 
  \$? \"    {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <STRING, HERESTRING> {
- "$("    { pushSpan(SUBSHELL, null); out.write(yytext()); }
+ "$("    { pushSpan(SUBSHELL, null); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <QSTRING> {
- \'\'    { out.write(htmlize(yytext())); }
+ \'\'    { onNonSymbolMatched(yytext(), yychar); }
  \'    {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <COMMENT> {
  \#\>    {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
@@ -279,13 +271,13 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 <SCOMMENT> {
  {WhspChar}*{EOL}    {
     yypop();
-    startNewLine();
+    onEndOfLineMatched(yytext(), yychar);
  }
 }
 
 <SUBSHELL> {
   \)    {
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
   }
 }
@@ -293,7 +285,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 <HERESTRING> {
   // Match escaped dollar sign of variable 
   // (eg. `$var) so it does not turn into web-link.
-  "`$"    { out.write(yytext()); }
+  "`$"    { onNonSymbolMatched(yytext(), yychar); }
 
   {SimpleVariable}    {
      emitSimpleVariable();
@@ -303,73 +295,66 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
      emitComplexVariable();
   }
   ^ \"\@    {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
   }
 }
 
 <HEREQSTRING> {
   ^ "'@"    {
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
     yypop();
   }
 }
 
 <YYINITIAL, SUBSHELL> {
   /* Don't enter new state if special character is escaped. */
-  [`][`\(\)\{\}\"\'\$\#\\]    { out.write(htmlize(yytext())); }
+  [`][`\(\)\{\}\"\'\$\#\\]    { onNonSymbolMatched(yytext(), yychar); }
 
   /* $# should not start a comment. */
-  "$#"    { out.write(yytext()); }
+  "$#"    { onNonSymbolMatched(yytext(), yychar); }
 
-  \$ ? \(    { pushSpan(SUBSHELL, null); out.write(yytext()); }
+  \$ ? \(    { pushSpan(SUBSHELL, null); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <YYINITIAL, SUBSHELL, STRING, SCOMMENT, QSTRING> {
     {File} {
         String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
+        onFilelikeMatched(path, yychar);
     }
 
     {AnyFPath}
-            {out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+            {onPathlikeMatched(yytext(), '/', false, yychar);}
 }
 
 <YYINITIAL, DATATYPE, SUBSHELL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING,
     HEREQSTRING> {
-    [&<>\'\"]    { out.write(htmlize(yytext())); }
-    {WhspChar}*{EOL}    { startNewLine(); }
-    {WhiteSpace}   { out.write(yytext()); }
-    [!-~]   { out.write(yycharat(0)); }
-    [^\n]   { writeUnicodeChar(yycharat(0)); }
+
+    {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+    [^\n]    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          writeEMailAddress(yytext());
+          onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, SCOMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true);
+        onUriMatched(yytext(), yychar);
     }
 }
 
 <QSTRING> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, PoshUtils.STRINGLITERAL_APOS_DELIMITER);
+        onUriMatched(yytext(), yychar, PoshUtils.STRINGLITERAL_APOS_DELIMITER);
     }
 }
 
 <COMMENT> {
     {BrowseableURI} \>?    {
-        appendLink(yytext(), true, PoshUtils.MAYBE_END_MULTILINE_COMMENT);
+        onUriMatched(yytext(), yychar, PoshUtils.MAYBE_END_MULTILINE_COMMENT);
     }
 }
