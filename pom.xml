@@ -75,7 +75,7 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
             <dependency>
                 <groupId>org.apache.bcel</groupId>
                 <artifactId>bcel</artifactId>
-                <version>6.0</version>
+                <version>6.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
