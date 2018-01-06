@@ -29,15 +29,12 @@
 package org.opensolaris.opengrok.analysis.ada;
 
 import java.io.IOException;
-import java.io.Reader;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class AdaXref
-%extends JFlexXref
+%extends JFlexSymbolMatcher
 %implements AdaLexer
 %unicode
 %ignorecase
@@ -45,17 +42,15 @@ import org.opensolaris.opengrok.web.Util;
 %char
 %init{
     h = new AdaLexHelper(this);
+    yyline = 1;
 %init}
-%include CommonXref.lexh
+%include CommonLexer.lexh
 %{
     private final AdaLexHelper h;
 
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-
+    /**
+     * Resets the Ada tracked state; {@inheritDoc}
+     */
     @Override
     public void reset() {
         super.reset();
@@ -64,19 +59,7 @@ import org.opensolaris.opengrok.web.Util;
 
     @Override
     public void offer(String value) throws IOException {
-        out.write(value);
-    }
-
-    @Override
-    public void offerNonword(String value) throws IOException {
-        out.write(htmlize(value));
-    }
-
-    public void takeUnicode(String value) throws IOException {
-        for (int i = 0; i < value.length(); i++){
-            char c = value.charAt(i);
-            writeUnicodeChar(c);
-        }
+        onNonSymbolMatched(value, yychar);
     }
 
     @Override
@@ -85,13 +68,13 @@ import org.opensolaris.opengrok.web.Util;
             throws IOException {
         if (ignoreKwd) {
             if (value.length() > 1) {
-                return writeSymbol(value, null, yyline, false);
+                return onFilteredSymbolMatched(value, yychar, null, false);
             } else {
-                out.write(value);
+                onNonSymbolMatched(value, yychar);
                 return false;
             }
         } else {
-            return writeSymbol(value, Consts.kwd, yyline, false);
+            return onFilteredSymbolMatched(value, yychar, Consts.kwd, false);
         }
     }
 
@@ -102,7 +85,17 @@ import org.opensolaris.opengrok.web.Util;
 
     @Override
     public void offerKeyword(String value) throws IOException {
-        writeKeyword(value, yyline);
+        onKeywordMatched(value, yychar);
+    }
+
+    @Override
+    public void startNewLine() throws IOException {
+        onEndOfLineMatched("\n", yychar);
+    }
+
+    @Override
+    public void disjointSpan(String className) throws IOException {
+        onDisjointSpanChanged(className, yychar);
     }
 
     protected boolean takeAllContent() {
@@ -112,8 +105,6 @@ import org.opensolaris.opengrok.web.Util;
     protected boolean returnOnSymbol() {
         return false;
     }
-
-    protected String getUrlPrefix() { return urlPrefix; }
 %}
 
 %include Common.lexh

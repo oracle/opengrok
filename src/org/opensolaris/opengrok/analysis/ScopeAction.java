@@ -21,10 +21,13 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-%{
-    /**
-     * Gets the YYEOF value.
-     * @return YYEOF
-     */
-    public int getYYEOF() { return YYEOF; }
-%}
+package org.opensolaris.opengrok.analysis;
+
+/**
+ * Represents an enumeration of changes to language scopes.
+ */
+public enum ScopeAction {
+    DEC,
+    END,
+    INC
+}

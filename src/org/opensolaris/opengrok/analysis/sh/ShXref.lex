@@ -26,17 +26,20 @@ package org.opensolaris.opengrok.analysis.sh;
 
 import java.io.IOException;
 import java.util.Stack;
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class ShXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %int
-%include CommonXref.lexh
+%char
+%init{
+    yyline = 1;
+%init}
+%include CommonLexer.lexh
 %{
   private final Stack<String> styleStack = new Stack<String>();
 
@@ -46,32 +49,37 @@ import org.opensolaris.opengrok.web.Util;
   private String heredocStopWord;
   private boolean heredocStripLeadingTabs;
 
+  /**
+   * Resets the sh tracked state; {@inheritDoc}
+   */
+  @Override
+  public void reset() {
+      super.reset();
+      heredocStopWord = null;
+      heredocStripLeadingTabs = false;
+  }
+
   @Override
   protected void clearStack() {
       super.clearStack();
       styleStack.clear();
   }
 
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-
-  @Override
   public void pushSpan(int newState, String className) throws IOException {
-      super.pushSpan(newState, className);
+      onDisjointSpanChanged(className, yychar);
+      yypush(newState);
       styleStack.push(className);
   }
 
   @Override
   public void yypop() throws IOException {
+      onDisjointSpanChanged(null, yychar);
       super.yypop();
       styleStack.pop();
 
       if (!styleStack.empty()) {
           String style = styleStack.peek();
-          disjointSpan(style);
+          onDisjointSpanChanged(style, yychar);
       }
   }
 
@@ -122,14 +130,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 <STRING>{
  "$" {Identifier}    {
     String id = yytext();
-    out.write("<a href=\"");
-    out.write(urlPrefix);
-    out.write("refs=");
-    out.write(id);
-    appendProject();
-    out.write("\">");
-    out.write(id);
-    out.write("</a>");
+    onRefsTermMatched(id, yychar);
  }
 
   /* This rule matches associative arrays inside strings,
@@ -137,7 +138,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
      state on the stack to prevent premature exit from the
      STRING state. */
   \$\{ {Identifier} \[\"    {
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
   }
 }
@@ -145,33 +146,33 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
 \$ ? {Identifier}    {
     String id = yytext();
-    writeSymbol(id, Consts.shkwd, yyline);
+    onFilteredSymbolMatched(id, yychar, Consts.shkwd);
  }
 
 {Number}        {
     String lastClassName = getDisjointSpanClassName();
-    disjointSpan(HtmlConsts.NUMBER_CLASS);
-    out.write(yytext());
-    disjointSpan(lastClassName);
+    onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(lastClassName, yychar);
  }
 
  \$ ? \"    {
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
  }
  \$ ? \'    {
     pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
-    out.write(htmlize(yytext()));
+    onNonSymbolMatched(yytext(), yychar);
  }
  "#"     {
     pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
 
  // Recognize here-documents. At least a subset of them.
  "<<" "-"? {WhspChar}* {Identifier} {WhspChar}*    {
    String text = yytext();
-   out.write(htmlize(text));
+   onNonSymbolMatched(text, yychar);
 
    heredocStripLeadingTabs = (text.charAt(2) == '-');
    heredocStopWord = text.substring(heredocStripLeadingTabs ? 3 : 2).trim();
@@ -181,34 +182,34 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
  // Any sequence of more than two < characters should not start HEREDOC. Use
  // this rule to catch them before the HEREDOC rule.
  "<<" "<" +    {
-   out.write(htmlize(yytext()));
+   onNonSymbolMatched(yytext(), yychar);
  }
 
  {Unary_op_req_lookahead} / \W    {
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
  {Unary_op_req_lookahead} $    {
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
- {WhiteSpace} {Unary_op_char} / ")"    {
-    out.write(yytext());
+ {WhspChar}+ {Unary_op_char} / ")"    {
+    onNonSymbolMatched(yytext(), yychar);
  }
  {Binary_op}    {
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <STRING> {
  \\[\"\$\`\\] |
- \" {WhspChar}* \"    { out.write(htmlize(yytext())); }
- \"     { out.write(htmlize(yytext())); yypop(); }
+ \" {WhspChar}* \"    { onNonSymbolMatched(yytext(), yychar); }
+ \"     { onNonSymbolMatched(yytext(), yychar); yypop(); }
  \$\(    {
     pushSpan(SUBSHELL, null);
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
  [`]    {
     pushSpan(BACKQUOTE, null);
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
 
  /* Bug #15661: Recognize ksh command substitution within strings. According
@@ -217,29 +218,29 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   */
  "${" / {WhspChar} | {EOL}    {
     pushSpan(BRACEGROUP, null);
-    out.write(yytext());
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <QSTRING> {
  \\[\'] |
- \' {WhspChar}* \'    { out.write(htmlize(yytext())); }
- \'    { out.write(htmlize(yytext())); yypop(); }
+ \' {WhspChar}* \'    { onNonSymbolMatched(yytext(), yychar); }
+ \'    { onNonSymbolMatched(yytext(), yychar); yypop(); }
 }
 
 <SCOMMENT> {
 {WhspChar}*{EOL}    {
     yypop();
-    startNewLine();
+    onEndOfLineMatched(yytext(), yychar);
  }
 }
 
 <SUBSHELL> {
-  \)   { out.write(yytext()); yypop(); }
+  \)   { onNonSymbolMatched(yytext(), yychar); yypop(); }
 }
 
 <BACKQUOTE> {
-  [`]    { out.write(yytext()); yypop(); }
+  [`]    { onNonSymbolMatched(yytext(), yychar); yypop(); }
 }
 
 <BRACEGROUP> {
@@ -248,8 +249,8 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * the closing brace must be on beginning of line, or it must be preceded by
   * a semi-colon and (optionally) whitespace.
   */
-  ^ {WhspChar}* \}    { out.write(yytext()); yypop(); }
-  ; {WhspChar}* \}    { out.write(yytext()); yypop(); }
+  ^ {WhspChar}* \}    { onNonSymbolMatched(yytext(), yychar); yypop(); }
+  ; {WhspChar}* \}    { onNonSymbolMatched(yytext(), yychar); yypop(); }
 }
 
 <HEREDOC> {
@@ -258,21 +259,27 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
     if (isHeredocStopWord(line)) {
       yypop();
     }
-    out.write(htmlize(line));
+    onNonSymbolMatched(line, yychar);
   }
 
-  {EOL}    { startNewLine(); }
+  {EOL}    { onEndOfLineMatched(yytext(), yychar); }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
   /* Don't enter new state if special character is escaped. */
-  \\[`\)\(\{\"\'\$\#\\]    { out.write(htmlize(yytext())); }
+  \\[`\)\(\{\"\'\$\#\\]    { onNonSymbolMatched(yytext(), yychar); }
 
   /* $# should not start a comment. */
-  "$#"    { out.write(yytext()); }
+  "$#"    { onNonSymbolMatched(yytext(), yychar); }
 
-  \$ ? \(    { pushSpan(SUBSHELL, null); out.write(yytext()); }
-  [`]    { pushSpan(BACKQUOTE, null); out.write(yytext()); }
+  \$ ? \(    {
+    pushSpan(SUBSHELL, null);
+    onNonSymbolMatched(yytext(), yychar);
+  }
+  [`]    {
+    pushSpan(BACKQUOTE, null);
+    onNonSymbolMatched(yytext(), yychar);
+  }
 
  /* Bug #15661: Recognize ksh command substitution within strings. According
   * to ksh man page http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
@@ -281,45 +288,38 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * group too early if the ${ cmd; } expression contains nested { cmd; } groups.
   */
   \$ ? \{ / {WhspChar} | {EOL}    {
-    pushSpan(BRACEGROUP, null); out.write(yytext());
+    pushSpan(BRACEGROUP, null);
+    onNonSymbolMatched(yytext(), yychar);
   }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP, STRING, SCOMMENT, QSTRING> {
 {File}    {
     String path = yytext();
-    out.write("<a href=\""+urlPrefix+"path=");
-    out.write(path);
-    appendProject();
-    out.write("\">");
-    out.write(path);
-    out.write("</a>");
+    onFilelikeMatched(path, yychar);
 }
 
 {RelaxedMiddleFPath}    {
-    out.write(Util.breadcrumbPath(urlPrefix + "path=", yytext(), '/')); }
+    onPathlikeMatched(yytext(), '/', false, yychar); }
 
-[&<>\'\"]    { out.write(htmlize(yytext())); }
-{WhspChar}*{EOL}    { startNewLine(); }
-{WhiteSpace}    { out.write(yytext()); }
-[!-~]    { out.write(yycharat(0)); }
-[^\n]    { writeUnicodeChar(yycharat(0)); }
+{WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+[^\n]    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
-          writeEMailAddress(yytext());
+          onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, SCOMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true);
+        onUriMatched(yytext(), yychar);
     }
 }
 
 <QSTRING> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, StringUtils.APOS_NO_BSESC);
+        onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
     }
 }

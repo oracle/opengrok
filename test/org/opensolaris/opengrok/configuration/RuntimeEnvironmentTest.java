@@ -45,6 +45,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
 import org.opensolaris.opengrok.authorization.AuthorizationPlugin;
 import org.opensolaris.opengrok.authorization.AuthorizationStack;
@@ -840,7 +841,7 @@ public class RuntimeEnvironmentTest {
 
         String address = "discuss@opengrok.java.net";
 
-        PlainXref xref = new PlainXref(new StringReader(address));
+        JFlexXref xref = new JFlexXref(new PlainXref(new StringReader(address)));
         StringWriter out = new StringWriter();
         xref.write(out);
 

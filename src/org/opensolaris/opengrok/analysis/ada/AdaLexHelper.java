@@ -71,7 +71,7 @@ class AdaLexHelper implements Resettable {
             ni = value.indexOf("\n", off);
             if (ri == -1 && ni == -1) {
                 String sub = value.substring(off);
-                lexer.offerNonword(sub);
+                lexer.offer(sub);
                 break;
             }
             if (ri != -1 && ni != -1) {
@@ -90,7 +90,7 @@ class AdaLexHelper implements Resettable {
             }
 
             String sub = value.substring(off, i);
-            lexer.offerNonword(sub);
+            lexer.offer(sub);
             lexer.disjointSpan(null);
             lexer.startNewLine();
             lexer.disjointSpan(className);

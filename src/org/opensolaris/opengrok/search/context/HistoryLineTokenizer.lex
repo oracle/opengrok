@@ -19,13 +19,13 @@
 
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.search.context;
 
-import org.opensolaris.opengrok.search.Hit;
-import java.io.*;
-import java.util.*;
+import java.io.StringReader;
+import java.util.HashSet;
 %%
 
 %public

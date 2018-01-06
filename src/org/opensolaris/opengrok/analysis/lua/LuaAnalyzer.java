@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.lua;
@@ -26,6 +27,7 @@ package org.opensolaris.opengrok.analysis.lua;
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -37,15 +39,20 @@ public class LuaAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of LuaAnalyzer
-     * @param factory
+     * @param factory defined instance for the analyzer
      */
     protected LuaAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer=new LuaSymbolTokenizer(FileAnalyzer.dummyReader);    
+        super(factory, new JFlexTokenizer(new LuaSymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }    
 
+    /**
+     * Creates a wrapped {@link LuaXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new LuaXref(reader);
+        return new JFlexXref(new LuaXref(reader));
     }
 }

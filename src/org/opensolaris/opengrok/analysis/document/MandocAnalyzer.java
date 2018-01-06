@@ -30,10 +30,11 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
@@ -43,12 +44,11 @@ public class MandocAnalyzer extends TextAnalyzer {
 
     /**
      * Creates a new instance of MandocAnalyzer
-     * @param factory name
+     * @param factory defined instance for the analyzer
      */
     protected MandocAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        // reuse the TroffFullTokenizer
-        SymbolTokenizer = new TroffFullTokenizer(FileAnalyzer.dummyReader);
+        super(factory, new JFlexTokenizer(new TroffFullTokenizer(
+            FileAnalyzer.dummyReader)));
     }
 
     @Override
@@ -57,8 +57,8 @@ public class MandocAnalyzer extends TextAnalyzer {
 
         // this is to explicitly use appropriate analyzers tokenstream to
         // workaround #1376 symbols search works like full text search
-        this.SymbolTokenizer.setReader(getReader(src.getStream()));
-        TextField full = new TextField(QueryBuilder.FULL, SymbolTokenizer);
+        this.symbolTokenizer.setReader(getReader(src.getStream()));
+        TextField full = new TextField(QueryBuilder.FULL, symbolTokenizer);
         doc.add(full);
 
         if (xrefOut != null) {
@@ -71,12 +71,12 @@ public class MandocAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create a {@link MandocXref} instance.
+     * Creates a wrapped {@link MandocXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
     @Override
-    protected JFlexXref newXref(Reader reader) {
+    protected Xrefer newXref(Reader reader) {
         return new MandocXref(reader);
     }
 }

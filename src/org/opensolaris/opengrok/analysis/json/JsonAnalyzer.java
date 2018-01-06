@@ -19,12 +19,14 @@
 
 /*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.json;
 
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -36,16 +38,21 @@ import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 public class JsonAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of JavaAnalyzer
-     * @param factory factory for this analyzer
+     * Creates a new instance of {@link JsonAnalyzer}.
+     * @param factory defined instance for the analyzer
      */
     protected JsonAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer=new JsonSymbolTokenizer(FileAnalyzer.dummyReader);    
+        super(factory, new JFlexTokenizer(new JsonSymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }    
 
+    /**
+     * Creates a wrapped {@link JsonXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new JsonXref(reader);
+        return new JFlexXref(new JsonXref(reader));
     }
 }

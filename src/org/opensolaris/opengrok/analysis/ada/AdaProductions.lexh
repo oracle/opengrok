@@ -160,44 +160,30 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 
     {Comment_token}    {
         yypush(SCOMMENT);
-        disjointSpan(HtmlConsts.COMMENT_CLASS);
-        offerNonword(yytext());
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        offer(yytext());
     }
 }
 
 <SCOMMENT> {
-    {WhiteSpace}{EOL} |
-    {EOL}    {
+    {WhspChar}*{EOL}    {
         String capture = yytext();
         yypushback(capture.length());
         yypop();
-        disjointSpan(null);
+        onDisjointSpanChanged(null, yychar);
     }
 }
 
 <YYINITIAL> {
-    {WhiteSpace}{EOL} |
-    {EOL}    {
-        startNewLine();
+    {WhspChar}*{EOL}    {
+        onEndOfLineMatched(yytext(), yychar);
     }
 }
 
 <YYINITIAL, SCOMMENT> {
-    [\&\<\>\"\']    {
-        offerNonword(yytext());
-    }
-
-    // Only one whitespace char at a time
-    {WhspChar}    {
-        offer(yytext());
-    }
-
-    [!-~]    {
-        offer(yytext());
-    }
-
+    // Only one whitespace char at a time -- thus only one character at a time
     [^\n\r]    {
-        takeUnicode(yytext());
+        offer(yytext());
     }
 }
 
@@ -205,31 +191,26 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 <SCOMMENT> {
     {FPath}    {
         if (takeAllContent()) {
-            offer(Util.breadcrumbPath(getUrlPrefix() + "path=",yytext(),'/'));
+            onPathlikeMatched(yytext(), '/', false, yychar);
         }
     }
 
     {File}    {
         if (takeAllContent()) {
             String path = yytext();
-            offer("<a href=\"" + getUrlPrefix() + "path=");
-            offer(path);
-            appendProject();
-            offer("\">");
-            offer(path);
-            offer("</a>");
+            onFilelikeMatched(path, yychar);
         }
     }
 
     {BrowseableURI}    {
         if (takeAllContent()) {
-            appendLink(yytext(), true);
+            onUriMatched(yytext(), yychar);
         }
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
         if (takeAllContent()) {
-            writeEMailAddress(yytext());
+            onEmailAddressMatched(yytext(), yychar);
         }
     }
 }

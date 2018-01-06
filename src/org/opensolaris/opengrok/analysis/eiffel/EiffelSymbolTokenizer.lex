@@ -24,34 +24,32 @@
 package org.opensolaris.opengrok.analysis.eiffel;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.util.StringUtils;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.web.HtmlConsts;
 %%
 %public
 %class EiffelSymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %implements EiffelLexer
 %init{
-    super(in);
     h = new EiffelLexHelper(VSTRING, this);
+    yyline = 1;
 %init}
 %unicode
 %ignorecase
 %int
 %char
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %{
     private final EiffelLexHelper h;
 
     private String lastSymbol;
 
     /**
-     * Resets the Eiffel tracked state after {@link #reset()}.
+     * Resets the Eiffel tracked state; {@inheritDoc}
      */
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         h.reset();
         lastSymbol = null;
@@ -63,22 +61,12 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     }
 
     @Override
-    public void offerNonword(String value) throws IOException {
-        // noop
-    }
-
-    public void takeUnicode(String value) throws IOException {
-        // noop
-    }
-
-    @Override
     public boolean offerSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
         if (ignoreKwd || !Consts.kwd.contains(value.toLowerCase())) {
             lastSymbol = value;
-            setAttribs(value, yychar + captureOffset, yychar + captureOffset +
-                value.length());
+            onSymbolMatched(value, yychar + captureOffset);
             return true;
         } else {
             lastSymbol = null;
@@ -113,14 +101,6 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     protected boolean returnOnSymbol() {
         return lastSymbol != null;
     }
-
-    protected String getUrlPrefix() { return null; }
-
-    protected void appendProject() { /* noop */ }
-
-    protected void appendLink(String s, boolean b) { /* noop */ }
-
-    protected void writeEMailAddress(String s) { /* noop */ }
 %}
 
 /*

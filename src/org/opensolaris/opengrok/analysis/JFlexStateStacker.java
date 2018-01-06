@@ -38,11 +38,12 @@ public abstract class JFlexStateStacker implements Resettable,
     protected final Stack<Integer> stack = new Stack<>();
 
     /**
-     * Resets the instance using {@link #clearStack()}.
+     * Resets the instance using {@link #clearStack()}, and sets line number to
+     * one.
      */
-    @Override
     public void reset() {
         clearStack();
+        setLineNumber(1);
     }
 
     /**
@@ -73,6 +74,33 @@ public abstract class JFlexStateStacker implements Resettable,
         clearStack();
         yybegin(newState);
     }
+
+    /**
+     * Gets the YYEOF value.
+     * @return YYEOF
+     */
+    public abstract int getYYEOF();
+
+    /**
+     * Gets the yyline value.
+     * @return yyline
+     */
+    public abstract int getLineNumber();
+
+    /**
+     * Tests if the instance's state stack is empty.
+     * @return {@code true} if the stack contains no items; {@code false}
+     * otherwise.
+     */
+    public boolean emptyStack() {
+        return stack.empty();
+    }
+
+    /**
+     * Sets the yyline value.
+     * @param value the new line number
+     */
+    protected abstract void setLineNumber(int value);
 
     /**
      * Clears the instance stack.

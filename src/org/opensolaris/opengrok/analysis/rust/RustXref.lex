@@ -29,17 +29,22 @@
 
 package org.opensolaris.opengrok.analysis.rust;
 
-import org.opensolaris.opengrok.analysis.JFlexXrefSimple;
+import java.io.IOException;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opensolaris.opengrok.analysis.ScopeAction;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
 %%
 %public
 %class RustXref
-%extends JFlexXrefSimple
+%extends JFlexSymbolMatcher
 %unicode
 %int
-%include CommonXref.lexh
+%char
+%init{
+    yyline = 1;
+%init}
+%include CommonLexer.lexh
 %{
   /**
    * Stores the number of hashes beginning and ending a raw string or raw byte
@@ -56,11 +61,11 @@ import org.opensolaris.opengrok.web.Util;
       nestedComment = 0;
   }
 
-  // TODO move this into an include file when bug #16053 is fixed
   @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
+  public void yypop() throws IOException {
+      onDisjointSpanChanged(null, yychar);
+      super.yypop();
+  }
 %}
 
 File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
@@ -75,62 +80,61 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
 %include Rust.lexh
 %%
 <YYINITIAL> {
-    \{ { incScope(); writeUnicodeChar(yycharat(0)); }
-    \} { decScope(); writeUnicodeChar(yycharat(0)); }
-    \; { endScope(); writeUnicodeChar(yycharat(0)); }
+    \{ { onScopeChanged(ScopeAction.INC, yytext(), yychar); }
+    \} { onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
+    \; { onScopeChanged(ScopeAction.END, yytext(), yychar); }
     {Identifier} {
         String id = yytext();
-        writeSymbol(id, Consts.kwd, yyline);
+        onFilteredSymbolMatched(id, yychar, Consts.kwd);
     }
     "<" ({File}|{FPath}) ">" {
-        out.write("&lt;");
+        onNonSymbolMatched("<", yychar);
         String path = yytext();
         path = path.substring(1, path.length() - 1);
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
-        out.write("&gt;");
+        onFilelikeMatched(path, yychar + 1);
+        onNonSymbolMatched(">", yychar + 1 + path.length());
     }
     {Number} {
-        disjointSpan(HtmlConsts.NUMBER_CLASS);
-        out.write(yytext());
-        disjointSpan(null);
+        onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
+        onDisjointSpanChanged(null, yychar);
     }
     [b]?\" {
-        pushSpan(STRING, HtmlConsts.STRING_CLASS);
-        out.write(htmlize(yytext()));
+        yypush(STRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
     [b]?[r][#]*\" {
-        pushSpan(RSTRING, HtmlConsts.STRING_CLASS);
+        yypush(RSTRING);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         String capture = yytext();
-        out.write(htmlize(capture));
+        onNonSymbolMatched(capture, yychar);
         rawHashCount = RustUtils.countRawHashes(capture);
     }
     [b]?\' ([^\n\r\'\\] | \\[^\n\r]) \' |
     [b]?\' \\[xX]{HEXDIG}{HEXDIG} \' |
     [b]?\' \\[uU]\{ {HEXDIG}{1,6} \}\'    {
-        disjointSpan(HtmlConsts.STRING_CLASS);
-        out.write(htmlize(yytext()));
-        disjointSpan(null);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
+        onDisjointSpanChanged(null, yychar);
     }
     "//" {
-        pushSpan(SCOMMENT, HtmlConsts.COMMENT_CLASS);
-        out.write(yytext());
+        yypush(SCOMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
     "/*"  {
         ++nestedComment;
-        pushSpan(COMMENT, HtmlConsts.COMMENT_CLASS);
-        out.write(yytext());
+        yypush(COMMENT);
+        onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+        onNonSymbolMatched(yytext(), yychar);
     }
 }
 
 <STRING> {
-    \\[\"\\]    { out.write(htmlize(yytext())); }
+    \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
     \"    {
-        out.write(htmlize(yytext()));
+        onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
 }
@@ -140,76 +144,68 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
         String capture = yytext();
         if (RustUtils.isRawEnding(capture, rawHashCount)) {
             String ender = capture.substring(0, 1 + rawHashCount);
-            out.write(htmlize(ender));
+            onNonSymbolMatched(ender, yychar);
             yypop();
             int excess = capture.length() - ender.length();
             if (excess > 0) yypushback(excess);
         } else {
-            out.write(htmlize(capture));
+            onNonSymbolMatched(capture, yychar);
         }
     }
 }
 
 <STRING, RSTRING> {
     {WhspChar}*{EOL}    {
-        disjointSpan(null);
-        startNewLine();
-        disjointSpan(HtmlConsts.STRING_CLASS);
+        onDisjointSpanChanged(null, yychar);
+        onEndOfLineMatched(yytext(), yychar);
+        onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     }
 }
 
 <COMMENT> {
     "*/"    {
-        out.write(yytext());
+        onNonSymbolMatched(yytext(), yychar);
         if (--nestedComment == 0) yypop();
     }
     "/*"    {
         ++nestedComment;
-        out.write(yytext());
+        onNonSymbolMatched(yytext(), yychar);
     }
 }
 
 <SCOMMENT> {
     {WhspChar}*{EOL} {
         yypop();
-        startNewLine();
+        onEndOfLineMatched(yytext(), yychar);
     }
 }
 
 <YYINITIAL, STRING, RSTRING, COMMENT, SCOMMENT> {
-    [&<>\'\"]    { out.write(htmlize(yytext())); }
-    {WhspChar}*{EOL} { startNewLine(); }
-    {WhiteSpace} { out.write(yytext()); }
-    [!-~] { out.write(yycharat(0)); }
-    [^\n] { writeUnicodeChar(yycharat(0)); }
+    {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+    [^\n]    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, SCOMMENT> {
-    {FPath} { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/')); }
+    {FPath} { onPathlikeMatched(yytext(), '/', false, yychar); }
 
     {File} {
         String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
+        onFilelikeMatched(path, yychar);
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ {
-        writeEMailAddress(yytext());
+        onEmailAddressMatched(yytext(), yychar);
     }
 }
 
 <STRING, RSTRING, SCOMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true);
+        onUriMatched(yytext(), yychar);
     }
 }
 
 <COMMENT> {
     {BrowseableURI}    {
-        appendLink(yytext(), true, StringUtils.END_C_COMMENT);
+        onUriMatched(yytext(), yychar, StringUtils.END_C_COMMENT);
     }
 }

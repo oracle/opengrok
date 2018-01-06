@@ -34,11 +34,13 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.IteratorReader;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.NullWriter;
 
@@ -51,20 +53,30 @@ public class PlainAnalyzer extends TextAnalyzer {
 
     /**
      * Creates a new instance of PlainAnalyzer
-     * @param factory name of factory
+     * @param factory defined instance for the analyzer
      */
     protected PlainAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
 
     /**
-     * Create a {@link PlainXref} instance.
+     * Creates a new instance of {@link PlainAnalyzer}.
+     * @param factory defined instance for the analyzer
+     * @param symbolTokenizer defined instance for the analyzer
+     */
+    protected PlainAnalyzer(FileAnalyzerFactory factory,
+        JFlexTokenizer symbolTokenizer) {
+        super(factory, symbolTokenizer);
+    }
+
+    /**
+     * Creates a wrapped {@link PlainXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
     @Override
-    protected JFlexXref newXref(Reader reader) {
-        return new PlainXref(reader);
+    protected Xrefer newXref(Reader reader) {
+        return new JFlexXref(new PlainXref(reader));
     }
 
     @Override
@@ -83,8 +95,9 @@ public class PlainAnalyzer extends TextAnalyzer {
             if (defs != null && defs.numberOfSymbols() > 0) {
                 doc.add(new TextField(QueryBuilder.DEFS, new IteratorReader(defs.getSymbols())));
                 //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
-                TextField ref=new TextField(QueryBuilder.REFS,this.SymbolTokenizer);
-                this.SymbolTokenizer.setReader(getReader(src.getStream()));
+                TextField ref = new TextField(QueryBuilder.REFS,
+                    this.symbolTokenizer);
+                this.symbolTokenizer.setReader(getReader(src.getStream()));
                 doc.add(ref);
                 byte[] tags = defs.serialize();
                 doc.add(new StoredField(QueryBuilder.TAGS, tags));                
@@ -105,7 +118,7 @@ public class PlainAnalyzer extends TextAnalyzer {
                 WriteXrefArgs args = new WriteXrefArgs(in, xrefOut);
                 args.setDefs(defs);
                 args.setProject(project);
-                JFlexXref xref = writeXref(args);
+                Xrefer xref = writeXref(args);
             
                 Scopes scopes = xref.getScopes();
                 if (scopes.size() > 0) {

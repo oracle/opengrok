@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2016 Nikolay Denev.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.rust;
@@ -27,6 +28,7 @@ package org.opensolaris.opengrok.analysis.rust;
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -39,16 +41,21 @@ public class RustAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of RustAnalyzer
-     * @param factory name
+     * @param factory defined instance for the analyzer
      */
     protected RustAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer=new RustSymbolTokenizer(FileAnalyzer.dummyReader);    
+        super(factory, new JFlexTokenizer(new RustSymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }    
 
+    /**
+     * Creates a wrapped {@link RustXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new RustXref(reader);
+        return new JFlexXref(new RustXref(reader));
     }
 
     @Override

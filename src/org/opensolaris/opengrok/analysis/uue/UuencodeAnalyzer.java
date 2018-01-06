@@ -30,6 +30,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
@@ -45,18 +46,18 @@ import org.opensolaris.opengrok.search.QueryBuilder;
 public class UuencodeAnalyzer extends TextAnalyzer {
     /**
      * Creates a new instance of UuencodeAnalyzer
-     * @param factory name
+     * @param factory defined instance for the analyzer
      */
     protected UuencodeAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer=new UuencodeFullTokenizer(FileAnalyzer.dummyReader);
+        super(factory, new JFlexTokenizer(new UuencodeFullTokenizer(
+            FileAnalyzer.dummyReader)));
     }
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
         //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
-        TextField full=new TextField(QueryBuilder.FULL,SymbolTokenizer);
-        this.SymbolTokenizer.setReader(getReader(src.getStream()));        
+        TextField full = new TextField(QueryBuilder.FULL, symbolTokenizer);
+        this.symbolTokenizer.setReader(getReader(src.getStream()));
         doc.add(full);
                 
         if (xrefOut != null) {
@@ -69,12 +70,12 @@ public class UuencodeAnalyzer extends TextAnalyzer {
     }
 
     /**
-     * Create a {@link UuencodeXref} instance.
+     * Creates a wrapped {@link UuencodeXref} instance.
      * @param reader the data to produce xref for
      * @return an xref instance
      */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new UuencodeXref(reader);
+        return new JFlexXref(new UuencodeXref(reader));
     }
 }

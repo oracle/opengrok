@@ -19,12 +19,14 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.c;
 
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
@@ -36,17 +38,22 @@ import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 public class CxxAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
-     * Creates a new instance of CAnalyzer
-     * @param factory name
+     * Creates a new instance of {@link CxxAnalyzer}.
+     * @param factory defined instance for the analyzer
      */
     protected CxxAnalyzer(FileAnalyzerFactory factory) {
-        super(factory);
-        SymbolTokenizer=new CxxSymbolTokenizer(FileAnalyzer.dummyReader);    
+        super(factory, new JFlexTokenizer(new CxxSymbolTokenizer(
+            FileAnalyzer.dummyReader)));
     }      
 
+    /**
+     * Creates a wrapped {@link CxxXref} instance.
+     * @param reader the data to produce xref for
+     * @return a defined instance
+     */
     @Override
     protected JFlexXref newXref(Reader reader) {
-        return new CxxXref(reader);
+        return new JFlexXref(new CxxXref(reader));
     }
     
     @Override

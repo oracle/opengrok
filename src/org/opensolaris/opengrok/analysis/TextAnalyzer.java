@@ -30,8 +30,22 @@ import org.opensolaris.opengrok.util.IOUtils;
 
 public abstract class TextAnalyzer extends FileAnalyzer {
 
-    public TextAnalyzer(FileAnalyzerFactory factory) {
+    /**
+     * Creates a new instance of {@link TextAnalyzer}.
+     * @param factory defined instance for the analyzer
+     */
+    protected TextAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+    }
+
+    /**
+     * Creates a new instance of {@link TextAnalyzer}.
+     * @param factory defined instance for the analyzer
+     * @param symbolTokenizer defined instance for the analyzer
+     */
+    protected TextAnalyzer(FileAnalyzerFactory factory,
+        JFlexTokenizer symbolTokenizer) {
+        super(factory, symbolTokenizer);
     }
 
     /**
@@ -41,14 +55,14 @@ public abstract class TextAnalyzer extends FileAnalyzer {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    public JFlexXref writeXref(WriteXrefArgs args) throws IOException {
+    public Xrefer writeXref(WriteXrefArgs args) throws IOException {
         if (args == null) throw new IllegalArgumentException("`args' is null");
-        JFlexXref xref = newXref(args.getIn());
+        Xrefer xref = newXref(args.getIn());
         xref.setDefs(args.getDefs());
         xref.setScopesEnabled(scopesEnabled);
         xref.setFoldingEnabled(foldingEnabled);
-        xref.annotation = args.getAnnotation();
-        xref.project = args.getProject();
+        xref.setAnnotation(args.getAnnotation());
+        xref.setProject(args.getProject());
         xref.write(args.getOut());
         return xref;
     }
@@ -59,7 +73,7 @@ public abstract class TextAnalyzer extends FileAnalyzer {
      * @param reader the data to produce xref for
      * @return an xref instance
      */
-    protected abstract JFlexXref newXref(Reader reader);
+    protected abstract Xrefer newXref(Reader reader);
 
     protected Reader getReader(InputStream stream) throws IOException {
         return IOUtils.createBOMStrippedReader(stream);

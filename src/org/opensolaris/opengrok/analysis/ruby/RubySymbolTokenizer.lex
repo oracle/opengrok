@@ -31,24 +31,22 @@ package org.opensolaris.opengrok.analysis.ruby;
 import java.io.IOException;
 import java.util.Stack;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.util.StringUtils;
 import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
-
 %%
 %public
 %class RubySymbolTokenizer
-%extends JFlexTokenizer
+%extends JFlexSymbolMatcher
 %implements RubyLexer
 %unicode
 %int
 %char
 %init{
-    super(in);
     h = getNewHelper();
+    yyline = 1;
 %init}
-%include CommonTokenizer.lexh
+%include CommonLexer.lexh
 %{
     protected Stack<RubyLexHelper> helpers;
 
@@ -57,11 +55,10 @@ import org.opensolaris.opengrok.web.Util;
     private String lastSymbol;
 
     /**
-     * Reinitialize the tokenizer with new reader.
-     * @throws java.io.IOException in case of I/O error
+     * Resets the Ruby tracked state; {@inheritDoc}
      */
     @Override
-    public void reset() throws IOException {
+    public void reset() {
         super.reset();
         if (helpers != null) helpers.clear();
         h.reset();
@@ -74,15 +71,6 @@ import org.opensolaris.opengrok.web.Util;
     }
 
     @Override
-    public void offerNonword(String value) throws IOException {
-        // noop
-    }
-
-    public void takeUnicode(String value) throws IOException {
-        // noop
-    }
-
-    @Override
     public boolean offerSymbol(String value, int captureOffset,
         boolean ignoreKwd)
             throws IOException {
@@ -90,8 +78,7 @@ import org.opensolaris.opengrok.web.Util;
             lastSymbol = null;
         } else if (ignoreKwd || !Consts.kwd.contains(value)) {
             lastSymbol = value;
-            setAttribs(value, yychar + captureOffset, yychar + captureOffset +
-                value.length());
+            onSymbolMatched(value, yychar + captureOffset);
             return true;
         } else {
             lastSymbol = null;
@@ -149,14 +136,6 @@ import org.opensolaris.opengrok.web.Util;
     protected boolean returnOnSymbol() {
         return lastSymbol != null;
     }
-
-    protected String getUrlPrefix() { return null; }
-
-    protected void appendProject() { /* noop */ }
-
-    protected void appendLink(String s, boolean b, Pattern p) { /* noop */ }
-
-    protected void writeEMailAddress(String s) { /* noop */ }
 
     protected void skipLink(String url, Pattern p) {
         int n = StringUtils.countPushback(url, p);

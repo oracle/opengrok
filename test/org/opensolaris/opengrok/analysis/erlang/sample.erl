@@ -58,3 +58,4 @@ flush() ->
 		ok
 	end.
 'http://example.com?a='
+-include("incdir/more_records.hrl").

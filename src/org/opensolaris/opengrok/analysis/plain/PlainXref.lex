@@ -23,26 +23,21 @@
  */
 
 package org.opensolaris.opengrok.analysis.plain;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
 
+import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class PlainXref
-%extends JFlexXref
+%extends JFlexSymbolMatcher
 %unicode
 %ignorecase
 %int
-%include CommonXref.lexh
-%{
-  // TODO move this into an include file when bug #16053 is fixed
-  @Override
-  protected int getLineNumber() { return yyline; }
-  @Override
-  protected void setLineNumber(int x) { yyline = x; }
-%}
+%char
+%init{
+    yyline = 1;
+%init}
+%include CommonLexer.lexh
+
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 %include Common.lexh
 %include CommonURI.lexh
@@ -51,17 +46,16 @@ File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 %%
 {File} | {RelaxedMiddleFPath}
         {String s=yytext();
-        out.write("<a href=\"");out.write(urlPrefix);out.write("path=");
-        out.write(s);appendProject();out.write("\">");
-        out.write(s);out.write("</a>");}
+        onFilelikeMatched(s, yychar);
+ }
 
 {BrowseableURI}    {
-          appendLink(yytext(), true);
+          onUriMatched(yytext(), yychar);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          writeEMailAddress(yytext());
+          onEmailAddressMatched(yytext(), yychar);
         }
 
 // Bug #13362: If there's a very long sequence that matches {FNameChar}+,
@@ -69,12 +63,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 // this rule, we avoid much of the backtracking and speed up the parsing
 // (in some cases from hours to seconds!). This rule will not interfere with
 // the rules above because JFlex always picks the longest match.
-{FNameChar}+ { out.write(yytext()); }
+{FNameChar}+    { onNonSymbolMatched(yytext(), yychar); }
 
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
-{WhiteSpace}{EOL} |
-    {EOL}   {startNewLine(); }
-[!-~] | {WhspChar}    {out.write(yycharat(0));}
-[^\n]       { writeUnicodeChar(yycharat(0)); }
+{WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
+[^\n]       { onNonSymbolMatched(yytext(), yychar); }
