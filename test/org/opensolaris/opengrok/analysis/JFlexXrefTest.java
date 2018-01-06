@@ -509,7 +509,8 @@ public class JFlexXrefTest {
         };
         Document doc = new Document();
         StringWriter out = new StringWriter();
-        new JavaClassAnalyzerFactory().getAnalyzer().analyze(doc, src, out);
+        JavaClassAnalyzerFactory.DEFAULT_INSTANCE.getAnalyzer().analyze(
+            doc, src, out);
         // Used to throw SAXParseException.
         DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
                 new InputSource(new StringReader("<doc>" + out + "</doc>")));

@@ -23,10 +23,19 @@
 
 package org.opensolaris.opengrok.analysis.executables;
 
+import java.io.InputStream;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
+/**
+ * Represents a subclass of {@link FileAnalyzerFactory} that creates
+ * {@link JavaClassAnalyzer} instances for files that have: 1) a CLASS file
+ * extension; or 2) {@code CAFEBABE} magic along with a known
+ * {@code major_version} (per
+ * https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html ),
+ * currently from JDK 1.1 ({@code 0x2D}) to Java SE 9 ({@code 0x35}).
+ */
 public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
 
     private static final String name = "Java class";
@@ -35,14 +44,41 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
         "CLASS"
     };
 
-    private static final String[] MAGICS = {
-        new String(new byte[] {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE})
+    private static final byte[] CAFEBABE =
+        new byte[] {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE};
+    private static final int MAJOR_VER_HIGHBYTE = 6;
+    private static final int MAJOR_VER_LOWBYTE = 7;
+    private static final int JDK1_1_MAJOR_VER = 0x2D;
+    private static final int JAVA_SE_9_MAJOR_VER = 0x35;
+
+    private static final Matcher MATCHER = (byte[] content, InputStream in) -> {
+        if (content.length < 8) return null;
+
+        // Require CAFEBABE or indicate no match.
+        for (int i = 0; i < CAFEBABE.length; ++i) {
+            if (content[i] != CAFEBABE[i]) return null;
+        }
+        // Require known major_version number.
+        int majorVersion = (content[MAJOR_VER_HIGHBYTE] << 1) |
+            content[MAJOR_VER_LOWBYTE];
+        if (majorVersion >= JDK1_1_MAJOR_VER && majorVersion <=
+            JAVA_SE_9_MAJOR_VER) {
+            return JavaClassAnalyzerFactory.DEFAULT_INSTANCE;
+        }
+        return null;
     };
 
-    public JavaClassAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, null, Genre.XREFABLE, name);
+    public static final JavaClassAnalyzerFactory DEFAULT_INSTANCE =
+        new JavaClassAnalyzerFactory();
+
+    private JavaClassAnalyzerFactory() {
+        super(null, null, SUFFIXES, null, MATCHER, null, Genre.XREFABLE, name);
     }
 
+    /**
+     * Creates a new {@link JavaClassAnalyzer} instance.
+     * @return a defined instance
+     */
     @Override
     protected FileAnalyzer newAnalyzer() {
         return new JavaClassAnalyzer(this);
