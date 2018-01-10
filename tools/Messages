@@ -84,6 +84,8 @@ Usage()
     echo "                          authorizationWatchdogEnabled = true"
     echo "                      Returns text describing the action."
     echo "                      The change is NOT persistent when reindex or redeploy!"
+    echo "       - \"get\"      retrieves the particular configuration option (only primitive types)"
+    echo "                      Returns string representation of the option."
     echo "       - \"auth\"     tag requires \"reload\" text and"
     echo "                    reloads all authorization plugins."
     echo "    project:"

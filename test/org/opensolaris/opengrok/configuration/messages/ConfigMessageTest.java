@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2017, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -32,7 +32,8 @@ import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
- *
+ * Test config message verification and handling.
+ * 
  * @author Vladimir Kotal
  */
 public class ConfigMessageTest {
@@ -95,6 +96,10 @@ public class ConfigMessageTest {
         m.addTag("set");
         m.addTag("getconf");
         Assert.assertFalse(MessageTest.assertValid(m));
+        m.setTags(new TreeSet<>());
+        m.addTag("get");
+        m.setText("sourceRoot");
+        Assert.assertTrue(MessageTest.assertValid(m));
     }
 
     @Test
@@ -128,6 +133,14 @@ public class ConfigMessageTest {
         m.apply(env);
     }
 
+    @Test(expected = IOException.class)
+    public void testApplyGetInvalidMethod() throws Exception {
+        Message m = new ConfigMessage();
+        m.setText("FooBar");
+        m.addTag("get");
+        m.apply(env);
+    }
+    
     @Test(expected = IOException.class)
     public void testApplySetInvalidMethodParameter() throws Exception {
         Message m = new ConfigMessage();
@@ -257,5 +270,33 @@ public class ConfigMessageTest {
         Assert.assertEquals("some complicated \"string\" with &#~Đ`[đ\\ characters", env.getUserPage());
 
         env.setUserPage(old);
+    }
+
+    @Test
+    public void testApplyGetOptionString() throws Exception {
+        env.setSourceRoot("/foo/bar");
+        Message m = new ConfigMessage();
+        m.setText("sourceRoot");
+        m.addTag("get");
+        String val = new String(m.apply(env));
+        Assert.assertEquals(val, env.getConfiguration().getSourceRoot());
+    }
+    
+    @Test
+    public void testApplyGetOptionInteger() throws Exception {
+        Message m = new ConfigMessage();
+        m.setText("hitsPerPage");
+        m.addTag("get");
+        String val = new String(m.apply(env));
+        Assert.assertEquals(val, Integer.toString(env.getHitsPerPage()));
+    }
+    
+    @Test
+    public void testApplyGetOptionBoolean() throws Exception {
+        Message m = new ConfigMessage();
+        m.setText("historyCache");
+        m.addTag("get");
+        String val = new String(m.apply(env));
+        Assert.assertEquals(val, Boolean.toString(env.getConfiguration().isHistoryCache()));
     }
 }
