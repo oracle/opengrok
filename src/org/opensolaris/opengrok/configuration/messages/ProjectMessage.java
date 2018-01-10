@@ -47,6 +47,8 @@ import org.opensolaris.opengrok.util.IOUtils;
 
 
 /**
+ * project specific message
+ *
  * @author Vladimir Kotal
  */
 public class ProjectMessage extends Message {
@@ -105,7 +107,7 @@ public class ProjectMessage extends Message {
 
         validateMore(env);
 
-        switch (getText()) {
+        switch (command) {
             case "add":
                 for (String projectName : getTags()) {
                     File srcRoot = env.getSourceRootFile();
@@ -304,11 +306,10 @@ public class ProjectMessage extends Message {
 
         // Text field carries the command.
         if (command == null) {
-            throw new Exception("The message must contain a text - \"add\", \"delete\" or \"indexed\"");
+            throw new Exception("The message text must contain one of '" + allowedText.toString() + "'");
         }
         if (!allowedText.contains(command)) {
-            throw new Exception("The message must contain either 'add', " +
-                    "'delete', 'indexed', 'list', 'list-indexed' or 'get-repos' text");
+            throw new Exception("The message text must contain one of '" + allowedText.toString() + "'");
         }
 
         if (!command.startsWith("list") && getTags().isEmpty()) {
