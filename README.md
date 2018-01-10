@@ -141,6 +141,10 @@ Currently supported message types:
   * **get-repos** – get list of repositories in the form of relative paths to source root for given project(s)
   * **get-repos-type** – get repository type(s) for given project(s)
 
+6. **RepositoryMessage** – used for getting repository info.
+
+  * **get-repo-type** – get repository type
+
 ## 4. OpenGrok install
 
 ### 4.1 Installing on Solaris from *.p5p file
