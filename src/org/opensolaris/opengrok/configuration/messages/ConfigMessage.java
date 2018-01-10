@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
@@ -34,6 +34,7 @@ import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
+ * A message to retrieve/change the configuration.
  *
  * @author Vladimir Kotal
  * @author Krystof Tulinger
@@ -75,6 +76,8 @@ public class ConfigMessage extends Message {
                                 VARIABLE_PATTERN.toString(),
                                 getText()));
             }
+        } else if (hasTag("get")) {
+            return invokeGetter(env.getConfiguration(), getText()).getBytes();
         } else if (hasTag("setconf")) {
             env.applyConfig(this, hasTag("reindex"));
         }
@@ -117,7 +120,6 @@ public class ConfigMessage extends Message {
             Method setter = desc.getWriteMethod();
 
             if (setter == null) {
-                // no setter
                 throw new IOException(
                         String.format("No setter for the name \"%s\".",
                                 field));
@@ -210,6 +212,53 @@ public class ConfigMessage extends Message {
     }
 
     /**
+     * Invokes a getter of a property on the configuration object.
+     * 
+     * @param config configuration object
+     * @param field string with field name
+     * @return string representation of the field value
+     * @throws java.io.IOException 
+     */
+    protected String invokeGetter(Configuration config, String field) throws IOException {
+        String val = null;
+
+        try {
+            PropertyDescriptor desc = new PropertyDescriptor(field, Configuration.class);
+            Method getter = desc.getReadMethod();
+
+            if (getter == null) {
+                throw new IOException(
+                        String.format("No getter for the name \"%s\".", field));
+            }
+
+            if (getter.getParameterCount() != 0) {
+                /**
+                 * Actually should not happen as it is not considered as a
+                 * read method so an exception would be thrown earlier.
+                 */
+                throw new IOException(
+                        String.format("The getter \"%s\" for the name \"%s\" takes a parameter.",
+                                getter.getName(), field));
+            }
+            
+            val = getter.invoke(config).toString();
+        } catch (IntrospectionException
+                | IllegalAccessException
+                | InvocationTargetException
+                | IllegalArgumentException ex) {
+            throw new IOException(
+                    String.format("Unsupported operation with the configuration for name \"%s\" - %s.",
+                            field,
+                            ex.getCause() == null
+                            ? ex.getLocalizedMessage()
+                            : ex.getCause().getLocalizedMessage()),
+                    ex);
+        }
+
+        return val;
+    }
+    
+    /**
      * Validate the string if it contains a boolean value.
      *
      * <p>
@@ -252,6 +301,7 @@ public class ConfigMessage extends Message {
         if (toInteger(hasTag("setconf"))
                 + toInteger(hasTag("getconf"))
                 + toInteger(hasTag("auth"))
+                + toInteger(hasTag("get"))
                 + toInteger(hasTag("set")) > 1) {
             throw new Exception("The message tag must be either setconf, getconf, auth or set");
         }
@@ -267,12 +317,12 @@ public class ConfigMessage extends Message {
             if (getTags().size() != 1) {
                 throw new Exception("The getconf message should be the only tag.");
             }
-        } else if (hasTag("set")) {
+        } else if (hasTag("set") || hasTag("get")) {
             if (getText() == null) {
-                throw new Exception("The set message must contain a text.");
+                throw new Exception("The get/set message must contain a text.");
             }
             if (getTags().size() != 1) {
-                throw new Exception("The set message should be the only tag.");
+                throw new Exception("The get/set message should be the only tag.");
             }
         } else if (hasTag("auth")) {
             if (!"reload".equalsIgnoreCase(getText())) {
