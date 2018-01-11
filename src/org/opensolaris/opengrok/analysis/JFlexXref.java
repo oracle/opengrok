@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -93,8 +93,8 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
             throw new IllegalArgumentException("`matcher' is null");
         }
         this.matcher = matcher;
-        matcher.addSymbolMatchedListener(this);
-        matcher.addNonSymbolMatchedListener(this);
+        matcher.setSymbolMatchedListener(this);
+        matcher.setNonSymbolMatchedListener(this);
         // The xrefer will own the matcher, so we won't have to unsubscribe.
 
         userPageLink = RuntimeEnvironment.getInstance().getUserPage();

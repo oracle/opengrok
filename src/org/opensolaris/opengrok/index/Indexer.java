@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
@@ -84,6 +85,7 @@ public final class Indexer {
     private static boolean addProjects = false;
     private static boolean searchRepositories = false;
     private static boolean noindex = false;
+    private static boolean awaitProfiler;
 
     private static int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
     private static String configFilename = null;
@@ -123,6 +125,7 @@ public final class Indexer {
         try {
 
             argv = parseOptions(argv);
+            if (awaitProfiler) pauseToAwaitProfiler();
             
             env = RuntimeEnvironment.getInstance();
 
@@ -550,6 +553,9 @@ public final class Indexer {
                 "You should strip off the source root.").Do( v -> {
                 defaultProjects.add((String)v);
             });
+
+            parser.on("--profiler", "Pause to await profiler or debugger.").
+                Do(v -> awaitProfiler = true);
 
             parser.on("--progress",
                 "Print per project percentage progress information.",
@@ -1077,6 +1083,17 @@ public final class Indexer {
                     + "(is web application server running with opengrok deployed?)", host, port), ex);
         }
         LOGGER.info("Configuration update routine done, check log output for errors.");
+    }
+
+    private static void pauseToAwaitProfiler() {
+        Scanner scan = new Scanner(System.in);
+        String in;
+        do {
+            System.out.print("Start profiler. Continue (Y/N)? ");
+            in = scan.nextLine().toLowerCase();
+        } while (!in.equals("y") && !in.equals("n"));
+
+        if (in.equals("n")) System.exit(1);
     }
 
     private Indexer() {
