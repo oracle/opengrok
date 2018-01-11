@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -392,9 +392,10 @@ public class Ctags {
 
         Thread clientThread = Thread.currentThread();
         ScheduledFuture futureTimeout = schedExecutor.schedule(() -> {
+            LOGGER.log(Level.WARNING, "Ctags futureTimeout executing.");
             clientThread.interrupt();
             outThread.interrupt();
-            LOGGER.log(Level.WARNING, "Ctags futureTimeout executed.");
+            ctags.destroyForcibly();
         }, CTAGSWAIT_S, TimeUnit.SECONDS);
 
         Definitions ret;
@@ -404,6 +405,13 @@ public class Ctags {
             ctagsIn.flush();
             if (Thread.interrupted()) throw new InterruptedException("flush()");
             ret = buffer.take();
+        } catch (IOException ex) {
+            /*
+             * In case the ctags process had to be destroyed, possibly pre-empt
+             * the IOException with an InterruptedException.
+             */
+            if (Thread.interrupted()) throw new InterruptedException("I/O");
+            throw ex;
         } finally {
             futureTimeout.cancel(false);
         }
@@ -537,6 +545,9 @@ public class Ctags {
             CtagsReader rdr = new CtagsReader();
             try {
                 readTags(rdr);
+                if (Thread.interrupted()) {
+                    throw new InterruptedException("readTags()");
+                }
                 Definitions defs = rdr.getDefinitions();
                 buffer.put(defs);
             } catch (InterruptedException ex) {
