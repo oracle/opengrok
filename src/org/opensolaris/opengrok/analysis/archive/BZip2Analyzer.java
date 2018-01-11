@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -27,10 +27,13 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.tools.bzip2.CBZip2InputStream;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.DigestedInputStream;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.StreamSource;
@@ -96,13 +99,56 @@ public class BZip2Analyzer extends FileAnalyzer {
             @Override
             public InputStream getStream() throws IOException {
                 InputStream raw = src.getStream();
+                return vetBZip2Stream(raw);
+            }
+
+            @Override
+            public DigestedInputStream getSHA256stream() throws IOException {
+                /*
+                 * Unzip the underlying source stream, and ensure that the
+                 * digest of the underlying stream -- and not the unzipped
+                 * stream -- is returned.
+                 */
+                DigestedInputStream dis = src.getSHA256stream();
+                BufferedInputStream bz2is = vetBZip2Stream(dis.getStream());
+
+                return new DigestedInputStream() {
+                    @Override
+                    public InputStream getStream() {
+                        return bz2is;
+                    }
+
+                    @Override
+                    public MessageDigest getMessageDigest() {
+                        return dis.getMessageDigest();
+                    }
+
+                    @Override
+                    public byte[] digestAll() throws IOException {
+                        return StreamSource.digestAll(this);
+                    }
+
+                    @Override
+                    public void close() throws Exception {
+                        bz2is.close();
+                        dis.close();
+                    }
+                };
+            }
+
+            /**
+             * As a BZip2 file starts with "BZ", but {@link CBZip2InputStream}
+             * expects the magic bytes to be stripped off first, ensures the
+             * presence of 'B' and 'Z' and hence consumes them.
+             */
+            private BufferedInputStream vetBZip2Stream(InputStream raw)
+                    throws IOException {
                 // A BZip2 file starts with "BZ", but CBZip2InputStream
                 // expects the magic bytes to be stripped off first.
                 if (raw.read() == 'B' && raw.read() == 'Z') {
                     return new BufferedInputStream(new CBZip2InputStream(raw));
-                } else {
-                    throw new IOException("Not BZIP2 format");
                 }
+                throw new IOException("Not BZIP2 format");
             }
         };
     }    

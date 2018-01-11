@@ -24,11 +24,8 @@
 package org.opensolaris.opengrok.analysis.csharp;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
-import java.io.InputStream;
 import java.io.StringWriter;
 import org.apache.lucene.document.Field;
 import org.junit.AfterClass;
@@ -56,12 +53,7 @@ public class CSharpAnalyzerFactoryTest {
     private static FileAnalyzer analyzer;
 
     private static StreamSource getStreamSource(final String fname) {
-        return new StreamSource() {
-            @Override
-            public InputStream getStream() throws IOException {
-                return new FileInputStream(fname);
-            }
-        };
+        return StreamSource.fromFile(new File(fname));
     }
 
     @BeforeClass

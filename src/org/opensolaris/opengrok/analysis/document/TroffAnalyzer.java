@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.document;
 
@@ -31,7 +31,6 @@ import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;

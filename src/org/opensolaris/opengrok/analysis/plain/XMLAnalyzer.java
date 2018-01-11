@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -34,6 +34,7 @@ import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import org.opensolaris.opengrok.analysis.Xrefer;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  * Analyzes HTML files Created on September 30, 2005
@@ -52,7 +53,7 @@ public class XMLAnalyzer extends TextAnalyzer {
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
-        doc.add(new TextField("full", getReader(src.getStream())));
+        doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
