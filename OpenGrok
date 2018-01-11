@@ -115,13 +115,15 @@
 #   - OPENGROK_SUBVERSION_PASSWORD password of the user that should be used for
 #                                 fetching the history from subversion
 #
+#   - OPENGROK_PROFILER           Pause to await user input for profiling.
+#
 # Notes:
 #   (*) Any Non-Empty String will enable these options
 #
 
 #
 # Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
-# Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+# Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
 #
@@ -866,6 +868,7 @@ CommonInvocation()
         ${READ_XML_CONF}                                        	\
         ${WEBAPP_CONFIG}						\
         ${WEBAPP_CONTEXT}						\
+        ${OPENGROK_PROFILER:+--profiler}				\
         "${@}"
 }
 

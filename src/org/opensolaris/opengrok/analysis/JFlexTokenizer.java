@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -49,7 +49,7 @@ public class JFlexTokenizer extends Tokenizer
             throw new IllegalArgumentException("`matcher' is null");
         }
         this.matcher = matcher;
-        matcher.addSymbolMatchedListener(this);
+        matcher.setSymbolMatchedListener(this);
         // The tokenizer will own the matcher, so we won't have to unsubscribe.
     }
 

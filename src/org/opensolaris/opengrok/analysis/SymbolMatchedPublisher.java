@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -33,26 +33,24 @@ package org.opensolaris.opengrok.analysis;
  */
 public interface SymbolMatchedPublisher {
     /**
-     * Adds a listener for the publisher.
+     * Sets a listener for the publisher.
      * @param l the listener
      */
-    void addSymbolMatchedListener(SymbolMatchedListener l);
+    void setSymbolMatchedListener(SymbolMatchedListener l);
 
     /**
-     * Removes a listener from the publisher.
-     * @param l the listener
+     * Clears any listener from the publisher.
      */
-    void removeSymbolMatchedListener(SymbolMatchedListener l);
+    void clearSymbolMatchedListener();
 
     /**
-     * Adds a listener for the publisher.
+     * Sets a listener for the publisher.
      * @param l the listener
      */
-    void addNonSymbolMatchedListener(NonSymbolMatchedListener l);
+    void setNonSymbolMatchedListener(NonSymbolMatchedListener l);
 
     /**
-     * Removes a listener from the publisher.
-     * @param l the listener
+     * Clears any listener from the publisher.
      */
-    void removeNonSymbolMatchedListener(NonSymbolMatchedListener l);
+    void clearNonSymbolMatchedListener();
 }
