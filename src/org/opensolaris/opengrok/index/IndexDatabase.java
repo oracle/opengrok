@@ -413,7 +413,8 @@ public class IndexDatabase {
 
         IOException finishingException = null;
         try {
-            Analyzer analyzer = AnalyzerGuru.getAnalyzer();
+            FileAnalyzer analyzer = AnalyzerGuru.getAnalyzer();
+            analyzer.setAllNonWhitespace(env.isAllNonWhitespace());
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setRAMBufferSizeMB(env.getRamBufferSize());

@@ -26,6 +26,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="javax.servlet.http.HttpServletResponse"%>
 <%@page session="false" errorPage="error.jsp" import="
+org.apache.lucene.queryparser.classic.QueryParser,
 org.opensolaris.opengrok.search.Results,
 org.opensolaris.opengrok.web.SearchHelper,
 org.opensolaris.opengrok.web.SortOrder,
@@ -165,19 +166,19 @@ include file="menu.jspf"
         %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
 	  if (hint.freetext!=null) { 
 	    for (String word : hint.freetext) {
-            %> <a href="search?q=<%= Util.URIEncode(word) %>"><%=
+            %> <a href="search?q=<%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
 	    }
 	  }
 	  if (hint.refs!=null)  {
 	    for (String word : hint.refs) {
-            %> <a href="search?refs=<%= Util.URIEncode(word) %>"><%=
+            %> <a href="search?refs=<%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
 	    }
 	  }
 	  if (hint.defs!=null) {
 	    for (String word : hint.defs) {
-            %> <a href="search?defs=<%= Util.URIEncode(word) %>"><%=
+            %> <a href="search?defs=<%= Util.URIEncode(QueryParser.escape(word)) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
             }
 	  }

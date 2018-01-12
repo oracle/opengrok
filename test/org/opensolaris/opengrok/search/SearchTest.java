@@ -268,13 +268,19 @@ public class SearchTest {
      * Test of long line indexing/splitting for plain symbol tokenizer.
      */
     @Test
-    public void testJavascriptLongLine() {
+    public void testJavascriptLongLine1() {
         Search instance = new Search();
-        
         assertTrue(instance.parseCmdLine(new String[]{"-f", "\"beforelongline\"","-p", "\"testlong.js\""}));
         assertTrue(instance.search());
         assertEquals(1, instance.results.size());
-        
+    }
+
+    /**
+     * Test of long line indexing/splitting for plain symbol tokenizer.
+     */
+    @Test
+    public void testJavascriptLongLine2() {
+        Search instance = new Search();
         //if fix for #1170 works, below should be also in index
         assertTrue(instance.parseCmdLine(new String[]{"-f", "\"afterlongline\"","-p", "\"testlong.js\""}));
         assertTrue(instance.search());

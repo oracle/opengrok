@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -30,4 +30,20 @@ package org.opensolaris.opengrok.analysis;
  */
 public interface ScanningSymbolMatcher extends JFlexStackingLexer, Resettable,
     SymbolMatchedPublisher {
+
+    /**
+     * Implementers can override if necessary to alter their behavior for
+     * different modes.
+     */
+    void setTokenizerMode(TokenizerMode value);
+
+    /**
+     * Determines if {@code str} starts with a contraction (i.e., a word
+     * containing letters and non-word characters such as "ain't") according to
+     * the specific language.
+     * @param str a defined instance
+     * @return 0 if {@code str} does not start with a contraction; or else the
+     * length of the longest initial contraction
+     */
+    int getLongestContractionPrefix(String str);
 }

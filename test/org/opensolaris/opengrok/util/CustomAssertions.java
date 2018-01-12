@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.util;
@@ -28,14 +28,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.TokenizerMode;
 import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
 /**
@@ -104,8 +108,10 @@ public class CustomAssertions {
     }
 
     /**
-     * Asserts the specified tokenizer class produces an expected stream of
-     * symbols from the specified input.
+     * Calls
+     * {@link #assertSymbolStream(java.lang.Class, java.io.InputStream, java.util.List, boolean)}
+     * with {@code klass}, {@code iss}, {@code expectedTokens} and
+     * {@code false}, and {@code TokenizerMode.SYMBOLS_ONLY}.
      * @param klass the test class
      * @param iss the input stream
      * @param expectedTokens the expected, ordered token list
@@ -115,6 +121,55 @@ public class CustomAssertions {
     public static void assertSymbolStream(
         Class<? extends JFlexSymbolMatcher> klass, InputStream iss,
         List<String> expectedTokens) throws Exception {
+        assertSymbolStream(klass, iss, expectedTokens, false,
+            TokenizerMode.SYMBOLS_ONLY);
+    }
+
+    /**
+     * Calls
+     * {@link #assertSymbolStream2(java.lang.Class, java.io.InputStream, java.util.List, boolean, org.opensolaris.opengrok.analysis.TokenizerMode)}
+     * with {@code klass}, {@code iss}, a translation of {@code expectedTokens}
+     * with {@code null} values, {@code caseInsensitive}, and {@code mode}.
+     * @param klass the test class
+     * @param iss the input stream
+     * @param expectedTokens the expected, ordered token list
+     * @param caseInsensitive indicates if content should be checked against
+     * source in case-insensitive (i.e. lower-cased) manner
+     * @param mode indicates mode for
+     * {@link JFlexTokenizer#setTokenizerMode(org.opensolaris.opengrok.analysis.TokenizerMode)}
+     * @throws java.lang.Exception if an error occurs constructing a
+     * {@code klass} instance or testing the stream
+     */
+    public static void assertSymbolStream(
+        Class<? extends JFlexSymbolMatcher> klass, InputStream iss,
+        List<String> expectedTokens, boolean caseInsensitive,
+        TokenizerMode mode) throws Exception {
+
+        List<SimpleEntry<String, Integer>> kvs =
+            expectedTokens.stream().map((s) ->
+            new SimpleEntry<>(s, (Integer)null)).collect(
+            Collectors.toList());
+        assertSymbolStream2(klass, iss, kvs, caseInsensitive, mode);
+    }
+
+    /**
+     * Asserts the specified tokenizer class produces an expected stream of
+     * symbols from the specified input.
+     * @param klass the test class
+     * @param iss the input stream
+     * @param expectedTokens the expected, ordered token list, where the Integer
+     * value is optional but asserted to match if not null
+     * @param caseInsensitive indicates if content should be checked against
+     * source in case-insensitive (i.e. lower-cased) manner
+     * @param mode indicates mode for
+     * {@link JFlexTokenizer#setTokenizerMode(org.opensolaris.opengrok.analysis.TokenizerMode)}
+     * @throws java.lang.Exception if an error occurs constructing a
+     * {@code klass} instance or testing the stream
+     */
+    public static void assertSymbolStream2(
+        Class<? extends JFlexSymbolMatcher> klass, InputStream iss,
+        List<SimpleEntry<String, Integer>> expectedTokens,
+        boolean caseInsensitive, TokenizerMode mode) throws Exception {
 
         byte[] inputCopy = copyStream(iss);
         String input = new String(inputCopy, StandardCharsets.UTF_8);
@@ -122,36 +177,52 @@ public class CustomAssertions {
             klass.getConstructor(Reader.class).newInstance(
 	        new InputStreamReader(new ByteArrayInputStream(inputCopy),
 	        StandardCharsets.UTF_8)));
+        tokenizer.setTokenizerMode(mode);
 
-        CharTermAttribute term = tokenizer.addAttribute(
+        CharTermAttribute term = tokenizer.getAttribute(
             CharTermAttribute.class);
-        OffsetAttribute offs = tokenizer.addAttribute(OffsetAttribute.class);
+        OffsetAttribute offs = tokenizer.getAttribute(OffsetAttribute.class);
+        PositionIncrementAttribute pinc = tokenizer.getAttribute(
+            PositionIncrementAttribute.class);
 
         int count = 0;
-        List<String> tokens = new ArrayList<>();
+        List<SimpleEntry<String, Integer>> tokens = new ArrayList<>();
         while (tokenizer.incrementToken()) {
             String termValue = term.toString();
-            tokens.add(termValue);
+            Integer v = pinc != null ? pinc.getPositionIncrement() : null;
+            tokens.add(new SimpleEntry<>(termValue, v));
 
             String cutValue = input.substring(offs.startOffset(),
                 offs.endOffset());
+            if (caseInsensitive) {
+                cutValue = cutValue.toLowerCase();
+            }
             assertEquals("cut term" + (1 + count), cutValue, termValue);
             ++count;
         }
 
+        boolean anyPosIncs = anyPositionIncrements(expectedTokens);
+
         count = 0;
-        for (String token : tokens) {
+        for (SimpleEntry<String, Integer> token : tokens) {
             // 1-based offset to accord with line #
             if (count >= expectedTokens.size()) {
-                printTokens(tokens);
+                printTokens(tokens, anyPosIncs);
                 assertTrue("too many tokens at term" + (1 + count) + ": " +
                     token, count < expectedTokens.size());
             }
-            String expected = expectedTokens.get(count);
-            if (!token.equals(expected)) {
-                printTokens(tokens);
-                assertEquals("term" + (1 + count), expected, token);
+            SimpleEntry<String, Integer> expected = expectedTokens.get(count);
+            if (!token.getKey().equals(expected.getKey())) {
+                printTokens(tokens, anyPosIncs);
+                assertEquals("term" + (1 + count), expected.getKey(),
+                    token.getKey());
             }
+            Integer expv = expected.getValue();
+            if (expv != null && !expv.equals(token.getValue())) {
+                printTokens(tokens, anyPosIncs);
+                assertEquals("posinc" + (1 + count), expv, token.getValue());
+            }
+
             count++;
         }
 
@@ -203,11 +274,35 @@ public class CustomAssertions {
      * Outputs a token list to stdout for use in a competent diffing tool
      * to compare to e.g. samplesymbols.txt.
      */
-    private static void printTokens(List<String> tokens) {
-        System.out.println("BEGIN TOKENS\n=====");
+    private static void printTokens(List<SimpleEntry<String, Integer>> tokens,
+        boolean withPosIncrements) {
+
+        System.out.println("BEGIN TOKENS =====");
         for (int i = 0; i < tokens.size(); ++i) {
-            System.out.println(tokens.get(i));
+            SimpleEntry<String, Integer> kv = tokens.get(i);
+            System.out.print(kv.getKey());
+
+            if (withPosIncrements) {
+                Integer v = kv.getValue();
+                if (v != null) {
+                    System.out.print("\t|");
+                    System.out.print(v);
+                }
+            }
+
+            System.out.println();
         }
-        System.out.println("=====\nEND TOKENS");
+        System.out.println("===== END TOKENS");
+    }
+
+    private static boolean anyPositionIncrements(
+        List<SimpleEntry<String, Integer>> expectedTokens) {
+
+        for (SimpleEntry<String, Integer> etok : expectedTokens) {
+            if (etok.getValue() != null) {
+                return true;
+            }
+        }
+        return false;
     }
 }

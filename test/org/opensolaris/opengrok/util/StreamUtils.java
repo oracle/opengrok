@@ -30,6 +30,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
 import static org.junit.Assert.assertNotNull;
 import org.opensolaris.opengrok.analysis.CtagsReader;
 import org.opensolaris.opengrok.analysis.Definitions;
@@ -59,6 +61,78 @@ public class StreamUtils {
 
         baosExp.close();
         return baosExp.toByteArray();
+    }
+
+    /**
+     * Reads lines from the specified UTF-8 {@link InputStream}, stripping off
+     * any content rightward if a comment token -- space-hash, {@code " #"}, or
+     * tab-hash, {@code "\t#"} -- is present beyond the first column, and
+     * removing any trailing whitespace.
+     * @param expectedSymbols a required instance to append
+     * @param stream a required instance
+     * @throws IOException if any I/O error occurs
+     */
+    public static void readExpectedSymbols(List<String> expectedSymbols,
+            InputStream stream) throws IOException {
+        try (BufferedReader rwords = new BufferedReader(new InputStreamReader(
+                stream, "UTF-8"))) {
+            String line;
+            while ((line = rwords.readLine()) != null) {
+                int coff;
+                if ((coff = line.indexOf(" #")) > 0 ||
+                        (coff = line.indexOf("\t#")) > 0) {
+                    line = line.substring(0, coff);
+                }
+                expectedSymbols.add(line.replaceFirst("\\s$", ""));
+            }
+        }
+    }
+
+    /**
+     * Reads lines from the specified UTF-8 {@link InputStream}, stripping off
+     * any content rightward if a comment token -- space-hash, {@code " #"}, or
+     * tab-hash, {@code "\t#"} -- is present beyond the first column; then
+     * optionally stripping off rightward and parsing an integer value if a
+     * vertical bar -- {@code '|'} -- is present beyond the first column; and
+     * then removing any trailing whitespace if either a comment or number was
+     * present.
+     * @param expectedSymbols a required instance to append
+     * @param stream a required instance
+     * @throws IOException if any I/O error occurs
+     */
+    public static void readExpectedSymbols2(
+        List<SimpleEntry<String, Integer>> expectedSymbols,
+        InputStream stream) throws IOException {
+
+        try (BufferedReader rwords = new BufferedReader(new InputStreamReader(
+                stream, "UTF-8"))) {
+            int lineno = 0;
+            String line;
+            while ((line = rwords.readLine()) != null) {
+                ++lineno;
+                int coff;
+                if ((coff = line.indexOf(" #")) > 0 ||
+                        (coff = line.indexOf("\t#")) > 0) {
+                    line = line.substring(0, coff).replaceFirst("\\s$", "");
+                }
+
+                String word = line;
+                Integer v = null;
+
+                coff = line.indexOf('|');
+                if (coff > 0) {
+                    word = line.substring(0, coff).replaceFirst("\\s$", "");
+                    String vstr = line.substring(coff + 1);
+                    try {
+                        v = Integer.parseInt(vstr.trim());
+                    } catch (NumberFormatException e) {
+                        throw new NumberFormatException("line " + lineno +
+                            ": " + e.getMessage());
+                    }
+                }
+                expectedSymbols.add(new SimpleEntry<>(word, v));
+            }
+        }
     }
 
     public static Definitions readTagsFromResource(String tagsResourceName)

@@ -197,6 +197,7 @@ public final class Configuration {
     private LuceneLockName luceneLocking = LuceneLockName.OFF;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
+    private boolean allNonWhitespace;
     private int indexingParallelism;
     private int historyParallelism;
     private int historyRenamedParallelism;
@@ -420,6 +421,7 @@ public final class Configuration {
          */
         // defaults for an opengrok instance configuration
         cmds = new HashMap<>();
+        //allNonWhitespace is default(boolean)
         setAllowedSymlinks(new HashSet<>());
         setAuthorizationWatchdogEnabled(false);
         //setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
@@ -1053,6 +1055,22 @@ public final class Configuration {
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         this.indexVersionedFilesOnly = indexVersionedFilesOnly;
+    }
+
+    /**
+     * Gets a value indicating if all non-whitespace should be indexed for
+     * FULL search. Default is false.
+     */
+    public boolean isAllNonWhitespace() {
+        return allNonWhitespace;
+    }
+
+    /**
+     * Sets a value indicating if all non-whitespace should be indexed for
+     * FULL search.
+     */
+    public void setAllNonWhitespace(boolean value) {
+        this.allNonWhitespace = value;
     }
 
     public int getIndexingParallelism() {

@@ -79,6 +79,27 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     }
 
     /**
+     * Does nothing. Subclasses can override if necessary to alter their
+     * behavior for different modes.
+     */
+    @Override
+    public void setTokenizerMode(TokenizerMode value) {
+    }
+
+    /**
+     * Does nothing. Subclasses can override to determines if {@code str}
+     * starts with a contraction (i.e., a word containing letters and non-word
+     * characters such as "ain't") according to the specific language.
+     * @param str a defined instance
+     * @return 0 if {@code str} does not start with a contraction; or else the
+     * length of the longest initial contraction
+     */
+    @Override
+    public int getLongestContractionPrefix(String str) {
+        return 0;
+    }
+
+    /**
      * Gets the class name value from the last call to
      * {@link #onDisjointSpanChanged(java.lang.String, int)}.
      * @return a defined value or null

@@ -66,6 +66,7 @@ public class FileAnalyzer extends Analyzer {
     protected Ctags ctags;
     protected boolean scopesEnabled;
     protected boolean foldingEnabled;
+    protected boolean allNonWhitespace;
     private final FileAnalyzerFactory factory;
 
     /**
@@ -167,6 +168,14 @@ public class FileAnalyzer extends Analyzer {
 
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = supportsScopes() && foldingEnabled;
+    }
+
+    /**
+     * Sets a value indicating if all non-whitespace should be indexed for
+     * FULL search. Default is false.
+     */
+    public void setAllNonWhitespace(boolean value) {
+        this.allNonWhitespace = value;
     }
 
     protected boolean supportsScopes() {
@@ -319,8 +328,13 @@ public class FileAnalyzer extends Analyzer {
     }
 
     private JFlexTokenizer createPlainFullTokenizer() {
-        return new JFlexTokenizer(new PlainFullTokenizer(
+        JFlexTokenizer tokenizer = new JFlexTokenizer(new PlainFullTokenizer(
                 FileAnalyzer.dummyReader));
+        tokenizer.setTokenizerModeSupplier(() -> {
+            return allNonWhitespace ? TokenizerMode.SYMBOLS_AND_NON_WHITESPACE :
+                TokenizerMode.SYMBOLS_ONLY;
+        });
+        return tokenizer;
     }
 
     @Override

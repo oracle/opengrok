@@ -83,6 +83,7 @@ public class SearchAndContextFormatterTest2 {
     @BeforeClass
     public static void setUpClass() throws Exception {
         env = RuntimeEnvironment.getInstance();
+        env.setAllNonWhitespace(true);
 
         originalProjectsEnabled = env.isProjectsEnabled();
         env.setProjectsEnabled(true);
@@ -145,6 +146,7 @@ public class SearchAndContextFormatterTest2 {
 
     @AfterClass
     public static void tearDownClass() {
+        env.setAllNonWhitespace(null);
         env.setProjectsEnabled(originalProjectsEnabled);
         env.setAllowedSymlinks(new HashSet<>());
 

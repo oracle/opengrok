@@ -17,9 +17,9 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -40,7 +40,8 @@ public class CompatibleAnalyser extends Analyzer {
     protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
             case QueryBuilder.FULL:
-                return new TokenStreamComponents(createPlainFullTokenizer());
+                return new TokenStreamComponents(createPlainFullTokenizer(
+                    TokenizerMode.NON_WHITESPACE_ONLY));
             case QueryBuilder.REFS:
                 return new TokenStreamComponents(createPlainSymbolTokenizer());
             case QueryBuilder.DEFS:
@@ -51,7 +52,8 @@ public class CompatibleAnalyser extends Analyzer {
             case QueryBuilder.HIST:
                 return new HistoryAnalyzer().createComponents(fieldName);
             default:
-                return new TokenStreamComponents(createPlainFullTokenizer());
+                return new TokenStreamComponents(
+                    createPlainFullTokenizer(TokenizerMode.SYMBOLS_ONLY));
         }
     }
 
@@ -60,9 +62,11 @@ public class CompatibleAnalyser extends Analyzer {
                 FileAnalyzer.dummyReader));
     }
 
-    private JFlexTokenizer createPlainFullTokenizer() {
-        return new JFlexTokenizer(new PlainFullTokenizer(
+    private JFlexTokenizer createPlainFullTokenizer(TokenizerMode mode) {
+        JFlexTokenizer tokenizer = new JFlexTokenizer(new PlainFullTokenizer(
                 FileAnalyzer.dummyReader));
+        tokenizer.setTokenizerMode(mode);
+        return tokenizer;
     }
 
     @Override
