@@ -71,12 +71,11 @@ Usage()
     echo "  Message types:"
     echo "    config:"
     echo "     - set or get configuration"
-    echo "     - query is formed in the message <text>:"
+    echo "     - query is formed in the message <tag>:"
     echo "       - \"setconf\"  send configuration to webapp."
-    echo "                      Requires input file as argument."
+    echo "                      Requires input file as argument in <text>."
     echo "       - \"getconf\"  retrieves configuration from webapp."
     echo "                      Prints the configuration in XML to stdout."
-    echo "     - or as a <tag>:"
     echo "       - \"set\"      sets the particular configuration option (only primitive types)"
     echo "                    in the webapp."
     echo "                      Examples:"
@@ -384,11 +383,11 @@ do
             echo "Unknown option \"$opt\"" && Usage && exit 5
         ;;
         *)
-	    if [ "$MESSAGE_TYPE" = "config" -a "$1" = "setconf" ]
-            then
-                MESSAGE_TAGS+=(-g "setconf")
-                shift
-                MESSAGE_FILE="$@"
+	    if [ "$MESSAGE_TYPE" = "config" ]; then
+		tags=${MESSAGE_TAGS[@]}
+		if [ "$tags" == "-g setconf" ]; then
+                    MESSAGE_FILE="$@"
+		fi
 	    else
                 if [ $# -ne 1 ]
                 then
