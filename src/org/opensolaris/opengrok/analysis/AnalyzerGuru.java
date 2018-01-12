@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -531,6 +531,9 @@ public class AnalyzerGuru {
         args.setProject(project);
 
         FileAnalyzer analyzer = factory.getAnalyzer();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        analyzer.setScopesEnabled(env.isScopesEnabled());
+        analyzer.setFoldingEnabled(env.isFoldingEnabled());
         analyzer.writeXref(args);
     }
 

@@ -83,32 +83,32 @@ public class ContextTest {
 
         // Definition search should be used
         QueryBuilder qb = new QueryBuilder().setDefs(term);
-        Context c = new Context(qb.build(), qb.getQueries());
+        Context c = new Context(qb.build(), qb);
         assertFalse(c.isEmpty());
 
         // Symbol search should be used
         qb = new QueryBuilder().setRefs(term);
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertFalse(c.isEmpty());
 
         // Full search should be used
         qb = new QueryBuilder().setFreetext(term);
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertFalse(c.isEmpty());
 
         // History search should not be used
         qb = new QueryBuilder().setHist(term);
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertTrue(c.isEmpty());
 
         // Path search should not be used
         qb = new QueryBuilder().setPath(term);
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertTrue(c.isEmpty());
 
         // Combined search should be fine
         qb = new QueryBuilder().setHist(term).setFreetext(term);
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertFalse(c.isEmpty());
     }
 
@@ -142,7 +142,7 @@ public class ContextTest {
 
         // Search freetext for the term "def"
         QueryBuilder qb = new QueryBuilder().setFreetext("def");
-        Context c = new Context(qb.build(), qb.getQueries());
+        Context c = new Context(qb.build(), qb);
         assertTrue(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
 
         if (hitList) {
@@ -166,7 +166,7 @@ public class ContextTest {
         out = hitList ? null : new StringWriter();
         hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setDefs("def");
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
 
         if (hitList) {
@@ -200,7 +200,7 @@ public class ContextTest {
         out = hitList ? null : new StringWriter();
         hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setDefs("def");
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
 
         if (hitList) {
@@ -221,7 +221,7 @@ public class ContextTest {
         out = hitList ? null : new StringWriter();
         hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setDefs("def");
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
 
         if (hitList) {
@@ -241,7 +241,7 @@ public class ContextTest {
         out = hitList ? null : new StringWriter();
         hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setFreetext("no_match");
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertFalse(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
         if (hitList) {
             assertEquals(0, hits.size());
@@ -254,7 +254,7 @@ public class ContextTest {
         out = hitList ? null : new StringWriter();
         hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setHist("abc");
-        c = new Context(qb.build(), qb.getQueries());
+        c = new Context(qb.build(), qb);
         assertFalse(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
         if (hitList) {
             assertEquals(0, hits.size());
@@ -280,7 +280,7 @@ public class ContextTest {
                 substring.length);
         Reader in = new CharArrayReader(chars);
         QueryBuilder qb = new QueryBuilder().setFreetext("test");
-        Context c = new Context(qb.build(), qb.getQueries());
+        Context c = new Context(qb.build(), qb);
         StringWriter out = new StringWriter();
         boolean match
                 = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
@@ -310,7 +310,7 @@ public class ContextTest {
         StringWriter out = new StringWriter();
 
         QueryBuilder qb = new QueryBuilder().setFreetext("search_for_me");
-        Context c = new Context(qb.build(), qb.getQueries());
+        Context c = new Context(qb.build(), qb);
 
         boolean match
                 = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
@@ -339,7 +339,7 @@ public class ContextTest {
         StringWriter out = new StringWriter();
 
         QueryBuilder qb = new QueryBuilder().setFreetext("search_for_me");
-        Context c = new Context(qb.build(), qb.getQueries());
+        Context c = new Context(qb.build(), qb);
 
         boolean match
                 = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
@@ -369,7 +369,7 @@ public class ContextTest {
         // input file. The generated HTML fragment is inserted inside a root
         // element so that the StringWriter contains a valid XML document.
         QueryBuilder qb = new QueryBuilder().setFreetext("\"a b c\"");
-        Context c = new Context(qb.build(), qb.getQueries());
+        Context c = new Context(qb.build(), qb);
         assertTrue(
                 "No match found",
                 c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null));
@@ -408,7 +408,7 @@ public class ContextTest {
         StringReader in = new StringReader("Mixed case: abc AbC dEf\n");
         StringWriter out = new StringWriter();
         QueryBuilder qb = new QueryBuilder().setFreetext("mixed");
-        Context c = new Context(qb.build(), qb.getQueries());
+        Context c = new Context(qb.build(), qb);
         assertTrue(c.getContext(in, out, "", "", "", null, false, qb.isDefSearch(), null));
         assertEquals("<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> "
                 + "<b>Mixed</b> case: abc AbC dEf</a><br/>",
@@ -465,7 +465,7 @@ public class ContextTest {
         defs.addTag(2, "bug17582", "type1", "text1", 0, 0);
         defs.addTag(3, "Bug17582", "type2", "text2", 0, 0);
 
-        Context context = new Context(builder.build(), builder.getQueries());
+        Context context = new Context(builder.build(), builder);
         ArrayList<Hit> hits = new ArrayList<>();
         assertEquals(lines.length != 0,
                 context.getContext(in, null, "", "", "", defs, false, builder.isDefSearch(), hits));
@@ -506,7 +506,7 @@ public class ContextTest {
         StringWriter out = new StringWriter();
 
         QueryBuilder qb = new QueryBuilder().setFreetext(queryString);
-        Context c = new Context(qb.build(), qb.getQueries());
+        Context c = new Context(qb.build(), qb);
 
         boolean match
                 = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);

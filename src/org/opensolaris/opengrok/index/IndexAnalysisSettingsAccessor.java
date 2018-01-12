@@ -55,12 +55,28 @@ public class IndexAnalysisSettingsAccessor {
 
     /**
      * Searches for a document with a {@link QueryBuilder#OBJUID} value matching
-     * {@link #INDEX_ANALYSIS_SETTINGS_OBJUID}.
+     * {@link #INDEX_ANALYSIS_SETTINGS_OBJUID}. The first document found is
+     * returned, so this should not be called with a MultiReader.
      * @param reader a defined instance
      * @return a defined instance or {@code null} if none could be found
      * @throws IOException if I/O error occurs while searching Lucene
      */
     public IndexAnalysisSettings read(IndexReader reader) throws IOException {
+        IndexAnalysisSettings[] res = read(reader, 1);
+        return res.length > 0 ? res[0] : null;
+    }
+
+    /**
+     * Searches for documents with a {@link QueryBuilder#OBJUID} value matching
+     * {@link #INDEX_ANALYSIS_SETTINGS_OBJUID}.
+     * @param reader a defined instance
+     * @param n a limit to the number of documents returned. The method may
+     * return less.
+     * @return a defined instance, which is empty if none could be found
+     * @throws IOException if I/O error occurs while searching Lucene
+     */
+    public IndexAnalysisSettings[] read(IndexReader reader, int n)
+            throws IOException {
         IndexSearcher searcher = new IndexSearcher(reader);
         Query q;
         try {
@@ -70,20 +86,24 @@ public class IndexAnalysisSettingsAccessor {
             // This is not expected, so translate to RuntimeException.
             throw new RuntimeException(ex);
         }
-        TopDocs top = searcher.search(q, 1);
-        if (top.totalHits < 1) {
-            return null;
-        }
+        TopDocs top = searcher.search(q, n);
 
-        Document doc = searcher.doc(top.scoreDocs[0].doc);
-        IndexableField objser = doc.getField(QueryBuilder.OBJSER);
-        try {
-            return objser == null ? null : IndexAnalysisSettings.deserialize(
-                objser.binaryValue().bytes);
-        } catch (ClassNotFoundException ex) {
-            // This is not expected, so translate to RuntimeException.
-            throw new RuntimeException(ex);
+        int nres = top.totalHits > n ? n : (int)top.totalHits;
+        IndexAnalysisSettings[] res = new IndexAnalysisSettings[nres];
+
+        for (int i = 0; i < nres; ++i) {
+            Document doc = searcher.doc(top.scoreDocs[i].doc);
+            IndexableField objser = doc.getField(QueryBuilder.OBJSER);
+            try {
+                res[i] = objser == null ? null :
+                    IndexAnalysisSettings.deserialize(
+                        objser.binaryValue().bytes);
+            } catch (ClassNotFoundException ex) {
+                // This is not expected, so translate to RuntimeException.
+                throw new RuntimeException(ex);
+            }
         }
+        return res;
     }
 
     /**

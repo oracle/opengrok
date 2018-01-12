@@ -27,19 +27,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.OGKTextField;
+import org.opensolaris.opengrok.analysis.OGKTextVecField;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import org.opensolaris.opengrok.analysis.Xrefer;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.NullWriter;
 
@@ -49,6 +52,9 @@ import org.opensolaris.opengrok.util.NullWriter;
  * @author Chandan
  */
 public class PlainAnalyzer extends TextAnalyzer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        PlainAnalyzer.class);
 
     /**
      * Creates a new instance of PlainAnalyzer
@@ -88,16 +94,16 @@ public class PlainAnalyzer extends TextAnalyzer {
             throws IOException, InterruptedException {
         Definitions defs = null;
 
-        doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
+        doc.add(new OGKTextField(QueryBuilder.FULL,
+            getReader(src.getStream())));
+
         String fullpath = doc.get(QueryBuilder.FULLPATH);
         if (fullpath != null && ctags != null) {
             defs = ctags.doCtags(fullpath);
             if (defs != null && defs.numberOfSymbols() > 0) {
-                DefinitionsTokenStream defstream = new DefinitionsTokenStream();
-                defstream.initialize(defs, src, null);
-                doc.add(new TextField(QueryBuilder.DEFS, defstream));
+                tryAddingDefs(doc, defs, src, fullpath);
                 //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
-                TextField ref = new TextField(QueryBuilder.REFS,
+                OGKTextField ref = new OGKTextField(QueryBuilder.REFS,
                     this.symbolTokenizer);
                 this.symbolTokenizer.setReader(getReader(src.getStream()));
                 doc.add(ref);
@@ -133,5 +139,52 @@ public class PlainAnalyzer extends TextAnalyzer {
                 addLOC(doc, xref.getLOC());
             }
         }
+    }
+
+    private void tryAddingDefs(Document doc, Definitions defs, StreamSource src,
+        String fullpath) throws IOException {
+
+        DefinitionsTokenStream defstream = new DefinitionsTokenStream();
+        defstream.initialize(defs, src, (reader) -> wrapReader(reader));
+
+        /**
+         *     Testing showed that UnifiedHighlighter will fall back to
+         * ANALYSIS in the presence of multi-term queries (MTQs) such as
+         * prefixes and wildcards even for fields that are analyzed with
+         * POSTINGS -- i.e. with DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS.
+         * This is despite UnifiedHighlighter seeming to indicate that
+         * postings should be sufficient in the comment for
+         * shouldHandleMultiTermQuery(String): "MTQ highlighting can be
+         * expensive, particularly when using offsets in postings."
+         *     DEFS re-analysis will not be correct, however, as the
+         * PlainAnalyzer which UnifiedHighlighter will use on-the-fly will
+         * not correctly integrate ctags Definitions.
+         *     Storing term vectors, however, allows UnifiedHighlighter to
+         * avoid re-analysis at the cost of a larger index. As DEFS are a
+         * small subset of source text, it seems worth the cost to get
+         * accurate highlighting for DEFS MTQs.
+         */
+        doc.add(new OGKTextVecField(QueryBuilder.DEFS, defstream));
+    }
+
+    /**
+     * Identical to {@link #getReader(java.io.InputStream)} but overlaying an
+     * existing stream.
+     * @see #getReader(java.io.InputStream)
+     */
+    private Reader wrapReader(Reader reader) {
+        return ExpandTabsReader.wrap(reader, project);
+    }
+
+    private static boolean bytesEqual(byte[] a, byte[] b) {
+        if (a.length != b.length) {
+            return false;
+        }
+        for (int i = 0; i < a.length; ++i) {
+            if (a[i] != b[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 }

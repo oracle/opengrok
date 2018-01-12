@@ -54,6 +54,7 @@ import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
+import org.opensolaris.opengrok.index.IndexAnalysisSettings;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Prefix;
@@ -82,9 +83,10 @@ public final class Results {
      * @throws CorruptIndexException
      * @throws IOException
      */
-    private static Map<String, ArrayList<Document>> createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx)
+    private static Map<String, ArrayList<Integer>> createMap(
+        IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx)
             throws CorruptIndexException, IOException {
-        LinkedHashMap<String, ArrayList<Document>> dirHash =
+        LinkedHashMap<String, ArrayList<Integer>> dirHash =
                 new LinkedHashMap<>();
         for (int i = startIdx; i < stopIdx; i++) {
             int docId = hits[i].doc;
@@ -96,12 +98,12 @@ public final class Results {
             }
 
             String parent = rpath.substring(0, rpath.lastIndexOf('/'));
-            ArrayList<Document> dirDocs = dirHash.get(parent);
+            ArrayList<Integer> dirDocs = dirHash.get(parent);
             if (dirDocs == null) {
                 dirDocs = new ArrayList<>();
                 dirHash.put(parent, dirDocs);
             }
-            dirDocs.add(doc);
+            dirDocs.add(docId);
         }
         return dirHash;
     }
@@ -167,7 +169,9 @@ public final class Results {
         String xrefPrefixE = ctxE + Prefix.XREF_P;
         File xrefDataDir = new File(sh.dataRoot, Prefix.XREF_P.toString());
 
-        for (Map.Entry<String, ArrayList<Document>> entry :
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        for (Map.Entry<String, ArrayList<Integer>> entry :
                 createMap(sh.searcher, sh.hits, start, end).entrySet()) {
             String parent = entry.getKey();
             out.write("<tr class=\"dir\"><td colspan=\"3\"><a href=\"");
@@ -191,8 +195,12 @@ public final class Results {
                 out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
                 out.write("</a>");
             }
+
+            int tabSize = sh.getTabSize(p);
+
             out.write("</td></tr>");
-            for (Document doc : entry.getValue()) {
+            for (int docId : entry.getValue()) {
+                Document doc = sh.searcher.doc(docId);
                 String rpath = doc.get(QueryBuilder.PATH);
                 String rpathE = Util.URIEncodePath(rpath);
                 DateFormat df;
@@ -202,7 +210,7 @@ public final class Results {
                 out.write(xrefPrefixE);
                 out.write(rpathE);
                 out.write("\"");
-                if (RuntimeEnvironment.getInstance().isLastEditedDisplayMode()) {
+                if (env.isLastEditedDisplayMode()) {
                     try {
                         // insert last edited date if possible
                         df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
@@ -222,18 +230,6 @@ public final class Results {
                 out.write("</td><td><tt class=\"con\">");
                 if (sh.sourceContext != null) {
                     Genre genre = Genre.get(doc.get("t"));
-                    Definitions tags = null;
-                    IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
-                    if (tagsField != null) {
-                        tags = Definitions.deserialize(tagsField.binaryValue().bytes);
-                    }
-                    Scopes scopes;
-                    IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
-                    if (scopesField != null) {
-                        scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
-                    } else {
-                        scopes = new Scopes();
-                    }
                     if (Genre.XREFABLE == genre && sh.summarizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);
                         // FIXME use Highlighter from lucene contrib here,
@@ -243,14 +239,9 @@ public final class Results {
                     } else if (Genre.HTML == genre && sh.summarizer != null) {
                         String htags = getTags(sh.sourceRoot, rpath, false);
                         out.write(sh.summarizer.getSummary(htags).toString());
-                    } else {
-                        // SRCROOT is read with UTF-8 as a default.
-                        Reader r = genre == Genre.PLAIN ?
-                            IOUtils.createBOMStrippedReader(
-                            new FileInputStream(new File(sh.sourceRoot, rpath)),
-                            StandardCharsets.UTF_8.name()) : null;
-                        sh.sourceContext.getContext(r, out, xrefPrefix, morePrefix, 
-                                rpath, tags, true, sh.builder.isDefSearch(), null, scopes);
+                    } else if (genre == Genre.PLAIN) {
+                        printPlain(sh, env, doc, docId, out, rpath,
+                            xrefPrefix, morePrefix, tabSize);
                     }
                 }
 
@@ -259,6 +250,46 @@ public final class Results {
                             rpath, out, sh.contextPath);
                 }
                 out.write("</tt></td></tr>\n");
+            }
+        }
+    }
+
+    private static void printPlain(SearchHelper searcHelper,
+        RuntimeEnvironment env, Document doc, int docId, Writer out,
+        String rpath, String xrefPrefix, String morePrefix, int tabSize)
+            throws ClassNotFoundException, IOException {
+
+        searcHelper.sourceContext.toggleAlt();
+
+        boolean didPresentNew = searcHelper.sourceContext.getContext2(env,
+            searcHelper.searcher, docId, out, xrefPrefix, morePrefix, true,
+            tabSize);
+
+        if (!didPresentNew) {
+            /**
+             * Fall back to the old view, which re-analyzes text using
+             * PlainLinetokenizer. E.g., when source code is updated (thus
+             * affecting SHA hashes) but re-indexing is not yet complete.
+             */
+            Definitions tags = null;
+            IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
+            if (tagsField != null) {
+                tags = Definitions.deserialize(tagsField.binaryValue().bytes);
+            }
+            Scopes scopes;
+            IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
+            if (scopesField != null) {
+                scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
+            } else {
+                scopes = new Scopes();
+            }
+            boolean isDefSearch = searcHelper.builder.isDefSearch();
+            // SRCROOT is read with UTF-8 as a default.
+            try (Reader r = IOUtils.createBOMStrippedReader(new FileInputStream(
+                    new File(searcHelper.sourceRoot, rpath)),
+                    StandardCharsets.UTF_8.name())) {
+                searcHelper.sourceContext.getContext(r, out, xrefPrefix,
+                    morePrefix, rpath, tags, true, isDefSearch, null, scopes);
             }
         }
     }

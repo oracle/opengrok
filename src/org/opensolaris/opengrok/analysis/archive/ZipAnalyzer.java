@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -28,11 +29,12 @@ import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.IteratorReader;
 import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opensolaris.opengrok.analysis.OGKTextField;
+import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -62,6 +64,6 @@ public class ZipAnalyzer extends FileAnalyzer {
             }
         }
 
-        doc.add(new TextField("full", new IteratorReader(names)));
+        doc.add(new OGKTextField(QueryBuilder.FULL, new IteratorReader(names)));
     }
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.web;
 
@@ -28,6 +28,7 @@ package org.opensolaris.opengrok.web;
  */
 public class HtmlConsts {
     public static final String SPAN_A = "<span class=\"a\">";
+    public static final String SPAN_B = "<span class=\"b\">";
     public static final String SPAN_C = "<span class=\"c\">";
     public static final String SPAN_D = "<span class=\"d\">";
     public static final String SPAN_N = "<span class=\"n\">";
@@ -44,4 +45,10 @@ public class HtmlConsts {
     public static final String NUMBER_CLASS = "n";
     public static final String STRING_CLASS = "s";
 
+    public static final String B = "<b>";
+    public static final String ZB = "</b>";
+
+    public static final String BR = "<br/>";
+
+    public static final String HELLIP = "&hellip;";
 }
