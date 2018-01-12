@@ -68,7 +68,7 @@ class MercurialRepository(Repository):
             hg_command.append(branch)
         cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
         cmd.execute()
-        self.logger.info(cmd.getoutput())
+        self.logger.info(cmd.getoutputstr())
 	#
 	# 'hg incoming' will return 1 if there are no incoming changesets,
 	# so do not check the return value.
@@ -83,7 +83,7 @@ class MercurialRepository(Repository):
             hg_command.append(branch)
         cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
         cmd.execute()
-        self.logger.info(cmd.getoutput())
+        self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             self.logger.error("failed to perform pull")
             return 1
@@ -95,7 +95,7 @@ class MercurialRepository(Repository):
             hg_command.append("--check")
         cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
         cmd.execute()
-        self.logger.info(cmd.getoutput())
+        self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             self.logger.error("failed to perform pull and update")
             return 1

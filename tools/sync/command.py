@@ -167,6 +167,12 @@ class Command:
         else:
             return self.returncode
 
+    def getoutputstr(self):
+        if self.state is Command.FINISHED:
+            return "".join(self.out).strip()
+        else:
+            return None
+
     def getoutput(self):
         if self.state is Command.FINISHED:
             return self.out

@@ -44,7 +44,7 @@ class CVSRepository(Repository):
         hg_command = [self.command, "update", "-dP"]
         cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
         cmd.execute()
-        self.logger.info(cmd.getoutput())
+        self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             self.logger.error("failed to perform update for {}".
                               format(self.path))
