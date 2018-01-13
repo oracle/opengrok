@@ -1015,6 +1015,9 @@ public class IndexDatabase {
                             x.exception = e;
                             ret = false;
                         } catch (RuntimeException|IOException e) {
+                            String errmsg = String.format("ERROR addFile(): %s",
+                                x.file);
+                            LOGGER.log(Level.WARNING, errmsg, e);
                             x.exception = e;
                             ret = false;
                         } finally {

@@ -52,20 +52,21 @@ public class Ctags {
     private static final long SIGNALWAIT_MS = 5000;
 
     /**
-     * Wait up to 60 seconds for ctags to run, which is a very long time for a
+     * Wait up to 90 seconds for ctags to run, which is a very long time for a
      * single run but is really intended for detecting blocked ctags processes
      * as happened with @tuxillo's testing of
      * <a href="https://github.com/oracle/opengrok/pull/1936">
      * Feature/deferred_ops</a>.
      */
-    private static final long CTAGSWAIT_S = 60;
+    private static final long CTAGSWAIT_S = 90;
 
     private final ScheduledThreadPoolExecutor schedExecutor;
     private final CtagsBuffer buffer = new CtagsBuffer();
     private final Object syncRoot = new Object();
     private volatile boolean closing;
     private volatile boolean signalled;
-    private Process ctags;
+    private volatile Process ctags;
+    private volatile IOException startIOException;
     private Thread errThread;
     private Thread outThread;
     private OutputStreamWriter ctagsIn;
@@ -119,13 +120,13 @@ public class Ctags {
         if (ctags != null) {
             closing = true;
             LOGGER.log(Level.FINE, "Destroying ctags command");
-            ctags.destroy();
+            ctags.destroyForcibly();
         }
     }
 
-    private void initialize() throws IOException {
+    private void initialize() throws IOException, InterruptedException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (processBuilder == null) {
+        if (true) {
             List<String> command = new ArrayList<>();
 
             command.add(binary);
@@ -329,7 +330,62 @@ public class Ctags {
             processBuilder = new ProcessBuilder(command);
         }
 
-        ctags = processBuilder.start();
+        Thread clientThread = Thread.currentThread();
+
+        startIOException = null;
+        // Start ctags on a separate, daemon thread in case start() blocks.
+        Thread startThread = new Thread(() -> {
+            try {
+                Process newCtags = processBuilder.start();
+                LOGGER.log(Level.FINE, "Executed ctags command re t{0}",
+                    clientThread.getId());
+                synchronized(syncRoot) {
+                    ctags = newCtags;
+                    syncRoot.notify();
+                }
+            } catch (IOException e) {
+                startIOException = e;
+            }
+        });
+        startThread.setDaemon(true);
+        startThread.start();
+
+        // Set a timeout so the client thread does not wait indefinitely.
+        ScheduledFuture startTimeout = schedExecutor.schedule(() -> {
+            LOGGER.log(Level.FINE, "Ctags startTimeout executing re t{0}.",
+                clientThread.getId());
+            clientThread.interrupt();
+            /**
+             * No point in interrupting startThread, since nothing it executes
+             * is interruptible.
+             */
+            LOGGER.log(Level.FINE, "Ctags startTimeout executed.");
+        }, CTAGSWAIT_S, TimeUnit.SECONDS);
+
+        // Wait until startThread sets the ctags field, until timeout, or error.
+        synchronized(syncRoot) {
+            while (ctags == null) {
+                if (startIOException != null) {
+                    startTimeout.cancel(false);
+                    throw startIOException;
+                }
+                try {
+                    syncRoot.wait(SIGNALWAIT_MS);
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Ctags did not start--{0}",
+                        e.getMessage());
+                    startTimeout.cancel(false);
+                    throw e;
+                }
+            }
+        }
+
+        startTimeout.cancel(false);
+        /*
+         * If the timeout could not be truly canceled in time, then ignore it.
+         */
+        Thread.interrupted();
+
         ctagsIn = new OutputStreamWriter(ctags.getOutputStream());
         ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream()));
 
@@ -364,26 +420,23 @@ public class Ctags {
 
     public Definitions doCtags(String file) throws IOException,
             InterruptedException {
-        boolean ctagsRunning = false;
+        if (file.length() < 1 || "\n".equals(file)) return null;
+
         if (ctags != null) {
             try {
                 int exitValue = ctags.exitValue();
                 // If it is possible to retrieve exit value without exception
-                // this means the ctags process is dead so we must restart it.
-                ctagsRunning = false;
+                // this means the ctags process is dead.
                 LOGGER.log(Level.WARNING, "Ctags process exited with exit value {0}",
                         exitValue);
+                // Throw the following to indicate non-I/O error for retry.
+                throw new InterruptedException("ctags died");
             } catch (IllegalThreadStateException exp) {
-                ctagsRunning = true;
                 // The ctags process is still running.
             }
-        }
-
-        if (!ctagsRunning) {
+        } else {
             initialize();
         }
-
-        if (file.length() < 1 || "\n".equals(file)) return null;
 
         synchronized(syncRoot) {
             signalled = true;
@@ -392,10 +445,12 @@ public class Ctags {
 
         Thread clientThread = Thread.currentThread();
         ScheduledFuture futureTimeout = schedExecutor.schedule(() -> {
-            LOGGER.log(Level.WARNING, "Ctags futureTimeout executing.");
+            LOGGER.log(Level.FINE, "Ctags futureTimeout executing re t{0}.",
+                clientThread.getId());
             clientThread.interrupt();
             outThread.interrupt();
             ctags.destroyForcibly();
+            LOGGER.log(Level.FINE, "Ctags futureTimeout executed.");
         }, CTAGSWAIT_S, TimeUnit.SECONDS);
 
         Definitions ret;
@@ -545,9 +600,6 @@ public class Ctags {
             CtagsReader rdr = new CtagsReader();
             try {
                 readTags(rdr);
-                if (Thread.interrupted()) {
-                    throw new InterruptedException("readTags()");
-                }
                 Definitions defs = rdr.getDefinitions();
                 buffer.put(defs);
             } catch (InterruptedException ex) {
