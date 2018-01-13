@@ -37,15 +37,18 @@ org.opensolaris.opengrok.configuration.Project
     if (request.getCharacterEncoding() == null) {
         request.setCharacterEncoding("UTF-8");
     }
-
-    PageConfig cfg = PageConfig.get(request);
-    cfg.getEnv().setUrlPrefix(request.getContextPath() + Prefix.SEARCH_R + "?");
-
-    String projects = cfg.getRequestedProjectsAsString();
-    if (projects.length() != 0) {
-        Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(projects, "utf-8"));
-        response.addCookie(cookie);
-    }
+	PageConfig cfg = PageConfig.get(request);
+	if (cfg.isSearchAll()) {
+		cfg.resetCookie(PageConfig.OPEN_GROK_PROJECT, request, response);
+	}
+	else {
+		cfg.getEnv().setUrlPrefix(request.getContextPath() + Prefix.SEARCH_R + "?");
+		String projects = cfg.getRequestedProjectsAsString();
+		if (projects.length() != 0) {
+			Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(projects, "utf-8"));
+			response.addCookie(cookie);
+		}
+	}
 }
 /* ---------------------- projects.jspf end --------------------- */
 %>
