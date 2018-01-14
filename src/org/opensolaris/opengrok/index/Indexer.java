@@ -50,6 +50,7 @@ import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.AnalyzerGuruHelp;
 import org.opensolaris.opengrok.configuration.Configuration;
+import org.opensolaris.opengrok.configuration.ConfigurationHelp;
 import org.opensolaris.opengrok.configuration.LuceneLockName;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -136,6 +137,8 @@ public final class Indexer {
                 System.err.println(helpUsage);
                 if (helpDetailed) {
                     System.err.println(AnalyzerGuruHelp.getUsage());
+                    System.err.println(
+                        ConfigurationHelp.getSamples());
                 }
                 System.exit(status);
             }

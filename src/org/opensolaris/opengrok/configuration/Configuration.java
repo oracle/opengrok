@@ -389,7 +389,7 @@ public final class Configuration {
         setCachePages(5);
         setCommandTimeout(600); // 10 minutes
         setCompressXref(true);
-        setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
+        //ctags is default(String)
         setCurrentIndexedCollapseThreshold(27);
         setDataRoot(null);
         setDisplayRepositories(true);
@@ -408,7 +408,7 @@ public final class Configuration {
         setIndexVersionedFilesOnly(false);
         setLastEditedDisplayMode(true);
         //luceneLocking default is OFF
-        setMandoc(System.getProperty("org.opensolaris.opengrok.analysis.Mandoc", null));
+        //mandoc is default(String)
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMessageLimit(500);
         setOptimizeDatabase(true);

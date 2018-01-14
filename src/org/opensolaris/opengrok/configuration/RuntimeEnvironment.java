@@ -138,6 +138,19 @@ public final class RuntimeEnvironment {
     private static IndexTimestamp indexTime = new IndexTimestamp();
 
     /**
+     * Stores a transient value when
+     * {@link #setCtags(java.lang.String)} is called -- i.e. the
+     * value is not mediated to {@link Configuration}.
+     */
+    private String ctags;
+    /**
+     * Stores a transient value when
+     * {@link #setMandoc(java.lang.String)} is called -- i.e. the
+     * value is not mediated to {@link Configuration}.
+     */
+    private String mandoc;
+
+    /**
      * Instance of authorization framework.
      */
     private AuthorizationFramework authFramework;
@@ -529,39 +542,62 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the name of the ctags program in use
-     *
-     * @return the name of the ctags program in use
+     * Gets the name of the ctags program to use: either the last value passed
+     * successfully to {@link #setCtags(java.lang.String)}, or
+     * {@link Configuration#getCtags()}, or the system property for
+     * {@code "org.opensolaris.opengrok.analysis.Ctags"}, or "ctags" as a
+     * default.
+     * @return a defined value
      */
     public String getCtags() {
-        return threadConfig.get().getCtags();
+        String value;
+        return ctags != null ? ctags : (value =
+            threadConfig.get().getCtags()) != null ? value :
+            System.getProperty("org.opensolaris.opengrok.analysis.Ctags",
+            "ctags");
     }
 
     /**
-     * Specify the CTags program to use
+     * Sets the name of the ctags program to use, or resets to use the fallbacks
+     * documented for {@link #getCtags()}.
+     * <p>
+     * N.b. the value is not mediated to {@link Configuration}.
      *
-     * @param ctags the ctags program to use
+     * @param ctags a defined value or {@code null} to reset to use the
+     * {@link Configuration#getCtags()} fallbacks
+     * @see #getCtags()
      */
     public void setCtags(String ctags) {
-        threadConfig.get().setCtags(ctags);
+        this.ctags = ctags;
     }
 
     /**
-     * Get the name of the mandoc program in use
-     *
-     * @return the name of the mandoc program in use or {@code null}
+     * Gets the name of the mandoc program to use: either the last value passed
+     * successfully to {@link #setMandoc(java.lang.String)}, or
+     * {@link Configuration#getMandoc()}, or the system property for
+     * {@code "org.opensolaris.opengrok.analysis.Mandoc"}, or {@code null} as a
+     * default.
+     * @return a defined instance or {@code null}
      */
     public String getMandoc() {
-        return threadConfig.get().getMandoc();
+        String value;
+        return mandoc != null ? mandoc : (value =
+            threadConfig.get().getMandoc()) != null ? value :
+            System.getProperty("org.opensolaris.opengrok.analysis.Mandoc");
     }
 
     /**
-     * Specify the mandoc program to use
+     * Sets the name of the mandoc program to use, or resets to use the
+     * fallbacks documented for {@link #getMandoc()}.
+     * <p>
+     * N.b. the value is not mediated to {@link Configuration}.
      *
-     * @param value the mandoc program to use or {@code null}
+     * @param value a defined value or {@code null} to reset to use the
+     * {@link Configuration#getMandoc()} fallbacks
+     * @see #getMandoc()
      */
     public void setMandoc(String value) {
-        threadConfig.get().setMandoc(value);
+        mandoc = value;
     }
 
     public int getCachePages() {
