@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -34,7 +35,7 @@ import java.util.logging.Logger;
  * @author Trond Norbye
  */
 @SuppressWarnings("PMD.SystemPrintln")
-class DefaultIndexChangedListener implements IndexChangedListener {
+public class DefaultIndexChangedListener implements IndexChangedListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultIndexChangedListener.class);
 
