@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -94,7 +94,7 @@ public class CtagsTest {
     private static Definitions getDefs(String fileName) throws Exception {
         String path = repository.getSourceRoot() + File.separator
                 + fileName.replace('/', File.separatorChar);
-        return ctags.doCtags(new File(path).getAbsolutePath() + "\n");
+        return ctags.doCtags(new File(path).getAbsolutePath());
     }
 
     /**

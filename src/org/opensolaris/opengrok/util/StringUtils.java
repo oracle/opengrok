@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.util;
@@ -33,6 +33,18 @@ import java.util.regex.Pattern;
  * @author austvik
  */
 public final class StringUtils {
+
+    /**
+     * Matches a standard end-of-line indicator, identical to Common.lexh's
+     * {EOL}
+     * <pre>
+     * {@code
+     * \r?\n|\r
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    public static final Pattern STANDARD_EOL = Pattern.compile("\\r?\\n|\\r");
 
     /**
      * Matches an apostrophe not following a backslash escape or following an

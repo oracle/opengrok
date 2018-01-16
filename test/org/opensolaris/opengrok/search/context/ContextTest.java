@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.search.context;
 
@@ -160,7 +161,7 @@ public class ContextTest {
 
         // Search with definitions
         Definitions defs = new Definitions();
-        defs.addTag(1, "def", "type", "text");
+        defs.addTag(1, "def", "type", "text", 0, 0);
         in = new StringReader("abc def ghi\n");
         out = hitList ? null : new StringWriter();
         hits = hitList ? new ArrayList<>() : null;
@@ -215,7 +216,7 @@ public class ContextTest {
         assertEquals(expectedOutput, actualOutput);
 
         defs = new Definitions();
-        defs.addTag(2, "def", "type", "text");
+        defs.addTag(2, "def", "type", "text", 0, 0);
         in = new StringReader("abc1 def ghi\nabc def ghi\nabc3 def ghi\n");
         out = hitList ? null : new StringWriter();
         hits = hitList ? new ArrayList<>() : null;
@@ -461,8 +462,8 @@ public class ContextTest {
 
         StringReader in = new StringReader("abc\nbug17582\nBug17582\n");
         Definitions defs = new Definitions();
-        defs.addTag(2, "bug17582", "type1", "text1");
-        defs.addTag(3, "Bug17582", "type2", "text2");
+        defs.addTag(2, "bug17582", "type1", "text1", 0, 0);
+        defs.addTag(3, "Bug17582", "type2", "text2", 0, 0);
 
         Context context = new Context(builder.build(), builder.getQueries());
         ArrayList<Hit> hits = new ArrayList<>();

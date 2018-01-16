@@ -20,6 +20,7 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -75,6 +76,58 @@ public class ExpandTabsReader extends FilterReader {
         } else {
             return in;
         }
+    }
+
+    /**
+     * Wrap a reader in an {@link ExpandTabsReader} if the {@code tabSize} is
+     * positive.
+     * @param in the reader to wrap
+     * @param tabSize a value effective only if greater than zero
+     * @return {@code in} if the {@code tabSize} is not positive;
+     * otherwise, an {@code ExpandTabsReader} that wraps {@code in} and expands
+     * tabs
+     */
+    public static Reader wrap(Reader in, int tabSize) {
+        return tabSize < 1 ? in : new ExpandTabsReader(in, tabSize);
+    }
+
+    /**
+     * Translates a specified {@code line} {@code column} offset (0-based) to an
+     * offset computed when translating for the specified tab size in accordance
+     * with {@link ExpandTabsReader} read handling.
+     * @param line a defined instance
+     * @param column a value greater than or equal to zero and less than or
+     * equal to {@code line} length
+     * @param tabSize a value effective only if greater than zero
+     * @return a translated offset
+     * @throws IllegalArgumentException if {@code column} is invalid for
+     * {@code line}
+     */
+    public static int translate(String line, int column, int tabSize) {
+        if (column < 0) {
+            throw new IllegalArgumentException("`column' is negative");
+        }
+        if (column > line.length()) {
+            throw new IllegalArgumentException("`column' is out of bounds");
+        }
+        if (tabSize < 1) return column;
+
+        int newColumn = 0;
+        for (int i = 0; i < column; ++i) {
+            char c = line.charAt(i);
+            switch (c) {
+                case '\t':
+                    // Fill up with spaces up to the next tab stop
+                    newColumn += tabSize - (newColumn % tabSize);
+                    break;
+                default:
+                    // \r or \n are not expected so do not handle specially.
+                    ++newColumn;
+                    break;
+            }
+        }
+
+        return newColumn;
     }
 
     @Override
