@@ -41,7 +41,6 @@ public class BooleanUtil {
      * <li>on</li>
      * <li>1</li>
      * </ul>
-     * </p>
      *
      * @param value the string value
      * @return if the value is boolean or not

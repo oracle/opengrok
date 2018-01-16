@@ -36,13 +36,17 @@ import org.apache.commons.jrcs.rcs.ParseException;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
- * Virtualise RCS log as an input stream
+ * Virtualize RCS log as an input stream
  */
 public class RCSget extends InputStream {
     private InputStream stream;
 
     /**
      * Pass null in version to get current revision
+     * @param file file contents to get
+     * @param version specified revision or @{code null}
+     * @throws java.io.IOException if I/O exception occurred
+     * @throws java.io.FileNotFoundException if the file cannot be found
      */
     public RCSget(String file, String version) throws IOException, FileNotFoundException {
         try {

@@ -1085,6 +1085,7 @@ public class IndexDatabase {
     /**
      * Get number of documents in this index database.
      * @return number of documents
+     * @throws IOException if I/O exception occurred
      */
     public int getNumFiles() throws IOException {
         IndexReader ireader = null;

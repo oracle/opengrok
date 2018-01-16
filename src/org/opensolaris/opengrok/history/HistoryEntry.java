@@ -62,7 +62,10 @@ public class HistoryEntry {
         changeRequests = new ArrayList<String>();
     }
     
-    /** Copy constructor */
+    /**
+     * Copy constructor
+     * @param that HistoryEntry object
+     */
     public HistoryEntry(HistoryEntry that) {
         this.revision = that.revision;
         this.date = that.date;

@@ -295,7 +295,7 @@ public class ProjectMessage extends Message {
     /**
      * Validate ProjectMessage.
      * Tags are project names, text is command (add/delete)
-     * @throws Exception 
+     * @throws Exception exception
      */
     @Override
     public void validate() throws Exception {

@@ -70,7 +70,7 @@ public class RepositoryMessage extends Message {
     /**
      * Validate the message.
      * Tag is repository path, text is command.
-     * @throws Exception 
+     * @throws Exception exception
      */
     @Override
     public void validate() throws Exception {

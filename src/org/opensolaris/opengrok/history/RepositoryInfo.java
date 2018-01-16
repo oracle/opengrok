@@ -132,7 +132,7 @@ public class RepositoryInfo implements Serializable {
     /**
      * Set the property working
      *
-     * @param working
+     * @param working is repository working
      */
     public void setWorking(Boolean working) {
         this.working = working;
@@ -151,7 +151,7 @@ public class RepositoryInfo implements Serializable {
     /**
      * Set the property remote
      *
-     * @param remote
+     * @param remote is remote repository
      */
     public void setRemote(boolean remote) {
         this.remote = remote;
@@ -169,7 +169,7 @@ public class RepositoryInfo implements Serializable {
     /**
      * Set property type
      *
-     * @param type
+     * @param type repository type
      */
     public void setType(String type) {
         this.type = type;
@@ -187,7 +187,7 @@ public class RepositoryInfo implements Serializable {
     /**
      * Set property parent
      *
-     * @param parent
+     * @param parent parent of the repository
      */
     public void setParent(String parent) {
         this.parent = parent;

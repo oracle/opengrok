@@ -47,7 +47,7 @@ public class ConfigMerge {
      * Merge base and new configuration.
      * @param cfgBase base configuration
      * @param cfgNew new configuration, will receive properties from the base configuration
-     * @throws Exception
+     * @throws Exception exception
      */
     public static void merge(Configuration cfgBase, Configuration cfgNew) throws Exception {
         Configuration cfgDefault = new Configuration();
