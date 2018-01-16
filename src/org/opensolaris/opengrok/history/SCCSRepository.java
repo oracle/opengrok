@@ -148,7 +148,7 @@ public class SCCSRepository extends Repository {
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
-     * @throws java.io.IOException
+     * @throws java.io.IOException if I/O exception occurs
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {

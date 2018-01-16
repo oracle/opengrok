@@ -138,7 +138,7 @@ public final class HistoryGuru {
      * @param rev the revision to annotate (<code>null</code> means BASE)
      * @return file annotation, or <code>null</code> if the
      * <code>HistoryParser</code> does not support annotation
-     * @throws IOException
+     * @throws IOException if I/O exception occurs
      */
     public Annotation annotate(File file, String rev) throws IOException {
         Annotation ret = null;
@@ -320,7 +320,7 @@ public final class HistoryGuru {
      * @param directory the directory whose files to check
      * @return a map from file names to modification times for the files that
      * the history cache has information about
-     * @throws org.opensolaris.opengrok.history.HistoryException
+     * @throws org.opensolaris.opengrok.history.HistoryException if history cannot be retrieved
      */
     public Map<String, Date> getLastModifiedTimes(File directory)
             throws HistoryException {
@@ -685,7 +685,7 @@ public final class HistoryGuru {
      * 
      * @param repositories list of repository paths relative to source root
      * @return list of repository paths that were found and their history data removed
-     * @throws HistoryException 
+     * @throws HistoryException if history cannot be retrieved
      */
     public List<String> clearCache(Collection<String> repositories) throws HistoryException {
         List<String> clearedRepos = new ArrayList<>();
@@ -728,7 +728,7 @@ public final class HistoryGuru {
      * successfully cleared are removed from the internal list of repositories.
      *
      * @param repositories list of repository paths relative to source root
-     * @throws HistoryException 
+     * @throws HistoryException if history cannot be retrieved
      */
     public void removeCache(Collection<String> repositories) throws HistoryException {
         if (!useCache()) {

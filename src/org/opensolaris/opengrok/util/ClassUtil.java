@@ -204,7 +204,7 @@ public class ClassUtil {
      * @param obj the object
      * @param field string with field name
      * @return string representation of the field value
-     * @throws java.io.IOException 
+     * @throws java.io.IOException exception
      */
     public static String invokeGetter(Object obj, String field) throws IOException {
         String val = null;

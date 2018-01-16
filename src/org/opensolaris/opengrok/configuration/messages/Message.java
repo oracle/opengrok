@@ -78,7 +78,7 @@ public abstract class Message implements Comparable<Message> {
      *
      * @param env the runtime environment
      * @return possible output for this application, null if no output
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     final public byte[] apply(RuntimeEnvironment env) throws Exception {
         validate();
@@ -90,7 +90,7 @@ public abstract class Message implements Comparable<Message> {
      *
      * @param env the runtime environment
      * @return possible output for this application, null if no output
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     protected abstract byte[] applyMessage(RuntimeEnvironment env) throws Exception;
 
@@ -99,7 +99,7 @@ public abstract class Message implements Comparable<Message> {
      * valid. Further implementation can override this method to get the message
      * into a state they would expect.
      *
-     * @throws Exception
+     * @throws Exception exception
      */
     public void validate() throws Exception {
         if (getCreated() == null) {
@@ -280,7 +280,7 @@ public abstract class Message implements Comparable<Message> {
      *
      * @param host host
      * @param port port number
-     * @throws IOException
+     * @throws IOException if I/O exception occurred
      *
      * @see #throwIfError(int c, String message)
      *

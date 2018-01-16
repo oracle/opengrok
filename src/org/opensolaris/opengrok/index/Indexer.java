@@ -334,7 +334,7 @@ public final class Indexer {
      * 
      * @param argv the command line arguments
      * @return array of remaining non option arguments
-     * @throws ParseException 
+     * @throws ParseException if parsing failed
      */
     public static String[] parseOptions(String[] argv) throws ParseException {
         String[] usage = { "--help" };
@@ -786,6 +786,7 @@ public final class Indexer {
      * Write configuration to a file
      * @param env runtime environment
      * @param filename file name to write the configuration to
+     * @throws IOException if I/O exception occurred
      */
     public static void writeConfigToFile(RuntimeEnvironment env, String filename) throws IOException {
         if (filename != null) {
@@ -970,6 +971,7 @@ public final class Indexer {
      * @param noThreads number of threads in the pool that participate in the indexing
      * @param subFiles index just some subdirectories
      * @param progress object to receive notifications as indexer progress is made
+     * @throws IOException if I/O exception occurred
      */
     public void doIndexerExecution(final boolean update, int noThreads, List<String> subFiles,
             IndexChangedListener progress)

@@ -1668,8 +1668,8 @@ public final class Util {
      * @param url anchor's URL
      * @return string containing the result
      *
-     * @throws URISyntaxException
-     * @throws MalformedURLException
+     * @throws URISyntaxException URI syntax
+     * @throws MalformedURLException bad URL
      */
     public static String buildLink(String name, String url)
             throws URISyntaxException, MalformedURLException {
@@ -1688,8 +1688,8 @@ public final class Util {
      * @param newTab a flag if the link should be opened in a new tab
      * @return string containing the result
      *
-     * @throws URISyntaxException
-     * @throws MalformedURLException
+     * @throws URISyntaxException URI syntax
+     * @throws MalformedURLException bad URL
      */
     public static String buildLink(String name, String url, boolean newTab)
             throws URISyntaxException, MalformedURLException {
