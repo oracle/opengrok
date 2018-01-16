@@ -694,6 +694,8 @@ public class IndexDatabase {
         for (IndexChangedListener listener : listeners) {
             listener.fileAdd(path, fa.getClass().getSimpleName());
         }
+
+        ctags.setTabSize(project != null ? project.getTabSize() : 0);
         if (ctags.getBinary() != null) fa.setCtags(ctags);
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
@@ -1069,8 +1071,8 @@ public class IndexDatabase {
                             ret = false;
                         } finally {
                             if (pctags != null) {
+                                pctags.reset();
                                 ctagsPool.release(pctags);
-                                pctags = null;
                             }
                         }
 

@@ -19,38 +19,79 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
 
 import java.util.EnumMap;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.SourceSplitter;
 
 /**
  * Represents a reader of output from runs of ctags.
  */
 public class CtagsReader {
 
+    /**
+     * Matches the Unicode word that occurs last in a string, ignoring any
+     * trailing whitespace or non-word characters, and makes it accessible as
+     * the first capture, {@code mtch.groups(1)}:
+     * <pre>
+     * {@code
+     * (?U)(\w+)[\W\s]*$
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    private static final Pattern LAST_UWORD = Pattern.compile(
+        "(?U)(\\w+)[\\W\\s]*$");
+
+    /**
+     * Matches a Unicode word character:
+     * <pre>
+     * {@code
+     * (?U)\w
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    private static final Pattern WORD_CHAR = Pattern.compile("(?U)\\w");
+
     private static final Logger LOGGER = LoggerFactory.getLogger(
         CtagsReader.class);
 
     /** A value indicating empty method body in tags, so skip it */
-    private final int MIN_METHOD_LINE_LENGTH = 6;
+    private static final int MIN_METHOD_LINE_LENGTH = 6;
 
     /**
      * 96 is used by universal ctags for some lines, but it's too low,
      * OpenGrok can theoretically handle 50000 with 8G heap. Also this might
      * break scopes functionality, if set too low.
      */
-    private final int MAX_METHOD_LINE_LENGTH = 1030;
+    private static final int MAX_METHOD_LINE_LENGTH = 1030;
+
+    /**
+     * E.g. krb5 src/kdc/kdc_authdata.c has a signature for handle_authdata()
+     * split across twelve lines, so use double that number.
+     */
+    private static final int MAX_CUT_LINES = 24;
 
     private final EnumMap<tagFields, String> fields = new EnumMap<>(
         tagFields.class);
 
     private final Definitions defs = new Definitions();
+
+    private Supplier<SourceSplitter> splitterSupplier;
+    private boolean triedSplitterSupplier;
+    private SourceSplitter splitter;
+
+    private int tabSize;
 
     /**
      * This should mimic
@@ -126,12 +167,34 @@ public class CtagsReader {
         }
     }
 
+    public int getTabSize() {
+        return tabSize;
+    }
+
+    public void setTabSize(int tabSize) {
+        this.tabSize = tabSize;
+    }
+
     /**
      * Gets the instance's definitions.
      * @return a defined instance
      */
     public Definitions getDefinitions() {
         return defs;
+    }
+
+    /**
+     * Sets the supplier of a {@link SourceSplitter} to use when ctags pattern
+     * is insufficient, and the reader could use the source data.
+     * <p>
+     * N.b. because an I/O exception can occur, the supplier may return
+     * {@code null}, which the {@link CtagsReader} handles.
+     * @param obj defined instance or {@code null}
+     */
+    public void setSplitterSupplier(Supplier<SourceSplitter> obj) {
+        splitter = null;
+        triedSplitterSupplier = false;
+        splitterSupplier = obj;
     }
 
     /**
@@ -182,20 +245,20 @@ public class CtagsReader {
         String signature = fields.get(tagFields.SIGNATURE);
         String classInher = fields.get(tagFields.CLASS);
 
+        final String whole;
         final String match;
         int mlength = p - mstart;
         if ((p > 0) && (mlength > MIN_METHOD_LINE_LENGTH)) {
+            whole = cutPattern(tagLine, mstart, p);
             if (mlength < MAX_METHOD_LINE_LENGTH) {
-                match = tagLine.substring(mstart + 3, p - 4).
-                    replace("\\/", "/").replaceAll("[ \t]+", " ");
-                //TODO per format we should also recognize \r and \n and \\
+                match = whole.replaceAll("[ \t]+", " ");
+                //TODO per format we should also recognize \r and \n
             } else {
                 LOGGER.log(Level.FINEST, "Ctags: stripping method" +
                     " body for def {0} line {1}(scopes/highlight" +
                     " might break)", new Object[]{def, lnum});
-                match = tagLine.substring(mstart + 3, mstart +
-                    MAX_METHOD_LINE_LENGTH - 1). // +3 - 4 = -1
-                    replace("\\/", "/").replaceAll("[ \t]+", " ");
+                match = whole.substring(0, MAX_METHOD_LINE_LENGTH).replaceAll(
+                    "[ \t]+", " ");
             }
         } else { //tag is wrong format; cannot extract tagaddress from it; skip
             return;
@@ -206,11 +269,24 @@ public class CtagsReader {
 
         final String type = classInher == null ? kind : kind + " in " +
             classInher;
-        addTag(defs, lnum, def, type, match, classInher, signature);
-        if (signature != null) {
-            // TODO if some languages use different character for separating
-            // arguments, below needs to be adjusted
-            String[] args = signature.split(",");
+
+        int lineno;
+        try {
+            lineno = Integer.parseUnsignedInt(lnum);
+        } catch (NumberFormatException e) {
+            lineno = 0;
+            LOGGER.log(Level.WARNING, "CTags line number parsing problem(but" +
+                " I will continue with line # 0) for symbol {0}", def);
+        }
+
+        CpatIndex cidx = bestIndexOfTag(lineno, whole, def);
+        addTag(defs, cidx.lineno, def, type, match, classInher, signature,
+            cidx.lineStart, cidx.lineEnd);
+
+        String[] args;
+        if (signature != null && !signature.equals("()") &&
+            !signature.startsWith("() ") && (args =
+            splitSignature(signature)) != null) {
             for (String arg : args) {
                 //TODO this algorithm assumes that data types occur to
                 //     the left of the argument name, so it will not
@@ -235,21 +311,27 @@ public class CtagsReader {
                     String[] a = arg.split("=");
                     arg = a[0];  // throws away assigned value
                 }
+                arg = arg.trim();
+                if (arg.length() < 1) continue;
 
-                // Strip out all non 'word' class symbols
-                // which leaves just names intact.
-                String[] names = arg.trim().split("[\\W]");
-                String name;
+                cidx = bestIndexOfArg(lineno, whole, arg);
 
-                // Walk the array backwards from the end and
-                // the parameter name should always be the first
-                // non-empty element encountered.
-                for (int ii = names.length - 1; ii >= 0; ii--) {
-                    name = names[ii];
-                    if (name.length() > 0) {
-                        addTag(defs, lnum, name, "argument", def.trim() +
-                            signature.trim(), null, signature);
-                        break;
+                String name = null;
+                Matcher mname = LAST_UWORD.matcher(arg);
+                if (mname.find()) {
+                    name = mname.group(1);
+                } else if (arg.equals("...")) {
+                    name = arg;
+                }
+                if (name != null) {
+                    addTag(defs, cidx.lineno, name, "argument", def.trim() +
+                        signature.trim(), null, signature, cidx.lineStart,
+                        cidx.lineEnd);
+                } else {
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST,
+                            "Not matched arg:{0}|sig:{1}",
+                            new Object[]{arg, signature});
                     }
                 }
             }
@@ -260,23 +342,454 @@ public class CtagsReader {
     }
 
     /**
+     * Cuts the ctags TAG FILE FORMAT search pattern from the specified
+     * {@code tagLine} between the specified tab positions, and un-escapes
+     * {@code \\} and {@code \/}.
+     * @return a defined string
+     */
+    private static String cutPattern(String tagLine, int startTab, int endTab) {
+        // Three lead character represents "\t/^".
+        String cut = tagLine.substring(startTab + 3, endTab);
+
+        /**
+         * Formerly this class cut four characters from the end, but my testing
+         * revealed a bug for short lines in files with macOS endings (e.g.
+         * cyrus-sasl mac/libdes/src/des_enc.c) where the pattern-ending $ is
+         * not present. Now, inspect the end of the pattern to determine the
+         * true cut -- which is appropriate for all content anyway.
+         */
+        if (cut.endsWith("$/;\"")) {
+            cut = cut.substring(0, cut.length() - 4);
+        } else if (cut.endsWith("/;\"")) {
+            cut = cut.substring(0, cut.length() - 3);
+        } else {
+            /**
+             * The former logic did the following without the inspections above.
+             * Leaving this here as a fallback.
+             */
+            cut = cut.substring(0, cut.length() - 4);
+        }
+        return cut.replace("\\\\", "\\").replace("\\/", "/");
+    }
+
+    /**
      * Adds a tag to a {@code Definitions} instance.
      */
-    private void addTag(Definitions defs, String lnum, String symbol,
-        String type, String text, String namespace, String signature) {
+    private void addTag(Definitions defs, int lineno, String symbol,
+        String type, String text, String namespace, String signature,
+        int lineStart, int lineEnd) {
         // The strings are frequently repeated (a symbol can be used in
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
         // the space consumed by them (see bug #809).
-        int lineno = 0;
-        try {
-            lineno = Integer.parseInt(lnum);
-        } catch (NumberFormatException nfe) {
-            LOGGER.log(Level.WARNING, "CTags line number parsing problem(but" +
-                " I will continue with line # 0) for symbol {0}", symbol);
-        }
         defs.addTag(lineno, symbol.trim().intern(), type.trim().intern(),
             text.trim().intern(), namespace == null ? null :
-            namespace.trim().intern(), signature);
+            namespace.trim().intern(), signature, lineStart, lineEnd);
+    }
+
+    /**
+     * Searches for the index of the best match of {@code str} in {@code whole}
+     * in a multi-stage algorithm that first starts strictly to disfavor
+     * abutting words and then relaxes -- and also works around ctags's possibly
+     * having returned a partial line or only one line of a multi-line language
+     * syntax.
+     * @return a defined instance
+     */
+    private CpatIndex bestIndexOfTag(int lineno, String whole,
+        String str) {
+
+        if (whole.length() < 1) return new CpatIndex(lineno, 0, 1, true);
+        String origWhole = whole;
+
+        int t = tabSize;
+        int s, e;
+
+        int woff = strictIndexOf(whole, str);
+        if (woff < 0) {
+            /**
+             * When a splitter is available, search the entire line.
+             * (N.b. use 0-offset vs ctags's 1-offset.)
+             */
+            String cut = trySplitterCut(lineno - 1, 1);
+            if (cut == null || !cut.startsWith(whole)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    String readablecut = cut != null ? cut : "null\n";
+                    LOGGER.log(Level.FINE,
+                        "Bad cut:{0}|versus:{1}|line {2}",
+                        new Object[]{readablecut, whole, lineno});
+                }
+            } else {
+                whole = cut;
+                woff = strictIndexOf(whole, str);
+            }
+
+            if (woff < 0) {
+                /** At this point, do a lax search of the substring. */
+                woff = whole.indexOf(str);
+            }
+        }
+
+        if (woff >= 0) {
+            s = ExpandTabsReader.translate(whole, woff, t);
+            e = ExpandTabsReader.translate(whole, woff + str.length(), t);
+            return new CpatIndex(lineno, s, e);
+        }
+        /**
+         * When ctags has truncated a pattern, or when it spans multiple lines,
+         * then `str' might not be found in `whole'. In that case, return an
+         * imprecise index for the last character as the best we can do.
+         */
+        s = ExpandTabsReader.translate(origWhole, origWhole.length() - 1, t);
+        e = ExpandTabsReader.translate(origWhole, origWhole.length(), t);
+        return new CpatIndex(lineno, s, e, true);
+    }
+
+    /**
+     * Searches for the index of the best match of {@code arg} in {@code whole}
+     * in a multi-stage algorithm that first starts strictly to disfavor
+     * abutting words and then relaxes -- and also works around ctags's possibly
+     * having returned a partial line or only one line of a multi-line language
+     * syntax or where ctags has transformed syntax.
+     * <p>
+     * E.g., the true source might read {@code const fru_regdef_t *d} with the
+     * ctags signature reading {@code const fru_regdef_t * d}
+     * @return a defined instance
+     */
+    private CpatIndex bestIndexOfArg(int lineno, String whole, String arg) {
+        if (whole.length() < 1) return new CpatIndex(lineno, 0, 1, true);
+
+        int t = tabSize;
+        int s, e;
+
+        // First search arg as-is in the current `whole' -- strict then lax.
+        int woff = strictIndexOf(whole, arg);
+        if (woff < 0) woff = whole.indexOf(arg);
+        if (woff >= 0) {
+            s = ExpandTabsReader.translate(whole, woff, t);
+            e = ExpandTabsReader.translate(whole, woff + arg.length(), t);
+            return new CpatIndex(lineno, s, e);
+        }
+
+        // Build a pattern from `arg' with looseness around whitespace.
+        StringBuilder bld = new StringBuilder();
+        int spos = 0;
+        boolean lastWhitespace = false;
+        boolean firstNonWhitespace = false;
+        for (int i = 0; i < arg.length(); ++i) {
+            char c = arg.charAt(i);
+            if (Character.isWhitespace(c)) {
+                if (!firstNonWhitespace) {
+                    ++spos;
+                } else if (!lastWhitespace) {
+                    lastWhitespace = true;
+                    if (spos < i) {
+                        bld.append(Pattern.quote(arg.substring(spos, i)));
+                    }
+                    // m`\s*`
+                    bld.append("\\s*");
+                }
+            } else {
+                firstNonWhitespace = true;
+                if (lastWhitespace) {
+                    lastWhitespace = false;
+                    spos = i;
+                }
+            }
+        }
+        if (spos < arg.length()) {
+            bld.append(Pattern.quote(arg.substring(spos)));
+        }
+        if (bld.length() < 1) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Odd arg:{0}|versus:{1}|line {2}",
+                    new Object[]{arg, whole, lineno});
+            }
+            /**
+             * When no fuzzy match can be generated, return an imprecise index
+             * for the first character as the best we can do.
+             */
+            return new CpatIndex(lineno, 0, 1, true);
+        }
+
+        Pattern argpat = Pattern.compile(bld.toString());
+        PatResult pr = bestMatch(whole, arg, argpat);
+        if (pr.start >= 0) {
+            s = ExpandTabsReader.translate(whole, pr.start, t);
+            e = ExpandTabsReader.translate(whole, pr.end, t);
+            return new CpatIndex(lineno, s, e);
+        }
+
+        /**
+         * When a splitter is available, search the next several lines.
+         * (N.b. use 0-offset vs ctags's 1-offset.)
+         */
+        String cut = trySplitterCut(lineno - 1, MAX_CUT_LINES);
+        if (cut == null || !cut.startsWith(whole)) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                String readablecut = cut != null ? cut : "null\n";
+                LOGGER.log(Level.FINE, "Bad cut:{0}|versus:{1}|line {2}",
+                    new Object[]{readablecut, whole, lineno});
+            }
+        } else {
+            pr = bestMatch(cut, arg, argpat);
+            if (pr.start >= 0) return bestLineOfMatch(lineno, pr, cut);
+        }
+
+        /**
+         * When no match is found, return an imprecise index for the last
+         * character as the best we can do.
+         */
+        s = ExpandTabsReader.translate(whole, whole.length() - 1, t);
+        e = ExpandTabsReader.translate(whole, whole.length(), t);
+        return new CpatIndex(lineno, s, e, true);
+    }
+
+    /**
+     * Searches strictly then laxly.
+     */
+    private PatResult bestMatch(String whole, String arg, Pattern argpat) {
+        PatResult m = strictMatch(whole, arg, argpat);
+        if (m.start >= 0) return m;
+        Matcher marg = argpat.matcher(whole);
+        if (marg.find()) {
+            return new PatResult(marg.start(), marg.end(), marg.group());
+        }
+        // Return m, which was invalid if we got to here.
+        return m;
+    }
+
+    /**
+     * Like {@link String#indexOf(java.lang.String)} but strict that a
+     * {@code substr} starting with a word character cannot abut another word
+     * character on its left and likewise on the right for a {@code substr}
+     * ending with a word character.
+     */
+    private int strictIndexOf(String whole, String substr) {
+        boolean strictLeft = substr.length() > 0 && WORD_CHAR.matcher(
+            String.valueOf(substr.charAt(0))).matches();
+        boolean strictRight = substr.length() > 0 && WORD_CHAR.matcher(
+            String.valueOf(substr.charAt(substr.length() - 1))).matches();
+
+        int spos = 0;
+        do {
+            int woff = whole.indexOf(substr, spos);
+            if (woff < 0) return -1;
+
+            spos = woff + 1;
+            String onechar;
+            /**
+             * Reject if the previous character is a word character, as that
+             * would not accord with a clean symbol break
+             */
+            if (strictLeft && woff > 0) {
+                onechar = String.valueOf(whole.charAt(woff - 1));
+                if (WORD_CHAR.matcher(onechar).matches()) {
+                    continue;
+                }
+            }
+            /**
+             * Reject if the following character is a word character, as that
+             * would not accord with a clean symbol break
+             */
+            if (strictRight && woff + substr.length() < whole.length()) {
+                onechar = String.valueOf(whole.charAt(woff + substr.length()));
+                if (WORD_CHAR.matcher(onechar).matches()) {
+                    continue;
+                }
+            }
+            return woff;
+        } while (spos < whole.length());
+        return -1;
+    }
+
+    /**
+     * Like {@link #strictIndexOf(java.lang.String, java.lang.String)} but using
+     * a pattern.
+     */
+    private PatResult strictMatch(String whole, String substr, Pattern pat) {
+        boolean strictLeft = substr.length() > 0 && WORD_CHAR.matcher(
+            String.valueOf(substr.charAt(0))).matches();
+        boolean strictRight = substr.length() > 0 && WORD_CHAR.matcher(
+            String.valueOf(substr.charAt(substr.length() - 1))).matches();
+
+        Matcher m = pat.matcher(whole);
+        while (m.find()) {
+            String onechar;
+            /**
+             * Reject if the previous character is a word character, as that
+             * would not accord with a clean symbol break
+             */
+            if (strictLeft && m.start() > 0) {
+                onechar = String.valueOf(whole.charAt(m.start() - 1));
+                if (WORD_CHAR.matcher(onechar).matches()) {
+                    continue;
+                }
+            }
+            /**
+             * Reject if the following character is a word character, as that
+             * would not accord with a clean symbol break
+             */
+            if (strictRight && m.end() < whole.length()) {
+                onechar = String.valueOf(whole.charAt(m.end()));
+                if (WORD_CHAR.matcher(onechar).matches()) {
+                    continue;
+                }
+            }
+            return new PatResult(m.start(), m.end(), m.group());
+        }
+        return new PatResult(-1, -1, null);
+    }
+
+    /**
+     * Finds the line with the longest content from {@code midx}.
+     * <p>
+     * The {@link Definitions} tag model is based on a match within a line.
+     * "signature" fields, however, can be condensed from multiple lines; and a
+     * fuzzy match can therefore span multiple lines.
+     */
+    private CpatIndex bestLineOfMatch(int lineno, PatResult pr, String cut) {
+        // (N.b. use 0-offset vs ctags's 1-offset.)
+        int lpos = splitter.getPosition(lineno - 1);
+        int mpos = lpos + pr.start;
+        int moff = splitter.findLineOffset(mpos);
+        int zpos = lpos + pr.end - 1;
+        int zoff = splitter.findLineOffset(zpos);
+
+        int t = tabSize;
+        int resoff = moff;
+        int contentLength = 0;
+        /**
+         * Initialize the following just to silence warnings but with values
+         * that will be detected as "bad fuzzy" later.
+         */
+        String whole = "";
+        int s = 0;
+        int e = 1;
+        /**
+         * Iterate to determine the length of the portion of `midx' that
+         * is contained within each line.
+         */
+        for (int ioff = moff; ioff <= zoff; ++ioff) {
+            String iwhole = splitter.getLine(ioff);
+            int ioffpos = splitter.getPosition(ioff);
+            int iendpos = ioffpos + iwhole.length();
+            int i_s = pr.start + lpos < ioffpos ? ioffpos : pr.start + lpos;
+            int i_e = pr.end + lpos > iendpos ? iendpos : pr.end + lpos;
+            if (i_e - i_s > contentLength) {
+                contentLength = i_e - i_s;
+                resoff = ioff;
+                whole = iwhole;
+                // (The following are not yet adjusted for tabs.)
+                s = i_s - ioffpos;
+                e = i_e - ioffpos;
+            }
+        }
+
+        if (s >= 0 && s < whole.length() && e >= 0 && e <= whole.length()) {
+            s = ExpandTabsReader.translate(whole, s, t);
+            e = ExpandTabsReader.translate(whole, e, t);
+            // (N.b. use ctags's 1-offset.)
+            return new CpatIndex(resoff + 1, s, e);
+        }
+
+        /**
+         * This should not happen -- but if it does, log it and return an
+         * imprecise index for the first character as the best we can do.
+         */
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE,
+                "Bad fuzzy:{0}|versus:{1}|line {2} pos {3}-{4}|{5}|",
+                new Object[]{pr.capture, cut, lineno, s, e, whole});
+        }
+        return new CpatIndex(lineno, 0, 1, true);
+    }
+
+    /**
+     * TODO if some languages use different character for separating arguments,
+     * below needs to be adjusted.
+     * @return a defined instance or null
+     */
+    private static String[] splitSignature(String signature) {
+        int off0 = 0;
+        int offz = signature.length();
+        int soff = off0;
+        int eoff = offz;
+        if (soff >= eoff) return null;
+
+        // Trim outer punctuation if it exists.
+        while (soff < signature.length() && (signature.charAt(soff) == '(' ||
+            signature.charAt(soff) == '{')) {
+            ++soff;
+        }
+        while (eoff - 1 > soff && (signature.charAt(eoff - 1) == ')' ||
+            signature.charAt(eoff - 1) == '}')) {
+            --eoff;
+        }
+        if (soff > off0 || eoff < offz) {
+            signature = signature.substring(soff, eoff);
+        }
+        return signature.split(",");
+    }
+
+    /**
+     * Tries to cut lines from a splitter provided by {@code splitterSupplier}.
+     * @return a defined instance if a successful cut is made or else
+     * {@code null}
+     */
+    private String trySplitterCut(int lineOffset, int maxLines) {
+        if (splitter == null) {
+            if (splitterSupplier == null || triedSplitterSupplier) return null;
+            triedSplitterSupplier = true;
+            splitter = splitterSupplier.get();
+            if (splitter == null) return null;
+        }
+
+        StringBuilder cutbld = new StringBuilder();
+        for (int i = lineOffset; i < lineOffset + maxLines &&
+            i < splitter.count(); ++i) {
+            cutbld.append(splitter.getLine(i));
+        }
+        return cutbld.toString();
+    }
+
+    /**
+     * Represents an index into ctags pattern entries.
+     */
+    private static class CpatIndex {
+        public final int lineno;
+        public final int lineStart;
+        public final int lineEnd;
+        public final boolean imprecise;
+
+        public CpatIndex(int lineno, int lineStart, int lineEnd) {
+            this.lineno = lineno;
+            this.lineStart = lineStart;
+            this.lineEnd = lineEnd;
+            this.imprecise = false;
+        }
+
+        public CpatIndex(int lineno, int lineStart, int lineEnd,
+            boolean imprecise) {
+            this.lineno = lineno;
+            this.lineStart = lineStart;
+            this.lineEnd = lineEnd;
+            this.imprecise = imprecise;
+        }
+    }
+
+    /**
+     * Represents a result from a pattern match -- valid if lineStart is greater
+     * than or equal to zero.
+     */
+    private static class PatResult {
+        public final int start;
+        public final int end;
+        public final String capture;
+
+        public PatResult(int start, int end, String capture) {
+            this.start = start;
+            this.end = end;
+            this.capture = capture;
+        }
     }
 }

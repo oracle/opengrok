@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -33,7 +33,6 @@ import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.IteratorReader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.Scopes;
@@ -92,9 +91,11 @@ public class PlainAnalyzer extends TextAnalyzer {
         doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
         String fullpath = doc.get(QueryBuilder.FULLPATH);
         if (fullpath != null && ctags != null) {
-            defs = ctags.doCtags(fullpath + "\n");
+            defs = ctags.doCtags(fullpath);
             if (defs != null && defs.numberOfSymbols() > 0) {
-                doc.add(new TextField(QueryBuilder.DEFS, new IteratorReader(defs.getSymbols())));
+                DefinitionsTokenStream defstream = new DefinitionsTokenStream();
+                defstream.initialize(defs, src, null);
+                doc.add(new TextField(QueryBuilder.DEFS, defstream));
                 //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
                 TextField ref = new TextField(QueryBuilder.REFS,
                     this.symbolTokenizer);
