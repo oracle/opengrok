@@ -28,19 +28,15 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.GitRepository;
 import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.MercurialRepository;
 import org.opensolaris.opengrok.history.MercurialRepositoryTest;
 import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.history.SubversionRepository;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -57,10 +53,6 @@ public class RepositoryMessageTest {
     
     @Before
     public void setUp() throws IOException {
-        Assume.assumeTrue(new MercurialRepository().isWorking());
-        Assume.assumeTrue(new SubversionRepository().isWorking());
-        Assume.assumeTrue(new GitRepository().isWorking());
-
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
                 "repositories.zip"));
@@ -102,13 +94,14 @@ public class RepositoryMessageTest {
     }
     
     @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
     @Test
     public void testGetRepositoryType() throws Exception {
         Message m = new RepositoryMessage();
         m.setText("get-repo-type");
         m.addTag("/totally-nonexistent-repository");
         String out = new String(m.apply(env));
-        Assert.assertEquals("N/A", out);
+        Assert.assertEquals("/totally-nonexistent-repository:N/A", out);
         
         // Create subrepository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
@@ -133,12 +126,18 @@ public class RepositoryMessageTest {
         m.setText("get-repo-type");
         m.addTag("/mercurial");
         out = new String(m.apply(env));
-        Assert.assertEquals("Mercurial", out);
+        Assert.assertEquals("/mercurial:Mercurial", out);
         
         m = new RepositoryMessage();
         m.setText("get-repo-type");
         m.addTag("/mercurial/closed");
         out = new String(m.apply(env));
-        Assert.assertEquals("Mercurial", out);
+        Assert.assertEquals("/mercurial/closed:Mercurial", out);
+        
+        m = new RepositoryMessage();
+        m.setText("get-repo-type");
+        m.addTag("/git");
+        out = new String(m.apply(env));
+        Assert.assertEquals("/git:git", out);
     }
 }
