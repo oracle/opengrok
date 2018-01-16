@@ -45,22 +45,22 @@ public class RepositoryMessage extends Message {
         
         switch (msgtext) {
             case "get-repo-type":
-                List<String> types = new ArrayList<>();
+                List<String> types = new ArrayList<>(16);
                 
                 for (String tag: getTags()) {
                     boolean found = false;
                     for (RepositoryInfo ri : env.getRepositories()) {
                         if (ri.getDirectoryNameRelative().equals(tag)) {
-                            types.add(ri.getType());
+                            types.add(tag + ":" + ri.getType());
                             found = true;
                             break;
                         }
                     }
                     if (!found) {
-                        types.add("N/A");
+                        types.add(tag + ":N/A");
                     }
                 }
-                ret = types.stream().collect(Collectors.joining("\n")).toString();
+                ret = types.stream().collect(Collectors.joining("\n"));
                 break;
         }
         
@@ -75,14 +75,14 @@ public class RepositoryMessage extends Message {
     @Override
     public void validate() throws Exception {
         String command = getText();
-        Set<String> allowedText = new TreeSet<>(Arrays.asList("get-repo-type"));
+        Set<String> allowedTexts = new TreeSet<>(Arrays.asList("get-repo-type"));
 
         // The text field carries the command.
         if (command == null) {
-            throw new Exception("The message text must contain one of '" + allowedText.toString() + "'");
+            throw new Exception("The message text must contain one of '" + allowedTexts.toString() + "'");
         }
-        if (!allowedText.contains(command)) {
-            throw new Exception("The message text must contain one of '" + allowedText.toString() + "'");
+        if (!allowedTexts.contains(command)) {
+            throw new Exception("The message text must contain one of '" + allowedTexts.toString() + "'");
         }
 
         if (getTags().size() == 0) {

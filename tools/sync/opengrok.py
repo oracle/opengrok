@@ -58,7 +58,7 @@ def get_first_line(logger, command):
 
     if len(cmd.getoutput()) != 1:
         logger.error("output from {} has more than 1 line ({})".
-            format(cmd, len(cmd.getoutput())))
+                     format(cmd, len(cmd.getoutput())))
         return None
 
     return cmd.getoutput()[0].strip()
@@ -88,5 +88,7 @@ def get_repo_type(logger, path, messages_file):
     XXX replace this with REST request after issue #1801
     """
 
-    return get_first_line(logger, [messages_file, '-n', 'repository', '-t',
-                           path, 'get-repo-type'])
+    line = get_first_line(logger, [messages_file, '-n', 'repository', '-t',
+                          path, 'get-repo-type'])
+    idx = line.rfind(":")
+    return line[idx + 1]
