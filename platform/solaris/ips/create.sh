@@ -252,29 +252,29 @@ PKG pkgsend add file tools/sync/filelock.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/filelock.py
 PKG pkgsend add file tools/sync/reindex-project.ksh \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/reindex-project.ksh
-PKG pkgsend add file tools/sync/cvs.py
+PKG pkgsend add file tools/sync/cvs.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/cvs.py
-PKG pkgsend add file tools/sync/git.py
+PKG pkgsend add file tools/sync/git.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/git.py
-PKG pkgsend add file tools/sync/hook.py
+PKG pkgsend add file tools/sync/hook.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/hook.py
-PKG pkgsend add file tools/sync/mercurial.py
+PKG pkgsend add file tools/sync/mercurial.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/mercurial.py
-PKG pkgsend add file tools/sync/mirror.py
+PKG pkgsend add file tools/sync/mirror.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/mirror.py
-PKG pkgsend add file tools/sync/opengrok.py
+PKG pkgsend add file tools/sync/opengrok.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/opengrok.py
-PKG pkgsend add file tools/sync/readconfig.py
+PKG pkgsend add file tools/sync/readconfig.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/readconfig.py
-PKG pkgsend add file tools/sync/repofactory.py
+PKG pkgsend add file tools/sync/repofactory.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/repofactory.py
-PKG pkgsend add file tools/sync/repository.py
+PKG pkgsend add file tools/sync/repository.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/repository.py
-PKG pkgsend add file tools/sync/svn.py
+PKG pkgsend add file tools/sync/svn.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/svn.py
-PKG pkgsend add file tools/sync/teamware.py
+PKG pkgsend add file tools/sync/teamware.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/teamware.py
-PKG pkgsend add file tools/sync/utils.py
+PKG pkgsend add file tools/sync/utils.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/utils.py
 
 PKG pkgsend add file dist/opengrok.jar \
