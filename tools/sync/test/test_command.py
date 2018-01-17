@@ -53,6 +53,13 @@ class TestApp(unittest.TestCase):
         self.assertEqual(orig_cwd, os.getcwd())
 
     @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    def test_env(self):
+        cmd = Command(['/usr/bin/env'],
+                      env_vars={'FOO': 'BAR'})
+        cmd.execute()
+        self.assertTrue("FOO=BAR\n" in cmd.getoutput())
+
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
     def test_retcode(self):
         cmd = Command(["/bin/false"])
         cmd.execute()
