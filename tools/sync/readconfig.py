@@ -26,6 +26,7 @@ import json
 import yaml
 import sys
 
+
 def read_config(logger, inputfile):
     """
     Try to interpret inputfile as either JSON or YAML file,
@@ -62,4 +63,3 @@ def read_config(logger, inputfile):
         logger.error("cannot open '{}'".format(inputfile))
 
     return cfg
-

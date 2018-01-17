@@ -98,13 +98,15 @@ class Command:
             def close(self):
                 os.close(self.write_fd)
 
+        orig_work_dir = None
         if self.work_dir:
+            orig_work_dir = os.getcwd()
             try:
                 os.chdir(self.work_dir)
             except OSError as e:
                 self.state = Command.ERRORED
                 self.logger.error("Cannot change working directory to {}".
-                    format(self.work_dir))
+                                  format(self.work_dir))
                 return
 
         othr = OutputThread()
@@ -134,6 +136,15 @@ class Command:
         finally:
             othr.close()
             self.out = othr.getoutput()
+
+        if orig_work_dir:
+            try:
+                os.chdir(orig_work_dir)
+            except OSError as e:
+                self.state = Command.ERRORED
+                self.logger.error("Cannot change working directory back to {}".
+                                  format(orig_work_dir))
+                return
 
     def fill_arg(self, args_append=None, args_subst=None):
         """
