@@ -65,8 +65,7 @@ public class Ctags {
     private final Object syncRoot = new Object();
     private volatile boolean closing;
     private volatile boolean signalled;
-    private volatile Process ctags;
-    private volatile IOException startIOException;
+    private Process ctags;
     private Thread errThread;
     private Thread outThread;
     private OutputStreamWriter ctagsIn;
@@ -75,7 +74,6 @@ public class Ctags {
     //default: setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
     private String binary;
     private String CTagsExtraOptionsFile = null;
-    private ProcessBuilder processBuilder;
 
     private boolean junit_testing = false;
 
@@ -124,8 +122,9 @@ public class Ctags {
         }
     }
 
-    private void initialize() throws IOException, InterruptedException {
+    private void initialize() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        ProcessBuilder processBuilder;
         if (true) {
             List<String> command = new ArrayList<>();
 
@@ -330,62 +329,7 @@ public class Ctags {
             processBuilder = new ProcessBuilder(command);
         }
 
-        Thread clientThread = Thread.currentThread();
-
-        startIOException = null;
-        // Start ctags on a separate, daemon thread in case start() blocks.
-        Thread startThread = new Thread(() -> {
-            try {
-                Process newCtags = processBuilder.start();
-                LOGGER.log(Level.FINE, "Executed ctags command re t{0}",
-                    clientThread.getId());
-                synchronized(syncRoot) {
-                    ctags = newCtags;
-                    syncRoot.notify();
-                }
-            } catch (IOException e) {
-                startIOException = e;
-            }
-        });
-        startThread.setDaemon(true);
-        startThread.start();
-
-        // Set a timeout so the client thread does not wait indefinitely.
-        ScheduledFuture startTimeout = schedExecutor.schedule(() -> {
-            LOGGER.log(Level.FINE, "Ctags startTimeout executing re t{0}.",
-                clientThread.getId());
-            clientThread.interrupt();
-            /**
-             * No point in interrupting startThread, since nothing it executes
-             * is interruptible.
-             */
-            LOGGER.log(Level.FINE, "Ctags startTimeout executed.");
-        }, CTAGSWAIT_S, TimeUnit.SECONDS);
-
-        // Wait until startThread sets the ctags field, until timeout, or error.
-        synchronized(syncRoot) {
-            while (ctags == null) {
-                if (startIOException != null) {
-                    startTimeout.cancel(false);
-                    throw startIOException;
-                }
-                try {
-                    syncRoot.wait(SIGNALWAIT_MS);
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.WARNING, "Ctags did not start--{0}",
-                        e.getMessage());
-                    startTimeout.cancel(false);
-                    throw e;
-                }
-            }
-        }
-
-        startTimeout.cancel(false);
-        /*
-         * If the timeout could not be truly canceled in time, then ignore it.
-         */
-        Thread.interrupted();
-
+        ctags = processBuilder.start();
         ctagsIn = new OutputStreamWriter(ctags.getOutputStream());
         ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream()));
 
