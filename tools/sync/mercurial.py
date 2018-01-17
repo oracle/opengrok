@@ -23,7 +23,7 @@
 
 from command import Command
 from repository import Repository
-from utils import which
+from shutil import which
 
 
 class MercurialRepository(Repository):
@@ -69,10 +69,10 @@ class MercurialRepository(Repository):
         cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
-	#
-	# 'hg incoming' will return 1 if there are no incoming changesets,
-	# so do not check the return value.
-	#
+        #
+        # 'hg incoming' will return 1 if there are no incoming changesets,
+        # so do not check the return value.
+        #
         if cmd.getstate() != Command.FINISHED:
             self.logger.error("failed to run 'hg incoming'")
             return 1

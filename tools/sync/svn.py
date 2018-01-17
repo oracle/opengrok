@@ -23,7 +23,7 @@
 
 from command import Command
 from repository import Repository
-from utils import which
+from shutil import which
 
 
 class SubversionRepository(Repository):

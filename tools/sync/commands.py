@@ -88,21 +88,21 @@ class Commands(CommandsBase):
 
     def check(self, ignore_errors):
         """
-	Check the output of the commands and perform logging.
-	"""
+        Check the output of the commands and perform logging.
+        """
 
         self.logger.debug("Output from {}:".format(self.name))
         for cmd in self.outputs.keys():
             if self.outputs[cmd] and len(self.outputs[cmd]) > 0:
                 self.logger.debug("{}: {}".
-                             format(cmd, self.outputs[cmd]))
+                                  format(cmd, self.outputs[cmd]))
 
         if self.name in ignore_errors:
             return
 
         if any(rv != 0 for rv in self.retcodes.values()):
             self.logger.error("processing of selfect {} failed".
-                         format(self))
+                              format(self))
             indent = "  "
             self.logger.error("{}failed commands:".format(indent))
             failed_cmds = {k: v for k, v in
@@ -110,7 +110,7 @@ class Commands(CommandsBase):
             indent = "    "
             for cmd in failed_cmds.keys():
                 self.logger.error("{}'{}': {}".
-                             format(indent, cmd, failed_cmds[cmd]))
+                                  format(indent, cmd, failed_cmds[cmd]))
                 out = self.get_cmd_output(cmd,
                                           indent=indent + "  ")
                 if out:
@@ -121,7 +121,7 @@ class Commands(CommandsBase):
                         if "error" in str(v).lower()}
         if len(errored_cmds) > 0:
             self.logger.error("Command output in selfect {}"
-                         " contains errors:".format(self.name))
+                              " contains errors:".format(self.name))
             indent = "  "
             for cmd in errored_cmds.keys():
                 self.logger.error("{}{}".format(indent, cmd))

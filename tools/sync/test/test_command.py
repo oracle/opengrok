@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.abspath(
 
 import command
 from command import Command
+import tempfile
 
 
 class TestApp(unittest.TestCase):
@@ -40,6 +41,16 @@ class TestApp(unittest.TestCase):
         cmd = Command(['/bin/ls', '/etc/passwd'])
         cmd.execute()
         self.assertEqual(['/etc/passwd\n'], cmd.getoutput())
+
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    def test_work_dir(self):
+        os.chdir("/")
+        orig_cwd = os.getcwd()
+        self.assertNotEqual(orig_cwd, tempfile.gettempdir())
+        cmd = Command(['/bin/ls', '/etc/passwd'],
+                      work_dir=tempfile.gettempdir())
+        cmd.execute()
+        self.assertEqual(orig_cwd, os.getcwd())
 
     @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
     def test_retcode(self):

@@ -25,6 +25,7 @@ import os
 from command import Command
 import logging
 
+
 def run_hook(logger, script, path):
     """
     Change a working directory to specified path, run a command
@@ -33,15 +34,7 @@ def run_hook(logger, script, path):
     Return 0 on success, 1 on failure.
     """
 
-    orig_cwd = os.getcwd()
-
-    try:
-        os.chdir(path)
-    except:
-        logger.error("Cannot chdir to {}".format(path))
-        return 1
-
-    cmd = Command([script])
+    cmd = Command([script], work_dir=path)
     cmd.execute()
     if cmd.state is not "finished" or cmd.getretcode() != 0:
         logger.error("failed to execute {}".format(cmd))
@@ -49,11 +42,5 @@ def run_hook(logger, script, path):
         return 1
 
     logger.info(cmd.getoutput())
-
-    try:
-        os.chdir(orig_cwd)
-    except:
-        logger.error("Cannot chdir to {}".format(orig_cwd))
-        return 1
 
     return 0

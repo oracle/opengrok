@@ -47,10 +47,11 @@ from commands import Commands, CommandsBase
 from repository import Repository
 from mercurial import MercurialRepository
 from repofactory import get_repository
-from utils import which, is_exe, check_create_dir, get_dict_val
+from utils import is_exe, check_create_dir
 from hook import run_hook
 from readconfig import read_config
 from opengrok import get_repos, get_config_value, get_repo_type
+from shutil import which
 
 
 major_version = sys.version_info[0]
@@ -128,7 +129,7 @@ if __name__ == '__main__':
         # The project has no config, that's fine - defaults will be used.
         pass
 
-    hookdir = get_dict_val(config, 'hookdir')
+    hookdir = config.get('hookdir')
     if hookdir:
         logger.debug("Hook directory = {}".format(hookdir))
 
@@ -137,8 +138,8 @@ if __name__ == '__main__':
     if project_config:
         try:
             if not hookdir:
-                logger.error("Need to have 'hookdir' in the configuration " +
-                    "to run hooks")
+                logger.error("Need to have 'hookdir' in the configuration "
+                             "to run hooks")
                 sys.exit(1)
 
             if not os.path.isdir(hookdir):
@@ -155,12 +156,12 @@ if __name__ == '__main__':
                     logger.debug("post-hook = {}".format(posthook))
                 else:
                     logger.error("Unknown hook name {} for project {}".
-                        format(hookname, args.project))
+                                 format(hookname, args.project))
                     sys.exit(1)
 
                 if not is_exe(hookpath):
-                    logger.error("hook file {} does not exist or not executable".
-                                 format(hookpath))
+                    logger.error("hook file {} does not exist or not "
+                                 "executable".format(hookpath))
                     sys.exit(1)
         except KeyError:
             pass
@@ -181,18 +182,20 @@ if __name__ == '__main__':
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
 
-        logging.basicConfig(filename = os.path.join(logdir,
-                            args.project + ".log"), filemode = 'a',
-                            format = '%(asctime)s - %(levelname)s: %(message)s',
-                            datefmt = '%m/%d/%Y %I:%M:%S %p',
-                            level = logging.DEBUG if args.debug else logging.INFO)
+        logging.basicConfig(filename=os.path.join(logdir,
+                            args.project + ".log"), filemode='a',
+                            format='%(asctime)s - %(levelname)s: %(message)s',
+                            datefmt='%m/%d/%Y %I:%M:%S %p',
+                            level=logging.DEBUG if args.debug
+                            else logging.INFO)
         logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
     # We want this to be logged to the log file (if any).
     if project_config:
         try:
             if project_config['disabled']:
-                logger.info("Project {} disabled, exiting".format(args.project))
+                logger.info("Project {} disabled, exiting".
+                            format(args.project))
                 sys.exit(0)
         except KeyError:
             pass
@@ -202,7 +205,8 @@ if __name__ == '__main__':
     try:
         with lock.acquire(timeout=0):
             if prehook and run_hook(logger, prehook,
-                        os.path.join(source_root, args.project)) != 0:
+                                    os.path.join(source_root,
+                                                 args.project)) != 0:
                 logger.error("pre hook failed")
                 logging.shutdown()
                 sys.exit(1)
@@ -225,7 +229,7 @@ if __name__ == '__main__':
                                       source_root + repo_path,
                                       repo_type,
                                       args.project,
-                                      get_dict_val(config, 'commands'),
+                                      config.get('commands'),
                                       config['proxy'] if use_proxy else None,
                                       None)
                 if not repo:
@@ -234,12 +238,13 @@ if __name__ == '__main__':
                     ret = 1
                 else:
                     if repo.sync() != 0:
-                        logger.debug("failed to sync repository {}".
-                            format(repo_path))
+                        logger.error("failed to sync repository {}".
+                                     format(repo_path))
                         ret = 1
 
             if posthook and run_hook(logger, posthook,
-                        os.path.join(source_root, args.project)) != 0:
+                                     os.path.join(source_root,
+                                                  args.project)) != 0:
                 logger.error("post hook failed")
                 logging.shutdown()
                 sys.exit(1)

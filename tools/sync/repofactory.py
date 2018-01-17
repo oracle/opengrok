@@ -26,7 +26,6 @@ from teamware import TeamwareRepository
 from cvs import CVSRepository
 from svn import SubversionRepository
 from git import GitRepository
-from utils import get_dict_val
 
 
 def get_repository(logger, path, repo_type, project, commands, env, hooks):
@@ -41,23 +40,23 @@ def get_repository(logger, path, repo_type, project, commands, env, hooks):
 
     if repo_lower in ["mercurial", "hg"]:
         return MercurialRepository(logger, path, project,
-                                   get_dict_val(commands, "hg"),
+                                   commands.get("hg"),
                                    env, hooks)
     elif repo_lower in ["teamware", "sccs"]:
         return TeamwareRepository(logger, path, project,
-                                  get_dict_val(commands, "teamware"),
+                                  commands.get("teamware"),
                                   env, hooks)
     elif repo_lower.lower() == "cvs":
         return CVSRepository(logger, path, project,
-                             get_dict_val(commands, "cvs"),
+                             commands.get("cvs"),
                              env, hooks)
     elif repo_lower == "svn":
         return SubversionRepository(logger, path, project,
-                                    get_dict_val(commands, "svn"),
+                                    commands.get("svn"),
                                     env, hooks)
     elif repo_lower == "git":
         return GitRepository(logger, path, project,
-                             get_dict_val(commands, "git"),
+                             commands.get("git"),
                              env, hooks)
     else:
         return None

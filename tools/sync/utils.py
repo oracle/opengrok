@@ -1,22 +1,31 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# See LICENSE.txt included in this distribution for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at LICENSE.txt.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+#
+# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+#
+
 import os
 
 
 def is_exe(fpath):
     return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-
-def which(program):
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
 
 
 def check_create_dir(path):
@@ -25,18 +34,7 @@ def check_create_dir(path):
     """
     if not os.path.isdir(path):
         try:
-            os.mkdir(path)
+            os.mkdirs(path)
         except OSError:
             logger.error("cannot create {} directory".format(path))
             sys.exit(1)
-
-
-def get_dict_val(dictionary, key):
-    """
-    Get value of key in dictionary or None.
-    """
-
-    try:
-        return dictionary[key]
-    except KeyError:
-        return None

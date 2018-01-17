@@ -23,7 +23,8 @@
 
 from command import Command
 from repository import Repository
-from utils import which
+from shutil import which
+
 
 class GitRepository(Repository):
     def __init__(self, logger, path, project, command, env, hooks):
@@ -46,7 +47,7 @@ class GitRepository(Repository):
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
             self.logger.error("failed to perform pull for {}".
-                format(self.path))
+                              format(self.path))
             return 1
 
         return 0
