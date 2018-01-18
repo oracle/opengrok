@@ -50,10 +50,16 @@ def get_repos(logger, project, messages_file):
 
 
 def get_first_line(logger, command):
+    """
+    Execute given command and return the first line of its output
+    or None if the execution failed.
+    """
+
     cmd = Command(command)
     cmd.execute()
     if cmd.state is not "finished" or cmd.getretcode() != 0:
-        logger.error("execution of command '{}' failed".format(cmd))
+        logger.error("execution of command '{}' failed with: {}"
+                     .format(cmd, cmd.getoutputstr()))
         return None
 
     if len(cmd.getoutput()) != 1:
