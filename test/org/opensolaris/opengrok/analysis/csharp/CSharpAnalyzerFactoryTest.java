@@ -30,7 +30,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.apache.lucene.document.Field;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -54,7 +53,6 @@ public class CSharpAnalyzerFactoryTest {
 
     private static final String CTAGS_PROP =
         "org.opensolaris.opengrok.analysis.Ctags";
-    private static ScheduledThreadPoolExecutor schedExecutor;
     private static Ctags ctags;
     private static TestRepository repository;
     private static FileAnalyzer analyzer;
@@ -70,8 +68,7 @@ public class CSharpAnalyzerFactoryTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        schedExecutor = new ScheduledThreadPoolExecutor(2);
-        ctags = new Ctags(schedExecutor);
+        ctags = new Ctags();
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
         repository = new TestRepository();
@@ -83,7 +80,7 @@ public class CSharpAnalyzerFactoryTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty(CTAGS_PROP, "ctags"));
         if (env.validateExuberantCtags()) {
-            analyzer.setCtags(new Ctags(schedExecutor));
+            analyzer.setCtags(new Ctags());
         }
     }
 
@@ -91,7 +88,6 @@ public class CSharpAnalyzerFactoryTest {
     public static void tearDownClass() throws Exception {
         ctags.close();
         ctags = null;
-        if (schedExecutor != null) schedExecutor.shutdown();
     }
 
     /**

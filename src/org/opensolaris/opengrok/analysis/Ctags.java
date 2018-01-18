@@ -32,9 +32,6 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -49,25 +46,10 @@ import org.opensolaris.opengrok.util.IOUtils;
 public class Ctags {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Ctags.class);
-    private static final long SIGNALWAIT_MS = 5000;
 
-    /**
-     * Wait up to 90 seconds for ctags to run, which is a very long time for a
-     * single run but is really intended for detecting blocked ctags processes
-     * as happened with @tuxillo's testing of
-     * <a href="https://github.com/oracle/opengrok/pull/1936">
-     * Feature/deferred_ops</a>.
-     */
-    private static final long CTAGSWAIT_S = 90;
-
-    private final ScheduledThreadPoolExecutor schedExecutor;
-    private final CtagsBuffer buffer = new CtagsBuffer();
-    private final Object syncRoot = new Object();
     private volatile boolean closing;
-    private volatile boolean signalled;
     private Process ctags;
     private Thread errThread;
-    private Thread outThread;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
@@ -78,27 +60,13 @@ public class Ctags {
     private boolean junit_testing = false;
 
     /**
-     * Initializes an instance using the specified, required executor which
-     * will be used to track ctags timeouts to avoid blockages.
-     * <p>(The {@code schedExecutor} is not owned by {@link Ctags}.)
-     * @param schedExecutor required, defined instance
-     */
-    public Ctags(ScheduledThreadPoolExecutor schedExecutor) {
-        if (schedExecutor == null) {
-            throw new IllegalArgumentException("`schedExecutor' is null");
-        }
-        this.schedExecutor = schedExecutor;
-    }
-
-    /**
-     * Gets a value indicating if a subprocess of ctags was started and either:
-     * 1) it is not alive; or 2) any necessary supporting thread is not alive.
+     * Gets a value indicating if a subprocess of ctags was started and it is
+     * not alive.
      * @return {@code true} if the instance should be considered closed and no
      * longer usable.
      */
     public boolean isClosed() {
-        return ctags != null && (!ctags.isAlive() || outThread == null ||
-            !outThread.isAlive());
+        return ctags != null && !ctags.isAlive();
     }
 
     public String getBinary() {
@@ -354,12 +322,6 @@ public class Ctags {
         });
         errThread.setDaemon(true);
         errThread.start();
-
-        if (outThread == null || !outThread.isAlive()) {
-            outThread = new Thread(() -> outThreadStart());
-            outThread.setDaemon(true);
-            outThread.start();
-        }
     }
 
     public Definitions doCtags(String file) throws IOException,
@@ -382,28 +344,15 @@ public class Ctags {
             initialize();
         }
 
-        synchronized(syncRoot) {
-            signalled = true;
-            syncRoot.notify();
-        }
-
-        Thread clientThread = Thread.currentThread();
-        ScheduledFuture futureTimeout = schedExecutor.schedule(() -> {
-            LOGGER.log(Level.FINE, "Ctags futureTimeout executing re t{0}.",
-                clientThread.getId());
-            clientThread.interrupt();
-            outThread.interrupt();
-            ctags.destroyForcibly();
-            LOGGER.log(Level.FINE, "Ctags futureTimeout executed.");
-        }, CTAGSWAIT_S, TimeUnit.SECONDS);
-
+        CtagsReader rdr = new CtagsReader();
         Definitions ret;
         try {
             ctagsIn.write(file);
             if (Thread.interrupted()) throw new InterruptedException("write()");
             ctagsIn.flush();
             if (Thread.interrupted()) throw new InterruptedException("flush()");
-            ret = buffer.take();
+            readTags(rdr);
+            ret = rdr.getDefinitions();
         } catch (IOException ex) {
             /*
              * In case the ctags process had to be destroyed, possibly pre-empt
@@ -411,15 +360,8 @@ public class Ctags {
              */
             if (Thread.interrupted()) throw new InterruptedException("I/O");
             throw ex;
-        } finally {
-            futureTimeout.cancel(false);
         }
 
-        /*
-         * If the timeout could not be canceled in time, then act as if no
-         * results were obtained.
-         */
-        if (Thread.interrupted()) throw new InterruptedException("late");
         return ret;
     }
 
@@ -517,46 +459,5 @@ public class Ctags {
             LOGGER.log(Level.WARNING, "CTags parsing problem: ", e);
         }
         LOGGER.severe("CTag reader cycle was interrupted!");
-    }
-
-    private void outThreadStart() {
-        while (!closing) {
-            synchronized(syncRoot) {
-                while (!signalled && !closing) {
-                    try {
-                        syncRoot.wait(SIGNALWAIT_MS);
-                    } catch (InterruptedException e) {
-                        LOGGER.log(Level.WARNING,
-                            "Ctags outThread unexpectedly interrupted--{0}",
-                            e.getMessage());
-                        /*
-                        * Terminating this thread will cause this Ctags
-                        * instance, which appears to be blocked, to be
-                        * reported as closed by isClosed().
-                        */
-                        return;
-                    }
-                }
-                signalled = false;
-            }
-            if (closing) return;
-            
-            CtagsReader rdr = new CtagsReader();
-            try {
-                readTags(rdr);
-                Definitions defs = rdr.getDefinitions();
-                buffer.put(defs);
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.WARNING,
-                    "Ctags outThread unexpectedly interrupted--{0}",
-                    ex.getMessage());
-                /*
-                * Terminating this thread will cause this Ctags instance,
-                * which appears to be blocked, to be reported as closed by
-                * isClosed().
-                */
-                return;
-            }
-        }
     }
 }

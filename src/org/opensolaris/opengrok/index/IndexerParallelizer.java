@@ -110,8 +110,8 @@ public class IndexerParallelizer implements AutoCloseable {
      * @return a defined instance, possibly with a {@code null} ctags binary
      * setting if a value was not available from {@link RuntimeEnvironment}.
      */
-    private Ctags getNewCtags(RuntimeEnvironment env) {
-        Ctags ctags = new Ctags(schedExecutor);
+    private static Ctags getNewCtags(RuntimeEnvironment env) {
+        Ctags ctags = new Ctags();
 
         String ctagsBinary = env.getCtags();
         if (ctagsBinary == null) {
