@@ -158,7 +158,8 @@ if __name__ == '__main__':
 
             projects = []
             for d in dirs_to_process:
-                proj = CommandsBase(d, config["commands"])
+                proj = CommandsBase(d, config.get("commands"),
+                                    config.get("cleanup"))
                 projects.append(proj)
 
             try:
