@@ -52,6 +52,7 @@ from hook import run_hook
 from readconfig import read_config
 from opengrok import get_repos, get_config_value, get_repo_type
 from shutil import which
+import re
 
 
 major_version = sys.version_info[0]
@@ -122,9 +123,22 @@ if __name__ == '__main__':
 
     project_config = None
     try:
-        if config['projects']:
-            if config['projects'][args.project]:
-                project_config = config['projects'][args.project]
+        projects = config['projects']
+        if projects:
+            if projects.get(args.project):
+                project_config = projects.get(args.project)
+            else:
+                for proj in projects.keys():
+                    try:
+                        pattern = re.compile(proj)
+                    except re.error:
+                        logger.error("Not a valid regular exception: {}".
+                                     format(proj))
+                        continue
+
+                    if pattern.match(args.project):
+                        project_config = projects.get(proj)
+                        break
     except KeyError:
         # The project has no config, that's fine - defaults will be used.
         pass
