@@ -47,6 +47,7 @@ import tempfile
 import commands
 from commands import Commands, CommandsBase
 from readconfig import read_config
+from shutil import which
 
 
 major_version = sys.version_info[0]
@@ -96,6 +97,8 @@ if __name__ == '__main__':
                         help='config file in JSON format')
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
+    parser.add_argument('-m', '--messages',
+                        help='path to the Messages binary')
     args = parser.parse_args()
 
     if args.debug:
@@ -107,6 +110,18 @@ if __name__ == '__main__':
             logging.basicConfig()
 
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
+
+    if args.messages:
+        messages_file = which(args.messages)
+        if not messages_file:
+            logger.error("file {} does not exist".format(args.messages))
+            sys.exit(1)
+    else:
+        messages_file = which("Messages")
+        if not messages_file:
+            logger.error("cannot determine path to Messages")
+            sys.exit(1)
+    logger.debug("Messages = {}".format(messages_file))
 
     config = read_config(logger, args.config)
     if config is None:
@@ -139,7 +154,7 @@ if __name__ == '__main__':
                 dirs_to_process = args.projects
             elif args.indexed:
                 # XXX replace this with REST request after issue #1801
-                cmd = Command(['/usr/opengrok/bin/Messages', '-n', 'project',
+                cmd = Command([messages_file, '-n', 'project',
                                'list-indexed'])
                 cmd.execute()
                 if cmd.state is "finished":
