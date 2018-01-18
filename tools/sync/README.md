@@ -58,7 +58,7 @@ projects:
   http:
     proxy: true
   history:
-    disable: true
+    disabled: true
   userland:
     proxy: true
     hooks:
