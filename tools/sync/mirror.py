@@ -41,6 +41,7 @@ from filelock import Timeout
 import command
 from command import Command
 import logging
+from logging.handlers import RotatingFileHandler
 import tempfile
 import commands
 from commands import Commands, CommandsBase
@@ -79,6 +80,8 @@ if __name__ == '__main__':
                         help='path to the Messages binary')
     parser.add_argument('-b', '--batch', action='store_true',
                         help='batch mode - will log into a file')
+    parser.add_argument('-B', '--backupcount', default=8,
+                        help='how many log files to keep around in batch mode')
     args = parser.parse_args()
 
     if args.debug:
@@ -203,6 +206,16 @@ if __name__ == '__main__':
                             level=logging.DEBUG if args.debug
                             else logging.INFO)
         logger = logging.getLogger(os.path.basename(sys.argv[0]))
+        handler = RotatingFileHandler(logfile, maxBytes=0,
+                                      backupCount=args.backupcount)
+        handler.doRollover()
+        #
+        # Technically, adding a handler to the logger is not necessary
+        # since log rotation is done above using doRollover() however
+        # it is done anyway in case the handler changes to use implicit
+        # rotation in the future.
+        #
+        logger.addHandler(handler)
 
     # We want this to be logged to the log file (if any).
     if project_config:
