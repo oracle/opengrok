@@ -125,7 +125,7 @@ if __name__ == '__main__':
         if config['projects']:
             if config['projects'][args.project]:
                 project_config = config['projects'][args.project]
-    except:
+    except KeyError:
         # The project has no config, that's fine - defaults will be used.
         pass
 
