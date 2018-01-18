@@ -135,8 +135,14 @@ if __name__ == '__main__':
 
     prehook = None
     posthook = None
+    ignored_repos = []
+    use_proxy = False
     if project_config:
-        try:
+        if project_config.get('ignored_repos'):
+            ignored_repos = project_config.get('ignored_repos')
+
+        hooks = project_config.get('hooks')
+        if hooks:
             if not hookdir:
                 logger.error("Need to have 'hookdir' in the configuration "
                              "to run hooks")
@@ -146,7 +152,6 @@ if __name__ == '__main__':
                 logger.error("Not a directory: {}".format(hookdir))
                 sys.exit(1)
 
-            hooks = project_config['hooks']
             for hookname in hooks:
                 if hookname == "pre":
                     prehook = hookpath = os.path.join(hookdir, hooks['pre'])
@@ -163,16 +168,9 @@ if __name__ == '__main__':
                     logger.error("hook file {} does not exist or not "
                                  "executable".format(hookpath))
                     sys.exit(1)
-        except KeyError:
-            pass
 
-    use_proxy = False
-    if project_config:
-        try:
-            if project_config['proxy']:
-                use_proxy = True
-        except KeyError:
-            pass
+        if project_config.get('proxy'):
+            use_proxy = True
 
     # Log messages to dedicated log file if running in batch mode.
     if args.batch:
@@ -194,13 +192,10 @@ if __name__ == '__main__':
 
     # We want this to be logged to the log file (if any).
     if project_config:
-        try:
-            if project_config['disabled']:
-                logger.info("Project {} disabled, exiting".
-                            format(args.project))
-                sys.exit(0)
-        except KeyError:
-            pass
+        if project_config.get('disabled'):
+            logger.info("Project {} disabled, exiting".
+                        format(args.project))
+            sys.exit(0)
 
     lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
                              args.project + "-mirror.lock"))
@@ -219,6 +214,11 @@ if __name__ == '__main__':
             #
             for repo_path in get_repos(logger, args.project, messages_file):
                 logger.debug("Repository path = {}".format(repo_path))
+
+                if repo_path in ignored_repos:
+                    logger.debug("repository {} ignored".format(repo_path))
+                    continue
+
                 repo_type = get_repo_type(logger, repo_path, messages_file)
                 if not repo_type:
                     logger.error("cannot determine type of {}".

@@ -64,6 +64,9 @@ projects:
     hooks:
       pre: userland-pre.ksh
       post: userland-post.ksh
+  opengrok-master:
+    - ignored_repos:
+      /opengrok-master/testdata/repositories/rcs_test
 ```
 
 See https://github.com/OpenGrok/OpenGrok/wiki/Per-project-management
