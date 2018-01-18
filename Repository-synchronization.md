@@ -10,6 +10,8 @@ In the source these scripts live under the [tools/sync](https://github.com/OpenG
 
 Both scripts take configuration either in JSON or YAML.
 
+# sync.py
+
 Use e.g. like this:
 
   `# sync.py -c /scripts/sync.conf -d /ws-local/ -p`
@@ -41,7 +43,7 @@ The commands above will basically:
   - pull the changes from all the upstream repositories that belong to the project using the `mirror.py` command
   - reindex the project using `reindex-project.ksh`
   - clear the alert using the second `Messages` command
-  - execute the "/scripts/check-indexer-logs.ksh" script to perform some pattern matching in the indexer logs to see if there were any serious failures there
+  - execute the `/scripts/check-indexer-logs.ksh` script to perform some pattern matching in the indexer logs to see if there were any serious failures there
 
 The `sync.py` script will print any errors to the console and uses file level locking to provide exclusivity of run so it is handy to run from `crontab` periodically.
 
@@ -60,6 +62,8 @@ done.
 For per-project reindexing to work properly, `reindex-project.ksh` uses
 the `logging.properties.template` to make sure each project has its own
 log directory.
+
+# mirror.py
 
 The `mirror-config.yml` configuration file contents can look e.g. like this:
 
