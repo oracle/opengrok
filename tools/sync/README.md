@@ -17,7 +17,9 @@ where the sync.conf file contents might look like this:
                   ["sudo", "-u", "webservd", "/usr/opengrok/bin/reindex-project.ksh",
                    "/opengrok/etc/opengrok.conf", "/usr/opengrok/bin"],
                   ["/usr/opengrok/bin/Messages", "-n", "abort", "-t"],
-                  ["/scripts/check-indexer-logs.ksh"]]
+                  ["/scripts/check-indexer-logs.ksh"]],
+     "ignore_errors": ["NetBSD-current", "linux-mainline-next"],
+     "cleanup": ["/usr/opengrok/bin/Messages", "-n", "abort", "-t"]
   }
 ```
 

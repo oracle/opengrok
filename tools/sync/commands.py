@@ -35,12 +35,13 @@ class CommandsBase:
     so that it can be passed through Pool.map().
     """
 
-    def __init__(self, name, commands):
+    def __init__(self, name, commands, cleanup=None):
         self.name = name
         self.commands = commands
         self.failed = False
         self.retcodes = {}
         self.outputs = {}
+        self.cleanup = cleanup
 
     def __str__(self):
         return str(self.name)
@@ -61,7 +62,7 @@ class CommandsBase:
 
 class Commands(CommandsBase):
     def __init__(self, base):
-        super().__init__(base.name, base.commands)
+        super().__init__(base.name, base.commands, base.cleanup)
 
         self.logger = logging.getLogger(__name__)
         logging.basicConfig()
@@ -88,11 +89,28 @@ class Commands(CommandsBase):
                 if retcode == 2:
                     self.logger.info("command '{}' requested break".
                                      format(cmd))
+                    self.run_cleanup()
                 else:
                     self.logger.info("command '{}' failed with code {}, "
                                      "breaking".format(cmd, retcode))
                     self.failed = True
+                    self.run_cleanup()
                 break
+
+    def run_cleanup(self):
+        """
+        Call cleanup in case the sequence failed or termination was requested.
+        """
+        if self.cleanup:
+            self.logger.debug("Running cleanup command '{}'".
+                              format(self.cleanup))
+            cmd = Command(self.cleanup,
+                          args_subst={"ARG": self.name},
+                          args_append=[self.name], excl_subst=True)
+            cmd.execute()
+            if cmd.getretcode() != 0:
+                self.logger.info("cleanup command '{}' failed with code {}".
+                                 format(self.cleanup, cmd.getretcode()))
 
     def check(self, ignore_errors):
         """
