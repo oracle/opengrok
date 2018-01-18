@@ -30,6 +30,17 @@ where the `sync.conf` file contents might look like this:
   }
 ```
 
+The above `sync.py` command will basically take all directories under `/ws-local` and for each it will run the sequence of commands specified in the `sync.conf` file. This will be done in parallel - on project level.
+
+The commands above will basically:
+  - mark the project with alert (to let the users know it is being synchronized/indexed) using the first `Messages` command
+  - pull the changes from all the upstream repositories that belong to the project using the `mirror.py` command
+  - reindex the project using `reindex-project.ksh`
+  - clear the alert using the second `Messages` command
+  - execute the "/scripts/check-indexer-logs.ksh" script to perform some pattern matching in the indexer logs to see if there were any serious failures there
+
+The `sync.py` script will print any errors to the console and uses file level locking to provide exclusivity of run so it is handy to run from `crontab` periodically.
+
 If any of the commands in `"commands"` fail, the `"cleanup"` command will be run. This is handy in this case since the first `Messages` command will mark the project with alert in the WEB UI so if any of the commands that follow fails, the cleanup `Messages` command will be run to clear the alert.
 
 Some project can be notorious for producing spurious errors so their errors are ignored via the `"ignore_errors"` section.
