@@ -40,9 +40,9 @@ def run_hook(logger, script, path):
     cmd.execute()
     if cmd.state is not "finished" or cmd.getretcode() != 0:
         logger.error("failed to execute {}".format(cmd))
-        logger.debug(cmd.getoutput())
+        logger.error(cmd.getoutputstr())
         return 1
 
-    logger.info(cmd.getoutput())
+    logger.info(cmd.getoutputstr())
 
     return 0
