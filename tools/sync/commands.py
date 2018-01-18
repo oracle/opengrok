@@ -70,6 +70,8 @@ class Commands(CommandsBase):
         """
         Run the sequence of commands and capture their output and return code.
         First command that returns code other than 0 terminates the sequence.
+        If the command has return code 2, the sequence will be terminated
+        however it will not be treated as error.
         """
 
         for command in self.commands:
@@ -81,9 +83,15 @@ class Commands(CommandsBase):
             self.outputs[str(cmd)] = cmd.getoutput()
 
             # If a command fails, terminate the sequence of commands.
-            if cmd.getretcode() != 0:
-                self.logger.debug("command {} failed, breaking".format(cmd))
-                self.failed = True
+            retcode = cmd.getretcode()
+            if retcode != 0:
+                if retcode == 2:
+                    self.logger.info("command '{}' requested break".
+                                     format(cmd))
+                else:
+                    self.logger.info("command '{}' failed with code {}, "
+                                     "breaking".format(cmd, retcode))
+                    self.failed = True
                 break
 
     def check(self, ignore_errors):

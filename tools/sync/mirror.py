@@ -195,7 +195,7 @@ if __name__ == '__main__':
         if project_config.get('disabled'):
             logger.info("Project {} disabled, exiting".
                         format(args.project))
-            sys.exit(0)
+            sys.exit(2)
 
     lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
                              args.project + "-mirror.lock"))
