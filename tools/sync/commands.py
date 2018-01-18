@@ -124,10 +124,12 @@ class Commands(CommandsBase):
                                   format(cmd, self.outputs[cmd]))
 
         if self.name in ignore_errors:
+            self.logger.debug("errors of project {} ignored".
+                              format(self.name))
             return
 
         if any(rv != 0 for rv in self.retcodes.values()):
-            self.logger.error("processing of selfect {} failed".
+            self.logger.error("processing of {} failed".
                               format(self))
             indent = "  "
             self.logger.error("{}failed commands:".format(indent))
