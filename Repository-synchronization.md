@@ -110,3 +110,5 @@ In the above config, the `userland` project will be run with environment variabl
 The `opengrok-master` project contains a RCS repository that would make the mirroring fail (since `mirror.py` does not support RCS yet) so it is marked as ignored.
 
 Multiple projects can share the same configuration using regular expressions as demonstrated with the `jdk.*` pattern in the above configuration. The patterns are matched from top to the bottom of the configuration file, first match wins.
+
+In batch mode, messages will be logged to a log file under the `logdir` directory specified in the configuration and rotated for each run, up to default count (8) or count specified using the `--backupcount` option.
