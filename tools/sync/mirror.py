@@ -176,14 +176,16 @@ if __name__ == '__main__':
 
     # Log messages to dedicated log file if running in batch mode.
     if args.batch:
+        logfile = os.path.join(logdir, args.project + ".log")
+        logger.debug("Switching logging to the {} file".
+                     format(logfile))
         logging.shutdown()
 
         # Remove the existing handler so that logger can be reconfigured.
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
 
-        logging.basicConfig(filename=os.path.join(logdir,
-                            args.project + ".log"), filemode='a',
+        logging.basicConfig(filename=logfile, filemode='a',
                             format='%(asctime)s - %(levelname)s: %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p',
                             level=logging.DEBUG if args.debug
