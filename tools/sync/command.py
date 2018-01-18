@@ -100,13 +100,20 @@ class Command:
 
         orig_work_dir = None
         if self.work_dir:
-            orig_work_dir = os.getcwd()
+            try:
+                orig_work_dir = os.getcwd()
+            except OSError as e:
+                self.state = Command.ERRORED
+                self.logger.error("Cannot get working directory",
+                                  exc_info=True)
+                return
+
             try:
                 os.chdir(self.work_dir)
             except OSError as e:
                 self.state = Command.ERRORED
                 self.logger.error("Cannot change working directory to {}".
-                                  format(self.work_dir))
+                                  format(self.work_dir), exc_info=True)
                 return
 
         othr = OutputThread()
@@ -123,11 +130,11 @@ class Command:
                                      stdout=othr)
             p.wait()
         except KeyboardInterrupt as e:
-            self.logger.debug("Got KeyboardException while processing ",
-                              exc_info=True)
+            self.logger.info("Got KeyboardException while processing ",
+                             exc_info=True)
             self.state = Command.INTERRUPTED
         except OSError as e:
-            self.logger.debug("Got OS error", exc_info=True)
+            self.logger.error("Got OS error", exc_info=True)
             self.state = Command.ERRORED
         else:
             self.state = Command.FINISHED
