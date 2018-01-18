@@ -34,6 +34,8 @@ def run_hook(logger, script, path):
     Return 0 on success, 1 on failure.
     """
 
+    logger.debug("Running hook '{}' in directory {}".
+                 format(script, path))
     cmd = Command([script], work_dir=path)
     cmd.execute()
     if cmd.state is not "finished" or cmd.getretcode() != 0:
