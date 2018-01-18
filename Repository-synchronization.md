@@ -99,8 +99,14 @@ projects:
   opengrok-master:
     - ignored_repos:
       /opengrok-master/testdata/repositories/rcs_test
+  jdk.*:
+    proxy: true
+    hooks:
+      post: jdk_post.sh
 ```
 
 In the above config, the `userland` project will be run with environment variables in the `proxy` section, plus it will also run scripts specified in the `hook` section before and after all its repositories are synchronized. The hook scripts will be run with the current working directory set to that of the project.
 
 The `opengrok-master` project contains a RCS repository that would make the mirroring fail (since `mirror.py` does not support RCS yet) so it is marked as ignored.
+
+Multiple projects can share the same configuration using regular expressions as demonstrated with the `jdk.*` pattern in the above configuration. The patterns are matched from top to the bottom of the configuration file, first match wins.
