@@ -61,10 +61,12 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
@@ -106,13 +108,17 @@ public class IndexDatabase {
     private static final Comparator<File> FILENAME_COMPARATOR =
         (File p1, File p2) -> p1.getName().compareTo(p2.getName());
 
+    private static final Set<String> CHECK_FIELDS;
+
     private final Object INSTANCE_LOCK = new Object();
 
     private Project project;
     private FSDirectory indexDirectory;
+    private IndexReader reader;
     private IndexWriter writer;
     private PendingFileCompleter completer;
     private TermsEnum uidIter;
+    private PostingsEnum postsIter;
     private IgnoredNames ignoredNames;
     private Filter includedNames;
     private AnalyzerGuru analyzerGuru;
@@ -153,6 +159,11 @@ public class IndexDatabase {
         this.project = project;
         lockfact = NoLockFactory.INSTANCE;
         initialize();
+    }
+
+    static {
+        CHECK_FIELDS = new HashSet<>();
+        CHECK_FIELDS.add(QueryBuilder.TABSIZE);
     }
 
     /**
@@ -382,6 +393,11 @@ public class IndexDatabase {
         this.parallelizer = parallelizer;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+        reader = null;
+        writer = null;
+        uidIter = null;
+        postsIter = null;
+
         IOException finishingException = null;
         try {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
@@ -422,7 +438,7 @@ public class IndexDatabase {
                 }
 
                 String startuid = Util.path2uid(dir, "");
-                IndexReader reader = DirectoryReader.open(indexDirectory); // open existing index
+                reader = DirectoryReader.open(indexDirectory); // open existing index
                 Terms terms = null;
                 int numDocs = reader.numDocs();
                 if (numDocs > 0) {
@@ -969,14 +985,19 @@ public class IndexDatabase {
                             }
                         }
 
-                        // If the file was not modified, skip to the next one.
-                        if (uidIter != null && uidIter.term() != null
-                                && uidIter.term().bytesEquals(buid)) {
-                            BytesRef next = uidIter.next(); // keep matching docs
-                            if (next == null) {
-                                uidIter = null;
-                            }
-                            continue;
+                        /**
+                         * If the file was not modified, probably skip to the
+                         * next one.
+                         */
+                        if (uidIter != null && uidIter.term() != null &&
+                            uidIter.term().bytesEquals(buid)) {
+                            boolean chkres = chkFields(file, path);
+                            if (!chkres) removeFile(false);
+
+                            BytesRef next = uidIter.next();
+                            if (next == null) uidIter = null;
+
+                            if (chkres) continue; // keep matching docs
                         }
                     }
 
@@ -1481,6 +1502,44 @@ public class IndexDatabase {
                 "An error occurred while finishing writer and completer", e);
             throw e;
         }
+    }
+
+    private boolean chkFields(File file, String path) throws IOException {
+        int n = 0;
+        postsIter = uidIter.postings(postsIter);
+        while (postsIter.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
+            ++n;
+            // Read a limited-fields version of the document.
+            Document doc = reader.document(postsIter.docID(), CHECK_FIELDS);
+            if (doc == null) {
+                LOGGER.log(Level.FINER, "No Document: {0}", path);
+                continue;
+            }
+
+            /**
+             * Verify TABSIZE, or return a value to indicate mismatch.
+             * For an older OpenGrok index that does not yet have TABSIZE,
+             * ignore the check so that no extra work is done. After a re-index,
+             * the TABSIZE check will be active.
+             */
+            int reqTabSize = project != null ? project.hasTabSizeSetting() ?
+                project.getTabSize() : 0 : 0;
+            IndexableField tbsz = doc.getField(QueryBuilder.TABSIZE);
+            int tbszint = tbsz != null ? tbsz.numericValue().intValue(): 0;
+            if (tbsz != null && tbszint != reqTabSize) {
+                LOGGER.log(Level.FINE, "Tabsize mismatch: {0}", path);
+                return false;
+            }
+
+            break;
+        }
+        if (n < 1) {
+            LOGGER.log(Level.FINER, "Missing index Documents: {0}", path);
+            return false;
+        }
+
+        // Assume "true" if otherwise no discrepancies were observed.
+        return true;
     }
 
     private class IndexDownArgs {

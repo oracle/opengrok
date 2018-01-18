@@ -20,7 +20,7 @@
 /* 
  * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.search;
 
@@ -66,6 +66,7 @@ public class QueryBuilder {
     public static final String DIRPATH = "dirpath";
     public static final String PROJECT = "project";
     public static final String DATE = "date";
+    public static final String TABSIZE = "tabsize";
 
     /** Used for paths, so SHA-1 is completely sufficient */
     private static final String DIRPATH_HASH_ALGORITHM = "SHA-1";
