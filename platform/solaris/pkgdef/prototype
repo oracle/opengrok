@@ -66,10 +66,10 @@ d none var/opengrok/share/plugins 0755 root sys
 f none usr/opengrok/share/plugins/plugins.jar=dist/plugins.jar 0444 root bin
 f none usr/opengrok/lib/ant.jar=dist/lib/ant.jar 0444 root bin
 f none usr/opengrok/lib/bcel-6.0.jar=lib/bcel-6.0.jar 0444 root bin
-f none usr/opengrok/lib/lucene-core-7.2.0.jar=lib/lucene-core-7.2.0.jar 0444 root bin
-f none usr/opengrok/lib/lucene-analyzers-common-7.2.0.jar=lib/lucene-analyzers-common-7.2.0.jar 0444 root bin
-f none usr/opengrok/lib/lucene-queryparser-7.2.0.jar=lib/lucene-queryparser-7.2.0.jar 0444 root bin
-f none usr/opengrok/lib/lucene-suggest-7.2.0.jar=lib/lucene-suggest-7.2.0.jar 0444 root bin
+f none usr/opengrok/lib/lucene-core-7.2.1.jar=lib/lucene-core-7.2.1.jar 0444 root bin
+f none usr/opengrok/lib/lucene-analyzers-common-7.2.1.jar=lib/lucene-analyzers-common-7.2.1.jar 0444 root bin
+f none usr/opengrok/lib/lucene-queryparser-7.2.1.jar=lib/lucene-queryparser-7.2.1.jar 0444 root bin
+f none usr/opengrok/lib/lucene-suggest-7.2.1.jar=lib/lucene-suggest-7.2.1.jar 0444 root bin
 f none usr/opengrok/lib/jrcs.jar=lib/jrcs.jar 0444 root bin
 f none usr/opengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar 0444 root bin
 f none usr/opengrok/lib/json-simple-1.1.1.jar=lib/json-simple-1.1.1.jar 0444 root bin
