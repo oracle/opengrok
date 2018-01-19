@@ -48,6 +48,7 @@ import commands
 from commands import Commands, CommandsBase
 from readconfig import read_config
 from shutil import which
+import multiprocessing
 
 
 major_version = sys.version_info[0]
@@ -75,7 +76,7 @@ if __name__ == '__main__':
     dirs_to_process = []
 
     parser = argparse.ArgumentParser(description='Manage parallel workers.')
-    parser.add_argument('-w', '--workers', default=4,
+    parser.add_argument('-w', '--workers', default=multiprocessing.cpu_count(),
                         help='Number of worker processes')
 
     # There can be only one way how to supply list of projects to process.
