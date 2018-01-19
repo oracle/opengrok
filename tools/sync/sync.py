@@ -192,7 +192,10 @@ if __name__ == '__main__':
                 sys.exit(1)
             else:
                 for proj in projects:
+                    logger.debug("Checking results of project {}".
+                                 format(proj))
                     cmds = Commands(proj)
+                    cmds.fill(proj.retcodes, proj.outputs, proj.failed)
                     cmds.check(ignore_errors)
     except Timeout:
         logger.warning("Already running, exiting.")
