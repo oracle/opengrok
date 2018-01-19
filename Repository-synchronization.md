@@ -34,7 +34,7 @@ where the `sync.conf` file contents might look like this:
   }
 ```
 
-The above `sync.py` command will basically take all directories under `/ws-local` and for each it will run the sequence of commands specified in the `sync.conf` file. This will be done in parallel - on project level. The level of parallelism can be specified using the the `--workers` option (is 4 by default).
+The above `sync.py` command will basically take all directories under `/ws-local` and for each it will run the sequence of commands specified in the `sync.conf` file. This will be done in parallel - on project level. The level of parallelism can be specified using the the `--workers` option (by default it will use as many workers as there are CPUs in the system).
 
 Another variant of how to specify the list of projects to be synchronized is to use the `--indexed` option of `sync.py` that will query the webapp configuration for list of indexed projects and will use that list. Otherwise, the `--projects` option can be specified to process just specified projects.
 
