@@ -128,7 +128,7 @@ class Commands(CommandsBase):
                               format(self.name))
             return
 
-        if any(rv != 0 for rv in self.retcodes.values()):
+        if any(rv != 0 and rv != 2 for rv in self.retcodes.values()):
             self.logger.error("processing of {} failed".
                               format(self))
             indent = "  "
