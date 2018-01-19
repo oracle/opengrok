@@ -2029,6 +2029,7 @@ public final class RuntimeEnvironment {
      *
      * @param proj project
      * @return SearcherManager for given project
+     * @throws IOException I/O exception
      */
     public SuperIndexSearcher getIndexSearcher(String proj) throws IOException {
         SearcherManager mgr = searcherManagerMap.get(proj);

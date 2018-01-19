@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration.messages;
@@ -37,6 +37,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -57,6 +59,7 @@ import org.opensolaris.opengrok.util.TestRepository;
  *
  * @author Vladimir Kotal
  */
+@ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
 public class ProjectMessageTest {
     
     RuntimeEnvironment env;

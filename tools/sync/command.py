@@ -18,7 +18,7 @@
 #
 
 #
-# Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
@@ -40,10 +40,12 @@ class Command:
     ERRORED = "errored"
 
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
-                 excl_subst=False):
+                 excl_subst=False, work_dir=None, env_vars=None):
         self.cmd = cmd
         self.state = "notrun"
         self.excl_subst = excl_subst
+        self.work_dir = work_dir
+        self.env_vars = env_vars
 
         self.logger = logger or logging.getLogger(__name__)
         logging.basicConfig()
@@ -96,11 +98,29 @@ class Command:
             def close(self):
                 os.close(self.write_fd)
 
+        orig_work_dir = None
+        if self.work_dir:
+            orig_work_dir = os.getcwd()
+            try:
+                os.chdir(self.work_dir)
+            except OSError as e:
+                self.state = Command.ERRORED
+                self.logger.error("Cannot change working directory to {}".
+                                  format(self.work_dir))
+                return
+
         othr = OutputThread()
         try:
+            self.logger.debug("working directory = {}".format(os.getcwd()))
             self.logger.debug("command = {}".format(self.cmd))
-            p = subprocess.Popen(self.cmd, stderr=subprocess.STDOUT,
-                                 stdout=othr)
+            if self.env_vars:
+                my_env = os.environ.copy()
+                my_env.update(self.env_vars)
+                p = subprocess.Popen(self.cmd, stderr=subprocess.STDOUT,
+                                     stdout=othr, env=my_env)
+            else:
+                p = subprocess.Popen(self.cmd, stderr=subprocess.STDOUT,
+                                     stdout=othr)
             p.wait()
         except KeyboardInterrupt as e:
             self.logger.debug("Got KeyboardException while processing ",
@@ -116,6 +136,15 @@ class Command:
         finally:
             othr.close()
             self.out = othr.getoutput()
+
+        if orig_work_dir:
+            try:
+                os.chdir(orig_work_dir)
+            except OSError as e:
+                self.state = Command.ERRORED
+                self.logger.error("Cannot change working directory back to {}".
+                                  format(orig_work_dir))
+                return
 
     def fill_arg(self, args_append=None, args_subst=None):
         """
@@ -148,6 +177,12 @@ class Command:
             return None
         else:
             return self.returncode
+
+    def getoutputstr(self):
+        if self.state is Command.FINISHED:
+            return "".join(self.out).strip()
+        else:
+            return None
 
     def getoutput(self):
         if self.state is Command.FINISHED:

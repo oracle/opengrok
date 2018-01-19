@@ -55,8 +55,8 @@ public abstract class TagEntry implements Comparable {
     /**
      * Revision number not present
      *
-     * @param revision
-     * @param tags
+     * @param revision revision number
+     * @param tags string representing tags
      */
     public TagEntry(int revision, String tags) {
         this.revision = revision;

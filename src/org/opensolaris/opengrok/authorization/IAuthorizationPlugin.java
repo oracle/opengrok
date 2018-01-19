@@ -61,8 +61,8 @@ public interface IAuthorizationPlugin {
      * It is up to the implementor if the standard request attributes like
      * session, user principal and others are used or not.
      *
-     * @param request
-     * @param project
+     * @param request servlet request
+     * @param project project to test
      * @return true if request is allowed to see this project
      */
     boolean isAllowed(HttpServletRequest request, Project project);
@@ -78,8 +78,8 @@ public interface IAuthorizationPlugin {
      * projects, repositories. You must include those in the isAllowed method
      * for project if you want to display content of the group.
      *
-     * @param request
-     * @param group
+     * @param request servlet request
+     * @param group group to test
      * @return true if request is allowed to see this group of projects
      */
     boolean isAllowed(HttpServletRequest request, Group group);

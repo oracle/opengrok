@@ -299,7 +299,7 @@ public class GitRepository extends Repository {
      * @param fullpath file path
      * @param changeset changeset
      * @return original filename
-     * @throws java.io.IOException
+     * @throws java.io.IOException if I/O exception occurred
      */
     protected String findOriginalName(String fullpath, String changeset)
             throws IOException {
@@ -374,7 +374,7 @@ public class GitRepository extends Repository {
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
-     * @throws java.io.IOException
+     * @throws java.io.IOException if I/O exception occurred
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {

@@ -185,6 +185,7 @@ public final class IOUtils {
      * Charset of the reader is set to UTF-8, UTF-16 or system's default.
      * @param stream input stream
      * @return reader for the stream without BOM
+     * @throws IOException if I/O exception occurred
      */
     public static Reader createBOMStrippedReader(InputStream stream) throws IOException {
         return createBOMStrippedReader(stream, Charset.defaultCharset().name());
@@ -196,6 +197,7 @@ public final class IOUtils {
      * @param stream input stream
      * @param defaultCharset default charset
      * @return reader for the stream without BOM
+     * @throws IOException if I/O exception occurred
      */    
     public static Reader createBOMStrippedReader(InputStream stream, String defaultCharset) throws IOException {
         InputStream in = stream.markSupported() ?

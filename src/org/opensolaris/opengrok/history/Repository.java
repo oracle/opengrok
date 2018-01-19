@@ -197,6 +197,7 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Checks whether this parser can annotate files.
      *
+     * @param file file to check
      * @return <code>true</code> if annotation is supported
      */
     abstract boolean fileHasAnnotation(File file);
@@ -266,7 +267,7 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Create internal list of all tags in this repository.
      *
-     * @param directory
+     * @param directory directory of the repository
      */
     protected void buildTagList(File directory) {
         this.tagList = null;
@@ -390,6 +391,7 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Get list of ignored files for this repository.
+     * @return list of strings
      */
     public List<String> getIgnoredFiles() {
         return ignoredFiles;
@@ -397,6 +399,7 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Get list of ignored directories for this repository.
+     * @return list of strings
      */
     public List<String> getIgnoredDirs() {
         return ignoredDirs;
@@ -409,6 +412,7 @@ public abstract class Repository extends RepositoryInfo {
      * called on every web request.
      *
      * @return the version
+     * @throws IOException if I/O exception occurred
      */
     public String determineCurrentVersion() throws IOException {
         return null;

@@ -703,9 +703,23 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 <include name="Groups"/>
             </tarfileset>
             <tarfileset dir="tools/sync" prefix="${distname}-${version}/bin/" mode="555">
-                <include name="sync.py"/>
                 <include name="command.py"/>
                 <include name="commands.py"/>
+                <include name="cvs.py"/>
+                <include name="filelock.py"/>
+                <include name="git.py"/>
+                <include name="hook.py"/>
+                <include name="mercurial.py"/>
+                <include name="mirror.py"/>
+                <include name="opengrok.py"/>
+                <include name="readconfig.py"/>
+                <include name="repofactory.py"/>
+                <include name="repository.py"/>
+                <include name="svn.py"/>
+                <include name="sync.py"/>
+                <include name="teamware.py"/>
+                <include name="testmercurial.py"/>
+                <include name="utils.py"/>
                 <include name="reindex-project.ksh"/>
             </tarfileset>
             <tarfileset dir="doc" prefix="${distname}-${version}/doc">

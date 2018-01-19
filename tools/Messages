@@ -71,12 +71,11 @@ Usage()
     echo "  Message types:"
     echo "    config:"
     echo "     - set or get configuration"
-    echo "     - query is formed in the message <text>:"
+    echo "     - query is formed in the message <tag>:"
     echo "       - \"setconf\"  send configuration to webapp."
-    echo "                      Requires input file as argument."
+    echo "                      Requires input file as argument in <text>."
     echo "       - \"getconf\"  retrieves configuration from webapp."
     echo "                      Prints the configuration in XML to stdout."
-    echo "     - or as a <tag>:"
     echo "       - \"set\"      sets the particular configuration option (only primitive types)"
     echo "                    in the webapp."
     echo "                      Examples:"
@@ -84,6 +83,8 @@ Usage()
     echo "                          authorizationWatchdogEnabled = true"
     echo "                      Returns text describing the action."
     echo "                      The change is NOT persistent when reindex or redeploy!"
+    echo "       - \"get\"      retrieves the particular configuration option (only primitive types)"
+    echo "                      Returns string representation of the option."
     echo "       - \"auth\"     tag requires \"reload\" text and"
     echo "                    reloads all authorization plugins."
     echo "    project:"
@@ -98,6 +99,10 @@ Usage()
     echo "       - \"list-indexed\" - list indexed projects"
     echo "       - \"get-repos\" - get list of repositories in the form of relative paths to source root for given project(s)"
     echo "       - \"get-repos-type\" - get repository type(s) for given project(s)"
+    echo "    repository:"
+    echo "     - repository paths relative to source root are specified as <tags>"
+    echo "     - command is specified in message <text>:"
+    echo "       - \"get-repo-type\" - returns type of the repository or \"N/A\""
     echo "    normal:"
     echo "     - assign a <text> to the main page or a project"
     echo "     - can be more precise with <tags> (for specific project)"
@@ -378,10 +383,8 @@ do
             echo "Unknown option \"$opt\"" && Usage && exit 5
         ;;
         *)
-	    if [ "$MESSAGE_TYPE" = "config" -a "$1" = "setconf" ]
-            then
-                MESSAGE_TAGS+=(-g "setconf")
-                shift
+	    tags=${MESSAGE_TAGS[@]}
+	    if [ "$MESSAGE_TYPE" = "config" -a "$tags" = "-g setconf" ]; then
                 MESSAGE_FILE="$@"
 	    else
                 if [ $# -ne 1 ]

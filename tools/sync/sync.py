@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.4
+#!/usr/bin/env python3
 #
 # CDDL HEADER START
 #
@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -44,9 +44,9 @@ import command
 from command import Command
 import logging
 import tempfile
-import json
 import commands
 from commands import Commands, CommandsBase
+from readconfig import read_config
 
 
 major_version = sys.version_info[0]
@@ -108,17 +108,9 @@ if __name__ == '__main__':
 
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
-    try:
-        with open(args.config) as json_data_file:
-            try:
-                config = json.load(json_data_file)
-            except ValueError as e:
-                logger.error("cannot decode {}".format(args.config))
-                sys.exit(1)
-            else:
-                logger.debug("config: {}".format(config))
-    except IOError as e:
-        logger.error("cannot open '{}'".format(args.config))
+    config = read_config(logger, args.config)
+    if config is None:
+        logger.error("Cannot read config file from {}".format(args.config))
         sys.exit(1)
 
     try:
