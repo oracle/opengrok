@@ -144,6 +144,13 @@ if __name__ == '__main__':
             pass
     logger.debug("Ignored projects: {}".format(ignore_errors))
 
+    try:
+        os.chdir("/")
+    except OSError as e:
+        logger.error("cannot change working directory to /",
+                     exc_info=True)
+        sys.exit(1)
+
     lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
                              "opengrok-sync.lock"))
     try:
