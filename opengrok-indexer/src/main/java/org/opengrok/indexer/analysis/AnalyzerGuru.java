@@ -866,8 +866,7 @@ public class AnalyzerGuru {
 
             // Try matching the prefix.
             if (dotpos > 0) {
-                factory
-                        = pre.get(path.substring(0, dotpos).toUpperCase(Locale.getDefault()));
+                factory = pre.get(path.substring(0, dotpos).toUpperCase(Locale.ROOT));
                 if (factory != null) {
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.log(Level.FINER, "{0}: chosen by prefix: {1}",
@@ -881,8 +880,7 @@ public class AnalyzerGuru {
             // Now try matching the suffix. We kind of consider this order (first
             // prefix then suffix) to be workable although for sure there can be
             // cases when this does not work.
-            factory
-                    = ext.get(path.substring(dotpos + 1).toUpperCase(Locale.getDefault()));
+            factory = ext.get(path.substring(dotpos + 1).toUpperCase(Locale.ROOT));
             if (factory != null) {
                 if (LOGGER.isLoggable(Level.FINER)) {
                     LOGGER.log(Level.FINER, "{0}: chosen by suffix: {1}",
@@ -894,7 +892,7 @@ public class AnalyzerGuru {
         }
 
         // file doesn't have any of the prefix or extensions we know, try full match
-        return FILE_NAMES.get(path.toUpperCase(Locale.getDefault()));
+        return FILE_NAMES.get(path.toUpperCase(Locale.ROOT));
     }
 
     /**

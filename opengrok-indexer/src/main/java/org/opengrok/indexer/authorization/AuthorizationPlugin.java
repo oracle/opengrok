@@ -19,9 +19,11 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -104,7 +106,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
             setFailed();
             LOGGER.log(Level.INFO, "[{0}] Plugin \"{1}\" {2} and is {3}.",
                     new Object[]{
-                        getFlag().toString().toUpperCase(),
+                        getFlag().toString().toUpperCase(Locale.ROOT),
                         getName(),
                         hasPlugin() ? "found" : "not found",
                         isWorking() ? "working" : "failed"});
@@ -125,7 +127,7 @@ public class AuthorizationPlugin extends AuthorizationStack {
 
         LOGGER.log(Level.INFO, "[{0}] Plugin \"{1}\" {2} and is {3}.",
                 new Object[]{
-                    getFlag().toString().toUpperCase(),
+                    getFlag().toString().toUpperCase(Locale.ROOT),
                     getName(),
                     hasPlugin() ? "found" : "not found",
                     isWorking() ? "working" : "failed"});

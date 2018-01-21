@@ -843,7 +843,7 @@ public final class Indexer {
         } else {
             fileSpec = fileSpec.substring(1);
         }
-        fileSpec = fileSpec.toUpperCase();
+        fileSpec = fileSpec.toUpperCase(Locale.ROOT);
 
         // Disable analyzer?
         if (analyzer.equals("-")) {

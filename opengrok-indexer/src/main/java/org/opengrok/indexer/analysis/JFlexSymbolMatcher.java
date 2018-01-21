@@ -23,6 +23,7 @@
 
 package org.opengrok.indexer.analysis;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.opengrok.indexer.util.StringUtils;
@@ -449,7 +450,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
         Set<String> keywords, boolean caseSensitive) {
 
         if (keywords != null) {
-            String check = caseSensitive ? str : str.toLowerCase();
+            String check = caseSensitive ? str : str.toLowerCase(Locale.ROOT);
             if (keywords.contains(check)) {
                 onKeywordMatched(str, start);
                 return false;

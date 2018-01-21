@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -230,14 +231,14 @@ public class FileAnalyzer extends Analyzer {
      * @return Normalized name of the analyzer.
      */
     public String getFileTypeName() {
-        String name = this.getClass().getSimpleName().toLowerCase();
+        String name = this.getClass().getSimpleName().toLowerCase(Locale.ROOT);
         String suffix = "analyzer";
 
         if (name.endsWith(suffix)) {
             return name.substring(0, name.length() - suffix.length());
         }
 
-        return name.toLowerCase();
+        return name;
     }
 
     /**

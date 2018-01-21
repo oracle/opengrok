@@ -184,4 +184,21 @@ public class ProjectTest {
 
         assertEquals(env.getTabSize(), p1.getTabSize());
     }
+
+    @Test
+    public void testEquality() {
+        Project g1 = new Project();
+        Project g2 = new Project();
+        assertTrue("null == null", g1.equals(g2));
+
+        g1 = new Project("name");
+        g2 = new Project("other");
+        assertFalse("\"name\" != \"other\"", g1.equals(g2));
+
+        g1 = new Project("name");
+        g2 = new Project("NAME");
+        assertTrue("\"name\" == \"NAME\"", g1.equals(g2));
+        assertTrue("\"name\" == \"name\"", g1.equals(g1));
+        assertTrue("\"NAME\" == \"NAME\"", g2.equals(g2));
+    }
 }

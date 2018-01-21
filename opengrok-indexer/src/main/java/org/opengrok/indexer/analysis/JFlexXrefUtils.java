@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis;
@@ -30,6 +30,7 @@ import java.io.Writer;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -252,7 +253,7 @@ public class JFlexXrefUtils {
         String[] strs = new String[1];
         strs[0] = "";
 
-        String check = caseSensitive ? symbol : symbol.toLowerCase();
+        String check = caseSensitive ? symbol : symbol.toLowerCase(Locale.ROOT);
         if (isKeyword || (keywords != null && keywords.contains( check ))) {
             // This is a keyword, so we don't create a link.
             out.append("<b>");

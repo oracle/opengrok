@@ -32,6 +32,7 @@ java.io.Reader,
 java.net.URLEncoder,
 java.nio.charset.StandardCharsets,
 java.util.List,
+java.util.Locale,
 java.util.Set,
 org.opengrok.indexer.analysis.AnalyzerGuru,
 org.opengrok.indexer.analysis.Definitions,
@@ -141,7 +142,7 @@ document.pageReady.push(function() { pageReadyList();});
                 }
 %>
 <%
-    String lcName = readMes.get(i).toLowerCase();
+    String lcName = readMes.get(i).toLowerCase(Locale.ROOT);
     if (lcName.endsWith(".md") || lcName.endsWith(".markdown")) {
     %><div id="src<%=i%>" data-markdown>
         <div class="markdown-heading">
