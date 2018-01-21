@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -30,6 +30,7 @@ package org.opengrok.indexer.analysis.php;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.Stack;
 import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
@@ -293,7 +294,7 @@ DocParamWithName = "uses"
     }
 
     {Identifier} {
-        if (!PSEUDO_TYPES.contains(yytext().toLowerCase())) {
+        if (!PSEUDO_TYPES.contains(yytext().toLowerCase(Locale.ROOT))) {
             onSymbolMatched(yytext(), yychar);
             return yystate();
         }

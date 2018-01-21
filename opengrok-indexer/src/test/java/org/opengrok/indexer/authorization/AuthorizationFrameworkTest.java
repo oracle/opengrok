@@ -19,12 +19,13 @@
 
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -807,9 +808,10 @@ public class AuthorizationFrameworkTest {
 
         @Override
         public String toString() {
-            return stack.getFlag().toString().toUpperCase() + "[" + printStack(stack) + "] " + "-> {\n"
-                    + setup.stream().map((t) -> t.toString()).collect(Collectors.joining(",\n")) + "\n"
-                    + "}";
+            return stack.getFlag().toString().toUpperCase(Locale.ROOT) + "[" +
+                    printStack(stack) + "] " + "-> {\n" + setup.stream().map(
+                    (t) -> t.toString()).collect(Collectors.joining(",\n")) +
+                    "\n" + "}";
         }
 
         private String printStack(AuthorizationStack s) {
@@ -818,7 +820,9 @@ public class AuthorizationFrameworkTest {
                 if (entity instanceof AuthorizationPlugin) {
                     x += ((AuthorizationPlugin) entity).getPlugin().toString() + ", ";
                 } else {
-                    x += entity.getFlag().toString().toUpperCase() + "[" + printStack((AuthorizationStack) entity) + "], ";
+                    x += entity.getFlag().toString().toUpperCase(Locale.ROOT) +
+                            "[" + printStack((AuthorizationStack) entity) +
+                            "], ";
                 }
             }
             return x.replaceAll(", $", "");

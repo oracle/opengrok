@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis.sql;
 
@@ -59,7 +60,7 @@ public final class PLSQLConsts {
             Consts.class.getResourceAsStream(file), StandardCharsets.UTF_8))) {
             while ((line = reader.readLine()) != null) {
                 line=line.trim();
-                lline = line.toLowerCase(Locale.US);
+                lline = line.toLowerCase(Locale.ROOT);
                 if (line.charAt(0) != '#') {
                     set.add(line);
                     set.add(lline);

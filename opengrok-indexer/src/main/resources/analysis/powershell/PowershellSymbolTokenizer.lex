@@ -19,13 +19,14 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.powershell;
 
-import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import java.util.Locale;
 import java.util.regex.Matcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class PoshSymbolTokenizer
@@ -50,7 +51,7 @@ import java.util.regex.Matcher;
     private boolean onPossiblyPublish(String symbol, int yyoffset,
         boolean skipKeywordCheck) {
         if (skipKeywordCheck || !Consts.poshkwd.contains(symbol.
-            toLowerCase())) {
+                toLowerCase(Locale.ROOT))) {
             onSymbolMatched(symbol, yychar + yyoffset);
             return true;
         }
@@ -134,8 +135,8 @@ import java.util.regex.Matcher;
     String capture = yytext();
     int startOffset = 1;	// trim away the "-" prefix
     String id = capture.substring(startOffset);
-    if (!Consts.poshkwd.contains(capture.toLowerCase()) &&
-        onPossiblyPublish(id, startOffset)) {
+    if (!Consts.poshkwd.contains(capture.toLowerCase(Locale.ROOT)) &&
+            onPossiblyPublish(id, startOffset)) {
         return yystate(); 
     }
  }

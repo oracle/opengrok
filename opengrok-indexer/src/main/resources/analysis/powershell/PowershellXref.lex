@@ -19,17 +19,18 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.powershell;
 
 import java.io.IOException;
+import java.util.Locale;
+import java.util.Stack;
+import java.util.regex.Matcher;
 import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 import org.opengrok.indexer.analysis.ScopeAction;
 import org.opengrok.indexer.web.HtmlConsts;
-import java.util.Stack;
-import java.util.regex.Matcher;
 %%
 %public
 %class PoshXref
@@ -189,7 +190,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  {Operator}    {
     chkLOC();
     String capture = yytext();
-    if (Consts.poshkwd.contains(capture.toLowerCase())) {
+    if (Consts.poshkwd.contains(capture.toLowerCase(Locale.ROOT))) {
         onKeywordMatched(capture, yychar);
     } else {
         String sigil = capture.substring(0, 1);

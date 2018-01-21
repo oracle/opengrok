@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.web;
@@ -1018,8 +1018,7 @@ public final class Util {
                     // Add leading zero if required.
                     sb.append('0');
                 }
-                sb.append(
-                        Integer.toHexString(u).toUpperCase(Locale.ENGLISH));
+                sb.append(Integer.toHexString(u).toUpperCase(Locale.ROOT));
             }
         }
         return sb.toString();

@@ -153,7 +153,7 @@ public class SCCSRepository extends Repository {
     @Override
     boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
-            File f = new File(file, CODEMGR_WSDATA.toLowerCase());
+            File f = new File(file, CODEMGR_WSDATA.toLowerCase()); // OK no ROOT
             if (f.isDirectory()) {
                 return true;
             }

@@ -19,11 +19,13 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -131,9 +133,8 @@ public class AuthorizationStack extends AuthorizationEntity {
         getCurrentSetup().putAll(getSetup());
 
         LOGGER.log(Level.INFO, "[{0}] Stack \"{1}\" is loading.",
-                new Object[]{
-                    getFlag().toString().toUpperCase(),
-                    getName()});
+                new Object[]{getFlag().toString().toUpperCase(Locale.ROOT),
+                getName()});
 
         // fill properly the "forGroups" and "forProjects" fields
         processTargetGroupsAndProjects();
@@ -154,7 +155,7 @@ public class AuthorizationStack extends AuthorizationEntity {
 
         LOGGER.log(Level.INFO, "[{0}] Stack \"{1}\" is {2}.",
                 new Object[]{
-                    getFlag().toString().toUpperCase(),
+                    getFlag().toString().toUpperCase(Locale.ROOT),
                     getName(),
                     isWorking() ? "ready" : "not fully ok"});
     }

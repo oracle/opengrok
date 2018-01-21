@@ -19,9 +19,11 @@
 
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.search;
 
+import java.util.Locale;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
@@ -89,7 +91,7 @@ Analyzer#normalize.
     // a fixed locale, but since they don't, we ignore that PMD warning here.
     @SuppressWarnings("PMD.UseLocaleWithCaseConversions")
     private static String getCanonicalTerm(String field, String term) {
-        return isCaseSensitive(field) ? term : term.toLowerCase();
+        return isCaseSensitive(field) ? term : term.toLowerCase(Locale.ROOT);
     }
 
     // Override the get***Query() methods to lower case the search terms if
