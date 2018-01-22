@@ -195,7 +195,8 @@ if __name__ == '__main__':
 
         if project_config.get('proxy'):
             if not config.get('proxy'):
-                logger.error("global project proxy needed")
+                logger.error("global proxy setting is needed in order to"
+                             "have per-project proxy")
                 sys.exit(1)
 
             logger.debug("will use proxy")
