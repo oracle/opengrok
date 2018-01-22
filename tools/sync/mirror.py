@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -140,6 +140,8 @@ if __name__ == '__main__':
                         continue
 
                     if pattern.match(args.project):
+                        logger.debug("Project '{}' matched pattern '{}'".
+                                     format(args.project, proj))
                         project_config = projects.get(proj)
                         break
     except KeyError:
@@ -155,8 +157,13 @@ if __name__ == '__main__':
     ignored_repos = []
     use_proxy = False
     if project_config:
+        logger.debug("Project '{}' has specific (non-default) config".
+                     format(args.project))
+
         if project_config.get('ignored_repos'):
             ignored_repos = project_config.get('ignored_repos')
+            logger.debug("has ignored repositories: {}".
+                         format(ignored_repos))
 
         hooks = project_config.get('hooks')
         if hooks:
@@ -187,6 +194,11 @@ if __name__ == '__main__':
                     sys.exit(1)
 
         if project_config.get('proxy'):
+            if not config.get('proxy'):
+                logger.error("global project proxy needed")
+                sys.exit(1)
+
+            logger.debug("will use proxy")
             use_proxy = True
 
     # Log messages to dedicated log file if running in batch mode.
