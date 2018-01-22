@@ -214,13 +214,14 @@ if __name__ == '__main__':
             logging.root.removeHandler(handler)
 
         logging.basicConfig(filename=logfile, filemode='a',
-                            format='%(asctime)s - %(levelname)s: %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p',
                             level=logging.DEBUG if args.debug
                             else logging.INFO)
         logger = logging.getLogger(os.path.basename(sys.argv[0]))
         handler = RotatingFileHandler(logfile, maxBytes=0,
                                       backupCount=args.backupcount)
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s: "
+                                      "%(message)s", '%m/%d/%Y %I:%M:%S %p')
+        handler.setFormatter(formatter)
         handler.doRollover()
         #
         # Technically, adding a handler to the logger is not necessary
