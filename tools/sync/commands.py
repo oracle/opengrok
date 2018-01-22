@@ -115,8 +115,11 @@ class Commands(CommandsBase):
     def check(self, ignore_errors):
         """
         Check the output of the commands and perform logging.
+
+        Return 0 on success, 1 if error was detected.
         """
 
+        ret = 0
         self.logger.debug("Output from {}:".format(self.name))
         for cmd in self.outputs.keys():
             if self.outputs[cmd] and len(self.outputs[cmd]) > 0:
@@ -129,6 +132,7 @@ class Commands(CommandsBase):
             return
 
         if any(rv != 0 and rv != 2 for rv in self.retcodes.values()):
+            ret = 1
             self.logger.error("processing of {} failed".
                               format(self))
             indent = "  "
@@ -148,6 +152,7 @@ class Commands(CommandsBase):
         errored_cmds = {k: v for k, v in self.outputs.items()
                         if "error" in str(v).lower()}
         if len(errored_cmds) > 0:
+            ret = 1
             self.logger.error("Command output in selfect {}"
                               " contains errors:".format(self.name))
             indent = "  "
@@ -158,3 +163,5 @@ class Commands(CommandsBase):
                 if out:
                     self.logger.error(out)
                 self.logger.error("")
+
+        return ret
