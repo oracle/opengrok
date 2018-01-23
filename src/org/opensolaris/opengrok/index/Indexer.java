@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -341,9 +342,7 @@ public final class Indexer {
         String program = "opengrok.jar";
         final String[] ON_OFF = {ON, OFF};
         final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
-        final String[] LUCENE_LOCKS = {LuceneLockName.ON,
-            LuceneLockName.OFF, LuceneLockName.SIMPLE,
-            LuceneLockName.NATIVE};
+        final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
 
         if (argv.length == 0) {
             argv = usage;  // will force usage output
@@ -474,7 +473,15 @@ public final class Indexer {
                 "Set OpenGrok/Lucene locking mode of the Lucene database",
                 "during index generation. \"on\" is an alias for \"simple\".",
                 "Default is off.").Do( v -> {
-                cfg.setLuceneLocking((String)v);
+                try {
+                    if (v != null) {
+                        String vuc = v.toString().toUpperCase(Locale.ROOT);
+                        cfg.setLuceneLocking(LuceneLockName.valueOf(vuc));
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.err.println(String.format(
+                        "`--lock %s' is invalid and ignored", v));
+                }
             });
 
             parser.on("--leadingWildCards", "=on|off", ON_OFF, Boolean.class,

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.configuration;
@@ -26,16 +26,12 @@ package org.opensolaris.opengrok.configuration;
 /**
  * Represents a container for OpenGrok's names of Lucene lock modes.
  */
-public class LuceneLockName {
-    public static final String OFF = "off";
+public enum LuceneLockName {
+    OFF,
     /**
      * An alias for {@link #SIMPLE}
      */
-    public static final String ON = "on";
-    public static final String SIMPLE = "simple";
-    public static final String NATIVE = "native";
-
-    /** private to enforce static */
-    private LuceneLockName() {
-    }
+    ON,
+    SIMPLE,
+    NATIVE
 }

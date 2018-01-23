@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -1417,18 +1417,14 @@ public class IndexDatabase {
     }
 
     LockFactory pickLockFactory(RuntimeEnvironment env) {
-        String luceneLocking = env.getLuceneLocking();
-        switch (luceneLocking) {
-            case LuceneLockName.OFF:
-                return NoLockFactory.INSTANCE;
-            case LuceneLockName.ON:
-            case LuceneLockName.SIMPLE:
+        switch (env.getLuceneLocking()) {
+            case ON:
+            case SIMPLE:
                 return SimpleFSLockFactory.INSTANCE;
-            case LuceneLockName.NATIVE:
+            case NATIVE:
                 return NativeFSLockFactory.INSTANCE;
+            case OFF:
             default:
-                LOGGER.log(Level.WARNING, "Unknown Lucene locking mode: {0}",
-                    luceneLocking);
                 return NoLockFactory.INSTANCE;
         }
     }

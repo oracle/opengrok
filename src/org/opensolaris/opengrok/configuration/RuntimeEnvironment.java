@@ -19,7 +19,7 @@
 
  /*
   * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
-  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
   */
 package org.opensolaris.opengrok.configuration;
 
@@ -1047,7 +1047,7 @@ public final class RuntimeEnvironment {
         threadConfig.get().setOptimizeDatabase(optimizeDatabase);
     }
 
-    public String getLuceneLocking() {
+    public LuceneLockName getLuceneLocking() {
         return threadConfig.get().getLuceneLocking();
     }
 

@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -179,7 +179,7 @@ public final class Configuration {
      */
     @Deprecated
     private boolean usingLuceneLocking;
-    private String luceneLocking = LuceneLockName.OFF;
+    private LuceneLockName luceneLocking = LuceneLockName.OFF;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
     private int indexingParallelism;
@@ -407,6 +407,7 @@ public final class Configuration {
         setIncludedNames(new Filter());
         setIndexVersionedFilesOnly(false);
         setLastEditedDisplayMode(true);
+        //luceneLocking default is OFF
         setMandoc(System.getProperty("org.opensolaris.opengrok.analysis.Mandoc", null));
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMessageLimit(500);
@@ -942,7 +943,7 @@ public final class Configuration {
             LuceneLockName.OFF);
     }
 
-    public String getLuceneLocking() {
+    public LuceneLockName getLuceneLocking() {
         return luceneLocking;
     }
 
@@ -950,7 +951,7 @@ public final class Configuration {
      * @param value off|on|simple|native where "on" is an alias for "simple".
      * Any other value is a fallback alias for "off" (with a logged warning).
      */
-    public void setLuceneLocking(String value) {
+    public void setLuceneLocking(LuceneLockName value) {
         this.luceneLocking = value;
         // Set the following to default(boolean) regardless of `value'.
         this.usingLuceneLocking = false;
