@@ -131,6 +131,7 @@ class Commands(CommandsBase):
                               format(self.name))
             return
 
+        self.logger.debug("retcodes = {}".format(self.retcodes))
         if any(rv != 0 and rv != 2 for rv in self.retcodes.values()):
             ret = 1
             self.logger.error("processing of {} failed".

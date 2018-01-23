@@ -19,10 +19,12 @@ class TestApp(unittest.TestCase):
 
     def test_run_retcodes(self):
         p = Commands(CommandsBase("opengrok-master",
-                     [["/bin/echo"], ["foo"]]))
+                     [["/bin/echo"], ["/bin/true"], ["/bin/false"]]))
         p.run()
+        # print(p.retcodes)
         self.assertEqual({'/bin/echo opengrok-master': 0,
-	                  'foo opengrok-master': None}, p.retcodes)
+                          '/bin/true opengrok-master': 0,
+                          '/bin/false opengrok-master': 1}, p.retcodes)
 
     # def test_outputs(self):
 
