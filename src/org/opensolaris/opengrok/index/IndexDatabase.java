@@ -441,7 +441,7 @@ public class IndexDatabase {
                         }
                     }
 
-                    // The actual indexing happens in indexDown().
+                    // The actual indexing happens in indexParallel().
 
                     IndexDownArgs args = new IndexDownArgs();
                     args.est_total = getFileCount(sourceRoot, dir);
@@ -1012,6 +1012,7 @@ public class IndexDatabase {
                         } catch (InterruptedException e) {
                             // Allow one retry if interrupted
                             if (++tries <= 1) continue;
+                            LOGGER.log(Level.WARNING, "No retry: {0}", x.file);
                             x.exception = e;
                             ret = false;
                         } catch (RuntimeException|IOException e) {
