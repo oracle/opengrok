@@ -434,6 +434,27 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 </configuration>
             </plugin>
 
+           <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                  <execution>
+                    <phase>verify</phase>
+                    <goals>
+                      <goal>exec</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                  <executable>pep8</executable>
+                  <arguments>
+		    <argument>-v</argument>
+		    <argument>--exclude=filelock.py,test_command.py</argument>
+                    <argument>${project.basedir}/../tools/sync</argument>
+                  </arguments>
+                </configuration>
+           </plugin>
 
         </plugins>
     </build>
