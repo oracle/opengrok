@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.index;
@@ -277,16 +277,22 @@ class PendingFileCompleter {
         }
     }
 
+    /**
+     * For the unique set of parent directories among
+     * {@link PendingFileDeletionExec#absoluteParent}, traverse in descending
+     * order of path-length, and attempt to clean any empty directories.
+     */
     private void tryDeleteParents(List<PendingFileDeletionExec> dels) {
         Set<File> parents = new TreeSet<>(DESC_PATHLEN_COMPARATOR);
         dels.forEach((del) -> { parents.add(del.absoluteParent); });
 
+        SkeletonDirs skels = new SkeletonDirs();
         for (File dir : parents) {
-            Set<File> children = findFilelessChildren(dir);
-            children.forEach((childDir) -> {
+            skels.reset();
+            findFilelessChildren(skels, dir);
+            skels.childDirs.forEach((childDir) -> {
                 tryDeleteDirectory(childDir);
             });
-
             tryDeleteDirectory(dir);
         }
     }
@@ -299,25 +305,10 @@ class PendingFileCompleter {
     }
 
     /**
-     * Determines a DESC ordered set of eligible file-less child directories
-     * for cleaning up.
+     * Recursively determines eligible, file-less child directories for cleaning
+     * up, and writes them to {@code skels}.
      */
-    private Set<File> findFilelessChildren(File directory) {
-        SkeletonDirs ret = new SkeletonDirs();
-        findFilelessChildrenDeep(ret, directory);
-
-        Set<File> parents = new TreeSet<>(DESC_PATHLEN_COMPARATOR);
-        // N.b. the `ineligible' field is not relevant here but only during
-        // recursion. `childDirs' contains eligible directories.
-        parents.addAll(ret.childDirs);
-        return parents;
-    }
-
-    /**
-     * Recursive method used by {@link #findFilelessChildren(java.io.File)}.
-     */
-    private void findFilelessChildrenDeep(SkeletonDirs ret, File directory) {
-
+    private void findFilelessChildren(SkeletonDirs skels, File directory) {
         if (!directory.exists()) return;
         String dirPath = directory.getAbsolutePath();
         boolean topLevelIneligible = false;
@@ -337,9 +328,9 @@ class PendingFileCompleter {
                             f.getAbsolutePath());
                     }
                 } else {
-                    findFilelessChildrenDeep(ret, f);
-                    if (!ret.ineligible) {
-                        ret.childDirs.add(f);
+                    findFilelessChildren(skels, f);
+                    if (!skels.ineligible) {
+                        skels.childDirs.add(f);
                     } else {
                         topLevelIneligible = true;
                         if (LOGGER.isLoggable(Level.FINEST)) {
@@ -351,7 +342,7 @@ class PendingFileCompleter {
 
                     // Reset this flag so that other potential, eligible
                     // children are evaluated.
-                    ret.ineligible = false;
+                    skels.ineligible = false;
                 }
             }
         } catch (IOException ex) {
@@ -362,7 +353,7 @@ class PendingFileCompleter {
             }
         }
 
-        ret.ineligible = topLevelIneligible;
+        skels.ineligible = topLevelIneligible;
     }
 
     /**
@@ -404,6 +395,12 @@ class PendingFileCompleter {
      */
     private class SkeletonDirs {
         public boolean ineligible; // a flag used during recursion
-        public List<File> childDirs = new ArrayList<>();
+        public final Set<File> childDirs = new TreeSet<>(
+            DESC_PATHLEN_COMPARATOR);
+
+        public void reset() {
+            ineligible = false;
+            childDirs.clear();
+        }
     }
 }
