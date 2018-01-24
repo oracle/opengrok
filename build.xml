@@ -1279,7 +1279,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 		as reported by 'git remote' command. This will enable forked
 		projects to create their releases easily.
 	    -->
-	    <arg value="-r OpenGrok/OpenGrok"/>
+	    <arg value="-r oracle/OpenGrok"/>
 	    <arg value="-t ${version}"/>
 	    <!--
 	         The directory of the files should really be ${dist.dir}
