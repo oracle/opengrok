@@ -103,7 +103,7 @@ import java.util.regex.Matcher;
     Matcher m = PoshUtils.GOTO_LABEL.matcher(capture);
     if (m.find()) {
         String label   = m.group(3);
-        onCertainlyPublish(label, yychar + yylength() - label.length());
+        onCertainlyPublish(label, m.start(3));
         return yystate();
     }
  }

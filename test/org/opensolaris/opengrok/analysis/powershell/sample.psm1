@@ -474,3 +474,7 @@ function Install-LabCAMachine
 Write-Debug `$`{`}
 Write-Debug $false.$true.$param
 $(Write-Debug $true)
+
+:OuterLoop while ($true) {
+    while ($true) { break OuterLoop }
+}
