@@ -44,6 +44,8 @@
 #                                 options for CTags program (for its --options
 #                                 switch), default is DATA_ROOT/etc/ctags.config
 #   - OPENGROK_MANDOC             Full path to mandoc(1) binary
+#   - OPENGROK_LOCKING            Locking mode on|off|simple|native (default off)
+#                                 ("on" is an alias for "simple")
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
@@ -109,6 +111,8 @@
 #                                 increase it to 256MB, but do increase JVM to
 #                                 4/8/16GB ! Lucene defaults to 8 threads.
 #                                 Increase JVM memory as noted using JAVA_OPTS
+#   - OPENGROK_PARALLELISM        Default is 0, meaning that parallelism is
+#                                   determined from available processors.
 #   - OPENGROK_LOGGER_CONFIG_PATH Set path to custom logging.properties file.
 #   - OPENGROK_SUBVERSION_USERNAME name of the user that should be used for
 #                                 fetching the history from subversion
@@ -861,10 +865,12 @@ CommonInvocation()
 	${RENAMED_FILES_HISTORY}					\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
+        ${OPENGROK_LOCKING:+--lock} ${OPENGROK_LOCKING}        		\
         ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\
         ${OPENGROK_MANDOC:+--mandoc} ${OPENGROK_MANDOC}			\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
+        ${OPENGROK_PARALLELISM:+--threads} ${OPENGROK_PARALLELISM}	\
         ${READ_XML_CONF}                                        	\
         ${WEBAPP_CONFIG}						\
         ${WEBAPP_CONTEXT}						\
@@ -1039,8 +1045,7 @@ case "${1}" in
     update)
         ValidateConfiguration
         CreateRuntimeRequirements
-        UpdateGeneratedData
-        UpdateDescriptionCache
+        UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     updateQuietly)
@@ -1048,8 +1053,7 @@ case "${1}" in
         CreateRuntimeRequirements
         QUIET="-q"
         VERBOSE=""
-        UpdateGeneratedData
-        UpdateDescriptionCache
+        UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     updateDesc)
@@ -1073,8 +1077,7 @@ case "${1}" in
         fi
         ValidateConfiguration
         CreateRuntimeRequirements
-        UpdateGeneratedData
-        UpdateDescriptionCache
+        UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     indexpart)
@@ -1112,3 +1115,4 @@ case "${1}" in
         Usage
         ;;
 esac
+exit $?

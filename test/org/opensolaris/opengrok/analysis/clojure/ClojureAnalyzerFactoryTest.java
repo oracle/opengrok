@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.clojure;
 
@@ -53,20 +54,11 @@ import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_n
  */
 public class ClojureAnalyzerFactoryTest {
 
-    FileAnalyzer analyzer;
-    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
+    private static final String CTAGS_PROP =
+        "org.opensolaris.opengrok.analysis.Ctags";
     private static Ctags ctags;
     private static TestRepository repository;
-
-    public ClojureAnalyzerFactoryTest() {
-        ClojureAnalyzerFactory analFact = new ClojureAnalyzerFactory();
-        this.analyzer = analFact.getAnalyzer();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
-        if (env.validateExuberantCtags()) {
-            this.analyzer.setCtags(new Ctags());
-        }
-    }
+    private static FileAnalyzer analyzer;
 
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {
@@ -85,6 +77,14 @@ public class ClojureAnalyzerFactoryTest {
         repository = new TestRepository();
         repository.create(ClojureAnalyzerFactoryTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/index/source.zip"));
+
+        ClojureAnalyzerFactory analFact = new ClojureAnalyzerFactory();
+        analyzer = analFact.getAnalyzer();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setCtags(System.getProperty(CTAGS_PROP, "ctags"));
+        if (env.validateExuberantCtags()) {
+            analyzer.setCtags(new Ctags());
+        }
     }
 
     @AfterClass

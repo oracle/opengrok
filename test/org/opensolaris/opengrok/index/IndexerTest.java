@@ -34,8 +34,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -72,19 +74,27 @@ public class IndexerTest {
 
     TestRepository repository;
     private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
+    private static IndexerParallelizer parallelizer;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         assertTrue("No point in running indexer tests without valid ctags",
-                RuntimeEnvironment.getInstance().validateExuberantCtags());
-        RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
+            env.validateExuberantCtags());
+        RepositoryFactory.initializeIgnoredNames(env);
+
+        parallelizer = new IndexerParallelizer(env);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
+        if (parallelizer != null) {
+            parallelizer.close();
+            parallelizer = null;
+        }
     }
 
     @Before
@@ -114,7 +124,7 @@ public class IndexerTest {
             env.setHistoryEnabled(false);
             Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
                     false, false, null, null, new ArrayList<>(), false);
-            Indexer.getInstance().doIndexerExecution(true, 1, null, null);
+            Indexer.getInstance().doIndexerExecution(true, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }
@@ -202,8 +212,8 @@ public class IndexerTest {
 
     private class MyIndexChangeListener implements IndexChangedListener {
 
-        List<String> files = new ArrayList<>();
-        List<String> removedFiles = new ArrayList<>();
+        final Queue<String> files = new ConcurrentLinkedQueue<>();
+        final Queue<String> removedFiles = new ConcurrentLinkedQueue<>();
 
         @Override
         public void fileAdd(String path, String analyzer) {
@@ -224,12 +234,12 @@ public class IndexerTest {
 
         @Override
         public void fileRemoved(String path) {
-            files.remove(path);
             removedFiles.add(path);
         }
         
         public void reset() {
-            this.files = new ArrayList<>();
+            this.files.clear();
+            this.removedFiles.clear();
         }
     }
 
@@ -262,14 +272,14 @@ public class IndexerTest {
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals(2, listener.files.size());
             repository.purgeData();
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(true);
             idb = new IndexDatabase(project);
             listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals(1, listener.files.size());
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
         } else {
@@ -283,8 +293,8 @@ public class IndexerTest {
      */
     private class RemoveIndexChangeListener implements IndexChangedListener {
 
-        List<String> filesToAdd = new ArrayList<>();
-        List<String> removedFiles = new ArrayList<>();
+        final Queue<String> filesToAdd = new ConcurrentLinkedQueue<>();
+        final Queue<String> removedFiles = new ConcurrentLinkedQueue<>();
 
         @Override
         public void fileAdd(String path, String analyzer) {
@@ -317,8 +327,8 @@ public class IndexerTest {
         }
 
         public void reset() {
-            this.filesToAdd = new ArrayList<>();
-            this.removedFiles = new ArrayList<>();
+            this.filesToAdd.clear();
+            this.removedFiles.clear();
         }
     }
 
@@ -350,7 +360,7 @@ public class IndexerTest {
         assertNotNull(idb);
         RemoveIndexChangeListener listener = new RemoveIndexChangeListener();
         idb.addIndexChangedListener(listener);
-        idb.update();
+        idb.update(parallelizer);
         Assert.assertEquals(5, listener.filesToAdd.size());
         listener.reset();
 
@@ -366,11 +376,11 @@ public class IndexerTest {
         fw.close();
 
         // reindex
-        idb.update();
+        idb.update(parallelizer);
         // Make sure that the file was actually processed.
         assertEquals(1, listener.removedFiles.size());
         assertEquals(1, listener.filesToAdd.size());
-        assertEquals("/mercurial/bar.txt", listener.removedFiles.get(0));
+        assertEquals("/mercurial/bar.txt", listener.removedFiles.peek());
 
         testrepo.destroy();
     }
@@ -408,7 +418,7 @@ public class IndexerTest {
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals(1, listener.files.size());
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -433,16 +443,19 @@ public class IndexerTest {
             assertNotNull(idb);
             MyIndexChangeListener listener = new MyIndexChangeListener();
             idb.addIndexChangedListener(listener);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals(1, listener.files.size());
             listener.reset();
             repository.addDummyFile(ppath);
-            idb.update();
+            idb.update(parallelizer);
             assertEquals("No new file added", 1, listener.files.size());
             repository.removeDummyFile(ppath);
-            idb.update();
-            assertEquals("Didn't remove the dummy file", 0, listener.files.size());
+            idb.update(parallelizer);
+            assertEquals("(added)files changed unexpectedly", 1,
+                listener.files.size());
             assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
+            assertEquals("Should have added then removed the same file",
+                listener.files.peek(), listener.removedFiles.peek());
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }
@@ -481,7 +494,7 @@ public class IndexerTest {
                 MyIndexChangeListener listener = new MyIndexChangeListener();
                 idb.addIndexChangedListener(listener);
                 System.out.println("Trying to index a special file - FIFO in this case.");
-                idb.update();
+                idb.update(parallelizer);
                 assertEquals(0, listener.files.size());
             } else {
                 System.out.println("Skipping test. Could not find a ctags I could use in path.");

@@ -71,7 +71,7 @@ public class SearchEngineTest {
             Indexer.getInstance().prepareIndexer(env, true, true,
                 new TreeSet<>(Arrays.asList(new String[]{"/c"})),
                 false, false, null, null, new ArrayList<>(), false);
-            Indexer.getInstance().doIndexerExecution(true, 1, null, null);
+            Indexer.getInstance().doIndexerExecution(true, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
             skip = true;

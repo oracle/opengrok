@@ -19,7 +19,7 @@
 
  /*
   * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
-  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
   */
 package org.opensolaris.opengrok.configuration;
 
@@ -1047,12 +1047,8 @@ public final class RuntimeEnvironment {
         threadConfig.get().setOptimizeDatabase(optimizeDatabase);
     }
 
-    public boolean isUsingLuceneLocking() {
-        return threadConfig.get().isUsingLuceneLocking();
-    }
-
-    public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        threadConfig.get().setUsingLuceneLocking(useLuceneLocking);
+    public LuceneLockName getLuceneLocking() {
+        return threadConfig.get().getLuceneLocking();
     }
 
     public boolean isIndexVersionedFilesOnly() {
@@ -1061,6 +1057,17 @@ public final class RuntimeEnvironment {
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         threadConfig.get().setIndexVersionedFilesOnly(indexVersionedFilesOnly);
+    }
+
+    /**
+     * Gets the value of {@link Configuration#getIndexingParallelism()} -- or
+     * if zero, then as a default gets the number of available processors.
+     * @return a natural number &gt;= 1
+     */
+    public int getIndexingParallelism() {
+        int parallelism = threadConfig.get().getIndexingParallelism();
+        return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
+            parallelism;
     }
 
     public boolean isTagsEnabled() {

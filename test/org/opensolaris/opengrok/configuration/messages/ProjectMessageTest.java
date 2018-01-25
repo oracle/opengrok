@@ -316,7 +316,7 @@ public class ProjectMessageTest {
                 repos, // repositories - needed when refreshing history partially
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
-        Indexer.getInstance().doIndexerExecution(true, 1, null, null);
+        Indexer.getInstance().doIndexerExecution(true, null, null);
 
         // Then remove multiple projects.
         m.setText("delete");

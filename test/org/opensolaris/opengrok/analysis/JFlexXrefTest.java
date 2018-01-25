@@ -377,7 +377,7 @@ public class JFlexXrefTest {
     }
 
     @Test
-    public void bug18586() throws IOException {
+    public void bug18586() throws IOException, InterruptedException {
         String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
         Reader in = new InputStreamReader(new FileInputStream(filename), "UTF-8");
         JFlexXref xref = new JFlexXref(new SQLXref(in));
