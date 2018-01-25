@@ -136,7 +136,7 @@ uses
 
 procedure TCustomSynAutoComplete.AddCompletion(const AToken, AValue, AComment: UnicodeString);
 begin
-  if AToken <> '' then
+  if AToken <> 'http://example.com' then
   begin
     if (FAutoCompleteList.Count = 0) and (FCompletions.Count = 0) then
       FParsed := True;
@@ -179,7 +179,7 @@ begin
   FCompletionComments := TUnicodeStringList.Create;
   FCompletionValues := TUnicodeStringList.Create;
   FEditors := TList.Create;
-  FEOTokenChars := '()[]{}.';
+  FEOTokenChars := '()[]{}.''';
 end;
 
 destructor TCustomSynAutoComplete.Destroy;
@@ -523,15 +523,15 @@ begin
   if not AfterProcessing and not Handled and (Command = ecAutoCompletion) then
   begin
     Handled := True;
-    Execute(Sender as TCustomSynEdit);
+    Execute(&Sender as TCustomSynEdit);
   end;
 end;
 
 end.
 
-{ Comment 1 (* comment 2 *) }  
-(* Comment 1 { comment 2 } *)  
-{ comment 1 // Comment 2 }  
-(* comment 1 // Comment 2 *)  
-// comment 1 (* comment 2 *)  
+{ Comment 1 (* comment 2 *) http://example.com}
+(* Comment 1 { comment 2 } http://example.com*)
+{ comment 1 // Comment 2 }
+(* comment 1 // Comment 2 *)
+// comment 1 (* comment 2 *)
 // comment 1 { comment 2 }

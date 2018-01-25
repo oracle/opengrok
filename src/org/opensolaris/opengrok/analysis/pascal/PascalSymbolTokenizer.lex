@@ -43,31 +43,35 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %char
 %include CommonLexer.lexh
 
-%state STRING COMMENT PCOMMENT SCOMMENT QSTRING
+%state COMMENT PCOMMENT SCOMMENT QSTRING
 
 %include Common.lexh
 %include Pascal.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
-                if (!Consts.kwd.contains(id.toLowerCase(Locale.ROOT))) {
+\&{Identifier}    {
+    String id = yytext();
+    onSymbolMatched(id.substring(1), yychar + 1);
+    return yystate();
+}
+{Identifier}    {
+    String id = yytext();
+    if (!Consts.kwd.contains(id.toLowerCase(Locale.ROOT))) {
                         onSymbolMatched(id, yychar);
-                        return yystate(); }
-              }
+                        return yystate();
+    }
+ }
  {Number}    {}
- \"     { yybegin(STRING); }
+ {ControlString}    {}
  \'     { yybegin(QSTRING); }
  \{     { yypush(COMMENT); }
  "(*"   { yypush(PCOMMENT); }
  "//"   { yybegin(SCOMMENT); }
 }
 
-<STRING> {
- \"     { yybegin(YYINITIAL); }
-}
-
 <QSTRING> {
+ \'\'    {}
  \'     { yybegin(YYINITIAL); }
 }
 
@@ -85,6 +89,6 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 {WhspChar}*{EOL}    { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, PCOMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, COMMENT, PCOMMENT, SCOMMENT, QSTRING> {
 [^]    {}
 }
