@@ -48,6 +48,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     protected void chkLOC() {
         switch (yystate()) {
             case COMMENT:
+            case PCOMMENT:
             case SCOMMENT:
                 break;
             default:
@@ -59,7 +60,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 
 File = [a-zA-Z]{FNameChar}* "." ("pas"|"properties"|"props"|"xml"|"conf"|"txt"|"htm"|"html"|"ini"|"diff"|"patch")
 
-%state  STRING COMMENT SCOMMENT QSTRING
+%state  STRING COMMENT PCOMMENT SCOMMENT QSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
@@ -97,22 +98,27 @@ File = [a-zA-Z]{FNameChar}* "." ("pas"|"properties"|"props"|"xml"|"conf"|"txt"|"
     chkLOC();
     yybegin(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
-    onNonSymbolMatched("\"", yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  \'     {
     yybegin(QSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
-    onNonSymbolMatched("\'", yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  \{     {
-    yybegin(COMMENT);
+    yypush(COMMENT);
     onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
-    onNonSymbolMatched("{", yychar);
+    onNonSymbolMatched(yytext(), yychar);
+ }
+ "(*"    {
+    yypush(PCOMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  "//"   {
     yybegin(SCOMMENT);
     onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
-    onNonSymbolMatched("//", yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
@@ -121,7 +127,7 @@ File = [a-zA-Z]{FNameChar}* "." ("pas"|"properties"|"props"|"xml"|"conf"|"txt"|"
  \"     {
     chkLOC();
     yybegin(YYINITIAL);
-    onNonSymbolMatched("\"", yychar);
+    onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
  \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
@@ -140,12 +146,27 @@ File = [a-zA-Z]{FNameChar}* "." ("pas"|"properties"|"props"|"xml"|"conf"|"txt"|"
 
 <COMMENT> {
  \}      {
-    yybegin(YYINITIAL);
+    yypop();
     onNonSymbolMatched(yytext(), yychar);
-    onDisjointSpanChanged(null, yychar);
+    if (yystate() == YYINITIAL) onDisjointSpanChanged(null, yychar);
+ }
+ "(*"    {
+    yypush(PCOMMENT);
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
+<PCOMMENT> {
+ "*)"    {
+    yypop();
+    onNonSymbolMatched(yytext(), yychar);
+    if (yystate() == YYINITIAL) onDisjointSpanChanged(null, yychar);
+ }
+ \{     {
+    yypush(COMMENT);
+    onNonSymbolMatched(yytext(), yychar);
+ }
+}
 
 <SCOMMENT> {
   {WhspChar}*{EOL} {
@@ -156,13 +177,13 @@ File = [a-zA-Z]{FNameChar}* "." ("pas"|"properties"|"props"|"xml"|"conf"|"txt"|"
 }
 
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, COMMENT, PCOMMENT, SCOMMENT, QSTRING> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
  [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
  [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
+<STRING, COMMENT, PCOMMENT, SCOMMENT, STRING, QSTRING> {
 {FPath}
         { chkLOC(); onPathlikeMatched(yytext(), '/', false, yychar); }
 

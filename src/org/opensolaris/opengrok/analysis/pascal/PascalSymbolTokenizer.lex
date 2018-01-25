@@ -28,6 +28,7 @@
 
 package org.opensolaris.opengrok.analysis.pascal;
 
+import java.util.Locale;
 import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
@@ -37,24 +38,28 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
     yyline = 1;
 %init}
 %unicode
+%ignorecase
 %int
-%include CommonLexer.lexh
 %char
+%include CommonLexer.lexh
 
-%state STRING COMMENT SCOMMENT QSTRING
+%state STRING COMMENT PCOMMENT SCOMMENT QSTRING
 
+%include Common.lexh
 %include Pascal.lexh
 %%
 
 <YYINITIAL> {
 {Identifier} {String id = yytext();
-                if(!Consts.kwd.contains(id)){
+                if (!Consts.kwd.contains(id.toLowerCase(Locale.ROOT))) {
                         onSymbolMatched(id, yychar);
                         return yystate(); }
               }
+ {Number}    {}
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
- \{     { yybegin(COMMENT); }
+ \{     { yypush(COMMENT); }
+ "(*"   { yypush(PCOMMENT); }
  "//"   { yybegin(SCOMMENT); }
 }
 
@@ -67,13 +72,19 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 }
 
 <COMMENT> {
-\}    { yybegin(YYINITIAL);}
+ \}      { yypop(); }
+ "(*"    { yypush(PCOMMENT); }
+}
+
+<PCOMMENT> {
+ "*)"    { yypop(); }
+ \{      { yypush(COMMENT); }
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{WhspChar}*{EOL}    { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, STRING, COMMENT, PCOMMENT, SCOMMENT, QSTRING> {
 [^]    {}
 }
