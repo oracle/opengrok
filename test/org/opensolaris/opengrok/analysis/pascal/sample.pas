@@ -14,7 +14,7 @@ The Initial Author of the Original Code is Michael Hieke.
 Portions written by Michael Hieke are Copyright 2000 Michael Hieke.
 Portions written by Cyrille de Brebisson (from mwCompletionProposal.pas) are
 Copyright 1999 Cyrille de Brebisson.
-Unicode translation by Maël Hörz.
+Unicode translation by MaÃ«l HÃ¶rz.
 All Rights Reserved.
 
 Contributors to the SynEdit and mwEdit projects are listed in the

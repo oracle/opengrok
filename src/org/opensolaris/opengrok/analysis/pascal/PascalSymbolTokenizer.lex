@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -41,10 +41,9 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %include CommonLexer.lexh
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-
 %state STRING COMMENT SCOMMENT QSTRING
 
+%include Pascal.lexh
 %%
 
 <YYINITIAL> {
