@@ -93,7 +93,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
     -->
 
-    <property name="version" value="1.1-rc19"/>
+    <property name="version" value="1.1-rc20"/>
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
