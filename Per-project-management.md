@@ -56,11 +56,13 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
 - make any necessary changes to /opengrok/etc/readonly_configuration.xml
 - perform sanity check 
 ```
-  OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml Groups list
+  OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml \
+     Groups list
 ```
 - if you are adding project and changing regular expression of project group, try matching it: 
 ```
-  OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml Groups match PROJECT_TO_BE_ADDED
+  OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml \
+      Groups match PROJECT_TO_BE_ADDED
 ```
 - get current config from the webapp if `/opengrok/etc/configuration.xml` is not fresh: 
 ```
@@ -68,8 +70,10 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
 ```
 - merge them together 
 ```
-    ConfigMerge /opengrok/etc/readonly_configuration.xml /opengrok/etc/configuration.xml > /tmp/merged.xml
-     mv /tmp/merged.xml  /opengrok/etc/configuration.xml
+  ConfigMerge \
+      /opengrok/etc/readonly_configuration.xml \
+      /opengrok/etc/configuration.xml > /tmp/merged.xml
+  mv /tmp/merged.xml  /opengrok/etc/configuration.xml
 ```
 - upload the new config to the webapp 
 ```
