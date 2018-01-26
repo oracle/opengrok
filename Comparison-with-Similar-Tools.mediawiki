@@ -10,6 +10,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |'''OpenGrok'''
 |'''Woboq'''
 |'''Hound'''
+|'''Debian code search'''|
 |-
 |Full text Search
 |Y
@@ -19,6 +20,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |
+|XXX
 |XXX
 |-
 |Definition Search
@@ -30,6 +32,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |XXX
+|XXX
 |-
 |Identifier Search
 |Y
@@ -39,6 +42,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |Y
+|XXX
 |XXX
 |-
 |Path search
@@ -50,6 +54,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |XXX
+|XXX
 |-
 |History Search
 | 
@@ -59,6 +64,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 | 
 |Y
 |
+|XXX
 |XXX
 |-
 |Caller/Callee Search
@@ -70,6 +76,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |
 |
 |XXX
+|XXX
 |-
 |RegExp Search
 | 
@@ -79,6 +86,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |P (only wildcards)
 |
+|XXX
 |XXX
 |-
 |Shows matching lines
@@ -90,6 +98,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |XXX
+|XXX
 |-
 |Hierarchical Search
 | 
@@ -99,6 +108,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |
+|XXX
 |XXX
 |-
 |query syntax like AND, OR, field:
@@ -110,6 +120,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |XXX
+|XXX
 |-
 |Incremental update
 | 
@@ -119,6 +130,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |
+|XXX
 |XXX
 |-
 |RSS Feed
@@ -130,6 +142,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |XXX
+|XXX
 |-
 |Syntax highlighting-Xref
 |Y
@@ -139,6 +152,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |
+|XXX
 |XXX
 |-
 |Interface for SCM
@@ -150,6 +164,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |XXX
+|XXX
 |-
 |open source
 |Y
@@ -160,6 +175,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |Y
+|XXX
 |-
 |Usable URLs
 |Y
@@ -169,6 +185,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |Y
+|XXX
 |XXX
 |-
 |Individual file download
@@ -180,6 +197,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |XXX
+|XXX
 |-
 |Changes at directory level
 | 
@@ -189,6 +207,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |N/A
 |Y
 |
+|XXX
 |XXX
 |-
 |Multi language support
@@ -200,6 +219,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |XXX
+|XXX
 |-
 |User interface
 |WEB
@@ -210,6 +230,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |WEB / CLI
 |WEB / CLI
 |WEB
+|XXX
 |-
 |Static HTML
 | 
@@ -219,6 +240,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |P (for xrefs)
 |Y
+|XXX
 |XXX
 |-
 |Input completion
@@ -230,6 +252,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |P (with greasemonkey script)
 |
 |XXX
+|XXX
 |-
 |Built-in parser
 | 
@@ -239,6 +262,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |P (lexical analysis)
 |
+|XXX
 |XXX
 |-
 |Plug-in parser
@@ -250,6 +274,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |
 |
 |XXX
+|XXX
 |-
 |Integration with (exuberant) ctags
 | 
@@ -259,6 +284,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |
+|XXX
 |XXX
 |-
 |Integration with cscope
@@ -270,6 +296,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |
 |
 |XXX
+|XXX
 |-
 |Integration with emacs
 | 
@@ -280,6 +307,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |Y
+|XXX
 |-
 |Integration with vim
 | 
@@ -290,6 +318,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |P (through [https://github.com/jdevera/vim-opengrok-search])
 |
 |Y
+|XXX
 |-
 |Integration with doxygen
 | 
@@ -299,6 +328,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |
+|XXX
 |XXX
 |-
 |Integration with Netbeans
@@ -310,6 +340,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |
 |
 |XXX
+|XXX
 |-
 |Integration with Eclipse
 | 
@@ -319,6 +350,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 | 
 |Y
 |
+|XXX
 |XXX
 |-
 |Integration with less
@@ -330,6 +362,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |
 |
 |XXX
+|XXX
 |-
 |Integration with bash
 | 
@@ -339,6 +372,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |
+|XXX
 |XXX
 |-
 |Integration with idutils
@@ -350,6 +384,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |
 |
 |XXX
+|XXX
 |-
 |Integration with Elvis
 | 
@@ -359,6 +394,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |
 |
+|XXX
 |XXX
 |-
 |}
