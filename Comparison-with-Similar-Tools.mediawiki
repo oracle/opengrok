@@ -1,4 +1,4 @@
-Disclaimer: this table might be obsolete, if you think it needs adjusting, please let us know and modify the wiki page.
+Disclaimer: this table might be obsolete, if you think it needs adjusting go ahead and modify the wiki page.
 
 {|
 |'''Feature'''
