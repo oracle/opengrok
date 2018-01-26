@@ -77,5 +77,5 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
 ```
 - upload the new config to the webapp 
 ```
-   Messages -n config setconf /opengrok/etc/configuration.xml
+   Messages -n config -t setconf /opengrok/etc/configuration.xml
 ```
