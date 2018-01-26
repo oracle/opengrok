@@ -88,7 +88,7 @@ The script has documented usage.
 ```
 $ tools/Messages --help
 
-Usage: Messages [options] [text]
+Usage: Messages [options] <text>
 
 [OPTIONS]:
   -c|--class                    css class to apply for the message (default info)
@@ -103,16 +103,16 @@ Usage: Messages [options] [text]
 
   (*) see man date: option --date (requires GNU date - use DATE env variable)
   css classes: success, info, warning, error
-  types: normal, abort, stats
-  tags: main, <project name>
+
+  tags: main, <project name(s)>
   text: supports html markup
 
   Message types:
     config:
      - set or get configuration
-     - query is formed in the message <text>:
+     - query is formed in the message <tag>:
        - "setconf"  send configuration to webapp.
-                      Requires input file as argument.
+                      Requires input file as argument in <text>.
        - "getconf"  retrieves configuration from webapp.
                       Prints the configuration in XML to stdout.
        - "set"      sets the particular configuration option (only primitive types)
@@ -121,7 +121,27 @@ Usage: Messages [options] [text]
                           histPerPage = 10
                           authorizationWatchdogEnabled = true
                       Returns text describing the action.
-                      The change is NOT persistent when you reindex or redeploy!
+                      The change is NOT persistent when reindex or redeploy!
+       - "get"      retrieves the particular configuration option (only primitive types)
+                      Returns string representation of the option.
+       - "auth"     tag requires "reload" text and
+                    reloads all authorization plugins.
+    project:
+     - project names to be added/deleted/indexed are specified as <tags>
+     - command is specified in message <text>:
+       - "add" - adds project(s) and its repositories to the configuration.
+                   If the project already exists, refresh list of its repositories.
+       - "delete" - removes project(s) and its repositores from the configuration
+                      Also deletes its data under data root (but not the source code).
+       - "indexed" - mark the project(s) as indexed so it becomes visible in the UI
+       - "list" - list all projects (both indexed and not indexed)
+       - "list-indexed" - list indexed projects
+       - "get-repos" - get list of repositories in the form of relative paths to source root for given project(s)
+       - "get-repos-type" - get repository type(s) for given project(s)
+    repository:
+     - repository paths relative to source root are specified as <tags>
+     - command is specified in message <text>:
+       - "get-repo-type" - returns type of the repository or "N/A"
     normal:
      - assign a <text> to the main page or a project
      - can be more precise with <tags> (for specific project)
@@ -140,7 +160,7 @@ Usage: Messages [options] [text]
 
   Optional environment variables:
     OPENGROK_CONFIGURATION - location of your configuration
-      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf /home/ktulinge/workspace/OpenGrok/tools/Messages ... 
+      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ./tools/Messages ... 
 
     See the code for more information on configuration options / variables
 
