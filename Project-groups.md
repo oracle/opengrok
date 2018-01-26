@@ -2,7 +2,7 @@
 
 <!-- toc -->
 
-- [Using OpenGrok groupings](#using-opengrok-groupings)
+- [Using project groups](#using-opengrok-groupings)
   * [Compatibility](#compatibility)
   * [Simple configuration](#simple-configuration)
   * [Display](#display)
