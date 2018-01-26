@@ -279,7 +279,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |Y
 |Y
 |
-|XXX
+|Y
 |-
 |Integration with vim
 | 
