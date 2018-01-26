@@ -23,7 +23,8 @@
 #
 
 #
-# OpenGrok Wrapper (initial setup and cron job updating)
+# opengrok.jar wrapper for initial setup and cron job updating.
+# Please see the Usage() function below for supported environment variables.
 #
 
 #

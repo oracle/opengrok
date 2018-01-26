@@ -57,7 +57,6 @@ public class ConfigurationHelp {
 
         Configuration conf = new Configuration();
         Class klass = conf.getClass();
-        klass.getDeclaredMethods();
 
         StringBuilder b = new StringBuilder();
         b.append("Configuration examples:\n");

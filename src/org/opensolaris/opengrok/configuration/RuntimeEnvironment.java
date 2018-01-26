@@ -597,7 +597,7 @@ public final class RuntimeEnvironment {
      * @see #getMandoc()
      */
     public void setMandoc(String value) {
-        mandoc = value;
+        this.mandoc = value;
     }
 
     public int getCachePages() {
