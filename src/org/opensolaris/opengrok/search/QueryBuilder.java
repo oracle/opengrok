@@ -69,6 +69,7 @@ public class QueryBuilder {
     public static final String DATE = "date";
     public static final String OBJUID = "objuid"; // object UID
     public static final String OBJSER = "objser"; // object serialized
+    public static final String ZVER = "zver"; // analyzer version
 
     /** Used for paths, so SHA-1 is completely sufficient */
     private static final String DIRPATH_HASH_ALGORITHM = "SHA-1";

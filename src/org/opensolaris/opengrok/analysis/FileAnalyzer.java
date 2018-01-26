@@ -63,6 +63,7 @@ public class FileAnalyzer extends Analyzer {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileAnalyzer.class);
 
     protected Project project;
+    protected Ctags ctags;
     protected boolean scopesEnabled;
     protected boolean foldingEnabled;
     private final FileAnalyzerFactory factory;
@@ -126,7 +127,31 @@ public class FileAnalyzer extends Analyzer {
             return null;
         }
     }
-    protected Ctags ctags;
+
+    /**
+     * Gets a version number to be used to tag processed documents so that
+     * re-analysis can be re-done later if a stored version number is different
+     * from the current implementation.
+     * <p>
+     * The value is the union of a {@link FileAnalyzer} root version and the
+     * value from {@link #getSpecializedVersionNo()}. Changing the root version
+     * affects all analyzers simultaneously; while subclasses can override
+     * {@link #getSpecializedVersionNo()} to allow changes that affect a few.
+     * @return (20061115_01 &lt;&lt; 32) | {@link #getSpecializedVersionNo()}
+     */
+    public final long getVersionNo() {
+        final int rootVersionNo = 20061115_01; // Edit comment above too!
+        return ((long)rootVersionNo << 32) | getSpecializedVersionNo();
+    }
+
+    /**
+     * Subclasses should override to produce a value relevant for the evolution
+     * of their analysis in each release.
+     * @return 0
+     */
+    protected int getSpecializedVersionNo() {
+        return 0; // FileAnalyzer is not specialized.
+    }
 
     public void setCtags(Ctags ctags) {
         this.ctags = ctags;

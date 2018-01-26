@@ -406,14 +406,15 @@ public final class Indexer {
                 "-A (.ext|prefix.):(-|analyzer)", "--analyzer", "/(\\.\\w+|\\w+\\.):(-|[a-zA-Z_0-9.]+)/",
                     "Files with the named prefix/extension should be analyzed",
                     "with the given analyzer, where 'analyzer' may be specified",
-                    "using a simple class name (CAnalyzer) or language name (C)",
+                    "using a simple class name (RubyAnalyzer) or language name (C)",
                     "(Note, analyzer specification is case sensitive)",
                     "  Ex: -A .foo:CAnalyzer",
-                    "      will use the C analyzer for all files ending with .foo",
-                    "  Ex: -A bar.:C",
-                    "      will use the C analyzer for all files starting with bar.",
+                    "      will use the C analyzer for all files ending with .FOO",
+                    "  Ex: -A bar.:Perl",
+                    "      will use the Perl analyzer for all files starting",
+                    "      with \"BAR\" (no full-stop)",
                     "  Ex: -A .c:-",
-                    "      will disable the C analyzer for for all files ending with .c").
+                    "      will disable specialized analyzers for all files ending with .c").
                 Do( analyzerSpec -> {
                     String[] arg = ((String)analyzerSpec).split(":");
                     String fileSpec = arg[0];

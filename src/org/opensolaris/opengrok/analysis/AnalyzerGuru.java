@@ -41,8 +41,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,6 +54,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.SortedDocValuesField;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
@@ -168,6 +171,17 @@ public class AnalyzerGuru {
     private static final Map<String, FileAnalyzerFactory> pre = new HashMap<>();
 
     /**
+     * Appended when
+     * {@link #addExtension(java.lang.String, org.opensolaris.opengrok.analysis.FileAnalyzerFactory)}
+     * or
+     * {@link #addPrefix(java.lang.String, org.opensolaris.opengrok.analysis.FileAnalyzerFactory)}
+     * are called to augment the value in {@link #getVersionNo()}.
+     */
+    private static final TreeSet<String> CUSTOMIZATION_KEYS = new TreeSet<>();
+
+    private static int customizationHashCode;
+
+    /**
      * Descending string length comparator for magics
      */
     private static final Comparator<String> descStrlenComparator =
@@ -219,6 +233,12 @@ public class AnalyzerGuru {
      */
     private static final Map<String, FileAnalyzerFactory> FILETYPE_FACTORIES =
             new HashMap<>();
+
+    /**
+     * Maps from {@link FileAnalyzer#getFileTypeName()} to
+     * {@link FileAnalyzer#getVersionNo()}
+     */
+    private static final Map<String, Long> ANALYZER_VERSIONS = new HashMap<>();
 
     /*
      * If you write your own analyzer please register it here. The order is
@@ -295,6 +315,45 @@ public class AnalyzerGuru {
         }
     }
 
+    /**
+     * Gets a version number to be used to tag documents examined by the guru so
+     * that analysis can be re-done later if a stored version number is
+     * different from the current implementation or if customization has been
+     * done by the user to change the {@link AnalyzerGuru} operation.
+     * <p>
+     * The static part of the version is bumped in a release when e.g. new
+     * {@link FileAnalyzerFactory} subclasses are registered or when existing
+     * {@link FileAnalyzerFactory} subclasses are revised to target more or
+     * different files.
+     * @return a value whose lower 32-bits are a static value
+     * 20171230_00
+     * for the current implementation and whose higher-32 bits are non-zero if
+     * {@link #addExtension(java.lang.String, org.opensolaris.opengrok.analysis.FileAnalyzerFactory)}
+     * or
+     * {@link #addPrefix(java.lang.String, org.opensolaris.opengrok.analysis.FileAnalyzerFactory)}
+     * has been called.
+     */
+    public static long getVersionNo() {
+        final int ver32 = 20171230_00; // Edit comment above too!
+        long ver = ver32;
+        if (customizationHashCode != 0) {
+            ver |= (long)customizationHashCode << 32;
+        }
+        return ver;
+    }
+
+    /**
+     * Gets a version number according to a registered
+     * {@link FileAnalyzer#getVersionNo()} for a {@code fileTypeName} according
+     * to {@link FileAnalyzer#getFileTypeName()}.
+     * @param fileTypeName a defined instance
+     * @return a registered value or {@link Long#MIN_VALUE} if
+     * {@code fileTypeName} is unknown
+     */
+    public static long getAnalyzerVersionNo(String fileTypeName) {
+        return ANALYZER_VERSIONS.getOrDefault(fileTypeName, Long.MIN_VALUE);
+    }
+
     public static Map<String, FileAnalyzerFactory> getExtensionsMap() {
         return Collections.unmodifiableMap(ext);
     }
@@ -347,7 +406,9 @@ public class AnalyzerGuru {
         factories.add(factory);
 
         FileAnalyzer fa = factory.getAnalyzer();
-        FILETYPE_FACTORIES.put(fa.getFileTypeName(), factory);
+        String fileTypeName = fa.getFileTypeName();
+        FILETYPE_FACTORIES.put(fileTypeName, factory);
+        ANALYZER_VERSIONS.put(fileTypeName, fa.getVersionNo());
     }
 
     /**
@@ -359,12 +420,16 @@ public class AnalyzerGuru {
      * extension (if you pass null as the analyzer, you will disable the
      * analyzer used for that extension)
      */
-    public static void addPrefix(String prefix,
-            FileAnalyzerFactory factory) {
+    public static void addPrefix(String prefix, FileAnalyzerFactory factory) {
+        FileAnalyzerFactory oldFactory;
         if (factory == null) {
-            pre.remove(prefix);
+            oldFactory = pre.remove(prefix);
         } else {
-            pre.put(prefix, factory);
+            oldFactory = pre.put(prefix, factory);
+        }
+
+        if (factoriesDifferent(factory, oldFactory)) {
+            addCustomizationKey("p:" + prefix);
         }
     }
 
@@ -379,10 +444,15 @@ public class AnalyzerGuru {
      */
     public static void addExtension(String extension,
             FileAnalyzerFactory factory) {
+        FileAnalyzerFactory oldFactory;
         if (factory == null) {
-            ext.remove(extension);
+            oldFactory = ext.remove(extension);
         } else {
-            ext.put(extension, factory);
+            oldFactory = ext.put(extension, factory);
+        }
+
+        if (factoriesDifferent(factory, oldFactory)) {
+            addCustomizationKey("e:" + extension);
         }
     }
 
@@ -501,6 +571,8 @@ public class AnalyzerGuru {
 
             String type = fa.getFileTypeName();
             doc.add(new StringField(QueryBuilder.TYPE, type, Store.YES));
+
+            doc.add(new StoredField(QueryBuilder.ZVER, fa.getVersionNo()));
         }
     }
 
@@ -1002,5 +1074,33 @@ public class AnalyzerGuru {
 
         in.reset();
         return opening.toString();
+    }
+
+    private static void addCustomizationKey(String k) {
+        CUSTOMIZATION_KEYS.add(k);
+        Object[] keys = CUSTOMIZATION_KEYS.toArray();
+        customizationHashCode = Objects.hash(keys);
+    }
+
+    private static boolean factoriesDifferent(FileAnalyzerFactory a,
+            FileAnalyzerFactory b) {
+        String a_name = null;
+        if (a != null) {
+            a_name = a.getName();
+            if (a_name == null) {
+                a_name = a.getClass().getSimpleName();
+            }
+        }
+        String b_name = null;
+        if (b != null) {
+            b_name = b.getName();
+            if (b_name == null) {
+                b_name = b.getClass().getSimpleName();
+            }
+        }
+        if (a_name == null && b_name == null) {
+            return false;
+        }
+        return a_name == null || b_name == null || !a_name.equals(b_name);
     }
 }
