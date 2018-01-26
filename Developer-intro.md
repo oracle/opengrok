@@ -70,6 +70,8 @@ Now select the opengrok project in the left column and go to Run -> Run Project 
 Simply insert a breakpoint either in the Indexer code or the webapp and Debug it (Ctrl+F5) it or do something with the browser, respectively. Then it is possible to single step, observe the variables etc.
 For the webapp, this presumes it has been deployed via 'Debug' not 'Deploy'.
 
+See [[Debugging wiki|Debugging]] for more information on debugging.
+
 ### Test
 
 To run tests in single file, open the file from the left column which contains the projects (e.g. opengrok -> Test Packages -> org.opensolaris.opengrok.history -> MercurialRepositoryTest.java) and right-click on it and select Test File (Ctrl+F6).
