@@ -21,6 +21,4 @@ To subscribe, send email to <nowiki><mailing_list_name></nowiki>-subscribe@yahoo
 
 == Old archives ==
 
-Archives of mailing lists (opengrok-dev@opensolaris.org and opengrok-discuss@opensolaris.org) prior to moving the project to github are available in compressed form on http://java.net/projects/opengrok/downloads/directory/archive-mails
-
 Current and past archives of opengrok-discuss mailing list in readable/searchable form is available on [http://marc.info/?l=opensolaris-opengrok-discuss&r=1&w=2 marc.info]
