@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -102,13 +103,7 @@ public final class RepositoryFactory {
         for (Repository rep : repositories) {
             if (rep.isRepositoryFor(file)) {
                 repo = rep.getClass().getDeclaredConstructor().newInstance();
-                try {
-                    repo.setDirectoryName(file.getCanonicalPath());
-                } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE,
-                            "Failed to get canonical path name for "
-                            + file.getAbsolutePath(), e);
-                }
+                repo.setDirectoryName(file);
 
                 if (!repo.isWorking()) {
                     LOGGER.log(Level.WARNING,

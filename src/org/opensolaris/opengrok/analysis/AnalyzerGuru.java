@@ -106,6 +106,7 @@ import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.HistoryReader;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
@@ -394,10 +395,12 @@ public class AnalyzerGuru {
      * @param xrefOut Where to write the xref (possibly {@code null})
      * @throws IOException If an exception occurs while collecting the data
      * @throws InterruptedException if a timeout occurs
+     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
+     * an ineligible link
      */
     public void populateDocument(Document doc, File file, String path,
         FileAnalyzer fa, Writer xrefOut) throws IOException,
-            InterruptedException {
+            InterruptedException, ForbiddenSymlinkException {
 
         String date = DateTools.timeToString(file.lastModified(),
                 DateTools.Resolution.MILLISECOND);

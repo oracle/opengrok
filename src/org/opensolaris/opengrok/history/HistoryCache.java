@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 
 interface HistoryCache {
     /**
@@ -58,9 +59,11 @@ interface HistoryCache {
      * the implementation is allowed to skip the file list, but it doesn't
      * have to.
      * @throws HistoryException if the history cannot be fetched
+     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
+     * an ineligible link
      */
     History get(File file, Repository repository, boolean withFiles)
-            throws HistoryException;
+            throws HistoryException, ForbiddenSymlinkException;
 
     /**
      * Store the history for a repository.
@@ -93,6 +96,14 @@ interface HistoryCache {
      */
     boolean hasCacheForDirectory(File directory, Repository repository)
             throws HistoryException;
+
+    /**
+     * Check if the specified file is present in the cache.
+     * @param file the file to check
+     * @return {@code true} if the file is in the cache, {@code false}
+     * otherwise
+     */
+    boolean hasCacheForFile(File file) throws HistoryException;
 
     /**
      * Get the revision identifier for the latest cached revision in a

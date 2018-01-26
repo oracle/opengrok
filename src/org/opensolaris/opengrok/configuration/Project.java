@@ -29,7 +29,11 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.ClassUtil;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 
 /**
  * Placeholder for the information that builds up a project
@@ -37,6 +41,8 @@ import org.opensolaris.opengrok.util.ClassUtil;
 public class Project implements Comparable<Project>, Nameable, Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Project.class);
 
     static {
         ClassUtil.remarkTransientFields(Project.class);
@@ -316,6 +322,9 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
             ret = getProject(RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file));
         } catch (FileNotFoundException e) { // NOPMD
             // ignore if not under source root
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            // ignore
         } catch (IOException e) { // NOPMD
             // problem has already been logged, just return null
         }
