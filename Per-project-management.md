@@ -3,7 +3,7 @@ OpenGrok can be run with or without projects. Project is simply a directory unde
 This is handy in case the synchronization, indexing for some of the projects is taking a long time or simply you have lots of projects. Or all of it together.
 
 Previously, it was necessary to index all of source root in order to discover new projects.
-Starting with the changes for issue #1390, using the `Messages` tool it is possible to manage the projects.
+Starting with OpenGrok 1.1, using the `Messages` tool it is possible to manage the projects.
 As a result, the indexing of complete source root is only necessary when upgrading across OpenGrok version
 with incompatible Lucene indexes.
 
