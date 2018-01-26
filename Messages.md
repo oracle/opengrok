@@ -59,6 +59,15 @@ Currently supported message types:
 
     Sent at the end of partial reindex to trigger refresh of SearcherManagers.
 
+6. `ProjectMessage`
+
+    Get project listings and information.
+
+7. `RepositoryMessage`
+
+    Get repository information.
+
+
 ## Tags
 
 Every message can have set of tags which give the closer specification to the message. Their meaning is specific for the particular message type.
