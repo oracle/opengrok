@@ -8,7 +8,7 @@
 
 = Chat =
 
-IRC channel #opengrok on [http://www.freenode.net Freenode]
+IRC channel #opengrok on [http://www.freenode.net Freenode] - not used much
 
 = Mailing lists =
 
