@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -73,7 +73,6 @@ import static org.junit.Assert.assertTrue;
 public class IndexerTest {
 
     TestRepository repository;
-    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
     private static IndexerParallelizer parallelizer;
 
     @Rule
@@ -116,7 +115,6 @@ public class IndexerTest {
     public void testIndexGeneration() throws Exception {
         System.out.println("Generating index by using the class methods");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (env.validateExuberantCtags()) {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
@@ -199,7 +197,6 @@ public class IndexerTest {
     public void testMain() throws IOException {
         System.out.println("Generate index by using command line options");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (env.validateExuberantCtags()) {
             String[] argv = {"-S", "-P", "-H", "-Q", "off", "-s",
                 repository.getSourceRoot(), "-d", repository.getDataRoot(),
@@ -251,7 +248,6 @@ public class IndexerTest {
     @Test
     public void testIndexWithSetIndexVersionedFilesOnly() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setRepositories(repository.getSourceRoot());
@@ -342,7 +338,6 @@ public class IndexerTest {
     public void testRemoveFileOnFileChange() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (!env.validateExuberantCtags()) {
             System.out.println("Skipping test due to no ctags");
         }
@@ -407,7 +402,6 @@ public class IndexerTest {
     @Test
     public void testBug3430() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
 
@@ -432,7 +426,6 @@ public class IndexerTest {
     @Test
     public void testIncrementalIndexAddRemoveFile() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
 

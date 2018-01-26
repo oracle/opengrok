@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.pascal;
 
@@ -53,8 +53,6 @@ import org.opensolaris.opengrok.util.TestRepository;
  */
 public class PascalAnalyzerFactoryTest {
     
-    private static final String CTAGS_PROP =
-        "org.opensolaris.opengrok.analysis.Ctags";
     private static Ctags ctags;
     private static TestRepository repository;
     private static FileAnalyzer analyzer;
@@ -80,7 +78,6 @@ public class PascalAnalyzerFactoryTest {
         PascalAnalyzerFactory analyzerFactory = new PascalAnalyzerFactory();
         analyzer = analyzerFactory.getAnalyzer();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(CTAGS_PROP, "ctags"));
         if (env.validateExuberantCtags()) {
             analyzer.setCtags(new Ctags());
         }

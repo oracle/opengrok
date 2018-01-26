@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -41,7 +42,6 @@ import org.opensolaris.opengrok.util.TestRepository;
 public class IndexerRepoTest {
 
     TestRepository repository;
-    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
     @Before
     public void setUp() throws IOException {
@@ -77,7 +77,6 @@ public class IndexerRepoTest {
     public void testMainWithH() throws IOException {
         System.out.println("Generate index by using command line options with -H");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (env.validateExuberantCtags()) {
             String[] argv = {"-S", "-H", "-s", repository.getSourceRoot(),
                 "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
@@ -92,7 +91,6 @@ public class IndexerRepoTest {
     public void testMainWithoutH() throws IOException {
         System.out.println("Generate index by using command line options without -H");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (env.validateExuberantCtags()) {
             String[] argv = {"-S", "-P", "-s", repository.getSourceRoot(),
                 "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};

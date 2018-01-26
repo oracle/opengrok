@@ -513,9 +513,7 @@ public final class Configuration {
     }
 
     /**
-     * Gets the configuration's ctags command. Default is the system property
-     * for {@code "org.opensolaris.opengrok.analysis.Ctags"} or else the value
-     * {@code "ctags"}.
+     * Gets the configuration's ctags command. Default is null.
      * @return the configured value
      */
     public String getCtags() {
@@ -524,16 +522,14 @@ public final class Configuration {
 
     /**
      * Sets the configuration's ctags command.
-     * @param ctags A program name (full-path if necessary)
+     * @param ctags A program name (full-path if necessary) or {@code null}
      */
     public void setCtags(String ctags) {
         this.ctags = ctags;
     }
 
     /**
-     * Gets the configuration's mandoc command. Default is the system property
-     * for {@code "org.opensolaris.opengrok.analysis.Mandoc"} or else
-     * {@code null}.
+     * Gets the configuration's mandoc command. Default is {@code null}.
      * @return the configured value
      */
     public String getMandoc() {
@@ -542,8 +538,7 @@ public final class Configuration {
 
     /**
      * Sets the configuration's mandoc command.
-     * @param value A program name (full-path if necessary) or {@code null} to
-     * disable mandoc rendering.
+     * @param value A program name (full-path if necessary) or {@code null}
      */
     public void setMandoc(String value) {
         this.mandoc = value;

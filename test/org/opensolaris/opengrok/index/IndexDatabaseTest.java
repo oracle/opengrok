@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -48,7 +49,6 @@ public class IndexDatabaseTest {
 
     private static TestRepository repository;
     private static IndexerParallelizer parallelizer;
-    private final static String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
     public IndexDatabaseTest() {
     }
@@ -56,7 +56,6 @@ public class IndexDatabaseTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         assertTrue("No ctags available", env.validateExuberantCtags());
 
         repository = new TestRepository();
