@@ -10,7 +10,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting go ahe
 |'''OpenGrok'''
 |'''Woboq'''
 |'''Hound'''
-|'''Debian code search'''|
+|'''Debian code search'''
 |-
 |Full text Search
 |Y
