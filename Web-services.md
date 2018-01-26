@@ -1,5 +1,4 @@
 ### Requirement
-If you're using OpenGrok 0.12, ensure the commits in this [pull request](https://github.com/OpenGrok/OpenGrok/pull/799) are included in your OpenGrok build.
 
 Starting from OpenGrok 1.0, the webservice is included in the provided build.
 
