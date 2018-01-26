@@ -86,6 +86,7 @@ import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.ObjectPool;
 import org.opensolaris.opengrok.web.Util;
@@ -695,6 +696,10 @@ public class IndexDatabase {
                 new Object[]{path, e.getMessage()});
             cleanupResources(doc);
             throw e;
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            cleanupResources(doc);
+            return;
         } catch (Exception e) {
             LOGGER.log(Level.INFO,
                     "Skipped file ''{0}'' because the analyzer didn''t "
@@ -1321,7 +1326,13 @@ public class IndexDatabase {
     public static Definitions getDefinitions(File file)
             throws IOException, ParseException, ClassNotFoundException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String path = env.getPathRelativeToSourceRoot(file);
+        String path;
+        try {
+            path = env.getPathRelativeToSourceRoot(file);
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            return null;
+        }
         //sanitize windows path delimiters
         //in order not to conflict with Lucene escape character
         path=path.replace("\\", "/");

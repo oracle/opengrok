@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -124,11 +125,7 @@ public class MonotoneRepository extends Repository {
      */
     Executor getHistoryLogExecutor(File file, String sinceRevision)
             throws IOException {
-        String abs = file.getCanonicalPath();
-        String filename = "";
-        if (abs.length() > getDirectoryName().length()) {
-            filename = abs.substring(getDirectoryName().length() + 1);
-        }
+        String filename = getRepoRelativePath(file);
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
