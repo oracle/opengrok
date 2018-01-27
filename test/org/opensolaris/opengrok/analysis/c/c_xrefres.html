@@ -109,8 +109,27 @@ function get_sym_list(){return [["Function","xf",[["abstime_to_reltime",70],["hr
 <a class="l" name="101" href="#101">101</a><span class='fold-space'>&nbsp;</span>	 */</span>
 <a class="l" name="102" href="#102">102</a><span class='fold-space'>&nbsp;</span>	<b>if</b> ((<a href="/source/s?defs=ulong_t" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ulong_t</a>)<a class="d intelliWindow-symbol" href="#abstime" data-definition-place="defined-in-file">abstime</a>-&gt;<a href="/source/s?defs=tv_nsec" class="intelliWindow-symbol" data-definition-place="undefined-in-file">tv_nsec</a> &gt;= <a href="/source/s?defs=NANOSEC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NANOSEC</a>)
 <a class="l" name="103" href="#103">103</a><span class='fold-space'>&nbsp;</span>		<a class="d intelliWindow-symbol" href="#reltime" data-definition-place="defined-in-file">reltime</a>-&gt;<a href="/source/s?defs=tv_nsec" class="intelliWindow-symbol" data-definition-place="undefined-in-file">tv_nsec</a> = <a class="d intelliWindow-symbol" href="#abstime" data-definition-place="defined-in-file">abstime</a>-&gt;<a href="/source/s?defs=tv_nsec" class="intelliWindow-symbol" data-definition-place="undefined-in-file">tv_nsec</a>&#59;
-<a class="l" name="104" href="#104">104</a><span class='fold-space'>&nbsp;</span>&#125;
-</span><a class="l" name="105" href="#105">105</a><span class='fold-space'>&nbsp;</span>
-<a class="l" name="106" href="#106">106</a><span class='fold-space'>&nbsp;</span><span class="c">/*<a href="http://example.com">http://example.com</a>*/</span>
-<a class="l" name="107" href="#107">107</a><span class='fold-space'>&nbsp;</span></body>
+<a class="l" name="104" href="#104">104</a><span class='fold-space'>&nbsp;</span>
+<a class="l" name="105" href="#105">105</a><span class='fold-space'>&nbsp;</span>	<b>int</b> <a class="xl" name="dec"/><a href="/source/s?refs=dec" class="xl intelliWindow-symbol" data-definition-place="def">dec</a> = <span class="n">42</span>&#59;
+<a class="l" name="106" href="#106">106</a><span class='fold-space'>&nbsp;</span>	<b>int</b> <a class="xl" name="o"/><a href="/source/s?refs=o" class="xl intelliWindow-symbol" data-definition-place="def">o</a> = <span class="n">052</span>&#59;
+<a class="l" name="107" href="#107">107</a><span class='fold-space'>&nbsp;</span>	<b>int</b> <a class="xl" name="x"/><a href="/source/s?refs=x" class="xl intelliWindow-symbol" data-definition-place="def">x</a> = <span class="n">0x2a</span>&#59;
+<a class="l" name="108" href="#108">108</a><span class='fold-space'>&nbsp;</span>	<b>int</b> <a class="xl" name="X"/><a href="/source/s?refs=X" class="xl intelliWindow-symbol" data-definition-place="def">X</a> = <span class="n">0X2A</span>&#59;
+<a class="l" name="109" href="#109">109</a><span class='fold-space'>&nbsp;</span>	<b>unsigned</b> <b>long</b> <b>long</b> <a class="xl" name="ull"/><a href="/source/s?refs=ull" class="xl intelliWindow-symbol" data-definition-place="def">ull</a> = <span class="n">12345678901234567890ull</span>&#59;
+<a class="hl" name="110" href="#110">110</a><span class='fold-space'>&nbsp;</span>	<b>unsigned</b> <b>long</b> <a class="xl" name="u"/><a href="/source/s?refs=u" class="xl intelliWindow-symbol" data-definition-place="def">u</a> = <span class="n">12345678901234567890u</span>&#59;
+<a class="l" name="111" href="#111">111</a><span class='fold-space'>&nbsp;</span>
+<a class="l" name="112" href="#112">112</a><span class='fold-space'>&nbsp;</span>	<b>double</b> <a class="xl" name="d"/><a href="/source/s?refs=d" class="xl intelliWindow-symbol" data-definition-place="def">d</a> = <span class="n">0x1.2p3</span>&#59; <span class="c">/* hex frac 1.2(dec 1.125) scaled by 2^3, i.e. 9.0*/</span>
+<a class="l" name="113" href="#113">113</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">1.2e3</span>&#59;
+<a class="l" name="114" href="#114">114</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">1e0</span>&#59;
+<a class="l" name="115" href="#115">115</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">1.</span>&#59;
+<a class="l" name="116" href="#116">116</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">.1</span>&#59;
+<a class="l" name="117" href="#117">117</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">15.0</span>&#59;
+<a class="l" name="118" href="#118">118</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">0x1.ep+3</span>&#59;
+<a class="l" name="119" href="#119">119</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">2.0e+308</span>&#59;
+<a class="hl" name="120" href="#120">120</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">1.0e-324</span>&#59;
+<a class="l" name="121" href="#121">121</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">-1.0e-324</span>&#59;
+<a class="l" name="122" href="#122">122</a><span class='fold-space'>&nbsp;</span>	<a class="d intelliWindow-symbol" href="#d" data-definition-place="defined-in-file">d</a> = <span class="n">-2.0e+308</span>&#59;
+<a class="l" name="123" href="#123">123</a><span class='fold-space'>&nbsp;</span>&#125;
+</span><a class="l" name="124" href="#124">124</a><span class='fold-space'>&nbsp;</span>
+<a class="l" name="125" href="#125">125</a><span class='fold-space'>&nbsp;</span><span class="c">/*<a href="http://example.com">http://example.com</a>*/</span>
+<a class="l" name="126" href="#126">126</a><span class='fold-space'>&nbsp;</span></body>
 </html>
