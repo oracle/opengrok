@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -225,6 +225,19 @@ public class FileAnalyzerFactory {
         default boolean getIsPreciseMagic() { return false; }
 
         /**
+         * Gets a default, reportable description of the matcher.
+         * <p>
+         * Subclasses can override to report a more informative description,
+         * with line length up to 50 characters before starting a new line with
+         * {@code \n}.
+         * @return a defined, reportable String
+         */
+        default String description() {
+            return getIsPreciseMagic() ? "precise matcher" :
+                "heuristic matcher";
+        }
+
+        /**
          * Try to match the file contents with an analyzer factory.
          * If the method reads from the input stream, it must reset the
          * stream before returning.
@@ -237,5 +250,12 @@ public class FileAnalyzerFactory {
          */
         FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
                 throws IOException;
+
+        /**
+         * Gets the instance which the matcher produces if
+         * {@link #isMagic(byte[], java.io.InputStream)} matches a file.
+         * @return a defined instance
+         */
+        FileAnalyzerFactory forFactory();
     }
 }

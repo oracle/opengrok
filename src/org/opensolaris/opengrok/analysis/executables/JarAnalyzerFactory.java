@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.executables;
@@ -26,6 +27,7 @@ package org.opensolaris.opengrok.analysis.executables;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.archive.ZipMatcherBase;
 
 public final class JarAnalyzerFactory extends FileAnalyzerFactory {
     
@@ -35,12 +37,34 @@ public final class JarAnalyzerFactory extends FileAnalyzerFactory {
         "JAR", "WAR", "EAR"
     };
 
+    private static final Matcher MATCHER = new ZipMatcherBase() {
+
+        @Override
+        public String description() {
+            return "PK\\{3}\\{4} magic signature with 0xCAFE Extra Field ID";
+        }
+
+        @Override
+        public FileAnalyzerFactory forFactory() {
+            return JarAnalyzerFactory.DEFAULT_INSTANCE;
+        }
+
+        @Override
+        protected boolean doesCheckExtraFieldID() {
+            return true;
+        }
+
+        @Override
+        protected Integer strictExtraFieldID() {
+            return 0xCAFE;
+        }
+    };
+
     public static final JarAnalyzerFactory DEFAULT_INSTANCE =
             new JarAnalyzerFactory();
 
     private JarAnalyzerFactory() {
-        // no magics for jar files, ZipAnalyzerFactory will handle it for us
-        super(null, null, SUFFIXES, null, null, null, Genre.XREFABLE, name);
+        super(null, null, SUFFIXES, null, MATCHER, null, Genre.XREFABLE, name);
     }
 
     @Override
