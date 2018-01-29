@@ -120,21 +120,21 @@ class Commands(CommandsBase):
         """
 
         ret = 0
-        self.logger.debug("Output from {}:".format(self.name))
+        self.logger.debug("Output for project '{}':".format(self.name))
         for cmd in self.outputs.keys():
             if self.outputs[cmd] and len(self.outputs[cmd]) > 0:
                 self.logger.debug("{}: {}".
                                   format(cmd, self.outputs[cmd]))
 
         if self.name in ignore_errors:
-            self.logger.debug("errors of project {} ignored".
+            self.logger.debug("errors of project '{}' ignored".
                               format(self.name))
             return
 
         self.logger.debug("retcodes = {}".format(self.retcodes))
         if any(rv != 0 and rv != 2 for rv in self.retcodes.values()):
             ret = 1
-            self.logger.error("processing of {} failed".
+            self.logger.error("processing of project '{}' failed".
                               format(self))
             indent = "  "
             self.logger.error("{}failed commands:".format(indent))
@@ -154,7 +154,7 @@ class Commands(CommandsBase):
                         if "error" in str(v).lower()}
         if len(errored_cmds) > 0:
             ret = 1
-            self.logger.error("Command output in selfect {}"
+            self.logger.error("Command output in project '{}'"
                               " contains errors:".format(self.name))
             indent = "  "
             for cmd in errored_cmds.keys():
