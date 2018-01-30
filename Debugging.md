@@ -12,13 +12,13 @@ For profiling an indexing run, JWDP is not required for a local `ProcessAttach`.
 
 ### Example in NetBeans
 
-1. Start an indexing run for profiling:
+1. Start an indexing run in a terminal for profiling:
 ```
 $ OPENGROK_PROFILER=1 OpenGrok index --profiler
 Loading the default instance configuration ...
 Start profiler. Continue (Y/N)? 
 ```
 
-2. Attach the NetBeans profiler from the menu: Profile => Attach to External Process ... => ... Already running local Java process.
+2. Attach the NetBeans profiler from the menu: Profile -> Attach to External Process ... -> ... Already running local Java process.
 3. Continue the indexing run in the terminal by entering `Y`.
 4. After the run, NetBeans will present the analysis.
