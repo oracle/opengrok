@@ -4,6 +4,8 @@ The `OpenGrok` shell script allows to specify Java debug options using the `JAVA
 export JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,address=8010,suspend=y"
 ```
 
+This will make the indexer to listen on the port 8010 until a debugger connects.
+
 Profiling
 ----
 For profiling an indexing run, JWDP is not required for a local `ProcessAttach`. It is convenient though to pause the run until the profiler is attached.
