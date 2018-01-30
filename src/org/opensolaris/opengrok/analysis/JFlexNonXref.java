@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -330,6 +330,7 @@ public abstract class JFlexNonXref extends JFlexStateStacker
      */
     public void write(Writer out) throws IOException {
         this.out = out;
+        if (defs != null) defs.resetUnused();
         JFlexXrefUtils.writeSymbolTable(out, defs);
         setLineNumber(1);
         startNewLine();

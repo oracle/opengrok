@@ -478,6 +478,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     @Override
     public void write(Writer out) throws IOException {
         this.out = out;
+        if (defs != null) defs.resetUnused();
         JFlexXrefUtils.writeSymbolTable(out, defs);
         startNewLine();
         while (matcher.yylex() != matcher.getYYEOF()) {
