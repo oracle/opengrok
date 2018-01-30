@@ -4,7 +4,7 @@ The `OpenGrok` shell script allows to specify Java debug options using the `JAVA
 export JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,address=8010,suspend=y"
 ```
 
-This will make the indexer to listen on the port 8010 until a debugger connects.
+This will make the indexer to listen on the port 8010 until a debugger connects. In Netbeans, select the Debug -> Attach Debugger from the menu and fill in the port number in the dialog window and click Attach.
 
 Profiling
 ----
