@@ -30,7 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -314,9 +313,8 @@ class PendingFileCompleter {
         boolean topLevelIneligible = false;
         boolean didLogFileTopLevelIneligible = false;
 
-        try {
-            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
-                Paths.get(dirPath));
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
+            Paths.get(dirPath))) {
             for (Path path : directoryStream) {
                 File f = path.toFile();
                 if (f.isFile()) {
