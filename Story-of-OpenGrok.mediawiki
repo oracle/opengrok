@@ -189,7 +189,7 @@ It is available for download. The logo has a opening flower bracket. Which is a 
 
 == OpenGrok Internals ==
 
-Some details of OpenGrok internal workings can be found on [[OpenGrok Internals]] page.
+Some details of OpenGrok internal workings can be found on [[Internals]] page.
 
 == In Retrospect ==
 
