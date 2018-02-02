@@ -261,13 +261,17 @@ public class ConfigurationHelp {
     private static Object getDefaultValue(Class<?> klass, Method setter,
         Configuration cinst) {
 
-        String gname = setter.getName();
-        gname = gname.replaceFirst("^set", "get");
+        String gname = setter.getName().replaceFirst("^set", "get");
         Method getter;
         try {
             getter = klass.getDeclaredMethod(gname);
         } catch (NoSuchMethodException|SecurityException ex) {
-            return null;
+            gname = setter.getName().replaceFirst("^set", "is");
+            try {
+                getter = klass.getDeclaredMethod(gname);
+            } catch (NoSuchMethodException|SecurityException ex2) {
+                return null;
+            }
         }
 
         try {
