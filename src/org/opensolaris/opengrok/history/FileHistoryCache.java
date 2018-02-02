@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.history;
@@ -223,13 +224,10 @@ class FileHistoryCache implements HistoryCache {
      * Read history from a file.
      */
     private static History readCache(File file) throws IOException {
-        try {
-            FileInputStream in = new FileInputStream(file);
-            XMLDecoder d = new XMLDecoder(
-                new BufferedInputStream(new GZIPInputStream(in)));
+        try (FileInputStream in = new FileInputStream(file);
+            XMLDecoder d = new XMLDecoder(new GZIPInputStream(
+                new BufferedInputStream(in)))) {
             return (History) d.readObject();
-        } catch (IOException e) {
-            throw e;
         }
     }
 
@@ -253,9 +251,8 @@ class FileHistoryCache implements HistoryCache {
         try {
             output = File.createTempFile("oghist", null, dir);
             try (FileOutputStream out = new FileOutputStream(output);
-                    XMLEncoder e = new XMLEncoder(
-                            new BufferedOutputStream(
-                                    new GZIPOutputStream(out)))) {
+                XMLEncoder e = new XMLEncoder(new GZIPOutputStream(
+                    new BufferedOutputStream(out)))) {
                 e.setPersistenceDelegate(File.class,
                         new FilePersistenceDelegate());
                 e.writeObject(history);

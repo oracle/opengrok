@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -215,7 +215,7 @@ public final class HistoryGuru {
     }
 
     public History getHistory(File file, boolean withFiles) throws HistoryException {
-        return getHistory(file, true, false);
+        return getHistory(file, withFiles, false);
     }
 
     /**
