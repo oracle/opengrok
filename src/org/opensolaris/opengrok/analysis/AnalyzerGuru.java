@@ -19,12 +19,13 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -511,6 +512,34 @@ public class AnalyzerGuru {
 
         FileAnalyzer analyzer = factory.getAnalyzer();
         analyzer.writeXref(args);
+    }
+
+    /**
+     * Writes a browse-able version of the file transformed for immediate
+     * serving to a web client.
+     * @param contextPath the web context path for
+     * {@link Util#dumpXref(java.io.Writer, java.io.Reader, java.lang.String)}
+     * @param factory the analyzer factory for this file type
+     * @param in the input stream containing the data
+     * @param out a defined instance to write
+     * @param defs definitions for the source file, if available
+     * @param annotation annotation information for the file
+     * @param project project the file belongs to
+     * @throws java.io.IOException if an error occurs while creating the output
+     */
+    public static void writeDumpedXref(String contextPath,
+        FileAnalyzerFactory factory, Reader in, Writer out, Definitions defs,
+        Annotation annotation, Project project) throws IOException {
+
+        File xrefTemp = File.createTempFile("ogxref", ".html");
+        try {
+            try (FileWriter tmpout = new FileWriter(xrefTemp)) {
+                writeXref(factory, in, tmpout, defs, annotation, project);
+            }
+            Util.dumpXref(out, xrefTemp, false, contextPath);
+        } finally {
+            xrefTemp.delete();
+        }
     }
 
     /**
