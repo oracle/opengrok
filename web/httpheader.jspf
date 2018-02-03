@@ -20,7 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
 --%><%--
 
@@ -45,12 +45,10 @@ org.opensolaris.opengrok.web.PageConfig"
     String ctxPath = request.getContextPath();
     String dstyle = styleDir + '/' + "style.css";
     String pstyle = styleDir + '/' + "print.css";
-%><?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
-      class="<%= request.getServletPath().length() > 0 ? request.getServletPath().substring(1) : "" %>">
+%><!DOCTYPE html>
+<html class="<%= request.getServletPath().length() > 0 ? request.getServletPath().substring(1) : "" %>">
 <head>
+<meta charset="UTF-8">
 <meta name="robots" content="noindex,nofollow" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="generator" content="{OpenGrok <%=Info.getVersion()%> (<%=Info.getRevision()%>)" />

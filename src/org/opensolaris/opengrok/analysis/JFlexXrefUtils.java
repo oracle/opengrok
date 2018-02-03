@@ -50,6 +50,17 @@ import org.opensolaris.opengrok.web.Util;
 public class JFlexXrefUtils {
 
     /**
+     * Matches an HTML 5 ID or Name:
+     * <pre>
+     * {@code
+     * (?U)^\S+$
+     * }
+     * </pre>
+     * (Edit above and paste below [in NetBeans] for easy String escaping.)
+     */
+    private static final Pattern HTML5_ID_NAME = Pattern.compile("(?U)^\\S+$");
+
+    /**
      * Appends the {@code url} to the specified {@code out} {@link Writer}.
      * <p>If {@code doEndingPushback} is true, then
      * {@link StringUtils#countURIEndingPushback(java.lang.String)} is enlisted
@@ -259,12 +270,14 @@ public class JFlexXrefUtils {
             //    this file? Otherwise, we may end up with multiple anchors with
             //    the same name.)
             //
-            //    Note: In HTML 4, the name must start with a letter, and can
-            //    only contain letters, digits, hyphens, underscores, colons,
-            //    and periods. https://www.w3.org/TR/html4/types.html#type-name
             //    Skip the anchor if the symbol name is not a valid anchor
-            //    name. This restriction is lifted in HTML 5.
-            if (symbol.matches("[a-zA-Z][a-zA-Z0-9_:.-]*")) {
+            //    name.  Note: In HTML 5, an ID or Name can be any string, with
+            //    the following restrictions: must be at least one character
+            //    long, must not contain any space characters.
+            //    https://www.w3.org/TR/2010/WD-html-markup-20100624/datatypes.html
+            //    Formerly for HTML 4, ID and Name were very restricted, as
+            //    explained by @tulinkry.
+            if (HTML5_ID_NAME.matcher(symbol).matches()) {
                 out.append("<a class=\"");
                 out.append(style_class);
                 out.append("\" name=\"");

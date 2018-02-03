@@ -100,13 +100,10 @@ public class PerlXrefTest {
     }
 
     private static String getHtmlBegin() {
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n" +
-            "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
-            "<html xmlns=\"http://www.w3.org/1999/xhtml\"" +
-            " xml:lang=\"en\" lang=\"en\"\n" +
-            "      class=\"xref\">\n" +
+        return "<!DOCTYPE html>\n" +
+            "<html>\n" +
             "<head>\n" +
+            "<meta charset=\"UTF-8\">\n" +
             "<title>sampleTest.pl - OpenGrok cross reference" +
             " for /sampleTest.pl</title></head><body>\n";
     }
