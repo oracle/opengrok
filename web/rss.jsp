@@ -49,7 +49,6 @@ org.opensolaris.opengrok.web.PageConfig"
         }
         return;
     }
-    cfg.getEnv().setUrlPrefix(request.getContextPath() + Prefix.SEARCH_R + '?');
     String path = cfg.getPath();
     String dtag = cfg.getDefineTagsIndex();
     String ForwardedHost = request.getHeader("X-Forwarded-Host");
