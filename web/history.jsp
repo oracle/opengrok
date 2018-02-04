@@ -23,6 +23,7 @@ Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%>
+<%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="org.opensolaris.opengrok.web.Util"%>
 <%@page import="org.opensolaris.opengrok.history.HistoryGuru"%>
 <%@page import="java.io.File"%>

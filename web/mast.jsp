@@ -20,12 +20,14 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
+Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%><%--
 
 After include you are here: /body/div#page/div#content/
 
 --%>
+<%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="org.json.simple.JSONArray"%>
 <%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
