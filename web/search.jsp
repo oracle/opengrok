@@ -20,9 +20,10 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
 --%>
+<%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="javax.servlet.http.HttpServletResponse"%>
 <%@page session="false" errorPage="error.jsp" import="
 org.opensolaris.opengrok.search.Results,
@@ -207,7 +208,7 @@ include file="menu.jspf"
         %>
         <p class="pagetitle">Searched <b><%
             Util.htmlize(searchHelper.query.toString(), out);
-            %></b> (Results <b> <%= start + 1 %> - <%= thispage + start
+            %></b> (Results <b> <%= start + 1 %> – <%= thispage + start
             %></b> of <b><%= totalHits %></b>) sorted by <%=
             searchHelper.order.getDesc() %></p><%
         if (slider.length() > 0) {
