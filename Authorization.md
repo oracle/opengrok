@@ -165,8 +165,8 @@ Also JVM can forbid you to extend some packages which are not meant to be extend
 
 The plugin class must be compiled to the .class file (and the it can be packaged into .jar file). The frameworks supports both .class and .jar files. For compiling you have to provide opengrok.jar and the servlet api (`HttpServletRequest`) in the classpath
 
-Example (for the `SampleAuthorizaionPlugin` which is included in the repository):
-`$ javac -classpath dist/opengrok.jar -d . plugins/SampleAuthorizationPlugin.java`
+Example (for the `TruePlugin` which is included in the repository):
+`$ javac -classpath dist/opengrok.jar -d . plugins/TruePlugin.java`
 
 Then you can just drop the compiled .class file into plugin directory and deploy the webapp.
 If the plugin is a part of a package. Then you have to copy the full directory path which is made
