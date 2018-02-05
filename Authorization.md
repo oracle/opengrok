@@ -91,7 +91,7 @@ You can configure:
 
 ### Example
 
-Example of a [SampleAuthorizationPlugin.java](https://github.com/OpenGrok/OpenGrok/tree/master/plugins) is included in plugins directory in the root of the git repository.
+Example of a [TruePlugin.java](https://github.com/OpenGrok/OpenGrok/tree/master/plugins) is included in plugins directory in the root of the git repository.
 
 ### Implementation
 
