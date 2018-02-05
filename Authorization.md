@@ -231,33 +231,33 @@ You can use the authorization framework without providing such an advanced confi
 This is an example entry for the "read-only configuration". This defines three plugins, each of them has a different role and so affect the stack processing in different way. Use the class name to specify the targeted plugin and one of the flags as the authorization role. This stack is then for every request processed from the top to the bottom (as it is a list) evaluating the flags with the particular plugin decisions.
 
 ```xml
-<void property="pluginConfiguration">
+<void property="pluginStack">
   <void method="add">
-    <object class="org.opensolaris.opengrok.authorization.AuthorizationCheck">
-      <void property="role">
-        <string>requisite</string>
+    <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+      <void property="flag">
+        <string>REQUISITE</string>
       </void>
-      <void property="classname">
-        <string>some.my..package.RequisitePlugin</string>
+      <void property="name">
+        <string>some.my.package.RequisitePlugin</string>
       </void>
     </object>
   </void> 
   <void method="add">
-    <object class="org.opensolaris.opengrok.authorization.AuthorizationCheck">
-      <void property="role">
-        <string>sufficient</string>
+    <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+      <void property="flag">
+        <string>SUFFICIENT</string>
       </void>
-      <void property="classname">
+      <void property="name">
         <string>Plugin</string>
       </void>
     </object>
   </void>
   <void method="add">
-    <object class="org.opensolaris.opengrok.authorization.AuthorizationCheck">
-      <void property="role">
-        <string>required</string>
+    <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+      <void property="flag">
+        <string>REQUIRED</string>
       </void>
-      <void property="classname">
+      <void property="name">
         <string>ExamplePlugin</string>
       </void>
     </object>
