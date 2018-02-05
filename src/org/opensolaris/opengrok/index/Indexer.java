@@ -742,22 +742,6 @@ public final class Indexer {
                 "(so that the web application can use the same configuration)").Do( configFile -> {
                 configFilename = (String)configFile;
             });
-
-            parser.on("-w", "--web", "=webapp-context", 
-                "Context of webapp. Default is /source. If you specify a different",
-                "name, make sure to rename source.war to that name. Also FULL reindex",
-                "is needed if this is changed.").
-                Do( webContext -> {
-                    String webapp = (String)webContext;
-                    if (webapp.charAt(0) != '/' && !webapp.startsWith("http")) {
-                        webapp = "/" + webapp;
-                    }
-                    if (!webapp.endsWith("/")) {
-                        webapp += "/";
-                    }
-                    cfg.setUrlPrefix(webapp + "s?");
-                }
-            );
         });
 
         // Need to read the configuration file first

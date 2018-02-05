@@ -20,15 +20,16 @@
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.web;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
@@ -1146,10 +1147,10 @@ public final class Util {
         if (!file.exists()) {
             return false;
         }
-        try (Reader in = compressed
-                ? new InputStreamReader(new GZIPInputStream(
-                        new FileInputStream(file)))
-                : new FileReader(file)) {
+        try (InputStream iss = new BufferedInputStream(
+            new FileInputStream(file))) {
+            Reader in = compressed ? new InputStreamReader(new GZIPInputStream(
+                iss)) : new InputStreamReader(iss);
             dump(out, in);
             return true;
         } catch (IOException e) {
@@ -1157,6 +1158,53 @@ public final class Util {
                     "An error occured while piping file " + file + ": ", e);
         }
         return false;
+    }
+
+    /**
+     * Silently dump an xref file to the given destination. All
+     * {@link IOException}s get caught and logged, but not re-thrown.
+     * @param out dump destination
+     * @param file file to dump
+     * @param compressed if {@code true} the denoted file is assumed to be
+     * gzipped
+     * @param contextPath an optional override of "/source/" as the context path
+     * @return {@code true} on success (everything read and written)
+     * @throws NullPointerException if a parameter is {@code null}.
+     */
+    public static boolean dumpXref(Writer out, File file, boolean compressed,
+        String contextPath) {
+        if (!file.exists()) return false;
+        try (InputStream iss = new BufferedInputStream(
+            new FileInputStream(file))) {
+            Reader in = compressed ? new InputStreamReader(new GZIPInputStream(
+                iss)) : new InputStreamReader(iss);
+            dumpXref(out, in, contextPath);
+            return true;
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "An error occured while piping file " +
+                file, e);
+        }
+        return false;
+    }
+
+    /**
+     * Silently dump an xref file to the given destination. All
+     * {@link IOException}s get caught and logged, but not re-thrown.
+     * @param out dump destination
+     * @param in source to read
+     * @param contextPath an optional override of "/source/" as the context path
+     * @throws IOException as defined by the given reader/writer
+     * @throws NullPointerException if a parameter is {@code null}.
+     */
+    public static void dumpXref(Writer out, Reader in, String contextPath)
+            throws IOException {
+        if (in == null || out == null) return;
+        XrefSourceTransformer xform = new XrefSourceTransformer(in);
+        xform.setWriter(out);
+        xform.setContextPath(contextPath);
+        while (xform.yylex()) {
+            // Nothing else to do.
+        }
     }
 
     /**

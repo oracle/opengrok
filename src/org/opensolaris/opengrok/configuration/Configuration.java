@@ -137,6 +137,14 @@ public final class Configuration {
     private String sourceRoot;
     private String dataRoot;
     private List<RepositoryInfo> repositories;
+    /**
+     * @deprecated This is kept around so not to break object deserialization
+     * but it is ignored and cannot be truly set. This should mean that the
+     * configuration is written leaving out this deprecated property; so after
+     * some time it can be retired with the expectation that zero or a
+     * miniscule number of production configurations still have this deprecated
+     * property.
+     */
     private String urlPrefix;
     private boolean generateHtml;
     /**
@@ -430,8 +438,7 @@ public final class Configuration {
         setStatisticsFilePath(null);
         //setTabSize(4);
         setTagsEnabled(false);
-        setUrlPrefix("/source/s?");
-        //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
+        //urlPrefix's constant value is moved to RuntimeEnvironment.
         //setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
         // Set to empty string so we can append it to the URL
         // unconditionally later.
@@ -735,15 +742,16 @@ public final class Configuration {
     }
 
     /**
-     * Set the URL prefix to be used by the {@link
-     * org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer} as well
-     * as lexers (see {@link org.opensolaris.opengrok.analysis.JFlexXref}) when
-     * they create output with html links.
-     *
-     * @param urlPrefix prefix to use.
+     * Formerly this allowed setting the URL prefix to be used for the Java
+     * class analyzer and for language cross-referencing (xref) when they
+     * created HTML links. Now, a static value is used and transformed as
+     * necessary to the servlet {@code contextPath} so that users can deploy
+     * OpenGrok as they like.
+     * @param urlPrefix ignored
      */
+    @Deprecated
     public void setUrlPrefix(String urlPrefix) {
-        this.urlPrefix = urlPrefix;
+        // ignore the value
     }
 
     public void setGenerateHtml(boolean generateHtml) {

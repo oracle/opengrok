@@ -20,6 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
+Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%><%--
 
@@ -69,9 +70,6 @@ org.opensolaris.opengrok.web.Util"%><%
     // set the default page title
     String path = cfg.getPath();
     cfg.setTitle(cfg.getPathTitle());
-
-    String context = request.getContextPath();
-    cfg.getEnv().setUrlPrefix(context + Prefix.SEARCH_R + "?");
 }
 %>
 <%@

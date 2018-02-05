@@ -102,6 +102,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.opensolaris.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
 import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.PathUtils;
+import org.opensolaris.opengrok.web.Prefix;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -110,6 +111,9 @@ import org.opensolaris.opengrok.util.PathUtils;
 public final class RuntimeEnvironment {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RuntimeEnvironment.class);
+
+    /** {@code "/source"} + {@link Prefix#SEARCH_R} + {@code "?"} */
+    private static final String URL_PREFIX = "/source" + Prefix.SEARCH_R + "?";
 
     private Configuration configuration;
     private final ThreadLocal<Configuration> threadConfig;
@@ -532,21 +536,12 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the context name of the web application
-     *
-     * @return the web applications context name
+     * Gets a static placeholder for the web application context name that is
+     * translated to the true servlet {@code contextPath} on demand.
+     * @return {@code "/source"} + {@link Prefix#SEARCH_R} + {@code "?"}
      */
     public String getUrlPrefix() {
-        return threadConfig.get().getUrlPrefix();
-    }
-
-    /**
-     * Set the web context name
-     *
-     * @param urlPrefix the web applications context name
-     */
-    public void setUrlPrefix(String urlPrefix) {
-        threadConfig.get().setUrlPrefix(urlPrefix);
+        return URL_PREFIX;
     }
 
     /**
