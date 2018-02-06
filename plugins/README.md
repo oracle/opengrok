@@ -69,95 +69,99 @@ indexer via the -R option.
             </void>
         </void>
 
-        <!-- get user cred from HTTP headers -->
-        <void method="add">
-            <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
-                <void property="name">
-                    <string>opengrok.auth.plugin.UserPlugin</string>
-                </void>
-                <void property="flag">
-                    <string>REQUISITE</string>
-                </void>
-            </object>
-        </void>
+        <void property="stack">
+            <!-- get user cred from HTTP headers -->
+            <void method="add">
+                <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+                    <void property="name">
+                        <string>opengrok.auth.plugin.UserPlugin</string>
+                    </void>
+                    <void property="flag">
+                        <string>REQUISITE</string>
+                    </void>
+                </object>
+            </void>
 
-        <!-- get email, ou and uid -->
-        <void method="add">
-            <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
-                <void property="name">
-                    <string>opengrok.auth.plugin.LdapUserPlugin</string>
+            <!-- get email, ou and uid -->
+            <void method="add">
+                <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+                    <void property="name">
+                        <string>opengrok.auth.plugin.LdapUserPlugin</string>
+                    </void>
+                    <void property="flag">
+                        <string>REQUISITE</string>
+                    </void>
+                </object>
+    	        <void property="setup">
+                    <void method="put">
+                        <string>objectclass</string>
+                        <string>posixAccount</string>
+                    </void>
                 </void>
-                <void property="flag">
-                    <string>REQUISITE</string>
-                </void>
-            </object>
-	    <void property="setup">
-                <void method="put">
-                    <string>objectclass</string>
-                    <string>posixAccount</string>
-                </void>
+            </void>
+
+            <!-- Authorization stacks follow -->
+
+            <void method="add">
+                <object class="org.opensolaris.opengrok.authorization.AuthorizationStack">
+                    <void property="forProjects">
+                        <void method="add">
+                            <string>foo</string>
+                        </void>
+                    </void>
+                    <void property="forGroups">
+                        <void method="add">
+                            <string>mygroup</string>
+                        </void>
+                    </void>
+                    <void property="name">
+                        <string>substack for some source code</string>
+                    </void>
+                    <void property="flag">
+                        <string>REQUIRED</string>
+                    </void>
+                    <void property="stack">
+                        <void method="add">
+                            <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+                                <void property="name">
+                                    <string>opengrok.auth.plugin.LdapAttrPlugin</string>
+                                </void>
+                                <void property="flag">
+                                    <string>SUFFICIENT</string>
+                                </void>
+                                <void property="setup">
+                                    <void method="put">
+                                        <string>attribute</string>
+                                        <string>mail</string>
+                                    </void>
+                                    <void method="put">
+                                        <string>file</string>
+                                        <string>/opengrok/auth/config/whitelists/mycode-whitelist-mail.txt</string>
+                                    </void>
+                                </void>
+                            </object>
+                        </void>
+                        <void method="add">
+                            <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+                                <void property="name">
+                                    <string>opengrok.auth.plugin.LdapFilterPlugin</string>
+                                </void>
+                                <void property="flag">
+                                    <string>REQUIRED</string>
+                                </void>
+                                <void property="setup">
+                                    <void method="put">
+                                        <string>filter</string>
+                                        <string>(&amp;(objectclass=posixGroup)(cn=my_src*)(memberUid=%uid%))</string>
+                                    </void>
+                                </void>
+                            </object>
+                        </void>
+                    </void>
+                </object>
             </void>
         </void>
 
-        <!-- Authorization stacks follow -->
-
-        <void method="add">
-            <object class="org.opensolaris.opengrok.authorization.AuthorizationStack">
-                <void property="forProjects">
-                    <void method="add">
-                        <string>foo</string>
-                    </void>
-                </void>
-                <void property="forGroups">
-                    <void method="add">
-                        <string>mygroup</string>
-                    </void>
-                </void>
-                <void property="name">
-                    <string>substack for some source code</string>
-                </void>
-                <void property="flag">
-                    <string>REQUIRED</string>
-                </void>
-                <void method="add">
-                    <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
-                        <void property="name">
-                            <string>opengrok.auth.plugin.LdapAttrPlugin</string>
-                        </void>
-                        <void property="flag">
-                            <string>SUFFICIENT</string>
-                        </void>
-                        <void property="setup">
-                            <void method="put">
-                                <string>attribute</string>
-                                <string>mail</string>
-                            </void>
-                            <void method="put">
-                                <string>file</string>
-                                <string>/opengrok/auth/config/whitelists/mycode-whitelist-mail.txt</string>
-                            </void>
-                        </void>
-                    </object>
-                </void>
-                <void method="add">
-                    <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
-                        <void property="name">
-                            <string>opengrok.auth.plugin.LdapFilterPlugin</string>
-                        </void>
-                        <void property="flag">
-                            <string>REQUIRED</string>
-                        </void>
-                        <void property="setup">
-                            <void method="put">
-                                <string>filter</string>
-                                <string>(&amp;(objectclass=posixGroup)(cn=my_src*)(memberUid=%uid%))</string>
-                            </void>
-                        </void>
-                    </object>
-                </void>
-            </object>
-        </void>
- 
    <!-- Authorization config end -->
    </object>
 ```
