@@ -302,8 +302,13 @@ public final class Results {
                     fargs.xrefPrefix, fargs.morePrefix, rpath, tags, true,
                     isDefSearch, null, scopes);
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, String.format("No context for %s",
-                        sourceFile, ex));
+                String errMsg = String.format("No context for %s", sourceFile);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    // WARNING but with FINE detail
+                    LOGGER.log(Level.WARNING, errMsg, ex);
+                } else {
+                    LOGGER.log(Level.WARNING, errMsg);
+                }
             }
         }
     }

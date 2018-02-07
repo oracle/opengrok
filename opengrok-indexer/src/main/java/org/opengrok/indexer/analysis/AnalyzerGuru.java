@@ -497,8 +497,8 @@ public class AnalyzerGuru {
         AnalyzerFactory factory = find(in, file);
         if (factory == null) {
             AbstractAnalyzer defaultAnalyzer = getAnalyzer();
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "{0}: fallback {1}",
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "{0}: fallback {1}",
                     new Object[]{file,
                     defaultAnalyzer.getClass().getSimpleName() });
             }
@@ -878,8 +878,8 @@ public class AnalyzerGuru {
             if (dotpos > 0) {
                 factory = pre.get(path.substring(0, dotpos).toUpperCase(Locale.ROOT));
                 if (factory != null) {
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(Level.FINER, "{0}: chosen by prefix: {1}",
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST, "{0}: chosen by prefix: {1}",
                             new Object[]{file,
                             factory.getClass().getSimpleName() });
                     }
@@ -892,8 +892,8 @@ public class AnalyzerGuru {
             // cases when this does not work.
             factory = ext.get(path.substring(dotpos + 1).toUpperCase(Locale.ROOT));
             if (factory != null) {
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINER, "{0}: chosen by suffix: {1}",
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "{0}: chosen by suffix: {1}",
                         new Object[]{file,
                         factory.getClass().getSimpleName() });
                 }
@@ -952,8 +952,8 @@ public class AnalyzerGuru {
             if (matcher.getIsPreciseMagic()) {
                 fac = matcher.isMagic(content, in);
                 if (fac != null) {
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(Level.FINER,
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST,
                             "{0}: chosen by precise magic: {1}", new Object[]{
                             file, fac.getClass().getSimpleName() });
                     }
@@ -974,8 +974,8 @@ public class AnalyzerGuru {
             if (!matcher.getIsPreciseMagic()) {
                 fac = matcher.isMagic(content, in);
                 if (fac != null) {
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(Level.FINER,
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST,
                             "{0}: chosen by imprecise magic: {1}",
                             new Object[]{file,
                             fac.getClass().getSimpleName() });
@@ -996,8 +996,8 @@ public class AnalyzerGuru {
         String fragment = getWords(opening, 2);
         AnalyzerFactory fac = magics.get(fragment);
         if (fac != null) {
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "{0}: chosen by magic {2}: {1}",
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "{0}: chosen by magic {2}: {1}",
                     new Object[]{file, fac.getClass().getSimpleName(),
                     fragment});
             }
@@ -1008,8 +1008,8 @@ public class AnalyzerGuru {
         fragment = getWords(opening, 1);
         fac = magics.get(fragment);
         if (fac != null) {
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "{0}: chosen by magic {2}: {1}",
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "{0}: chosen by magic {2}: {1}",
                     new Object[]{file, fac.getClass().getSimpleName(),
                     fragment});
             }
@@ -1022,8 +1022,8 @@ public class AnalyzerGuru {
             String magic = entry.getKey();
             if (opening.startsWith(magic)) {
                 fac = entry.getValue();
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINER,
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST,
                         "{0}: chosen by magic(substr) {2}: {1}", new Object[]{
                         file, fac.getClass().getSimpleName(), magic});
                 }
