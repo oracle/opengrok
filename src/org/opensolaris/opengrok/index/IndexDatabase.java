@@ -67,6 +67,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NativeFSLockFactory;
@@ -1000,6 +1001,7 @@ public class IndexDatabase {
 
         AtomicInteger successCounter = new AtomicInteger();
         AtomicInteger currentCounter = new AtomicInteger();
+        AtomicInteger alreadyClosedCounter = new AtomicInteger();
         ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
 
         Map<Boolean, List<IndexFileWork>> bySuccess = null;
@@ -1012,10 +1014,21 @@ public class IndexDatabase {
                     boolean ret;
                     while (true) {
                         try {
-                            pctags = ctagsPool.get();
-                            addFile(x.file, x.path, pctags);
-                            successCounter.incrementAndGet();
-                            ret = true;
+                            if (alreadyClosedCounter.get() > 0) {
+                                ret = false;
+                            } else {
+                                pctags = ctagsPool.get();
+                                addFile(x.file, x.path, pctags);
+                                successCounter.incrementAndGet();
+                                ret = true;
+                            }
+                        } catch (AlreadyClosedException e) {
+                            alreadyClosedCounter.incrementAndGet();
+                            String errmsg = String.format("ERROR addFile(): %s",
+                                x.file);
+                            LOGGER.log(Level.SEVERE, errmsg, e);
+                            x.exception = e;
+                            ret = false;
                         } catch (InterruptedException e) {
                             // Allow one retry if interrupted
                             if (++tries <= 1) continue;
@@ -1064,6 +1077,16 @@ public class IndexDatabase {
                 "%d failures (%.1f%%) while parallel-indexing",
                 failureCount, pctFailed);
             LOGGER.log(Level.WARNING, exmsg);
+        }
+
+        /**
+         * Encountering an AlreadyClosedException is severe enough to abort the
+         * run, since it will fail anyway later upon trying to commit().
+         */
+        int numAlreadyClosed = alreadyClosedCounter.get();
+        if (numAlreadyClosed > 0) {
+            throw new AlreadyClosedException(String.format("count=%d",
+                numAlreadyClosed));
         }
     }
 
