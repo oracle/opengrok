@@ -99,13 +99,13 @@ public class MandocRunner {
             command.add("os=" + oo);
         }
 
-        if (LOGGER.isLoggable(Level.FINE)) {
+        if (LOGGER.isLoggable(Level.FINER)) {
             StringBuilder sb = new StringBuilder();
             command.forEach((s) -> {
                 sb.append(s).append(" ");
             });
             String cmd = sb.toString();
-            LOGGER.log(Level.FINE, "Executing mandoc command [{0}]", cmd);
+            LOGGER.log(Level.FINER, "Executing mandoc command [{0}]", cmd);
         }
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
