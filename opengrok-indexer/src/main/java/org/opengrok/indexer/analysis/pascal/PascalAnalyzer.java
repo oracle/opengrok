@@ -49,11 +49,11 @@ public class PascalAnalyzer extends AbstractSourceCodeAnalyzer {
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
-     * @return 20180125_00
+     * @return 20180208_00
      */
     @Override
     protected int getSpecializedVersionNo() {
-        return 20180125_00; // Edit comment above too!
+        return 20180208_00; // Edit comment above too!
     }
 
     /**
