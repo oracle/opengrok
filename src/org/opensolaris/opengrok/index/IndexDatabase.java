@@ -88,6 +88,7 @@ import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.messages.Message;
@@ -310,9 +311,7 @@ public class IndexDatabase {
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
             analyzerGuru = new AnalyzerGuru();
-            if (env.isGenerateHtml()) {
-                xrefDir = new File(env.getDataRootFile(), XREF_DIR);
-            }
+            xrefDir = new File(env.getDataRootFile(), XREF_DIR);
             listeners = new CopyOnWriteArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
             dirty = dirtyFile.exists();
@@ -659,17 +658,17 @@ public class IndexDatabase {
         }
     }
 
+    private File whatXrefFile(String path, boolean compress) {
+        return new File(xrefDir, path + (compress ? ".gz" : ""));
+    }
+
     /**
      * Queue the removal of xref file for given path
      * @param path path to file under source root
      */
     private void removeXrefFile(String path) {
-        File xrefFile;
-        if (RuntimeEnvironment.getInstance().isCompressXref()) {
-            xrefFile = new File(xrefDir, path + ".gz");
-        } else {
-            xrefFile = new File(xrefDir, path);
-        }
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        File xrefFile = whatXrefFile(path, env.isCompressXref());
         PendingFileDeletion pending = new PendingFileDeletion(
             xrefFile.getAbsolutePath());
         completer.add(pending);
@@ -730,7 +729,7 @@ public class IndexDatabase {
         fa.setFoldingEnabled(RuntimeEnvironment.getInstance().isFoldingEnabled());
 
         Document doc = new Document();
-        try (Writer xrefOut = getXrefWriter(fa, path)) {
+        try (Writer xrefOut = newXrefWriter(fa, path)) {
             analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
         } catch (InterruptedException e) {
             LOGGER.log(Level.WARNING, "File ''{0}'' interrupted--{1}",
@@ -1056,6 +1055,8 @@ public class IndexDatabase {
         }
         Arrays.sort(files, FILENAME_COMPARATOR);
 
+        final boolean[] outIsXrefWriter =  new boolean[1];
+
         for (File file : files) {
             String path = parent + '/' + file.getName();
             if (!accept(dir, file, outLocalRelPath)) {
@@ -1105,7 +1106,9 @@ public class IndexDatabase {
                          */
                         if (uidIter != null && uidIter.term() != null
                                 && uidIter.term().bytesEquals(buid)) {
-                            boolean chkres = chkSettings(file, path);
+                            boolean chkres = chkSettings(outIsXrefWriter, file,
+                                    path) && (!outIsXrefWriter[0] ||
+                                    checkXrefExistence(path));
                             if (!chkres) {
                                 removeFile(false);
                             }
@@ -1552,16 +1555,21 @@ public class IndexDatabase {
         return hash;
     }
 
+    private boolean isXrefWriter(FileAnalyzer fa) {
+        Genre g = fa.getFactory().getGenre();
+        return (g == Genre.PLAIN || g == Genre.XREFABLE);
+    }
+
     /**
      * Get a writer to which the xref can be written, or null if no xref
      * should be produced for files of this type.
      */
-    private Writer getXrefWriter(FileAnalyzer fa, String path) throws IOException {
-        Genre g = fa.getFactory().getGenre();
-        if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private Writer newXrefWriter(FileAnalyzer fa, String path)
+            throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (env.isGenerateHtml() && isXrefWriter(fa)) {
             boolean compressed = env.isCompressXref();
-            File xrefFile = new File(xrefDir, path + (compressed ? ".gz" : ""));
+            File xrefFile = whatXrefFile(path, compressed);
             File parentFile = xrefFile.getParentFile();
 
             // If mkdirs() returns false, the failure is most likely
@@ -1633,7 +1641,9 @@ public class IndexDatabase {
      * @param path the source file path
      * @return {@code false} if a mismatch is detected
      */
-    private boolean chkSettings(File file, String path) throws IOException {
+    private boolean chkSettings(boolean[] outIsXrefWriter, File file,
+            String path) throws IOException {
+
         int reqTabSize = project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0;
         Integer actTabSize = settings.getTabSize();
@@ -1664,6 +1674,7 @@ public class IndexDatabase {
                 break;
             }
 
+            FileAnalyzer fa = null;
             String fileTypeName;
             if (actGuruVersion.equals(reqGuruVersion)) {
                 fileTypeName = doc.get(QueryBuilder.TYPE);
@@ -1671,6 +1682,12 @@ public class IndexDatabase {
                     // (Should not get here, but break just in case.)
                     LOGGER.log(Level.FINEST, "Missing TYPE field: {0}", path);
                     break;
+                }
+
+                FileAnalyzerFactory fac =
+                        AnalyzerGuru.findByFileTypeName(fileTypeName);
+                if (fac != null) {
+                    fa = fac.getAnalyzer();
                 }
             } else {
                 /**
@@ -1680,7 +1697,7 @@ public class IndexDatabase {
                  */
                 LOGGER.log(Level.FINER, "Guru version mismatch: {0}", path);
 
-                FileAnalyzer fa = getAnalyzerFor(file, path);
+                fa = getAnalyzerFor(file, path);
                 fileTypeName = fa.getFileTypeName();
                 String oldTypeName = doc.get(QueryBuilder.TYPE);
                 if (!fileTypeName.equals(oldTypeName)) {
@@ -1701,6 +1718,10 @@ public class IndexDatabase {
                         new Object[]{fileTypeName, path});
                 }
                 return false;
+            }
+
+            if (fa != null) {
+                outIsXrefWriter[0] = isXrefWriter(fa);
             }
 
             // The versions checks have passed.
@@ -1730,6 +1751,24 @@ public class IndexDatabase {
     private IndexAnalysisSettings2 readAnalysisSettings() throws IOException {
         IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
         return dao.read(reader);
+    }
+
+    private boolean checkXrefExistence(String path) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        boolean chkres = whatXrefFile(path, env.isCompressXref()).exists();
+
+        if (!env.isGenerateHtml()) {
+            if (chkres) {
+                LOGGER.log(Level.FINEST, "Extraneous {0}", path);
+                removeXrefFile(path);
+            }
+            return true;
+        }
+
+        if (!chkres) {
+            LOGGER.log(Level.FINEST, "Missing {0}", path);
+        }
+        return chkres;
     }
 
     private class IndexDownArgs {

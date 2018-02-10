@@ -20,7 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page errorPage="error.jsp" import="
@@ -176,7 +176,9 @@ document.pageReady.push(function() { pageReadyList();});
         }
     } else if (rev.length() != 0) {
         // requesting a revision
-        if (cfg.isLatestRevision(rev)) {
+        File xrefFile = null;
+        if (cfg.isLatestRevision(rev) &&
+                (xrefFile = cfg.findDataFile()) != null) {
             if (cfg.annotate()) {
                 // annotate
                 BufferedInputStream bin =
@@ -232,8 +234,6 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                 }
 
             } else {
-                File xrefFile = cfg.findDataFile();
-                if (xrefFile != null) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
@@ -242,7 +242,6 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                             request.getContextPath());
     %></pre>
 </div><%
-                }
             }
         } else {
             // requesting a previous revision
