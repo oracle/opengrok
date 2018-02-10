@@ -3,7 +3,7 @@
 !_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
-!_TAG_PROGRAM_VERSION	0.0.0	/b13cb551/
+!_TAG_PROGRAM_VERSION	0.0.0	/1620c633/
 !_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
 certStoreTypes	grok.psm1	/^$certStoreTypes = @'$/;"	variable	line:25
 pkiInternalsTypes	grok.psm1	/^$pkiInternalsTypes = @'$/;"	variable	line:29
@@ -195,3 +195,6 @@ CRLOverlapUnitsHours	grok.psm1	/^            'Days'   { $CRLOverlapUnitsHours = 
 CRLOverlapUnitsHours	grok.psm1	/^            'Hours'  { $CRLOverlapUnitsHours = [int]([int]${param}.CRLOverlapUnits) }$/;"	variable	line:466
 false	grok.psm1	/^Write-Debug $false.$true.$param$/;"	variable	line:475
 true	grok.psm1	/^$(Write-Debug $true)$/;"	variable	line:476
+true	grok.psm1	/^:OuterLoop while ($true) {$/;"	variable	line:478
+:OuterLoop	grok.psm1	/^:OuterLoop while ($true) {$/;"	label	line:478
+true	grok.psm1	/^    while ($true) { break OuterLoop }$/;"	variable	line:479

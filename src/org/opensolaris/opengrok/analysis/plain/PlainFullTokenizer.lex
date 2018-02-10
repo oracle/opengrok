@@ -43,7 +43,7 @@ import org.opensolaris.opengrok.util.TextTrieMap;
 %caseless
 %char
 %{
-    private static final Pattern POSSESSIVE = Pattern.compile("^\\w+'s$");
+    private static final Pattern POSSESSIVE = Pattern.compile("(?U)^\\w+'s$");
 
     private static final TextTrieMap<Object> CONTRACTIONS;
 

@@ -40,12 +40,14 @@ public class CompatibleAnalyser extends Analyzer {
     protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
             case QueryBuilder.FULL:
-                return new TokenStreamComponents(createPlainFullTokenizer(
-                    TokenizerMode.NON_WHITESPACE_ONLY));
+                return new TokenStreamComponents(
+                    createNonWhitespaceFullTokenizer());
             case QueryBuilder.REFS:
-                return new TokenStreamComponents(createPlainSymbolTokenizer());
+                return new TokenStreamComponents(
+                    createNonWhitespaceSymbolTokenizer());
             case QueryBuilder.DEFS:
-                return new TokenStreamComponents(createPlainSymbolTokenizer());
+                return new TokenStreamComponents(
+                    createNonWhitespaceSymbolTokenizer());
             case QueryBuilder.PATH:
             case QueryBuilder.PROJECT:
                 return new TokenStreamComponents(new PathTokenizer());
@@ -55,11 +57,6 @@ public class CompatibleAnalyser extends Analyzer {
                 return new TokenStreamComponents(
                     createPlainFullTokenizer(TokenizerMode.SYMBOLS_ONLY));
         }
-    }
-
-    private JFlexTokenizer createPlainSymbolTokenizer() {
-        return new JFlexTokenizer(new PlainSymbolTokenizer(
-                FileAnalyzer.dummyReader));
     }
 
     private JFlexTokenizer createPlainFullTokenizer(TokenizerMode mode) {
@@ -78,5 +75,16 @@ public class CompatibleAnalyser extends Analyzer {
             default:
                 return new LowerCaseFilter(in);
         }
+    }
+
+    private JFlexTokenizer createNonWhitespaceFullTokenizer() {
+        return createPlainFullTokenizer(TokenizerMode.NON_WHITESPACE_ONLY);
+    }
+
+    private JFlexTokenizer createNonWhitespaceSymbolTokenizer() {
+        JFlexTokenizer tokenizer = new JFlexTokenizer(new PlainSymbolTokenizer(
+            FileAnalyzer.dummyReader));
+        tokenizer.setTokenizerMode(TokenizerMode.NON_WHITESPACE_ONLY);
+        return tokenizer;
     }
 }
