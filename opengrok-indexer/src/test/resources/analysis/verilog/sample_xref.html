@@ -91,7 +91,7 @@ function get_sym_list(){return [];} /* ]]> */</script><a class="l" name="1" href
 <a class="l" name="85" href="#85">85</a><b>input</b>  <b>wire</b>             <a class="d" name="g_resetn"/><a href="/source/s?refs=g_resetn" class="d intelliWindow-symbol" data-definition-place="def">g_resetn</a>      , <span class="c">// Synchronous active low reset.</span>
 <a class="l" name="86" href="#86">86</a>
 <a class="l" name="87" href="#87">87</a><b>`ifdef</b> <a href="/source/s?defs=FORMAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">FORMAL</a>
-<a class="l" name="88" href="#88">88</a><a href="/source/s?defs=%22%60VTX_REGISTER_PORTS_OUT%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">`VTX_REGISTER_PORTS_OUT</a>(<a href="/source/s?defs=cprs_snoop" class="intelliWindow-symbol" data-definition-place="undefined-in-file">cprs_snoop</a>)
+<a class="l" name="88" href="#88">88</a><a href="/source/s?defs=%60VTX_REGISTER_PORTS_OUT" class="intelliWindow-symbol" data-definition-place="undefined-in-file">`VTX_REGISTER_PORTS_OUT</a>(<a href="/source/s?defs=cprs_snoop" class="intelliWindow-symbol" data-definition-place="undefined-in-file">cprs_snoop</a>)
 <a class="l" name="89" href="#89">89</a><b>`endif</b>
 <a class="hl" name="90" href="#90">90</a>
 <a class="l" name="91" href="#91">91</a><b>input</b>  <b>wire</b>             <a class="d" name="crs1_ren"/><a href="/source/s?refs=crs1_ren" class="d intelliWindow-symbol" data-definition-place="def">crs1_ren</a>      , <span class="c">// Port 1 read enable</span>
@@ -119,7 +119,7 @@ function get_sym_list(){return [];} /* ]]> */</script><a class="l" name="1" href
 <a class="l" name="113" href="#113">113</a><b>reg</b> [<span class="n">31</span>:<span class="n">0</span>] <a class="d" name="cprs"/><a href="/source/s?refs=cprs" class="d intelliWindow-symbol" data-definition-place="def">cprs</a> [<span class="n">15</span>:<span class="n">0</span>];
 <a class="l" name="114" href="#114">114</a>
 <a class="l" name="115" href="#115">115</a><b>`ifdef</b> <a href="/source/s?defs=FORMAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">FORMAL</a>
-<a class="l" name="116" href="#116">116</a><a href="/source/s?defs=%22%60VTX_REGISTER_PORTS_ASSIGNR%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">`VTX_REGISTER_PORTS_ASSIGNR</a>(<a href="/source/s?defs=cprs_snoop" class="intelliWindow-symbol" data-definition-place="undefined-in-file">cprs_snoop</a>,<a class="d intelliWindow-symbol" href="#cprs" data-definition-place="defined-in-file">cprs</a>)
+<a class="l" name="116" href="#116">116</a><a href="/source/s?defs=%60VTX_REGISTER_PORTS_ASSIGNR" class="intelliWindow-symbol" data-definition-place="undefined-in-file">`VTX_REGISTER_PORTS_ASSIGNR</a>(<a href="/source/s?defs=cprs_snoop" class="intelliWindow-symbol" data-definition-place="undefined-in-file">cprs_snoop</a>,<a class="d intelliWindow-symbol" href="#cprs" data-definition-place="defined-in-file">cprs</a>)
 <a class="l" name="117" href="#117">117</a><b>`endif</b>
 <a class="l" name="118" href="#118">118</a>
 <a class="l" name="119" href="#119">119</a><span class="c">//</span>
@@ -142,7 +142,7 @@ function get_sym_list(){return [];} /* ]]> */</script><a class="l" name="1" href
 <a class="l" name="136" href="#136">136</a>            <b>`ifdef</b> <a href="/source/s?defs=FORMAL" class="intelliWindow-symbol" data-definition-place="undefined-in-file">FORMAL</a>
 <a class="l" name="137" href="#137">137</a>                <span class="c">// If running the yosys formal flow, allow initial</span>
 <a class="l" name="138" href="#138">138</a>                <span class="c">// register values to be any constant value.</span>
-<a class="l" name="139" href="#139">139</a>                <span class="n">#1</span> <a class="d intelliWindow-symbol" href="#cprs" data-definition-place="defined-in-file">cprs</a>[<a class="d intelliWindow-symbol" href="#i" data-definition-place="defined-in-file">i</a>] &lt;= <a href="/source/s?defs=%22%24anyconst%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$anyconst</a>;
+<a class="l" name="139" href="#139">139</a>                <span class="n">#1</span> <a class="d intelliWindow-symbol" href="#cprs" data-definition-place="defined-in-file">cprs</a>[<a class="d intelliWindow-symbol" href="#i" data-definition-place="defined-in-file">i</a>] &lt;= <a href="/source/s?defs=%24anyconst" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$anyconst</a>;
 <a class="hl" name="140" href="#140">140</a>            <b>`else</b>
 <a class="l" name="141" href="#141">141</a>                <span class="n">#1step</span> <a class="d intelliWindow-symbol" href="#cprs" data-definition-place="defined-in-file">cprs</a>[<a class="d intelliWindow-symbol" href="#i" data-definition-place="defined-in-file">i</a>] &lt;= <span class="n">32&apos;b0</span>;
 <a class="l" name="142" href="#142">142</a>            <b>`endif</b>

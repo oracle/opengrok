@@ -56,7 +56,7 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="hl" name="50" href="#50">50</a><span class="c">#</span>
 <a class="l" name="51" href="#51">51</a><a class="xf" name="fail"/><a href="/source/s?refs=fail" class="xf intelliWindow-symbol" data-definition-place="def">fail</a>()
 <a class="l" name="52" href="#52">52</a>{
-<a class="l" name="53" href="#53">53</a>        <b>echo</b> <a href="/source/s?defs=%22%24PROG%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$PROG</a>: $@ &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/stderr">stderr</a>
+<a class="l" name="53" href="#53">53</a>        <b>echo</b> <a href="/source/s?defs=%24PROG" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$PROG</a>: $@ &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/stderr">stderr</a>
 <a class="l" name="54" href="#54">54</a>        <b>exit</b> <span class="n">1</span>
 <a class="l" name="55" href="#55">55</a>}
 <a class="l" name="56" href="#56">56</a>
@@ -65,7 +65,7 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="l" name="59" href="#59">59</a><span class="c">#</span>
 <a class="hl" name="60" href="#60">60</a><a class="xf" name="warn"/><a href="/source/s?refs=warn" class="xf intelliWindow-symbol" data-definition-place="def">warn</a>()
 <a class="l" name="61" href="#61">61</a>{
-<a class="l" name="62" href="#62">62</a>        <b>echo</b> <a href="/source/s?defs=%22%24PROG%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$PROG</a>: <a href="/source/s?defs=warning" class="intelliWindow-symbol" data-definition-place="undefined-in-file">warning</a>: $@ &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/stderr">stderr</a>
+<a class="l" name="62" href="#62">62</a>        <b>echo</b> <a href="/source/s?defs=%24PROG" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$PROG</a>: <a href="/source/s?defs=warning" class="intelliWindow-symbol" data-definition-place="undefined-in-file">warning</a>: $@ &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/stderr">stderr</a>
 <a class="l" name="63" href="#63">63</a>}
 <a class="l" name="64" href="#64">64</a>
 <a class="l" name="65" href="#65">65</a><span class="c">#</span>
@@ -73,7 +73,7 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="l" name="67" href="#67">67</a><span class="c">#</span>
 <a class="l" name="68" href="#68">68</a><a class="xf" name="info"/><a href="/source/s?refs=info" class="xf intelliWindow-symbol" data-definition-place="def">info</a>()
 <a class="l" name="69" href="#69">69</a>{
-<a class="hl" name="70" href="#70">70</a>        <b>echo</b> <a href="/source/s?defs=%22%24PROG%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$PROG</a>: $@
+<a class="hl" name="70" href="#70">70</a>        <b>echo</b> <a href="/source/s?defs=%24PROG" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$PROG</a>: $@
 <a class="l" name="71" href="#71">71</a>}
 <a class="l" name="72" href="#72">72</a>
 <a class="l" name="73" href="#73">73</a><span class="c">#</span>
@@ -94,23 +94,23 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="l" name="88" href="#88">88</a>
 <a class="l" name="89" href="#89">89</a><a href="/source/s?defs=which_scm" class="intelliWindow-symbol" data-definition-place="undefined-in-file">which_scm</a> | <b>read</b> <a href="/source/s?defs=SCM_MODE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SCM_MODE</a> <a href="/source/s?defs=CODEMGR_WS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">CODEMGR_WS</a> || <b>exit</b> <span class="n">1</span>
 <a class="hl" name="90" href="#90">90</a>
-<a class="l" name="91" href="#91">91</a><b>if</b> [[ <a href="/source/s?defs=%22%24SCM_MODE%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$SCM_MODE</a> == <span class="s">&quot;unknown&quot;</span> ]];<b>then</b>
+<a class="l" name="91" href="#91">91</a><b>if</b> [[ <a href="/source/s?defs=%24SCM_MODE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$SCM_MODE</a> == <span class="s">&quot;unknown&quot;</span> ]];<b>then</b>
 <a class="l" name="92" href="#92">92</a>	<b>print</b> -<a href="/source/s?defs=u2" class="intelliWindow-symbol" data-definition-place="undefined-in-file">u2</a> <span class="s">&quot;Unable to determine SCM type currently in use.&quot;</span>
 <a class="l" name="93" href="#93">93</a>	<b>exit</b> <span class="n">1</span>
 <a class="l" name="94" href="#94">94</a><b>fi</b>
 <a class="l" name="95" href="#95">95</a>
 <a class="l" name="96" href="#96">96</a><b>export</b> <a href="/source/s?defs=CODEMGR_WS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">CODEMGR_WS</a>
-<a class="l" name="97" href="#97">97</a><a href="/source/s?defs=SRC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SRC</a>=<a href="/source/s?defs=%22%24CODEMGR_WS%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$CODEMGR_WS</a>/<a href="/source/s?path=/usr/">usr</a>/<a href="/source/s?path=/usr/src">src</a> <b>export</b> <a href="/source/s?defs=SRC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SRC</a>
+<a class="l" name="97" href="#97">97</a><a href="/source/s?defs=SRC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SRC</a>=<a href="/source/s?defs=%24CODEMGR_WS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$CODEMGR_WS</a>/<a href="/source/s?path=/usr/">usr</a>/<a href="/source/s?path=/usr/src">src</a> <b>export</b> <a href="/source/s?defs=SRC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SRC</a>
 <a class="l" name="98" href="#98">98</a><a href="/source/s?defs=MACH" class="intelliWindow-symbol" data-definition-place="undefined-in-file">MACH</a>=`<a href="/source/s?defs=uname" class="intelliWindow-symbol" data-definition-place="undefined-in-file">uname</a> -p` <b>export</b> <a href="/source/s?defs=MACH" class="intelliWindow-symbol" data-definition-place="undefined-in-file">MACH</a>
 <a class="l" name="99" href="#99">99</a>
-<a class="hl" name="100" href="#100">100</a>[ -f <a href="/source/s?defs=%22%24XREFMK%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> ] || <a class="d intelliWindow-symbol" href="#fail" data-definition-place="defined-in-file">fail</a> <span class="s">&quot;cannot locate <a href="/source/s?path=xref.mk">xref.mk</a>&quot;</span>
+<a class="hl" name="100" href="#100">100</a>[ -f <a href="/source/s?defs=%24XREFMK" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> ] || <a class="d intelliWindow-symbol" href="#fail" data-definition-place="defined-in-file">fail</a> <span class="s">&quot;cannot locate <a href="/source/s?path=xref.mk">xref.mk</a>&quot;</span>
 <a class="l" name="101" href="#101">101</a>
 <a class="l" name="102" href="#102">102</a><a href="/source/s?defs=clobber" class="intelliWindow-symbol" data-definition-place="undefined-in-file">clobber</a>=
 <a class="l" name="103" href="#103">103</a><a href="/source/s?defs=noflg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">noflg</a>=
 <a class="l" name="104" href="#104">104</a><a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=
 <a class="l" name="105" href="#105">105</a>
 <a class="l" name="106" href="#106">106</a><b>while</b> <b>getopts</b> <a href="/source/s?defs=cfm" class="intelliWindow-symbol" data-definition-place="undefined-in-file">cfm</a>:<a href="/source/s?defs=px" class="intelliWindow-symbol" data-definition-place="undefined-in-file">px</a>: <a href="/source/s?defs=flag" class="intelliWindow-symbol" data-definition-place="undefined-in-file">flag</a>; <b>do</b>
-<a class="l" name="107" href="#107">107</a>	<b>case</b> <a href="/source/s?defs=%22%24flag%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$flag</a> <b>in</b>
+<a class="l" name="107" href="#107">107</a>	<b>case</b> <a href="/source/s?defs=%24flag" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$flag</a> <b>in</b>
 <a class="l" name="108" href="#108">108</a>	c)
 <a class="l" name="109" href="#109">109</a>		<a href="/source/s?defs=clobber" class="intelliWindow-symbol" data-definition-place="undefined-in-file">clobber</a>=<a href="/source/s?defs=y" class="intelliWindow-symbol" data-definition-place="undefined-in-file">y</a>
 <a class="hl" name="110" href="#110">110</a>		;;
@@ -118,7 +118,7 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="l" name="112" href="#112">112</a>		<a href="/source/s?defs=noflg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">noflg</a>=<a href="/source/s?defs=y" class="intelliWindow-symbol" data-definition-place="undefined-in-file">y</a>
 <a class="l" name="113" href="#113">113</a>		;;
 <a class="l" name="114" href="#114">114</a>	m)
-<a class="l" name="115" href="#115">115</a>		<a href="/source/s?defs=XRMAKEFILE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">XRMAKEFILE</a>=<a href="/source/s?defs=%22%24OPTARG%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$OPTARG</a>
+<a class="l" name="115" href="#115">115</a>		<a href="/source/s?defs=XRMAKEFILE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">XRMAKEFILE</a>=<a href="/source/s?defs=%24OPTARG" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$OPTARG</a>
 <a class="l" name="116" href="#116">116</a>		;;
 <a class="l" name="117" href="#117">117</a>	p)
 <a class="l" name="118" href="#118">118</a>		<span class="c">#</span>
@@ -132,10 +132,10 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="l" name="126" href="#126">126</a>		<a href="/source/s?defs=ENVCPPFLAGS4" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ENVCPPFLAGS4</a>=
 <a class="l" name="127" href="#127">127</a>		;;
 <a class="l" name="128" href="#128">128</a> 	x)
-<a class="l" name="129" href="#129">129</a>		<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<a href="/source/s?defs=%22%24OPTARG%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$OPTARG</a>
+<a class="l" name="129" href="#129">129</a>		<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<a href="/source/s?defs=%24OPTARG" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$OPTARG</a>
 <a class="hl" name="130" href="#130">130</a>		;;
 <a class="l" name="131" href="#131">131</a>	\?)
-<a class="l" name="132" href="#132">132</a>		<b>echo</b> <span class="s">&quot;usage: <a href="/source/s?refs=%22%24PROG%22">$PROG</a> [-cfp] [-m &lt;makefile&gt;]&quot;</span>\
+<a class="l" name="132" href="#132">132</a>		<b>echo</b> <span class="s">&quot;usage: <a href="/source/s?refs=%24PROG">$PROG</a> [-cfp] [-m &lt;makefile&gt;]&quot;</span>\
 <a class="l" name="133" href="#133">133</a>		     <span class="s">&quot;[-x cscope|ctags|etags[,...]] [&lt;subtree&gt; ...]&quot;</span>\
 <a class="l" name="134" href="#134">134</a>		      &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/stderr">stderr</a>
 <a class="l" name="135" href="#135">135</a>		<b>exit</b> <span class="n">1</span>
@@ -149,13 +149,13 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="l" name="143" href="#143">143</a><span class="c"># Get the list of directories before we reset $@.</span>
 <a class="l" name="144" href="#144">144</a><span class="c">#</span>
 <a class="l" name="145" href="#145">145</a><b>dirs</b>=$@
-<a class="l" name="146" href="#146">146</a>[ -z <span class="s">&quot;<a href="/source/s?refs=%22%24dirs%22">$dirs</a>&quot;</span> ] &amp;&amp; <b>dirs</b>=.
+<a class="l" name="146" href="#146">146</a>[ -z <span class="s">&quot;<a href="/source/s?refs=%24dirs">$dirs</a>&quot;</span> ] &amp;&amp; <b>dirs</b>=.
 <a class="l" name="147" href="#147">147</a>
 <a class="l" name="148" href="#148">148</a><span class="c">#</span>
 <a class="l" name="149" href="#149">149</a><span class="c"># Get the canonical path to the workspace.  This allows xref to work</span>
 <a class="hl" name="150" href="#150">150</a><span class="c"># even in the presence of lofs(7FS).</span>
 <a class="l" name="151" href="#151">151</a><span class="c">#</span>
-<a class="l" name="152" href="#152">152</a><b>cd</b> <a href="/source/s?defs=%22%24CODEMGR_WS%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$CODEMGR_WS</a>
+<a class="l" name="152" href="#152">152</a><b>cd</b> <a href="/source/s?defs=%24CODEMGR_WS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$CODEMGR_WS</a>
 <a class="l" name="153" href="#153">153</a><a href="/source/s?defs=CODEMGR_WS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">CODEMGR_WS</a>=`/<a href="/source/s?path=/bin/">bin</a>/<a href="/source/s?path=/bin/pwd">pwd</a>`
 <a class="l" name="154" href="#154">154</a><b>cd</b> - &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a>
 <a class="l" name="155" href="#155">155</a>
@@ -163,46 +163,46 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="l" name="157" href="#157">157</a><span class="c"># Process the xref format list.  For convenience, support common synonyms</span>
 <a class="l" name="158" href="#158">158</a><span class="c"># for the xref formats.</span>
 <a class="l" name="159" href="#159">159</a><span class="c">#</span>
-<a class="hl" name="160" href="#160">160</a><b>if</b> [ -z <span class="s">&quot;<a href="/source/s?refs=%22%24xrefs%22">$xrefs</a>&quot;</span> ]; <b>then</b>
+<a class="hl" name="160" href="#160">160</a><b>if</b> [ -z <span class="s">&quot;<a href="/source/s?refs=%24xrefs">$xrefs</a>&quot;</span> ]; <b>then</b>
 <a class="l" name="161" href="#161">161</a>	<span class="c">#</span>
 <a class="l" name="162" href="#162">162</a>	<span class="c"># Disable etags if we can&apos;t find it.</span>
 <a class="l" name="163" href="#163">163</a>	<span class="c">#</span>
 <a class="l" name="164" href="#164">164</a>	<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<span class="s">&quot;cscope ctags&quot;</span>
-<a class="l" name="165" href="#165">165</a>	<a href="/source/s?defs=%22%24MAKE%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%22%24XREFMK%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?path=xref.etags.check">xref.etags.check</a> <span class="n">2</span>&gt;/<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a> <span class="n">1</span>&gt;&amp;<span class="n">2</span> &amp;&amp; \
-<a class="l" name="166" href="#166">166</a>	    <a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<span class="s">&quot;<a href="/source/s?refs=%22%24xrefs%22">$xrefs</a> etags&quot;</span>
+<a class="l" name="165" href="#165">165</a>	<a href="/source/s?defs=%24MAKE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%24XREFMK" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?path=xref.etags.check">xref.etags.check</a> <span class="n">2</span>&gt;/<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a> <span class="n">1</span>&gt;&amp;<span class="n">2</span> &amp;&amp; \
+<a class="l" name="166" href="#166">166</a>	    <a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<span class="s">&quot;<a href="/source/s?refs=%24xrefs">$xrefs</a> etags&quot;</span>
 <a class="l" name="167" href="#167">167</a><b>else</b>
-<a class="l" name="168" href="#168">168</a>	<a href="/source/s?defs=oldifs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">oldifs</a>=<a href="/source/s?defs=%22%24IFS%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$IFS</a>
+<a class="l" name="168" href="#168">168</a>	<a href="/source/s?defs=oldifs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">oldifs</a>=<a href="/source/s?defs=%24IFS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$IFS</a>
 <a class="l" name="169" href="#169">169</a>	<a href="/source/s?defs=IFS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IFS</a>=,
-<a class="hl" name="170" href="#170">170</a>	<b>set</b> -- <a href="/source/s?defs=%22%24xrefs%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$xrefs</a>
-<a class="l" name="171" href="#171">171</a>	<a href="/source/s?defs=IFS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IFS</a>=<a href="/source/s?defs=%22%24oldifs%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$oldifs</a>
+<a class="hl" name="170" href="#170">170</a>	<b>set</b> -- <a href="/source/s?defs=%24xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$xrefs</a>
+<a class="l" name="171" href="#171">171</a>	<a href="/source/s?defs=IFS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IFS</a>=<a href="/source/s?defs=%24oldifs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$oldifs</a>
 <a class="l" name="172" href="#172">172</a>
 <a class="l" name="173" href="#173">173</a>	<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=
 <a class="l" name="174" href="#174">174</a>	<b>for</b> <a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a>; <b>do</b>
-<a class="l" name="175" href="#175">175</a>		<b>case</b> <a href="/source/s?defs=%22%24xref%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$xref</a> <b>in</b>
+<a class="l" name="175" href="#175">175</a>		<b>case</b> <a href="/source/s?defs=%24xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$xref</a> <b>in</b>
 <a class="l" name="176" href="#176">176</a>		<a href="/source/s?defs=cscope" class="intelliWindow-symbol" data-definition-place="undefined-in-file">cscope</a>|<a href="/source/s?path=cscope.out">cscope.out</a>)
-<a class="l" name="177" href="#177">177</a>			<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<span class="s">&quot;<a href="/source/s?refs=%22%24xrefs%22">$xrefs</a> cscope&quot;</span>
+<a class="l" name="177" href="#177">177</a>			<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<span class="s">&quot;<a href="/source/s?refs=%24xrefs">$xrefs</a> cscope&quot;</span>
 <a class="l" name="178" href="#178">178</a>			;;
 <a class="l" name="179" href="#179">179</a>		<a href="/source/s?defs=ctags" class="intelliWindow-symbol" data-definition-place="undefined-in-file">ctags</a>|<a href="/source/s?defs=tags" class="intelliWindow-symbol" data-definition-place="undefined-in-file">tags</a>)
-<a class="hl" name="180" href="#180">180</a>			<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<span class="s">&quot;<a href="/source/s?refs=%22%24xrefs%22">$xrefs</a> ctags&quot;</span>
+<a class="hl" name="180" href="#180">180</a>			<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<span class="s">&quot;<a href="/source/s?refs=%24xrefs">$xrefs</a> ctags&quot;</span>
 <a class="l" name="181" href="#181">181</a>			;;
 <a class="l" name="182" href="#182">182</a>		<a href="/source/s?defs=etags" class="intelliWindow-symbol" data-definition-place="undefined-in-file">etags</a>|<a href="/source/s?defs=TAGS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">TAGS</a>)
-<a class="l" name="183" href="#183">183</a>			<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<span class="s">&quot;<a href="/source/s?refs=%22%24xrefs%22">$xrefs</a> etags&quot;</span>
+<a class="l" name="183" href="#183">183</a>			<a href="/source/s?defs=xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xrefs</a>=<span class="s">&quot;<a href="/source/s?refs=%24xrefs">$xrefs</a> etags&quot;</span>
 <a class="l" name="184" href="#184">184</a>			;;
 <a class="l" name="185" href="#185">185</a>		*)
-<a class="l" name="186" href="#186">186</a>			<a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;ignoring unknown cross-reference \&quot;<a href="/source/s?refs=%22%24xref%22">$xref</a>\&quot;&quot;</span>
+<a class="l" name="186" href="#186">186</a>			<a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;ignoring unknown cross-reference \&quot;<a href="/source/s?refs=%24xref">$xref</a>\&quot;&quot;</span>
 <a class="l" name="187" href="#187">187</a>			;;
 <a class="l" name="188" href="#188">188</a> 		<b>esac</b>
 <a class="l" name="189" href="#189">189</a> 	<b>done</b>
 <a class="hl" name="190" href="#190">190</a>
-<a class="l" name="191" href="#191">191</a>	[ -z <span class="s">&quot;<a href="/source/s?refs=%22%24xrefs%22">$xrefs</a>&quot;</span> ] &amp;&amp; <a class="d intelliWindow-symbol" href="#fail" data-definition-place="defined-in-file">fail</a> <span class="s">&quot;no known cross-reference formats specified&quot;</span>
+<a class="l" name="191" href="#191">191</a>	[ -z <span class="s">&quot;<a href="/source/s?refs=%24xrefs">$xrefs</a>&quot;</span> ] &amp;&amp; <a class="d intelliWindow-symbol" href="#fail" data-definition-place="defined-in-file">fail</a> <span class="s">&quot;no known cross-reference formats specified&quot;</span>
 <a class="l" name="192" href="#192">192</a><b>fi</b>
 <a class="l" name="193" href="#193">193</a>
 <a class="l" name="194" href="#194">194</a><span class="c">#</span>
 <a class="l" name="195" href="#195">195</a><span class="c"># Process the requested list of directories.</span>
 <a class="l" name="196" href="#196">196</a><span class="c">#</span>
-<a class="l" name="197" href="#197">197</a><b>for</b> <a href="/source/s?defs=dir" class="intelliWindow-symbol" data-definition-place="undefined-in-file">dir</a> <b>in</b> <a href="/source/s?defs=%22%24dirs%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$dirs</a>; <b>do</b>
-<a class="l" name="198" href="#198">198</a>	<b>if</b> [ ! -d <a href="/source/s?defs=%22%24dir%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$dir</a> ]; <b>then</b>
-<a class="l" name="199" href="#199">199</a>		<a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;directory \&quot;<a href="/source/s?refs=%22%24dir%22">$dir</a>\&quot; does not exist; skipping&quot;</span>
+<a class="l" name="197" href="#197">197</a><b>for</b> <a href="/source/s?defs=dir" class="intelliWindow-symbol" data-definition-place="undefined-in-file">dir</a> <b>in</b> <a href="/source/s?defs=%24dirs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$dirs</a>; <b>do</b>
+<a class="l" name="198" href="#198">198</a>	<b>if</b> [ ! -d <a href="/source/s?defs=%24dir" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$dir</a> ]; <b>then</b>
+<a class="l" name="199" href="#199">199</a>		<a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;directory \&quot;<a href="/source/s?refs=%24dir">$dir</a>\&quot; does not exist; skipping&quot;</span>
 <a class="hl" name="200" href="#200">200</a>		<b>continue</b>
 <a class="l" name="201" href="#201">201</a>	<b>fi</b>
 <a class="l" name="202" href="#202">202</a>
@@ -210,11 +210,11 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="l" name="204" href="#204">204</a>	<span class="c"># NOTE: we cannot use $PWD because it will mislead in the presence</span>
 <a class="l" name="205" href="#205">205</a>	<span class="c"># of lofs(7FS).</span>
 <a class="l" name="206" href="#206">206</a>	<span class="c">#</span>
-<a class="l" name="207" href="#207">207</a>	<b>cd</b> <a href="/source/s?defs=%22%24dir%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$dir</a> || <a class="d intelliWindow-symbol" href="#fail" data-definition-place="defined-in-file">fail</a> <span class="s">&quot;cannot change to directory <a href="/source/s?refs=%22%24dir%22">$dir</a>&quot;</span>
+<a class="l" name="207" href="#207">207</a>	<b>cd</b> <a href="/source/s?defs=%24dir" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$dir</a> || <a class="d intelliWindow-symbol" href="#fail" data-definition-place="defined-in-file">fail</a> <span class="s">&quot;cannot change to directory <a href="/source/s?refs=%24dir">$dir</a>&quot;</span>
 <a class="l" name="208" href="#208">208</a>	<b>pwd</b>=`/<a href="/source/s?path=/bin/">bin</a>/<a href="/source/s?path=/bin/pwd">pwd</a>`
 <a class="l" name="209" href="#209">209</a>	<a href="/source/s?defs=reldir" class="intelliWindow-symbol" data-definition-place="undefined-in-file">reldir</a>=${<b>pwd</b><span class="c">##${CODEMGR_WS}/}</span>
-<a class="hl" name="210" href="#210">210</a>	<b>if</b> [ <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>&quot;</span> = <span class="s">&quot;<a href="/source/s?refs=%22%24pwd%22">$pwd</a>&quot;</span> ]; <b>then</b>
-<a class="l" name="211" href="#211">211</a>		<a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;directory \&quot;<a href="/source/s?refs=%22%24pwd%22">$pwd</a>\&quot; is not beneath \$CODEMGR_WS; skipping&quot;</span>
+<a class="hl" name="210" href="#210">210</a>	<b>if</b> [ <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>&quot;</span> = <span class="s">&quot;<a href="/source/s?refs=%24pwd">$pwd</a>&quot;</span> ]; <b>then</b>
+<a class="l" name="211" href="#211">211</a>		<a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;directory \&quot;<a href="/source/s?refs=%24pwd">$pwd</a>\&quot; is not beneath \$CODEMGR_WS; skipping&quot;</span>
 <a class="l" name="212" href="#212">212</a>		<b>cd</b> - &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a>
 <a class="l" name="213" href="#213">213</a>		<b>continue</b>
 <a class="l" name="214" href="#214">214</a>	<b>fi</b>
@@ -223,50 +223,50 @@ function get_sym_list(){return [["Function","xf",[["fail",51],["info",68],["time
 <a class="l" name="217" href="#217">217</a>	<span class="c"># If we&apos;re building cross-references, then run `<a href="/source/s?path=xref.clean">xref.clean</a>&apos; first</span>
 <a class="l" name="218" href="#218">218</a>	<span class="c"># to purge any crud that may be lying around from previous aborted runs.</span>
 <a class="l" name="219" href="#219">219</a>	<span class="c">#</span>
-<a class="hl" name="220" href="#220">220</a>	<b>if</b> [ -z <span class="s">&quot;<a href="/source/s?refs=%22%24clobber%22">$clobber</a>&quot;</span> ]; <b>then</b>
-<a class="l" name="221" href="#221">221</a>		<a href="/source/s?defs=%22%24MAKE%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%22%24XREFMK%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?path=xref.clean">xref.clean</a> &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a>
+<a class="hl" name="220" href="#220">220</a>	<b>if</b> [ -z <span class="s">&quot;<a href="/source/s?refs=%24clobber">$clobber</a>&quot;</span> ]; <b>then</b>
+<a class="l" name="221" href="#221">221</a>		<a href="/source/s?defs=%24MAKE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%24XREFMK" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?path=xref.clean">xref.clean</a> &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a>
 <a class="l" name="222" href="#222">222</a>	<b>fi</b>
 <a class="l" name="223" href="#223">223</a>
 <a class="l" name="224" href="#224">224</a>	<span class="c">#</span>
 <a class="l" name="225" href="#225">225</a>	<span class="c"># Find flg-related source files, if requested.</span>
 <a class="l" name="226" href="#226">226</a>	<span class="c">#</span>
-<a class="l" name="227" href="#227">227</a>	<b>if</b> [ -z <span class="s">&quot;<a href="/source/s?refs=%22%24noflg%22">$noflg</a>&quot;</span> -a -z <span class="s">&quot;<a href="/source/s?refs=%22%24clobber%22">$clobber</a>&quot;</span> ]; <b>then</b>
+<a class="l" name="227" href="#227">227</a>	<b>if</b> [ -z <span class="s">&quot;<a href="/source/s?refs=%24noflg">$noflg</a>&quot;</span> -a -z <span class="s">&quot;<a href="/source/s?refs=%24clobber">$clobber</a>&quot;</span> ]; <b>then</b>
 <a class="l" name="228" href="#228">228</a>		<a href="/source/s?defs=SECONDS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SECONDS</a>=<span class="n">0</span>
-<a class="l" name="229" href="#229">229</a>    		<a class="d intelliWindow-symbol" href="#info" data-definition-place="defined-in-file">info</a> <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>: finding flg-related source files&quot;</span>
-<a class="hl" name="230" href="#230">230</a>		<a href="/source/s?defs=%22%24MAKE%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%22%24XREFMK%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?path=xref.flg">xref.flg</a> &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a>
+<a class="l" name="229" href="#229">229</a>    		<a class="d intelliWindow-symbol" href="#info" data-definition-place="defined-in-file">info</a> <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>: finding flg-related source files&quot;</span>
+<a class="hl" name="230" href="#230">230</a>		<a href="/source/s?defs=%24MAKE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%24XREFMK" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?path=xref.flg">xref.flg</a> &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a>
 <a class="l" name="231" href="#231">231</a>		<b>if</b> [ $? -ne <span class="n">0</span> ]; <b>then</b>
-<a class="l" name="232" href="#232">232</a>			<a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>: unable to find flg-related source files&quot;</span>
+<a class="l" name="232" href="#232">232</a>			<a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>: unable to find flg-related source files&quot;</span>
 <a class="l" name="233" href="#233">233</a>		<b>else</b>
 <a class="l" name="234" href="#234">234</a>			<a href="/source/s?defs=nfiles" class="intelliWindow-symbol" data-definition-place="undefined-in-file">nfiles</a>=`<a href="/source/s?defs=wc" class="intelliWindow-symbol" data-definition-place="undefined-in-file">wc</a> -l &lt; <a href="/source/s?path=xref.flg">xref.flg</a>`
-<a class="l" name="235" href="#235">235</a>			<b>if</b> [ <span class="s">&quot;<a href="/source/s?refs=%22%24nfiles%22">$nfiles</a>&quot;</span> -eq <span class="n">1</span> ]; <b>then</b>
+<a class="l" name="235" href="#235">235</a>			<b>if</b> [ <span class="s">&quot;<a href="/source/s?refs=%24nfiles">$nfiles</a>&quot;</span> -eq <span class="n">1</span> ]; <b>then</b>
 <a class="l" name="236" href="#236">236</a>				<a href="/source/s?defs=msg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">msg</a>=<span class="s">&quot;found 1 flg-related source file&quot;</span>
 <a class="l" name="237" href="#237">237</a>			<b>else</b>
-<a class="l" name="238" href="#238">238</a>				<a href="/source/s?defs=msg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">msg</a>=<span class="s">&quot;found <a href="/source/s?refs=%22%24nfiles%22">$nfiles</a> flg-related source files&quot;</span>
+<a class="l" name="238" href="#238">238</a>				<a href="/source/s?defs=msg" class="intelliWindow-symbol" data-definition-place="undefined-in-file">msg</a>=<span class="s">&quot;found <a href="/source/s?refs=%24nfiles">$nfiles</a> flg-related source files&quot;</span>
 <a class="l" name="239" href="#239">239</a>			<b>fi</b>
-<a class="hl" name="240" href="#240">240</a>			<a class="d intelliWindow-symbol" href="#timeinfo" data-definition-place="defined-in-file">timeinfo</a> <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>: <a href="/source/s?refs=%22%24msg%22">$msg</a>&quot;</span>
+<a class="hl" name="240" href="#240">240</a>			<a class="d intelliWindow-symbol" href="#timeinfo" data-definition-place="defined-in-file">timeinfo</a> <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>: <a href="/source/s?refs=%24msg">$msg</a>&quot;</span>
 <a class="l" name="241" href="#241">241</a>		<b>fi</b>
 <a class="l" name="242" href="#242">242</a>	<b>fi</b>
 <a class="l" name="243" href="#243">243</a>
 <a class="l" name="244" href="#244">244</a>	<span class="c">#</span>
 <a class="l" name="245" href="#245">245</a>	<span class="c"># Build or clobber all of the requested cross-references.</span>
 <a class="l" name="246" href="#246">246</a>	<span class="c">#</span>
-<a class="l" name="247" href="#247">247</a>	<b>for</b> <a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a> <b>in</b> <a href="/source/s?defs=%22%24xrefs%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$xrefs</a>; <b>do</b>
-<a class="l" name="248" href="#248">248</a>		<b>if</b> [ -n <span class="s">&quot;<a href="/source/s?refs=%22%24clobber%22">$clobber</a>&quot;</span> ]; <b>then</b>
-<a class="l" name="249" href="#249">249</a>			<a class="d intelliWindow-symbol" href="#info" data-definition-place="defined-in-file">info</a> <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>: clobbering <a href="/source/s?refs=%22%24xref%22">$xref</a> cross-reference&quot;</span>
-<a class="hl" name="250" href="#250">250</a>			<a href="/source/s?defs=%22%24MAKE%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%22%24XREFMK%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a>.${<a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a>}.<a href="/source/s?defs=clobber" class="intelliWindow-symbol" data-definition-place="undefined-in-file">clobber</a> &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a> ||
-<a class="l" name="251" href="#251">251</a> 			    <a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>: cannot clobber <a href="/source/s?refs=%22%24xref%22">$xref</a> cross-reference&quot;</span>
+<a class="l" name="247" href="#247">247</a>	<b>for</b> <a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a> <b>in</b> <a href="/source/s?defs=%24xrefs" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$xrefs</a>; <b>do</b>
+<a class="l" name="248" href="#248">248</a>		<b>if</b> [ -n <span class="s">&quot;<a href="/source/s?refs=%24clobber">$clobber</a>&quot;</span> ]; <b>then</b>
+<a class="l" name="249" href="#249">249</a>			<a class="d intelliWindow-symbol" href="#info" data-definition-place="defined-in-file">info</a> <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>: clobbering <a href="/source/s?refs=%24xref">$xref</a> cross-reference&quot;</span>
+<a class="hl" name="250" href="#250">250</a>			<a href="/source/s?defs=%24MAKE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%24XREFMK" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a>.${<a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a>}.<a href="/source/s?defs=clobber" class="intelliWindow-symbol" data-definition-place="undefined-in-file">clobber</a> &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a> ||
+<a class="l" name="251" href="#251">251</a> 			    <a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>: cannot clobber <a href="/source/s?refs=%24xref">$xref</a> cross-reference&quot;</span>
 <a class="l" name="252" href="#252">252</a>			<b>continue</b>
 <a class="l" name="253" href="#253">253</a>		<b>fi</b>
 <a class="l" name="254" href="#254">254</a>
 <a class="l" name="255" href="#255">255</a>		<a href="/source/s?defs=SECONDS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">SECONDS</a>=<span class="n">0</span>
-<a class="l" name="256" href="#256">256</a>		<a class="d intelliWindow-symbol" href="#info" data-definition-place="defined-in-file">info</a> <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>: building <a href="/source/s?refs=%22%24xref%22">$xref</a> cross-reference&quot;</span>
-<a class="l" name="257" href="#257">257</a>		<a href="/source/s?defs=%22%24MAKE%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%22%24XREFMK%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a>.${<a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a>} &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a> ||
-<a class="l" name="258" href="#258">258</a>		    <a class="d intelliWindow-symbol" href="#fail" data-definition-place="defined-in-file">fail</a> <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>: cannot build <a href="/source/s?refs=%22%24xref%22">$xref</a> cross-reference&quot;</span>
-<a class="l" name="259" href="#259">259</a>		<a class="d intelliWindow-symbol" href="#timeinfo" data-definition-place="defined-in-file">timeinfo</a> <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>: built <a href="/source/s?refs=%22%24xref%22">$xref</a> cross-reference&quot;</span>
+<a class="l" name="256" href="#256">256</a>		<a class="d intelliWindow-symbol" href="#info" data-definition-place="defined-in-file">info</a> <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>: building <a href="/source/s?refs=%24xref">$xref</a> cross-reference&quot;</span>
+<a class="l" name="257" href="#257">257</a>		<a href="/source/s?defs=%24MAKE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%24XREFMK" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a>.${<a href="/source/s?defs=xref" class="intelliWindow-symbol" data-definition-place="undefined-in-file">xref</a>} &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a> ||
+<a class="l" name="258" href="#258">258</a>		    <a class="d intelliWindow-symbol" href="#fail" data-definition-place="defined-in-file">fail</a> <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>: cannot build <a href="/source/s?refs=%24xref">$xref</a> cross-reference&quot;</span>
+<a class="l" name="259" href="#259">259</a>		<a class="d intelliWindow-symbol" href="#timeinfo" data-definition-place="defined-in-file">timeinfo</a> <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>: built <a href="/source/s?refs=%24xref">$xref</a> cross-reference&quot;</span>
 <a class="hl" name="260" href="#260">260</a> 	<b>done</b>
 <a class="l" name="261" href="#261">261</a>
-<a class="l" name="262" href="#262">262</a>	<a href="/source/s?defs=%22%24MAKE%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%22%24XREFMK%22" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?path=xref.clean">xref.clean</a> &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a> ||
-<a class="l" name="263" href="#263">263</a>	    <a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;<a href="/source/s?refs=%22%24reldir%22">$reldir</a>: cannot clean up temporary files&quot;</span>
+<a class="l" name="262" href="#262">262</a>	<a href="/source/s?defs=%24MAKE" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$MAKE</a> -e -f <a href="/source/s?defs=%24XREFMK" class="intelliWindow-symbol" data-definition-place="undefined-in-file">$XREFMK</a> <a href="/source/s?path=xref.clean">xref.clean</a> &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a> ||
+<a class="l" name="263" href="#263">263</a>	    <a class="d intelliWindow-symbol" href="#warn" data-definition-place="defined-in-file">warn</a> <span class="s">&quot;<a href="/source/s?refs=%24reldir">$reldir</a>: cannot clean up temporary files&quot;</span>
 <a class="l" name="264" href="#264">264</a>	<b>cd</b> - &gt; /<a href="/source/s?path=/dev/">dev</a>/<a href="/source/s?path=/dev/null">null</a>
 <a class="l" name="265" href="#265">265</a><b>done</b>
 <a class="l" name="266" href="#266">266</a><b>exit</b> <span class="n">0</span>

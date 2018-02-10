@@ -25,6 +25,7 @@
 package org.opengrok.indexer.search;
 
 import java.io.File;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -413,23 +414,29 @@ public class QueryBuilder {
      * @param query the query string to escape
      * @return the escaped query string
      */
-    @SuppressWarnings("fallthrough")
     private String escapeQueryString(String field, String query) {
+        StringReader reader = new StringReader(query);
+        StringBuilder res = new StringBuilder();
         switch (field) {
             case FULL:
-                // The free text field may contain terms qualified with other
-                // field names, so we don't escape single colons.
-                return query.replace("::", "\\:\\:");
+                FullQueryEscaper fesc = new FullQueryEscaper(reader);
+                fesc.setOut(res);
+                fesc.consume();
+                break;
             case PATH:
-                // workaround for replacing / with escaped / - needed since lucene 4.x
                 if (!(query.startsWith("/") && query.endsWith("/"))) {
-                    return (query.replace(":", "\\:")).replace("/", "\\/");
+                    PathQueryEscaper pesc = new PathQueryEscaper(reader);
+                    pesc.setOut(res);
+                    pesc.consume();
+                    break;
                 }
-            // Other fields shouldn't use qualified terms, so escape colons
-            // so that we can search for them.
+                // FALLTHROUGH
             default:
-                return query.replace(":", "\\:");
+                DefaultQueryEscaper desc = new DefaultQueryEscaper(reader);
+                desc.setOut(res);
+                desc.consume();
         }
+        return res.toString();
     }
 
     /**
