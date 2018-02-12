@@ -19,8 +19,8 @@
 
 /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
- *
  * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
 /**
@@ -1439,9 +1439,11 @@ function init_tablesorter() {
     $("#dirlist").tablesorter({
         sortList: [[0, 0]],
         cancelSelection: true,
+        sortInitialOrder: "desc",
         headers: {
             1: {
-                sorter: 'text'
+                sorter: 'text',
+                sortInitialOrder: "asc"
             },
             3: {
                 sorter: 'dates'

@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.web;
 
@@ -1396,20 +1397,40 @@ public final class PageConfig {
      * @return a search helper.
      */
     public SearchHelper prepareSearch() {
-        SearchHelper sh = new SearchHelper();
-        sh.dataRoot = getDataRoot(); // throws Exception if none-existent
+        SearchHelper sh = prepareInternalSearch();
+
         List<SortOrder> sortOrders = getSortOrder();
         sh.order = sortOrders.isEmpty() ? SortOrder.RELEVANCY : sortOrders.get(0);
+
         if (getRequestedProjects().isEmpty() && getEnv().hasProjects()) {
             sh.errorMsg = "You must select a project!";
             return sh;
         }
-        sh.builder = getQueryBuilder();
+
         if (sh.builder.getSize() == 0) {
             // Entry page show the map
             sh.redirect = req.getContextPath() + '/';
             return sh;
         }
+
+        return sh;
+    }
+
+    /**
+     * Prepare a search helper with required settings for an internal search.
+     * <p>
+     * NOTE: One should check the {@link SearchHelper#errorMsg} as well as
+     * {@link SearchHelper#redirect} and take the appropriate action before
+     * executing the prepared query or continue processing.
+     * <p>
+     * This method stops populating fields as soon as an error occurs.
+     * @return a search helper.
+     */
+    public SearchHelper prepareInternalSearch() {
+        SearchHelper sh = new SearchHelper();
+        sh.dataRoot = getDataRoot(); // throws Exception if none-existent
+        sh.order = SortOrder.RELEVANCY;
+        sh.builder = getQueryBuilder();
         sh.start = getSearchStart();
         sh.maxItems = getSearchMaxItems();
         sh.contextPath = req.getContextPath();

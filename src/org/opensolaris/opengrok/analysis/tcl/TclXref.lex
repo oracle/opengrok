@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
   private int braceCount;
 
@@ -81,6 +82,17 @@ import org.opensolaris.opengrok.web.HtmlConsts;
           }
       }
   }
+
+  protected void chkLOC() {
+      switch (yystate()) {
+          case COMMENT:
+          case SCOMMENT:
+              break;
+          default:
+              phLOC();
+              break;
+      }
+  }
 %}
 
 File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
@@ -95,6 +107,7 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 <YYINITIAL>{
 
  [\{]    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     ++braceCount;
     yypush(BRACES);
@@ -103,11 +116,13 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
 <YYINITIAL, BRACES> {
  {Number}    {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
  \"     {
+    chkLOC();
     yypush(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -118,15 +133,18 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
     onNonSymbolMatched(yytext(), yychar);
  }
  {WordOperators}    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <YYINITIAL, STRING, BRACES> {
     {Backslash_sub}    {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
     }
     {Backslash_nl}    {
+        chkLOC();
         String capture = yytext();
         String esc = capture.substring(0, 1);
         String whsp = capture.substring(1);
@@ -134,6 +152,7 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
         writeWhitespace(whsp);
     }
     {Varsub1}    {
+        chkLOC();
         String capture = yytext();
         String sigil = capture.substring(0, 1);
         String name = capture.substring(1);
@@ -141,6 +160,7 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
         onFilteredSymbolMatched(name, yychar, Consts.kwd);
     }
     {Varsub2}    {
+        chkLOC();
         // TclXref could get away without VARSUB2 as a state, but for ease in
         // comparing to TclSymbolTokenizer, it is modeled here too.
         yypush(VARSUB2);
@@ -156,6 +176,7 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
         onNonSymbolMatched("(", yychar);
     }
     {Varsub3}    {
+        chkLOC();
         String capture = yytext();
         String sigil = capture.substring(0, 2);
         String name = capture.substring(2, capture.length() - 1);
@@ -168,6 +189,7 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
 <VARSUB2> {
     {name_unit}+    {
+        chkLOC();
         String name2 = yytext();
         yypop();
         onFilteredSymbolMatched(name2, yychar, Consts.kwd);
@@ -176,6 +198,7 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
 <YYINITIAL, BRACES> {
     {OrdinaryWord}    {
+        chkLOC();
         String id = yytext();
         onFilteredSymbolMatched(id, yychar, Consts.kwd);
     }
@@ -183,6 +206,7 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
 <STRING> {
  \"     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -190,12 +214,14 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
 <BRACES> {
     [\}]    {
+        chkLOC();
         if (--braceCount == 0) {
             yypop();
         }
         onNonSymbolMatched(yytext(), yychar);
     }
     [\{]    {
+        chkLOC();
         ++braceCount;
         onNonSymbolMatched(yytext(), yychar);
     }
@@ -210,25 +236,31 @@ File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, BRACES> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, SCOMMENT> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+    chkLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {BrowseableURI}    {
+          chkLOC();
           onUriMatched(yytext(), yychar);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }

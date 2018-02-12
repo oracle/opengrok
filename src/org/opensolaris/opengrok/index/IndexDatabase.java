@@ -112,6 +112,8 @@ public class IndexDatabase {
     private static final Comparator<File> FILENAME_COMPARATOR =
         (File p1, File p2) -> p1.getName().compareTo(p2.getName());
 
+    private final Object INSTANCE_LOCK = new Object();
+
     private Project project;
     private FSDirectory indexDirectory;    
     private IndexWriter writer;
@@ -273,7 +275,7 @@ public class IndexDatabase {
 
     @SuppressWarnings("PMD.CollapsibleIfStatements")
     private void initialize() throws IOException {
-        synchronized (this) {
+        synchronized (INSTANCE_LOCK) {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             File indexDir = new File(env.getDataRootFile(), INDEX_DIR);            
             if (project != null) {
@@ -810,7 +812,7 @@ public class IndexDatabase {
         return !RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
     }
 
-    boolean accept(File parent, File file) {
+    private boolean accept(File parent, File file) {
         try {
             File f1 = parent.getCanonicalFile();
             File f2 = file.getCanonicalFile();
@@ -1156,8 +1158,8 @@ public class IndexDatabase {
      */
     public Set<String> getFiles() throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter;
-        Terms terms = null;
+        TermsEnum iter = null;
+        Terms terms;
         Set<String> files = new HashSet<>();
 
         try {
@@ -1166,8 +1168,8 @@ public class IndexDatabase {
             if (numDocs > 0) {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.U);
+                iter = terms.iterator(); // init uid iterator
             }
-            iter = terms.iterator(); // init uid iterator
             while (iter != null && iter.term() != null) {
                 files.add(Util.uid2url(iter.term().utf8ToString()));
                 BytesRef next = iter.next();
@@ -1246,8 +1248,8 @@ public class IndexDatabase {
 
     public void listTokens(int freq) throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter;
-        Terms terms = null;         
+        TermsEnum iter = null;
+        Terms terms;
 
         try {
             ireader = DirectoryReader.open(indexDirectory);
@@ -1255,8 +1257,8 @@ public class IndexDatabase {
             if (numDocs > 0) {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.DEFS);
+                iter = terms.iterator(); // init uid iterator
             }
-            iter = terms.iterator(); // init uid iterator            
             while (iter != null && iter.term() != null) {
                 //if (iter.term().field().startsWith("f")) {
                 if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
@@ -1264,9 +1266,6 @@ public class IndexDatabase {
                 }
                 BytesRef next = iter.next();
                 if (next==null) {iter=null;}
-                /*} else {
-                 break;
-                 }*/
             }
         } finally {
 

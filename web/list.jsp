@@ -46,8 +46,13 @@ org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
 org.opensolaris.opengrok.analysis.FileAnalyzerFactory,
 org.opensolaris.opengrok.history.Annotation,
 org.opensolaris.opengrok.index.IndexDatabase,
+org.opensolaris.opengrok.search.DirectoryEntry,
+org.opensolaris.opengrok.search.DirectoryExtraReader,
+org.opensolaris.opengrok.search.FileExtra,
+org.opensolaris.opengrok.util.FileExtraZipper,
 org.opensolaris.opengrok.util.IOUtils,
-org.opensolaris.opengrok.web.DirectoryListing"
+org.opensolaris.opengrok.web.DirectoryListing,
+org.opensolaris.opengrok.web.SearchHelper"
 %><%
 {
     // need to set it here since requesting parameters
@@ -113,9 +118,29 @@ document.pageReady.push(function() { pageReadyList();});
         DirectoryListing dl = new DirectoryListing(cfg.getEftarReader());
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
-            List<String> readMes = dl.listTo(
+            List<FileExtra> extras = null;
+            if (activeProject != null) {
+                SearchHelper searchHelper = cfg.prepareInternalSearch();
+                // N.b. searchHelper.destroy() is called via
+                // WebappListener.requestDestroyed() on presence of the
+                // following REQUEST_ATTR.
+                request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
+                searchHelper.prepareExec(activeProject);
+
+                if (searchHelper.searcher != null) {
+                    DirectoryExtraReader extraReader =
+                        new DirectoryExtraReader();
+                    extras = extraReader.search(searchHelper.searcher, path);
+                }
+            }
+
+            FileExtraZipper zipper = new FileExtraZipper();
+            List<DirectoryEntry> entries = zipper.zip(resourceFile, files,
+                extras);
+
+            List<String> readMes = dl.extraListTo(
                     Util.URIEncodePath(request.getContextPath()),
-                    resourceFile, out, path, files);
+                    resourceFile, out, path, entries);
             File[] catfiles = cfg.findDataFiles(readMes);
             for (int i=0; i < catfiles.length; i++) {
                 if (catfiles[i] == null) {

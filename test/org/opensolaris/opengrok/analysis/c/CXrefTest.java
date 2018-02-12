@@ -29,19 +29,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import org.junit.Test;
 
+import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.opensolaris.opengrok.analysis.CtagsReader;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link CXref} class.
@@ -51,28 +52,27 @@ public class CXrefTest {
     @Test
     public void sampleTest() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             "org/opensolaris/opengrok/analysis/c/sample.c");
         assertNotNull("though sample.c should stream,", res);
-        writeCXref(res, new PrintStream(baos));
+        int actLOC = writeCXref(res, new PrintStream(baos));
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
             "org/opensolaris/opengrok/analysis/c/c_xrefres.html");
         assertNotNull("c_xrefres.html should stream,", exp);
-        copyStream(exp, baosExp);
+        byte[] expbytes = copyStream(exp);
         exp.close();
-        baosExp.close();
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
-        String estr = new String(baosExp.toByteArray(), "UTF-8");
+        String estr = new String(expbytes, "UTF-8");
         assertLinesEqual("C xref", estr, ostr);
+        assertEquals("C LOC", 52, actLOC);
     }
 
-    private void writeCXref(InputStream iss, PrintStream oss)
+    private int writeCXref(InputStream iss, PrintStream oss)
         throws IOException {
 
         oss.print(getHtmlBegin());
@@ -85,22 +85,11 @@ public class CXrefTest {
         wargs.setDefs(getTagsDefinitions());
         analyzer.setScopesEnabled(true);
         analyzer.setFoldingEnabled(true);
-        analyzer.writeXref(wargs);
+        Xrefer xref = analyzer.writeXref(wargs);
 
         oss.print(sw.toString());
         oss.print(getHtmlEnd());
-    }
-
-    private void copyStream(InputStream iss, OutputStream oss)
-        throws IOException {
-        byte buffer[] = new byte[8192];
-        int read;
-        do {
-            read = iss.read(buffer, 0, buffer.length);
-            if (read > 0) {
-                oss.write(buffer, 0, read);
-            }
-        } while (read >= 0);
+        return xref.getLOC();
     }
 
     private Definitions getTagsDefinitions() throws IOException {

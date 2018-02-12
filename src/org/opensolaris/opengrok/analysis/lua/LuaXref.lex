@@ -47,6 +47,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     int bracketLevel;
 
@@ -60,6 +61,17 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     public void yypop() throws IOException {
         onDisjointSpanChanged(null, yychar);
         super.yypop();
+    }
+
+    protected void chkLOC() {
+        switch (yystate()) {
+            case COMMENT:
+            case SCOMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
     }
 %}
 
@@ -75,20 +87,24 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 %%
 <YYINITIAL> {
     {Identifier} {
+        chkLOC();
         String id = yytext();
         onFilteredSymbolMatched(id, yychar, Consts.kwd);
     }
     {Number}     {
+        chkLOC();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
         onDisjointSpanChanged(null, yychar);
     }
     \"           {
+        chkLOC();
         yypush(STRING);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
     }
     "[" [=]* "["    {
+        chkLOC();
         String capture = yytext();
         bracketLevel = LuaUtils.countOpeningLongBracket(capture);
         yypush(LSTRING);
@@ -96,6 +112,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
         onNonSymbolMatched(capture, yychar);
     }
     \'           {
+        chkLOC();
         yypush(QSTRING);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
@@ -116,6 +133,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 }
 
 "<" ({File}|{FPath}) ">" {
+    chkLOC();
     onNonSymbolMatched("<", yychar);
     String path = yytext();
     path = path.substring(1, path.length() - 1);
@@ -125,8 +143,9 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 
 <STRING> {
     \\[\"\\] |
-    \" {WhspChar}+ \"    { onNonSymbolMatched(yytext(), yychar); }
+    \" {WhspChar}+ \"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
     \"    {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
@@ -134,8 +153,9 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 
 <QSTRING> {
     \\[\'\\] |
-    \' {WhspChar}+ \'    { onNonSymbolMatched(yytext(), yychar); }
+    \' {WhspChar}+ \'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
     \'    {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
@@ -143,6 +163,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 
 <LSTRING, COMMENT> {
     "]" [=]* "]"    {
+        chkLOC();
         String capture = yytext();
         onNonSymbolMatched(capture, yychar);
         if (LuaUtils.isClosingLongBracket(capture, bracketLevel)) yypop();
@@ -174,27 +195,35 @@ File = [a-zA-Z]{FNameChar}* "." ([Ll][Uu][Aa] | [Tt][Xx][Tt] |
 
 <YYINITIAL, STRING, LSTRING, COMMENT, SCOMMENT, QSTRING> {
     {WhspChar}*{EOL}   { onEndOfLineMatched(yytext(), yychar); }
-    [^\n]              { onNonSymbolMatched(yytext(), yychar); }
+    [[\s]--[\n]]       { onNonSymbolMatched(yytext(), yychar); }
+    [^\n]              { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, LSTRING, COMMENT, SCOMMENT, QSTRING> {
-    {FPath}    { onPathlikeMatched(yytext(), '/', false, yychar); }
+    {FPath}    {
+        chkLOC();
+        onPathlikeMatched(yytext(), '/', false, yychar);
+    }
     {File} {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
     }
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+        chkLOC();
         onEmailAddressMatched(yytext(), yychar);
     }
 }
 
 <STRING, LSTRING, COMMENT, SCOMMENT> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }
 <QSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
     }
 }

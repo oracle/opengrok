@@ -109,6 +109,14 @@ public class JFlexTokenizer extends Tokenizer
     }
 
     /**
+     * Does nothing.
+     * @param evt ignored
+     */
+    @Override
+    public void sourceCodeSeen(SourceCodeSeenEvent evt) {
+    }
+
+    /**
      * Clears, and then resets the instance's attributes per the specified
      * arguments.
      * @param str the matched symbol

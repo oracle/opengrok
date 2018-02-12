@@ -140,6 +140,7 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 %%
 <YYINITIAL> {
     {Identifier}    {
+        h.chkLOC();
         String id = yytext();
         if (offerSymbol(id, 0, false) && returnOnSymbol()) {
             return yystate();
@@ -147,14 +148,17 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
     }
 
     {Character_literal}    {
+        h.chkLOC();
         h.takeLiteral(yytext(), HtmlConsts.STRING_CLASS);
     }
 
     {Numeric_literal}    {
+        h.chkLOC();
         h.takeLiteral(yytext(), HtmlConsts.NUMBER_CLASS);
     }
 
     {String_literal}    {
+        h.chkLOC();
         h.takeLiteral(yytext(), HtmlConsts.STRING_CLASS);
     }
 
@@ -181,8 +185,13 @@ File = [a-zA-Z]{FNameChar}* "." {FileExt}
 }
 
 <YYINITIAL, SCOMMENT> {
-    // Only one whitespace char at a time -- thus only one character at a time
+    // Only one whitespace char at a time
+    [[\s]--[\n\r]]    {
+        offer(yytext());
+    }
+    // Only one character at a time because of \s restriction above.
     [^\n\r]    {
+        h.chkLOC();
         offer(yytext());
     }
 }

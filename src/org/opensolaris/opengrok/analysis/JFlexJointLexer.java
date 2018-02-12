@@ -79,4 +79,10 @@ public interface JFlexJointLexer extends JFlexStackingLexer {
      * @throws IOException if an output error occurs
      */
     void disjointSpan(String className) throws IOException;
+
+    /**
+     * Indicates that eligible source code was encountered for physical
+     * lines-of-code count (physical LOC).
+     */
+    void phLOC();
 }

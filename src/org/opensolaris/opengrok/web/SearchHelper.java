@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner. 
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.web;
 
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -322,6 +324,18 @@ public class SearchHelper {
             errorMsg = e.getMessage();
         }
         return this;
+    }
+
+    /**
+     * Calls {@link #prepareExec(java.util.SortedSet)} with a single-element
+     * set for {@code project}.
+     * @param project a defined instance
+     * @return this instance
+     */
+    public SearchHelper prepareExec(Project project) {
+        SortedSet<String> oneProject = new TreeSet<>();
+        oneProject.add(project.getName());
+        return prepareExec(oneProject);
     }
 
     /**

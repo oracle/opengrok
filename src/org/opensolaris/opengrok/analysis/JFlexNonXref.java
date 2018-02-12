@@ -76,6 +76,15 @@ public abstract class JFlexNonXref extends JFlexStateStacker
     private int scopeLevel;
 
     /**
+     * The following field is set to {@code true} (via {@link #phLOC()}) when
+     * applicable during lexing before a call to {@link #startNewLine()} so
+     * that the lines-of-code count is also incremented.
+     */
+    protected boolean didSeePhysicalLOC;
+
+    protected int loc;
+
+    /**
      * See {@link RuntimeEnvironment#getUserPage()}. Per default initialized in
      * the constructor and here to be consistent and avoid lot of unnecessary
      * lookups.
@@ -137,12 +146,22 @@ public abstract class JFlexNonXref extends JFlexStateStacker
         super.reset();
 
         annotation = null;
+        didSeePhysicalLOC = false;
         disjointSpanClassName = null;
+        loc = 0;
         scopes = new Scopes();
         scope = null;
         scopeLevel = 0;
         scopeOpen = false;
+        setLineNumber(1);
     }
+
+    /**
+     * Gets the document physical lines-of-code count.
+     * @return a number greater than or equal to 0
+     */
+    @Override
+    public int getLOC() { return loc; }
 
     @Override
     public void setAnnotation(Annotation annotation) {
@@ -177,6 +196,11 @@ public abstract class JFlexNonXref extends JFlexStateStacker
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = foldingEnabled;
     }
+
+    /**
+     * Sets a value indicating that a physical line-of-code was encountered.
+     */
+    protected void phLOC() { didSeePhysicalLOC = true; }
 
     /**
      * Calls {@link #appendLink(java.lang.String, boolean)} with {@code url}
@@ -346,6 +370,11 @@ public abstract class JFlexNonXref extends JFlexStateStacker
         int line = getLineNumber();
         boolean skipNl = false;
         setLineNumber(line + 1);
+
+        if (didSeePhysicalLOC) {
+            ++loc;
+            didSeePhysicalLOC = false;
+        }
 
         if (scopesEnabled) {
             startScope();

@@ -28,16 +28,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link PerlXref} class.
@@ -47,41 +49,41 @@ public class PerlXrefTest {
     @Test
     public void sampleTest() throws IOException {
         writeAndCompare("org/opensolaris/opengrok/analysis/perl/sample.pl",
-            "org/opensolaris/opengrok/analysis/perl/samplexrefres.html");
+            "org/opensolaris/opengrok/analysis/perl/samplexrefres.html", 258);
     }
 
     @Test
     public void shouldCloseTruncateStringSpan() throws IOException {
         writeAndCompare("org/opensolaris/opengrok/analysis/perl/truncated.pl",
-            "org/opensolaris/opengrok/analysis/perl/truncated_xrefres.html");
+            "org/opensolaris/opengrok/analysis/perl/truncated_xrefres.html",
+            1);
     }
 
-    private void writeAndCompare(String sourceResource, String resultResource)
-        throws IOException {
+    private void writeAndCompare(String sourceResource, String resultResource,
+        int expLOC) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             sourceResource);
         assertNotNull(sourceResource + " should get-as-stream", res);
-        writePerlXref(res, new PrintStream(baos));
+        int actLOC = writePerlXref(res, new PrintStream(baos));
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
             resultResource);
         assertNotNull(resultResource + " should get-as-stream", exp);
-        copyStream(exp, baosExp);
+        byte[] expbytes = copyStream(exp);
         exp.close();
-        baosExp.close();
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
-        String estr = new String(baosExp.toByteArray(), "UTF-8");
+        String estr = new String(expbytes, "UTF-8");
         assertLinesEqual("Perl xref", estr, ostr);
+        assertEquals("Perl LOC", expLOC, actLOC);
     }
 
-    private void writePerlXref(InputStream iss, PrintStream oss)
+    private int writePerlXref(InputStream iss, PrintStream oss)
         throws IOException {
 
         oss.print(getHtmlBegin());
@@ -89,22 +91,12 @@ public class PerlXrefTest {
         Writer sw = new StringWriter();
         PerlAnalyzerFactory fac = new PerlAnalyzerFactory();
         FileAnalyzer analyzer = fac.getAnalyzer();
-        analyzer.writeXref(new WriteXrefArgs(
+        Xrefer xref = analyzer.writeXref(new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw));
         oss.print(sw.toString());
 
         oss.print(getHtmlEnd());
-    }
-
-    private void copyStream(InputStream iss, OutputStream oss) throws IOException {
-        byte buffer[] = new byte[8192];
-        int read;
-        do {
-            read = iss.read(buffer, 0, buffer.length);
-            if (read > 0) {
-                oss.write(buffer, 0, read);
-            }
-        } while (read >= 0);
+        return xref.getLOC();
     }
 
     private static String getHtmlBegin() {

@@ -20,6 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
+Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page import="javax.servlet.http.HttpServletResponse"%>
@@ -67,6 +68,9 @@ include file="projects.jspf"
     long starttime = System.currentTimeMillis();
 
     SearchHelper searchHelper = cfg.prepareSearch();
+    // N.b. searchHelper.destroy() is called via
+    // WebappListener.requestDestroyed() on presence of the following
+    // REQUEST_ATTR.
     request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
     request.setAttribute("search.jsp-query-start-time", starttime);
     searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();

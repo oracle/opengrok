@@ -23,24 +23,37 @@
 
 package org.opensolaris.opengrok.analysis;
 
-// "How do I make a Class extend Observable when it has extended another class too?"
-// Answered by adamski, https://stackoverflow.com/users/127479/adamski,
-// https://stackoverflow.com/a/1658735/933163,
-// https://stackoverflow.com/questions/1658702/how-do-i-make-a-class-extend-observable-when-it-has-extended-another-class-too
-
 /**
- * Represents an API for a listener for {@link SymbolMatchedEvent}s.
+ * Represents an event raised when a language lexer has seen source code.
  */
-public interface SymbolMatchedListener {
-    /**
-     * Receives an event instance.
-     * @param evt the event
-     */
-    void symbolMatched(SymbolMatchedEvent evt);
+public class SourceCodeSeenEvent {
+
+    private final Object source;
+    private final int position;
 
     /**
-     * Receives an event instance.
-     * @param evt the event
+     * Initializes an immutable instance of {@link SourceCodeSeenEvent}.
+     * @param source the event source
+     * @param position the text position
      */
-    void sourceCodeSeen(SourceCodeSeenEvent evt);
+    public SourceCodeSeenEvent(Object source, int position) {
+        this.source = source;
+        this.position = position;
+    }
+
+    /**
+     * Gets the event source.
+     * @return the initial value
+     */
+    public Object getSource() {
+        return source;
+    }
+
+    /**
+     * Gets the text position.
+     * @return the initial value
+     */
+    public int getPosition() {
+        return position;
+    }
 }

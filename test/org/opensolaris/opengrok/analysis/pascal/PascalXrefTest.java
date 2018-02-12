@@ -38,7 +38,9 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
@@ -51,26 +53,25 @@ public class PascalXrefTest {
     public void sampleTest() throws IOException {
         writeAndCompare("org/opensolaris/opengrok/analysis/pascal/sample.pas",
             "org/opensolaris/opengrok/analysis/pascal/sample_xref.html",
-            getTagsDefinitions());
+            getTagsDefinitions(), 423);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare("org/opensolaris/opengrok/analysis/pascal/truncated.pas",
             "org/opensolaris/opengrok/analysis/pascal/truncated_xref.html",
-            null);
+            null, 1);
     }
 
     private void writeAndCompare(String sourceResource, String resultResource,
-        Definitions defs)
-            throws IOException {
+        Definitions defs, int expLOC) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             sourceResource);
         assertNotNull(sourceResource + " should get-as-stream", res);
-        writePascalXref(new PrintStream(baos), res, defs);
+        int actLOC = writePascalXref(new PrintStream(baos), res, defs);
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
@@ -87,11 +88,11 @@ public class PascalXrefTest {
         String expected[] = estr.split("\n");
 
         assertLinesEqual("Pascal xref", expected, gotten);
+        assertEquals("Pascal LOC", expLOC, actLOC);
     }
 
-    private void writePascalXref(PrintStream oss, InputStream iss,
-        Definitions defs)
-            throws IOException {
+    private int writePascalXref(PrintStream oss, InputStream iss,
+        Definitions defs) throws IOException {
 
         oss.print(getHtmlBegin());
 
@@ -103,10 +104,11 @@ public class PascalXrefTest {
         WriteXrefArgs wargs = new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw);
         wargs.setDefs(defs);
-        analyzer.writeXref(wargs);
+        Xrefer xref = analyzer.writeXref(wargs);
         oss.print(sw.toString());
 
         oss.print(getHtmlEnd());
+        return xref.getLOC();
     }
 
     private Definitions getTagsDefinitions() throws IOException {

@@ -17,8 +17,9 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.web;
 
@@ -339,7 +340,7 @@ public class DirectoryListingTest {
         if (len < 5) {
             return;
         }
-        assertEquals(5, len);
+        assertEquals("list.jsp table <td> count", 7, len);
 
         // item(0) is a decoration placeholder, i.e. no content
         entry.name = getFilename(nl.item(1));

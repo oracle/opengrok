@@ -33,13 +33,14 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 %implements EiffelLexer
 %char
 %init{
-    h = new EiffelLexHelper(VSTRING, this);
+    h = new EiffelLexHelper(VSTRING, SCOMMENT, this);
     yyline = 1;
 %init}
 %unicode
 %ignorecase
 %int
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     private final EiffelLexHelper h;
 

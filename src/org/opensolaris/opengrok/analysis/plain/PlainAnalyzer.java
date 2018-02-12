@@ -127,6 +127,9 @@ public class PlainAnalyzer extends TextAnalyzer {
                     doc.add(new StoredField(QueryBuilder.SCOPES,
                         scopesSerialized));
                 }
+
+                addNumLines(doc, xref.getLineNumber());
+                addLOC(doc, xref.getLOC());
             }
         }
     }
