@@ -34,6 +34,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -271,8 +272,10 @@ public final class PageConfig {
                 ArrayList<String> lines = new ArrayList<>();
                 Project p = getProject();
                 for (int i = 0; i < 2; i++) {
+                    // SRCROOT is read with UTF-8 as a default.
                     try (BufferedReader br = new BufferedReader(
-                            ExpandTabsReader.wrap(IOUtils.createBOMStrippedReader(in[i]), p))) {
+                        ExpandTabsReader.wrap(IOUtils.createBOMStrippedReader(
+                        in[i], StandardCharsets.UTF_8.name()), p))) {
                         String line;
                         while ((line = br.readLine()) != null) {
                             lines.add(line);

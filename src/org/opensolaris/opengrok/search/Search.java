@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -140,7 +141,9 @@ final class Search {
                 System.out.println("Collect the rest (y/n) ?");
                 BufferedReader in;
                 try {
-                    in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
+                    // SRCROOT is read with UTF-8 as a default.
+                    in = new BufferedReader(new InputStreamReader(System.in,
+                        StandardCharsets.UTF_8));
                     String line = in.readLine();
                     if (null == line || line.length() == 0 || line.charAt(0) == 'n') {
                        return;

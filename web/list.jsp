@@ -32,6 +32,7 @@ java.io.InputStream,
 java.io.InputStreamReader,
 java.io.Reader,
 java.net.URLEncoder,
+java.nio.charset.StandardCharsets,
 java.util.ArrayList,
 java.util.Arrays,
 java.util.List,
@@ -190,6 +191,10 @@ document.pageReady.push(function() { pageReadyList();});
     <img src="<%= rawPath %>"/>
 </div><%
                 } else if ( g == Genre.HTML) {
+                    /**
+                     * For backward compatibility, read the OpenGrok-produced
+                     * document using the system default charset.
+                     */
                     r = new InputStreamReader(bin);
                     Util.dump(out, r);
                 } else if (g == Genre.PLAIN) {
@@ -200,7 +205,9 @@ document.pageReady.push(function() { pageReadyList();});
                     // find the definitions in the index.
                     Definitions defs = IndexDatabase.getDefinitions(resourceFile);
                     Annotation annotation = cfg.getAnnotation();
-                    r = IOUtils.createBOMStrippedReader(bin);
+                    // SRCROOT is read with UTF-8 as a default.
+                    r = IOUtils.createBOMStrippedReader(bin,
+                        StandardCharsets.UTF_8.name());
                     AnalyzerGuru.writeXref(a, r, out, defs, annotation,
                         Project.getProject(resourceFile));
     %></pre>
@@ -269,7 +276,9 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                 Annotation annotation = cfg.getAnnotation();
                                 //not needed yet
                                 //annotation.writeTooltipMap(out);
-                                r = IOUtils.createBOMStrippedReader(in);
+                                // SRCROOT is read with UTF-8 as a default.
+                                r = IOUtils.createBOMStrippedReader(in,
+                                    StandardCharsets.UTF_8.name());
                                 AnalyzerGuru.writeXref(a, r, out, defs,
                                     annotation, Project.getProject(resourceFile));
                             } else if (g == Genre.IMAGE) {
@@ -277,6 +286,11 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
         <pre><%
                             } else if (g == Genre.HTML) {
+                                /**
+                                 * For backward compatibility, read the
+                                 * OpenGrok-produced document using the system
+                                 * default charset.
+                                 */
                                 r = new InputStreamReader(in);
                                 Util.dump(out, r);
                             } else {

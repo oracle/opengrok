@@ -30,6 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -453,11 +454,19 @@ public class SearchEngine {
                 if (sourceContext != null) {
                     try {
                         if (Genre.PLAIN == genre && (source != null)) {
-                            hasContext = sourceContext.getContext(new InputStreamReader(new FileInputStream(source
-                                    + filename)), null, null, null, filename,
-                                    tags, nhits > 100, false, ret, scopes);
+                            // SRCROOT is read with UTF-8 as a default.
+                            hasContext = sourceContext.getContext(
+                                new InputStreamReader(new FileInputStream(
+                                source + filename), StandardCharsets.UTF_8),
+                                null, null, null, filename, tags, nhits > 100,
+                                false, ret, scopes);
                         } else if (Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
+                            /**
+                             * For backward compatibility, read the
+                             * OpenGrok-produced document using the system
+                             * default charset.
+                             */
                             try (Reader r = RuntimeEnvironment.getInstance().isCompressXref()
                                     ? new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + Prefix.XREF_P + filename + ".gz")))))
                                     : new HTMLStripCharFilter(new BufferedReader(new FileReader(data + Prefix.XREF_P + filename)))) {

@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -219,7 +220,7 @@ public final class IOUtils {
                 && head[2] == (byte) 0xBF) {
             // InputStreamReader does not properly discard BOM on UTF8 streams,
             // so don't reset the stream.
-            charset = "UTF-8";
+            charset = StandardCharsets.UTF_8.name();
         }
 
         if (charset == null) {

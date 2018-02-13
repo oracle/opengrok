@@ -25,6 +25,7 @@ Portions Copyright 2011 Jens Elkner.
 --%><%@page errorPage="error.jsp" import="
 java.io.FileInputStream,
 java.io.Reader,
+java.nio.charset.StandardCharsets,
 java.util.logging.Level,
 java.util.logging.Logger,
 
@@ -56,8 +57,9 @@ file="mast.jsp"
 %><p><span class="pagetitle">Lines Matching <b><%= tquery %></b></span></p>
 <div id="more" style="line-height:1.5em;">
     <pre><%
-            Reader r = IOUtils.createBOMStrippedReader(
-                    new FileInputStream(cfg.getResourceFile()));
+            // SRCROOT is read with UTF-8 as a default.
+            Reader r = IOUtils.createBOMStrippedReader(new FileInputStream(
+                cfg.getResourceFile()), StandardCharsets.UTF_8.name());
             sourceContext.getContext(r, out,
                 request.getContextPath() + Prefix.XREF_P, null, cfg.getPath(),
                 null, false, false, null, null);

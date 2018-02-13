@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.analysis.sql;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
@@ -54,7 +55,7 @@ public final class Consts {
     {
         String line,lline;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    Consts.class.getResourceAsStream(file), "US-ASCII"))) {
+            Consts.class.getResourceAsStream(file), StandardCharsets.UTF_8))) {
             while ((line = reader.readLine()) != null) {
                 line=line.trim();
                 lline = line.toLowerCase(Locale.US);
