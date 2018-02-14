@@ -757,13 +757,14 @@ public class IndexDatabase {
      */
     private boolean accept(File file) {
 
+        String absolutePath = file.getAbsolutePath();
+
         if (!includedNames.isEmpty()
                 && // the filter should not affect directory names
                 (!(file.isDirectory() || includedNames.match(file)))) {
+            LOGGER.log(Level.FINER, "not including {0}", absolutePath);
             return false;
         }
-
-        String absolutePath = file.getAbsolutePath();
 
         if (ignoredNames.ignore(file)) {
             LOGGER.log(Level.FINER, "ignoring {0}", absolutePath);
@@ -807,7 +808,13 @@ public class IndexDatabase {
         }
 
         // this is an unversioned file, check if it should be indexed
-        return !RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        boolean res = !env.isIndexVersionedFilesOnly();
+        if (!res) {
+            LOGGER.log(Level.FINER, "not accepting unversioned {0}",
+                absolutePath);
+        }
+        return res;
     }
 
     private boolean accept(File parent, File file) {
