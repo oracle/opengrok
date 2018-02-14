@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.pascal;
 
@@ -47,8 +48,8 @@ public class Consts{
         kwd.add( "default" );
         kwd.add( "destructor" );
         kwd.add( "dispinterface" );
-        kwd.add( "div" );
         kwd.add( "dispose" );
+        kwd.add( "div" );
         kwd.add( "do" );
         kwd.add( "double" );
         kwd.add( "downto" );
@@ -103,8 +104,8 @@ public class Consts{
         kwd.add( "set" );
         kwd.add( "shl" );
         kwd.add( "shr" );
-        kwd.add( "string" );
         kwd.add( "strict" );
+        kwd.add( "string" );
         kwd.add( "then" );
         kwd.add( "threadvar" );
         kwd.add( "to" );
@@ -120,5 +121,8 @@ public class Consts{
         kwd.add( "with" );
         kwd.add( "write" );
         kwd.add( "xor" );
+
+        kwd.add("absolute");	// Reconcile w. Turbo Pascal
+        kwd.add("reintroduce");	// Reconcile w. Turbo Pascal
     }
 }

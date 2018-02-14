@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -48,6 +48,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     protected void chkLOC() {
         switch (yystate()) {
             case COMMENT:
+            case PCOMMENT:
             case SCOMMENT:
                 break;
             default:
@@ -57,24 +58,27 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
-
 File = [a-zA-Z]{FNameChar}* "." ("pas"|"properties"|"props"|"xml"|"conf"|"txt"|"htm"|"html"|"ini"|"diff"|"patch")
 
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
-
-%state  STRING COMMENT SCOMMENT QSTRING
+%state COMMENT PCOMMENT SCOMMENT QSTRING
 
 %include Common.lexh
 %include CommonURI.lexh
 %include CommonPath.lexh
+%include Pascal.lexh
 %%
 <YYINITIAL>{
  "begin"    { chkLOC(); onScopeChanged(ScopeAction.INC, yytext(), yychar); }
  "end"      { chkLOC(); onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
  \;         { chkLOC(); onScopeChanged(ScopeAction.END, yytext(), yychar); }
 
-{Identifier} {
+\&{Identifier}    {
+    chkLOC();
+    String id = yytext();
+    onNonSymbolMatched("&", yychar);
+    onSymbolMatched(id.substring(1), yychar + 1);
+}
+{Identifier}    {
     chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.kwd);
@@ -96,43 +100,37 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
     onDisjointSpanChanged(null, yychar);
  }
 
- \"     {
+ {ControlString}    {
     chkLOC();
-    yybegin(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
-    onNonSymbolMatched("\"", yychar);
+    onNonSymbolMatched(yytext(), yychar);
+    onDisjointSpanChanged(null, yychar);
  }
+
  \'     {
     yybegin(QSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
-    onNonSymbolMatched("\'", yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  \{     {
-    yybegin(COMMENT);
+    yypush(COMMENT);
     onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
-    onNonSymbolMatched("{", yychar);
+    onNonSymbolMatched(yytext(), yychar);
+ }
+ "(*"    {
+    yypush(PCOMMENT);
+    onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
  "//"   {
     yybegin(SCOMMENT);
     onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
-    onNonSymbolMatched("//", yychar);
+    onNonSymbolMatched(yytext(), yychar);
  }
-}
-
-<STRING> {
- \" {WhspChar}+ \"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
- \"     {
-    chkLOC();
-    yybegin(YYINITIAL);
-    onNonSymbolMatched("\"", yychar);
-    onDisjointSpanChanged(null, yychar);
- }
- \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <QSTRING> {
- \\[\'\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
- \' {WhspChar}+ \'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
+ \'\'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'     {
     chkLOC();
     yybegin(YYINITIAL);
@@ -143,12 +141,27 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 
 <COMMENT> {
  \}      {
-    yybegin(YYINITIAL);
+    yypop();
     onNonSymbolMatched(yytext(), yychar);
-    onDisjointSpanChanged(null, yychar);
+    if (yystate() == YYINITIAL) onDisjointSpanChanged(null, yychar);
+ }
+ "(*"    {
+    yypush(PCOMMENT);
+    onNonSymbolMatched(yytext(), yychar);
  }
 }
 
+<PCOMMENT> {
+ "*)"    {
+    yypop();
+    onNonSymbolMatched(yytext(), yychar);
+    if (yystate() == YYINITIAL) onDisjointSpanChanged(null, yychar);
+ }
+ \{     {
+    yypush(COMMENT);
+    onNonSymbolMatched(yytext(), yychar);
+ }
+}
 
 <SCOMMENT> {
   {WhspChar}*{EOL} {
@@ -159,13 +172,13 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 }
 
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, COMMENT, PCOMMENT, SCOMMENT, QSTRING> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
  [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
  [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
+<COMMENT, PCOMMENT, SCOMMENT, QSTRING> {
 {FPath}
         { chkLOC(); onPathlikeMatched(yytext(), '/', false, yychar); }
 
@@ -176,14 +189,30 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
         onFilelikeMatched(path, yychar);
  }
 
-{BrowseableURI}    {
-          chkLOC();
-          onUriMatched(yytext(), yychar);
-        }
-
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
           chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
+}
+
+<COMMENT, SCOMMENT> {
+    {BrowseableURI}    {
+        chkLOC();
+        onUriMatched(yytext(), yychar);
+    }
+}
+
+<PCOMMENT> {
+    {BrowseableURI}    {
+        chkLOC();
+        onUriMatched(yytext(), yychar, PascalUtils.END_OLD_PASCAL_COMMENT);
+    }
+}
+
+<QSTRING> {
+    {BrowseableURI}    {
+        chkLOC();
+        onUriMatched(yytext(), yychar, PascalUtils.CHARLITERAL_APOS_DELIMITER);
+    }
 }
