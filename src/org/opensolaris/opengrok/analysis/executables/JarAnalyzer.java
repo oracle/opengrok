@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
@@ -34,6 +35,7 @@ import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -49,6 +51,7 @@ public class JarAnalyzer extends FileAnalyzer {
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        StringBuilder fout = new StringBuilder();
         try (ZipInputStream zis = new ZipInputStream(src.getStream())) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
@@ -60,7 +63,24 @@ public class JarAnalyzer extends FileAnalyzer {
                     xrefOut.append("</b>");
                 }
 
-                doc.add(new TextField("full", ename, Store.NO));
+                /**
+                 * If a FULL field exists already, then append to it.
+                 */
+                useExtantValue(fout, doc, QueryBuilder.FULL);
+                fout.append("// ");
+                fout.append(ename);
+                fout.append("\n");
+
+                /**
+                 * Unlike other analyzers, which rely on the full content
+                 * existing to be accessed at a file system location identified
+                 * by PATH, *.jar and *.class files have virtual content which
+                 * is stored here (Store.YES) for analyzer convenience.
+                 */
+                String fstr = fout.toString();
+                doc.add(new TextField(QueryBuilder.FULL, fstr, Store.YES));
+                fout.setLength(0);
+
                 FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
                 if (fac instanceof JavaClassAnalyzerFactory) {
                     if (xrefOut != null) {
@@ -71,6 +91,15 @@ public class JarAnalyzer extends FileAnalyzer {
                     jca.analyze(doc, new BufferedInputStream(zis), xrefOut);
                 }
             }
+        }
+    }
+
+    private static void useExtantValue(StringBuilder accum, Document doc,
+        String field) {
+        String extantValue = doc.get(field);
+        if (extantValue != null) {
+            doc.removeFields(field);
+            accum.append(extantValue);
         }
     }
 }
