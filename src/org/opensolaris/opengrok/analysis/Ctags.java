@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -298,15 +299,22 @@ public class Ctags {
         }
 
         ctags = processBuilder.start();
-        ctagsIn = new OutputStreamWriter(ctags.getOutputStream());
-        ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream()));
+        ctagsIn = env.isUniversalCtags() ? new OutputStreamWriter(
+            ctags.getOutputStream(), StandardCharsets.UTF_8) :
+            new OutputStreamWriter(ctags.getOutputStream());
+        ctagsOut = new BufferedReader(env.isUniversalCtags() ?
+            new InputStreamReader(ctags.getInputStream(),
+            StandardCharsets.UTF_8) : new InputStreamReader(
+            ctags.getInputStream()));
 
         errThread = new Thread(new Runnable() {
 
             @Override
             public void run() {
                 try (BufferedReader error = new BufferedReader(
-                        new InputStreamReader(ctags.getErrorStream()))) {
+                    env.isUniversalCtags() ? new InputStreamReader(
+                    ctags.getErrorStream(), StandardCharsets.UTF_8) :
+                    new InputStreamReader(ctags.getErrorStream()))) {
                     String s;
                     while ((s = error.readLine()) != null) {
                         if (s.length() > 0) {

@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.analysis;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import org.opensolaris.opengrok.util.IOUtils;
 
 public abstract class TextAnalyzer extends FileAnalyzer {
@@ -76,6 +77,8 @@ public abstract class TextAnalyzer extends FileAnalyzer {
     protected abstract Xrefer newXref(Reader reader);
 
     protected Reader getReader(InputStream stream) throws IOException {
-        return IOUtils.createBOMStrippedReader(stream);
+        // SRCROOT is read with UTF-8 as a default.
+        return IOUtils.createBOMStrippedReader(stream,
+            StandardCharsets.UTF_8.name());
     }
 }

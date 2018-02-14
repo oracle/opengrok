@@ -32,6 +32,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -921,7 +922,8 @@ public class AnalyzerGuru {
 
         String encoding = IOUtils.findBOMEncoding(sig);
         if (encoding == null) {
-            encoding = "UTF-8";
+            // SRCROOT is read with UTF-8 as a default.
+            encoding = StandardCharsets.UTF_8.name();
         } else {
             int skipForBOM = IOUtils.skipForBOM(sig);
             if (in.skip(skipForBOM) < skipForBOM) {

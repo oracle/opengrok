@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -110,12 +111,11 @@ public class MandocRunner {
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
-        String utf8 = "UTF-8";
         Process starting = processBuilder.start();
         OutputStreamWriter inn = new OutputStreamWriter(
-            starting.getOutputStream(), utf8);
+            starting.getOutputStream(), StandardCharsets.UTF_8);
         BufferedReader rdr = new BufferedReader(new InputStreamReader(
-            starting.getInputStream(), utf8));
+            starting.getInputStream(), StandardCharsets.UTF_8));
         InputStream errorStream = starting.getErrorStream();
         mandocIn = inn;
         mandocOut = rdr;
@@ -125,7 +125,7 @@ public class MandocRunner {
             StringBuilder sb1 = new StringBuilder();
             // implicitly capture `errorStream' for the InputStreamReader
             try (final BufferedReader error = new BufferedReader(
-                new InputStreamReader(errorStream))) {
+                new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
                 String s;
                 while ((s = error.readLine()) != null) {
                     sb1.append(s);

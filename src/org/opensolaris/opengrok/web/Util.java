@@ -39,6 +39,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -77,8 +78,6 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 public final class Util {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
-
-    private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private static final int BOLD_COUNT_THRESHOLD = 1000;
 
@@ -902,7 +901,8 @@ public final class Util {
      */
     public static String URIEncode(String q) {
         try {
-            return q == null ? "" : URLEncoder.encode(q, UTF8.name());
+            return q == null ? "" : URLEncoder.encode(q,
+                StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
             // Should not happen. UTF-8 must be supported by JVMs.
             LOGGER.log(
@@ -965,7 +965,7 @@ public final class Util {
         //
         // For now, encode manually the way we want it.
         StringBuilder sb = new StringBuilder(path.length());
-        for (byte b : path.getBytes(UTF8)) {
+        for (byte b : path.getBytes(StandardCharsets.UTF_8)) {
             // URLEncoder's javadoc says a-z, A-Z, ., -, _ and * are safe
             // characters, so we preserve those to make the encoded string
             // shorter and easier to read. We also preserve the separator
@@ -1165,6 +1165,10 @@ public final class Util {
         if (!file.exists()) {
             return false;
         }
+        /**
+         * For backward compatibility, read the OpenGrok-produced document
+         * using the system default charset.
+         */
         try (Reader in = compressed
                 ? new InputStreamReader(new GZIPInputStream(
                         new FileInputStream(file)))
