@@ -904,10 +904,10 @@ public class IndexDatabase {
 
     /**
      * Executes the first, serial stage of indexing, recursively.
-     * <p>Files at least are counted, and if {@code count_only} is false then
-     * any deleted or updated files (based on comparison to the Lucene index)
-     * are passed to {@link #removeFile(boolean)}. New or updated files are
-     * noted for indexing.
+     * <p>Files at least are counted, and any deleted or updated files (based on
+     * comparison to the Lucene index) are passed to
+     * {@link #removeFile(boolean)}. New or updated files are noted for
+     * indexing.
      * @param dir the root indexDirectory to generate indexes for
      * @param parent path to parent directory
      * @param args arguments to control execution and for collecting a list of
