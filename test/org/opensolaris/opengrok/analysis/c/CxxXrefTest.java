@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.c;
@@ -68,7 +68,7 @@ public class CxxXrefTest {
         String ostr = new String(baos.toByteArray(), "UTF-8");
         String estr = new String(expbytes, "UTF-8");
         assertLinesEqual("Cxx xref", estr, ostr);
-        assertEquals("Cxx LOC", 185, actLOC);
+        assertEquals("Cxx LOC", 199, actLOC);
     }
 
     private int writeCxxXref(InputStream iss, PrintStream oss)
