@@ -102,8 +102,10 @@ public class GZIPAnalyzer extends FileAnalyzer {
 
     /**
      * Wrap the raw stream source in one that returns the uncompressed stream.
+     * @param src a defined instance
+     * @return a defined instance
      */
-    private static StreamSource wrap(final StreamSource src) {
+    public static StreamSource wrap(final StreamSource src) {
         return new StreamSource() {
             @Override
             public InputStream getStream() throws IOException {
