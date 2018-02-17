@@ -85,7 +85,8 @@ public class PlainAnalyzer extends TextAnalyzer {
     }
     
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+    public void analyze(Document doc, StreamSource src, Writer xrefOut)
+            throws IOException, InterruptedException {
         Definitions defs = null;
 
         doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
@@ -126,6 +127,9 @@ public class PlainAnalyzer extends TextAnalyzer {
                     doc.add(new StoredField(QueryBuilder.SCOPES,
                         scopesSerialized));
                 }
+
+                addNumLines(doc, xref.getLineNumber());
+                addLOC(doc, xref.getLOC());
             }
         }
     }

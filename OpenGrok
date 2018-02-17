@@ -18,110 +18,13 @@
 # CDDL HEADER END
 
 #
-# OpenGrok Wrapper (initial setup and cron job updating)
-#
-# Supported Operating Systems:
-#   - Solaris 11  (SunOS 5.11)
-#   - Debian      (Linux)
-#
-# Supported Deployment Engines:
-#   - Tomcat 8
-#   - Glassfish
-#   - Resin
-#
-# Supported Environment Variables:
-#   - OPENGROK_NON_INTERACTIVE    Suppress Progress and Warnings Messages (*)
-#   - OPENGROK_STANDARD_ENV       Run Time Shell Environment (Shell Script)
-#   - OPENGROK_CONFIGURATION      User Configuration (Shell Script)
-#
-# Supported Environment Variables for configuring the default setup:
-#   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
-#   - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
-#   - OPENGROK_SRC_ROOT		  directory with files to be indexed
-#   - OPENGROK_DATA_ROOT	  directory where index and cache files are generated
-#   - OPENGROK_CTAGS              Full path to Exuberant or Universal CTags binary
-#   - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
-#                                 options for CTags program (for its --options
-#                                 switch), default is DATA_ROOT/etc/ctags.config
-#   - OPENGROK_MANDOC             Full path to mandoc(1) binary
-#   - JAVA_HOME                   Full Path to Java Installation Root
-#   - JAVA                        Full Path to java binary (to enable 64bit JDK)
-#   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
-#                                 or enabling server JDK)
-#                                 JAVA_OPTS=-Xmx2048m is the default!
-#   - OPENGROK_APP_SERVER         Application Server ("Tomcat", "Glassfish" or "Resin")
-#   - OPENGROK_WAR_TARGET_TOMCAT  Tomcat Specific WAR Target Directory
-#   - OPENGROK_WAR_TARGET_GLASSFISH Glassfish Specific WAR Target Directory
-#   - OPENGROK_WAR_TARGET_RESIN   Resin Specific WAR Target Directory
-#   - OPENGROK_WAR_TARGET         Fallback WAR Target Directory
-#   - OPENGROK_TOMCAT_BASE        Base Directory for Tomcat (contains webapps)
-#   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish
-#                                 (contains domains)
-#   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
-#   - OPENGROK_RESIN_BASE         Base Directory for Resin (contains webapps)
-#   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
-#   - OPENGROK_PROGRESS           Shows progress in %(percentage) of working
-#                                 through project, it's good to have Verbose
-#                                 Mode enabled too, cost of this is one more
-#                                 traversal of the project before indexing it(*)
-#   - OPENGROK_RENAMED_FILES_HISTORY If set to "on", get full history of
-#                                 renamed files for SCMs that support it (Git,
-#                                 Mercurial).
-#                                 The default is off.
-#                                 When set to on, the indexing is slower,
-#                                 especially in the presence of
-#                                 lots of renamed files in the repository.
-#   - OPENGROK_GENERATE_HISTORY   Influence history cache generation
-#                                 Following values are recognized:
-#                                   on		- enabled (default)
-#                                   off		- disabled for indexing and UI
-#                                   dirbased	- indexing enabled only for repos
-#                                              	  which can fetch history for
-#                                                 directory
-#                                   local	- for local repos only
-#                                   uionly	- enabled for UI only
-#   - OPENGROK_ENABLE_PROJECTS    Enable projects (set it to true or false)
-#                                 Every directory in SRC_ROOT is
-#                                   considered a separate project
-#   - OPENGROK_IGNORE_PATTERNS    Set ignored patterns for indexer to skip.
-#                                   OPENGROK_IGNORE_PATTERNS="-i dummy"
-#                                   OPENGROK_IGNORE_PATTERNS="-i f:dummy"
-#                                   OPENGROK_IGNORE_PATTERNS="-i d:dummy"
-#                                   Multiple entries can be joined together:
-#                                     "-i dummy -i d:tmp -i f:dummy"
-#   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
-#   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
-#                                 (by default 3 directories from SRC_ROOT)
-#   - OPENGROK_WEBAPP_CFGADDR     Web app address to send configuration to
-#                                 (use "none" to avoid sending it to web app)
-#   - OPENGROK_WEBAPP_CONTEXT     Context URL of the OpenGrok webapp
-#                                 (by default /source)
-#                                 - FULL reindex is needed once this is used
-#                                 (old already indexed files won't be refreshed)
-#   - OPENGROK_WPREFIX            Disable wildcard prefix search query
-#                                 support (*)
-#   - OPENGROK_TAG                Enable parsing of revision tags into the History
-#                                 view
-#   - OPENGROK_READ_XML_CONFIGURATION file with read only configuration
-#                                 - temporary workaround for bug # 327
-#   - OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 16" - set RAM buffer size for flushing,
-#                                 default is 16MB per thread, you might try to
-#                                 increase it to 256MB, but do increase JVM to
-#                                 4/8/16GB ! Lucene defaults to 8 threads.
-#                                 Increase JVM memory as noted using JAVA_OPTS
-#   - OPENGROK_LOGGER_CONFIG_PATH Set path to custom logging.properties file.
-#   - OPENGROK_SUBVERSION_USERNAME name of the user that should be used for
-#                                 fetching the history from subversion
-#   - OPENGROK_SUBVERSION_PASSWORD password of the user that should be used for
-#                                 fetching the history from subversion
-#
-# Notes:
-#   (*) Any Non-Empty String will enable these options
+# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
-# Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+# opengrok.jar wrapper for initial setup and cron job updating.
+# Please see the Usage() function below for supported environment variables.
 #
 
 #
@@ -133,22 +36,132 @@ Usage()
 
     exec >&2
     echo ""
-    echo "Usage: ${progname} <bootstrap|deploy|update|updateQuietly|updateDesc|usage|help>"
+    echo "Usage: ${progname} <bootstrap|deploy|update|updateQuietly|updateDesc>"
     echo "       ${progname} index [<directory>]"
     echo "       ${progname} indexpart <directory_1> [<directory_2> ..]"
     echo "       ${progname} clearHistory <src_root> <repository_name>"
+    echo "       ${progname} usage|help [--detailed]"
     echo ""
     echo "       The \"indexpart\" assumes that it will be run with configuration"
     echo "       pointed to via the OPENGROK_READ_XML_CONFIGURATION environment"
     echo "       variable."
     echo ""
-    echo "  Optional environment variables:"
-    echo "    OPENGROK_CONFIGURATION - location of your configuration"
-    echo "      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ${0} ... "
-    echo ""
-    echo "    See the code for more information on configuration options /" \
-        "variables"
-    echo ""
+    if [ "$1" != "--detailed" ]; then
+        echo "  Optional environment variables:"
+        echo "    OPENGROK_CONFIGURATION - location of your configuration"
+        echo "      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf \\"
+        echo "               ${0} ... "
+        echo ""
+        echo "    Use help --detailed, or see the code for more information on"
+        echo "    configuration options and variables."
+    else
+        cat <<END
+Supported Environment Variables:
+  - OPENGROK_CONFIGURATION      User Configuration (Shell Script)
+  - OPENGROK_NON_INTERACTIVE    Suppress Progress and Warnings Messages (*)
+  - OPENGROK_STANDARD_ENV       Run Time Shell Environment (Shell Script)
+
+Supported Environment Variables for configuring the default setup:
+  - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
+  - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
+  - OPENGROK_SRC_ROOT		  directory with files to be indexed
+  - OPENGROK_DATA_ROOT          Base Directory where index and cache files are
+                                  generated
+  - OPENGROK_CTAGS              Full path to Exuberant or Universal CTags binary
+  - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
+                                options for CTags program (for its --options
+                                switch), default is DATA_ROOT/etc/ctags.config
+  - OPENGROK_MANDOC             Full path to mandoc(1) binary
+  - OPENGROK_LOCKING            Locking mode on|off|simple|native (default off)
+                                ("on" is an alias for "simple")
+  - JAVA_HOME                   Full Path to Java Installation Root
+  - JAVA                        Full Path to java binary (to enable 64bit JDK)
+  - JAVA_OPTS                   Java options (e.g. for JVM memory increase
+                                or enabling server JDK)
+                                JAVA_OPTS=-Xmx2048m is the default!
+  - OPENGROK_APP_SERVER         Application Server ("Tomcat", "Glassfish" or
+                                "Resin")
+  - OPENGROK_WAR_TARGET_TOMCAT  Tomcat Specific WAR Target Directory
+  - OPENGROK_WAR_TARGET_GLASSFISH Glassfish Specific WAR Target Directory
+  - OPENGROK_WAR_TARGET_RESIN   Resin Specific WAR Target Directory
+  - OPENGROK_WAR_TARGET         Fallback WAR Target Directory
+  - OPENGROK_TOMCAT_BASE        Base Directory for Tomcat (contains webapps)
+  - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish
+                                (contains domains)
+  - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
+  - OPENGROK_RESIN_BASE         Base Directory for Resin (contains webapps)
+  - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
+  - OPENGROK_PROGRESS           Shows progress in %(percentage) of working
+                                through project, it's good to have Verbose
+                                Mode enabled too, cost of this is one more
+                                traversal of the project before indexing it(*)
+  - OPENGROK_RENAMED_FILES_HISTORY If set to "on", get full history of
+                                renamed files for SCMs that support it (Git,
+                                Mercurial).
+                                The default is off.
+                                When set to on, the indexing is slower,
+                                especially in the presence of
+                                lots of renamed files in the repository.
+  - OPENGROK_GENERATE_HISTORY   Influence history cache generation
+                                Following values are recognized:
+                                  on		- enabled (default)
+                                  off		- disabled for indexing and UI
+                                  dirbased	- indexing enabled only for
+                                                  repos which can fetch history
+                                                  for directory
+                                  local		- for local repos only
+                                  uionly	- enabled for UI only
+  - OPENGROK_ENABLE_PROJECTS    Enable projects (set it to true or false)
+                                Every directory in SRC_ROOT is
+                                  considered a separate project
+  - OPENGROK_IGNORE_PATTERNS    Set ignored patterns for indexer to skip.
+                                  OPENGROK_IGNORE_PATTERNS="-i dummy"
+                                  OPENGROK_IGNORE_PATTERNS="-i f:dummy"
+                                  OPENGROK_IGNORE_PATTERNS="-i d:dummy"
+                                  Multiple entries can be joined together:
+                                    "-i dummy -i d:tmp -i f:dummy"
+  - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
+  - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
+                                (by default 3 directories from SRC_ROOT)
+  - OPENGROK_WEBAPP_CFGADDR     Web app address to send configuration to
+                                (use "none" to avoid sending it to web app)
+  - OPENGROK_WEBAPP_CONTEXT     Context URL of the OpenGrok webapp
+                                (by default /source)
+                                - FULL reindex is needed once this is used
+                                (old already indexed files won't be refreshed)
+  - OPENGROK_WPREFIX            Disable wildcard prefix search query
+                                support (*)
+  - OPENGROK_TAG                Enable parsing of revision tags into the History
+                                view
+  - OPENGROK_READ_XML_CONFIGURATION file with read only configuration
+                                - temporary workaround for bug # 327
+  - OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 16" - set RAM buffer size for flushing,
+                                default is 16MB per thread, you might try to
+                                increase it to 256MB, but do increase JVM to
+                                4/8/16GB ! Lucene defaults to 8 threads.
+                                Increase JVM memory as noted using JAVA_OPTS
+  - OPENGROK_PARALLELISM        Default is 0, meaning that parallelism is
+                                  determined from available processors.
+  - OPENGROK_LOGGER_CONFIG_PATH Set path to custom logging.properties file.
+  - OPENGROK_SUBVERSION_USERNAME name of the user that should be used for
+                                fetching the history from subversion
+  - OPENGROK_SUBVERSION_PASSWORD password of the user that should be used for
+                                fetching the history from subversion
+  - OPENGROK_PROFILER           Pause to await user input for profiling.
+
+Notes:
+  (*) Any Non-Empty String will enable these options
+
+Supported Operating Systems:
+  - Solaris 11  (SunOS 5.11)
+  - Debian      (Linux)
+
+Supported Deployment Engines:
+  - Tomcat 8
+  - Glassfish
+  - Resin
+END
+    fi
     exit 1
 }
 
@@ -859,13 +872,16 @@ CommonInvocation()
 	${RENAMED_FILES_HISTORY}					\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
+        ${OPENGROK_LOCKING:+--lock} ${OPENGROK_LOCKING}        		\
         ${OPENGROK_CTAGS:+-c} ${OPENGROK_CTAGS}               		\
         ${OPENGROK_MANDOC:+--mandoc} ${OPENGROK_MANDOC}			\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
+        ${OPENGROK_PARALLELISM:+--threads} ${OPENGROK_PARALLELISM}	\
         ${READ_XML_CONF}                                        	\
         ${WEBAPP_CONFIG}						\
         ${WEBAPP_CONTEXT}						\
+        ${OPENGROK_PROFILER:+--profiler}				\
         "${@}"
 }
 
@@ -911,8 +927,9 @@ UpdateDescriptionCache()
 
 OpenGrokUsage()
 {
+    [ "$1" == "--detailed" ] && helpargs=$1
     echo "Options for opengrok.jar:" 1>&2
-    ${DO} ${JAVA} ${JAVA_OPTS} -jar "${OPENGROK_JAR}" '-?'
+    ${DO} ${JAVA} ${JAVA_OPTS} -jar "${OPENGROK_JAR}" '-?' $helpargs
 }
 
 DeployWar()
@@ -1036,8 +1053,7 @@ case "${1}" in
     update)
         ValidateConfiguration
         CreateRuntimeRequirements
-        UpdateGeneratedData
-        UpdateDescriptionCache
+        UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     updateQuietly)
@@ -1045,8 +1061,7 @@ case "${1}" in
         CreateRuntimeRequirements
         QUIET="-q"
         VERBOSE=""
-        UpdateGeneratedData
-        UpdateDescriptionCache
+        UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     updateDesc)
@@ -1070,8 +1085,7 @@ case "${1}" in
         fi
         ValidateConfiguration
         CreateRuntimeRequirements
-        UpdateGeneratedData
-        UpdateDescriptionCache
+        UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     indexpart)
@@ -1102,10 +1116,11 @@ case "${1}" in
 	;;
 
     usage|help)
-        OpenGrokUsage
-        Usage
+        OpenGrokUsage $2
+        Usage $2
         ;;
     *)
         Usage
         ;;
 esac
+exit $?

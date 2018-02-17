@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -36,6 +36,14 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
     private static final String name = "Plain Text";
     
     private static final Matcher MATCHER = new Matcher() {
+            @Override
+            public String description() {
+                return "UTF-8, UTF-16BE, or UTF-16LE Byte Order Mark is" +
+                    " present; or first eight bytes are all ASCII graphic" +
+                    " characters or ASCII whitespace";
+            }
+
+            @Override
             public FileAnalyzerFactory isMagic(byte[] content, InputStream in)
                     throws IOException {
                 if (isPlainText(content)) {
@@ -43,6 +51,11 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
                 } else {
                     return null;
                 }
+            }
+
+            @Override
+            public FileAnalyzerFactory forFactory() {
+                return DEFAULT_INSTANCE;
             }
 
             /**

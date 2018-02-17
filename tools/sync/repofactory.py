@@ -50,7 +50,7 @@ def get_repository(logger, path, repo_type, project, commands, env, hooks):
         return CVSRepository(logger, path, project,
                              commands.get("cvs"),
                              env, hooks)
-    elif repo_lower == "svn":
+    elif repo_lower in ["svn", "subversion"]:
         return SubversionRepository(logger, path, project,
                                     commands.get("svn"),
                                     env, hooks)

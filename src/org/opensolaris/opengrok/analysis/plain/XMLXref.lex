@@ -40,6 +40,18 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
+%{
+    protected void chkLOC() {
+        switch (yystate()) {
+            case COMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
+    }
+%}
 
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 
@@ -65,40 +77,50 @@ NameChar = {FileChar}|"."
     onNonSymbolMatched("<!--", yychar);
  }
  "<![CDATA[" {
+    chkLOC();
     yybegin(CDATA);
     onNonSymbolMatched("<", yychar);
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched("![CDATA[", yychar);
     onDisjointSpanChanged(HtmlConsts.COMMENT_CLASS, yychar);
  }
- "<"    { yybegin(TAG); onNonSymbolMatched("<", yychar); }
+ "<"    { chkLOC(); yybegin(TAG); onNonSymbolMatched("<", yychar); }
 }
 
 <TAG> {
  [a-zA-Z_0-9]+{WhspChar}*\=    {
+    chkLOC();
     onNonSymbolMatched(yytext(), EmphasisHint.STRONG, yychar);
  }
  [a-zA-Z_0-9]+    {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
  \"      {
+    chkLOC();
     yybegin(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
  \'      {
+    chkLOC();
     yybegin(SSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
-[><]    { yybegin(YYINITIAL); onNonSymbolMatched(yytext(), yychar); }
+ [><]    {
+    chkLOC();
+    yybegin(YYINITIAL);
+    onNonSymbolMatched(yytext(), yychar);
+ }
 }
 
 <STRING> {
- \" {WhspChar}* \"    { onNonSymbolMatched(yytext(), yychar); }
+ \" {WhspChar}* \"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    chkLOC();
     yybegin(TAG);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
@@ -106,8 +128,9 @@ NameChar = {FileChar}|"."
 }
 
 <SSTRING> {
- \' {WhspChar}* \'    { onNonSymbolMatched(yytext(), yychar); }
+ \' {WhspChar}* \'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'     {
+    chkLOC();
     yybegin(TAG);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
@@ -124,6 +147,7 @@ NameChar = {FileChar}|"."
 
 <CDATA> {
   "]]>" {
+    chkLOC();
     yybegin(YYINITIAL);
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched("]]", yychar);
@@ -136,6 +160,7 @@ NameChar = {FileChar}|"."
 
 {File}|{AlmostAnyFPath}
   {
+    chkLOC();
     final String path = yytext();
     final boolean isJavaClass=StringUtils.isPossiblyJavaClass(path);
     final char separator = isJavaClass ? '.' : '/';
@@ -143,14 +168,17 @@ NameChar = {FileChar}|"."
   }
 
 {BrowseableURI}    {
+          chkLOC();
           onUriMatched(yytext(), yychar);
         }
 
 {NameChar}+ "@" {NameChar}+ "." {NameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
-[^\n]    { onNonSymbolMatched(yytext(), yychar); }
+[[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+[^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }

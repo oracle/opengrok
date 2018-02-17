@@ -43,11 +43,22 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     @Override
     public void yypop() throws IOException {
         onDisjointSpanChanged(null, yychar);
         super.yypop();
+    }
+
+    protected void chkLOC() {
+        switch (yystate()) {
+            case COMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
     }
 %}
 
@@ -63,11 +74,13 @@ File = [a-zA-Z]{FNameChar}* "." ("vb"|"cls"|"frm"|"vbs"|"bas"|"ctl")
 <YYINITIAL>{
 
 {Identifier} {
+    chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.reservedKeywords, false);
 }
 
 "<" ({File}|{FPath}) ">" {
+        chkLOC();
         onNonSymbolMatched("<", yychar);
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -79,12 +92,14 @@ File = [a-zA-Z]{FNameChar}* "." ("vb"|"cls"|"frm"|"vbs"|"bas"|"ctl")
         { onPathlikeMatched(yytext(), '.', false, yychar); }
 */
  {Number}        {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
 
  \"   {
+    chkLOC();
     yypush(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -98,8 +113,9 @@ File = [a-zA-Z]{FNameChar}* "." ("vb"|"cls"|"frm"|"vbs"|"bas"|"ctl")
 
 <STRING> {
  \"\" |
- \" {WhspChar}+ \"    { onNonSymbolMatched(yytext(), yychar); }
+ \" {WhspChar}+ \"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -120,25 +136,31 @@ File = [a-zA-Z]{FNameChar}* "." ("vb"|"cls"|"frm"|"vbs"|"bas"|"ctl")
 
 <YYINITIAL, STRING, COMMENT> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]      { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+    chkLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {BrowseableURI}    {
+          chkLOC();
           onUriMatched(yytext(), yychar);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }

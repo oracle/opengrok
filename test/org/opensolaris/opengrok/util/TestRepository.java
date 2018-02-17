@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.util;
 
@@ -42,6 +43,14 @@ public class TestRepository {
 
     private File sourceRoot;
     private File dataRoot;
+
+    public void createEmpty() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        sourceRoot = FileUtilities.createTemporaryDirectory("source");
+        dataRoot = FileUtilities.createTemporaryDirectory("data");
+        env.setSourceRoot(sourceRoot.getAbsolutePath());
+        env.setDataRoot(dataRoot.getAbsolutePath());
+    }
 
     public void create(InputStream inputBundle) throws IOException {
         File sourceBundle = null;
@@ -109,5 +118,31 @@ public class TestRepository {
         File dummy = new File(getSourceRoot() + File.separator + project +
             File.separator + dummyFilename);
         dummy.delete();
+    }
+
+    /**
+     * Add an ad-hoc file of a specified name with contents from the specified
+     * stream.
+     * @param filename a required instance
+     * @param in a required instance
+     * @param project an optional project name
+     * @return
+     * @throws IOException
+     */
+    public File addAdhocFile(String filename, InputStream in, String project)
+            throws IOException {
+
+        String projsep = project != null ? File.separator + project : "";
+        File adhoc = new File(getSourceRoot() + projsep + File.separator +
+            filename);
+
+        byte[] buf = new byte[8192];
+        try (FileOutputStream out = new FileOutputStream(adhoc)) {
+            int r;
+            if ((r = in.read(buf)) != -1) {
+                out.write(buf, 0, r);
+            }
+        }
+        return adhoc;
     }
 }

@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 """
@@ -41,6 +41,7 @@ from filelock import Timeout
 import command
 from command import Command
 import logging
+from logging.handlers import RotatingFileHandler
 import tempfile
 import commands
 from commands import Commands, CommandsBase
@@ -52,6 +53,7 @@ from hook import run_hook
 from readconfig import read_config
 from opengrok import get_repos, get_config_value, get_repo_type
 from shutil import which
+import re
 
 
 major_version = sys.version_info[0]
@@ -78,6 +80,8 @@ if __name__ == '__main__':
                         help='path to the Messages binary')
     parser.add_argument('-b', '--batch', action='store_true',
                         help='batch mode - will log into a file')
+    parser.add_argument('-B', '--backupcount', default=8,
+                        help='how many log files to keep around in batch mode')
     args = parser.parse_args()
 
     if args.debug:
@@ -122,10 +126,25 @@ if __name__ == '__main__':
 
     project_config = None
     try:
-        if config['projects']:
-            if config['projects'][args.project]:
-                project_config = config['projects'][args.project]
-    except:
+        projects = config['projects']
+        if projects:
+            if projects.get(args.project):
+                project_config = projects.get(args.project)
+            else:
+                for proj in projects.keys():
+                    try:
+                        pattern = re.compile(proj)
+                    except re.error:
+                        logger.error("Not a valid regular exception: {}".
+                                     format(proj))
+                        continue
+
+                    if pattern.match(args.project):
+                        logger.debug("Project '{}' matched pattern '{}'".
+                                     format(args.project, proj))
+                        project_config = projects.get(proj)
+                        break
+    except KeyError:
         # The project has no config, that's fine - defaults will be used.
         pass
 
@@ -135,8 +154,19 @@ if __name__ == '__main__':
 
     prehook = None
     posthook = None
+    ignored_repos = []
+    use_proxy = False
     if project_config:
-        try:
+        logger.debug("Project '{}' has specific (non-default) config".
+                     format(args.project))
+
+        if project_config.get('ignored_repos'):
+            ignored_repos = project_config.get('ignored_repos')
+            logger.debug("has ignored repositories: {}".
+                         format(ignored_repos))
+
+        hooks = project_config.get('hooks')
+        if hooks:
             if not hookdir:
                 logger.error("Need to have 'hookdir' in the configuration "
                              "to run hooks")
@@ -146,7 +176,6 @@ if __name__ == '__main__':
                 logger.error("Not a directory: {}".format(hookdir))
                 sys.exit(1)
 
-            hooks = project_config['hooks']
             for hookname in hooks:
                 if hookname == "pre":
                     prehook = hookpath = os.path.join(hookdir, hooks['pre'])
@@ -163,16 +192,15 @@ if __name__ == '__main__':
                     logger.error("hook file {} does not exist or not "
                                  "executable".format(hookpath))
                     sys.exit(1)
-        except KeyError:
-            pass
 
-    use_proxy = False
-    if project_config:
-        try:
-            if project_config['proxy']:
-                use_proxy = True
-        except KeyError:
-            pass
+        if project_config.get('proxy'):
+            if not config.get('proxy'):
+                logger.error("global proxy setting is needed in order to"
+                             "have per-project proxy")
+                sys.exit(1)
+
+            logger.debug("will use proxy")
+            use_proxy = True
 
     # Log messages to dedicated log file if running in batch mode.
     if args.batch:
@@ -186,21 +214,29 @@ if __name__ == '__main__':
             logging.root.removeHandler(handler)
 
         logging.basicConfig(filename=logfile, filemode='a',
-                            format='%(asctime)s - %(levelname)s: %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p',
                             level=logging.DEBUG if args.debug
                             else logging.INFO)
         logger = logging.getLogger(os.path.basename(sys.argv[0]))
+        handler = RotatingFileHandler(logfile, maxBytes=0,
+                                      backupCount=args.backupcount)
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s: "
+                                      "%(message)s", '%m/%d/%Y %I:%M:%S %p')
+        handler.setFormatter(formatter)
+        handler.doRollover()
+        #
+        # Technically, adding a handler to the logger is not necessary
+        # since log rotation is done above using doRollover() however
+        # it is done anyway in case the handler changes to use implicit
+        # rotation in the future.
+        #
+        logger.addHandler(handler)
 
     # We want this to be logged to the log file (if any).
     if project_config:
-        try:
-            if project_config['disabled']:
-                logger.info("Project {} disabled, exiting".
-                            format(args.project))
-                sys.exit(0)
-        except KeyError:
-            pass
+        if project_config.get('disabled'):
+            logger.info("Project {} disabled, exiting".
+                        format(args.project))
+            sys.exit(2)
 
     lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
                              args.project + "-mirror.lock"))
@@ -219,6 +255,11 @@ if __name__ == '__main__':
             #
             for repo_path in get_repos(logger, args.project, messages_file):
                 logger.debug("Repository path = {}".format(repo_path))
+
+                if repo_path in ignored_repos:
+                    logger.debug("repository {} ignored".format(repo_path))
+                    continue
+
                 repo_type = get_repo_type(logger, repo_path, messages_file)
                 if not repo_type:
                     logger.error("cannot determine type of {}".

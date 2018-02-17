@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -93,7 +93,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
     -->
 
-    <property name="version" value="1.1-rc17"/>
+    <property name="version" value="1.1-rc21"/>
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
@@ -1300,7 +1300,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 		as reported by 'git remote' command. This will enable forked
 		projects to create their releases easily.
 	    -->
-	    <arg value="-r OpenGrok/OpenGrok"/>
+	    <arg value="-r oracle/OpenGrok"/>
 	    <arg value="-t ${version}"/>
 	    <!--
 	         The directory of the files should really be ${dist.dir}

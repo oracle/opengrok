@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis.executables;
@@ -51,21 +52,35 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
     private static final int JDK1_1_MAJOR_VER = 0x2D;
     private static final int JAVA_SE_9_MAJOR_VER = 0x35;
 
-    private static final Matcher MATCHER = (byte[] content, InputStream in) -> {
-        if (content.length < 8) return null;
-
-        // Require CAFEBABE or indicate no match.
-        for (int i = 0; i < CAFEBABE.length; ++i) {
-            if (content[i] != CAFEBABE[i]) return null;
+    private static final Matcher MATCHER = new Matcher() {
+        @Override
+        public String description() {
+            return "0xCAFEBABE magic with major_version from JDK 1.1 to Java" +
+                " SE 9";
         }
-        // Require known major_version number.
-        int majorVersion = (content[MAJOR_VER_HIGHBYTE] << 1) |
-            content[MAJOR_VER_LOWBYTE];
-        if (majorVersion >= JDK1_1_MAJOR_VER && majorVersion <=
-            JAVA_SE_9_MAJOR_VER) {
+
+        @Override
+        public FileAnalyzerFactory isMagic(byte[] content, InputStream in) {
+            if (content.length < 8) return null;
+
+            // Require CAFEBABE or indicate no match.
+            for (int i = 0; i < CAFEBABE.length; ++i) {
+                if (content[i] != CAFEBABE[i]) return null;
+            }
+            // Require known major_version number.
+            int majorVersion = (content[MAJOR_VER_HIGHBYTE] << 1) |
+                content[MAJOR_VER_LOWBYTE];
+            if (majorVersion >= JDK1_1_MAJOR_VER && majorVersion <=
+                JAVA_SE_9_MAJOR_VER) {
+                return JavaClassAnalyzerFactory.DEFAULT_INSTANCE;
+            }
+            return null;
+        }
+
+        @Override
+        public FileAnalyzerFactory forFactory() {
             return JavaClassAnalyzerFactory.DEFAULT_INSTANCE;
         }
-        return null;
     };
 
     public static final JavaClassAnalyzerFactory DEFAULT_INSTANCE =

@@ -35,12 +35,13 @@ class CommandsBase:
     so that it can be passed through Pool.map().
     """
 
-    def __init__(self, name, commands):
+    def __init__(self, name, commands, cleanup=None):
         self.name = name
         self.commands = commands
         self.failed = False
         self.retcodes = {}
         self.outputs = {}
+        self.cleanup = cleanup
 
     def __str__(self):
         return str(self.name)
@@ -61,7 +62,7 @@ class CommandsBase:
 
 class Commands(CommandsBase):
     def __init__(self, base):
-        super().__init__(base.name, base.commands)
+        super().__init__(base.name, base.commands, base.cleanup)
 
         self.logger = logging.getLogger(__name__)
         logging.basicConfig()
@@ -70,6 +71,8 @@ class Commands(CommandsBase):
         """
         Run the sequence of commands and capture their output and return code.
         First command that returns code other than 0 terminates the sequence.
+        If the command has return code 2, the sequence will be terminated
+        however it will not be treated as error.
         """
 
         for command in self.commands:
@@ -81,27 +84,57 @@ class Commands(CommandsBase):
             self.outputs[str(cmd)] = cmd.getoutput()
 
             # If a command fails, terminate the sequence of commands.
-            if cmd.getretcode() != 0:
-                self.logger.debug("command {} failed, breaking".format(cmd))
-                self.failed = True
+            retcode = cmd.getretcode()
+            if retcode != 0:
+                if retcode == 2:
+                    self.logger.info("command '{}' requested break".
+                                     format(cmd))
+                    self.run_cleanup()
+                else:
+                    self.logger.info("command '{}' failed with code {}, "
+                                     "breaking".format(cmd, retcode))
+                    self.failed = True
+                    self.run_cleanup()
                 break
+
+    def run_cleanup(self):
+        """
+        Call cleanup in case the sequence failed or termination was requested.
+        """
+        if self.cleanup:
+            self.logger.debug("Running cleanup command '{}'".
+                              format(self.cleanup))
+            cmd = Command(self.cleanup,
+                          args_subst={"ARG": self.name},
+                          args_append=[self.name], excl_subst=True)
+            cmd.execute()
+            if cmd.getretcode() != 0:
+                self.logger.info("cleanup command '{}' failed with code {}".
+                                 format(self.cleanup, cmd.getretcode()))
 
     def check(self, ignore_errors):
         """
         Check the output of the commands and perform logging.
+
+        Return 0 on success, 1 if error was detected.
         """
 
-        self.logger.debug("Output from {}:".format(self.name))
+        ret = 0
+        self.logger.debug("Output for project '{}':".format(self.name))
         for cmd in self.outputs.keys():
             if self.outputs[cmd] and len(self.outputs[cmd]) > 0:
                 self.logger.debug("{}: {}".
                                   format(cmd, self.outputs[cmd]))
 
         if self.name in ignore_errors:
+            self.logger.debug("errors of project '{}' ignored".
+                              format(self.name))
             return
 
-        if any(rv != 0 for rv in self.retcodes.values()):
-            self.logger.error("processing of selfect {} failed".
+        self.logger.debug("retcodes = {}".format(self.retcodes))
+        if any(rv != 0 and rv != 2 for rv in self.retcodes.values()):
+            ret = 1
+            self.logger.error("processing of project '{}' failed".
                               format(self))
             indent = "  "
             self.logger.error("{}failed commands:".format(indent))
@@ -120,7 +153,8 @@ class Commands(CommandsBase):
         errored_cmds = {k: v for k, v in self.outputs.items()
                         if "error" in str(v).lower()}
         if len(errored_cmds) > 0:
-            self.logger.error("Command output in selfect {}"
+            ret = 1
+            self.logger.error("Command output in project '{}'"
                               " contains errors:".format(self.name))
             indent = "  "
             for cmd in errored_cmds.keys():
@@ -130,3 +164,5 @@ class Commands(CommandsBase):
                 if out:
                     self.logger.error(out)
                 self.logger.error("")
+
+        return ret

@@ -41,8 +41,33 @@ class SubversionRepository(Repository):
             raise OSError
 
     def reposync(self):
-        hg_command = [self.command, "update"]
-        cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
+        svn_command = [self.command]
+
+        #
+        # The proxy configuration in SVN does not heed environment variables so
+        # they need to be converted to the options.
+        #
+        http_proxy = self.env.get('http_proxy')
+        if http_proxy:
+            data = http_proxy.split(':')
+            if len(data) != 2:
+                logger.error("Cannot split '{}' into two strings by ':'".
+                             format(http_proxy))
+                return 1
+
+            svn_command.append("--config-option")
+            svn_command.append("servers:global:http-proxy-host=" + data[0])
+            svn_command.append("--config-option")
+            svn_command.append("servers:global:http-proxy-port=" + data[1])
+
+        no_proxy = self.env.get('no_proxy')
+        if no_proxy:
+            svn_command.append("--config-option")
+            svn_command.append("servers:global:http-proxy-exceptions=" +
+                               no_proxy)
+
+        svn_command.append("update")
+        cmd = Command(svn_command, work_dir=self.path, env_vars=self.env)
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:

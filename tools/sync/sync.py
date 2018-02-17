@@ -47,6 +47,8 @@ import tempfile
 import commands
 from commands import Commands, CommandsBase
 from readconfig import read_config
+from shutil import which
+import multiprocessing
 
 
 major_version = sys.version_info[0]
@@ -74,7 +76,7 @@ if __name__ == '__main__':
     dirs_to_process = []
 
     parser = argparse.ArgumentParser(description='Manage parallel workers.')
-    parser.add_argument('-w', '--workers', default=4,
+    parser.add_argument('-w', '--workers', default=multiprocessing.cpu_count(),
                         help='Number of worker processes')
 
     # There can be only one way how to supply list of projects to process.
@@ -96,6 +98,8 @@ if __name__ == '__main__':
                         help='config file in JSON format')
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
+    parser.add_argument('-m', '--messages',
+                        help='path to the Messages binary')
     args = parser.parse_args()
 
     if args.debug:
@@ -107,6 +111,18 @@ if __name__ == '__main__':
             logging.basicConfig()
 
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
+
+    if args.messages:
+        messages_file = which(args.messages)
+        if not messages_file:
+            logger.error("file {} does not exist".format(args.messages))
+            sys.exit(1)
+    else:
+        messages_file = which("Messages")
+        if not messages_file:
+            logger.error("cannot determine path to Messages")
+            sys.exit(1)
+    logger.debug("Messages = {}".format(messages_file))
 
     config = read_config(logger, args.config)
     if config is None:
@@ -129,6 +145,13 @@ if __name__ == '__main__':
             pass
     logger.debug("Ignored projects: {}".format(ignore_errors))
 
+    try:
+        os.chdir("/")
+    except OSError as e:
+        logger.error("cannot change working directory to /",
+                     exc_info=True)
+        sys.exit(1)
+
     lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
                              "opengrok-sync.lock"))
     try:
@@ -139,7 +162,7 @@ if __name__ == '__main__':
                 dirs_to_process = args.projects
             elif args.indexed:
                 # XXX replace this with REST request after issue #1801
-                cmd = Command(['/usr/opengrok/bin/Messages', '-n', 'project',
+                cmd = Command([messages_file, '-n', 'project',
                                'list-indexed'])
                 cmd.execute()
                 if cmd.state is "finished":
@@ -158,7 +181,8 @@ if __name__ == '__main__':
 
             projects = []
             for d in dirs_to_process:
-                proj = CommandsBase(d, config["commands"])
+                proj = CommandsBase(d, config.get("commands"),
+                                    config.get("cleanup"))
                 projects.append(proj)
 
             try:
@@ -168,7 +192,10 @@ if __name__ == '__main__':
                 sys.exit(1)
             else:
                 for proj in projects:
+                    logger.debug("Checking results of project {}".
+                                 format(proj))
                     cmds = Commands(proj)
+                    cmds.fill(proj.retcodes, proj.outputs, proj.failed)
                     cmds.check(ignore_errors)
     except Timeout:
         logger.warning("Already running, exiting.")

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.web;
@@ -46,7 +47,6 @@ import org.opensolaris.opengrok.util.TestRepository;
  */
 public class SearchHelperTest {
     TestRepository repository;
-    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
     RuntimeEnvironment env;
     
     @BeforeClass
@@ -80,7 +80,7 @@ public class SearchHelperTest {
         Indexer.getInstance().prepareIndexer(env, true, true,
             new TreeSet<>(Arrays.asList(new String[]{"/c"})),
             false, false, null, null, new ArrayList<>(), false);
-        Indexer.getInstance().doIndexerExecution(true, 1, null, null);
+        Indexer.getInstance().doIndexerExecution(true, null, null);
     }
 
     private SearchHelper getSearchHelper(String searchTerm) {
@@ -126,7 +126,6 @@ public class SearchHelperTest {
 
         env.setProjectsEnabled(true);
 
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
         if (!env.validateExuberantCtags()) {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
             return;

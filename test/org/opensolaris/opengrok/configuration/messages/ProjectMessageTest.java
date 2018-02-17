@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -65,7 +65,6 @@ public class ProjectMessageTest {
     RuntimeEnvironment env;
 
     private static TestRepository repository = new TestRepository();
-    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
     @Before
     public void setUp() throws IOException {
@@ -253,8 +252,6 @@ public class ProjectMessageTest {
     public void testDelete() throws Exception {
         String projectsToDelete[] = { "git", "svn" };
 
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
-
         assertTrue("No point in running indexer tests without valid ctags",
                 RuntimeEnvironment.getInstance().validateExuberantCtags());
 
@@ -316,7 +313,7 @@ public class ProjectMessageTest {
                 repos, // repositories - needed when refreshing history partially
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
-        Indexer.getInstance().doIndexerExecution(true, 1, null, null);
+        Indexer.getInstance().doIndexerExecution(true, null, null);
 
         // Then remove multiple projects.
         m.setText("delete");

@@ -35,6 +35,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.StoredField;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.configuration.Project;
@@ -223,8 +224,10 @@ public class FileAnalyzer extends Analyzer {
      * @param src the input data source
      * @param xrefOut where to write the xref (may be {@code null})
      * @throws IOException if any I/O error
+     * @throws InterruptedException if a timeout occurs
      */
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+    public void analyze(Document doc, StreamSource src, Writer xrefOut)
+            throws IOException, InterruptedException {
         // not used
     }
 
@@ -265,6 +268,24 @@ public class FileAnalyzer extends Analyzer {
                         Level.WARNING, "Have no analyzer for: {0}", fieldName);
                 return null;
         }
+    }
+
+    /**
+     * Add a field to store document number of lines.
+     * @param doc the target document
+     * @param value the number of lines
+     */
+    protected void addNumLines(Document doc, int value)  {
+        doc.add(new StoredField(QueryBuilder.NUML, value));
+    }
+
+    /**
+     * Add a field to store document lines-of-code.
+     * @param doc the target document
+     * @param value the loc
+     */
+    protected void addLOC(Document doc, int value)  {
+        doc.add(new StoredField(QueryBuilder.LOC, value));
     }
 
     private JFlexTokenizer createPlainSymbolTokenizer() {

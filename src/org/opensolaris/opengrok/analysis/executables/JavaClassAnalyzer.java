@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
@@ -60,6 +61,7 @@ import org.opensolaris.opengrok.analysis.IteratorReader;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -95,12 +97,23 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         List<String> refs = new ArrayList<>();
         List<String> full = new ArrayList<>();
 
-        ClassParser classparser = new ClassParser(in, doc.get("path"));
-        StringWriter out = new StringWriter();
+        StringWriter dout = new StringWriter();
+        StringWriter rout = new StringWriter();
         StringWriter fout = new StringWriter();
-        getContent(out, fout, classparser.parse(), defs, refs, full);
-        String fullt = fout.toString();
-        String xref = out.toString();
+
+        /**
+         * The JarAnalyzer uses JavaClassAnalyzer, so if a DEFS, REFS, or FULL
+         * field exists already, then append to it.
+         */
+        useExtantValue(dout, doc, QueryBuilder.DEFS);
+        useExtantValue(rout, doc, QueryBuilder.REFS);
+        useExtantValue(fout, doc, QueryBuilder.FULL);
+
+        ClassParser classparser = new ClassParser(in,
+            doc.get(QueryBuilder.PATH));
+        StringWriter xout = new StringWriter();
+        getContent(xout, fout, classparser.parse(), defs, refs, full);
+        String xref = xout.toString();
 
         if (xrefOut != null) {
             xrefOut.append(xref);
@@ -110,21 +123,26 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 LOGGER.log(Level.WARNING, "Couldn't flush xref, will retry once added to doc", ex);
             }
         }        
-        xref = null; //flush the xref        
 
-        StringWriter cout=new StringWriter();
-        for (String fl : full) {
-            cout.write(fl);
-            cout.write('\n');
-        }
-        String constants = cout.toString();
-        if (extra==null) {extra="";}
-        //merge all info into one reader to avoid problems with multiple adds in lucene 7
-        StringReader fullout_constants=new StringReader(extra+fullt+constants);
+        appendValues(dout, defs, "");
+        appendValues(rout, refs, "");
+        appendValues(fout, full, "// ");
 
-        doc.add(new TextField("defs", new IteratorReader(defs)));
-        doc.add(new TextField("refs", new IteratorReader(refs)));
-        doc.add(new TextField("full", fullout_constants));
+        /**
+         * Unlike other analyzers, which rely on the full content existing to be
+         * accessed at a file system location identified by PATH, *.class and
+         * *.jar files have virtual content which is stored here (Store.YES) for
+         * analyzer convenience.
+         */
+
+        String dstr = dout.toString();
+        doc.add(new TextField(QueryBuilder.DEFS, dstr, Store.YES));
+
+        String rstr = rout.toString();
+        doc.add(new TextField(QueryBuilder.REFS, rstr, Store.YES));
+
+        String fstr = fout.toString();
+        doc.add(new TextField(QueryBuilder.FULL, fstr, Store.YES));
     }
 
     
@@ -466,5 +484,23 @@ private static final String RCBREOL="}\n";
                 throw new ClassFormatException("Unknown constant type " + tag);
         }
         return str;
+    }
+
+    private static void useExtantValue(StringWriter accum, Document doc,
+        String field) {
+        String extantValue = doc.get(field);
+        if (extantValue != null) {
+            doc.removeFields(field);
+            accum.append(extantValue);
+        }
+    }
+
+    private static void appendValues(StringWriter accum, List<String> full,
+        String lede) {
+        for (String fl : full) {
+            accum.write(lede);
+            accum.write(fl);
+            accum.write(EOL);
+        }
     }
 }

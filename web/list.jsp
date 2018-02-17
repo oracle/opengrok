@@ -32,6 +32,7 @@ java.io.InputStream,
 java.io.InputStreamReader,
 java.io.Reader,
 java.net.URLEncoder,
+java.nio.charset.StandardCharsets,
 java.util.ArrayList,
 java.util.Arrays,
 java.util.List,
@@ -46,8 +47,13 @@ org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
 org.opensolaris.opengrok.analysis.FileAnalyzerFactory,
 org.opensolaris.opengrok.history.Annotation,
 org.opensolaris.opengrok.index.IndexDatabase,
+org.opensolaris.opengrok.search.DirectoryEntry,
+org.opensolaris.opengrok.search.DirectoryExtraReader,
+org.opensolaris.opengrok.search.FileExtra,
+org.opensolaris.opengrok.util.FileExtraZipper,
 org.opensolaris.opengrok.util.IOUtils,
-org.opensolaris.opengrok.web.DirectoryListing"
+org.opensolaris.opengrok.web.DirectoryListing,
+org.opensolaris.opengrok.web.SearchHelper"
 %><%
 {
     // need to set it here since requesting parameters
@@ -113,9 +119,29 @@ document.pageReady.push(function() { pageReadyList();});
         DirectoryListing dl = new DirectoryListing(cfg.getEftarReader());
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
-            List<String> readMes = dl.listTo(
+            List<FileExtra> extras = null;
+            if (activeProject != null) {
+                SearchHelper searchHelper = cfg.prepareInternalSearch();
+                // N.b. searchHelper.destroy() is called via
+                // WebappListener.requestDestroyed() on presence of the
+                // following REQUEST_ATTR.
+                request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
+                searchHelper.prepareExec(activeProject);
+
+                if (searchHelper.searcher != null) {
+                    DirectoryExtraReader extraReader =
+                        new DirectoryExtraReader();
+                    extras = extraReader.search(searchHelper.searcher, path);
+                }
+            }
+
+            FileExtraZipper zipper = new FileExtraZipper();
+            List<DirectoryEntry> entries = zipper.zip(resourceFile, files,
+                extras);
+
+            List<String> readMes = dl.extraListTo(
                     Util.URIEncodePath(request.getContextPath()),
-                    resourceFile, out, path, files);
+                    resourceFile, out, path, entries);
             File[] catfiles = cfg.findDataFiles(readMes);
             for (int i=0; i < catfiles.length; i++) {
                 if (catfiles[i] == null) {
@@ -165,6 +191,10 @@ document.pageReady.push(function() { pageReadyList();});
     <img src="<%= rawPath %>"/>
 </div><%
                 } else if ( g == Genre.HTML) {
+                    /**
+                     * For backward compatibility, read the OpenGrok-produced
+                     * document using the system default charset.
+                     */
                     r = new InputStreamReader(bin);
                     Util.dump(out, r);
                 } else if (g == Genre.PLAIN) {
@@ -175,7 +205,9 @@ document.pageReady.push(function() { pageReadyList();});
                     // find the definitions in the index.
                     Definitions defs = IndexDatabase.getDefinitions(resourceFile);
                     Annotation annotation = cfg.getAnnotation();
-                    r = IOUtils.createBOMStrippedReader(bin);
+                    // SRCROOT is read with UTF-8 as a default.
+                    r = IOUtils.createBOMStrippedReader(bin,
+                        StandardCharsets.UTF_8.name());
                     AnalyzerGuru.writeXref(a, r, out, defs, annotation,
                         Project.getProject(resourceFile));
     %></pre>
@@ -244,7 +276,9 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                 Annotation annotation = cfg.getAnnotation();
                                 //not needed yet
                                 //annotation.writeTooltipMap(out);
-                                r = IOUtils.createBOMStrippedReader(in);
+                                // SRCROOT is read with UTF-8 as a default.
+                                r = IOUtils.createBOMStrippedReader(in,
+                                    StandardCharsets.UTF_8.name());
                                 AnalyzerGuru.writeXref(a, r, out, defs,
                                     annotation, Project.getProject(resourceFile));
                             } else if (g == Genre.IMAGE) {
@@ -252,6 +286,11 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
         <pre><%
                             } else if (g == Genre.HTML) {
+                                /**
+                                 * For backward compatibility, read the
+                                 * OpenGrok-produced document using the system
+                                 * default charset.
+                                 */
                                 r = new InputStreamReader(in);
                                 Util.dump(out, r);
                             } else {

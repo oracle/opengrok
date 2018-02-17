@@ -19,8 +19,8 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- *
  * Portions Copyright 2011 Jens Elkner.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.web;
 
@@ -34,10 +34,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.search.DirectoryEntry;
+import org.opensolaris.opengrok.search.FileExtra;
 
 /**
  * Generates HTML listing of a Directory
@@ -116,6 +119,26 @@ public class DirectoryListing {
     }
 
     /**
+     * Calls
+     * {@link #extraListTo(java.lang.String, java.io.File, java.io.Writer, java.lang.String, java.util.List)}
+     * with {@code contextPath}, {@code dir}, {@code out}, {@code path},
+     * and a list mapped from {@code files}.
+     * @return see
+     * {@link #extraListTo(java.lang.String, java.io.File, java.io.Writer, java.lang.String, java.util.List)}
+     */
+    public List<String> listTo(String contextPath, File dir, Writer out,
+        String path, List<String> files)
+            throws HistoryException, IOException {
+        List<DirectoryEntry> filesExtra = null;
+        if (files != null) {
+            filesExtra = files.stream().map(f ->
+                new DirectoryEntry(new File(dir, f), null)).collect(
+                Collectors.toList());
+        }
+        return extraListTo(contextPath, dir, out, path, filesExtra);
+    }
+
+    /**
      * Write a HTML-ized listing of the given directory to the given destination.
      *
      * @param contextPath path used for link prefixes
@@ -123,7 +146,7 @@ public class DirectoryListing {
      * @param out write destination
      * @param path virtual path of the directory (usually the path name of
      *  <var>dir</var> with the source root directory stripped off).
-     * @param files basenames of potential children of the directory to list.
+     * @param entries basenames of potential children of the directory to list.
      *  Gets filtered by {@link IgnoredNames}.
      * @return a possible empty list of README files included in the written
      *  listing.
@@ -134,8 +157,8 @@ public class DirectoryListing {
      * @throws NullPointerException if a parameter except <var>files</var>
      *  is {@code null}
      */
-    public List<String> listTo(String contextPath, File dir, Writer out,
-            String path, List<String> files)
+    public List<String> extraListTo(String contextPath, File dir, Writer out,
+        String path, List<DirectoryEntry> entries)
             throws HistoryException, IOException {
         // TODO this belongs to a jsp, not here
         ArrayList<String> readMes = new ArrayList<>();
@@ -156,6 +179,8 @@ public class DirectoryListing {
         out.write("<th class=\"sorter-false\"></th>\n");
         out.write("<th class=\"sort-dates\">Date</th>\n");
         out.write("<th class=\"sort-groksizes\">Size</th>\n");
+        out.write("<th>#Lines</th>\n");
+        out.write("<th>LOC</th>\n");
         if (offset > 0) {
             out.write("<th><tt>Description</tt></th>\n");
         }
@@ -176,15 +201,13 @@ public class DirectoryListing {
         Map<String, Date> modTimes =
                 HistoryGuru.getInstance().getLastModifiedTimes(dir);
 
-        if (files != null) {
-            for (String filename : files) {
-                if (ignoredNames.ignore(env.getSourceRootPath() + path + filename)) {
-                    continue;
-                }
-                File child = new File(dir, filename);
+        if (entries != null) {
+            for (DirectoryEntry entry : entries) {
+                File child = entry.getFile();
                 if (ignoredNames.ignore(child)) {
                     continue;
                 }
+                String filename = child.getName();
                 if (filename.startsWith("README") || filename.endsWith("README")
                     || filename.startsWith("readme"))
                 {
@@ -219,6 +242,8 @@ public class DirectoryListing {
                 out.write("</td>");
                 Util.writeHAD(out, contextPath, path + filename, isDir);
                 printDateSize(out, child, modTimes.get(filename), dateFormatter);
+                printNumlines(out, entry);
+                printLoc(out, entry);
                 if (offset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, filename);
                     if (briefDesc == null) {
@@ -234,5 +259,35 @@ public class DirectoryListing {
         }
         out.write("</tbody>\n</table>");
         return readMes;
+    }
+
+    private void printNumlines(Writer out, DirectoryEntry entry)
+            throws IOException {
+        Integer numlines = null;
+        String readableNumlines = "";
+        FileExtra extra = entry.getExtra();
+        if (extra != null) numlines = extra.getNumlines();
+        if (numlines != null) {
+            readableNumlines = Util.readableCount(numlines);
+        }
+
+        out.write("<td class=\"numlines\">");
+        out.write(readableNumlines);
+        out.write("</td>");
+    }
+
+    private void printLoc(Writer out, DirectoryEntry entry)
+            throws IOException {
+        Integer loc = null;
+        String readableLoc = "";
+        FileExtra extra = entry.getExtra();
+        if (extra != null) loc = extra.getLoc();
+        if (loc != null) {
+            readableLoc = Util.readableCount(loc);
+        }
+
+        out.write("<td class=\"loc\">");
+        out.write(readableLoc);
+        out.write("</td>");
     }
 }

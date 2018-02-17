@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -39,7 +40,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
- * Provides Ctags by having a running instance of ctags
+ * Provides Ctags by having a running subprocess of ctags.
  *
  * @author Chandan
  */
@@ -47,16 +48,31 @@ public class Ctags {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Ctags.class);
 
+    private volatile boolean closing;
     private Process ctags;
+    private Thread errThread;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
     //default: setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
     private String binary;
     private String CTagsExtraOptionsFile = null;
-    private ProcessBuilder processBuilder;
 
     private boolean junit_testing = false;
+
+    /**
+     * Gets a value indicating if a subprocess of ctags was started and it is
+     * not alive.
+     * @return {@code true} if the instance should be considered closed and no
+     * longer usable.
+     */
+    public boolean isClosed() {
+        return ctags != null && !ctags.isAlive();
+    }
+
+    public String getBinary() {
+        return binary;
+    }
 
     public void setBinary(String binary) {
         this.binary = binary;
@@ -69,14 +85,16 @@ public class Ctags {
     public void close() throws IOException {
         IOUtils.close(ctagsIn);
         if (ctags != null) {
+            closing = true;
             LOGGER.log(Level.FINE, "Destroying ctags command");
-            ctags.destroy();
+            ctags.destroyForcibly();
         }
     }
 
     private void initialize() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (processBuilder == null) {
+        ProcessBuilder processBuilder;
+        if (true) {
             List<String> command = new ArrayList<>();
 
             command.add(binary);
@@ -281,26 +299,32 @@ public class Ctags {
         }
 
         ctags = processBuilder.start();
-        ctagsIn = new OutputStreamWriter(ctags.getOutputStream());
-        ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream()));
+        ctagsIn = env.isUniversalCtags() ? new OutputStreamWriter(
+            ctags.getOutputStream(), StandardCharsets.UTF_8) :
+            new OutputStreamWriter(ctags.getOutputStream());
+        ctagsOut = new BufferedReader(env.isUniversalCtags() ?
+            new InputStreamReader(ctags.getInputStream(),
+            StandardCharsets.UTF_8) : new InputStreamReader(
+            ctags.getInputStream()));
 
-        Thread errThread = new Thread(new Runnable() {
+        errThread = new Thread(new Runnable() {
 
             @Override
             public void run() {
-                StringBuilder sb = new StringBuilder();
                 try (BufferedReader error = new BufferedReader(
-                        new InputStreamReader(ctags.getErrorStream()))) {
+                    env.isUniversalCtags() ? new InputStreamReader(
+                    ctags.getErrorStream(), StandardCharsets.UTF_8) :
+                    new InputStreamReader(ctags.getErrorStream()))) {
                     String s;
                     while ((s = error.readLine()) != null) {
-                        sb.append(s);
-                        sb.append('\n');
+                        if (s.length() > 0) {
+                            LOGGER.log(Level.WARNING, "Error from ctags: {0}",
+                                s);
+                        }
+                        if (closing) break;
                     }
                 } catch (IOException exp) {
                     LOGGER.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
-                }
-                if (sb.length() > 0) {
-                    LOGGER.log(Level.WARNING, "Error from ctags: {0}", sb.toString());
                 }
             }
         });
@@ -308,34 +332,42 @@ public class Ctags {
         errThread.start();
     }
 
-    public Definitions doCtags(String file) throws IOException {
-        boolean ctagsRunning = false;
+    public Definitions doCtags(String file) throws IOException,
+            InterruptedException {
+        if (file.length() < 1 || "\n".equals(file)) return null;
+
         if (ctags != null) {
             try {
                 int exitValue = ctags.exitValue();
                 // If it is possible to retrieve exit value without exception
-                // this means the ctags process is dead so we must restart it.
-                ctagsRunning = false;
+                // this means the ctags process is dead.
                 LOGGER.log(Level.WARNING, "Ctags process exited with exit value {0}",
                         exitValue);
+                // Throw the following to indicate non-I/O error for retry.
+                throw new InterruptedException("ctags died");
             } catch (IllegalThreadStateException exp) {
-                ctagsRunning = true;
                 // The ctags process is still running.
             }
-        }
-
-        if (!ctagsRunning) {
+        } else {
             initialize();
         }
 
-        Definitions ret = null;
-        if (file.length() > 0 && !"\n".equals(file)) {
-            //log.fine("doing >" + file + "<");
+        CtagsReader rdr = new CtagsReader();
+        Definitions ret;
+        try {
             ctagsIn.write(file);
+            if (Thread.interrupted()) throw new InterruptedException("write()");
             ctagsIn.flush();
-            CtagsReader rdr = new CtagsReader();
+            if (Thread.interrupted()) throw new InterruptedException("flush()");
             readTags(rdr);
             ret = rdr.getDefinitions();
+        } catch (IOException ex) {
+            /*
+             * In case the ctags process had to be destroyed, possibly pre-empt
+             * the IOException with an InterruptedException.
+             */
+            if (Thread.interrupted()) throw new InterruptedException("I/O");
+            throw ex;
         }
 
         return ret;
@@ -383,15 +415,23 @@ public class Ctags {
         };
 
         CtagsReader rdr = new CtagsReader();
-        readTags(rdr);
+        try {
+            readTags(rdr);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.SEVERE, "readTags() test", ex);
+        }
         Definitions ret = rdr.getDefinitions();
         return ret;
     }
 
-    private void readTags(CtagsReader reader) {
+    private void readTags(CtagsReader reader) throws InterruptedException {
         try {
             do {
                 String tagLine = ctagsOut.readLine();
+                if (Thread.interrupted()) {
+                    throw new InterruptedException("readLine()");
+                }
+
                 //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
                     if (!junit_testing) {
@@ -421,6 +461,8 @@ public class Ctags {
 
                 reader.readLine(tagLine);
             } while (true);
+        } catch (InterruptedException e) {
+            throw e;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "CTags parsing problem: ", e);
         }

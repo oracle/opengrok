@@ -42,11 +42,23 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     @Override
     public void yypop() throws IOException {
         onDisjointSpanChanged(null, yychar);
         super.yypop();
+    }
+
+    protected void chkLOC() {
+        switch (yystate()) {
+            case SCOMMENT:
+            case LCOMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
     }
 %}
 
@@ -61,6 +73,7 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 %%
 <YYINITIAL>{
  ^{Label} {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
@@ -72,6 +85,7 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 }
 
 {Identifier} {
+    chkLOC();
     String id = yytext();
     // For historical reasons, FortranXref doesn't link identifiers of length=1
     if (id.length() > 1) {
@@ -82,6 +96,7 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 }
 
 "<" ({File}|{FPath}) ">" {
+    chkLOC();
     onNonSymbolMatched("<", yychar);
     String file = yytext();
     file = file.substring(1, file.length() - 1);
@@ -93,17 +108,20 @@ File = [a-zA-Z]{FNameChar}* ".inc"
         { onPathlikeMatched(yytext(), '.', false, yychar); }
 */
 {Number}        {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
+    chkLOC();
     yypush(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
  \'     {
+    chkLOC();
     yypush(QSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -116,16 +134,18 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 }
 
 <STRING> {
- \"\"    { onNonSymbolMatched(yytext(), yychar); }
+ \"\"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <QSTRING> {
- \'\'    { onNonSymbolMatched(yytext(), yychar); }
+ \'\'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -148,33 +168,40 @@ File = [a-zA-Z]{FNameChar}* ".inc"
 
 <YYINITIAL, STRING, SCOMMENT, QSTRING, LCOMMENT> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]      { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <SCOMMENT, STRING, QSTRING> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+    chkLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <SCOMMENT, STRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }
 
 <QSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, FortranUtils.CHARLITERAL_APOS_DELIMITER);
     }
 }

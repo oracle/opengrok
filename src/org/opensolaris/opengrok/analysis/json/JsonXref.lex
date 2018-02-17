@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     @Override
     public void yypop() throws IOException {
@@ -68,11 +69,13 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
 //TODO add support for identifiers on the left side, restruct the way how we see quoted strings, ctags detect them as identifiers, xref should print them that way too
 //improve per http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
 {Identifier} {
+    phLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.kwd);
 }
 
 "<" ({File}|{FPath}) ">" {
+        phLOC();
         onNonSymbolMatched("<", yychar);
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -85,12 +88,14 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
 */
 
 {Number}        {
+    phLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
+    phLOC();
     yypush(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -99,8 +104,9 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
 
 <STRING> {
  \\[\"\\] |
- \" {WhspChar}+ \"    { onNonSymbolMatched(yytext(), yychar); }
+ \" {WhspChar}+ \"    { phLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    phLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -108,25 +114,31 @@ File = [a-zA-Z]{FNameChar}* "." ([Jj][Ss] |
 
 <YYINITIAL, STRING> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]    { phLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+    phLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        phLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {BrowseableURI}    {
+          phLOC();
           onUriMatched(yytext(), yychar);
         }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          phLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }

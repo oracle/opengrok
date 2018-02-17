@@ -19,7 +19,7 @@
 
  /*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -168,9 +168,21 @@ public final class Configuration {
     private String webappLAF;
     private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
+    /**
+     * @deprecated This is kept around so not to break object deserialization.
+     * <p>Anyone who is using `--lock on` will now be setting
+     * {@link #luceneLocking} and resetting this field back to its default
+     * value. This should mean that the configuration is written leaving out
+     * this deprecated property; so after some time it can be retired with the
+     * expectation that zero or a miniscule number of production configurations
+     * still have this deprecated property.
+     */
+    @Deprecated
     private boolean usingLuceneLocking;
+    private LuceneLockName luceneLocking = LuceneLockName.OFF;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
+    private int indexingParallelism;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
@@ -377,7 +389,7 @@ public final class Configuration {
         setCachePages(5);
         setCommandTimeout(600); // 10 minutes
         setCompressXref(true);
-        setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
+        //ctags is default(String)
         setCurrentIndexedCollapseThreshold(27);
         setDataRoot(null);
         setDisplayRepositories(true);
@@ -395,7 +407,8 @@ public final class Configuration {
         setIncludedNames(new Filter());
         setIndexVersionedFilesOnly(false);
         setLastEditedDisplayMode(true);
-        setMandoc(System.getProperty("org.opensolaris.opengrok.analysis.Mandoc", null));
+        //luceneLocking default is OFF
+        //mandoc is default(String)
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMessageLimit(500);
         setOptimizeDatabase(true);
@@ -500,9 +513,7 @@ public final class Configuration {
     }
 
     /**
-     * Gets the configuration's ctags command. Default is the system property
-     * for {@code "org.opensolaris.opengrok.analysis.Ctags"} or else the value
-     * {@code "ctags"}.
+     * Gets the configuration's ctags command. Default is null.
      * @return the configured value
      */
     public String getCtags() {
@@ -511,16 +522,14 @@ public final class Configuration {
 
     /**
      * Sets the configuration's ctags command.
-     * @param ctags A program name (full-path if necessary)
+     * @param ctags A program name (full-path if necessary) or {@code null}
      */
     public void setCtags(String ctags) {
         this.ctags = ctags;
     }
 
     /**
-     * Gets the configuration's mandoc command. Default is the system property
-     * for {@code "org.opensolaris.opengrok.analysis.Mandoc"} or else
-     * {@code null}.
+     * Gets the configuration's mandoc command. Default is {@code null}.
      * @return the configured value
      */
     public String getMandoc() {
@@ -529,8 +538,7 @@ public final class Configuration {
 
     /**
      * Sets the configuration's mandoc command.
-     * @param value A program name (full-path if necessary) or {@code null} to
-     * disable mandoc rendering.
+     * @param value A program name (full-path if necessary) or {@code null}
      */
     public void setMandoc(String value) {
         this.mandoc = value;
@@ -913,16 +921,35 @@ public final class Configuration {
         this.optimizeDatabase = optimizeDatabase;
     }
 
+    @Deprecated
     public boolean isUsingLuceneLocking() {
-        return usingLuceneLocking;
+        return LuceneLockName.SIMPLE.equals(luceneLocking) ||
+            LuceneLockName.ON.equals(luceneLocking);
     }
 
+    @Deprecated
     public boolean getUsingLuceneLocking() {
-        return usingLuceneLocking;
+        return isUsingLuceneLocking();
     }
 
+    @Deprecated
     public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        this.usingLuceneLocking = useLuceneLocking;
+        setLuceneLocking(useLuceneLocking ? LuceneLockName.ON :
+            LuceneLockName.OFF);
+    }
+
+    public LuceneLockName getLuceneLocking() {
+        return luceneLocking;
+    }
+
+    /**
+     * @param value off|on|simple|native where "on" is an alias for "simple".
+     * Any other value is a fallback alias for "off" (with a logged warning).
+     */
+    public void setLuceneLocking(LuceneLockName value) {
+        this.luceneLocking = value;
+        // Set the following to default(boolean) regardless of `value'.
+        this.usingLuceneLocking = false;
     }
 
     public void setCompressXref(boolean compressXref) {
@@ -939,6 +966,14 @@ public final class Configuration {
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         this.indexVersionedFilesOnly = indexVersionedFilesOnly;
+    }
+
+    public int getIndexingParallelism() {
+        return indexingParallelism;
+    }
+
+    public void setIndexingParallelism(int value) {
+        this.indexingParallelism = value > 0 ? value : 0;
     }
 
     public boolean isTagsEnabled() {

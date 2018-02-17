@@ -43,11 +43,22 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     @Override
     public void yypop() throws IOException {
         onDisjointSpanChanged(null, yychar);
         super.yypop();
+    }
+
+    protected void chkLOC() {
+        switch (yystate()) {
+            case COMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
     }
 %}
 
@@ -67,12 +78,14 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
 <YYINITIAL>{
 
 "?" {Identifier} {  // Macros
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.MACRO_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
 }
 
 {Identifier} {
+    chkLOC();
     String id = yytext();
     if (!id.equals("_")) {
         onFilteredSymbolMatched(id, yychar, Consts.kwd);
@@ -82,6 +95,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
 }
 
 "-" {IncludeDirective} "(" ({File}|{FPath}) ")." {
+        chkLOC();
         String capture = yytext();
         String parenth = capture.substring(capture.indexOf("("));
         String opening = capture.substring(0, yylength() - parenth.length());
@@ -99,6 +113,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
 }
 
 ^"-" {Identifier} {
+    chkLOC();
     String capture = yytext();
     String punc = capture.substring(0, 1);
     String id = capture.substring(1);
@@ -108,18 +123,21 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
 
 {ErlInt} |
     {Number}    {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar + yylength());
 }
 
  \"     {
+    chkLOC();
     yypush(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
 
  \'     {
+    chkLOC();
     yypush(QATOM);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -133,16 +151,18 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
 }
 
 <STRING> {
- \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <QATOM> {
- \\[\'\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\'\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -157,33 +177,40 @@ File = [a-zA-Z]{FNameChar}* "." ([Ee][Rr][Ll] | [Hh][Rr][Ll] | [Aa][Pp][Pp] |
 
 <YYINITIAL, STRING, COMMENT, QATOM> {
 {ErlangWhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^]    { onNonSymbolMatched(yytext(), yychar); }
+ \s     { onNonSymbolMatched(yytext(), yychar); }
+ [^]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, QATOM> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+     chkLOC();
+     onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, COMMENT> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }
 
 <QATOM> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
     }
 }

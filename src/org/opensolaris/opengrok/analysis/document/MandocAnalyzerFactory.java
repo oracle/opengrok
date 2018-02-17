@@ -24,6 +24,7 @@
 
 package org.opensolaris.opengrok.analysis.document;
 
+import java.io.IOException;
 import java.io.InputStream;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
@@ -34,10 +35,19 @@ public class MandocAnalyzerFactory extends FileAnalyzerFactory {
 
     private static final String NAME = "Mandoc";
 
-    public static final Matcher MATCHER = (byte[] contents, InputStream in) -> {
-        return RuntimeEnvironment.getInstance().getMandoc() != null ?
-            getTrueMenMatcher().isMagic(contents, in) :
-            getTrueMdocMatcher().isMagic(contents, in);
+    public static final Matcher MATCHER = new Matcher() {
+        @Override
+        public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
+                throws IOException {
+            return RuntimeEnvironment.getInstance().getMandoc() != null ?
+                getTrueMenMatcher().isMagic(contents, in) :
+                getTrueMdocMatcher().isMagic(contents, in);
+        }
+
+        @Override
+        public FileAnalyzerFactory forFactory() {
+            return getTrueMenMatcher().forFactory();
+        }
     };
 
     public static final MandocAnalyzerFactory DEFAULT_INSTANCE =

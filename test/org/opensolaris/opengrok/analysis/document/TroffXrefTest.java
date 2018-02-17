@@ -33,12 +33,13 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.opensolaris.opengrok.analysis.CtagsReader;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
@@ -51,19 +52,18 @@ public class TroffXrefTest {
     public void sampleTest() throws IOException {
         writeAndCompare("org/opensolaris/opengrok/analysis/document/sync.1m",
             "org/opensolaris/opengrok/analysis/document/sync_xref.html",
-            null);
+            null, 20);
     }
 
     private void writeAndCompare(String sourceResource, String resultResource,
-        Definitions defs)
-            throws IOException {
+        Definitions defs, int expLOC) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             sourceResource);
         assertNotNull(sourceResource + " should get-as-stream", res);
-        writeTroffXref(new PrintStream(baos), res, defs);
+        int actLOC = writeTroffXref(new PrintStream(baos), res, defs);
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
@@ -80,11 +80,11 @@ public class TroffXrefTest {
         String expected[] = estr.split("\n");
 
         assertLinesEqual("Troff xref", expected, gotten);
+        assertEquals("Troff LOC", expLOC, actLOC);
     }
 
-    private void writeTroffXref(PrintStream oss, InputStream iss,
-        Definitions defs)
-            throws IOException {
+    private int writeTroffXref(PrintStream oss, InputStream iss,
+        Definitions defs) throws IOException {
 
         oss.print(getHtmlBegin());
 
@@ -96,26 +96,11 @@ public class TroffXrefTest {
         WriteXrefArgs wargs = new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw);
         wargs.setDefs(defs);
-        analyzer.writeXref(wargs);
+        Xrefer xref = analyzer.writeXref(wargs);
         oss.print(sw.toString());
 
         oss.print(getHtmlEnd());
-    }
-
-    private Definitions getTagsDefinitions() throws IOException {
-        InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/document/sampletags");
-        assertNotNull("though sampletags should stream,", res);
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-            res, "UTF-8"));
-
-        CtagsReader rdr = new CtagsReader();
-        String line;
-        while ((line = in.readLine()) != null) {
-            rdr.readLine(line);
-        }
-        return rdr.getDefinitions();
+        return xref.getLOC();
     }
 
     private static String getHtmlBegin() {

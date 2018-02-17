@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -154,8 +155,8 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    public void setDirectoryName(String directoryName) {
-        super.setDirectoryName(directoryName);
+    public void setDirectoryName(File directory) {
+        super.setDirectoryName(directory);
 
         if (isWorking()) {
             // set to true if we manage to find the root directory
@@ -198,20 +199,9 @@ public class SubversionRepository extends Repository {
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, String sinceRevision,
-            int numEntries) {
+            int numEntries) throws IOException {
 
-        String abs;
-        try {
-            abs = file.getCanonicalPath();
-        } catch (IOException exp) {
-            LOGGER.log(Level.SEVERE,
-                    "Failed to get canonical path: {0}", exp.getClass().toString());
-            return null;
-        }
-        String filename = "";
-        if (abs.length() > getDirectoryName().length()) {
-            filename = abs.substring(getDirectoryName().length() + 1);
-        }
+        String filename = getRepoRelativePath(file);
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);

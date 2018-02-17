@@ -37,4 +37,10 @@ public interface SymbolMatchedListener {
      * @param evt the event
      */
     void symbolMatched(SymbolMatchedEvent evt);
+
+    /**
+     * Receives an event instance.
+     * @param evt the event
+     */
+    void sourceCodeSeen(SourceCodeSeenEvent evt);
 }

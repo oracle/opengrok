@@ -17,8 +17,9 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -68,6 +69,15 @@ public class Definitions implements Serializable {
     }
 
     /**
+     * Reset all {@link Tag#used} values to {@code false}.
+     */
+    public void resetUnused() {
+        for (Tag tag : tags) {
+            tag.used = false;
+        }
+    }
+
+    /**
      * Get all symbols used in definitions.
      *
      * @return a set containing all the symbols
@@ -105,14 +115,15 @@ public class Definitions implements Serializable {
             LineTagMap line_map = line_maps.get(lineNumber);
             if (line_map != null) {
                 for (Tag tag : line_map.sym_tags.get(symbol)) {
+                    if (tag.used) continue;
                     if (strs.length > 0) { //NOPMD
                         strs[0] = tag.type;
                     }
+                    tag.used = true;
                     // Assume the first one
-                    break;
+                    return true;
                 }
             }
-            return true;
         }
         return false;
     }
@@ -200,6 +211,11 @@ public class Definitions implements Serializable {
          * Scope of tag definition
          */
         public final String signature;
+
+        /**
+         * A non-serialized marker for marking a tag to avoid its reuse.
+         */
+        public transient boolean used;
 
         protected Tag(int line, String symbol, String type, String text, String namespace, String signature) {
             this.line = line;

@@ -101,6 +101,25 @@ abstime_to_reltime(clockid_t clock_id,
 	 */
 	if ((ulong_t)abstime->tv_nsec >= NANOSEC)
 		reltime->tv_nsec = abstime->tv_nsec;
+
+	int dec = 42;
+	int o = 052;
+	int x = 0x2a;
+	int X = 0X2A;
+	unsigned long long ull = 12345678901234567890ull;
+	unsigned long u = 12345678901234567890u;
+
+	double d = 0x1.2p3; /* hex frac 1.2(dec 1.125) scaled by 2^3, i.e. 9.0*/
+	d = 1.2e3;
+	d = 1e0;
+	d = 1.;
+	d = .1;
+	d = 15.0;
+	d = 0x1.ep+3;
+	d = 2.0e+308;
+	d = 1.0e-324;
+	d = -1.0e-324;
+	d = -2.0e+308;
 }
 
 /*http://example.com*/

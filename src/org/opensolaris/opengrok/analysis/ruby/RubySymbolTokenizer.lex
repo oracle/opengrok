@@ -106,6 +106,11 @@ import org.opensolaris.opengrok.web.HtmlConsts;
         // noop
     }
 
+    @Override
+    public void phLOC() {
+        // noop
+    }
+
     /**
      * If the state is YYINITIAL, then transitions to INTRA; otherwise does
      * nothing, because other transitions would have saved the state.
@@ -126,7 +131,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 
     protected RubyLexHelper getNewHelper() {
         return new RubyLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-            HERE, HERExN, HEREin, HEREinxN);
+            HERE, HERExN, HEREin, HEREinxN, SCOMMENT, POD);
     }
 
     protected boolean takeAllContent() {

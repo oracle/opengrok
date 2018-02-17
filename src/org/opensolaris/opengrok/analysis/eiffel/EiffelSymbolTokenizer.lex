@@ -32,7 +32,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 %extends JFlexSymbolMatcher
 %implements EiffelLexer
 %init{
-    h = new EiffelLexHelper(VSTRING, this);
+    h = new EiffelLexHelper(VSTRING, SCOMMENT, this);
     yyline = 1;
 %init}
 %unicode
@@ -91,6 +91,11 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 
     @Override
     public void disjointSpan(String className) throws IOException {
+        // noop
+    }
+
+    @Override
+    public void phLOC() {
         // noop
     }
 

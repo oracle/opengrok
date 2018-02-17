@@ -35,7 +35,9 @@ import java.io.Writer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzerFactory;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
@@ -48,24 +50,24 @@ public class XMLXrefTest {
     @Test
     public void sampleTest() throws IOException {
         writeAndCompare("org/opensolaris/opengrok/analysis/xml/sample.xml",
-            "org/opensolaris/opengrok/analysis/xml/sample_xref.html");
+            "org/opensolaris/opengrok/analysis/xml/sample_xref.html", 229);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare("org/opensolaris/opengrok/analysis/xml/truncated.xml",
-            "org/opensolaris/opengrok/analysis/xml/truncated_xref.html");
+            "org/opensolaris/opengrok/analysis/xml/truncated_xref.html", 1);
     }
 
-    private void writeAndCompare(String sourceResource, String resultResource)
-        throws IOException {
+    private void writeAndCompare(String sourceResource, String resultResource,
+        int expectedLOC) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             sourceResource);
         assertNotNull(sourceResource + " should get-as-stream", res);
-        writeXMLXref(new PrintStream(baos), res);
+        int actLOC = writeXMLXref(new PrintStream(baos), res);
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
@@ -82,9 +84,10 @@ public class XMLXrefTest {
         String expected[] = estr.split("\n");
 
         assertLinesEqual("XML xref", expected, gotten);
+        assertEquals("XML LOC", expectedLOC, actLOC);
     }
 
-    private void writeXMLXref(PrintStream oss, InputStream iss)
+    private int writeXMLXref(PrintStream oss, InputStream iss)
             throws IOException {
 
         oss.print(getHtmlBegin());
@@ -96,10 +99,11 @@ public class XMLXrefTest {
         analyzer.setFoldingEnabled(true);
         WriteXrefArgs wargs = new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw);
-        analyzer.writeXref(wargs);
+        Xrefer xref = analyzer.writeXref(wargs);
         oss.print(sw.toString());
 
         oss.print(getHtmlEnd());
+        return xref.getLOC();
     }
 
     private static String getHtmlBegin() {

@@ -17,8 +17,9 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.pascal;
 
@@ -52,20 +53,9 @@ import org.opensolaris.opengrok.util.TestRepository;
  */
 public class PascalAnalyzerFactoryTest {
     
-    FileAnalyzer analyzer;
-    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
     private static Ctags ctags;
     private static TestRepository repository;
-    
-    public PascalAnalyzerFactoryTest() {
-        PascalAnalyzerFactory analyzerFactory = new PascalAnalyzerFactory();
-        this.analyzer = analyzerFactory.getAnalyzer();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty(ctagsProperty, "ctags"));
-        if (env.validateExuberantCtags()) {
-            this.analyzer.setCtags(new Ctags());
-        }
-    }
+    private static FileAnalyzer analyzer;
     
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {
@@ -84,6 +74,13 @@ public class PascalAnalyzerFactoryTest {
         repository = new TestRepository();
         repository.create(PascalAnalyzerFactoryTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/index/source.zip"));
+
+        PascalAnalyzerFactory analyzerFactory = new PascalAnalyzerFactory();
+        analyzer = analyzerFactory.getAnalyzer();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (env.validateExuberantCtags()) {
+            analyzer.setCtags(new Ctags());
+        }
     }
     
     @AfterClass

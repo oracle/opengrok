@@ -40,11 +40,14 @@ class AdaLexHelper implements Resettable {
 
     private final AdaLexer lexer;
 
-    public AdaLexHelper(AdaLexer lexer) {
+    private final int SCOMMENT;
+
+    public AdaLexHelper(int sCOMMENT, AdaLexer lexer) {
         if (lexer == null) {
             throw new IllegalArgumentException("`lexer' is null");
         }
         this.lexer = lexer;
+        this.SCOMMENT = sCOMMENT;
     }
 
     /**
@@ -98,5 +101,14 @@ class AdaLexHelper implements Resettable {
         } while (off < value.length());
 
         lexer.disjointSpan(null);
+    }
+
+    /**
+     * Calls {@link AdaLexer#phLOC()} if the yystate is not SCOMMENT.
+     */
+    public void chkLOC() {
+        if (lexer.yystate() != SCOMMENT) {
+            lexer.phLOC();
+        }
     }
 }

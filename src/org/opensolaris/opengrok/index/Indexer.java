@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -35,8 +35,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
@@ -47,7 +49,10 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.AnalyzerGuruHelp;
 import org.opensolaris.opengrok.configuration.Configuration;
+import org.opensolaris.opengrok.configuration.ConfigurationHelp;
+import org.opensolaris.opengrok.configuration.LuceneLockName;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.messages.Message;
@@ -85,8 +90,12 @@ public final class Indexer {
     private static boolean addProjects = false;
     private static boolean searchRepositories = false;
     private static boolean noindex = false;
+    private static boolean awaitProfiler;
 
-    private static int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
+    private static boolean help;
+    private static String helpUsage;
+    private static boolean helpDetailed;
+
     private static String configFilename = null;
     private static int status = 0;
 
@@ -124,6 +133,17 @@ public final class Indexer {
         try {
 
             argv = parseOptions(argv);
+            if (help) {
+                status = 1;
+                System.err.println(helpUsage);
+                if (helpDetailed) {
+                    System.err.println(AnalyzerGuruHelp.getUsage());
+                    System.err.println(
+                        ConfigurationHelp.getSamples());
+                }
+                System.exit(status);
+            }
+            if (awaitProfiler) pauseToAwaitProfiler();
             
             env = RuntimeEnvironment.getInstance();
 
@@ -264,8 +284,7 @@ public final class Indexer {
             // And now index it all.
             if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
                 IndexChangedListener progress = new DefaultIndexChangedListener();
-                getInstance().doIndexerExecution(update, noThreads, subFiles,
-                        progress);
+                getInstance().doIndexerExecution(update, subFiles, progress);
             }
 
             writeConfigToFile(env, configFilename);
@@ -282,6 +301,7 @@ public final class Indexer {
             
         } catch (ParseException e) {
             System.err.println("** " +e.getMessage());
+            System.exit(1);
         } catch (IndexerException ex) {
             LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
             System.err.println(openGrok.getUsage());
@@ -345,8 +365,9 @@ public final class Indexer {
     public static String[] parseOptions(String[] argv) throws ParseException {
         String[] usage = { "--help" };
         String program = "opengrok.jar";
-        String[] onOff = {ON, OFF};
-        String[] remoteRepoChoices = {ON, OFF, DIRBASED, UIONLY};
+        final String[] ON_OFF = {ON, OFF};
+        final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
+        final String[] LUCENE_LOCKS = {ON, OFF, "simple", "native"};
 
         if (argv.length == 0) {
             argv = usage;  // will force usage output
@@ -372,8 +393,13 @@ public final class Indexer {
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
             parser.on("-?", "-h", "--help", "Display this usage summary.").Do( v -> {
-                parser.help();
-                System.exit(status);
+                help = true;
+                helpUsage = parser.getUsage();
+            });
+
+            parser.on("--detailed",
+                "Display additional help with -h,--help.").Do(v -> {
+                helpDetailed = true;
             });
 
             parser.on(
@@ -473,12 +499,22 @@ public final class Indexer {
                 cfg.getIgnoredNames().add((String)pattern);
             });
 
-            parser.on("-l", "--lock", "=on/off", onOff, Boolean.class,
-                "Turn on/off locking of the Lucene database during index generation.").Do( v -> {
-                cfg.setUsingLuceneLocking((Boolean)v);
+            parser.on("-l", "--lock", "=on|off|simple|native", LUCENE_LOCKS,
+                "Set OpenGrok/Lucene locking mode of the Lucene database",
+                "during index generation. \"on\" is an alias for \"simple\".",
+                "Default is off.").Do( v -> {
+                try {
+                    if (v != null) {
+                        String vuc = v.toString().toUpperCase(Locale.ROOT);
+                        cfg.setLuceneLocking(LuceneLockName.valueOf(vuc));
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.err.println(String.format(
+                        "`--lock %s' is invalid and ignored", v));
+                }
             });
 
-            parser.on("--leadingWildCards", "=on/off", onOff, Boolean.class, 
+            parser.on("--leadingWildCards", "=on|off", ON_OFF, Boolean.class,
                 "Allow or disallow leading wildcards in a search.").Do( v -> {
                 cfg.setAllowLeadingWildcard((Boolean)v);
             });
@@ -516,7 +552,7 @@ public final class Indexer {
                 runIndex = false;
             });
 
-            parser.on("-O", "--optimize", "=on/off", onOff, Boolean.class,
+            parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
                 "Turn on/off the optimization of the index database",
                 "as part of the indexing step.").
                 Do( v -> {
@@ -557,6 +593,9 @@ public final class Indexer {
                 defaultProjects.add((String)v);
             });
 
+            parser.on("--profiler", "Pause to await profiler or debugger.").
+                Do(v -> awaitProfiler = true);
+
             parser.on("--progress",
                 "Print per project percentage progress information.",
                 "(I/O extensive, since one read through directory structure is",
@@ -566,7 +605,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-Q", "--quickScan",  "=on/off", onOff, Boolean.class,
+            parser.on("-Q", "--quickScan",  "=on|off", ON_OFF, Boolean.class,
                 "Turn on/off quick context scan. By default, only the first",
                 "1024k of a file is scanned, and a '[..all..]' link is inserted",
                 "when the file is bigger. Activating this may slow the server down.",
@@ -584,7 +623,8 @@ public final class Indexer {
                 // Already handled above. This populates usage.
             });
 
-            parser.on("-r", "--remote", "=on|off|uionly|dirbased", remoteRepoChoices,
+            parser.on("-r", "--remote", "=on|off|uionly|dirbased",
+                REMOTE_REPO_CHOICES,
                 "Specify support for remote SCM systems.",
                 "      on - allow retrieval for remote SCM systems.",
                 "     off - ignore SCM for remote systems.",
@@ -605,7 +645,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--renamedHistory", "=on/off", onOff, Boolean.class,
+            parser.on("--renamedHistory", "=on|off", ON_OFF, Boolean.class,
                 "Enable or disable generating history for renamed files.",
                 "If set to on, makes history indexing slower for repositories",
                 "with lots of renamed files.").Do( v -> {
@@ -649,9 +689,9 @@ public final class Indexer {
 
             parser.on("-T", "--threads", "=number", Integer.class,
                 "The number of threads to use for index generation.",
-                "By default the number of threads will be set to the",
-                "number of available CPUs.").Do( threadCount -> {
-                noThreads = (Integer)threadCount;
+                "By default the number of threads will be set to the number",
+                "of available CPUs.").Do( threadCount -> {
+                cfg.setIndexingParallelism((Integer)threadCount);
             });
 
             parser.on("-t", "--tabSize", "=number", Integer.class,
@@ -974,25 +1014,24 @@ public final class Indexer {
      * if any).
      * 
      * @param update if addOption to true, index database is updated, otherwise optimized
-     * @param noThreads number of threads in the pool that participate in the indexing
      * @param subFiles index just some subdirectories
      * @param progress object to receive notifications as indexer progress is made
      * @throws IOException if I/O exception occurred
      */
-    public void doIndexerExecution(final boolean update, int noThreads, List<String> subFiles,
-            IndexChangedListener progress)
+    public void doIndexerExecution(final boolean update, List<String> subFiles,
+        IndexChangedListener progress)
             throws IOException {
         Statistics elapsed = new Statistics();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
         LOGGER.info("Starting indexing");
 
-        ExecutorService executor = Executors.newFixedThreadPool(noThreads);
+        IndexerParallelizer parallelizer = new IndexerParallelizer(env);
 
         if (subFiles == null || subFiles.isEmpty()) {
             if (update) {
-                IndexDatabase.updateAll(executor, progress);
+                IndexDatabase.updateAll(parallelizer, progress);
             } else if (env.isOptimizeDatabase()) {
-                IndexDatabase.optimizeAll(executor);
+                IndexDatabase.optimizeAll(parallelizer);
             }
         } else {
             List<IndexDatabase> dbs = new ArrayList<>();
@@ -1026,12 +1065,12 @@ public final class Indexer {
             for (final IndexDatabase db : dbs) {
                 final boolean optimize = env.isOptimizeDatabase();
                 db.addIndexChangedListener(progress);
-                executor.submit(new Runnable() {
+                parallelizer.getFixedExecutor().submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             if (update) {
-                                db.update();
+                                db.update(parallelizer);
                             } else if (optimize) {
                                 db.optimize();
                             }
@@ -1045,11 +1084,12 @@ public final class Indexer {
             }
         }
 
-        executor.shutdown();
-        while (!executor.isTerminated()) {
+        parallelizer.getFixedExecutor().shutdown();
+        while (!parallelizer.getFixedExecutor().isTerminated()) {
             try {
                 // Wait forever
-                executor.awaitTermination(999, TimeUnit.DAYS);
+                parallelizer.getFixedExecutor().awaitTermination(999,
+                    TimeUnit.DAYS);
             } catch (InterruptedException exp) {
                 LOGGER.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
@@ -1062,6 +1102,11 @@ public final class Indexer {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE,
                     "destroying of renamed thread pool failed", ex);
+        }
+        try {
+            parallelizer.close();
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "parallelizer.close() failed", ex);
         }
         elapsed.report(LOGGER, "Done indexing data of all repositories");
     }
@@ -1085,6 +1130,17 @@ public final class Indexer {
                     + "(is web application server running with opengrok deployed?)", host, port), ex);
         }
         LOGGER.info("Configuration update routine done, check log output for errors.");
+    }
+
+    private static void pauseToAwaitProfiler() {
+        Scanner scan = new Scanner(System.in);
+        String in;
+        do {
+            System.out.print("Start profiler. Continue (Y/N)? ");
+            in = scan.nextLine().toLowerCase(Locale.ROOT);
+        } while (!in.equals("y") && !in.equals("n"));
+
+        if (in.equals("n")) System.exit(1);
     }
 
     private Indexer() {

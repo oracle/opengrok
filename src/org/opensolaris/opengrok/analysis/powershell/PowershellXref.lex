@@ -42,6 +42,7 @@ import java.util.regex.Matcher;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
   private final Stack<String> styleStack = new Stack<String>();
 
@@ -81,6 +82,17 @@ import java.util.regex.Matcher;
           onDisjointSpanChanged(style, yychar);
       }
   }
+
+  protected void chkLOC() {
+      switch (yystate()) {
+          case COMMENT:
+          case SCOMMENT:
+              break;
+          default:
+              phLOC();
+              break;
+      }
+  }
 %}
 
 File = {FNameChar}+ "." ([a-zA-Z0-9]+)
@@ -115,26 +127,30 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <STRING>{
  {ComplexVariable}    {
+    chkLOC();
     emitComplexVariable();
  }
  {SimpleVariable}    {
+    chkLOC();
     emitSimpleVariable();
  }
 }
 
 <YYINITIAL>{
- \{     { onScopeChanged(ScopeAction.INC, yytext(), yychar); }
- \}     { onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
- \;     { onScopeChanged(ScopeAction.END, yytext(), yychar); }
+ \{     { chkLOC(); onScopeChanged(ScopeAction.INC, yytext(), yychar); }
+ \}     { chkLOC(); onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
+ \;     { chkLOC(); onScopeChanged(ScopeAction.END, yytext(), yychar); }
 }
 
 <YYINITIAL, SUBSHELL> {
  ^ {Label}    {
+    chkLOC();
     String capture = yytext();
     onLabelMatched(capture, yychar, capture.substring(1));
  }
  {Break} |
  {Continue}    {
+    chkLOC();
     String capture = yytext();
     Matcher m = PoshUtils.GOTO_LABEL.matcher(capture);
     if (!m.find()) {
@@ -150,6 +166,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  }
 
  {DataType}    {
+    chkLOC();
     yypushback(yylength());
     pushSpan(DATATYPE, null);
  }
@@ -157,10 +174,12 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <YYINITIAL, SUBSHELL, DOTSYNTAX> {
  {ComplexVariable}    {
+    chkLOC();
     emitComplexVariable();
     if (yystate() != DOTSYNTAX) pushSpan(DOTSYNTAX, null);
  }
  {SimpleVariable}    {
+    chkLOC();
     emitSimpleVariable();
     if (yystate() != DOTSYNTAX) pushSpan(DOTSYNTAX, null);
  }
@@ -168,6 +187,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <YYINITIAL, SUBSHELL> {
  {Operator}    {
+    chkLOC();
     String capture = yytext();
     if (Consts.poshkwd.contains(capture.toLowerCase())) {
         onKeywordMatched(capture, yychar);
@@ -180,6 +200,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  }
 
  {Number}    {
+    chkLOC();
     String lastClassName = getDisjointSpanClassName();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -187,10 +208,12 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  }
 
  \"    {
+    chkLOC();
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
     onNonSymbolMatched(yytext(), yychar);
  }
  \'    {
+    chkLOC();
     pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
     onNonSymbolMatched(yytext(), yychar);
  }
@@ -205,10 +228,12 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
  }
 
  \@\"    {
+    chkLOC();
     pushSpan(HERESTRING, HtmlConsts.STRING_CLASS);
     onNonSymbolMatched(yytext(), yychar);
  }
  \@\'    {
+    chkLOC();
     pushSpan(HEREQSTRING, HtmlConsts.STRING_CLASS);
     onNonSymbolMatched(yytext(), yychar);
  }
@@ -216,6 +241,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <DOTSYNTAX> {
  "."    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
  }
 
@@ -227,6 +253,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <YYINITIAL, SUBSHELL, DATATYPE, DOTSYNTAX> {
  {Identifier}    {
+    chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.poshkwd, false);
  }
@@ -234,6 +261,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <DATATYPE> {
  "]"    {
+    chkLOC();
     yypushback(yylength());
     yypop();
  }
@@ -241,21 +269,27 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <STRING> {
  [`][\"\$`] |
- \"\"    { onNonSymbolMatched(yytext(), yychar); }
+ \"\"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 
  \$? \"    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <STRING, HERESTRING> {
- "$("    { pushSpan(SUBSHELL, null); onNonSymbolMatched(yytext(), yychar); }
+ "$("    {
+    chkLOC();
+    pushSpan(SUBSHELL, null);
+    onNonSymbolMatched(yytext(), yychar);
+ }
 }
 
 <QSTRING> {
- \'\'    { onNonSymbolMatched(yytext(), yychar); }
+ \'\'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -277,6 +311,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <SUBSHELL> {
   \)    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
   }
@@ -285,16 +320,19 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 <HERESTRING> {
   // Match escaped dollar sign of variable 
   // (eg. `$var) so it does not turn into web-link.
-  "`$"    { onNonSymbolMatched(yytext(), yychar); }
+  "`$"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 
   {SimpleVariable}    {
+     chkLOC();
      emitSimpleVariable();
   }
 
   {ComplexVariable}    {
+     chkLOC();
      emitComplexVariable();
   }
   ^ \"\@    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
   }
@@ -302,6 +340,7 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <HEREQSTRING> {
   ^ "'@"    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
   }
@@ -309,46 +348,60 @@ AnyFPath = "/"? {FNameChar}+ ("/" {FNameChar}+)+
 
 <YYINITIAL, SUBSHELL> {
   /* Don't enter new state if special character is escaped. */
-  [`][`\(\)\{\}\"\'\$\#\\]    { onNonSymbolMatched(yytext(), yychar); }
+  [`][`\(\)\{\}\"\'\$\#\\]    {
+    chkLOC();
+    onNonSymbolMatched(yytext(), yychar);
+  }
 
   /* $# should not start a comment. */
-  "$#"    { onNonSymbolMatched(yytext(), yychar); }
+  "$#"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 
-  \$ ? \(    { pushSpan(SUBSHELL, null); onNonSymbolMatched(yytext(), yychar); }
+  \$ ? \(    {
+    chkLOC();
+    pushSpan(SUBSHELL, null);
+    onNonSymbolMatched(yytext(), yychar);
+  }
 }
 
 <YYINITIAL, SUBSHELL, STRING, SCOMMENT, QSTRING> {
     {File} {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
     }
 
-    {AnyFPath}
-            {onPathlikeMatched(yytext(), '/', false, yychar);}
+    {AnyFPath}    {
+        chkLOC();
+        onPathlikeMatched(yytext(), '/', false, yychar);
+    }
 }
 
 <YYINITIAL, DATATYPE, SUBSHELL, STRING, COMMENT, SCOMMENT, QSTRING, HERESTRING,
     HEREQSTRING> {
 
     {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
-    [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+    [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+    [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, SCOMMENT> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }
 
 <QSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, PoshUtils.STRINGLITERAL_APOS_DELIMITER);
     }
 }

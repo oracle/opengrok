@@ -167,6 +167,11 @@ public class DocumentMatcher implements Matcher {
         return null;
     }
 
+    @Override
+    public FileAnalyzerFactory forFactory() {
+        return factory;
+    }
+
     /**
      * Determines if the {@code in} stream has a line feed character within the
      * first {@code FIRST_LOOK_WIDTH} characters.

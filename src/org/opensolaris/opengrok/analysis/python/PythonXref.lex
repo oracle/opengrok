@@ -43,11 +43,22 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
     @Override
     public void yypop() throws IOException {
         onDisjointSpanChanged(null, yychar);
         super.yypop();
+    }
+
+    protected void chkLOC() {
+        switch (yystate()) {
+            case SCOMMENT:
+                break;
+            default:
+                phLOC();
+                break;
+        }
     }
 %}
 
@@ -65,11 +76,13 @@ File = [a-zA-Z]{FNameChar}* "." ([Pp][Yy] | [Pp][Mm] | [Cc][Oo][Nn][Ff] |
 <YYINITIAL>{
 
 {Identifier} {
+    chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.kwd);
 }
 
 "<" ({File}|{FPath}) ">" {
+        chkLOC();
         onNonSymbolMatched("<", yychar);
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -78,27 +91,32 @@ File = [a-zA-Z]{FNameChar}* "." ([Pp][Yy] | [Pp][Mm] | [Cc][Oo][Nn][Ff] |
 }
 
  {Number}    {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
+    chkLOC();
     yypush(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
  \"\"\" {
+    chkLOC();
     yypush(LSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
  \'     {
+    chkLOC();
     yypush(QSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
  \'\'\' {
+    chkLOC();
     yypush(LQSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -111,8 +129,9 @@ File = [a-zA-Z]{FNameChar}* "." ([Pp][Yy] | [Pp][Mm] | [Cc][Oo][Nn][Ff] |
 }
 
 <STRING> {
- \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -123,8 +142,9 @@ File = [a-zA-Z]{FNameChar}* "." ([Pp][Yy] | [Pp][Mm] | [Cc][Oo][Nn][Ff] |
 }
 
 <QSTRING> {
- \\[\'\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\'\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -135,16 +155,18 @@ File = [a-zA-Z]{FNameChar}* "." ([Pp][Yy] | [Pp][Mm] | [Cc][Oo][Nn][Ff] |
 }
 
 <LSTRING> {
- \\[\"\\]    { onNonSymbolMatched(yytext(), yychar);}
+ \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar);}
  \"\"\" {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
 }
 
 <LQSTRING> {
- \\[\'\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\'\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \'\'\'     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -159,39 +181,47 @@ File = [a-zA-Z]{FNameChar}* "." ([Pp][Yy] | [Pp][Mm] | [Cc][Oo][Nn][Ff] |
 
 <YYINITIAL, STRING, SCOMMENT, QSTRING , LSTRING, LQSTRING> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, SCOMMENT, STRING, QSTRING , LSTRING, LQSTRING> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+    chkLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <SCOMMENT, STRING, LSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }
 
 <QSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
     }
 }
 
 <LQSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, PythonUtils.LONGSTRING_APOS);
     }
 }

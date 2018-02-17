@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -117,6 +118,10 @@ public final class Results {
     private static Reader getXrefReader(
                     File basedir, String path, boolean compressed)
             throws IOException {
+        /**
+         * For backward compatibility, read the OpenGrok-produced document
+         * using the system default charset.
+         */
         if (compressed) {
             return new BufferedReader(IOUtils.createBOMStrippedReader(
                     new GZIPInputStream(new FileInputStream(new File(basedir, path + ".gz")))));
@@ -234,9 +239,11 @@ public final class Results {
                         String htags = getTags(sh.sourceRoot, rpath, false);
                         out.write(sh.summarizer.getSummary(htags).toString());
                     } else {
-                        Reader r = genre == Genre.PLAIN
-                                ? IOUtils.createBOMStrippedReader(new FileInputStream(new File(sh.sourceRoot, rpath)))
-                                : null;
+                        // SRCROOT is read with UTF-8 as a default.
+                        Reader r = genre == Genre.PLAIN ?
+                            IOUtils.createBOMStrippedReader(
+                            new FileInputStream(new File(sh.sourceRoot, rpath)),
+                            StandardCharsets.UTF_8.name()) : null;
                         sh.sourceContext.getContext(r, out, xrefPrefix, morePrefix, 
                                 rpath, tags, true, sh.builder.isDefSearch(), null, scopes);
                     }

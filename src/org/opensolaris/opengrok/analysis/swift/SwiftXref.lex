@@ -40,6 +40,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
   /* Must match {WhiteSpace} regex */
   private final static String WHITE_SPACE = "[ \\t\\f]+";
@@ -56,6 +57,18 @@ import org.opensolaris.opengrok.web.HtmlConsts;
   public void yypop() throws IOException {
       onDisjointSpanChanged(null, yychar);
       super.yypop();
+  }
+
+  protected void chkLOC() {
+      switch (yystate()) {
+          case COMMENT:
+          case SCOMMENT:
+          case SDOC:
+              break;
+          default:
+              phLOC();
+              break;
+      }
   }
 %}
 
@@ -81,16 +94,18 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 %include Swift.lexh
 %%
 <YYINITIAL>{
- \{     { onScopeChanged(ScopeAction.INC, yytext(), yychar); }
- \}     { onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
- \;     { onScopeChanged(ScopeAction.END, yytext(), yychar); }
+ \{     { chkLOC(); onScopeChanged(ScopeAction.INC, yytext(), yychar); }
+ \}     { chkLOC(); onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
+ \;     { chkLOC(); onScopeChanged(ScopeAction.END, yytext(), yychar); }
 
 {Identifier} {
+    chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.kwd);
 }
 
  [`] {Identifier} [`]    {
+    chkLOC();
     String capture = yytext();
     String id = capture.substring(1, capture.length() - 1);
     onNonSymbolMatched("`", yychar);
@@ -99,10 +114,12 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  }
 
  {ImplicitIdentifier} {
+    chkLOC();
     onKeywordMatched(yytext(), yychar);
  }
 
 "<" ({File}|{FPath}) ">" {
+        chkLOC();
         onNonSymbolMatched("<", yychar);
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -114,17 +131,20 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         { onPathlikeMatched(yytext(), '.', false, yychar); }
 */
  {Number}        {
+    chkLOC();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
     onDisjointSpanChanged(null, yychar);
  }
 
  \"     {
+    chkLOC();
     yypush(STRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
  }
  \"\"\"    {
+    chkLOC();
     yypush(TSTRING);
     onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -144,8 +164,9 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 }
 
 <STRING> {
- \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
+ \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
  \"     {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -153,6 +174,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
 <TSTRING> {
  \"\"\"    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     yypop();
  }
@@ -214,30 +236,35 @@ ParamName = {Identifier} | "<" {Identifier} ">"
   }
 }
 
-
 <YYINITIAL, STRING, COMMENT, SCOMMENT, SDOC, TSTRING> {
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
- [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+ [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+ [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, COMMENT, SCOMMENT, SDOC, TSTRING> {
-{FPath}
-        { onPathlikeMatched(yytext(), '/', false, yychar); }
+ {FPath}    {
+    chkLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {File}
         {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
  }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, SCOMMENT, TSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }

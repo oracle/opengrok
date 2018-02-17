@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 /*
@@ -28,6 +28,7 @@
 
 package org.opensolaris.opengrok.analysis.pascal;
 
+import java.util.Locale;
 import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
@@ -37,44 +38,57 @@ import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
     yyline = 1;
 %init}
 %unicode
+%ignorecase
 %int
-%include CommonLexer.lexh
 %char
+%include CommonLexer.lexh
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+%state COMMENT PCOMMENT SCOMMENT QSTRING
 
-%state STRING COMMENT SCOMMENT QSTRING
-
+%include Common.lexh
+%include Pascal.lexh
 %%
 
 <YYINITIAL> {
-{Identifier} {String id = yytext();
-                if(!Consts.kwd.contains(id)){
+\&{Identifier}    {
+    String id = yytext();
+    onSymbolMatched(id.substring(1), yychar + 1);
+    return yystate();
+}
+{Identifier}    {
+    String id = yytext();
+    if (!Consts.kwd.contains(id.toLowerCase(Locale.ROOT))) {
                         onSymbolMatched(id, yychar);
-                        return yystate(); }
-              }
- \"     { yybegin(STRING); }
+                        return yystate();
+    }
+ }
+ {Number}    {}
+ {ControlString}    {}
  \'     { yybegin(QSTRING); }
- \{     { yybegin(COMMENT); }
+ \{     { yypush(COMMENT); }
+ "(*"   { yypush(PCOMMENT); }
  "//"   { yybegin(SCOMMENT); }
 }
 
-<STRING> {
- \"     { yybegin(YYINITIAL); }
-}
-
 <QSTRING> {
+ \'\'    {}
  \'     { yybegin(YYINITIAL); }
 }
 
 <COMMENT> {
-\}    { yybegin(YYINITIAL);}
+ \}      { yypop(); }
+ "(*"    { yypush(PCOMMENT); }
+}
+
+<PCOMMENT> {
+ "*)"    { yypop(); }
+ \{      { yypush(COMMENT); }
 }
 
 <SCOMMENT> {
-\n      { yybegin(YYINITIAL);}
+{WhspChar}*{EOL}    { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
+<YYINITIAL, COMMENT, PCOMMENT, SCOMMENT, QSTRING> {
 [^]    {}
 }

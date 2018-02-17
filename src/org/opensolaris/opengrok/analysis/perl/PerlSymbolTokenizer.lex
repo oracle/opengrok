@@ -43,7 +43,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 %char
 %init{
     h = new PerlLexHelper(QUO, QUOxN, QUOxL, QUOxLxN, this,
-        HERE, HERExN, HEREin, HEREinxN);
+        HERE, HERExN, HEREin, HEREinxN, SCOMMENT, POD);
     yyline = 1;
 %init}
 %include CommonLexer.lexh
@@ -97,6 +97,11 @@ import org.opensolaris.opengrok.web.HtmlConsts;
 
     @Override
     public void disjointSpan(String className) throws IOException {
+        // noop
+    }
+
+    @Override
+    public void phLOC() {
         // noop
     }
 

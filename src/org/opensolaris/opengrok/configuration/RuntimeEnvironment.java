@@ -19,7 +19,7 @@
 
  /*
   * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
-  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
   */
 package org.opensolaris.opengrok.configuration;
 
@@ -100,6 +100,8 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.opensolaris.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
+import org.opensolaris.opengrok.util.PathUtils;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -135,7 +137,20 @@ public final class RuntimeEnvironment {
 
     private Statistics statistics = new Statistics();
     
-    private static IndexTimestamp indexTime = new IndexTimestamp();
+    private static final IndexTimestamp indexTime = new IndexTimestamp();
+
+    /**
+     * Stores a transient value when
+     * {@link #setCtags(java.lang.String)} is called -- i.e. the
+     * value is not mediated to {@link Configuration}.
+     */
+    private String ctags;
+    /**
+     * Stores a transient value when
+     * {@link #setMandoc(java.lang.String)} is called -- i.e. the
+     * value is not mediated to {@link Configuration}.
+     */
+    private String mandoc;
 
     /**
      * Instance of authorization framework.
@@ -370,11 +385,14 @@ public final class RuntimeEnvironment {
      * source root.
      *
      * @param file A file to resolve
-     * @throws IOException If an IO error occurs
-     * @throws FileNotFoundException If the file is not relative to source root
      * @return Path relative to source root
+     * @throws IOException If an IO error occurs
+     * @throws FileNotFoundException if the file is not relative to source root
+     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
+     * an ineligible link
      */
-    public String getPathRelativeToSourceRoot(File file) throws IOException {
+    public String getPathRelativeToSourceRoot(File file)
+            throws IOException, ForbiddenSymlinkException {
         return getPathRelativeToSourceRoot(file, 0);
     }
 
@@ -385,29 +403,32 @@ public final class RuntimeEnvironment {
      *
      * @param file A file to resolve
      * @param stripCount Number of characters past source root to strip
-     * @throws IOException If an IO error occurs
-     * @throws FileNotFoundException If the file is not relative to source root
      * @return Path relative to source root
+     * @throws IOException if an IO error occurs
+     * @throws FileNotFoundException if the file is not relative to source root
+     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
+     * an ineligible link
      */
-    public String getPathRelativeToSourceRoot(File file, int stripCount) throws IOException {
-        String canonicalPath = file.getCanonicalPath();
+    public String getPathRelativeToSourceRoot(File file, int stripCount)
+            throws IOException, ForbiddenSymlinkException {
         String sourceRoot = getSourceRootPath();
-        
-        if(sourceRoot == null){
+        if (sourceRoot == null) {
             throw new FileNotFoundException("Source Root Not Found");
         }
-        
-        if (canonicalPath.startsWith(sourceRoot)) {
-            return canonicalPath.substring(sourceRoot.length() + stripCount);
+
+        String maybeRelPath = PathUtils.getRelativeToCanonical(file.getPath(),
+            sourceRoot, getAllowedSymlinks());
+        File maybeRelFile = new File(maybeRelPath);
+        if (!maybeRelFile.isAbsolute()) {
+            // N.b. OpenGrok has a weird convention that
+            // source-root "relative" paths must start with a '/' as they are
+            // elsewhere directly appended to env.getSourceRootPath() and also
+            // stored as such.
+            maybeRelPath = File.separator + maybeRelPath;
+            return maybeRelPath.substring(stripCount);
         }
-        for (String allowedSymlink : getAllowedSymlinks()) {
-            String allowedTarget = new File(allowedSymlink).getCanonicalPath();
-            if (canonicalPath.startsWith(allowedTarget)) {
-                return canonicalPath.substring(allowedTarget.length()
-                        + stripCount);
-            }
-        }
-        throw new FileNotFoundException("Failed to resolve [" + canonicalPath
+
+        throw new FileNotFoundException("Failed to resolve [" + file.getPath()
                 + "] relative to source root [" + sourceRoot + "]");
     }
 
@@ -529,39 +550,62 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the name of the ctags program in use
-     *
-     * @return the name of the ctags program in use
+     * Gets the name of the ctags program to use: either the last value passed
+     * successfully to {@link #setCtags(java.lang.String)}, or
+     * {@link Configuration#getCtags()}, or the system property for
+     * {@code "org.opensolaris.opengrok.analysis.Ctags"}, or "ctags" as a
+     * default.
+     * @return a defined value
      */
     public String getCtags() {
-        return threadConfig.get().getCtags();
+        String value;
+        return ctags != null ? ctags : (value =
+            threadConfig.get().getCtags()) != null ? value :
+            System.getProperty("org.opensolaris.opengrok.analysis.Ctags",
+            "ctags");
     }
 
     /**
-     * Specify the CTags program to use
+     * Sets the name of the ctags program to use, or resets to use the fallbacks
+     * documented for {@link #getCtags()}.
+     * <p>
+     * N.b. the value is not mediated to {@link Configuration}.
      *
-     * @param ctags the ctags program to use
+     * @param ctags a defined value or {@code null} to reset to use the
+     * {@link Configuration#getCtags()} fallbacks
+     * @see #getCtags()
      */
     public void setCtags(String ctags) {
-        threadConfig.get().setCtags(ctags);
+        this.ctags = ctags;
     }
 
     /**
-     * Get the name of the mandoc program in use
-     *
-     * @return the name of the mandoc program in use or {@code null}
+     * Gets the name of the mandoc program to use: either the last value passed
+     * successfully to {@link #setMandoc(java.lang.String)}, or
+     * {@link Configuration#getMandoc()}, or the system property for
+     * {@code "org.opensolaris.opengrok.analysis.Mandoc"}, or {@code null} as a
+     * default.
+     * @return a defined instance or {@code null}
      */
     public String getMandoc() {
-        return threadConfig.get().getMandoc();
+        String value;
+        return mandoc != null ? mandoc : (value =
+            threadConfig.get().getMandoc()) != null ? value :
+            System.getProperty("org.opensolaris.opengrok.analysis.Mandoc");
     }
 
     /**
-     * Specify the mandoc program to use
+     * Sets the name of the mandoc program to use, or resets to use the
+     * fallbacks documented for {@link #getMandoc()}.
+     * <p>
+     * N.b. the value is not mediated to {@link Configuration}.
      *
-     * @param value the mandoc program to use or {@code null}
+     * @param value a defined value or {@code null} to reset to use the
+     * {@link Configuration#getMandoc()} fallbacks
+     * @see #getMandoc()
      */
     public void setMandoc(String value) {
-        threadConfig.get().setMandoc(value);
+        this.mandoc = value;
     }
 
     public int getCachePages() {
@@ -1047,12 +1091,8 @@ public final class RuntimeEnvironment {
         threadConfig.get().setOptimizeDatabase(optimizeDatabase);
     }
 
-    public boolean isUsingLuceneLocking() {
-        return threadConfig.get().isUsingLuceneLocking();
-    }
-
-    public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        threadConfig.get().setUsingLuceneLocking(useLuceneLocking);
+    public LuceneLockName getLuceneLocking() {
+        return threadConfig.get().getLuceneLocking();
     }
 
     public boolean isIndexVersionedFilesOnly() {
@@ -1061,6 +1101,17 @@ public final class RuntimeEnvironment {
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         threadConfig.get().setIndexVersionedFilesOnly(indexVersionedFilesOnly);
+    }
+
+    /**
+     * Gets the value of {@link Configuration#getIndexingParallelism()} -- or
+     * if zero, then as a default gets the number of available processors.
+     * @return a natural number &gt;= 1
+     */
+    public int getIndexingParallelism() {
+        int parallelism = threadConfig.get().getIndexingParallelism();
+        return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
+            parallelism;
     }
 
     public boolean isTagsEnabled() {
@@ -1316,9 +1367,13 @@ public final class RuntimeEnvironment {
         for (RepositoryInfo r : getRepositories()) {
             Project proj;
             String repoPath;
-
-            repoPath = getPathRelativeToSourceRoot(
+            try {
+                repoPath = getPathRelativeToSourceRoot(
                     new File(r.getDirectoryName()), 0);
+            } catch (ForbiddenSymlinkException e) {
+                LOGGER.log(Level.FINER, e.getMessage());
+                continue;
+            }
 
             if ((proj = Project.getProject(repoPath)) != null) {
                 List<RepositoryInfo> values = repository_map.get(proj);
@@ -1710,7 +1765,7 @@ public final class RuntimeEnvironment {
         try {
             config = makeXMLStringAsConfiguration(m.getText());
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Configuration decoding failed" + ex);
+            LOGGER.log(Level.WARNING, "Configuration decoding failed", ex);
             return;
         }
 

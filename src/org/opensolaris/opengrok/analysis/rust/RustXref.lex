@@ -45,6 +45,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
   /**
    * Stores the number of hashes beginning and ending a raw string or raw byte
@@ -66,6 +67,17 @@ import org.opensolaris.opengrok.web.HtmlConsts;
       onDisjointSpanChanged(null, yychar);
       super.yypop();
   }
+
+  protected void chkLOC() {
+      switch (yystate()) {
+          case COMMENT:
+          case SCOMMENT:
+              break;
+          default:
+              phLOC();
+              break;
+      }
+  }
 %}
 
 File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
@@ -80,14 +92,16 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
 %include Rust.lexh
 %%
 <YYINITIAL> {
-    \{ { onScopeChanged(ScopeAction.INC, yytext(), yychar); }
-    \} { onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
-    \; { onScopeChanged(ScopeAction.END, yytext(), yychar); }
+    \{ { chkLOC(); onScopeChanged(ScopeAction.INC, yytext(), yychar); }
+    \} { chkLOC(); onScopeChanged(ScopeAction.DEC, yytext(), yychar); }
+    \; { chkLOC(); onScopeChanged(ScopeAction.END, yytext(), yychar); }
     {Identifier} {
+        chkLOC();
         String id = yytext();
         onFilteredSymbolMatched(id, yychar, Consts.kwd);
     }
     "<" ({File}|{FPath}) ">" {
+        chkLOC();
         onNonSymbolMatched("<", yychar);
         String path = yytext();
         path = path.substring(1, path.length() - 1);
@@ -95,16 +109,19 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
         onNonSymbolMatched(">", yychar + 1 + path.length());
     }
     {Number} {
+        chkLOC();
         onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
         onDisjointSpanChanged(null, yychar);
     }
     [b]?\" {
+        chkLOC();
         yypush(STRING);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
     }
     [b]?[r][#]*\" {
+        chkLOC();
         yypush(RSTRING);
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         String capture = yytext();
@@ -114,6 +131,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
     [b]?\' ([^\n\r\'\\] | \\[^\n\r]) \' |
     [b]?\' \\[xX]{HEXDIG}{HEXDIG} \' |
     [b]?\' \\[uU]\{ {HEXDIG}{1,6} \}\'    {
+        chkLOC();
         onDisjointSpanChanged(HtmlConsts.STRING_CLASS, yychar);
         onNonSymbolMatched(yytext(), yychar);
         onDisjointSpanChanged(null, yychar);
@@ -132,8 +150,9 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
 }
 
 <STRING> {
-    \\[\"\\]    { onNonSymbolMatched(yytext(), yychar); }
+    \\[\"\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
     \"    {
+        chkLOC();
         onNonSymbolMatched(yytext(), yychar);
         yypop();
     }
@@ -141,6 +160,7 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
 
 <RSTRING> {
     \"[#]*    {
+        chkLOC();
         String capture = yytext();
         if (RustUtils.isRawEnding(capture, rawHashCount)) {
             String ender = capture.substring(0, 1 + rawHashCount);
@@ -182,24 +202,31 @@ File = [a-zA-Z]{FNameChar}* "." ([Rr][Ss] | [Cc][Oo][Nn][Ff] | [Tt][Xx][Tt] |
 
 <YYINITIAL, STRING, RSTRING, COMMENT, SCOMMENT> {
     {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
-    [^\n]    { onNonSymbolMatched(yytext(), yychar); }
+    [[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+    [^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, SCOMMENT> {
-    {FPath} { onPathlikeMatched(yytext(), '/', false, yychar); }
+    {FPath}    {
+        chkLOC();
+        onPathlikeMatched(yytext(), '/', false, yychar);
+    }
 
     {File} {
+        chkLOC();
         String path = yytext();
         onFilelikeMatched(path, yychar);
     }
 
     {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+ {
+        chkLOC();
         onEmailAddressMatched(yytext(), yychar);
     }
 }
 
 <STRING, RSTRING, SCOMMENT> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }

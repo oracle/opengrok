@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -57,7 +58,8 @@ public class BZip2Analyzer extends FileAnalyzer {
     private FileAnalyzer fa;
 
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+    public void analyze(Document doc, StreamSource src, Writer xrefOut)
+            throws IOException, InterruptedException {
         StreamSource bzSrc = wrap(src);
         String path = doc.get("path");
         if (path != null

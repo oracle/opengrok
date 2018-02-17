@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
@@ -38,10 +39,14 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -63,8 +68,10 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
+import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
@@ -73,6 +80,7 @@ import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.configuration.LuceneLockName;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.messages.Message;
@@ -80,7 +88,9 @@ import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.util.ObjectPool;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -94,31 +104,38 @@ public class IndexDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexDatabase.class);
 
+    /**
+     * Formerly, every delete issued an IndexWriter commit(). This is a first
+     * draft of a policy value used to flush -- not commit -- deleted Lucene
+     * items periodically.
+     */
+    private static final int MAX_BUFFERED_DELETE_TERMS = 200;
+
+    private static final Comparator<File> FILENAME_COMPARATOR =
+        (File p1, File p2) -> p1.getName().compareTo(p2.getName());
+
+    private final Object INSTANCE_LOCK = new Object();
+
     private Project project;
     private FSDirectory indexDirectory;    
     private IndexWriter writer;
+    private PendingFileCompleter completer;
     private TermsEnum uidIter;
     private IgnoredNames ignoredNames;
     private Filter includedNames;
     private AnalyzerGuru analyzerGuru;
     private File xrefDir;
     private boolean interrupted;
-    private List<IndexChangedListener> listeners;
+    private CopyOnWriteArrayList<IndexChangedListener> listeners;
     private File dirtyFile;
     private final Object lock = new Object();
     private boolean dirty;
     private boolean running;
     private List<String> directories;
-    private static final Comparator<File> fileComparator = new Comparator<File>() {
-        @Override
-        public int compare(File p1, File p2) {
-            return p1.getName().compareTo(p2.getName());
-        }
-    };
-    private Ctags ctags;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
-    
+    private IndexerParallelizer parallelizer;
+
     // Directory where we store indexes
     public static final String INDEX_DIR = "index";
     public static final String XREF_DIR = "xref";
@@ -142,7 +159,7 @@ public class IndexDatabase {
      */
     public IndexDatabase(Project project) throws IOException {
         this.project = project;
-        lockfact = SimpleFSLockFactory.INSTANCE;
+        lockfact = NoLockFactory.INSTANCE;
         initialize();
     }
 
@@ -150,21 +167,23 @@ public class IndexDatabase {
      * Update the index database for all of the projects. Print progress to
      * standard out.
      *
-     * @param executor An executor to run the job
+     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    public static void updateAll(ExecutorService executor) throws IOException {
-        updateAll(executor, null);
+    public static void updateAll(IndexerParallelizer parallelizer)
+            throws IOException {
+        updateAll(parallelizer, null);
     }
 
     /**
      * Update the index database for all of the projects
      *
-     * @param executor An executor to run the job
+     * @param parallelizer a defined instance
      * @param listener where to signal the changes to the database
      * @throws IOException if an error occurs
      */
-    static void updateAll(ExecutorService executor, IndexChangedListener listener) throws IOException {
+    static void updateAll(IndexerParallelizer parallelizer,
+        IndexChangedListener listener) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -182,11 +201,11 @@ public class IndexDatabase {
                 db.addIndexChangedListener(listener);
             }
 
-            executor.submit(new Runnable() {
+            parallelizer.getFixedExecutor().submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        db.update();
+                        db.update(parallelizer);
                     } catch (Throwable e) {
                         LOGGER.log(Level.SEVERE, "Problem updating lucene index database: ", e);
                     }
@@ -198,12 +217,13 @@ public class IndexDatabase {
     /**
      * Update the index database for a number of sub-directories
      *
-     * @param executor An executor to run the job
+     * @param parallelizer a defined instance
      * @param listener where to signal the changes to the database
      * @param paths list of paths to be indexed
      * @throws IOException if an error occurs
      */
-    public static void update(ExecutorService executor, IndexChangedListener listener, List<String> paths) throws IOException {
+    public static void update(IndexerParallelizer parallelizer,
+        IndexChangedListener listener, List<String> paths) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<>();
 
@@ -241,11 +261,11 @@ public class IndexDatabase {
 
             for (final IndexDatabase db : dbs) {
                 db.addIndexChangedListener(listener);
-                executor.submit(new Runnable() {
+                parallelizer.getFixedExecutor().submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            db.update();
+                            db.update(parallelizer);
                         } catch (Throwable e) {
                             LOGGER.log(Level.SEVERE, "An error occured while updating index", e);
                         }
@@ -257,7 +277,7 @@ public class IndexDatabase {
 
     @SuppressWarnings("PMD.CollapsibleIfStatements")
     private void initialize() throws IOException {
-        synchronized (this) {
+        synchronized (INSTANCE_LOCK) {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             File indexDir = new File(env.getDataRootFile(), INDEX_DIR);            
             if (project != null) {
@@ -271,9 +291,7 @@ public class IndexDatabase {
                 }
             }            
 
-            if (!env.isUsingLuceneLocking()) {
-                lockfact = NoLockFactory.INSTANCE;
-            }
+            lockfact = pickLockFactory(env);
             indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);            
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
@@ -281,7 +299,7 @@ public class IndexDatabase {
             if (env.isGenerateHtml()) {
                 xrefDir = new File(env.getDataRootFile(), XREF_DIR);
             }
-            listeners = new ArrayList<>();
+            listeners = new CopyOnWriteArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
             dirty = dirtyFile.exists();
             directories = new ArrayList<>();
@@ -315,11 +333,14 @@ public class IndexDatabase {
     private int getFileCount(File sourceRoot, String dir) throws IOException {
         int file_cnt = 0;
         if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+            IndexDownArgs args = new IndexDownArgs();
+            args.count_only = true;
+
             LOGGER.log(Level.INFO, "Counting files in {0} ...", dir);
-            file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
+            indexDown(sourceRoot, dir, args);
             LOGGER.log(Level.INFO,
                     "Need to process: {0} files for {1}",
-                    new Object[]{file_cnt, dir});
+                    new Object[]{args.cur_count, dir});
         }
 
         return file_cnt;
@@ -353,10 +374,11 @@ public class IndexDatabase {
     /**
      * Update the content of this index database
      *
+     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
-     * @throws HistoryException if an error occurs when accessing the history
      */
-    public void update() throws IOException, HistoryException {
+    public void update(IndexerParallelizer parallelizer)
+            throws IOException {
         synchronized (lock) {
             if (running) {
                 throw new IOException("Indexer already running!");
@@ -365,30 +387,19 @@ public class IndexDatabase {
             interrupted = false;
         }
 
+        this.parallelizer = parallelizer;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String ctgs = env.getCtags();
-        if (ctgs != null) {
-            ctags = new Ctags();
-            ctags.setBinary(ctgs);
-        }
-        if (ctags == null) {
-            LOGGER.severe("Unable to run ctags! searching definitions will not work!");
-        }
 
-        if (ctags != null) {
-            String filename = env.getCTagsExtraOptionsFile();
-            if (filename != null) {
-                ctags.setCTagsExtraOptionsFile(filename);
-            }
-        }
-
+        IOException finishingException = null;
         try {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setRAMBufferSizeMB(env.getRamBufferSize());
+            iwc.setMaxBufferedDeleteTerms(MAX_BUFFERED_DELETE_TERMS);
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
+            completer = new PendingFileCompleter();
 
             if (directories.isEmpty()) {
                 if (project == null) {
@@ -407,7 +418,16 @@ public class IndexDatabase {
                 }
 
                 if (env.isHistoryEnabled()) {
-                    HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
+                    try {
+                        HistoryGuru.getInstance().ensureHistoryCacheExists(
+                            sourceRoot);
+                    } catch (HistoryException ex) {
+                        String exmsg = String.format(
+                            "Failed to ensureHistoryCacheExists() for %s",
+                            sourceRoot);
+                        LOGGER.log(Level.SEVERE, exmsg, ex);
+                        continue;
+                    }
                 }
 
                 String startuid = Util.path2uid(dir, "");
@@ -420,7 +440,7 @@ public class IndexDatabase {
                 }
                 
                 try {
-                    if (numDocs > 0) {
+                    if (terms != null) {
                         uidIter = terms.iterator();
                         TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
                         if (stat == TermsEnum.SeekStatus.END) {
@@ -431,9 +451,16 @@ public class IndexDatabase {
                         }
                     }
 
-                    // The actual indexing happens in indexDown().
-                    indexDown(sourceRoot, dir, false, 0,
-                            getFileCount(sourceRoot, dir));
+                    // The actual indexing happens in indexParallel().
+
+                    IndexDownArgs args = new IndexDownArgs();
+                    args.est_total = getFileCount(sourceRoot, dir);
+
+                    args.cur_count = 0;
+                    indexDown(sourceRoot, dir, args);
+
+                    args.cur_count = 0;
+                    indexParallel(args);
 
                     // Remove data for the trailing terms that indexDown()
                     // did not traverse. These correspond to files that have been
@@ -453,30 +480,33 @@ public class IndexDatabase {
                     reader.close();
                 }
             }
+
+            try {
+                finishWriting();
+            } catch (IOException e) {
+                finishingException = e;
+            }
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.SEVERE,
+                "Failed with unexpected RuntimeException", ex);
+            throw ex;
         } finally {
-            if (writer != null) {
-                try {
-                    writer.prepareCommit();
-                    writer.commit();
-                    writer.close();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occured while closing writer", e);
+            completer = null;
+            try {
+                if (writer != null) writer.close();
+            } catch (IOException e) {
+                if (finishingException == null) finishingException = e;
+                LOGGER.log(Level.WARNING,
+                    "An error occured while closing writer", e);
+            } finally {
+                writer = null;
+                synchronized (lock) {
+                    running = false;
                 }
-            }
-
-            if (ctags != null) {
-                try {
-                    ctags.close();
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING,
-                        "An error occured while closing ctags process", e);
-                }
-            }
-
-            synchronized (lock) {
-                running = false;
             }
         }
+
+        if (finishingException != null) throw finishingException;
 
         if (!isInterrupted() && isDirty()) {
             if (env.isOptimizeDatabase()) {
@@ -489,10 +519,11 @@ public class IndexDatabase {
     /**
      * Optimize all index databases
      *
-     * @param executor An executor to run the job
+     * @param parallelizer a defined instance
      * @throws IOException if an error occurs
      */
-    static void optimizeAll(ExecutorService executor) throws IOException {
+    static void optimizeAll(IndexerParallelizer parallelizer)
+            throws IOException {
         List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
@@ -506,11 +537,11 @@ public class IndexDatabase {
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (db.isDirty()) {
-                executor.submit(new Runnable() {
+                parallelizer.getFixedExecutor().submit(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            db.update();
+                            db.update(parallelizer);
                         } catch (Throwable e) {
                             LOGGER.log(Level.SEVERE,
                                 "Problem updating lucene index database: ", e);
@@ -524,7 +555,7 @@ public class IndexDatabase {
     /**
      * Optimize the index database
      */
-    public void optimize() {
+    public void optimize() throws IOException {
         synchronized (lock) {
             if (running) {
                 LOGGER.warning("Optimize terminated... Someone else is updating / optimizing it!");
@@ -532,7 +563,9 @@ public class IndexDatabase {
             }
             running = true;
         }
+
         IndexWriter wrt = null;
+        IOException writerException = null;
         try {
             LOGGER.info("Optimizing the index ... ");
             Analyzer analyzer = new StandardAnalyzer();
@@ -550,12 +583,14 @@ public class IndexDatabase {
                 dirty = false;
             }
         } catch (IOException e) {
+            writerException = e;
             LOGGER.log(Level.SEVERE, "ERROR: optimizing index: {0}", e);
         } finally {
             if (wrt != null) {
                 try {
                     wrt.close();
                 } catch (IOException e) {
+                    if (writerException == null) writerException = e;
                     LOGGER.log(Level.WARNING,
                         "An error occured while closing writer", e);
                 }
@@ -564,6 +599,8 @@ public class IndexDatabase {
                 running = false;
             }
         }
+
+        if (writerException != null) throw writerException;
     }
     
     private boolean isDirty() {
@@ -590,7 +627,7 @@ public class IndexDatabase {
     }
 
     /**
-     * Remove xref file for given path
+     * Queue the removal of xref file for given path
      * @param path path to file under source root
      */
     private void removeXrefFile(String path) {
@@ -600,18 +637,9 @@ public class IndexDatabase {
         } else {
             xrefFile = new File(xrefDir, path);
         }
-        File parent = xrefFile.getParentFile();
-
-        if (!xrefFile.delete() && xrefFile.exists()) {
-            LOGGER.log(Level.INFO, "Failed to remove obsolete xref-file: {0}",
-                xrefFile.getAbsolutePath());
-        }
-
-        // Remove the parent directory if it's empty.
-        if (parent.delete()) {
-            LOGGER.log(Level.FINE, "Removed empty xref dir:{0}",
-                parent.getAbsolutePath());
-        }
+        PendingFileDeletion pending = new PendingFileDeletion(
+            xrefFile.getAbsolutePath());
+        completer.add(pending);
     }
 
     private void removeHistoryFile(String path) {
@@ -619,8 +647,8 @@ public class IndexDatabase {
     }
 
     /**
-     * Remove a stale file (uidIter.term().text()) from the index database,
-     * history cache and xref.
+     * Remove a stale file (uidIter.term().text()) from the index database and
+     * history cache, and queue the removal of xref.
      *
      * @param removeHistory if false, do not remove history cache for this file
      * @throws java.io.IOException if an error occurs
@@ -633,8 +661,6 @@ public class IndexDatabase {
         }
 
         writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));        
-        writer.prepareCommit();
-        writer.commit();
 
         removeXrefFile(path);
         if (removeHistory) {
@@ -652,9 +678,12 @@ public class IndexDatabase {
      *
      * @param file The file to add
      * @param path The path to the file (from source root)
+     * @param ctags a defined instance to use (only if its binary is not null)
      * @throws java.io.IOException if an error occurs
+     * @throws InterruptedException if a timeout occurs
      */
-    private void addFile(File file, String path) throws IOException {
+    private void addFile(File file, String path, Ctags ctags)
+            throws IOException, InterruptedException {
         FileAnalyzer fa;
         try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
             fa = AnalyzerGuru.getAnalyzer(in, path);
@@ -663,7 +692,7 @@ public class IndexDatabase {
         for (IndexChangedListener listener : listeners) {
             listener.fileAdd(path, fa.getClass().getSimpleName());
         }
-        fa.setCtags(ctags);
+        if (ctags.getBinary() != null) fa.setCtags(ctags);
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
         fa.setFoldingEnabled(RuntimeEnvironment.getInstance().isFoldingEnabled());
@@ -671,15 +700,28 @@ public class IndexDatabase {
         Document doc = new Document();
         try (Writer xrefOut = getXrefWriter(fa, path)) {
             analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "File ''{0}'' interrupted--{1}",
+                new Object[]{path, e.getMessage()});
+            cleanupResources(doc);
+            throw e;
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            cleanupResources(doc);
+            return;
         } catch (Exception e) {
             LOGGER.log(Level.INFO,
                     "Skipped file ''{0}'' because the analyzer didn''t "
                     + "understand it.",
                     path);
-            LOGGER.log(Level.FINE,
-                    "Exception from analyzer " + fa.getClass().getName(), e);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Exception from analyzer " +
+                    fa.getClass().getName(), e);
+            }
             cleanupResources(doc);
             return;
+        } finally {
+            fa.setCtags(null);
         }
 
         try {
@@ -703,7 +745,7 @@ public class IndexDatabase {
      *
      * @param doc the document whose resources to clean up
      */
-    private void cleanupResources(Document doc) {
+    private static void cleanupResources(Document doc) {
         for (IndexableField f : doc) {
             // If the field takes input from a reader, close the reader.
             IOUtils.close(f.readerValue());
@@ -777,7 +819,7 @@ public class IndexDatabase {
         return !RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
     }
 
-    boolean accept(File parent, File file) {
+    private boolean accept(File parent, File file) {
         try {
             File f1 = parent.getCanonicalFile();
             File f2 = file.getCanonicalFile();
@@ -870,49 +912,44 @@ public class IndexDatabase {
     }
 
     /**
-     * Generate indexes recursively
-     *
+     * Executes the first, serial stage of indexing, recursively.
+     * <p>Files at least are counted, and if {@code count_only} is false then
+     * any deleted or updated files (based on comparison to the Lucene index)
+     * are passed to {@link #removeFile(boolean)}. New or updated files are
+     * noted for indexing.
      * @param dir the root indexDirectory to generate indexes for
      * @param parent path to parent directory
-     * @param count_only if true will just traverse the source root and count
-     * files
-     * @param cur_count current file count during the traversal of the tree
-     * @param est_total estimate total files to process
-     * @return current file count
+     * @param args arguments to control execution and for collecting a list of
+     * files for indexing
      */
-    private int indexDown(File dir, String parent, boolean count_only,
-        int cur_count, int est_total) throws IOException {
+    private void indexDown(File dir, String parent, IndexDownArgs args)
+            throws IOException {
 
-        int lcur_count = cur_count;
         if (isInterrupted()) {
-            return lcur_count;
+            return;
         }
 
         if (!accept(dir)) {
-            return lcur_count;
+            return;
         }
 
         File[] files = dir.listFiles();
         if (files == null) {
             LOGGER.log(Level.SEVERE, "Failed to get file listing for: {0}",
-                dir.getAbsolutePath());
-            return lcur_count;
+                dir.getPath());
+            return;
         }
-        Arrays.sort(files, fileComparator);
+        Arrays.sort(files, FILENAME_COMPARATOR);
 
         for (File file : files) {
             if (accept(dir, file)) {
                 String path = parent + '/' + file.getName();
 
                 if (file.isDirectory()) {
-                    lcur_count = indexDown(file, path, count_only, lcur_count, est_total);
+                    indexDown(file, path, args);
                 } else {
-                    lcur_count++;
-                    if (count_only) {
-                        continue;
-                    }
-
-                    printProgress(lcur_count, est_total);
+                    args.cur_count++;
+                    if (args.count_only) continue;
 
                     if (uidIter != null) {
                         String uid = Util.path2uid(path,
@@ -951,18 +988,112 @@ public class IndexDatabase {
                             continue;
                         }
                     }
-                    try {
-                        addFile(file, path);
-                    } catch (Exception e) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to add file " + file.getAbsolutePath(),
-                                e);
-                    }
+
+                    args.works.add(new IndexFileWork(file, path));
                 }
             }
         }
+    }
 
-        return lcur_count;
+    /**
+     * Executes the second, parallel stage of indexing.
+     * @param args contains a list of files to index, found during the earlier
+     * stage
+     */
+    private void indexParallel(IndexDownArgs args) throws IOException {
+
+        int worksCount = args.works.size();
+        if (worksCount < 1) return;
+
+        AtomicInteger successCounter = new AtomicInteger();
+        AtomicInteger currentCounter = new AtomicInteger();
+        AtomicInteger alreadyClosedCounter = new AtomicInteger();
+        ObjectPool<Ctags> ctagsPool = parallelizer.getCtagsPool();
+
+        Map<Boolean, List<IndexFileWork>> bySuccess = null;
+        try {
+            bySuccess = parallelizer.getForkJoinPool().submit(() ->
+                args.works.parallelStream().collect(
+                Collectors.groupingByConcurrent((x) -> {
+                    int tries = 0;
+                    Ctags pctags = null;
+                    boolean ret;
+                    while (true) {
+                        try {
+                            if (alreadyClosedCounter.get() > 0) {
+                                ret = false;
+                            } else {
+                                pctags = ctagsPool.get();
+                                addFile(x.file, x.path, pctags);
+                                successCounter.incrementAndGet();
+                                ret = true;
+                            }
+                        } catch (AlreadyClosedException e) {
+                            alreadyClosedCounter.incrementAndGet();
+                            String errmsg = String.format("ERROR addFile(): %s",
+                                x.file);
+                            LOGGER.log(Level.SEVERE, errmsg, e);
+                            x.exception = e;
+                            ret = false;
+                        } catch (InterruptedException e) {
+                            // Allow one retry if interrupted
+                            if (++tries <= 1) continue;
+                            LOGGER.log(Level.WARNING, "No retry: {0}", x.file);
+                            x.exception = e;
+                            ret = false;
+                        } catch (RuntimeException|IOException e) {
+                            String errmsg = String.format("ERROR addFile(): %s",
+                                x.file);
+                            LOGGER.log(Level.WARNING, errmsg, e);
+                            x.exception = e;
+                            ret = false;
+                        } finally {
+                            if (pctags != null) {
+                                ctagsPool.release(pctags);
+                                pctags = null;
+                            }
+                        }
+
+                        int ncount = currentCounter.incrementAndGet();
+                        printProgress(ncount, worksCount);
+                        return ret;
+                    }
+                }))).get();
+        } catch (InterruptedException|ExecutionException e) {
+            int successCount = successCounter.intValue();
+            double successPct = 100.0 * successCount / worksCount;
+            String exmsg = String.format(
+                "%d successes (%.1f%%) after aborting parallel-indexing",
+                successCount, successPct);
+            LOGGER.log(Level.SEVERE, exmsg, e);
+        }
+
+        args.cur_count = currentCounter.intValue();
+
+        // Start with failureCount=worksCount, and then subtract successes.
+        int failureCount = worksCount;
+        if (bySuccess != null) {
+            List<IndexFileWork> successes = bySuccess.getOrDefault(
+                Boolean.TRUE, null);
+            if (successes != null) failureCount -= successes.size();
+        }
+        if (failureCount > 0) {
+            double pctFailed = 100.0 * failureCount / worksCount;
+            String exmsg = String.format(
+                "%d failures (%.1f%%) while parallel-indexing",
+                failureCount, pctFailed);
+            LOGGER.log(Level.WARNING, exmsg);
+        }
+
+        /**
+         * Encountering an AlreadyClosedException is severe enough to abort the
+         * run, since it will fail anyway later upon trying to commit().
+         */
+        int numAlreadyClosed = alreadyClosedCounter.get();
+        if (numAlreadyClosed > 0) {
+            throw new AlreadyClosedException(String.format("count=%d",
+                numAlreadyClosed));
+        }
     }
 
     /**
@@ -1056,8 +1187,8 @@ public class IndexDatabase {
      */
     public Set<String> getFiles() throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter;
-        Terms terms = null;
+        TermsEnum iter = null;
+        Terms terms;
         Set<String> files = new HashSet<>();
 
         try {
@@ -1066,8 +1197,8 @@ public class IndexDatabase {
             if (numDocs > 0) {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.U);
+                iter = terms.iterator(); // init uid iterator
             }
-            iter = terms.iterator(); // init uid iterator
             while (iter != null && iter.term() != null) {
                 files.add(Util.uid2url(iter.term().utf8ToString()));
                 BytesRef next = iter.next();
@@ -1146,8 +1277,8 @@ public class IndexDatabase {
 
     public void listTokens(int freq) throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter;
-        Terms terms = null;         
+        TermsEnum iter = null;
+        Terms terms;
 
         try {
             ireader = DirectoryReader.open(indexDirectory);
@@ -1155,8 +1286,8 @@ public class IndexDatabase {
             if (numDocs > 0) {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.DEFS);
+                iter = terms.iterator(); // init uid iterator
             }
-            iter = terms.iterator(); // init uid iterator            
             while (iter != null && iter.term() != null) {
                 //if (iter.term().field().startsWith("f")) {
                 if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
@@ -1164,9 +1295,6 @@ public class IndexDatabase {
                 }
                 BytesRef next = iter.next();
                 if (next==null) {iter=null;}
-                /*} else {
-                 break;
-                 }*/
             }
         } finally {
 
@@ -1226,7 +1354,13 @@ public class IndexDatabase {
     public static Definitions getDefinitions(File file)
             throws IOException, ParseException, ClassNotFoundException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String path = env.getPathRelativeToSourceRoot(file);
+        String path;
+        try {
+            path = env.getPathRelativeToSourceRoot(file);
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            return null;
+        }
         //sanitize windows path delimiters
         //in order not to conflict with Lucene escape character
         path=path.replace("\\", "/");
@@ -1293,26 +1427,86 @@ public class IndexDatabase {
     private Writer getXrefWriter(FileAnalyzer fa, String path) throws IOException {
         Genre g = fa.getFactory().getGenre();
         if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
-            File xrefFile = new File(xrefDir, path);
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            boolean compressed = env.isCompressXref();
+            File xrefFile = new File(xrefDir, path + (compressed ? ".gz" : ""));
+            File parentFile = xrefFile.getParentFile();
+
             // If mkdirs() returns false, the failure is most likely
             // because the file already exists. But to check for the
             // file first and only add it if it doesn't exists would
             // only increase the file IO...
-            if (!xrefFile.getParentFile().mkdirs()) {
-                assert xrefFile.getParentFile().exists();
+            if (!parentFile.mkdirs()) {
+                assert parentFile.exists();
             }
 
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            // Write to a pending file for later renaming.
+            String xrefAbs = xrefFile.getAbsolutePath();
+            File transientXref = new File(xrefAbs +
+                PendingFileCompleter.PENDING_EXTENSION);
+            PendingFileRenaming ren = new PendingFileRenaming(xrefAbs,
+                transientXref.getAbsolutePath());
+            completer.add(ren);
 
-            boolean compressed = env.isCompressXref();
-            File file = new File(xrefDir, path + (compressed ? ".gz" : ""));
-            return new BufferedWriter(new OutputStreamWriter(
-                    compressed ?
-                        new GZIPOutputStream(new FileOutputStream(file)) :
-                        new FileOutputStream(file)));
+            return new BufferedWriter(new OutputStreamWriter(compressed ?
+                new GZIPOutputStream(new FileOutputStream(transientXref)) :
+                new FileOutputStream(transientXref)));
         }
 
         // no Xref for this analyzer
         return null;
+    }
+
+    LockFactory pickLockFactory(RuntimeEnvironment env) {
+        switch (env.getLuceneLocking()) {
+            case ON:
+            case SIMPLE:
+                return SimpleFSLockFactory.INSTANCE;
+            case NATIVE:
+                return NativeFSLockFactory.INSTANCE;
+            case OFF:
+            default:
+                return NoLockFactory.INSTANCE;
+        }
+    }
+
+    private void finishWriting() throws IOException {
+        boolean hasPendingCommit = false;
+        try {
+            writer.prepareCommit();
+            hasPendingCommit = true;
+
+            int n = completer.complete();
+            LOGGER.log(Level.FINE, "completed {0} file(s)", n);
+
+            // Just before commit(), reset the `hasPendingCommit' flag,
+            // since after commit() is called, there is no need for
+            // rollback() regardless of success.
+            hasPendingCommit = false;
+            writer.commit();
+        } catch (RuntimeException|IOException e) {
+            if (hasPendingCommit) writer.rollback();
+            LOGGER.log(Level.WARNING,
+                "An error occured while finishing writer and completer", e);
+            throw e;
+        }
+    }
+
+    private class IndexDownArgs {
+        boolean count_only;
+        int cur_count;
+        int est_total;
+        final List<IndexFileWork> works = new ArrayList<>();
+    }
+
+    private class IndexFileWork {
+        final File file;
+        final String path;
+        Exception exception;
+
+        public IndexFileWork(File file, String path) {
+            this.file = file;
+            this.path = path;
+        }
     }
 }

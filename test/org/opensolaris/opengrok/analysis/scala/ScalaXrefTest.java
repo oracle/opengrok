@@ -29,7 +29,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -39,8 +38,11 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.opensolaris.opengrok.analysis.Xrefer;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link ScalaXref} class.
@@ -51,49 +53,46 @@ public class ScalaXrefTest {
     public void sampleTest() throws IOException {
         writeAndCompare("org/opensolaris/opengrok/analysis/scala/sample.scala",
             "org/opensolaris/opengrok/analysis/scala/sample_xref.html",
-            getTagsDefinitions());
+            getTagsDefinitions(), 196);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
         writeAndCompare("org/opensolaris/opengrok/analysis/scala/truncated.scala",
             "org/opensolaris/opengrok/analysis/scala/truncated_xref.html",
-            null);
+            null, 1);
     }
 
     private void writeAndCompare(String sourceResource, String resultResource,
-        Definitions defs)
-        throws IOException {
+        Definitions defs, int expLOC) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteArrayOutputStream baosExp = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
             sourceResource);
         assertNotNull(sourceResource + " should get-as-stream", res);
-        writeScalaXref(new PrintStream(baos), res, defs);
+        int actLOC = writeScalaXref(new PrintStream(baos), res, defs);
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
             resultResource);
         assertNotNull(resultResource + " should get-as-stream", exp);
-        copyStream(exp, baosExp);
+        byte[] expbytes = copyStream(exp);
         exp.close();
-        baosExp.close();
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
         String gotten[] = ostr.split("\n");
 
-        String estr = new String(baosExp.toByteArray(), "UTF-8");
+        String estr = new String(expbytes, "UTF-8");
         String expected[] = estr.split("\n");
 
         assertLinesEqual("Scala xref", expected, gotten);
+        assertEquals("Scala LOC", expLOC, actLOC);
     }
 
-    private void writeScalaXref(PrintStream oss, InputStream iss,
-        Definitions defs)
-        throws IOException {
+    private int writeScalaXref(PrintStream oss, InputStream iss,
+        Definitions defs) throws IOException {
 
         oss.print(getHtmlBegin());
 
@@ -105,23 +104,11 @@ public class ScalaXrefTest {
         WriteXrefArgs wargs = new WriteXrefArgs(
             new InputStreamReader(iss, "UTF-8"), sw);
         wargs.setDefs(defs);
-        analyzer.writeXref(wargs);
+        Xrefer xref = analyzer.writeXref(wargs);
         oss.print(sw.toString());
 
         oss.print(getHtmlEnd());
-    }
-
-    private void copyStream(InputStream iss, OutputStream oss)
-        throws IOException {
-
-        byte buffer[] = new byte[8192];
-        int read;
-        do {
-            read = iss.read(buffer, 0, buffer.length);
-            if (read > 0) {
-                oss.write(buffer, 0, read);
-            }
-        } while (read >= 0);
+        return xref.getLOC();
     }
 
     private Definitions getTagsDefinitions() throws IOException {

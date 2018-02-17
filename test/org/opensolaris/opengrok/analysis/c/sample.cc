@@ -259,6 +259,21 @@ Ancestor::definitionContains(const fru_regdef_t *def,
 		}
 	}
 
+	int d = 42;
+	int o = 052;
+	int x = 0x2a;
+	int X = 0X2A;
+	int b = 0b101010; // C++14
+	unsigned long long l1 = 18446744073709550592ull; // C++11
+	unsigned long long l2 = 18'446'744'073'709'550'592llu; // C++14
+	unsigned long long l3 = 1844'6744'0737'0955'0592uLL; // C++14
+	unsigned long long l4 = 184467'440737'0'95505'92LLU; // C++14
+	double d = 0x1.2p3; // hex frac 1.2 (dec 1.125) scaled by 2^3, i.e. 9.0
+	d = 123.456e-67;
+	d = .1E4f;
+	d = 58.;
+	d = -4e2;
+
 	return (found);
 }
 

@@ -40,6 +40,7 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     yyline = 1;
 %init}
 %include CommonLexer.lexh
+%include CommonXref.lexh
 %{
   private final Stack<String> styleStack = new Stack<String>();
 
@@ -102,6 +103,15 @@ import org.opensolaris.opengrok.web.HtmlConsts;
     return line.substring(i).equals(heredocStopWord);
   }
 
+  protected void chkLOC() {
+      switch (yystate()) {
+          case SCOMMENT:
+              break;
+          default:
+              phLOC();
+              break;
+      }
+  }
 %}
 
 File = {FNameChar}+ "." ([a-zA-Z]+)
@@ -129,6 +139,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 %%
 <STRING>{
  "$" {Identifier}    {
+    chkLOC();
     String id = yytext();
     onRefsTermMatched(id, yychar);
  }
@@ -138,6 +149,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
      state on the stack to prevent premature exit from the
      STRING state. */
   \$\{ {Identifier} \[\"    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
   }
@@ -145,11 +157,13 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
 \$ ? {Identifier}    {
+    chkLOC();
     String id = yytext();
     onFilteredSymbolMatched(id, yychar, Consts.shkwd);
  }
 
 {Number}        {
+    chkLOC();
     String lastClassName = getDisjointSpanClassName();
     onDisjointSpanChanged(HtmlConsts.NUMBER_CLASS, yychar);
     onNonSymbolMatched(yytext(), yychar);
@@ -157,10 +171,12 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
  }
 
  \$ ? \"    {
+    chkLOC();
     pushSpan(STRING, HtmlConsts.STRING_CLASS);
     onNonSymbolMatched(yytext(), yychar);
  }
  \$ ? \'    {
+    chkLOC();
     pushSpan(QSTRING, HtmlConsts.STRING_CLASS);
     onNonSymbolMatched(yytext(), yychar);
  }
@@ -171,6 +187,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
  // Recognize here-documents. At least a subset of them.
  "<<" "-"? {WhspChar}* {Identifier} {WhspChar}*    {
+   chkLOC();
    String text = yytext();
    onNonSymbolMatched(text, yychar);
 
@@ -182,32 +199,39 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
  // Any sequence of more than two < characters should not start HEREDOC. Use
  // this rule to catch them before the HEREDOC rule.
  "<<" "<" +    {
+   chkLOC();
    onNonSymbolMatched(yytext(), yychar);
  }
 
  {Unary_op_req_lookahead} / \W    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
  }
  {Unary_op_req_lookahead} $    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
  }
  {WhspChar}+ {Unary_op_char} / ")"    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
  }
  {Binary_op}    {
+    chkLOC();
     onNonSymbolMatched(yytext(), yychar);
  }
 }
 
 <STRING> {
  \\[\"\$\`\\] |
- \" {WhspChar}* \"    { onNonSymbolMatched(yytext(), yychar); }
- \"     { onNonSymbolMatched(yytext(), yychar); yypop(); }
+ \" {WhspChar}* \"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
+ \"     { chkLOC(); onNonSymbolMatched(yytext(), yychar); yypop(); }
  \$\(    {
+    chkLOC();
     pushSpan(SUBSHELL, null);
     onNonSymbolMatched(yytext(), yychar);
  }
  [`]    {
+    chkLOC();
     pushSpan(BACKQUOTE, null);
     onNonSymbolMatched(yytext(), yychar);
  }
@@ -217,6 +241,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * the opening brace must be followed by a blank.
   */
  "${" / {WhspChar} | {EOL}    {
+    chkLOC();
     pushSpan(BRACEGROUP, null);
     onNonSymbolMatched(yytext(), yychar);
  }
@@ -224,8 +249,8 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
 <QSTRING> {
  \\[\'] |
- \' {WhspChar}* \'    { onNonSymbolMatched(yytext(), yychar); }
- \'    { onNonSymbolMatched(yytext(), yychar); yypop(); }
+ \' {WhspChar}* \'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
+ \'    { chkLOC(); onNonSymbolMatched(yytext(), yychar); yypop(); }
 }
 
 <SCOMMENT> {
@@ -236,11 +261,11 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 }
 
 <SUBSHELL> {
-  \)   { onNonSymbolMatched(yytext(), yychar); yypop(); }
+  \)   { chkLOC(); onNonSymbolMatched(yytext(), yychar); yypop(); }
 }
 
 <BACKQUOTE> {
-  [`]    { onNonSymbolMatched(yytext(), yychar); yypop(); }
+  [`]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); yypop(); }
 }
 
 <BRACEGROUP> {
@@ -249,12 +274,21 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * the closing brace must be on beginning of line, or it must be preceded by
   * a semi-colon and (optionally) whitespace.
   */
-  ^ {WhspChar}* \}    { onNonSymbolMatched(yytext(), yychar); yypop(); }
-  ; {WhspChar}* \}    { onNonSymbolMatched(yytext(), yychar); yypop(); }
+  ^ {WhspChar}* \}    {
+    chkLOC();
+    onNonSymbolMatched(yytext(), yychar);
+    yypop();
+  }
+  ; {WhspChar}* \}    {
+    chkLOC();
+    onNonSymbolMatched(yytext(), yychar);
+    yypop();
+  }
 }
 
 <HEREDOC> {
-  [^\n]+    {
+  [^\s]+    {
+    chkLOC();
     String line = yytext();
     if (isHeredocStopWord(line)) {
       yypop();
@@ -263,20 +297,23 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   }
 
   {EOL}    { onEndOfLineMatched(yytext(), yychar); }
+  \s    { onNonSymbolMatched(yytext(), yychar); }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
   /* Don't enter new state if special character is escaped. */
-  \\[`\)\(\{\"\'\$\#\\]    { onNonSymbolMatched(yytext(), yychar); }
+  \\[`\)\(\{\"\'\$\#\\]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 
   /* $# should not start a comment. */
-  "$#"    { onNonSymbolMatched(yytext(), yychar); }
+  "$#"    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 
   \$ ? \(    {
+    chkLOC();
     pushSpan(SUBSHELL, null);
     onNonSymbolMatched(yytext(), yychar);
   }
   [`]    {
+    chkLOC();
     pushSpan(BACKQUOTE, null);
     onNonSymbolMatched(yytext(), yychar);
   }
@@ -288,6 +325,7 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
   * group too early if the ${ cmd; } expression contains nested { cmd; } groups.
   */
   \$ ? \{ / {WhspChar} | {EOL}    {
+    chkLOC();
     pushSpan(BRACEGROUP, null);
     onNonSymbolMatched(yytext(), yychar);
   }
@@ -295,31 +333,38 @@ File = {FNameChar}+ "." ([a-zA-Z]+)
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP, STRING, SCOMMENT, QSTRING> {
 {File}    {
+    chkLOC();
     String path = yytext();
     onFilelikeMatched(path, yychar);
 }
 
 {RelaxedMiddleFPath}    {
-    onPathlikeMatched(yytext(), '/', false, yychar); }
+    chkLOC();
+    onPathlikeMatched(yytext(), '/', false, yychar);
+ }
 
 {WhspChar}*{EOL}    { onEndOfLineMatched(yytext(), yychar); }
-[^\n]    { onNonSymbolMatched(yytext(), yychar); }
+[[\s]--[\n]]    { onNonSymbolMatched(yytext(), yychar); }
+[^\n]    { chkLOC(); onNonSymbolMatched(yytext(), yychar); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+    {
+          chkLOC();
           onEmailAddressMatched(yytext(), yychar);
         }
 }
 
 <STRING, SCOMMENT> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar);
     }
 }
 
 <QSTRING> {
     {BrowseableURI}    {
+        chkLOC();
         onUriMatched(yytext(), yychar, StringUtils.APOS_NO_BSESC);
     }
 }

@@ -32,8 +32,10 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +56,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory.Matcher;
 import org.opensolaris.opengrok.analysis.ada.AdaAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.BZip2AnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.GZIPAnalyzerFactory;
@@ -106,6 +109,7 @@ import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.HistoryReader;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
@@ -279,12 +283,28 @@ public class AnalyzerGuru {
 
     }
 
+    public static Map<String, FileAnalyzerFactory> getExtensionsMap() {
+        return Collections.unmodifiableMap(ext);
+    }
+
+    public static Map<String, FileAnalyzerFactory> getPrefixesMap() {
+        return Collections.unmodifiableMap(pre);
+    }
+
+    public static Map<String, FileAnalyzerFactory> getMagicsMap() {
+        return Collections.unmodifiableMap(magics);
+    }
+
+    public static List<Matcher> getAnalyzerFactoryMatchers() {
+        return Collections.unmodifiableList(matchers);
+    }
+
     public static Map<String, String> getfileTypeDescriptions() {
-        return fileTypeDescriptions;
+        return Collections.unmodifiableMap(fileTypeDescriptions);
     }
 
     public List<FileAnalyzerFactory> getAnalyzerFactories() {
-        return factories;
+        return Collections.unmodifiableList(factories);
     }
 
     /**
@@ -393,10 +413,13 @@ public class AnalyzerGuru {
      * @param fa The analyzer to use on the file
      * @param xrefOut Where to write the xref (possibly {@code null})
      * @throws IOException If an exception occurs while collecting the data
+     * @throws InterruptedException if a timeout occurs
+     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
+     * an ineligible link
      */
     public void populateDocument(Document doc, File file, String path,
-            FileAnalyzer fa, Writer xrefOut)
-            throws IOException {
+        FileAnalyzer fa, Writer xrefOut) throws IOException,
+            InterruptedException, ForbiddenSymlinkException {
 
         String date = DateTools.timeToString(file.lastModified(),
                 DateTools.Resolution.MILLISECOND);
@@ -404,7 +427,8 @@ public class AnalyzerGuru {
                 string_ft_stored_nanalyzed_norms));
         doc.add(new Field(QueryBuilder.FULLPATH, file.getAbsolutePath(),
                 string_ft_nstored_nanalyzed_norms));
-        doc.add(new SortedDocValuesField(QueryBuilder.FULLPATH, new BytesRef(file.getAbsolutePath())));
+        doc.add(new SortedDocValuesField(QueryBuilder.FULLPATH,
+                new BytesRef(file.getAbsolutePath())));
 
         if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
             try {
@@ -419,12 +443,26 @@ public class AnalyzerGuru {
         }
         doc.add(new Field(QueryBuilder.DATE, date, string_ft_stored_nanalyzed_norms));
         doc.add(new SortedDocValuesField(QueryBuilder.DATE, new BytesRef(date)));
-        if (path != null) {
-            doc.add(new TextField(QueryBuilder.PATH, path, Store.YES));
-            Project project = Project.getProject(path);
-            if (project != null) {
-                doc.add(new TextField(QueryBuilder.PROJECT, project.getPath(), Store.YES));
-            }
+
+        // `path' is not null, as it was passed to Util.path2uid() above.
+        doc.add(new TextField(QueryBuilder.PATH, path, Store.YES));
+        Project project = Project.getProject(path);
+        if (project != null) {
+            doc.add(new TextField(QueryBuilder.PROJECT, project.getPath(), Store.YES));
+        }
+
+        /*
+         * Use the parent of the path -- not the absolute file as is done for
+         * FULLPATH -- so that DIRPATH is the same convention as for PATH
+         * above. A StringField, however, is used instead of a TextField.
+         */
+        File fpath = new File(path);
+        String fileParent = fpath.getParent();
+        if (fileParent != null && fileParent.length() > 0) {
+            String normalizedPath = QueryBuilder.normalizeDirPath(fileParent);
+            StringField npstring = new StringField(QueryBuilder.DIRPATH,
+                normalizedPath, Store.NO);
+            doc.add(npstring);
         }
 
         if (fa != null) {
@@ -884,7 +922,8 @@ public class AnalyzerGuru {
 
         String encoding = IOUtils.findBOMEncoding(sig);
         if (encoding == null) {
-            encoding = "UTF-8";
+            // SRCROOT is read with UTF-8 as a default.
+            encoding = StandardCharsets.UTF_8.name();
         } else {
             int skipForBOM = IOUtils.skipForBOM(sig);
             if (in.skip(skipForBOM) < skipForBOM) {

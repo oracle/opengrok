@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  * (derived from Ctags.java).
  */
 package org.opensolaris.opengrok.analysis.document;
@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.channels.ClosedByInterruptException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -110,36 +110,26 @@ public class MandocRunner {
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
-        String utf8 = "UTF-8";
         Process starting = processBuilder.start();
         OutputStreamWriter inn = new OutputStreamWriter(
-            starting.getOutputStream(), utf8);
+            starting.getOutputStream(), StandardCharsets.UTF_8);
         BufferedReader rdr = new BufferedReader(new InputStreamReader(
-            starting.getInputStream(), utf8));
+            starting.getInputStream(), StandardCharsets.UTF_8));
         InputStream errorStream = starting.getErrorStream();
         mandocIn = inn;
         mandocOut = rdr;
         mandoc = starting;
 
         errThread = new Thread(() -> {
-            StringBuilder sb1 = new StringBuilder();
             // implicitly capture `errorStream' for the InputStreamReader
             try (final BufferedReader error = new BufferedReader(
-                new InputStreamReader(errorStream))) {
+                new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
                 String s;
                 while ((s = error.readLine()) != null) {
-                    sb1.append(s);
-                    sb1.append('\n');
+                    LOGGER.log(Level.WARNING, "Error from mandoc: {0}", s);
                 }
-            } catch (ClosedByInterruptException ex) {
-                // ignore
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING,
-                    "Got an exception reading mandoc error stream: ", ex);
-            }
-            if (sb1.length() > 0) {
-                LOGGER.log(Level.WARNING, "Error from mandoc: {0}",
-                    sb1.toString());
+                // ignore
             }
         });
         errThread.setDaemon(true);

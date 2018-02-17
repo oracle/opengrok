@@ -18,14 +18,12 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
 
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.util.StringUtils;
 
@@ -36,32 +34,48 @@ import org.opensolaris.opengrok.util.StringUtils;
 public abstract class JFlexSymbolMatcher extends JFlexStateStacker
         implements ScanningSymbolMatcher {
 
-    private final CopyOnWriteArrayList<SymbolMatchedListener> symbolListeners =
-        new CopyOnWriteArrayList<>();
-
-    private final CopyOnWriteArrayList<NonSymbolMatchedListener>
-        nonSymbolListeners = new CopyOnWriteArrayList<>();
-
+    private SymbolMatchedListener symbolListener;
+    private NonSymbolMatchedListener nonSymbolListener;
     private String disjointSpanClassName;
 
+    /**
+     * Associates the specified listener, replacing the former one.
+     * @param l defined instance
+     */
     @Override
-    public void addSymbolMatchedListener(SymbolMatchedListener l) {
-        symbolListeners.add(l);
+    public void setSymbolMatchedListener(SymbolMatchedListener l) {
+        if (l == null) {
+            throw new IllegalArgumentException("`l' is null");
+        }
+        symbolListener = l;
     }
 
+    /**
+     * Clears any association to a listener.
+     */
     @Override
-    public void removeSymbolMatchedListener(SymbolMatchedListener l) {
-        symbolListeners.remove(l);
+    public void clearSymbolMatchedListener() {
+        symbolListener = null;
     }
 
+    /**
+     * Associates the specified listener, replacing the former one.
+     * @param l defined instance
+     */
     @Override
-    public void addNonSymbolMatchedListener(NonSymbolMatchedListener l) {
-        nonSymbolListeners.add(l);
+    public void setNonSymbolMatchedListener(NonSymbolMatchedListener l) {
+        if (l == null) {
+            throw new IllegalArgumentException("`l' is null");
+        }
+        nonSymbolListener = l;
     }
 
+    /**
+     * Clears any association to a listener.
+     */
     @Override
-    public void removeNonSymbolMatchedListener(NonSymbolMatchedListener l) {
-        nonSymbolListeners.remove(l);
+    public void clearNonSymbolMatchedListener() {
+        nonSymbolListener = null;
     }
 
     /**
@@ -76,15 +90,30 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     /**
      * Raises
      * {@link SymbolMatchedListener#symbolMatched(org.opensolaris.opengrok.analysis.SymbolMatchedEvent)}
-     * for all subscribed listeners in turn.
+     * for a subscribed listener.
      * @param str the symbol string
      * @param start the symbol start position
      */
     protected void onSymbolMatched(String str, int start) {
-        if (symbolListeners.size() > 0) {
+        SymbolMatchedListener l = symbolListener;
+        if (l != null) {
             SymbolMatchedEvent evt = new SymbolMatchedEvent(this, str, start,
                 start + str.length());
-            symbolListeners.forEach((l) -> l.symbolMatched(evt));
+            l.symbolMatched(evt);
+        }
+    }
+
+    /**
+     * Raises
+     * {@link SymbolMatchedListener#sourceCodeSeen(org.opensolaris.opengrok.analysis.SourceCodeSeenEvent)}
+     * for all subscribed listeners in turn.
+     * @param start the source code start position
+     */
+    protected void onSourceCodeSeen(int start) {
+        SymbolMatchedListener l = symbolListener;
+        if (l != null) {
+            SourceCodeSeenEvent evt = new SourceCodeSeenEvent(this, start);
+            l.sourceCodeSeen(evt);
         }
     }
 
@@ -101,47 +130,50 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     /**
      * Raises
      * {@link NonSymbolMatchedListener#nonSymbolMatched(org.opensolaris.opengrok.analysis.TextMatchedEvent)}
-     * for all subscribed listeners in turn.
+     * for a subscribed listener.
      * @param str the text string
      * @param start the text start position
      */
     protected void onNonSymbolMatched(String str, int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, start,
                 start + str.length());
-            onNonSymbolEvent((l) -> l.nonSymbolMatched(evt));
+            l.nonSymbolMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#nonSymbolMatched(org.opensolaris.opengrok.analysis.TextMatchedEvent)}
-     * for all subscribed listeners in turn.
+     * for a subscribed listener.
      * @param str the text string
      * @param hint the text hint
      * @param start the text start position
      */
     protected void onNonSymbolMatched(String str, EmphasisHint hint,
         int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, hint, start,
                 start + str.length());
-            onNonSymbolEvent((l) -> l.nonSymbolMatched(evt));
+            l.nonSymbolMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#keywordMatched(org.opensolaris.opengrok.analysis.TextMatchedEvent)}
-     * for all subscribed listeners in turn.
+     * for a subscribed listener.
      * @param str the text string
      * @param start the text start position
      */
     protected void onKeywordMatched(String str, int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, start,
                 start + str.length());
-            onNonSymbolEvent((l) -> l.keywordMatched(evt));
+            l.keywordMatched(evt);
         }
     }
 
@@ -150,32 +182,34 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * {@link #getLineNumber()} and the number of LFs in {@code str}, and then
      * raises
      * {@link NonSymbolMatchedListener#endOfLineMatched(org.opensolaris.opengrok.analysis.TextMatchedEvent)}
-     * for all subscribed listeners in turn.
+     * for a subscribed listener.
      * @param str the text string
      * @param start the text start position
      */
     protected void onEndOfLineMatched(String str, int start) {
         setLineNumber(getLineNumber() + countLFs(str));
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, start,
                 start + str.length());
-            onNonSymbolEvent((l) -> l.endOfLineMatched(evt));
+            l.endOfLineMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#disjointSpanChanged(org.opensolaris.opengrok.analysis.DisjointSpanChangedEvent)}
-     * for all subscribed listeners in turn.
+     * for a subscribed listener.
      * @param className the text string
      * @param position the text position
      */
     protected void onDisjointSpanChanged(String className, int position) {
         disjointSpanClassName = className;
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             DisjointSpanChangedEvent evt = new DisjointSpanChangedEvent(this,
                 className, position);
-            onNonSymbolEvent((l) -> l.disjointSpanChanged(evt));
+            l.disjointSpanChanged(evt);
         }
     }
 
@@ -193,7 +227,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     /**
      * Raises
      * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
-     * of {@link LinkageType#URI} for all subscribed listeners in turn.
+     * of {@link LinkageType#URI} for a subscribed listener.
      * <p>First, the end of {@code uri} is possibly trimmed (with a
      * corresponding call to {@link #yypushback(int)}) based on the result
      * of {@link StringUtils#countURIEndingPushback(java.lang.String)} and
@@ -234,32 +268,34 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
         } while (subn != 0);
         if (n > 0) yypushback(n);
 
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, uri,
                 LinkageType.URI, start, start + uri.length());
-            onNonSymbolEvent((l) -> l.linkageMatched(evt));
+            l.linkageMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
-     * of {@link LinkageType#FILELIKE} for all subscribed listeners in turn.
+     * of {@link LinkageType#FILELIKE} for a subscribed listener.
      * @param str the text string
      * @param start the text start position
      */
     protected void onFilelikeMatched(String str, int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
                 LinkageType.FILELIKE, start, start + str.length());
-            onNonSymbolEvent((l) -> l.linkageMatched(evt));
+            l.linkageMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#pathlikeMatched(org.opensolaris.opengrok.analysis.PathlikeMatchedEvent)}
-     * for all subscribed listeners in turn.
+     * for a subscribed listener.
      * @param str the path text string
      * @param sep the path separator
      * @param canonicalize a value indicating whether the path should be
@@ -268,102 +304,109 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      */
     protected void onPathlikeMatched(String str, char sep,
         boolean canonicalize, int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             PathlikeMatchedEvent  evt = new PathlikeMatchedEvent(this, str,
                 sep, canonicalize, start, start + str.length());
-            onNonSymbolEvent((l) -> l.pathlikeMatched(evt));
+            l.pathlikeMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
-     * of {@link LinkageType#EMAIL} for all subscribed listeners in turn.
+     * of {@link LinkageType#EMAIL} for a subscribed listener.
      * @param str the text string
      * @param start the text start position
      */
     protected void onEmailAddressMatched(String str, int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
                 LinkageType.EMAIL, start, start + str.length());
-            onNonSymbolEvent((l) -> l.linkageMatched(evt));
+            l.linkageMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
-     * of {@link LinkageType#LABEL} for all subscribed listeners in turn.
+     * of {@link LinkageType#LABEL} for a subscribed listener.
      * @param str the text string (literal capture)
      * @param start the text start position
      * @param lstr the text link string
      */
     protected void onLabelMatched(String str, int start, String lstr) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
                 LinkageType.LABEL, start, start + str.length(), lstr);
-            onNonSymbolEvent((l) -> l.linkageMatched(evt));
+            l.linkageMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
-     * of {@link LinkageType#LABELDEF} for all subscribed listeners in turn.
+     * of {@link LinkageType#LABELDEF} for a subscribed listener.
      * @param str the text string (literal capture)
      * @param start the text start position
      */
     protected void onLabelDefMatched(String str, int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
                 LinkageType.LABELDEF, start, start + str.length());
-            onNonSymbolEvent((l) -> l.linkageMatched(evt));
+            l.linkageMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
-     * of {@link LinkageType#QUERY} for all subscribed listeners in turn.
+     * of {@link LinkageType#QUERY} for a subscribed listener.
      * @param str the text string
      * @param start the text start position
      */
     protected void onQueryTermMatched(String str, int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
                 LinkageType.QUERY, start, start + str.length());
-            onNonSymbolEvent((l) -> l.linkageMatched(evt));
+            l.linkageMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
-     * of {@link LinkageType#REFS} for all subscribed listeners in turn.
+     * of {@link LinkageType#REFS} for a subscribed listener.
      * @param str the text string
      * @param start the text start position
      */
     protected void onRefsTermMatched(String str, int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             LinkageMatchedEvent evt = new LinkageMatchedEvent(this, str,
                 LinkageType.REFS, start, start + str.length());
-            onNonSymbolEvent((l) -> l.linkageMatched(evt));
+            l.linkageMatched(evt);
         }
     }
 
     /**
      * Raises
      * {@link NonSymbolMatchedListener#scopeChanged(org.opensolaris.opengrok.analysis.ScopeChangedEvent)}
-     * for all subscribed listeners in turn.
+     * for a subscribed listener.
      * @param action the scope change action
      * @param str the text string
      * @param start the text start position
      */
     protected void onScopeChanged(ScopeAction action, String str, int start) {
-        if (nonSymbolListeners.size() > 0) {
+        NonSymbolMatchedListener l = nonSymbolListener;
+        if (l != null) {
             ScopeChangedEvent evt = new ScopeChangedEvent(this, action, str,
                 start, start + str.length());
-            nonSymbolListeners.forEach((l) -> l.scopeChanged(evt));
+            l.scopeChanged(evt);
         }
     }
 
@@ -410,10 +453,6 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
         }
         onSymbolMatched(str, start);
         return true;
-    }
-
-    private void onNonSymbolEvent(Consumer<NonSymbolMatchedListener> action) {
-        nonSymbolListeners.forEach(action);
     }
 
     private static int countLFs(String str) {
