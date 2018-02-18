@@ -88,7 +88,7 @@ public class JarAnalyzer extends FileAnalyzer {
                     }
                     JavaClassAnalyzer jca =
                             (JavaClassAnalyzer) fac.getAnalyzer();
-                    jca.analyze(doc, new BufferedInputStream(zis), xrefOut,ename);
+                    jca.analyze(doc, new BufferedInputStream(zis), xrefOut);
                 }
             }
         }

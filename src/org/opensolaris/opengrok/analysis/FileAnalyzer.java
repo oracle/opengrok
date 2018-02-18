@@ -245,7 +245,7 @@ public class FileAnalyzer extends Analyzer {
     }
 
     // you analyzer HAS to override this to get proper symbols in results
-    protected JFlexTokenizer symbolTokenizer;
+    protected final JFlexTokenizer symbolTokenizer;
 
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {

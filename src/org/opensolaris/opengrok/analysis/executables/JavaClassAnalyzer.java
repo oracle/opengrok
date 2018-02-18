@@ -93,11 +93,11 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         try (InputStream in = src.getStream()) {
-            analyze(doc, in, xrefOut,null);
+            analyze(doc, in, xrefOut);
         }
     }
 
-    void analyze(Document doc, InputStream in, Writer xrefOut, String extra) throws IOException {
+    void analyze(Document doc, InputStream in, Writer xrefOut) throws IOException {
         List<String> defs = new ArrayList<>();
         List<String> refs = new ArrayList<>();
         List<String> full = new ArrayList<>();
