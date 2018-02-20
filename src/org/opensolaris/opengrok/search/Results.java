@@ -28,9 +28,7 @@ package org.opensolaris.opengrok.search;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -84,7 +82,7 @@ public final class Results {
      * @throws CorruptIndexException
      * @throws IOException
      */
-    private static Map<String, ArrayList<Document>> createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx)
+    private static Map<String, ArrayList<Document>> createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx)
             throws CorruptIndexException, IOException {
         LinkedHashMap<String, ArrayList<Document>> dirHash =
                 new LinkedHashMap<>();
@@ -155,7 +153,7 @@ public final class Results {
      * @throws ClassNotFoundException
      */
     public static void prettyPrint(Writer out, SearchHelper sh, int start,
-            int end)
+            long end)
             throws HistoryException, IOException, ClassNotFoundException {
         Project p;
         String ctxE = Util.URIEncodePath(sh.contextPath);

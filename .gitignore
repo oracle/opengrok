@@ -31,6 +31,7 @@ lib/derby.jar
 lib/jrcs.jar
 lib/lucene-*
 lib/servlet-api-*
+lib/bcel-*
 lib/junit-*
 lib/hamcrest-core-*
 derby.log

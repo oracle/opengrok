@@ -101,6 +101,24 @@ public class SearchHelperTest {
         return sh;
     }
 
+    private SearchHelper getSearchHelperPath(String searchTerm) {
+        SearchHelper sh = new SearchHelper();
+
+        sh.dataRoot = env.getDataRootFile(); // throws Exception if none-existent
+        sh.order = SortOrder.RELEVANCY;
+        sh.builder = new QueryBuilder().setPath(searchTerm);
+        Assert.assertNotSame(0, sh.builder.getSize());
+        sh.start = 0;
+        sh.maxItems = env.getHitsPerPage();
+        sh.contextPath = env.getUrlPrefix();
+        sh.parallel = Runtime.getRuntime().availableProcessors() > 1;
+        sh.isCrossRefSearch = false;
+        sh.compressed = env.isCompressXref();
+        sh.desc = null;
+        sh.sourceRoot = env.getSourceRootFile();
+        return sh;
+    }    
+    
     @Test
     public void testSearchAfterReindex() {
         SortedSet<String> projectNames = new TreeSet<>();
@@ -125,7 +143,7 @@ public class SearchHelperTest {
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("single project search returned " +
-            Integer.toString(searchHelper.totalHits) + " hits");
+            Long.toString(searchHelper.totalHits) + " hits");
         Assert.assertEquals(4, searchHelper.totalHits);
         searchHelper.destroy();
 
@@ -135,7 +153,7 @@ public class SearchHelperTest {
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("multi-project search returned " +
-            Integer.toString(searchHelper.totalHits) + " hits");
+            Long.toString(searchHelper.totalHits) + " hits");
         Assert.assertEquals(5, searchHelper.totalHits);
         searchHelper.destroy();
 
@@ -144,7 +162,7 @@ public class SearchHelperTest {
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("multi-project search for non-existing term returned " +
-            Integer.toString(searchHelper.totalHits) + " hits");
+            Long.toString(searchHelper.totalHits) + " hits");
         Assert.assertEquals(0, searchHelper.totalHits);
         searchHelper.destroy();
 
@@ -165,10 +183,21 @@ public class SearchHelperTest {
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("multi-project search after reindex returned " +
-            Integer.toString(searchHelper.totalHits) + " hits");
+            Long.toString(searchHelper.totalHits) + " hits");
         Assert.assertEquals(6, searchHelper.totalHits);
         searchHelper.destroy();
         repository.removeDummyFile("c");
+        
+        // Search for case insensitive path.
+        projectNames.add("java");
+        searchHelper = this.getSearchHelperPath("JaVa")
+            .prepareExec(projectNames).executeQuery().prepareSummary();
+        Assert.assertNull(searchHelper.errorMsg);
+        System.out.println("multi-project search for non-existing term returned " +
+            Long.toString(searchHelper.totalHits) + " hits");
+        Assert.assertEquals(5, searchHelper.totalHits);
+        searchHelper.destroy();   
+        
     }
 
     @Test

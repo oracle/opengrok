@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -79,7 +80,6 @@ import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.configuration.LuceneLockName;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.messages.Message;
@@ -102,13 +102,6 @@ import org.opensolaris.opengrok.web.Util;
 public class IndexDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexDatabase.class);
-
-    /**
-     * Formerly, every delete issued an IndexWriter commit(). This is a first
-     * draft of a policy value used to flush -- not commit -- deleted Lucene
-     * items periodically.
-     */
-    private static final int MAX_BUFFERED_DELETE_TERMS = 200;
 
     private static final Comparator<File> FILENAME_COMPARATOR =
         (File p1, File p2) -> p1.getName().compareTo(p2.getName());
@@ -356,7 +349,12 @@ public class IndexDatabase {
                 Message m = Message.createMessage("project");
                 m.addTag(project.getName());
                 m.setText("indexed");
-                m.write(env.getConfigHost(), env.getConfigPort());
+                try {
+                    m.write(env.getConfigHost(), env.getConfigPort());
+                } catch (ConnectException ce) {
+                    LOGGER.log(Level.SEVERE, "Misconfig of webapp host or port", ce);
+                    System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());
+                }
             }
 
             // Also need to store the correct value in configuration
@@ -389,8 +387,7 @@ public class IndexDatabase {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            iwc.setRAMBufferSizeMB(env.getRamBufferSize());
-            iwc.setMaxBufferedDeleteTerms(MAX_BUFFERED_DELETE_TERMS);
+            iwc.setRAMBufferSizeMB(env.getRamBufferSize());            
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
             completer = new PendingFileCompleter();

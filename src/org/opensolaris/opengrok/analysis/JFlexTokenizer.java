@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -93,7 +93,7 @@ public class JFlexTokenizer extends Tokenizer
      * @throws IOException in case of I/O error
      */
     @Override
-    public final boolean incrementToken() throws IOException {        
+    public final boolean incrementToken() throws IOException {
         clearAttributes();
         return matcher.yylex() != matcher.getYYEOF();
     }
@@ -117,7 +117,7 @@ public class JFlexTokenizer extends Tokenizer
     }
 
     /**
-     * Clears, and then resets the instance's attributes per the specified
+     * Clears, and then resets the instances attributes per the specified
      * arguments.
      * @param str the matched symbol
      * @param start the match start position
@@ -127,7 +127,7 @@ public class JFlexTokenizer extends Tokenizer
         clearAttributes();
         //FIXME increasing below by one(default) might be tricky, need more analysis
         // after lucene upgrade to 3.5 below is most probably not even needed        
-        this.posIncrAtt.setPositionIncrement(1);        
+        this.posIncrAtt.setPositionIncrement(1);
         this.termAtt.setEmpty();
         this.termAtt.append(str);
         this.offsetAtt.setOffset(start, end);

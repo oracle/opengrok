@@ -331,7 +331,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Add query text for the specified field.
+     * Add query text for the specified field.  
      *
      * @param field the field to add query text for
      * @param query the query text to set

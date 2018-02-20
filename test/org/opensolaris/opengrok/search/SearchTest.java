@@ -152,7 +152,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "main~"}));
         assertTrue(instance.search());
-        assertEquals("Search for main~ in testdata sources", 9, instance.results.size());
+        assertEquals("Search for main~ in testdata sources", 9, instance.results.size()); // only in SearchEngine ... why?
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main troff\"~5"}));
         assertTrue(instance.search());

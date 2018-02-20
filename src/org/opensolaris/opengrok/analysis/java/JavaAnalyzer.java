@@ -59,4 +59,5 @@ public class JavaAnalyzer extends AbstractSourceCodeAnalyzer {
     protected boolean supportsScopes() {
         return true;
     }
+
 }

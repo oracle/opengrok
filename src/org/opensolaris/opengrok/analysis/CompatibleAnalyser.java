@@ -17,13 +17,15 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.TokenStream;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.search.QueryBuilder;
@@ -35,7 +37,7 @@ public class CompatibleAnalyser extends Analyzer {
     }
 
     @Override
-    protected TokenStreamComponents createComponents(String fieldName) {        
+    protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
             case QueryBuilder.FULL:
                 return new TokenStreamComponents(createPlainFullTokenizer());
@@ -55,11 +57,22 @@ public class CompatibleAnalyser extends Analyzer {
 
     private JFlexTokenizer createPlainSymbolTokenizer() {
         return new JFlexTokenizer(new PlainSymbolTokenizer(
-            FileAnalyzer.dummyReader));
+                FileAnalyzer.dummyReader));
     }
 
     private JFlexTokenizer createPlainFullTokenizer() {
         return new JFlexTokenizer(new PlainFullTokenizer(
-            FileAnalyzer.dummyReader));
+                FileAnalyzer.dummyReader));
+    }
+
+    @Override
+    protected TokenStream normalize(String fieldName, TokenStream in) {
+        switch (fieldName) {
+            case QueryBuilder.DEFS:
+            case QueryBuilder.REFS:
+                return in;
+            default:
+                return new LowerCaseFilter(in);
+        }
     }
 }

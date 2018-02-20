@@ -26,6 +26,8 @@ package org.opensolaris.opengrok.analysis;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.TokenStream;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 public final class HistoryAnalyzer extends Analyzer {
@@ -66,4 +68,9 @@ public final class HistoryAnalyzer extends Analyzer {
         return new TokenStreamComponents(plainfull, new StopFilter(plainfull,
             stopWords));
     }
+    
+    @Override
+    protected TokenStream normalize(String fieldName, TokenStream in) {        
+           return new LowerCaseFilter(in);
+        }        
 }

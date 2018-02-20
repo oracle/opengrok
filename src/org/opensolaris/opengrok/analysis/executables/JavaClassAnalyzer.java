@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.executables;
@@ -42,8 +42,13 @@ import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.classfile.ConstantDouble;
 import org.apache.bcel.classfile.ConstantFloat;
 import org.apache.bcel.classfile.ConstantInteger;
+import org.apache.bcel.classfile.ConstantInvokeDynamic;
 import org.apache.bcel.classfile.ConstantLong;
+import org.apache.bcel.classfile.ConstantMethodHandle;
+import org.apache.bcel.classfile.ConstantMethodType;
+import org.apache.bcel.classfile.ConstantModule;
 import org.apache.bcel.classfile.ConstantNameAndType;
+import org.apache.bcel.classfile.ConstantPackage;
 import org.apache.bcel.classfile.ConstantPool;
 import org.apache.bcel.classfile.ConstantString;
 import org.apache.bcel.classfile.ConstantUtf8;
@@ -203,6 +208,8 @@ private static final String RCBREOL="}\n";
             throws IOException {
         String t;
         ConstantPool cp = c.getConstantPool();
+        
+        
         int[] v = new int[cp.getLength() + 1];
         out.write(linkPath(t = c.getSourceFileName()));
         defs.add(t);
@@ -267,6 +274,8 @@ private static final String RCBREOL="}\n";
                         }
                     }
                 }
+            } else if   (a.getTag() == org.apache.bcel.Const.ATTR_BOOTSTRAP_METHODS ) {
+                // TODO fill in bootstrap methods, fix the else if
             } else if (a.getTag() == org.apache.bcel.Const.ATTR_SOURCE_FILE) {
                 v[a.getNameIndex()] = 1;
                 break;
@@ -418,7 +427,7 @@ private static final String RCBREOL="}\n";
     public String constantToString(Constant c, ConstantPool cp, int[] v)
             throws ClassFormatException {
         String str;
-        int i, j;
+        int i, j, k;
         byte tag = c.getTag();
 
         switch (tag) {
@@ -479,7 +488,66 @@ private static final String RCBREOL="}\n";
                 str = (constantToString(cp.getConstant(i), cp, v) + ' ' +
                         constantToString(cp.getConstant(j), cp, v));
                 break;
-
+                
+            case org.apache.bcel.Const.CONSTANT_MethodType:
+                i = ((ConstantMethodType) c).getDescriptorIndex();
+                v[i] = 1;                
+                str = constantToString(cp.getConstant(i), cp, v);
+                break;
+//                CONSTANT_MethodType_info {
+//    u1 tag;
+//    u2 descriptor_index;
+//}
+            case org.apache.bcel.Const.CONSTANT_MethodHandle:
+    //TODO fix implementation as per below to have proper lookup table/constants
+//                i = ((ConstantMethodHandle) c).getReferenceKind();
+//                v[i] = 1;
+//                j = ((ConstantMethodHandle) c).getReferenceIndex();
+//                v[j] = 1;
+//                str = (constantToString(cp.getConstant(i), cp, v) + ' ' +
+//                        constantToString(cp.getConstant(j), cp, v));
+                str="";
+                break;
+//                CONSTANT_MethodHandle_info {
+//    u1 tag;
+//    u1 reference_kind;
+//    u2 reference_index;
+//}
+            case org.apache.bcel.Const.CONSTANT_InvokeDynamic:
+    //TODO fix implementation as per below and add bootstrap method tables first
+//                i = ((ConstantInvokeDynamic) c).getClassIndex();
+//                v[i] = 1;
+//                j = ((ConstantInvokeDynamic) c).getNameAndTypeIndex();
+//                v[j] = 1;
+//                k = ((ConstantInvokeDynamic) c).getBootstrapMethodAttrIndex();
+//                v[k] = 1;
+//                str = (constantToString(cp.getConstant(i), cp, v) + ' ' +
+//                        constantToString(cp.getConstant(j), cp, v) + ' ' +
+//                        constantToString(cp.getConstant(k), cp, v));
+                str="";
+                break;            
+            case org.apache.bcel.Const.CONSTANT_Package:    
+                i = ((ConstantPackage) c).getNameIndex();
+                v[i] = 1;                
+                str = constantToString(cp.getConstant(i), cp, v);
+                break;
+            case org.apache.bcel.Const.CONSTANT_Module:
+                i = ((ConstantModule) c).getNameIndex();
+                v[i] = 1;                
+                str = constantToString(cp.getConstant(i), cp, v);
+                break;
+                
+//                CONSTANT_InvokeDynamic_info {
+//    u1 tag;
+//    u2 bootstrap_method_attr_index;
+//    u2 name_and_type_index;
+//}
+                
+// if types are missing add more as per
+// https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.4.2 
+// and bcel docs 
+// https://commons.apache.org/proper/commons-bcel/apidocs/org/apache/bcel/classfile/Constant.html  
+                
             default: // Never reached
                 throw new ClassFormatException("Unknown constant type " + tag);
         }

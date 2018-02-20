@@ -32,12 +32,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -312,7 +309,7 @@ public class SearchEngine {
     public int search() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         return search(
-                env.hasProjects() ? env.getProjectList() : new ArrayList<Project>(),
+                env.hasProjects() ? env.getProjectList() : new ArrayList<>(),
                 new File(env.getDataRootFile(), IndexDatabase.INDEX_DIR));
     }
 

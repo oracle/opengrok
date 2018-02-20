@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -80,6 +80,8 @@ public class DirectoryHistoryReader {
     List<String> icomment;
     HistoryEntry currentEntry; // set in next()
     History history; // set in the constructor
+    
+    private static final int MAX_RESULTS=40;
 
     /**
      * The main task of this method is to produce list of history entries for
@@ -113,16 +115,17 @@ public class DirectoryHistoryReader {
             try {
                 // Get files under given directory by searching the index.
                 query = qparser.parse(path);
-                TopFieldDocs fdocs = searcher.search(query, hitsPerPage * cachePages, sort);
-                fdocs = searcher.search(query, fdocs.totalHits, sort);
+                TopFieldDocs fdocs;// = searcher.search(query, hitsPerPage * cachePages, sort);
+                // fdocs.totalHits  is total found, we fetch just X
+                fdocs = searcher.search(query, MAX_RESULTS, sort);
                 hits = fdocs.scoreDocs;
             } catch (ParseException e) {
                 LOGGER.log(Level.WARNING,
                         "An error occured while parsing search query", e);
             }
             if (hits != null) {
-                // Get maximum 40 (why ? XXX) files which were changed recently.
-                for (int i = 0; i < 40 && i < hits.length; i++) {
+                // Get maximum MAX_RESULTS (why ? XXX) files which were changed recently.
+                for (int i = 0; i < MAX_RESULTS && i < hits.length; i++) {
                     int docId = hits[i].doc;
                     Document doc = searcher.doc(docId);
                     String rpath = doc.get(QueryBuilder.PATH);

@@ -431,7 +431,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
     <property name="coverage.dir" value="${basedir}/coverage"/>
 
-    <target name="-pre-compile" depends="check-java-version,jrcs,jflex,download-lucene,download-servlet-api"/>
+    <target name="-pre-compile" depends="check-java-version,jrcs,jflex,download-lucene,download-servlet-api,download-bcel"/>
 
     <target name="eclipse" depends="-pre-compile"
             description="satisfy eclipse dependencies"/>
@@ -560,6 +560,27 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </delete>
         <get src="${mvn.repository}/javax/servlet/servlet-api/${servlet-api.version}/${servlet-api.jar}"
              dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>
+    </target>
+
+    <target name="-check-bcel" description="Check that bcel jar file is present">
+        <available file="${bcel.jar}" type="file" property="bcel.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>
+        <condition property="bcel_not_downloaded">
+            <not>
+                <isset property="bcel.jar.present"/>
+            </not>
+        </condition>
+    </target>
+
+    <target name="download-bcel" depends="-check-bcel" if="bcel_not_downloaded">
+        <delete>
+            <fileset dir="lib">
+                <include name="bcel-*.jar"/>
+            </fileset>
+        </delete>        
+        <get src="${mvn.repository}/org/apache/bcel/bcel/${bcel.version}/${bcel.jar}"
+             dest="lib/${bcel.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="-check-junit" description="Check that junit jar file is present">
