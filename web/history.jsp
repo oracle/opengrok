@@ -19,8 +19,8 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
-
 Portions Copyright 2011 Jens Elkner.
+Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page import="org.opensolaris.opengrok.web.Util"%>
@@ -115,8 +115,8 @@ include file="pageheader.jspf"
 
         int start = cfg.getSearchStart();
         int max = cfg.getSearchMaxItems();
-        int totalHits = hist.getHistoryEntries().size();
-        int thispage = Math.min(totalHits - start, max);
+        long totalHits = hist.getHistoryEntries().size();
+        long thispage = Math.min(totalHits - start, max);
 
         // We have a lots of results to show: create a slider for them
         request.setAttribute("history.jsp-slider", Util.createSlider(start, max, totalHits, request));
