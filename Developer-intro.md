@@ -12,7 +12,7 @@ E.g. for Solaris install:
 2. JDK8 (`pkg install developer/java/jdk`)
 3. [Universal ctags](https://github.com/universal-ctags) (from source)
 4. Git (`pkg install git`)
-5. [Netbeans](https://netbeans.org/) (with bundled Tomcat or install Tomcat8 separately and point Netbeans to it)
+5. [Netbeans](https://netbeans.org/) (with bundled Tomcat or install Tomcat8 separately and point Netbeans to it. Note that latest stable Netbeans 8.2 does not work with Tomcat 8.5. Use Tomcat 8.0.)
 6. other SCMs (e.g. `pkg install mercurial subversion`, will be handy for testing)
 
 Also, it would not hurt if you created an issue (https://github.com/OpenGrok/OpenGrok/issues) and mentioned that you will be working on it.
