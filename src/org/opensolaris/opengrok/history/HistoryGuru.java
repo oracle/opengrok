@@ -86,7 +86,7 @@ public final class HistoryGuru {
     private Map<String, String> repositoryRoots = new ConcurrentHashMap<>();
 
     private final int scanningDepth;
-    
+
     /**
      * Creates a new instance of HistoryGuru, and try to set the default source
      * control system.
@@ -353,13 +353,13 @@ public final class HistoryGuru {
      */
     public Map<String, Date> getLastModifiedTimes(File directory)
             throws HistoryException {
-        
+
         Repository repository = getRepository(directory);
-        
+
         if (repository != null && useCache()) {
             return historyCache.getLastModifiedTimes(directory, repository);
         }
-        
+
         return Collections.emptyMap();
     }
 
@@ -451,7 +451,7 @@ public final class HistoryGuru {
                 LOGGER.log(Level.WARNING, "Repository will be ignored...", exp);
             }
         }
-        
+
         return repoList;
     }
 
@@ -479,7 +479,7 @@ public final class HistoryGuru {
     /**
      * Recursively search for repositories in given directories, add those found
      * to the internally used repository map.
-     * 
+     *
      * @param repos collection of repository paths
      * @param ignoredNames what files to ignore
      * @return collection of added repositories
@@ -491,7 +491,7 @@ public final class HistoryGuru {
                 map(r -> new File(r)).
                 collect(Collectors.toList()).toArray(new File[0]), ignoredNames);
     }
-    
+
     /**
      * Get collection of repositories used internally by HistoryGuru.
      * @return collection of repositories
@@ -500,7 +500,7 @@ public final class HistoryGuru {
         return repositories.values().stream().
                 map(ri -> new RepositoryInfo(ri)).collect(Collectors.toSet());
     }
-    
+
     /**
      * Update the source contents in all repositories.
      */
@@ -525,7 +525,7 @@ public final class HistoryGuru {
                     LOGGER.warning(String.format("Skipping update of %s repository"
                             + " in %s: Not implemented", type, path));
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "An error occured while updating "
+                    LOGGER.log(Level.WARNING, "An error occurred while updating "
                             + path + " (" + type + ")", e);
                 }
             } else {
@@ -561,7 +561,7 @@ public final class HistoryGuru {
                             + " in %s: Not implemented", type,
                             repository.getDirectoryName()));
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "An error occured while updating "
+                    LOGGER.log(Level.WARNING, "An error occurred while updating "
                             + repository.getDirectoryName() + " (" + type + ")", e);
                 }
             } else {
@@ -589,7 +589,7 @@ public final class HistoryGuru {
                 repository.createCache(historyCache, sinceRevision);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING,
-                        "An error occured while creating cache for " + path + " ("
+                        "An error occurred while creating cache for " + path + " ("
                         + type + ")", e);
             }
 
@@ -696,7 +696,7 @@ public final class HistoryGuru {
      * Create history cache for selected repositories.
      * For this to work the repositories have to be already present in the
      * internal map, e.g. via {@code setRepositories()} or {@code addRepositories()}.
-     * 
+     *
      * @param repositories list of repository paths
      */
     public void createCache(Collection<String> repositories) {
@@ -710,7 +710,7 @@ public final class HistoryGuru {
      * Remove history data for a list of repositories.
      * Note that this just deals with the data, the map used by HistoryGuru
      * will be left intact.
-     * 
+     *
      * @param repositories list of repository paths relative to source root
      * @return list of repository paths that were found and their history data removed
      * @throws HistoryException if history cannot be retrieved
@@ -786,7 +786,7 @@ public final class HistoryGuru {
     private List<Repository> getReposFromString(Collection<String> repositories) {
         ArrayList<Repository> repos = new ArrayList<>();
         File srcRoot = RuntimeEnvironment.getInstance().getSourceRootFile();
-        
+
         for (String file : repositories) {
             File f = new File(srcRoot, file);
             Repository r = getRepository(f);
@@ -797,7 +797,7 @@ public final class HistoryGuru {
                 repos.add(r);
             }
         }
-        
+
         return repos;
     }
 
@@ -904,10 +904,10 @@ public final class HistoryGuru {
             }
             repos = newrepos;
         }
-        
+
         invalidateRepositories(repos);
     }
-    
+
     /**
      * Go through the list of specified repositories and determine if they
      * are valid. Those that make it through will form the new HistoryGuru
@@ -919,7 +919,7 @@ public final class HistoryGuru {
      * The processing is done via thread pool since the operation
      * is expensive (see {@code RepositoryFactory.getRepository()}).
      *
-     * @param repos collection of repositories to invalidate. 
+     * @param repos collection of repositories to invalidate.
      * If null or empty, the internal map of repositories will be cleared.
      */
     public void invalidateRepositories(Collection<? extends RepositoryInfo> repos) {
@@ -928,12 +928,12 @@ public final class HistoryGuru {
             repositories.clear();
             return;
         }
-        
+
         Map<String, Repository> newrepos =
             Collections.synchronizedMap(new HashMap<>(repos.size()));
         Statistics elapsed = new Statistics();
         boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
-        
+
         if (verbose) {
             LOGGER.log(Level.FINE, "invalidating {0} repositories", repos.size());
         }

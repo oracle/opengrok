@@ -78,7 +78,7 @@ public class LdapFacade extends AbstractLdapProvider {
      * server waiting.
      */
     private int interval = 10 * 1000;
-    
+
     /**
      * LDAP search base
      */
@@ -224,11 +224,11 @@ public class LdapFacade extends AbstractLdapProvider {
     public String getSearchBase() {
         return searchBase;
     }
-            
+
     public void setSearchBase(String base) {
         this.searchBase = base;
     }
-    
+
     @Override
     public boolean isConfigured() {
         return servers != null && servers.size() > 0 && LDAP_FILTER != null && searchBase != null;
@@ -340,7 +340,7 @@ public class LdapFacade extends AbstractLdapProvider {
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);
         } catch (NamingException ex) {
-            LOGGER.log(Level.SEVERE, "An arbitrary LDAP error occured.", ex);
+            LOGGER.log(Level.SEVERE, "An arbitrary LDAP error occurred.", ex);
             closeActualServer();
             actualServer = getNextServer();
             return lookup(dn, filter, attributes, mapper, fail + 1);

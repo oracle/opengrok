@@ -96,7 +96,7 @@ public final class Groups {
                         try {
                             cfg = Configuration.read(f);
                         } catch (ArrayIndexOutOfBoundsException ex) {
-                            System.err.println("An error occured - this may mean that the input file is not well-formated.");
+                            System.err.println("An error occurred - this may mean that the input file is not well-formated.");
                             System.err.println();
                             ex.printStackTrace(System.err);
                             System.exit(3);
@@ -132,11 +132,11 @@ public final class Groups {
                 }
             }
         } catch (FileNotFoundException ex) {
-            System.err.println("An error occured - file does not exist");
+            System.err.println("An error occurred - file does not exist");
             ex.printStackTrace(System.err);
             System.exit(3);
         } catch (IOException ex) {
-            System.err.println("An unknown error occured - the input file may be corrupted");
+            System.err.println("An unknown error occurred - the input file may be corrupted");
             ex.printStackTrace(System.err);
             System.exit(3);
         }
@@ -225,11 +225,11 @@ public final class Groups {
             try {
                 out = new PrintStream(outFile, "utf-8");
             } catch (FileNotFoundException ex) {
-                System.err.println("An error occured - file does not exist");
+                System.err.println("An error occurred - file does not exist");
                 ex.printStackTrace(System.err);
                 System.exit(3);
             } catch (UnsupportedEncodingException ex) {
-                System.err.println("An error occured - file contains unsupported charset");
+                System.err.println("An error occurred - file contains unsupported charset");
                 ex.printStackTrace(System.err);
                 System.exit(3);
             }

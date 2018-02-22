@@ -71,7 +71,7 @@ public class DirectoryExtraReader {
             query = qbuild.build();
         } catch (ParseException e) {
             final String PARSE_ERROR =
-                "An error occured while parsing dirpath query";
+                "An error occurred while parsing dirpath query";
             LOGGER.log(Level.WARNING, PARSE_ERROR, e);
             throw new IOException(PARSE_ERROR);
         }

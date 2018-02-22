@@ -80,7 +80,7 @@ public class DirectoryHistoryReader {
     List<String> icomment;
     HistoryEntry currentEntry; // set in next()
     History history; // set in the constructor
-    
+
     private static final int MAX_RESULTS=40;
 
     /**
@@ -121,7 +121,7 @@ public class DirectoryHistoryReader {
                 hits = fdocs.scoreDocs;
             } catch (ParseException e) {
                 LOGGER.log(Level.WARNING,
-                        "An error occured while parsing search query", e);
+                        "An error occurred while parsing search query", e);
             }
             if (hits != null) {
                 // Get maximum MAX_RESULTS (why ? XXX) files which were changed recently.
@@ -150,7 +150,7 @@ public class DirectoryHistoryReader {
                             hist = HistoryGuru.getInstance().getHistory(f);
                         } catch (HistoryException e) {
                             LOGGER.log(Level.WARNING,
-                                    "An error occured while getting history reader", e);
+                                    "An error occurred while getting history reader", e);
                         }
                         if (hist == null) {
                             put(cdate, "", "-", "", rpath);
@@ -177,7 +177,7 @@ public class DirectoryHistoryReader {
                     ireader.close();
                 } catch (Exception ex) {
                     LOGGER.log(Level.WARNING,
-                            "An error occured while closing reader", ex);
+                            "An error occurred while closing reader", ex);
                 }
             }
         }

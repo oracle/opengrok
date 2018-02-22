@@ -78,7 +78,7 @@ public class SCCSRepository extends Repository {
             return null;
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING,
-                    "An error occured while getting revision", ex);
+                    "An error occurred while getting revision", ex);
             return null;
         }
     }

@@ -302,7 +302,7 @@ public final class Util {
                 break;
             case '\n':
                 if (pre) {
-                    dest.append(c);                
+                    dest.append(c);
                 } else {
                     dest.append("<br/>");
                 }
@@ -723,7 +723,7 @@ public final class Util {
     public static void readableLine(int num, Writer out, Annotation annotation,
             String userPageLink, String userPageSuffix, String project)
             throws IOException
-    {    
+    {
         readableLine(num, out, annotation, userPageLink, userPageSuffix, project, false);
     }
 
@@ -867,7 +867,7 @@ public final class Util {
         out.write("<td class=\"q\">");
         if (RuntimeEnvironment.getInstance().isHistoryEnabled()) {
             String histPrefixE = ctxE + Prefix.HIST_L;
-                    
+
             out.write("<a href=\"");
             out.write(histPrefixE);
             if (!entry.startsWith("/")) {
@@ -1177,7 +1177,7 @@ public final class Util {
             return true;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,
-                    "An error occured while piping file " + file + ": ", e);
+                    "An error occurred while piping file " + file + ": ", e);
         }
         return false;
     }
@@ -1222,7 +1222,7 @@ public final class Util {
                 out.write("</ul>");
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING,
-                        "An error occured for a group of messages", ex);
+                        "An error occurred for a group of messages", ex);
             }
         }
     }
