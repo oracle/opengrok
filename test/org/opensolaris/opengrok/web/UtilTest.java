@@ -111,7 +111,7 @@ public class UtilTest {
         // Prefix gets just prefixed as is and not mangled wrt. path -> "//"
         assertEquals("/<a href=\"/root//xx&project=y\">xx</a>",
                 Util.breadcrumbPath("/root/", "../xx", '/', "&project=y", true));
-        // relative pathes are resolved wrt. / , so path resolves to /a/c/d
+        // relative pathes are resolved wrt. / , so path resolves to /a/c/d 
         assertEquals("/<a href=\"/r//a/\">a</a>/"
                 + "<a href=\"/r//a/c/\">c</a>/"
                 + "<a href=\"/r//a/c/d\">d</a>",
@@ -240,9 +240,9 @@ public class UtilTest {
                 "char    *config_list = NULL;"
             },
             {
+                "* An error occured or there is non-numeric stuff at the end",
                 "* An error occurred or there is non-numeric stuff at the end",
-                "* An error occurred or there is non-numeric stuff at the end",
-                "* An error occurred or there is non-numeric stuff at the end",
+                "* An error occured or there is non-numeric stuff at the end",
                 "* An error occur<span class=\"a\">r</span>ed or there is "
                 + "non-numeric stuff at the end"
             }
