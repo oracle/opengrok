@@ -271,10 +271,10 @@ public class SearchEngine {
     }
 
     /**
-     * Execute a search aware of current request. 
-     * 
+     * Execute a search aware of current request.
+     *
      * This filters out all projects which are not allowed for the current request.
-     * 
+     *
      * Before calling this function,
      * you must set the appropriate search criteria with the set-functions. Note
      * that this search will return the first cachePages of hitsPerPage, for
@@ -284,7 +284,7 @@ public class SearchEngine {
      * so that IndexSearcher objects are properly freed.
      *
      * @return The number of hits
-     * @see ProjectHelper#getAllProjects() 
+     * @see ProjectHelper#getAllProjects()
      */
     public int search(HttpServletRequest req) {
         ProjectHelper pHelper = PageConfig.get(req).getProjectHelper();
@@ -294,8 +294,8 @@ public class SearchEngine {
     }
 
     /**
-     * Execute a search without authorization. 
-     * 
+     * Execute a search without authorization.
+     *
      * Before calling this function, you must set the
      * appropriate search criteria with the set-functions. Note that this search
      * will return the first cachePages of hitsPerPage, for more you need to
@@ -363,7 +363,7 @@ public class SearchEngine {
                 }
                 summarizer = new Summarizer(query, analyzer);
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "An error occured while creating summary", e);
+                LOGGER.log(Level.WARNING, "An error occurred while creating summary", e);
             }
 
             historyContext = null;
@@ -373,7 +373,7 @@ public class SearchEngine {
                     historyContext = null;
                 }
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "An error occured while getting history context", e);
+                LOGGER.log(Level.WARNING, "An error occurred while getting history context", e);
             }
         }
         int count = hits == null ? 0 : hits.length;

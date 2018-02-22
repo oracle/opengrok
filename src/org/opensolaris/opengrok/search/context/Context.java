@@ -255,7 +255,7 @@ public class Context {
                     }
                 }
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "An error occured while reading data", e);
+                LOGGER.log(Level.WARNING, "An error occurred while reading data", e);
                 return anything;
             }
             if (charsRead == 0) {

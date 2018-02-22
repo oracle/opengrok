@@ -109,7 +109,7 @@ public class IndexDatabase {
     private final Object INSTANCE_LOCK = new Object();
 
     private Project project;
-    private FSDirectory indexDirectory;    
+    private FSDirectory indexDirectory;
     private IndexWriter writer;
     private PendingFileCompleter completer;
     private TermsEnum uidIter;
@@ -246,7 +246,7 @@ public class IndexDatabase {
                         LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\" .", path);
                     }
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occured while updating index", e);
+                    LOGGER.log(Level.WARNING, "An error occurred while updating index", e);
 
                 }
             }
@@ -259,7 +259,7 @@ public class IndexDatabase {
                         try {
                             db.update(parallelizer);
                         } catch (Throwable e) {
-                            LOGGER.log(Level.SEVERE, "An error occured while updating index", e);
+                            LOGGER.log(Level.SEVERE, "An error occurred while updating index", e);
                         }
                     }
                 });
@@ -271,9 +271,9 @@ public class IndexDatabase {
     private void initialize() throws IOException {
         synchronized (INSTANCE_LOCK) {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            File indexDir = new File(env.getDataRootFile(), INDEX_DIR);            
+            File indexDir = new File(env.getDataRootFile(), INDEX_DIR);
             if (project != null) {
-                indexDir = new File(indexDir, project.getPath());                
+                indexDir = new File(indexDir, project.getPath());
             }
 
             if (!indexDir.exists() && !indexDir.mkdirs()) {
@@ -281,10 +281,10 @@ public class IndexDatabase {
                 if (!indexDir.exists()) {
                     throw new FileNotFoundException("Failed to create root directory [" + indexDir.getAbsolutePath() + "]");
                 }
-            }            
+            }
 
             lockfact = pickLockFactory(env);
-            indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);            
+            indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
             analyzerGuru = new AnalyzerGuru();
@@ -387,7 +387,7 @@ public class IndexDatabase {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            iwc.setRAMBufferSizeMB(env.getRamBufferSize());            
+            iwc.setRAMBufferSizeMB(env.getRamBufferSize());
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
             completer = new PendingFileCompleter();
@@ -399,7 +399,7 @@ public class IndexDatabase {
                     directories.add(project.getPath());
                 }
             }
-            
+
             for (String dir : directories) {
                 File sourceRoot;
                 if ("".equals(dir)) {
@@ -429,11 +429,11 @@ public class IndexDatabase {
                     Fields uFields = MultiFields.getFields(reader);//reader.getTermVectors(0);
                     terms = uFields.terms(QueryBuilder.U);
                 }
-                
+
                 try {
                     if (terms != null) {
                         uidIter = terms.iterator();
-                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
+                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid
                         if (stat == TermsEnum.SeekStatus.END) {
                             uidIter = null;
                             LOGGER.log(Level.WARNING,
@@ -488,7 +488,7 @@ public class IndexDatabase {
             } catch (IOException e) {
                 if (finishingException == null) finishingException = e;
                 LOGGER.log(Level.WARNING,
-                    "An error occured while closing writer", e);
+                    "An error occurred while closing writer", e);
             } finally {
                 writer = null;
                 synchronized (lock) {
@@ -564,7 +564,7 @@ public class IndexDatabase {
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
             wrt = new IndexWriter(indexDirectory, conf);
-            wrt.forceMerge(1); // this is deprecated and not needed anymore            
+            wrt.forceMerge(1); // this is deprecated and not needed anymore
             LOGGER.info("done");
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
@@ -583,7 +583,7 @@ public class IndexDatabase {
                 } catch (IOException e) {
                     if (writerException == null) writerException = e;
                     LOGGER.log(Level.WARNING,
-                        "An error occured while closing writer", e);
+                        "An error occurred while closing writer", e);
                 }
             }
             synchronized (lock) {
@@ -593,7 +593,7 @@ public class IndexDatabase {
 
         if (writerException != null) throw writerException;
     }
-    
+
     private boolean isDirty() {
         synchronized (lock) {
             return dirty;
@@ -651,7 +651,7 @@ public class IndexDatabase {
             listener.fileRemove(path);
         }
 
-        writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));        
+        writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));
 
         removeXrefFile(path);
         if (removeHistory) {
@@ -950,7 +950,7 @@ public class IndexDatabase {
                         // Traverse terms that have smaller UID than the current
                         // file, i.e. given the ordering they positioned before the file
                         // or it is the file that has been modified.
-                        while (uidIter != null && uidIter.term() != null 
+                        while (uidIter != null && uidIter.term() != null
                                 && uidIter.term().compareTo(emptyBR) != 0
                                 && uidIter.term().compareTo(buid) < 0) {
 
@@ -1202,7 +1202,7 @@ public class IndexDatabase {
                 try {
                     ireader.close();
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occured while closing index reader", e);
+                    LOGGER.log(Level.WARNING, "An error occurred while closing index reader", e);
                 }
             }
         }
@@ -1218,7 +1218,7 @@ public class IndexDatabase {
     public int getNumFiles() throws IOException {
         IndexReader ireader = null;
         int numDocs = 0;
-        
+
         try {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
             numDocs = ireader.numDocs();
@@ -1227,11 +1227,11 @@ public class IndexDatabase {
                 try {
                     ireader.close();
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occured while closing index reader", e);
+                    LOGGER.log(Level.WARNING, "An error occurred while closing index reader", e);
                 }
             }
         }
-        
+
         return numDocs;
     }
 
@@ -1293,7 +1293,7 @@ public class IndexDatabase {
                 try {
                     ireader.close();
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "An error occured while closing index reader", e);
+                    LOGGER.log(Level.WARNING, "An error occurred while closing index reader", e);
                 }
             }
         }
@@ -1478,7 +1478,7 @@ public class IndexDatabase {
         } catch (RuntimeException|IOException e) {
             if (hasPendingCommit) writer.rollback();
             LOGGER.log(Level.WARNING,
-                "An error occured while finishing writer and completer", e);
+                "An error occurred while finishing writer and completer", e);
             throw e;
         }
     }

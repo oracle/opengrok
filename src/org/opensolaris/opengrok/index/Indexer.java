@@ -126,10 +126,10 @@ public final class Indexer {
         Executor.registerErrorHandler();
         ArrayList<String> subFiles = new ArrayList<>();
         ArrayList<String> subFilesList = new ArrayList<>();
-        
-        boolean listFiles = false; 
+
+        boolean listFiles = false;
         boolean createDict = false;
-        
+
         try {
 
             argv = parseOptions(argv);
@@ -144,7 +144,7 @@ public final class Indexer {
                 System.exit(status);
             }
             if (awaitProfiler) pauseToAwaitProfiler();
-            
+
             env = RuntimeEnvironment.getInstance();
 
             // Complete the configuration of repository types.
@@ -298,7 +298,7 @@ public final class Indexer {
                     getInstance().sendToConfigHost(env, host, port);
                 }
             }
-            
+
         } catch (ParseException e) {
             System.err.println("** " +e.getMessage());
             System.exit(1);
@@ -321,7 +321,7 @@ public final class Indexer {
     public static class WebAddress {
         private String host;
         private int port;
-        
+
         WebAddress(String host, String port) throws NumberFormatException {
             this.host = host;
             this.port = Integer.parseInt(port);
@@ -333,7 +333,7 @@ public final class Indexer {
             return port;
         }
     }
-    
+
      /**
       * Parse a web address into its host and port components
       * This method along with the WebAddress class is used by OptionParser
@@ -351,13 +351,13 @@ public final class Indexer {
 
         return new WebAddress(hp[0], hp[1]);
     }
-    
-    
+
+
     /**
      * Parse OpenGrok Indexer options
      * This method was created so that it would be easier to write unit
      * tests against the Indexer option parsing mechanism.
-     * 
+     *
      * @param argv the command line arguments
      * @return array of remaining non option arguments
      * @throws ParseException if parsing failed
@@ -422,7 +422,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-c", "--ctags","=/path/to/ctags", 
+            parser.on("-c", "--ctags","=/path/to/ctags",
                 "Path to Exuberant or Universal Ctags",
                 "By default takes the Exuberant Ctags in PATH.").
                 Do( ctagsPath -> {
@@ -430,7 +430,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-d", "--dataRoot", "=/path/to/data/root", 
+            parser.on("-d", "--dataRoot", "=/path/to/data/root",
                 "The directory where OpenGrok stores the generated data.").
                 Do( drPath -> {
                     File dataRoot = new File((String)drPath);
@@ -448,7 +448,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--deleteHistory", "=/path/to/repository", 
+            parser.on("--deleteHistory", "=/path/to/repository",
                 "Delete the history cache for the given repository and exit.",
                 "Use '*' to delete the cache for all repositories.").Do( repo -> {
                 zapCache.add((String)repo);
@@ -472,7 +472,7 @@ public final class Indexer {
                 cfg.setTagsEnabled(true);
             });
 
-            parser.on("-H", "--history", "=[/path/to/repository]", 
+            parser.on("-H", "--history", "=[/path/to/repository]",
                 "Get history for specific repositories (specified as",
                 "absolute path from source root), or ALL repositories",
                 "when none specified.").
@@ -486,13 +486,13 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-I", "--include", "=pattern", 
+            parser.on("-I", "--include", "=pattern",
                 "Only files matching this pattern will be examined.",
                 "(supports wildcards, example: -I *.java -I *.c)").Do( pattern -> {
                 cfg.getIncludedNames().add((String)pattern);
             });
 
-            parser.on("-i", "--ignore", "=pattern", 
+            parser.on("-i", "--ignore", "=pattern",
                 "Ignore the named files (prefixed with 'f:')",
                 "or directories (prefixed with 'd:').",
                 "Supports wildcards (example: -i *.so -i *.dll)").Do( pattern -> {
@@ -547,7 +547,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-n", "--noIndex", 
+            parser.on("-n", "--noIndex",
                 "Do not generate indexes, but process all other command line options.").Do( v -> {
                 runIndex = false;
             });
@@ -564,7 +564,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-o", "--ctagOpts", "=path", 
+            parser.on("-o", "--ctagOpts", "=path",
                 "File with extra command line options for ctags.").
                 Do( path -> {
                     String CTagsExtraOptionsFile = (String)path;
@@ -578,13 +578,13 @@ public final class Indexer {
                 }
             );
 
-            parser.on("-P", "--projects", 
+            parser.on("-P", "--projects",
                 "Generate a project for each top-level directory in source root.").Do( v -> {
                 addProjects = true;
                 cfg.setProjectsEnabled(true);
             });
 
-            parser.on("-p", "--defaultProject", "=/path/to/default/project", 
+            parser.on("-p", "--defaultProject", "=/path/to/default/project",
                 "This is the path to the project that should be selected",
                 "by default in the web application (when no other project",
                 "set either in cookie or in parameter). May be used multiple",
@@ -618,7 +618,7 @@ public final class Indexer {
                 LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
             });
 
-            parser.on("-R /path/to/configuration", 
+            parser.on("-R /path/to/configuration",
                 "Read configuration from the specified file.").Do( v-> {
                 // Already handled above. This populates usage.
             });
@@ -652,7 +652,7 @@ public final class Indexer {
                     cfg.setHandleHistoryOfRenamedFiles((Boolean)v);
             });
 
-            parser.on("-S", "--search", 
+            parser.on("-S", "--search",
                 "Search for \"external\" source repositories and add them.").Do( v -> {
                 searchRepositories = true;
             });
@@ -672,7 +672,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--style", "=path", 
+            parser.on("--style", "=path",
                 "Path to the subdirectory in the web-application containing the",
                 "requested stylesheet. The factory-setting is: \"default\".").
                 Do( stylePath -> {
@@ -680,7 +680,7 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--symlink", "=/path/to/symlink", 
+            parser.on("--symlink", "=/path/to/symlink",
                 "Allow this symlink to be followed. Option may be repeated.",
                 "By default only symlinks directly under source root directory",
                 "are allowed.").Do( symlink -> {
@@ -716,7 +716,7 @@ public final class Indexer {
 
             parser.on("---unitTest");  // For unit test only, will not appear in help
 
-            parser.on("--updateConfig", 
+            parser.on("--updateConfig",
                 "Populate the webapp with bare configuration and exit.").Do( v -> {
                 noindex = true;
             });
@@ -728,7 +728,7 @@ public final class Indexer {
                 cfg.setUserPage((String)v);
             });
 
-            parser.on("--userPageSuffix", "=URL-suffix", 
+            parser.on("--userPageSuffix", "=URL-suffix",
                 "URL Suffix for the user Information provider. Default: \"\".").Do( suffix -> {
                 cfg.setUserPageSuffix((String)suffix);
             });
@@ -743,13 +743,13 @@ public final class Indexer {
                 LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
             });
 
-            parser.on("-W", "--writeConfig", "=/path/to/configuration", 
+            parser.on("-W", "--writeConfig", "=/path/to/configuration",
                 "Write the current configuration to the specified file",
                 "(so that the web application can use the same configuration)").Do( configFile -> {
                 configFilename = (String)configFile;
             });
 
-            parser.on("-w", "--web", "=webapp-context", 
+            parser.on("-w", "--web", "=webapp-context",
                 "Context of webapp. Default is /source. If you specify a different",
                 "name, make sure to rename source.war to that name. Also FULL reindex",
                 "is needed if this is changed.").
@@ -777,17 +777,17 @@ public final class Indexer {
         cfg.setHistoryEnabled(false);  // force user to turn on history capture
 
         argv = openGrok.parse(argv);
-        
+
         return argv;
     }
-    
+
     private static void die(String message) {
         System.err.println("ERROR: " + message);
         System.exit(1);
     }
-    
+
     private static void configureFileAnalyzer(String fileSpec, String analyzer) {
-        
+
         boolean prefix = false;
 
         // removing '.' from file specification
@@ -819,7 +819,7 @@ public final class Indexer {
                         AnalyzerGuru.findFactory(analyzer));
                 }
 
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException 
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException
                     | InvocationTargetException e) {
                 LOGGER.log(Level.SEVERE, "Unable to locate FileAnalyzerFactory for {0}", analyzer);
                 LOGGER.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
@@ -827,7 +827,7 @@ public final class Indexer {
             }
         }
     }
-    
+
     /**
      * Write configuration to a file
      * @param env runtime environment
@@ -1012,7 +1012,7 @@ public final class Indexer {
      * by passing source code files through ctags, generating xrefs
      * and storing data from the source files in the index (along with history,
      * if any).
-     * 
+     *
      * @param update if addOption to true, index database is updated, otherwise optimized
      * @param subFiles index just some subdirectories
      * @param progress object to receive notifications as indexer progress is made
@@ -1075,7 +1075,7 @@ public final class Indexer {
                                 db.optimize();
                             }
                         } catch (Throwable e) {
-                            LOGGER.log(Level.SEVERE, "An error occured while "
+                            LOGGER.log(Level.SEVERE, "An error occurred while "
                                     + (update ? "updating" : "optimizing")
                                     + " index", e);
                         }
