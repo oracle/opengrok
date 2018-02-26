@@ -185,6 +185,9 @@ public class Executor {
                     } catch (IOException ex) {
                         if (reportExceptions) {
                             LOGGER.log(Level.SEVERE,
+                                    "Error while executing command {0} in directory {1}",
+                new Object[] {cmd_str,dir_str});
+                            LOGGER.log(Level.SEVERE,
                                     "Error during process pipe listening", ex);
                         }
                     }
