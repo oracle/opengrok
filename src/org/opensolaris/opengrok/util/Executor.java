@@ -23,6 +23,7 @@
 
 package org.opensolaris.opengrok.util;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -356,7 +357,9 @@ public class Executor {
         }
 
         @Override
-        public void processStream(InputStream in) throws IOException {
+        public void processStream(InputStream input) throws IOException {            
+            BufferedInputStream  in = new BufferedInputStream(input);
+
             byte[] buffer = new byte[8092];
             int len;
 
