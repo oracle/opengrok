@@ -30,10 +30,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.junit.Assert;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
 import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
@@ -53,6 +56,12 @@ import static org.junit.Assert.*;
  * Tests for the functionality provided by the AnalyzerGuru class.
  */
 public class AnalyzerGuruTest {
+    @Test
+    public void testGetFileTypeDescriptions() {
+        Map<String,String> map = AnalyzerGuru.getfileTypeDescriptions();
+        Assert.assertTrue(map.size() > 0);
+    }
+    
     /**
      * Test that we get the correct analyzer if the file name exactly matches a
      * known extension.
