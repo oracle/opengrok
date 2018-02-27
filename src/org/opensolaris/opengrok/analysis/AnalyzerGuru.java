@@ -220,67 +220,72 @@ public class AnalyzerGuru {
      * though precise Matchers are run before imprecise ones.
      */
     static {
-        FileAnalyzerFactory[] analyzers = {
-            DEFAULT_ANALYZER_FACTORY,
-            new IgnorantAnalyzerFactory(),
-            new BZip2AnalyzerFactory(),
-            new XMLAnalyzerFactory(),
-            MandocAnalyzerFactory.DEFAULT_INSTANCE,
-            TroffAnalyzerFactory.DEFAULT_INSTANCE,
-            new ELFAnalyzerFactory(),
-            JavaClassAnalyzerFactory.DEFAULT_INSTANCE,
-            new ImageAnalyzerFactory(),
-            JarAnalyzerFactory.DEFAULT_INSTANCE,
-            ZipAnalyzerFactory.DEFAULT_INSTANCE,
-            new TarAnalyzerFactory(),
-            new CAnalyzerFactory(),
-            new CSharpAnalyzerFactory(),
-            new VBAnalyzerFactory(),
-            new CxxAnalyzerFactory(),
-            new ErlangAnalyzerFactory(),
-            new ShAnalyzerFactory(),
-            new PowershellAnalyzerFactory(),
-            PlainAnalyzerFactory.DEFAULT_INSTANCE,
-            new UuencodeAnalyzerFactory(),
-            new GZIPAnalyzerFactory(),
-            new JavaAnalyzerFactory(),
-            new JavaScriptAnalyzerFactory(),
-            new KotlinAnalyzerFactory(),
-            new SwiftAnalyzerFactory(),
-            new JsonAnalyzerFactory(),
-            new PythonAnalyzerFactory(),
-            new RustAnalyzerFactory(),
-            new PerlAnalyzerFactory(),
-            new PhpAnalyzerFactory(),
-            new LispAnalyzerFactory(),
-            new TclAnalyzerFactory(),
-            new ScalaAnalyzerFactory(),
-            new ClojureAnalyzerFactory(),
-            new SQLAnalyzerFactory(),
-            new PLSQLAnalyzerFactory(),
-            new FortranAnalyzerFactory(),
-            new HaskellAnalyzerFactory(),
-            new GolangAnalyzerFactory(),
-            new LuaAnalyzerFactory(),
-            new PascalAnalyzerFactory(),
-            new AdaAnalyzerFactory(),
-            new RubyAnalyzerFactory(),
-            new EiffelAnalyzerFactory()
-        };
+        try {
+            FileAnalyzerFactory[] analyzers = {
+                DEFAULT_ANALYZER_FACTORY,
+                new IgnorantAnalyzerFactory(),
+                new BZip2AnalyzerFactory(),
+                new XMLAnalyzerFactory(),
+                MandocAnalyzerFactory.DEFAULT_INSTANCE,
+                TroffAnalyzerFactory.DEFAULT_INSTANCE,
+                new ELFAnalyzerFactory(),
+                JavaClassAnalyzerFactory.DEFAULT_INSTANCE,
+                new ImageAnalyzerFactory(),
+                JarAnalyzerFactory.DEFAULT_INSTANCE,
+                ZipAnalyzerFactory.DEFAULT_INSTANCE,
+                new TarAnalyzerFactory(),
+                new CAnalyzerFactory(),
+                new CSharpAnalyzerFactory(),
+                new VBAnalyzerFactory(),
+                new CxxAnalyzerFactory(),
+                new ErlangAnalyzerFactory(),
+                new ShAnalyzerFactory(),
+                new PowershellAnalyzerFactory(),
+                PlainAnalyzerFactory.DEFAULT_INSTANCE,
+                new UuencodeAnalyzerFactory(),
+                new GZIPAnalyzerFactory(),
+                new JavaAnalyzerFactory(),
+                new JavaScriptAnalyzerFactory(),
+                new KotlinAnalyzerFactory(),
+                new SwiftAnalyzerFactory(),
+                new JsonAnalyzerFactory(),
+                new PythonAnalyzerFactory(),
+                new RustAnalyzerFactory(),
+                new PerlAnalyzerFactory(),
+                new PhpAnalyzerFactory(),
+                new LispAnalyzerFactory(),
+                new TclAnalyzerFactory(),
+                new ScalaAnalyzerFactory(),
+                new ClojureAnalyzerFactory(),
+                new SQLAnalyzerFactory(),
+                new PLSQLAnalyzerFactory(),
+                new FortranAnalyzerFactory(),
+                new HaskellAnalyzerFactory(),
+                new GolangAnalyzerFactory(),
+                new LuaAnalyzerFactory(),
+                new PascalAnalyzerFactory(),
+                new AdaAnalyzerFactory(),
+                new RubyAnalyzerFactory(),
+                new EiffelAnalyzerFactory()
+            };
 
-        for (FileAnalyzerFactory analyzer : analyzers) {
-            registerAnalyzer(analyzer);
-        }
-
-        for (FileAnalyzerFactory analyzer : analyzers) {
-            if (analyzer.getName() != null && !analyzer.getName().isEmpty()) {
-                fileTypeDescriptions.put(analyzer.getAnalyzer().getFileTypeName(), analyzer.getName());
+            for (FileAnalyzerFactory analyzer : analyzers) {
+                registerAnalyzer(analyzer);
             }
+
+            for (FileAnalyzerFactory analyzer : analyzers) {
+                if (analyzer.getName() != null && !analyzer.getName().isEmpty()) {
+                    fileTypeDescriptions.put(analyzer.getAnalyzer().getFileTypeName(), analyzer.getName());
+                }
+            }
+
+            string_ft_stored_nanalyzed_norms.setOmitNorms(false);
+            string_ft_nstored_nanalyzed_norms.setOmitNorms(false);
+        } catch (Throwable t) {
+            LOGGER.log(Level.SEVERE,
+                    "exception hit when constructing AnalyzerGuru static", t);
+            throw t;
         }
-
-        string_ft_stored_nanalyzed_norms.setOmitNorms(false);
-        string_ft_nstored_nanalyzed_norms.setOmitNorms(false);
-
     }
 
     public static Map<String, FileAnalyzerFactory> getExtensionsMap() {
