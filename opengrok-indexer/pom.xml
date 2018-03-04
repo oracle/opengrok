@@ -296,7 +296,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                         </manifest>
                     </archive>
                     <descriptorRefs>
-                        <descriptorRef>with-dependencies</descriptorRef>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                 </configuration>
                 <executions>
