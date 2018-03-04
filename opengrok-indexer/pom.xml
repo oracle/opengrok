@@ -38,34 +38,31 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
     </parent>
 
     <build>
-        <sourceDirectory>../src</sourceDirectory>
-        <testSourceDirectory>../test</testSourceDirectory>
-
         <resources>
             <resource>
                 <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
-                <directory>../src/org/opensolaris/opengrok/analysis/sql/</directory>
+                <directory>src/main/java/org/opensolaris/opengrok/analysis/sql/</directory>
                 <includes>
                     <include>*.dat</include>
                 </includes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/analysis/vb/</targetPath>
-                <directory>../src/org/opensolaris/opengrok/analysis/vb/</directory>
+                <directory>src/main/java/org/opensolaris/opengrok/analysis/vb/</directory>
                 <includes>
                     <include>*.dat</include>
                 </includes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/index/</targetPath>
-                <directory>../src/org/opensolaris/opengrok/index/</directory>
+                <directory>src/main/java/org/opensolaris/opengrok/index/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/history/</targetPath>
-                <directory>../src/org/opensolaris/opengrok/history/</directory>
+                <directory>src/main/java/org/opensolaris/opengrok/history/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                     <exclude>*.html</exclude>
@@ -75,211 +72,214 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
         <testResources>
             <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
                 <targetPath>org/opensolaris/opengrok/history/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/history/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/history/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/ada/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/ada/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/ada/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/archive/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/archive/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/archive/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/clojure/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/clojure/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/clojure/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/csharp/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/csharp/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/csharp/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/document/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/document/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/document/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/eiffel/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/eiffel/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/eiffel/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/erlang/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/erlang/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/erlang/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/executables/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/executables/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/executables/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/fortran/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/fortran/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/fortran/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/golang/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/golang/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/golang/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/lua/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/lua/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/lua/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/java/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/java/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/java/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/javascript/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/javascript/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/javascript/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/json/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/json/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/json/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/perl/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/perl/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/perl/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/php/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/php/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/php/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/powershell/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/powershell/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/powershell/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/python/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/python/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/python/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/ruby/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/ruby/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/ruby/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/rust/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/rust/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/rust/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/scala/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/scala/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/scala/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/sql/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/sql/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/tcl/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/tcl/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/tcl/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/haskell/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/haskell/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/haskell/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/java/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/java/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/java/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/sh/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/sh/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/sh/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/swift/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/swift/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/swift/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
             <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/vb/</targetPath>
-                <directory>../test/org/opensolaris/opengrok/analysis/vb/</directory>
+                <directory>src/test/java/org/opensolaris/opengrok/analysis/vb/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
@@ -287,22 +287,26 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         </testResources>
 
         <plugins>
-
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
+                <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <archive>
                         <manifest>
                             <mainClass>org.opensolaris.opengrok.index.Indexer</mainClass>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
-                        <manifestEntries>
-                        </manifestEntries>
                     </archive>
+                    <descriptorRefs>
+                        <descriptorRef>with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -390,7 +394,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                         <phase>initialize</phase>
                         <configuration>
                             <target>
-                                <property name="src.dir" value="../src"/>
+                                <property name="src.dir" value="src/main/java"/>
                                 <property name="tgt.dir" value="${basedir}/target/jflex-sources"/>
                                 <ant target="-collect-lex-lexh"/>
                             </target>

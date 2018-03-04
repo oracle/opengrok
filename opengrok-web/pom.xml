@@ -15,8 +15,6 @@
     </parent>
 
     <build>
-        <!-- Unstandard paths inherited by old directory structure -->
-        <sourceDirectory>../web</sourceDirectory>
         <finalName>source</finalName>
 
         <plugins>
@@ -25,8 +23,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <webXml>../web/WEB-INF/web.xml</webXml>
-                    <warSourceDirectory>../web</warSourceDirectory>
+                    <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
                 </configuration>
             </plugin>
         </plugins>

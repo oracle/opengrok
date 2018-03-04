@@ -51,15 +51,15 @@ public class KotlinXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/kotlin/sample.kt",
-            "org/opensolaris/opengrok/analysis/kotlin/sample_xref.html",
+        writeAndCompare("analysis/kotlin/sample.kt",
+                "analysis/kotlin/sample_xref.html",
             getTagsDefinitions(), 105);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/kotlin/truncated.kt",
-            "org/opensolaris/opengrok/analysis/kotlin/truncated_xref.html",
+        writeAndCompare("analysis/kotlin/truncated.kt",
+                "analysis/kotlin/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class KotlinXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/kotlin/sampletags");
+                "analysis/kotlin/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

@@ -44,11 +44,10 @@ public class KotlinSymbolTokenizerTest {
      */
     @Test
     public void testKotlinSymbolStream() throws Exception {
-        InputStream ktres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/kotlin/sample.kt");
+        InputStream ktres = getClass().getClassLoader().getResourceAsStream("analysis/kotlin/sample.kt");
         assertNotNull("despite sample.kt as resource,", ktres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/kotlin/samplesymbols.txt");
+                "analysis/kotlin/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

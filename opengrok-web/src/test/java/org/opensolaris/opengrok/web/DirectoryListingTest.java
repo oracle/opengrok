@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.web;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -39,7 +40,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.util.FileUtilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -186,7 +186,7 @@ public class DirectoryListingTest {
 
     @Before
     public void setUp() throws Exception {
-        directory = FileUtilities.createTemporaryDirectory("directory");
+        directory = createTemporaryDirectory("directory");
 
         entries = new FileEntry[3];
         entries[0] = new FileEntry("foo.c", "foo.c", 0, 112);
@@ -214,6 +214,28 @@ public class DirectoryListingTest {
         // Need to populate list of ignored entries for all repository types.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
+    }
+
+    /**
+     * Create an empty directory under {@code /tmp} or similar.
+     *
+     * @param prefix string to prefix the directory name with
+     * @return a {@code File} object pointing to the directory
+     * @throws IOException if the temporary directory cannot be created
+     */
+    private static File createTemporaryDirectory(String prefix)
+            throws IOException {
+        // TODO: duplicate method with FileUtilities#createTemporaryDirectory
+        File file = File.createTempFile(prefix, "opengrok");
+        if (!file.delete()) {
+            throw new IOException(
+                    "Could not create delete temporary file " + file);
+        }
+        if (!file.mkdir()) {
+            throw new IOException(
+                    "Could not create temporary directory " + file);
+        }
+        return file;
     }
 
     @After
