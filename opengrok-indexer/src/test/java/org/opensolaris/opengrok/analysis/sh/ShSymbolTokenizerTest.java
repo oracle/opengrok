@@ -45,10 +45,10 @@ public class ShSymbolTokenizerTest {
     @Test
     public void testShSymbolStream() throws Exception {
         InputStream shres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/sh/sample.sh");
+            "analysis/sh/sample.sh");
         assertNotNull("despite sample.sh as resource,", shres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/sh/samplesymbols.txt");
+            "analysis/sh/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

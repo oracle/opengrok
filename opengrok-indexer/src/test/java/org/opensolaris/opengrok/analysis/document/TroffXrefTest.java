@@ -50,8 +50,8 @@ public class TroffXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/document/sync.1m",
-            "org/opensolaris/opengrok/analysis/document/sync_xref.html",
+        writeAndCompare("analysis/document/sync.1m",
+            "analysis/document/sync_xref.html",
             null, 20);
     }
 

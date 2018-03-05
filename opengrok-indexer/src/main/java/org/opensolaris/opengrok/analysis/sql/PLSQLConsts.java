@@ -39,8 +39,8 @@ public final class PLSQLConsts {
         try {
             //populateKeywordSet(kwds, "sql2003reserved.dat");
             //populateKeywordSet(kwds, "sql2008reserved.dat");
-            populateKeywordSet(kwds, "sql2011reserved.dat");
-            populateKeywordSet(kwds, "plsql2011reserved.dat"); // this is just diff on top of sql iso
+            populateKeywordSet(kwds, "/analysis/sql/sql2011reserved.dat");
+            populateKeywordSet(kwds, "/analysis/sql/plsql2011reserved.dat"); // this is just diff on top of sql iso
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }

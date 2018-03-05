@@ -51,15 +51,15 @@ public class ErlangXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/erlang/sample.erl",
-            "org/opensolaris/opengrok/analysis/erlang/sample_xref.html",
+        writeAndCompare("analysis/erlang/sample.erl",
+            "analysis/erlang/sample_xref.html",
             getTagsDefinitions(), 37);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/erlang/truncated.erl",
-            "org/opensolaris/opengrok/analysis/erlang/truncated_xref.html",
+        writeAndCompare("analysis/erlang/truncated.erl",
+            "analysis/erlang/truncated_xref.html",
             null, 1);
     }
 
@@ -111,7 +111,7 @@ public class ErlangXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/erlang/sampletags");
+            "analysis/erlang/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

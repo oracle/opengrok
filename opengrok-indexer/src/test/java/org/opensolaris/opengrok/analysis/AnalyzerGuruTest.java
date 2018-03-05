@@ -255,7 +255,7 @@ public class AnalyzerGuruTest {
     @Test
     public void shouldNotThrowGettingCsprojOpening() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/a.csproj");
+            "analysis/a.csproj");
         assertNotNull("despite embedded a.csproj,", res);
         assertSame("despite normal a.csproj,", XMLAnalyzer.class,
             AnalyzerGuru.getAnalyzer(res, "dummy").getClass());

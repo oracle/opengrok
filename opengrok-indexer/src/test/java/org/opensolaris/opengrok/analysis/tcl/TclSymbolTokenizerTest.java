@@ -45,10 +45,10 @@ public class TclSymbolTokenizerTest {
     @Test
     public void testTclSymbolStream() throws Exception {
         InputStream tclres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/tcl/sample.tcl");
+            "analysis/tcl/sample.tcl");
         assertNotNull("despite sample.tcl as resource,", tclres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/tcl/samplesymbols.txt");
+            "analysis/tcl/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

@@ -82,7 +82,7 @@ public class PhpSymbolTokenizerTest {
     @Test
     public void sampleTest() throws UnsupportedEncodingException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/php/sample.php");
+                "analysis/php/sample.php");
         InputStreamReader r = new InputStreamReader(res, "UTF-8");
         String[] termsFor = getTermsFor(r);
         assertArrayEquals(

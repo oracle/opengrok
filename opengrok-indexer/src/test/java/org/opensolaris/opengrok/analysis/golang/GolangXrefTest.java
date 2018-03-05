@@ -51,15 +51,15 @@ public class GolangXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/golang/sample.go",
-            "org/opensolaris/opengrok/analysis/golang/sample_xref.html",
+        writeAndCompare("analysis/golang/sample.go",
+            "analysis/golang/sample_xref.html",
             getTagsDefinitions(), 101);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/golang/truncated.go",
-            "org/opensolaris/opengrok/analysis/golang/truncated_xref.html",
+        writeAndCompare("analysis/golang/truncated.go",
+            "analysis/golang/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class GolangXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/golang/sampletags");
+            "analysis/golang/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

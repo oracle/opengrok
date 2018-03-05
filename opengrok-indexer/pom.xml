@@ -38,253 +38,6 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
     </parent>
 
     <build>
-        <resources>
-            <resource>
-                <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
-                <directory>src/main/java/org/opensolaris/opengrok/analysis/sql/</directory>
-                <includes>
-                    <include>*.dat</include>
-                </includes>
-            </resource>
-            <resource>
-                <targetPath>org/opensolaris/opengrok/analysis/vb/</targetPath>
-                <directory>src/main/java/org/opensolaris/opengrok/analysis/vb/</directory>
-                <includes>
-                    <include>*.dat</include>
-                </includes>
-            </resource>
-            <resource>
-                <targetPath>org/opensolaris/opengrok/index/</targetPath>
-                <directory>src/main/java/org/opensolaris/opengrok/index/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </resource>
-            <resource>
-                <targetPath>org/opensolaris/opengrok/history/</targetPath>
-                <directory>src/main/java/org/opensolaris/opengrok/history/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                    <exclude>*.html</exclude>
-                </excludes>
-            </resource>
-        </resources>
-
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/history/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/history/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/ada/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/ada/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/archive/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/archive/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/clojure/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/clojure/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/csharp/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/csharp/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/document/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/document/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/eiffel/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/eiffel/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/erlang/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/erlang/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/executables/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/executables/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/fortran/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/fortran/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/golang/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/golang/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/lua/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/lua/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/java/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/java/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/javascript/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/javascript/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/json/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/json/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/perl/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/perl/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/php/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/php/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/powershell/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/powershell/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/python/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/python/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/ruby/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/ruby/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/rust/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/rust/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/scala/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/scala/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/sql/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/tcl/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/tcl/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/haskell/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/haskell/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/java/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/java/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/sh/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/sh/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/swift/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/swift/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-            <testResource>
-                <targetPath>org/opensolaris/opengrok/analysis/vb/</targetPath>
-                <directory>src/test/java/org/opensolaris/opengrok/analysis/vb/</directory>
-                <excludes>
-                    <exclude>*.java</exclude>
-                </excludes>
-            </testResource>
-        </testResources>
 
         <plugins>
             <plugin>
@@ -318,6 +71,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <phase>generate-sources</phase>
                         <configuration>
                             <lexDefinitions>
                                 <lexDefinition>${basedir}/target/jflex-sources</lexDefinition>
@@ -328,13 +82,10 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 </executions>
             </plugin>
             
-            <!--  add the same fix as is in build.xml to patch jflex generated files to stop increasing buffer beyond token size that lucene accepts
+            <!-- patches jflex generated files to stop increasing buffer beyond token size that lucene accepts
             https://github.com/OpenGrok/OpenGrok/issues/1170 make parsers stop producing tokens > 32766 chars
             at least for PlainFullTokenizer, PlainSymbolTokenizer, JavaScriptSymbolTokenizer, JavaSymbolTokenizer
-            use below  
-            
-            DON'T forget to SYNC this with ../build.xml !!!
-            
+            use below
             -->
  
             <plugin>                                                                                                                                                                                                                        
@@ -394,7 +145,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                         <phase>initialize</phase>
                         <configuration>
                             <target>
-                                <property name="src.dir" value="src/main/java"/>
+                                <property name="src.dir" value="src/main/resources"/>
                                 <property name="tgt.dir" value="${basedir}/target/jflex-sources"/>
                                 <ant target="-collect-lex-lexh"/>
                             </target>

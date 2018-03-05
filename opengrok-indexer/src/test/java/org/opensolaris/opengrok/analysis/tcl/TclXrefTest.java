@@ -51,15 +51,15 @@ public class TclXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/tcl/sample.tcl",
-            "org/opensolaris/opengrok/analysis/tcl/sample_xref.html",
+        writeAndCompare("analysis/tcl/sample.tcl",
+            "analysis/tcl/sample_xref.html",
             getTagsDefinitions(), 163);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/tcl/truncated.tcl",
-            "org/opensolaris/opengrok/analysis/tcl/truncated_xref.html",
+        writeAndCompare("analysis/tcl/truncated.tcl",
+            "analysis/tcl/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class TclXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/tcl/sampletags");
+            "analysis/tcl/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

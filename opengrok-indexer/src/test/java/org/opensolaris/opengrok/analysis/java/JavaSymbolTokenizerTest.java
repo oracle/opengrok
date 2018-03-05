@@ -75,7 +75,7 @@ public class JavaSymbolTokenizerTest {
     @Test
     public void sampleTest() throws UnsupportedEncodingException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/java/Sample.jav");
+                "analysis/java/Sample.jav");
         InputStreamReader r = new InputStreamReader(res, "UTF-8");
         String[] termsFor = getTermsFor(r);        
         assertArrayEquals(

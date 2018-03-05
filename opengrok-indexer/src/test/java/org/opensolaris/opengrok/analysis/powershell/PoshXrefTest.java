@@ -51,15 +51,15 @@ public class PoshXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/powershell/sample.psm1",
-            "org/opensolaris/opengrok/analysis/powershell/sample_xref.html",
+        writeAndCompare("analysis/powershell/sample.psm1",
+            "analysis/powershell/sample_xref.html",
             getTagsDefinitions(), 338);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/powershell/truncated.ps1",
-            "org/opensolaris/opengrok/analysis/powershell/truncated_xref.html",
+        writeAndCompare("analysis/powershell/truncated.ps1",
+            "analysis/powershell/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class PoshXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/powershell/sampletags");
+            "analysis/powershell/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

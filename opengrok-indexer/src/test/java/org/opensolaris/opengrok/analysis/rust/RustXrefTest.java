@@ -51,15 +51,15 @@ public class RustXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/rust/sample.rs",
-            "org/opensolaris/opengrok/analysis/rust/sample_xref.html",
+        writeAndCompare("analysis/rust/sample.rs",
+            "analysis/rust/sample_xref.html",
             getTagsDefinitions(), 107);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/rust/truncated.rs",
-            "org/opensolaris/opengrok/analysis/rust/truncated_xref.html",
+        writeAndCompare("analysis/rust/truncated.rs",
+            "analysis/rust/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class RustXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/rust/sampletags");
+            "analysis/rust/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

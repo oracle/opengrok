@@ -51,15 +51,15 @@ public class JavaScriptXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/javascript/sample.js",
-            "org/opensolaris/opengrok/analysis/javascript/sample_xref.html",
+        writeAndCompare("analysis/javascript/sample.js",
+            "analysis/javascript/sample_xref.html",
             getTagsDefinitions(), 206);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/javascript/truncated.js",
-            "org/opensolaris/opengrok/analysis/javascript/truncated_xref.html",
+        writeAndCompare("analysis/javascript/truncated.js",
+            "analysis/javascript/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class JavaScriptXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/javascript/sampletags");
+            "analysis/javascript/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

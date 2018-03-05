@@ -51,15 +51,15 @@ public class SQLXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/sql/sample.sql",
-            "org/opensolaris/opengrok/analysis/sql/samplesql_xref.html",
+        writeAndCompare("analysis/sql/sample.sql",
+            "analysis/sql/samplesql_xref.html",
             getTagsDefinitions(), 1127);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/sql/truncated.sql",
-            "org/opensolaris/opengrok/analysis/sql/truncatedsql_xref.html",
+        writeAndCompare("analysis/sql/truncated.sql",
+            "analysis/sql/truncatedsql_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class SQLXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/sql/samplesqltags");
+            "analysis/sql/samplesqltags");
         assertNotNull("though samplesqltags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

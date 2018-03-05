@@ -51,15 +51,15 @@ public class PascalXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/pascal/sample.pas",
-            "org/opensolaris/opengrok/analysis/pascal/sample_xref.html",
+        writeAndCompare("analysis/pascal/sample.pas",
+            "analysis/pascal/sample_xref.html",
             getTagsDefinitions(), 423);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/pascal/truncated.pas",
-            "org/opensolaris/opengrok/analysis/pascal/truncated_xref.html",
+        writeAndCompare("analysis/pascal/truncated.pas",
+            "analysis/pascal/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class PascalXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/pascal/sampletags");
+            "analysis/pascal/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

@@ -51,15 +51,15 @@ public class LuaXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/lua/sample.lua",
-            "org/opensolaris/opengrok/analysis/lua/sample_xref.html",
+        writeAndCompare("analysis/lua/sample.lua",
+            "analysis/lua/sample_xref.html",
             getTagsDefinitions(), 108);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/lua/truncated.lua",
-            "org/opensolaris/opengrok/analysis/lua/truncated_xref.html",
+        writeAndCompare("analysis/lua/truncated.lua",
+            "analysis/lua/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class LuaXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/lua/sampletags");
+            "analysis/lua/sampletags");
         assertNotNull("though sampletags luaould stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

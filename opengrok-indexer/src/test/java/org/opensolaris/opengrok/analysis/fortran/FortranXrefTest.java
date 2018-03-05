@@ -51,15 +51,15 @@ public class FortranXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/fortran/sample.f",
-            "org/opensolaris/opengrok/analysis/fortran/sample_xref.html",
+        writeAndCompare("analysis/fortran/sample.f",
+            "analysis/fortran/sample_xref.html",
             getTagsDefinitions(), 28);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/fortran/truncated.f",
-            "org/opensolaris/opengrok/analysis/fortran/truncated_xref.html",
+        writeAndCompare("analysis/fortran/truncated.f",
+            "analysis/fortran/truncated_xref.html",
             null, 1);
     }
 
@@ -109,7 +109,7 @@ public class FortranXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/fortran/sampletags");
+            "analysis/fortran/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

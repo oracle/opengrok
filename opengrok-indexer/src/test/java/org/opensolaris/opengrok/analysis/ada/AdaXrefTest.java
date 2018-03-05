@@ -51,13 +51,13 @@ public class AdaXrefTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ada/sample.adb");
+            "analysis/ada/sample.adb");
         assertNotNull("though sample.adb should stream,", res);
         int actLOC = writeAdaXref(res, new PrintStream(baos));
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ada/ada_xrefres.html");
+            "analysis/ada/ada_xrefres.html");
         assertNotNull("ada_xrefres.html should stream,", exp);
         byte[] expbytes = copyStream(exp);
         exp.close();

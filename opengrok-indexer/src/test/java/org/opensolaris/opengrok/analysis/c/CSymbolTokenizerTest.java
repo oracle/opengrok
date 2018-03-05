@@ -45,10 +45,10 @@ public class CSymbolTokenizerTest {
     @Test
     public void testCSymbolStream() throws Exception {
         InputStream cres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/c/sample.c");
+            "analysis/c/sample.c");
         assertNotNull("despite sample.c as resource,", cres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/c/samplesymbols_c.txt");
+            "analysis/c/samplesymbols_c.txt");
         assertNotNull("despite samplesymbols_c.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

@@ -45,10 +45,10 @@ public class JavaScriptSymbolTokenizerTest {
     @Test
     public void testJavaScriptSymbolStream() throws Exception {
         InputStream jsres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/javascript/sample.js");
+            "analysis/javascript/sample.js");
         assertNotNull("despite sample.js as resource,", jsres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/javascript/samplesymbols.txt");
+            "analysis/javascript/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

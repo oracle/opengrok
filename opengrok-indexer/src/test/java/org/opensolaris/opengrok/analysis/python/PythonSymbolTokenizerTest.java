@@ -45,10 +45,10 @@ public class PythonSymbolTokenizerTest {
     @Test
     public void testPythonSymbolStream() throws Exception {
         InputStream pyres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/python/sample.py");
+            "analysis/python/sample.py");
         assertNotNull("despite sample.py as resource,", pyres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/python/samplesymbols.txt");
+            "analysis/python/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

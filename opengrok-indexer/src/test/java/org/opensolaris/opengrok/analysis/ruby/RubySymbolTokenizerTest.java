@@ -45,10 +45,10 @@ public class RubySymbolTokenizerTest {
     @Test
     public void testRubySymbolStream() throws Exception {
         InputStream rbres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ruby/sample.rb");
+            "analysis/ruby/sample.rb");
         assertNotNull("despite sample.rb as resource,", rbres);
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ruby/samplesymbols.txt");
+            "analysis/ruby/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", wdsres);
 
         List<String> expectedSymbols = new ArrayList<>();

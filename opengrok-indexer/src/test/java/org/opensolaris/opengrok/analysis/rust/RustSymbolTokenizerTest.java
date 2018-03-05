@@ -45,10 +45,10 @@ public class RustSymbolTokenizerTest {
     @Test
     public void testRustSymbolStream() throws Exception {
         InputStream rsres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/rust/sample.rs");
+            "analysis/rust/sample.rs");
         assertNotNull("despite sample.rs as resource,", rsres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/rust/samplesymbols.txt");
+            "analysis/rust/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

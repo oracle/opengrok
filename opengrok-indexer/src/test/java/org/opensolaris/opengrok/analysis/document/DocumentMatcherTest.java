@@ -43,7 +43,7 @@ public class DocumentMatcherTest {
     @Test
     public void testMdocDocument() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/document/sync.1m");
+                "analysis/document/sync.1m");
         assertNotNull("despite inclusion locally,", res);
 
         byte[] buf = readSignature(res);
@@ -68,7 +68,7 @@ public class DocumentMatcherTest {
     @Test
     public void testMandocDocument() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/document/catman.1m");
+                "analysis/document/catman.1m");
         assertNotNull("despite inclusion locally,", res);
 
         byte[] buf = readSignature(res);
@@ -97,7 +97,7 @@ public class DocumentMatcherTest {
     @Test
     public void testMandocBOMDocument() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/document/utf16le.1m");
+                "analysis/document/utf16le.1m");
         assertNotNull("despite inclusion locally,", res);
 
         byte[] buf = readSignature(res);

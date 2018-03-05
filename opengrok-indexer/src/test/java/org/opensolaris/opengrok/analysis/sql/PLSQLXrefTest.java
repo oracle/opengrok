@@ -51,15 +51,15 @@ public class PLSQLXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/sql/sample.pls",
-            "org/opensolaris/opengrok/analysis/sql/samplepls_xref.html",
+        writeAndCompare("analysis/sql/sample.pls",
+            "analysis/sql/samplepls_xref.html",
             getTagsDefinitions(), 284);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/sql/truncated.pls",
-            "org/opensolaris/opengrok/analysis/sql/truncatedpls_xref.html",
+        writeAndCompare("analysis/sql/truncated.pls",
+            "analysis/sql/truncatedpls_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class PLSQLXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/sql/sampleplstags");
+            "analysis/sql/sampleplstags");
         assertNotNull("though sampleplstags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

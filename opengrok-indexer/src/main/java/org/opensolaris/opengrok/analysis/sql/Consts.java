@@ -39,7 +39,7 @@ public final class Consts {
         try {
             //populateKeywordSet(kwds, "sql2003reserved.dat");
             //populateKeywordSet(kwds, "sql2008reserved.dat");
-            populateKeywordSet(kwds, "sql2011reserved.dat");
+            populateKeywordSet(kwds, "/analysis/sql/sql2011reserved.dat");
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }

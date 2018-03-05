@@ -51,15 +51,15 @@ public class JsonXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/json/sample.json",
-            "org/opensolaris/opengrok/analysis/json/sample_xref.html",
+        writeAndCompare("analysis/json/sample.json",
+            "analysis/json/sample_xref.html",
             getTagsDefinitions(), 27);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/json/truncated.json",
-            "org/opensolaris/opengrok/analysis/json/truncated_xref.html",
+        writeAndCompare("analysis/json/truncated.json",
+            "analysis/json/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class JsonXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/json/sampletags");
+            "analysis/json/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

@@ -89,7 +89,7 @@ public class HaskellXrefTest {
     public void sampleTest() throws IOException {
         // load sample source
         InputStream sampleInputStream = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/haskell/sample.hs");
+                "analysis/haskell/sample.hs");
         ByteArrayOutputStream sampleOutputStream = new ByteArrayOutputStream();
 
         Definitions defs = new Definitions();
@@ -105,7 +105,7 @@ public class HaskellXrefTest {
 
         // load expected xref
         InputStream expectedInputStream = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/haskell/sampleXrefExpected.html");
+                "analysis/haskell/sampleXrefExpected.html");
         ByteArrayOutputStream expectedOutputSteam = new ByteArrayOutputStream();
         try {
             byte buffer[] = new byte[8192];
@@ -129,15 +129,15 @@ public class HaskellXrefTest {
 
     @Test
     public void sampleTest2() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/haskell/sample2.hs",
-            "org/opensolaris/opengrok/analysis/haskell/sample2_xref.html",
+        writeAndCompare("analysis/haskell/sample2.hs",
+            "analysis/haskell/sample2_xref.html",
             getTagsDefinitions(), 198);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/haskell/truncated.hs",
-            "org/opensolaris/opengrok/analysis/haskell/truncated_xref.html",
+        writeAndCompare("analysis/haskell/truncated.hs",
+            "analysis/haskell/truncated_xref.html",
             null, 1);
     }
 
@@ -171,7 +171,7 @@ public class HaskellXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/haskell/sampletags");
+            "analysis/haskell/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

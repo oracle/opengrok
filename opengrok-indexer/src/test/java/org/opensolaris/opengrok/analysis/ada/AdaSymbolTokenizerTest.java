@@ -44,10 +44,10 @@ public class AdaSymbolTokenizerTest {
     @Test
     public void testPerlSymbolStream() throws Exception {
         InputStream adbres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ada/sample.adb");
+            "analysis/ada/sample.adb");
         assertNotNull("despite sample.adb as resource,", adbres);
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ada/samplesymbols.txt");
+            "analysis/ada/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", wdsres);
 
         List<String> expectedSymbols = new ArrayList<>();

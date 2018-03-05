@@ -45,10 +45,10 @@ public class EiffelSymbolTokenizerTest {
     @Test
     public void testEiffelSymbolStream() throws Exception {
         InputStream eres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/eiffel/sample.e");
+            "analysis/eiffel/sample.e");
         assertNotNull("despite sample.e as resource,", eres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/eiffel/samplesymbols.txt");
+            "analysis/eiffel/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

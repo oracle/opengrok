@@ -54,13 +54,13 @@ public class CXrefTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/c/sample.c");
+            "analysis/c/sample.c");
         assertNotNull("though sample.c should stream,", res);
         int actLOC = writeCXref(res, new PrintStream(baos));
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/c/c_xrefres.html");
+            "analysis/c/c_xrefres.html");
         assertNotNull("c_xrefres.html should stream,", exp);
         byte[] expbytes = copyStream(exp);
         exp.close();
@@ -94,7 +94,7 @@ public class CXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/c/sampletags_c");
+            "analysis/c/sampletags_c");
         assertNotNull("though sampletags_c should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

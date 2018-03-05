@@ -51,15 +51,15 @@ public class ShXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/sh/sample.sh",
-            "org/opensolaris/opengrok/analysis/sh/sample_xref.html",
+        writeAndCompare("analysis/sh/sample.sh",
+            "analysis/sh/sample_xref.html",
             getTagsDefinitions(), 157);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/sh/truncated.sh",
-            "org/opensolaris/opengrok/analysis/sh/truncated_xref.html",
+        writeAndCompare("analysis/sh/truncated.sh",
+            "analysis/sh/truncated_xref.html",
             null, 1);
     }
 
@@ -109,7 +109,7 @@ public class ShXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/sh/sampletags");
+            "analysis/sh/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

@@ -45,10 +45,10 @@ public class PoshSymbolTokenizerTest {
     @Test
     public void testPowerShellSymbolStream() throws Exception {
         InputStream psres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/powershell/sample.psm1");
+            "analysis/powershell/sample.psm1");
         assertNotNull("despite sample.psm1 as resource,", psres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/powershell/samplesymbols.txt");
+            "analysis/powershell/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

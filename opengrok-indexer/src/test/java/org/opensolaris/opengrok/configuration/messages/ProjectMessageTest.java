@@ -374,7 +374,7 @@ public class ProjectMessageTest {
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
         MercurialRepositoryTest.runHgCommand(mercurialRoot,
             "import", HistoryGuru.getInstance().getClass().
-            getResource("hg-export-subdir.txt").getPath());
+            getResource("/history/hg-export-subdir.txt").getPath());
 
         // Test that the project's indexed flag becomes true only after
         // the message is applied.

@@ -45,10 +45,10 @@ public class ErlangSymbolTokenizerTest {
     @Test
     public void testErlangSymbolStream() throws Exception {
         InputStream erlres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/erlang/sample.erl");
+            "analysis/erlang/sample.erl");
         assertNotNull("despite sample.erl as resource,", erlres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/erlang/samplesymbols.txt");
+            "analysis/erlang/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

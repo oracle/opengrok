@@ -56,13 +56,13 @@ public class RubyXrefTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ruby/sample.rb");
+            "analysis/ruby/sample.rb");
         assertNotNull("though sample.rb should stream,", res);
         int actLOC = writeRubyXref(res, new PrintStream(baos));
         res.close();
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ruby/ruby_xrefres.html");
+            "analysis/ruby/ruby_xrefres.html");
         assertNotNull("ruby_xrefres.html should stream,", exp);
         byte[] expbytes = copyStream(exp);
         exp.close();
@@ -116,7 +116,7 @@ public class RubyXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/ruby/sampletags");
+            "analysis/ruby/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

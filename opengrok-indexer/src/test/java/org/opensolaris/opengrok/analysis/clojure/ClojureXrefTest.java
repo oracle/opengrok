@@ -51,15 +51,15 @@ public class ClojureXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/clojure/sample.clj",
-            "org/opensolaris/opengrok/analysis/clojure/sample_xref.html",
+        writeAndCompare("analysis/clojure/sample.clj",
+            "analysis/clojure/sample_xref.html",
             getTagsDefinitions(), 40);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/clojure/truncated.clj",
-            "org/opensolaris/opengrok/analysis/clojure/truncated_xref.html",
+        writeAndCompare("analysis/clojure/truncated.clj",
+            "analysis/clojure/truncated_xref.html",
             null, 1);
     }
 
@@ -111,7 +111,7 @@ public class ClojureXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/clojure/sampletags");
+            "analysis/clojure/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

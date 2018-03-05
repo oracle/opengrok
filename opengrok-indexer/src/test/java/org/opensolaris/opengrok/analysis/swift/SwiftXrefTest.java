@@ -51,15 +51,15 @@ public class SwiftXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/swift/sample.swift",
-            "org/opensolaris/opengrok/analysis/swift/sample_xref.html",
+        writeAndCompare("analysis/swift/sample.swift",
+            "analysis/swift/sample_xref.html",
             getTagsDefinitions(), 111);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/swift/truncated.swift",
-            "org/opensolaris/opengrok/analysis/swift/truncated_xref.html",
+        writeAndCompare("analysis/swift/truncated.swift",
+            "analysis/swift/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class SwiftXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/swift/sampletags");
+            "analysis/swift/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

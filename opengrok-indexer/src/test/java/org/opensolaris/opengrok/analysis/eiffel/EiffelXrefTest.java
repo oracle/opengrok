@@ -51,15 +51,15 @@ public class EiffelXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/eiffel/sample.e",
-            "org/opensolaris/opengrok/analysis/eiffel/sample_xref.html",
+        writeAndCompare("analysis/eiffel/sample.e",
+            "analysis/eiffel/sample_xref.html",
             getTagsDefinitions(), 489);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/eiffel/truncated.e",
-            "org/opensolaris/opengrok/analysis/eiffel/truncated_xref.html",
+        writeAndCompare("analysis/eiffel/truncated.e",
+            "analysis/eiffel/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class EiffelXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/eiffel/sampletags");
+            "analysis/eiffel/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

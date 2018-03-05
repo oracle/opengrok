@@ -51,15 +51,15 @@ public class LispXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/lisp/sample.lsp",
-            "org/opensolaris/opengrok/analysis/lisp/sample_xref.html",
+        writeAndCompare("analysis/lisp/sample.lsp",
+            "analysis/lisp/sample_xref.html",
             getTagsDefinitions(), 55);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/lisp/truncated.lsp",
-            "org/opensolaris/opengrok/analysis/lisp/truncated_xref.html",
+        writeAndCompare("analysis/lisp/truncated.lsp",
+            "analysis/lisp/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class LispXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/lisp/sampletags");
+            "analysis/lisp/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

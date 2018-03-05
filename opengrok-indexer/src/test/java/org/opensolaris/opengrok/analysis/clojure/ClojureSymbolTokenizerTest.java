@@ -45,10 +45,10 @@ public class ClojureSymbolTokenizerTest {
     @Test
     public void testClojureSymbolStream() throws Exception {
         InputStream cljres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/clojure/sample.clj");
+            "analysis/clojure/sample.clj");
         assertNotNull("despite sample.clj as resource,", cljres);
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/clojure/samplesymbols.txt");
+            "analysis/clojure/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", wdsres);
 
         List<String> expectedSymbols = new ArrayList<>();

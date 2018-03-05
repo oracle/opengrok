@@ -48,14 +48,14 @@ public class PerlXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/perl/sample.pl",
-            "org/opensolaris/opengrok/analysis/perl/samplexrefres.html", 258);
+        writeAndCompare("analysis/perl/sample.pl",
+            "analysis/perl/samplexrefres.html", 258);
     }
 
     @Test
     public void shouldCloseTruncateStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/perl/truncated.pl",
-            "org/opensolaris/opengrok/analysis/perl/truncated_xrefres.html",
+        writeAndCompare("analysis/perl/truncated.pl",
+            "analysis/perl/truncated_xrefres.html",
             1);
     }
 

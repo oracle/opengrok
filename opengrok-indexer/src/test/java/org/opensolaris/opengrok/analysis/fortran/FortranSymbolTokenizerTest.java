@@ -45,10 +45,10 @@ public class FortranSymbolTokenizerTest {
     @Test
     public void testFortranSymbolStream() throws Exception {
         InputStream fres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/fortran/sample.f");
+            "analysis/fortran/sample.f");
         assertNotNull("despite sample.f as resource,", fres);
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/fortran/samplesymbols.txt");
+            "analysis/fortran/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", wdsres);
 
         List<String> expectedSymbols = new ArrayList<>();

@@ -45,10 +45,10 @@ public class CSharpSymbolTokenizerTest {
     @Test
     public void testCSharpSymbolStream() throws Exception {
         InputStream csres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/csharp/sample.cs");
+            "analysis/csharp/sample.cs");
         assertNotNull("despite sample.cs as resource,", csres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/csharp/samplesymbols.txt");
+            "analysis/csharp/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

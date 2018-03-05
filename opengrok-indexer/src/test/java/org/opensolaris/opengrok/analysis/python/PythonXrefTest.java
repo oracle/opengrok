@@ -51,15 +51,15 @@ public class PythonXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/python/sample.py",
-            "org/opensolaris/opengrok/analysis/python/sample_xref.html",
+        writeAndCompare("analysis/python/sample.py",
+            "analysis/python/sample_xref.html",
             getTagsDefinitions(), 101);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/python/truncated.py",
-            "org/opensolaris/opengrok/analysis/python/truncated_xref.html",
+        writeAndCompare("analysis/python/truncated.py",
+            "analysis/python/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class PythonXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/python/sampletags");
+            "analysis/python/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

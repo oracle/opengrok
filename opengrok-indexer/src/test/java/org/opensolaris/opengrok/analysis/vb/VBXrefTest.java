@@ -51,15 +51,15 @@ public class VBXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/vb/sample.cls",
-            "org/opensolaris/opengrok/analysis/vb/sample_xref.html",
+        writeAndCompare("analysis/vb/sample.cls",
+            "analysis/vb/sample_xref.html",
             getTagsDefinitions(), 209);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/vb/truncated.cls",
-            "org/opensolaris/opengrok/analysis/vb/truncated_xref.html",
+        writeAndCompare("analysis/vb/truncated.cls",
+            "analysis/vb/truncated_xref.html",
             null, 1);
     }
 
@@ -113,7 +113,7 @@ public class VBXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/vb/sampletags");
+            "analysis/vb/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(

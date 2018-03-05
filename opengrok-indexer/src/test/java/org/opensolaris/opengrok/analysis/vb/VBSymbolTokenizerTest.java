@@ -45,10 +45,10 @@ public class VBSymbolTokenizerTest {
     @Test
     public void testClojureSymbolStream() throws Exception {
         InputStream clsres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/vb/sample.cls");
+            "analysis/vb/sample.cls");
         assertNotNull("despite sample.cls as resource,", clsres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/vb/samplesymbols.txt");
+            "analysis/vb/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

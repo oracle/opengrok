@@ -99,9 +99,9 @@ public class PerlSymbolTokenizerTest {
     @Test
     public void testPerlSymbolStream() throws Exception {
         InputStream plres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/perl/sample.pl");
+            "analysis/perl/sample.pl");
         InputStream wdsres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/perl/samplesymbols.txt");
+            "analysis/perl/samplesymbols.txt");
 
         List<String> expectedSymbols = new ArrayList<>();
         try (BufferedReader wdsr = new BufferedReader(new InputStreamReader(

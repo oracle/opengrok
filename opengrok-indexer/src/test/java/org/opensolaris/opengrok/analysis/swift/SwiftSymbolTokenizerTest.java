@@ -45,10 +45,10 @@ public class SwiftSymbolTokenizerTest {
     @Test
     public void testSwiftSymbolStream() throws Exception {
         InputStream swiftres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/swift/sample.swift");
+            "analysis/swift/sample.swift");
         assertNotNull("despite sample.swift as resource,", swiftres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/swift/samplesymbols.txt");
+            "analysis/swift/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

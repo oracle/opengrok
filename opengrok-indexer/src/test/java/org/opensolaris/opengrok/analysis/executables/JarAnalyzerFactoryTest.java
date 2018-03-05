@@ -43,7 +43,7 @@ public class JarAnalyzerFactoryTest {
     @Test
     public void testJarWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/executables/javajar.bin");
+            "analysis/executables/javajar.bin");
         assertNotNull("javajar.bin should be available,", res);
 
         // assert that it is matched

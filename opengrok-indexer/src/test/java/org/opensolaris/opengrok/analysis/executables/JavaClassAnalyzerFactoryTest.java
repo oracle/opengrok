@@ -44,7 +44,7 @@ public class JavaClassAnalyzerFactoryTest {
     @Test
     public void testJavaClassWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/executables/javaclass.bin");
+            "analysis/executables/javaclass.bin");
         assertNotNull("despite inclusion locally,", res);
 
         // assert that it is matched
@@ -61,7 +61,7 @@ public class JavaClassAnalyzerFactoryTest {
     @Test
     public void testDylibCafebabeWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/executables/fat.dylib");
+            "analysis/executables/fat.dylib");
         assertNotNull("despite inclusion locally,", res);
 
         FileAnalyzerFactory fac = AnalyzerGuru.find(res);

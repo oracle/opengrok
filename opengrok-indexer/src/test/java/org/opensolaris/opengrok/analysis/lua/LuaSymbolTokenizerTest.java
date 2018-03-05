@@ -45,10 +45,10 @@ public class LuaSymbolTokenizerTest {
     @Test
     public void testLuaSymbolStream() throws Exception {
         InputStream luares = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/lua/sample.lua");
+            "analysis/lua/sample.lua");
         assertNotNull("despite sample.lua as resource,", luares);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/lua/samplesymbols.txt");
+            "analysis/lua/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

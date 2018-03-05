@@ -45,10 +45,10 @@ public class PascalSymbolTokenizerTest {
     @Test
     public void testPascalSymbolStream() throws Exception {
         InputStream pasres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/pascal/sample.pas");
+            "analysis/pascal/sample.pas");
         assertNotNull("despite sample.pas as resource,", pasres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/pascal/samplesymbols.txt");
+            "analysis/pascal/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

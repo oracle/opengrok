@@ -49,14 +49,14 @@ public class XMLXrefTest {
 
     @Test
     public void sampleTest() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/xml/sample.xml",
-            "org/opensolaris/opengrok/analysis/xml/sample_xref.html", 229);
+        writeAndCompare("analysis/xml/sample.xml",
+            "analysis/xml/sample_xref.html", 229);
     }
 
     @Test
     public void shouldCloseTruncatedStringSpan() throws IOException {
-        writeAndCompare("org/opensolaris/opengrok/analysis/xml/truncated.xml",
-            "org/opensolaris/opengrok/analysis/xml/truncated_xref.html", 1);
+        writeAndCompare("analysis/xml/truncated.xml",
+            "analysis/xml/truncated_xref.html", 1);
     }
 
     private void writeAndCompare(String sourceResource, String resultResource,

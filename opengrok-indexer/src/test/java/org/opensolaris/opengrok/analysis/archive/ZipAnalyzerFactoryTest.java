@@ -43,7 +43,7 @@ public class ZipAnalyzerFactoryTest {
     @Test
     public void testZipWrtAnalyzerGuru() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/archive/zip.bin");
+            "analysis/archive/zip.bin");
         assertNotNull("zip.bin should be available,", res);
 
         // assert that it is matched

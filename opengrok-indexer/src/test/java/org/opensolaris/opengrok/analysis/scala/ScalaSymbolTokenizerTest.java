@@ -45,10 +45,10 @@ public class ScalaSymbolTokenizerTest {
     @Test
     public void testScalaSymbolStream() throws Exception {
         InputStream scalares = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/scala/sample.scala");
+            "analysis/scala/sample.scala");
         assertNotNull("despite samplescalakt as resource,", scalares);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/scala/samplesymbols.txt");
+            "analysis/scala/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

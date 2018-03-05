@@ -45,10 +45,10 @@ public class JsonSymbolTokenizerTest {
     @Test
     public void testJsonSymbolStream() throws Exception {
         InputStream jres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/json/sample.json");
+            "analysis/json/sample.json");
         assertNotNull("despite sample.json as resource,", jres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/json/samplesymbols.txt");
+            "analysis/json/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

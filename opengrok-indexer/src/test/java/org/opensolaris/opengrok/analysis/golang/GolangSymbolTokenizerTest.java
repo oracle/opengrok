@@ -45,10 +45,10 @@ public class GolangSymbolTokenizerTest {
     @Test
     public void testGolangSymbolStream() throws Exception {
         InputStream gores = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/golang/sample.go");
+            "analysis/golang/sample.go");
         assertNotNull("despite sample.go as resource,", gores);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/golang/samplesymbols.txt");
+            "analysis/golang/samplesymbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

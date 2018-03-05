@@ -123,7 +123,7 @@ public class MercurialRepositoryTest {
 
         // Add a subdirectory with some history.
         runHgCommand(root, "import",
-            getClass().getResource("hg-export-subdir.txt").getPath());
+            getClass().getResource("/history/hg-export-subdir.txt").getPath());
 
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
@@ -194,7 +194,7 @@ public class MercurialRepositoryTest {
 
         // Branch the repo and add one changeset.
         runHgCommand(root, "unbundle",
-                getClass().getResource("hg-branch.bundle").getPath());
+                getClass().getResource("/history/hg-branch.bundle").getPath());
         // Switch to the branch.
         runHgCommand(root, "update", "mybranch");
 

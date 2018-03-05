@@ -74,7 +74,7 @@ public class HaskellSymbolTokenizerTest {
     @Test
     public void sampleTest() throws UnsupportedEncodingException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/haskell/sample.hs");
+                "analysis/haskell/sample.hs");
         InputStreamReader r = new InputStreamReader(res, "UTF-8");
         String[] termsFor = getTermsFor(r);        
         assertArrayEquals(
@@ -93,10 +93,10 @@ public class HaskellSymbolTokenizerTest {
     @Test
     public void testHaskellSymbolStream() throws Exception {
         InputStream pyres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/haskell/sample2.hs");
+            "analysis/haskell/sample2.hs");
         assertNotNull("despite sample.py as resource,", pyres);
         InputStream symres = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/haskell/sample2symbols.txt");
+            "analysis/haskell/sample2symbols.txt");
         assertNotNull("despite samplesymbols.txt as resource,", symres);
 
         List<String> expectedSymbols = new ArrayList<>();

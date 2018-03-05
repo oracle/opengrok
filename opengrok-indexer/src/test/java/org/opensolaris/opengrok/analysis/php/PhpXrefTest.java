@@ -111,7 +111,7 @@ public class PhpXrefTest {
         InputStream is = null;
         if (args.length == 0) {
             is = PhpXrefTest.class.getClassLoader().getResourceAsStream(
-                    "org/opensolaris/opengrok/analysis/php/sample.php");
+                    "analysis/php/sample.php");
         } else {
             is = new FileInputStream(new File(args[0]));
         }
@@ -122,7 +122,7 @@ public class PhpXrefTest {
     @Test
     public void sampleTest() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/php/sample.php");
+                "analysis/php/sample.php");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         int actLOC;
@@ -133,7 +133,7 @@ public class PhpXrefTest {
         }
 
         InputStream exp = getClass().getClassLoader().getResourceAsStream(
-                "org/opensolaris/opengrok/analysis/php/sampleXrefRes.html");
+                "analysis/php/sampleXrefRes.html");
         byte[] expbytes = copyStream(exp);
 
         String gotten[] = new String(baos.toByteArray(), "UTF-8").split("\n");
@@ -146,7 +146,7 @@ public class PhpXrefTest {
 
     private Definitions getTagsDefinitions() throws IOException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/php/sampletags");
+            "analysis/php/sampletags");
         assertNotNull("though sampletags should stream,", res);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(
