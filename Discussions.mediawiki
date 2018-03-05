@@ -1,9 +1,8 @@
 = Slack =
 
 * http://opengrok.slack.com
-**use shared invite: https://join.slack.com/t/opengrok/shared_invite/enQtMjg1OTQ3MTU1MTIwLWE2Yzk1ZTAyMmE3NzAxNzAyYjIzMjA3OGMyZGQ0MjM1MjE0M2U1OGIxYjRhNzVhOTQxOTU0MzRmNzg0NzJmMDg
-**(valid until 13.1.2018, please create an issue for a new one)
-**(or ask for (new) shared invite on below list)
+**use shared invite: https://join.slack.com/t/opengrok/shared_invite/enQtMzI1Mzc1MTU3ODQ2LTM5MTdhYWJiODVlOTU4OTYzNjM5ZGYzYzU2ZTU4ODZiMTFkZWRiNWRlMmJkNGYwZjMyMjQzMjY2ZTYyOGQ4MzM
+
 * https://opengrok.slackarchive.io
 
 = Chat =
