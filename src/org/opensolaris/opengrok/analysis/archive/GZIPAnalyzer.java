@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -27,12 +27,14 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.security.MessageDigest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.DigestedInputStream;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
@@ -100,13 +102,50 @@ public class GZIPAnalyzer extends FileAnalyzer {
 
     /**
      * Wrap the raw stream source in one that returns the uncompressed stream.
+     * @param src a defined instance
+     * @return a defined instance
      */
-    private static StreamSource wrap(final StreamSource src) {
+    public static StreamSource wrap(final StreamSource src) {
         return new StreamSource() {
             @Override
             public InputStream getStream() throws IOException {
                 return new BufferedInputStream(
                         new GZIPInputStream(src.getStream()));
+            }
+
+            @Override
+            public DigestedInputStream getSHA256stream() throws IOException {
+                /*
+                 * Unzip the underlying source stream, and ensure that the
+                 * digest of the underlying stream -- and not the unzipped
+                 * stream -- is returned.
+                 */
+                DigestedInputStream dis = src.getSHA256stream();
+                BufferedInputStream gzis = new BufferedInputStream(
+                    new GZIPInputStream(dis.getStream()));
+
+                return new DigestedInputStream() {
+                    @Override
+                    public InputStream getStream() {
+                        return gzis;
+                    }
+
+                    @Override
+                    public MessageDigest getMessageDigest() {
+                        return dis.getMessageDigest();
+                    }
+
+                    @Override
+                    public byte[] digestAll() throws IOException {
+                        return StreamSource.digestAll(this);
+                    }
+
+                    @Override
+                    public void close() throws Exception {
+                        gzis.close();
+                        dis.close();
+                    }
+                };
             }
         };
     }    

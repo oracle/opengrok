@@ -37,9 +37,6 @@ import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.TestRepository;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -59,12 +56,7 @@ public class ClojureAnalyzerFactoryTest {
     private static FileAnalyzer analyzer;
 
     private static StreamSource getStreamSource(final String fname) {
-        return new StreamSource() {
-            @Override
-            public InputStream getStream() throws IOException {
-                return new FileInputStream(fname);
-            }
-        };
+        return StreamSource.fromFile(new File(fname));
     }
 
     @BeforeClass

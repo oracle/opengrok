@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright 2009 - 2011 Jens Elkner. 
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.document;
 
@@ -40,6 +41,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.opensolaris.opengrok.analysis.DigestedInputStream;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.util.TestRepository;
 import org.opensolaris.opengrok.web.Util;
@@ -123,6 +125,11 @@ public class TroffAnalyzerTest {
             @Override
             public InputStream getStream() throws IOException {
                 return new ByteArrayInputStream(content.getBytes());
+            }
+
+            @Override
+            public DigestedInputStream getSHA256stream() throws IOException {
+                return StreamSource.getSHA256stream(getStream());
             }
         }, xrefOut);
     }

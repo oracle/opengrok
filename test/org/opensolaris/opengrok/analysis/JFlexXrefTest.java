@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -505,6 +505,11 @@ public class JFlexXrefTest {
                     StringWriter.class.getName().replace('.', '/') +
                     ".class";
                 return StringWriter.class.getResourceAsStream(path);
+            }
+
+            @Override
+            public DigestedInputStream getSHA256stream() throws IOException {
+                return StreamSource.getSHA256stream(getStream());
             }
         };
         Document doc = new Document();

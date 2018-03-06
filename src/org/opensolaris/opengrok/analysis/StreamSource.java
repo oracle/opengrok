@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -27,6 +28,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * This class lets you create {@code InputStream}s that read data from a
@@ -39,6 +43,9 @@ import java.io.InputStream;
  * with each other.
  */
 public abstract class StreamSource {
+
+    protected static final String SHA256 = "SHA-256";
+
     /**
      * Get a stream that reads data from the input source. Every call should
      * return a new instance so that multiple readers can read from the source
@@ -48,6 +55,16 @@ public abstract class StreamSource {
      * @throws IOException if an error occurs when opening the stream
      */
     public abstract InputStream getStream() throws IOException;
+
+    /**
+     * Gets a stream that reads data from the input source and produces a
+     * SHA-256 digest. Every call should return a new instance so that multiple
+     * readers can read from the source without interfering with each other.
+     *
+     * @return a defined instance
+     * @throws IOException if an error occurs when opening the stream
+     */
+    public abstract DigestedInputStream getSHA256stream() throws IOException;
 
     /**
      * Helper method that creates a {@code StreamSource} instance that
@@ -62,6 +79,58 @@ public abstract class StreamSource {
             public InputStream getStream() throws IOException {
                 return new BufferedInputStream(new FileInputStream(file));
             }
+
+            @Override
+            public DigestedInputStream getSHA256stream() throws IOException {
+                return getSHA256stream(getStream());
+            }
         };
+    }
+
+    protected static DigestedInputStream getSHA256stream(InputStream under)
+            throws IOException {
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance(SHA256);
+        } catch (NoSuchAlgorithmException ex) {
+            /*
+             * NOT EXPECTED because "Every implementation of the Java
+             * platform is required to support ... SHA-256 ...."
+             */
+            throw new IOException("digest failed");
+        }
+        DigestInputStream dis = new DigestInputStream(under, md);
+
+        return new DigestedInputStream() {
+            @Override
+            public InputStream getStream() {
+                return dis;
+            }
+
+            @Override
+            public MessageDigest getMessageDigest() {
+                return dis.getMessageDigest();
+            }
+
+            @Override
+            public byte[] digestAll() throws IOException {
+                return StreamSource.digestAll(this);
+            }
+
+            @Override
+            public void close() throws Exception {
+                dis.close();
+            }
+        };
+    }
+
+    protected static byte[] digestAll(DigestedInputStream dis)
+            throws IOException {
+        byte[] buf = new byte[64 * 1024];
+        InputStream iss = dis.getStream();
+        while (iss.read(buf) != -1) {
+            // iterate
+        }
+        return dis.getMessageDigest().digest();
     }
 }
