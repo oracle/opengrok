@@ -54,11 +54,11 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
    * first line part of the matching region.
    */
   private final StringBuilder markedContents = new StringBuilder();
-  int markedPos=0;
-  int curLinePos=0;
-  int matchStart=-1;
-  int markedLine=0;
-  int rest=0;
+  int markedPos = 0;
+  int curLinePos = 0;
+  int matchStart = -1;
+  int markedLine = 1; // lines are indexed from 1
+  int rest = 0;
   boolean wait = false;
   boolean dumpRest = false;
   Writer out;
@@ -115,10 +115,10 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
         wait = false;
         dumpRest = false;
         rest = 0;
-        markedPos=0;
-        curLinePos=0;
-        matchStart=-1;
-        markedLine=0;
+        markedPos = 0;
+        curLinePos = 0;
+        matchStart = -1;
+        markedLine = 1;
         yyline = 1;
         this.out = out;
         this.url = url;
