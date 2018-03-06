@@ -1,18 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.opensolaris.opengrok</groupId>
-    <artifactId>opengrok-web</artifactId>
-    <packaging>war</packaging>
-    <version>1.1-SNAPSHOT</version>
-    <name>OpenGrok Web</name>
 
     <parent>
         <groupId>org.opensolaris.opengrok</groupId>
         <artifactId>opengrok</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
+
+    <artifactId>opengrok-web</artifactId>
+    <version>1.1-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>OpenGrok Web</name>
+
+    <properties>
+        <tomcat.server.id>OpenGrok</tomcat.server.id>
+        <tomcat.servlet.context.path>/source</tomcat.servlet.context.path>
+        <tomcat.url>http://localhost:8080/manager/text</tomcat.url>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opengrok-indexer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <finalName>source</finalName>
@@ -26,15 +40,19 @@
                     <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
                 </configuration>
             </plugin>
-        </plugins>
-    </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>opengrok-indexer</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <server>${tomcat.server.id}</server>
+                    <path>${tomcat.servlet.context.path}</path>
+                    <url>${tomcat.url}</url>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
 
 </project>

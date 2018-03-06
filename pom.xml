@@ -21,22 +21,20 @@ CDDL HEADER END
 Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>opengrok</artifactId>
-    <packaging>pom</packaging>
     <version>1.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
     <name>OpenGrok</name>
     <url>http://opengrok.github.com/OpenGrok/</url>
-
-    <scm>
-        <connection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</developerConnection>
-        <url>ssh://git@github.com:OpenGrok/OpenGrok.git</url>
-    </scm>
-
+    <organization>
+        <name>Oracle</name>
+        <url>http://www.oracle.com</url>
+    </organization>
     <licenses>
         <license>
             <name>CDDL 1</name>
@@ -45,11 +43,6 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
         </license>
     </licenses>
 
-    <organization>
-        <name>Oracle</name>
-        <url>http://www.oracle.com</url>
-    </organization>
-
     <modules>
         <module>jrcs</module>
         <module>plugins</module>
@@ -57,9 +50,15 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
         <module>opengrok-web</module>
     </modules>
 
+    <scm>
+        <connection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</developerConnection>
+        <url>ssh://git@github.com:OpenGrok/OpenGrok.git</url>
+    </scm>
+
     <properties>
-	<lucene.version>7.2.1</lucene.version>
-	<mavenjavadocplugin.version>2.10.4</mavenjavadocplugin.version>
+        <lucene.version>7.2.1</lucene.version>
+        <mavenjavadocplugin.version>2.10.4</mavenjavadocplugin.version>
         <compileSource>1.8</compileSource>
         <compileTarget>1.8</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -103,9 +102,9 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
                 <version>2.5</version>
             </dependency>
             <dependency>
-                    <groupId>com.googlecode.json-simple</groupId>
-                    <artifactId>json-simple</artifactId>
-                    <version>1.1.1</version>
+                <groupId>com.googlecode.json-simple</groupId>
+                <artifactId>json-simple</artifactId>
+                <version>1.1.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.ant</groupId>
@@ -114,6 +113,27 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>maven.org</id>
+            <name>maven.org</name>
+            <url>http://repo.maven.apache.org/maven2/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>apache.snapshots</id>
+            <name>apache.snapshots</name>
+            <url>http://repository.apache.org/snapshots/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>maven.org</id>
+            <url>http://repo.maven.apache.org/maven2/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <plugins>
@@ -141,15 +161,15 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.7.9</version>
             </plugin>
-	    <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-		<version>${mavenjavadocplugin.version}</version>
+                <version>${mavenjavadocplugin.version}</version>
             </plugin>
-           <plugin>
-            <artifactId>maven-project-info-reports-plugin</artifactId>
-            <version>2.9</version>
-           </plugin>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.9</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -236,27 +256,5 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
             </plugin>
         </plugins>
     </reporting>
-
-    <repositories>
-        <repository>
-            <id>maven.org</id>
-            <name>maven.org</name>
-            <url>http://repo.maven.apache.org/maven2/</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>apache.snapshots</id>
-            <name>apache.snapshots</name>
-            <url>http://repository.apache.org/snapshots/</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>maven.org</id>
-            <url>http://repo.maven.apache.org/maven2/</url>
-        </pluginRepository>
-    </pluginRepositories>
 
 </project>

@@ -22,20 +22,66 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.opensolaris.opengrok</groupId>
-    <artifactId>opengrok-indexer</artifactId>
-    <packaging>jar</packaging>
-    <version>1.1-SNAPSHOT</version>
-    <name>OpenGrok Indexer</name>
 
     <parent>
         <groupId>org.opensolaris.opengrok</groupId>
         <artifactId>opengrok</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
+
+    <artifactId>opengrok-indexer</artifactId>
+    <version>1.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>OpenGrok Indexer</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.bcel</groupId>
+            <artifactId>bcel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-suggest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opensolaris.opengrok</groupId>
+            <artifactId>jrcs</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
 
     <build>
 
@@ -196,75 +242,29 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 </configuration>
             </plugin>
 
-           <plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
                 <executions>
-                  <execution>
-                    <phase>verify</phase>
-                    <goals>
-                      <goal>exec</goal>
-                    </goals>
-                  </execution>
+                    <execution>
+                        <phase>verify</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                    </execution>
                 </executions>
                 <configuration>
-                  <executable>pep8</executable>
-                  <arguments>
-		    <argument>-v</argument>
-		    <argument>--exclude=filelock.py,test_command.py</argument>
-                    <argument>${project.basedir}/../tools/sync</argument>
-                  </arguments>
+                    <executable>pep8</executable>
+                    <arguments>
+                        <argument>-v</argument>
+                        <argument>--exclude=filelock.py,test_command.py</argument>
+                        <argument>${project.basedir}/../tools/sync</argument>
+                    </arguments>
                 </configuration>
-           </plugin>
+            </plugin>
 
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.bcel</groupId>
-            <artifactId>bcel</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-queryparser</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-suggest</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.opensolaris.opengrok</groupId>
-            <artifactId>jrcs</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-    </dependencies>
 
 </project>

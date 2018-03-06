@@ -21,14 +21,8 @@ CDDL HEADER END
 Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.opensolaris.opengrok</groupId>
-    <artifactId>plugins</artifactId>
-    <packaging>jar</packaging>
-    <version>1.1-SNAPSHOT</version>
-    <name>OpenGrok authorization plugins</name>
 
     <parent>
         <groupId>org.opensolaris.opengrok</groupId>
@@ -36,9 +30,33 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
         <version>1.1-SNAPSHOT</version>
     </parent>
 
+    <artifactId>plugins</artifactId>
+    <version>1.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>OpenGrok authorization plugins</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opengrok-indexer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <sourceDirectory>.</sourceDirectory>
-	<!-- Note that the plugins/UserPlugin/test/ directory is added via the build-helper plugin below -->
+        <!-- Note that the plugins/UserPlugin/test/ directory is added via the build-helper plugin below -->
         <testSourceDirectory>LdapPlugin/test</testSourceDirectory>
 
         <testResources>
@@ -53,67 +71,49 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  
         <plugins>
 
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>2.0.2</version>
-            <configuration>
-              <includes>
-                <include>**/LdapPlugin/src/**</include>
-                <include>**/UserPlugin/src/**</include>
-                <include>*Plugin.java</include>
-              </includes>
-            </configuration>
-          </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.0.2</version>
+                <configuration>
+                    <includes>
+                        <include>**/LdapPlugin/src/**</include>
+                        <include>**/UserPlugin/src/**</include>
+                        <include>*Plugin.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
 
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <configuration>
-                  <systemPropertyVariables>
-                      <junit-force-all>true</junit-force-all>
-                  </systemPropertyVariables>
-              </configuration>
-          </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <junit-force-all>true</junit-force-all>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
 
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <version>1.8</version>
-            <executions>
-                <execution>
-                    <id>add-test-source</id>
-                    <phase>generate-test-sources</phase>
-                    <goals>
-                        <goal>add-test-source</goal>
-                    </goals>
-                    <configuration>
-                        <sources>
-                            <directory>UserPlugin/test</directory>
-                        </sources>
-                    </configuration>
-                </execution>
-            </executions>
-          </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>add-test-source</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <directory>UserPlugin/test</directory>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>opengrok-indexer</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-        </dependency>
-	<dependency>
-	    <groupId>junit</groupId>
-	    <artifactId>junit</artifactId>
-	    <version>4.12</version>
-            <scope>test</scope>
-	</dependency>
-    </dependencies>
 
 </project>
