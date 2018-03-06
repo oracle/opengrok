@@ -94,7 +94,7 @@ public class StreamUtils {
                 try {
                     splitter.reset(src);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    System.err.println(ex.toString());
                     return null;
                 }
                 return splitter;
