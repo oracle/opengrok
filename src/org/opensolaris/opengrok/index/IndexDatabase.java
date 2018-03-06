@@ -996,8 +996,8 @@ public class IndexDatabase {
                          * If the file was not modified, probably skip to the
                          * next one.
                          */
-                        if (uidIter != null && uidIter.term() != null &&
-                            uidIter.term().bytesEquals(buid)) {
+                        if (uidIter != null && uidIter.term() != null
+                                && uidIter.term().bytesEquals(buid)) {
                             boolean chkres = chkFields(file, path);
                             if (!chkres) removeFile(false);
 
@@ -1529,8 +1529,8 @@ public class IndexDatabase {
              * ignore the check so that no extra work is done. After a re-index,
              * the TABSIZE check will be active.
              */
-            int reqTabSize = project != null ? project.hasTabSizeSetting() ?
-                project.getTabSize() : 0 : 0;
+            int reqTabSize = project != null && project.hasTabSizeSetting() ?
+                project.getTabSize() : 0;
             IndexableField tbsz = doc.getField(QueryBuilder.TABSIZE);
             int tbszint = tbsz != null ? tbsz.numericValue().intValue(): 0;
             if (tbsz != null && tbszint != reqTabSize) {
