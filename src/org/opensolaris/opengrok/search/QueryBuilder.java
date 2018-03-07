@@ -66,7 +66,8 @@ public class QueryBuilder {
     public static final String DIRPATH = "dirpath";
     public static final String PROJECT = "project";
     public static final String DATE = "date";
-    public static final String TABSIZE = "tabsize";
+    public static final String OBJUID = "objuid"; // object UID
+    public static final String OBJSER = "objser"; // object serialized
 
     /** Used for paths, so SHA-1 is completely sufficient */
     private static final String DIRPATH_HASH_ALGORITHM = "SHA-1";
