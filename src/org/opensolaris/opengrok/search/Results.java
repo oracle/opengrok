@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.search;
@@ -89,7 +89,12 @@ public final class Results {
         for (int i = startIdx; i < stopIdx; i++) {
             int docId = hits[i].doc;
             Document doc = searcher.doc(docId);
+
             String rpath = doc.get(QueryBuilder.PATH);
+            if (rpath == null) {
+                continue;
+            }
+
             String parent = rpath.substring(0, rpath.lastIndexOf('/'));
             ArrayList<Document> dirDocs = dirHash.get(parent);
             if (dirDocs == null) {

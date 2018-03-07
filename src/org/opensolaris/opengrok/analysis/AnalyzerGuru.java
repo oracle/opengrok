@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -52,7 +52,6 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.SortedDocValuesField;
-import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
@@ -470,9 +469,6 @@ public class AnalyzerGuru {
                 normalizedPath, Store.NO);
             doc.add(npstring);
         }
-
-        doc.add(new StoredField(QueryBuilder.TABSIZE, project != null &&
-            project.hasTabSizeSetting() ? project.getTabSize() : 0));
 
         if (fa != null) {
             Genre g = fa.getGenre();
