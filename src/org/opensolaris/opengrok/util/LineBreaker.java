@@ -72,13 +72,17 @@ public class LineBreaker {
             Reader rdr = IOUtils.createBOMStrippedReader(in,
                 StandardCharsets.UTF_8.name())) {
             Reader intermediate = null;
-            if (wrapper != null) intermediate = wrapper.get(rdr);
+            if (wrapper != null) {
+                intermediate = wrapper.get(rdr);
+            }
 
             try (BufferedReader brdr = new BufferedReader(
-                intermediate != null ? intermediate : rdr)) {
+                    intermediate != null ? intermediate : rdr)) {
                 reset(brdr);
             } finally {
-                if (intermediate != null) intermediate.close();
+                if (intermediate != null) {
+                    intermediate.close();
+                }
             }
         }
     }

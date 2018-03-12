@@ -285,8 +285,8 @@ public class CtagsReader {
 
         String[] args;
         if (signature != null && !signature.equals("()") &&
-            !signature.startsWith("() ") && (args =
-            splitSignature(signature)) != null) {
+                !signature.startsWith("() ") && (args =
+                splitSignature(signature)) != null) {
             for (String arg : args) {
                 //TODO this algorithm assumes that data types occur to
                 //     the left of the argument name, so it will not
@@ -312,7 +312,9 @@ public class CtagsReader {
                     arg = a[0];  // throws away assigned value
                 }
                 arg = arg.trim();
-                if (arg.length() < 1) continue;
+                if (arg.length() < 1) {
+                    continue;
+                }
 
                 cidx = bestIndexOfArg(lineno, whole, arg);
 
@@ -398,7 +400,9 @@ public class CtagsReader {
     private CpatIndex bestIndexOfTag(int lineno, String whole,
         String str) {
 
-        if (whole.length() < 1) return new CpatIndex(lineno, 0, 1, true);
+        if (whole.length() < 1) {
+            return new CpatIndex(lineno, 0, 1, true);
+        }
         String origWhole = whole;
 
         int t = tabSize;
@@ -456,14 +460,18 @@ public class CtagsReader {
      * @return a defined instance
      */
     private CpatIndex bestIndexOfArg(int lineno, String whole, String arg) {
-        if (whole.length() < 1) return new CpatIndex(lineno, 0, 1, true);
+        if (whole.length() < 1) {
+            return new CpatIndex(lineno, 0, 1, true);
+        }
 
         int t = tabSize;
         int s, e;
 
         // First search arg as-is in the current `whole' -- strict then lax.
         int woff = strictIndexOf(whole, arg);
-        if (woff < 0) woff = whole.indexOf(arg);
+        if (woff < 0) {
+            woff = whole.indexOf(arg);
+        }
         if (woff >= 0) {
             s = ExpandTabsReader.translate(whole, woff, t);
             e = ExpandTabsReader.translate(whole, woff + arg.length(), t);
@@ -532,7 +540,9 @@ public class CtagsReader {
             }
         } else {
             pr = bestMatch(cut, arg, argpat);
-            if (pr.start >= 0) return bestLineOfMatch(lineno, pr, cut);
+            if (pr.start >= 0) {
+                return bestLineOfMatch(lineno, pr, cut);
+            }
         }
 
         /**
@@ -549,7 +559,9 @@ public class CtagsReader {
      */
     private PatResult bestMatch(String whole, String arg, Pattern argpat) {
         PatResult m = strictMatch(whole, arg, argpat);
-        if (m.start >= 0) return m;
+        if (m.start >= 0) {
+            return m;
+        }
         Matcher marg = argpat.matcher(whole);
         if (marg.find()) {
             return new PatResult(marg.start(), marg.end(), marg.group());
@@ -573,7 +585,9 @@ public class CtagsReader {
         int spos = 0;
         do {
             int woff = whole.indexOf(substr, spos);
-            if (woff < 0) return -1;
+            if (woff < 0) {
+                return -1;
+            }
 
             spos = woff + 1;
             String onechar;
@@ -718,11 +732,11 @@ public class CtagsReader {
 
         // Trim outer punctuation if it exists.
         while (soff < signature.length() && (signature.charAt(soff) == '(' ||
-            signature.charAt(soff) == '{')) {
+                signature.charAt(soff) == '{')) {
             ++soff;
         }
         while (eoff - 1 > soff && (signature.charAt(eoff - 1) == ')' ||
-            signature.charAt(eoff - 1) == '}')) {
+                signature.charAt(eoff - 1) == '}')) {
             --eoff;
         }
         if (soff > off0 || eoff < offz) {
@@ -738,15 +752,19 @@ public class CtagsReader {
      */
     private String trySplitterCut(int lineOffset, int maxLines) {
         if (splitter == null) {
-            if (splitterSupplier == null || triedSplitterSupplier) return null;
+            if (splitterSupplier == null || triedSplitterSupplier) {
+                return null;
+            }
             triedSplitterSupplier = true;
             splitter = splitterSupplier.get();
-            if (splitter == null) return null;
+            if (splitter == null) {
+                return null;
+            }
         }
 
         StringBuilder cutbld = new StringBuilder();
         for (int i = lineOffset; i < lineOffset + maxLines &&
-            i < splitter.count(); ++i) {
+                i < splitter.count(); ++i) {
             cutbld.append(splitter.getLine(i));
         }
         return cutbld.toString();

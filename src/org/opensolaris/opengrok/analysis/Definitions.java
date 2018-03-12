@@ -228,7 +228,8 @@ public class Definitions implements Serializable {
         public transient boolean used;
 
         protected Tag(int line, String symbol, String type, String text,
-            String namespace, String signature, int lineStart, int lineEnd) {
+                String namespace, String signature, int lineStart,
+                int lineEnd) {
             this.line = line;
             this.symbol = symbol;
             this.type = type;
@@ -241,12 +242,12 @@ public class Definitions implements Serializable {
     }
 
     public void addTag(int line, String symbol, String type, String text,
-        int lineStart, int lineEnd) {
+            int lineStart, int lineEnd) {
         addTag(line, symbol, type, text, null, null, lineStart, lineEnd);
     }
 
     public void addTag(int line, String symbol, String type, String text,
-        String namespace, String signature, int lineStart, int lineEnd) {
+            String namespace, String signature, int lineStart, int lineEnd) {
         Tag new_tag = new Tag(line, symbol, type, text, namespace, signature,
             lineStart, lineEnd);
         tags.add(new_tag);
