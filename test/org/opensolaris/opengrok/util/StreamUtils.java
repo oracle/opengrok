@@ -62,12 +62,12 @@ public class StreamUtils {
     }
 
     public static Definitions readTagsFromResource(String tagsResourceName)
-        throws IOException {
+            throws IOException {
         return readTagsFromResource(tagsResourceName, null);
     }
 
     public static Definitions readTagsFromResource(String tagsResourceName,
-        String rawResourceName) throws IOException {
+            String rawResourceName) throws IOException {
         return readTagsFromResource(tagsResourceName, rawResourceName, 0);
     }
 

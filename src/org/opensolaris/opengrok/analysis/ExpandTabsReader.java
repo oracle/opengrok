@@ -110,7 +110,9 @@ public class ExpandTabsReader extends FilterReader {
         if (column > line.length()) {
             throw new IllegalArgumentException("`column' is out of bounds");
         }
-        if (tabSize < 1) return column;
+        if (tabSize < 1) {
+            return column;
+        }
 
         int newColumn = 0;
         for (int i = 0; i < column; ++i) {

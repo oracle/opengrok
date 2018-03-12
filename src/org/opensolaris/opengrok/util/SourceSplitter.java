@@ -109,7 +109,9 @@ public class SourceSplitter {
         if (lineOffsets == null) {
             throw new IllegalStateException("reset() has not succeeded");
         }
-        if (position < 0 || position > length) return -1;
+        if (position < 0 || position > length) {
+            return -1;
+        }
 
         int lo = 0;
         int hi = lineOffsets.length - 1;
@@ -195,13 +197,17 @@ public class SourceSplitter {
             Reader rdr = IOUtils.createBOMStrippedReader(in,
                 StandardCharsets.UTF_8.name())) {
             Reader intermediate = null;
-            if (wrapper != null) intermediate = wrapper.get(rdr);
+            if (wrapper != null) {
+                intermediate = wrapper.get(rdr);
+            }
 
             try (BufferedReader brdr = new BufferedReader(
-                intermediate != null ? intermediate : rdr)) {
+                    intermediate != null ? intermediate : rdr)) {
                 reset(brdr);
             } finally {
-                if (intermediate != null) intermediate.close();
+                if (intermediate != null) {
+                    intermediate.close();
+                }
             }
         }
     }
@@ -277,7 +283,9 @@ public class SourceSplitter {
         int position = 0;
         for (int i = 0; i < lineOffsets.length; ++i) {
             lineOffsets[i] = position;
-            if (i < lines.length) position += lines[i].length();
+            if (i < lines.length) {
+                position += lines[i].length();
+            }
         }
     }
 }

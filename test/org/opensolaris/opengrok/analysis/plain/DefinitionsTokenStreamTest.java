@@ -115,8 +115,8 @@ public class DefinitionsTokenStreamTest {
         StringBuilder bld = new StringBuilder();
         String source;
         try (Reader rdr = ExpandTabsReader.wrap(
-            IOUtils.createBOMStrippedReader(src.getStream(),
-            StandardCharsets.UTF_8.name()), tabSize)) {
+                IOUtils.createBOMStrippedReader(src.getStream(),
+                StandardCharsets.UTF_8.name()), tabSize)) {
             int c;
             while ((c = rdr.read()) != -1) {
                 bld.append((char)c);

@@ -116,7 +116,7 @@ public class DefinitionsTokenStream extends TokenStream {
             int lineno = tag.line - 1;
 
             if (lineno >= 0 && lineno < brk.count() && tag.symbol != null &&
-                tag.text != null) {
+                    tag.text != null) {
                 int lineoff = brk.getPosition(lineno);
                 if (tag.lineStart >= 0) {
                     PendingToken tok = new PendingToken(tag.symbol, lineoff +
