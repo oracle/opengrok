@@ -224,10 +224,10 @@ public final class Indexer {
             /*
              * Add paths to directories under source root. If projects
              * are enabled the path should correspond to a project because
-             * project path is necessary to correctly addOption index directory
+             * project path is necessary to correctly set index directory
              * (otherwise the index files will end up in index data root
              * directory and not per project data root directory).
-             * For the check we need to have 'env' already addOption.
+             * For the check we need to have 'env' already set.
              */
             for (String path : subFilesList) {
                 String srcPath = env.getSourceRootPath();
@@ -257,7 +257,7 @@ public final class Indexer {
 
             // If the webapp is running with a config that does not contain
             // 'projectsEnabled' property (case of upgrade or transition
-            // from project-less config to one with projects), addOption the property
+            // from project-less config to one with projects), set the property
             // using a message so that the 'project/indexed' messages
             // emitted during indexing do not cause validation error.
             if (addProjects && host != null && port > 0) {
@@ -1013,7 +1013,7 @@ public final class Indexer {
      * and storing data from the source files in the index (along with history,
      * if any).
      *
-     * @param update if addOption to true, index database is updated, otherwise optimized
+     * @param update if set to true, index database is updated, otherwise optimized
      * @param subFiles index just some subdirectories
      * @param progress object to receive notifications as indexer progress is made
      * @throws IOException if I/O exception occurred

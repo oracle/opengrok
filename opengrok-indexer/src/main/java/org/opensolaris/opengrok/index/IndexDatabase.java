@@ -757,13 +757,14 @@ public class IndexDatabase {
      */
     private boolean accept(File file) {
 
+        String absolutePath = file.getAbsolutePath();
+
         if (!includedNames.isEmpty()
                 && // the filter should not affect directory names
                 (!(file.isDirectory() || includedNames.match(file)))) {
+            LOGGER.log(Level.FINER, "not including {0}", absolutePath);
             return false;
         }
-
-        String absolutePath = file.getAbsolutePath();
 
         if (ignoredNames.ignore(file)) {
             LOGGER.log(Level.FINER, "ignoring {0}", absolutePath);
@@ -807,7 +808,13 @@ public class IndexDatabase {
         }
 
         // this is an unversioned file, check if it should be indexed
-        return !RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        boolean res = !env.isIndexVersionedFilesOnly();
+        if (!res) {
+            LOGGER.log(Level.FINER, "not accepting unversioned {0}",
+                absolutePath);
+        }
+        return res;
     }
 
     private boolean accept(File parent, File file) {
@@ -904,10 +911,10 @@ public class IndexDatabase {
 
     /**
      * Executes the first, serial stage of indexing, recursively.
-     * <p>Files at least are counted, and if {@code count_only} is false then
-     * any deleted or updated files (based on comparison to the Lucene index)
-     * are passed to {@link #removeFile(boolean)}. New or updated files are
-     * noted for indexing.
+     * <p>Files at least are counted, and any deleted or updated files (based on
+     * comparison to the Lucene index) are passed to
+     * {@link #removeFile(boolean)}. New or updated files are noted for
+     * indexing.
      * @param dir the root indexDirectory to generate indexes for
      * @param parent path to parent directory
      * @param args arguments to control execution and for collecting a list of

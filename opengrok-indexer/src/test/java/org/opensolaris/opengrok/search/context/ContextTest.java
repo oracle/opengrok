@@ -409,7 +409,7 @@ public class ContextTest {
         QueryBuilder qb = new QueryBuilder().setFreetext("mixed");
         Context c = new Context(qb.build(), qb.getQueries());
         assertTrue(c.getContext(in, out, "", "", "", null, false, qb.isDefSearch(), null));
-        assertEquals("<a class=\"s\" href=\"#0\"><span class=\"l\">0</span> "
+        assertEquals("<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> "
                 + "<b>Mixed</b> case: abc AbC dEf</a><br/>",
                 out.toString());
     }
