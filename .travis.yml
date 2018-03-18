@@ -27,7 +27,10 @@ env:
    #   via the "travis encrypt" command using the project repo's public key
    - secure: "O_cda5pWDBAP-O3_0nG5RQ"
 
-script:     "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile && cd opengrok-indexer && mvn javadoc:javadoc && cd ../opengrok-web && mvn javadoc:javadoc && cd .. && mvn verify -B"
+script: "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile \
+            && cd opengrok-indexer && mvn javadoc:javadoc \
+            && cd ../opengrok-web && mvn javadoc:javadoc \
+            && cd .. && mvn verify -B -Djunit-force-all=true"
 
 addons:
   coverity_scan:
