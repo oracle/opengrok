@@ -18,16 +18,14 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 /*
  * Copyright 2006 Trond Norbye.  All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -53,13 +51,11 @@ public class HistoryEntry {
 
     private boolean active;
     private SortedSet<String> files;
-    private List<String> changeRequests;
 
     /** Creates a new instance of HistoryEntry */
     public HistoryEntry() {
         message = new StringBuffer();
-        files = new TreeSet<String>();
-        changeRequests = new ArrayList<String>();
+        files = new TreeSet<>();
     }
     
     /**
@@ -74,7 +70,6 @@ public class HistoryEntry {
         this.message = that.message;
         this.active = that.active;
         this.files = that.files;
-        this.changeRequests = that.changeRequests;
     }
 
     public HistoryEntry(String revision, Date date, String author,
@@ -85,8 +80,7 @@ public class HistoryEntry {
         this.tags = tags;
         this.message = new StringBuffer(message);
         this.active = active;
-        this.files = new TreeSet<String>();
-        this.changeRequests = new ArrayList<String>();
+        this.files = new TreeSet<>();
     }
 
     public String getLine() {
@@ -106,12 +100,6 @@ public class HistoryEntry {
         for (String line : lines) {
             LOGGER.log(Level.FINE, "HistoryEntry : message        {0} {1}",
                     new Object[]{separator, line});
-            separator = ">";
-        }
-        separator = "=";
-        for (String cr : changeRequests) {
-            LOGGER.log(Level.FINE, "HistoryEntry : changeRequests {0} {1}",
-                    new Object[]{separator, cr});
             separator = ">";
         }
         separator = "=";
@@ -195,20 +183,6 @@ public class HistoryEntry {
     @Override
     public String toString() {
         return getLine();
-    }
-
-    public void addChangeRequest(String changeRequest) {
-        if (!changeRequests.contains(changeRequest)) {
-            changeRequests.add(changeRequest);
-        }
-    }
-
-    public List<String> getChangeRequests() {
-        return changeRequests;
-    }
-
-    public void setChangeRequests(List<String> changeRequests) {
-        this.changeRequests = changeRequests;
     }
 
     /**

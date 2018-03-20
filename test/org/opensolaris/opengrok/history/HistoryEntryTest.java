@@ -18,15 +18,12 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.history;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -86,8 +83,6 @@ public class HistoryEntryTest {
         instance.setActive(false);
         instance.addFile("testFile1.txt");
         instance.addFile("testFile2.txt");
-        instance.addChangeRequest("CR1");
-        instance.addChangeRequest("CR2");
         instance.dump();
     }
 
@@ -244,30 +239,6 @@ public class HistoryEntryTest {
     public void testToString() {
         assertTrue(instance.toString().contains(historyRevision));
         assertTrue(instance.toString().contains(historyAuthor));
-    }
-
-    /**
-     * Test of addChangeRequest method, of class HistoryEntry.
-     */
-    @Test
-    public void addGetChangeRequest() {
-        String changeRequest = "Change Request";
-        assertEquals(0, instance.getChangeRequests().size());
-        instance.addChangeRequest(changeRequest);
-        assertEquals(1, instance.getChangeRequests().size());
-        assertTrue(instance.getChangeRequests().contains(changeRequest));
-    }
-
-    /**
-     * Test of setChangeRequests method, of class HistoryEntry.
-     */
-    @Test
-    public void setChangeRequests() {
-        List<String> changeRequests = new ArrayList<String>();
-        changeRequests.add("CR1");
-        changeRequests.add("CR2");
-        instance.setChangeRequests(changeRequests);
-        assertEquals(2, instance.getChangeRequests().size());
     }
 
     /**
