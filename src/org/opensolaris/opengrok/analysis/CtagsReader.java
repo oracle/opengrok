@@ -378,8 +378,8 @@ public class CtagsReader {
      * Adds a tag to a {@code Definitions} instance.
      */
     private void addTag(Definitions defs, int lineno, String symbol,
-        String type, String text, String namespace, String signature,
-        int lineStart, int lineEnd) {
+            String type, String text, String namespace, String signature,
+            int lineStart, int lineEnd) {
         // The strings are frequently repeated (a symbol can be used in
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
@@ -397,9 +397,7 @@ public class CtagsReader {
      * syntax.
      * @return a defined instance
      */
-    private CpatIndex bestIndexOfTag(int lineno, String whole,
-        String str) {
-
+    private CpatIndex bestIndexOfTag(int lineno, String whole, String str) {
         if (whole.length() < 1) {
             return new CpatIndex(lineno, 0, 1, true);
         }

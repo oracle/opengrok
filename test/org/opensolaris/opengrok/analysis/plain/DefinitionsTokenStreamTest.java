@@ -116,7 +116,7 @@ public class DefinitionsTokenStreamTest {
         String source;
         try (Reader rdr = ExpandTabsReader.wrap(
                 IOUtils.createBOMStrippedReader(src.getStream(),
-                StandardCharsets.UTF_8.name()), tabSize)) {
+                    StandardCharsets.UTF_8.name()), tabSize)) {
             int c;
             while ((c = rdr.read()) != -1) {
                 bld.append((char)c);
@@ -158,8 +158,8 @@ public class DefinitionsTokenStreamTest {
 
             boolean cutContainsTerm = cutValue.endsWith(termValue);
             assertTrue("cut term" + count + " at " +
-                (offs.startOffset()) + "-" + (offs.endOffset()) + "["
-                + cutValue + "] vs [" + termValue + "]", cutContainsTerm);
+                (offs.startOffset()) + "-" + (offs.endOffset()) + "[" +
+                cutValue + "] vs [" + termValue + "]", cutContainsTerm);
         }
 
         assertEquals("token count", expectedCount, count);
