@@ -22,6 +22,8 @@
 #
 
 import os
+from shutil import which
+import logging
 
 
 def is_exe(fpath):
@@ -38,3 +40,34 @@ def check_create_dir(path):
         except OSError:
             logger.error("cannot create {} directory".format(path))
             sys.exit(1)
+
+
+def get_command(logger, path, name):
+    """
+    Get the path to the command specified by path and name.
+    If the path does not contain executable, search for the command
+    according to name in OS environment and/or dirname.
+
+    Return path to the command or None.
+    """
+
+    cmd_file = None
+    if path:
+        cmd_file = which(path)
+        if not is_exe(cmd_file):
+            logger.error("file {} is not executable file".
+                         format(path))
+            sys.exit(1)
+    else:
+        cmd_file = which(name)
+        if not cmd_file:
+            # try to search within dirname()
+            cmd_file = which(name,
+                             path=os.path.dirname(sys.argv[0]))
+            if not cmd_file:
+                logger.error("cannot determine path to the {} script".
+                             format(name))
+                sys.exit(1)
+    logger.debug("{} = {}".format(name, cmd_file))
+
+    return cmd_file
