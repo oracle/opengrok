@@ -276,6 +276,8 @@ PKG pkgsend add file tools/sync/teamware.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/teamware.py
 PKG pkgsend add file tools/sync/utils.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/utils.py
+PKG pkgsend add file tools/sync/projadm.py \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/projadm.py
 
 PKG pkgsend add file dist/opengrok.jar \
     mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
