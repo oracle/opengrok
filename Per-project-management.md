@@ -15,19 +15,15 @@ Combine these procedures with the parallel processing tools under the [tools/syn
 
 - backup current config (this could be done by copying the `configuration.xml` file aside, taking file-system snapshot etc.)
 - clone the project repositories under source root directory
-- add the project to configuration:
+- add the project to configuration (also refreshes the configuration on disk):
 ```
-   Messages -n project -t PROJECT add
-```
-- save the config (this is necessary so that partial indexer can recognize the project and its repositories):
-```
-   Messages -n config -t getconf > /opengrok/etc/configuration.xml
+   projadm -b /opengrok -a PROJECT
 ```
 - reindex
   - Use `OpenGrok indexpart` or `reindex-project.ksh` (in the latter case the previous step is not necessary since the script downloads fresh configuration from the webapp)
-- save the configuration (this is necessary so that the indexed flag of the project is persistent) 
+- save the configuration (this is necessary so that the indexed flag of the project is persistent). The -R option can be used to supply path to read-only configuration so that it is merged with current configuration.
 ```
-   Messages -n config -t getconf > /opengrok/etc/configuration.xml
+   projadm -b /opengrok -r
 ```
 - perform any necessary authorization adjustments
 - add any per-project settings - go to the 'Changing read-only configuration' section below
@@ -35,13 +31,9 @@ Combine these procedures with the parallel processing tools under the [tools/syn
 ## Deleting a project
 
 - backup current config
-- delete the project from configuration (deletes project's index data)
+- delete the project from configuration (deletes project's index data and refreshes on disk configuration). The -R option can be used to supply path to read-only configuration so that it is merged with current configuration.
 ```
-   Messages -n project -t PROJECT delete
-```
-- save the configuration 
-```
-   Messages -n config -t getconf > /opengrok/etc/configuration.xml
+   projadm -d PROJECT
 ```
 - perform any necessary authorization adjustments
 - remove any per-project settings - go to the 'Changing read-only configuration' section below
