@@ -7,7 +7,7 @@ Starting with OpenGrok 1.1, using the `projadm` tool (that utilizes the `Message
 As a result, the indexing of complete source root is only necessary when upgrading across OpenGrok version
 with incompatible Lucene indexes.
 
-The following is assuming that the commands `Messages`, `Groups` and `ConfigMerge` tools are in `PATH`.
+The following is assuming that the commands `projadm`, `Messages`, `Groups` and `ConfigMerge` tools are in `PATH`.
 
 Combine these procedures with the parallel processing tools under the [tools/sync](https://github.com/OpenGrok/OpenGrok/tree/master/tools/sync) directory and you have per-project management with parallel processing.
 
