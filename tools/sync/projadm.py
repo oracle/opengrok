@@ -37,7 +37,6 @@ from command import Command
 import logging
 import tempfile
 import shutil
-import stat
 from utils import get_command
 
 
@@ -75,61 +74,69 @@ def get_config_file(basedir):
     return path.join(basedir, "etc", "configuration.xml")
 
 
+def install_config(doit, src, dst):
+    """
+    Copy the data of src to dst. Exit on failure.
+    """
+    if not doit:
+        logger.debug("Not copying {} to {}".format(src, dst))
+        return
+
+    #
+    # Copy the file so that close() triggered unlink()
+    # does not fail.
+    #
+    logger.debug("Copying {} to {}".format(src, dst))
+    try:
+        shutil.copyfile(src, dst)
+    except PermissionError:
+        logger.error('Failed to copy {} to {} (permissions)'.
+                     format(src, dst))
+        sys.exit(1)
+    except OSError:
+        logger.error('Failed to copy {} to {} (I/O)'.
+                     format(src, dst))
+        sys.exit(1)
+
+
 def config_refresh(doit, logger, basedir, messages, configmerge, roconfig):
     """
     Refresh current configuration file with configuration retrieved
-    from webapp merged with readonly configuration.
+    from webapp. If roconfig is not None, the current config is merged with
+    readonly configuration first.
 
-      1. retrieves current configuration from the webapp,
-         stores it into temporary file
-      2. merge the read-only config with the config from previous step
-         - this is done as a workaround for
-           https://github.com/oracle/opengrok/issues/2002
+    The merge of the current config from the webapp with the read-only config
+    is done as a workaround for https://github.com/oracle/opengrok/issues/2002
     """
 
-    if not roconfig:
-        logger.debug("No read-only configuration specified, not refreshing")
-        return
+    main_config = get_config_file(basedir)
+    if not path.isfile(main_config):
+        logger.error("file {} does not exist".format(main_config))
+        sys.exit(1)
 
-    logger.info('Refreshing configuration and merging with read-only '
-                'configuration')
     current_config = exec_command(doit, logger,
                                   [messages, '-n', 'config', '-t', 'getconf'],
                                   "getting configuration failed")
-    with tempfile.NamedTemporaryFile() as fc:
-        logger.debug("Temporary file for current config: {}".format(fc.name))
+    with tempfile.NamedTemporaryFile() as fcur:
+        logger.debug("Temporary file for current config: {}".format(fcur.name))
         if doit:
-            fc.write(bytearray(''.join(current_config), "UTF-8"))
-        merged_config = exec_command(doit, logger,
-                                     [configmerge, roconfig, fc.name],
-                                     "cannot merge configuration")
-        with tempfile.NamedTemporaryFile() as fm:
-            logger.debug("Temporary file for merged config: {}".
-                         format(fm.name))
-            if doit:
-                fm.write(bytearray(''.join(merged_config), "UTF-8"))
-            main_config = get_config_file(basedir)
-            if path.isfile(main_config):
+            fcur.write(bytearray(''.join(current_config), "UTF-8"))
+
+        if not roconfig:
+            logger.info('Refreshing configuration')
+            install_config(doit, fcur.name, main_config)
+        else:
+            logger.info('Refreshing configuration '
+                        '(merging with read-only config)')
+            merged_config = exec_command(doit, logger,
+                                         [configmerge, roconfig, fcur.name],
+                                         "cannot merge configuration")
+            with tempfile.NamedTemporaryFile() as fmerged:
+                logger.debug("Temporary file for merged config: {}".
+                             format(fmerged.name))
                 if doit:
-                    #
-                    # Copy the file so that close() triggered unlink()
-                    # does not fail.
-                    #
-                    logger.debug("Copying {} to {}".
-                                 format(fm.name, main_config))
-                    try:
-                        shutil.copyfile(fm.name, main_config)
-                    except PermissionError:
-                        logger.error('Failed to copy {} to {} (permissions)'.
-                                     format(fm.name, main_config))
-                        sys.exit(1)
-                    except OSError:
-                        logger.error('Failed to copy {} to {} (I/O)'.
-                                     format(fm.name, main_config))
-                        sys.exit(1)
-            else:
-                logger.error("file {} does not exist".format(main_config))
-                sys.exit(1)
+                    fmerged.write(bytearray(''.join(merged_config), "UTF-8"))
+                    install_config(doit, fmerged.name, main_config)
 
 
 def project_add(doit, logger, project, messages):
@@ -207,8 +214,9 @@ if __name__ == '__main__':
     group.add_argument('-d', '--delete', metavar='project', nargs='+',
                        help='Delete project and its data and source code')
     group.add_argument('-r', '--refresh', action='store_true',
-                       help='Refresh configuration from read-only '
-                       'configuration')
+                       help='Refresh configuration. If read-only '
+                       'configuration is supplied, it is merged with current '
+                       'configuration.')
 
     args = parser.parse_args()
 
@@ -239,10 +247,6 @@ if __name__ == '__main__':
         else:
             logger.error("File {} does not exist".format(args.roconfig))
             sys.exit(1)
-
-    if args.refresh and not args.roconfig:
-        logger.error("-r requires -R")
-        sys.exit(1)
 
     # XXX replace Messages with REST request after issue #1801
     messages_file = get_command(logger, args.messages, "Messages")
