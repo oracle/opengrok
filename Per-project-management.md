@@ -17,28 +17,28 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 
 - backup current config (this could be done by copying the `configuration.xml` file aside, taking file-system snapshot etc.)
 - clone the project repositories under source root directory
+- perform any necessary authorization adjustments
 - add the project to configuration (also refreshes the configuration on disk):
 ```
    projadm -b /opengrok -a PROJECT
 ```
+- add any per-project settings - go to the 'Changing read-only configuration' section below
 - reindex
   - Use `OpenGrok indexpart` or `reindex-project.ksh` (in the latter case the previous step is not necessary since the script downloads fresh configuration from the webapp)
 - save the configuration (this is necessary so that the indexed flag of the project is persistent). The -R option can be used to supply path to read-only configuration so that it is merged with current configuration.
 ```
    projadm -b /opengrok -r
 ```
-- perform any necessary authorization adjustments
-- add any per-project settings - go to the 'Changing read-only configuration' section below
 
 ## Deleting a project
 
 - backup current config
+- remove any per-project settings - go to the 'Changing read-only configuration' section below
 - delete the project from configuration (deletes project's index data and refreshes on disk configuration). The -R option can be used to supply path to read-only configuration so that it is merged with current configuration.
 ```
    projadm -b /opengrok -d PROJECT
 ```
 - perform any necessary authorization adjustments
-- remove any per-project settings - go to the 'Changing read-only configuration' section below
 
 ## Changing read-only configuration
 
