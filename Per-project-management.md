@@ -11,6 +11,8 @@ The following is assuming that the commands `Messages`, `Groups` and `ConfigMerg
 
 Combine these procedures with the parallel processing tools under the [tools/sync](https://github.com/OpenGrok/OpenGrok/tree/master/tools/sync) directory and you have per-project management with parallel processing.
 
+The following examples assume that OpenGrok install base is under the `/opengrok` directory.
+
 ## Adding project
 
 - backup current config (this could be done by copying the `configuration.xml` file aside, taking file-system snapshot etc.)
@@ -33,7 +35,7 @@ Combine these procedures with the parallel processing tools under the [tools/syn
 - backup current config
 - delete the project from configuration (deletes project's index data and refreshes on disk configuration). The -R option can be used to supply path to read-only configuration so that it is merged with current configuration.
 ```
-   projadm -d PROJECT
+   projadm -b /opengrok -d PROJECT
 ```
 - perform any necessary authorization adjustments
 - remove any per-project settings - go to the 'Changing read-only configuration' section below
