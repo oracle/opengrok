@@ -3,7 +3,7 @@ OpenGrok can be run with or without projects. Project is simply a directory unde
 This is handy in case the synchronization, indexing for some of the projects is taking a long time or simply you have lots of projects. Or all of it together.
 
 Previously, it was necessary to index all of source root in order to discover new projects.
-Starting with OpenGrok 1.1, using the `Messages` tool it is possible to manage the projects.
+Starting with OpenGrok 1.1, using the `projadm` tool (that utilizes the `Messages` tool/API) it is possible to manage the projects.
 As a result, the indexing of complete source root is only necessary when upgrading across OpenGrok version
 with incompatible Lucene indexes.
 
@@ -35,7 +35,7 @@ Combine these procedures with the parallel processing tools under the [tools/syn
 ## Deleting a project
 
 - backup current config
-- delete the project from configuration 
+- delete the project from configuration (deletes project's index data)
 ```
    Messages -n project -t PROJECT delete
 ```
@@ -43,8 +43,6 @@ Combine these procedures with the parallel processing tools under the [tools/syn
 ```
    Messages -n config -t getconf > /opengrok/etc/configuration.xml
 ```
-- delete the source code under source root
-  - the index data for the project was deleted already
 - perform any necessary authorization adjustments
 - remove any per-project settings - go to the 'Changing read-only configuration' section below
 
@@ -64,18 +62,7 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
   OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml \
       Groups match PROJECT_TO_BE_ADDED
 ```
-- get current config from the webapp if `/opengrok/etc/configuration.xml` is not fresh: 
+- get current config from the webapp, merge it with read-only configuration and upload the new config to the webapp
 ```
-   Messages -n config -t getconf > /opengrok/etc/configuration.xml
-```
-- merge them together 
-```
-  ConfigMerge \
-      /opengrok/etc/readonly_configuration.xml \
-      /opengrok/etc/configuration.xml > /tmp/merged.xml
-  mv /tmp/merged.xml  /opengrok/etc/configuration.xml
-```
-- upload the new config to the webapp 
-```
-   Messages -n config -t setconf /opengrok/etc/configuration.xml
+   projadm -b /opengrok -R /opengrok/etc/readonly_configuration.xml -r -u
 ```
