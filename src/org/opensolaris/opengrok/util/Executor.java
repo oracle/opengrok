@@ -137,15 +137,15 @@ public class Executor {
     }
 
     /**
-     * Close all the 3 streams of a process.
-     * @param process
+     * Close all the 3 streams of a process. This is useful for closing the
+     * pipes to avoid file descriptors from being drained quickly.
+     * @param process process which streams to close
      */
     private static void closeStreams(Process process) {
         try {
             process.getOutputStream().close();
             process.getInputStream().close();
             process.getErrorStream().close();
-            process.destroy();
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "failed to close streams", ex);
         }
@@ -241,12 +241,6 @@ public class Executor {
             // only after that read the data.
             thread.join();
             stderr = err.getBytes();
-            
-            // Close the pipes to avoid file descriptors from being drained
-            // quickly. Then set the process object to null in the high hopes
-            // that the garbage collector will finish rest of the cleanup soon.
-            closeStreams(process);
-            process = null;
         } catch (IOException e) {
             if (reportExceptions) {
                 LOGGER.log(Level.SEVERE,
@@ -269,7 +263,6 @@ public class Executor {
                 }
             } catch (IllegalThreadStateException e) {
                 if (process != null) {
-                    closeStreams(process);
                     process.destroy();
                 }
             }
