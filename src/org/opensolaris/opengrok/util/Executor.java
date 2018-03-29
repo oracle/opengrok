@@ -137,21 +137,6 @@ public class Executor {
     }
 
     /**
-     * Close all the 3 streams of a process. This is useful for closing the
-     * pipes to avoid file descriptors from being drained quickly.
-     * @param process process which streams to close
-     */
-    private static void closeStreams(Process process) {
-        try {
-            process.getOutputStream().close();
-            process.getInputStream().close();
-            process.getErrorStream().close();
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "failed to close streams", ex);
-        }
-    }
-    
-    /**
      * Execute the command and collect the output
      *
      * @param reportExceptions Should exceptions be added to the log or not
@@ -258,7 +243,9 @@ public class Executor {
             }
             try {
                 if (process != null) {
-                    closeStreams(process);
+                    IOUtils.close(process.getOutputStream());
+                    IOUtils.close(process.getInputStream());
+                    IOUtils.close(process.getErrorStream());
                     ret = process.exitValue();
                 }
             } catch (IllegalThreadStateException e) {
