@@ -137,6 +137,21 @@ public class Executor {
     }
 
     /**
+     * Close all the 3 streams of a process.
+     * @param process
+     */
+    private void closeStreams(Process process) {
+        try {
+            process.getOutputStream().close();
+            process.getInputStream().close();
+            process.getErrorStream().close();
+            process.destroy();
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "failed to close streams", ex);
+        }
+    }
+    
+    /**
      * Execute the command and collect the output
      *
      * @param reportExceptions Should exceptions be added to the log or not
@@ -230,9 +245,7 @@ public class Executor {
             // Close the pipes to avoid file descriptors from being drained
             // quickly. Then set the process object to null in the high hopes
             // that the garbage collector will finish rest of the cleanup soon.
-            process.getOutputStream().close();
-            process.getInputStream().close();
-            process.getErrorStream().close();
+            closeStreams(process);
             process = null;
         } catch (IOException e) {
             if (reportExceptions) {
@@ -251,24 +264,14 @@ public class Executor {
             }
             try {
                 if (process != null) {
-                    process.getOutputStream().close();
-                    process.getInputStream().close();
-                    process.getErrorStream().close();
+                    closeStreams(process);
                     ret = process.exitValue();
                 }
             } catch (IllegalThreadStateException e) {
                 if (process != null) {
-                    try {
-                        process.getOutputStream().close();
-                        process.getInputStream().close();
-                        process.getErrorStream().close();
-                        process.destroy();
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "failed to close streams", ex);
-                    }
+                    closeStreams(process);
+                    process.destroy();
                 }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "failed to close streams", ex);
             }
         }
 
