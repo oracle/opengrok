@@ -140,7 +140,7 @@ public class Executor {
      * Close all the 3 streams of a process.
      * @param process
      */
-    private void closeStreams(Process process) {
+    private static void closeStreams(Process process) {
         try {
             process.getOutputStream().close();
             process.getInputStream().close();
