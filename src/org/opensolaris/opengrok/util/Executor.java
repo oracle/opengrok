@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.util;
@@ -148,7 +148,7 @@ public class Executor {
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
         final String cmd_str = processBuilder.command().toString();
         final String dir_str;
-        Timer t = null; // timer for timing out the process
+        Timer timer = null; // timer for timing out the process
 
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
@@ -201,8 +201,8 @@ public class Executor {
              */
             if (this.timeout != 0) {
                 // invoking the constructor starts the background thread
-                t = new Timer();
-                t.schedule(new TimerTask() {
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
                     @Override public void run() {
                         LOGGER.log(Level.INFO,
                             "Terminating process of command {0} in directory {1} " +
@@ -217,12 +217,23 @@ public class Executor {
             handler.processStream(process.getInputStream());
 
             ret = process.waitFor();
+            
             LOGGER.log(Level.FINE,
                 "Finished command {0} in directory {1}",
                 new Object[] {cmd_str,dir_str});
-            process = null;
+
+            // Wait for the stderr read-out thread to finish the processing and
+            // only after that read the data.
             thread.join();
             stderr = err.getBytes();
+            
+            // Close the pipes to avoid file descriptors from being drained
+            // quickly. Then set the process object to null in the high hopes
+            // that the garbage collector will finish rest of the cleanup soon.
+            process.getOutputStream().close();
+            process.getInputStream().close();
+            process.getErrorStream().close();
+            process = null;
         } catch (IOException e) {
             if (reportExceptions) {
                 LOGGER.log(Level.SEVERE,
@@ -234,6 +245,10 @@ public class Executor {
                         "Waiting for process interrupted: " + cmdList.get(0), e);
             }
         } finally {
+            // Stop timer thread if the instance exists.
+            if (timer != null) {
+                timer.cancel();
+            }
             try {
                 if (process != null) {
                     ret = process.exitValue();
@@ -242,10 +257,6 @@ public class Executor {
                 if (process != null) {
                     process.destroy();
                 }
-            }
-            // stop timer thread if the instance exists
-            if (t != null) {
-                t.cancel();
             }
         }
 
