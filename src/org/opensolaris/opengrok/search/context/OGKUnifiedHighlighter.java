@@ -144,9 +144,9 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
     /**
      * Produces original text by reading from OpenGrok source content relative
      * to {@link RuntimeEnvironment#getSourceRootPath()} and returns the content
-     * for each document if the SHA digest matches -- or else just {@code null}
-     * for a missing file or a digest mismatch (as "the returned Strings must be
-     * identical to what was indexed.")
+     * for each document if the timestamp matches -- or else just {@code null}
+     * for a missing file or a timestamp mismatch (as "the returned Strings must
+     * be identical to what was indexed.")
      * <p>
      * "This method must load fields for at least one document from the given
      * {@link DocIdSetIterator} but need not return all of them; by default the
@@ -195,10 +195,6 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
      * Returns the value from the {@code super} implementation, with logging for
      * ANALYSIS of any field but {@link QueryBuilder#FULL} or
      * {@link QueryBuilder#REFS}.
-     * @param field
-     * @param terms
-     * @param phraseHelper
-     * @param automata
      * @return the value from the {@code super} implementation
      */
     @Override

@@ -425,9 +425,9 @@ public class SearchEngine {
     /**
      * Gets the document of the specified {@code docId} from
      * {@code search(...)} if it was called.
-     * @param docId
      * @return a defined instance if a query succeeded
-     * @throws java.io.IOException
+     * @throws java.io.IOException if an error occurs obtaining the Lucene
+     * document by ID
      */
     public Document doc(int docId) throws IOException {
         if (searcher == null) {

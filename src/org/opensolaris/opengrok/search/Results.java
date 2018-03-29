@@ -54,7 +54,6 @@ import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.index.IndexAnalysisSettings;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Prefix;
@@ -86,6 +85,7 @@ public final class Results {
     private static Map<String, ArrayList<Integer>> createMap(
         IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx)
             throws CorruptIndexException, IOException {
+
         LinkedHashMap<String, ArrayList<Integer>> dirHash =
                 new LinkedHashMap<>();
         for (int i = startIdx; i < stopIdx; i++) {
@@ -197,6 +197,8 @@ public final class Results {
             }
 
             int tabSize = sh.getTabSize(p);
+            PrintPlainFinalArgs fargs = new PrintPlainFinalArgs(out, sh, env,
+                xrefPrefix, tabSize, morePrefix);
 
             out.write("</td></tr>");
             for (int docId : entry.getValue()) {
@@ -240,8 +242,7 @@ public final class Results {
                         String htags = getTags(sh.sourceRoot, rpath, false);
                         out.write(sh.summarizer.getSummary(htags).toString());
                     } else if (genre == Genre.PLAIN) {
-                        printPlain(sh, env, doc, docId, out, rpath,
-                            xrefPrefix, morePrefix, tabSize);
+                        printPlain(fargs, doc, docId, rpath);
                     }
                 }
 
@@ -254,22 +255,20 @@ public final class Results {
         }
     }
 
-    private static void printPlain(SearchHelper searcHelper,
-        RuntimeEnvironment env, Document doc, int docId, Writer out,
-        String rpath, String xrefPrefix, String morePrefix, int tabSize)
-            throws ClassNotFoundException, IOException {
+    private static void printPlain(PrintPlainFinalArgs fargs, Document doc,
+        int docId, String rpath) throws ClassNotFoundException, IOException {
 
-        searcHelper.sourceContext.toggleAlt();
+        fargs.shelp.sourceContext.toggleAlt();
 
-        boolean didPresentNew = searcHelper.sourceContext.getContext2(env,
-            searcHelper.searcher, docId, out, xrefPrefix, morePrefix, true,
-            tabSize);
+        boolean didPresentNew = fargs.shelp.sourceContext.getContext2(fargs.env,
+            fargs.shelp.searcher, docId, fargs.out, fargs.xrefPrefix,
+            fargs.morePrefix, true, fargs.tabSize);
 
         if (!didPresentNew) {
             /**
              * Fall back to the old view, which re-analyzes text using
              * PlainLinetokenizer. E.g., when source code is updated (thus
-             * affecting SHA hashes) but re-indexing is not yet complete.
+             * affecting timestamps) but re-indexing is not yet complete.
              */
             Definitions tags = null;
             IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
@@ -283,18 +282,39 @@ public final class Results {
             } else {
                 scopes = new Scopes();
             }
-            boolean isDefSearch = searcHelper.builder.isDefSearch();
+            boolean isDefSearch = fargs.shelp.builder.isDefSearch();
             // SRCROOT is read with UTF-8 as a default.
             try (Reader r = IOUtils.createBOMStrippedReader(new FileInputStream(
-                    new File(searcHelper.sourceRoot, rpath)),
+                    new File(fargs.shelp.sourceRoot, rpath)),
                     StandardCharsets.UTF_8.name())) {
-                searcHelper.sourceContext.getContext(r, out, xrefPrefix,
-                    morePrefix, rpath, tags, true, isDefSearch, null, scopes);
+                fargs.shelp.sourceContext.getContext(r, fargs.out,
+                    fargs.xrefPrefix, fargs.morePrefix, rpath, tags, true,
+                    isDefSearch, null, scopes);
             }
         }
     }
 
     private static String htmlize(String raw) {
         return Util.htmlize(raw);
+    }
+
+    private static class PrintPlainFinalArgs {
+        final Writer out;
+        final SearchHelper shelp;
+        final RuntimeEnvironment env;
+        final String xrefPrefix;
+        final String morePrefix;
+        final int tabSize;
+
+        public PrintPlainFinalArgs(Writer out, SearchHelper shelp,
+                RuntimeEnvironment env, String xrefPrefix, int tabSize,
+                String morePrefix) {
+            this.out = out;
+            this.shelp = shelp;
+            this.env = env;
+            this.xrefPrefix = xrefPrefix;
+            this.morePrefix = morePrefix;
+            this.tabSize = tabSize;
+        }
     }
 }

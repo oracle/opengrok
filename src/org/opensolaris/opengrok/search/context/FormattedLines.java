@@ -56,16 +56,12 @@ public class FormattedLines {
         return footer;
     }
 
-    /**
-     * @param footer the footer to set
-     */
-    public void setFooter(String footer) {
-        this.footer = footer;
+    public void setFooter(String value) {
+        footer = value;
     }
 
     /**
      * Gets a value indicating if lines were limited.
-     * @return the value
      */
     public boolean isLimited() {
         return limited;
@@ -73,10 +69,9 @@ public class FormattedLines {
 
     /**
      * Sets a value indicating if lines were limited.
-     * @param limited the value
      */
-    public void setLimited(boolean limited) {
-        this.limited = limited;
+    public void setLimited(boolean value) {
+        limited = value;
     }
 
     /**
@@ -85,8 +80,7 @@ public class FormattedLines {
      * @throws NoSuchElementException if the instance is empty
      */
     public String pop() {
-        String value = lines.remove(lines.lastKey());
-        return value;
+        return lines.remove(lines.lastKey());
     }
 
     /**

@@ -97,7 +97,7 @@ file="mast.jsp"
                 /**
                  * Fall back to the old view, which re-analyzes text using
                  * PlainLinetokenizer. E.g., when source code is updated (thus
-                 * affecting SHA hashes) but re-indexing is not yet complete.
+                 * affecting timestamps) but re-indexing is not yet complete.
                  */
                 Context sourceContext = new Context(tquery, qbuilder);
                 sourceContext.toggleAlt();

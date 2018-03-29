@@ -256,7 +256,9 @@ public class ContextFormatter extends PassageFormatter {
                         }
 
                         if (phi.getLineStart() < 0) {
-                            if (!didBold) bld.append(HtmlConsts.B);
+                            if (!didBold) {
+                                bld.append(HtmlConsts.B);
+                            }
                             if (phi.getLineEnd() != Integer.MAX_VALUE) {
                                 lhi.hsub(bld, line, loff, phi.getLineEnd());
                                 loff += phi.getLineEnd() - loff;
@@ -269,7 +271,7 @@ public class ContextFormatter extends PassageFormatter {
                         } else {
                             lhi.hsub(bld, line, loff, phi.getLineStart());
                             loff += phi.getLineStart() - loff;
-                            if (! didBold) {
+                            if (!didBold) {
                                 bld.append(HtmlConsts.B);
                                 didBold = true;
                             }

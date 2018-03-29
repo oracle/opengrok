@@ -53,9 +53,6 @@ import org.opensolaris.opengrok.util.NullWriter;
  */
 public class PlainAnalyzer extends TextAnalyzer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-        PlainAnalyzer.class);
-
     /**
      * Creates a new instance of PlainAnalyzer
      * @param factory defined instance for the analyzer
@@ -174,17 +171,5 @@ public class PlainAnalyzer extends TextAnalyzer {
      */
     private Reader wrapReader(Reader reader) {
         return ExpandTabsReader.wrap(reader, project);
-    }
-
-    private static boolean bytesEqual(byte[] a, byte[] b) {
-        if (a.length != b.length) {
-            return false;
-        }
-        for (int i = 0; i < a.length; ++i) {
-            if (a[i] != b[i]) {
-                return false;
-            }
-        }
-        return true;
     }
 }

@@ -123,7 +123,6 @@ public class LineHighlight {
 
     /**
      * Sets the left elide value.
-     * @param value
      */
     public void setLelide(int value) {
         if (value < 0) {
@@ -142,7 +141,6 @@ public class LineHighlight {
 
     /**
      * Sets the right elide value.
-     * @param value
      */
     public void setRelide(int value) {
         if (value < 0) {

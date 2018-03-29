@@ -212,8 +212,7 @@ public class Context {
 
         try {
             List<String> fieldList = qbuilder.getContextFields();
-            String[] fields = new String[fieldList.size()];
-            fieldList.toArray(fields);
+            String[] fields = fieldList.toArray(new String[fieldList.size()]);
 
             String res = uhi.highlightFieldsUnion(fields, query, docId,
                 linelimit);
@@ -222,10 +221,10 @@ public class Context {
                 return true;
             }
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "ERROR highlightFields(...)", e);
+            LOGGER.log(Level.WARNING, "ERROR highlightFieldsUnion(...)", e);
             // Continue below.
         } catch (Throwable e) {
-            LOGGER.log(Level.SEVERE, "ERROR highlightFields(...)", e);
+            LOGGER.log(Level.SEVERE, "ERROR highlightFieldsUnion(...)", e);
             throw e;
         }
         return false;

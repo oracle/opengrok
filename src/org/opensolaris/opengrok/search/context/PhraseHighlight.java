@@ -59,14 +59,18 @@ public class PhraseHighlight {
     }
 
     /**
-     * @return the lineStart
+     * Gets a value that has been translated from start offset w.r.t. document
+     * start to a value w.r.t. line start -- or -1 if not beginning this
+     * line.
      */
     public int getLineStart() {
         return lineStart;
     }
 
     /**
-     * @return the lineEnd
+     * Gets a value that has been translated from start offset w.r.t. document
+     * start to a value w.r.t. line start -- or {@link Integer#MAX_VALUE} if
+     * not ending this line.
      */
     public int getLineEnd() {
         return lineEnd;
@@ -74,7 +78,6 @@ public class PhraseHighlight {
 
     /**
      * Determines if the specified {@code other} overlaps with this instance.
-     * @param other
      * @return {@code true} if the instances overlap
      */
     public boolean overlaps(PhraseHighlight other) {
@@ -87,7 +90,6 @@ public class PhraseHighlight {
     /**
      * Creates a new instance that is the merging of this instance and the
      * specified {@code other}.
-     * @param other
      * @return a defined instance
      */
     public PhraseHighlight merge(PhraseHighlight other) {
