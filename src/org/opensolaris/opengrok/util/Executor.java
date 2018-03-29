@@ -251,12 +251,24 @@ public class Executor {
             }
             try {
                 if (process != null) {
+                    process.getOutputStream().close();
+                    process.getInputStream().close();
+                    process.getErrorStream().close();
                     ret = process.exitValue();
                 }
             } catch (IllegalThreadStateException e) {
                 if (process != null) {
-                    process.destroy();
+                    try {
+                        process.getOutputStream().close();
+                        process.getInputStream().close();
+                        process.getErrorStream().close();
+                        process.destroy();
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.WARNING, "failed to close streams", ex);
+                    }
                 }
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "failed to close streams", ex);
             }
         }
 
