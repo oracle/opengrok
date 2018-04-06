@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.InvalidPathException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -175,6 +176,8 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                         } catch (ForbiddenSymlinkException e) {
                             LOGGER.log(Level.FINER, e.getMessage());
                             // ignored
+                        } catch (InvalidPathException e) {
+                            LOGGER.log(Level.WARNING, e.getMessage());
                         }
                     }
                     break;

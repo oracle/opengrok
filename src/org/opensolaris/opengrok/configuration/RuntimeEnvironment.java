@@ -96,6 +96,7 @@ import org.opensolaris.opengrok.web.Statistics;
 import org.opensolaris.opengrok.web.Util;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
+import java.nio.file.InvalidPathException;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -408,9 +409,11 @@ public final class RuntimeEnvironment {
      * @throws FileNotFoundException if the file is not relative to source root
      * @throws ForbiddenSymlinkException if symbolic-link checking encounters
      * an ineligible link
+     * @throws InvalidPathException if the path cannot be decoded
      */
     public String getPathRelativeToSourceRoot(File file, int stripCount)
-            throws IOException, ForbiddenSymlinkException {
+            throws IOException, ForbiddenSymlinkException, FileNotFoundException,
+            InvalidPathException {
         String sourceRoot = getSourceRootPath();
         if (sourceRoot == null) {
             throw new FileNotFoundException("Source Root Not Found");
