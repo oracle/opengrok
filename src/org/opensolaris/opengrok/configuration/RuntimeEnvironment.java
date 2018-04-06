@@ -44,6 +44,7 @@ import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
@@ -96,7 +97,6 @@ import org.opensolaris.opengrok.web.Statistics;
 import org.opensolaris.opengrok.web.Util;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
-import java.nio.file.InvalidPathException;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
