@@ -44,6 +44,7 @@ import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
@@ -408,9 +409,11 @@ public final class RuntimeEnvironment {
      * @throws FileNotFoundException if the file is not relative to source root
      * @throws ForbiddenSymlinkException if symbolic-link checking encounters
      * an ineligible link
+     * @throws InvalidPathException if the path cannot be decoded
      */
     public String getPathRelativeToSourceRoot(File file, int stripCount)
-            throws IOException, ForbiddenSymlinkException {
+            throws IOException, ForbiddenSymlinkException, FileNotFoundException,
+            InvalidPathException {
         String sourceRoot = getSourceRootPath();
         if (sourceRoot == null) {
             throw new FileNotFoundException("Source Root Not Found");
