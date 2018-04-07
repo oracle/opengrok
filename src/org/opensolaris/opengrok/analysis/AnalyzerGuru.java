@@ -213,6 +213,13 @@ public class AnalyzerGuru {
 
     private static final Map<String, String> fileTypeDescriptions = new TreeMap<>();
 
+    /**
+     * Maps from {@link FileAnalyzer#getFileTypeName()} to
+     * {@link FileAnalyzerFactory}
+     */
+    private static final Map<String, FileAnalyzerFactory> FILETYPE_FACTORIES =
+            new HashMap<>();
+
     /*
      * If you write your own analyzer please register it here. The order is
      * important for any factory that uses a FileAnalyzerFactory.Matcher
@@ -338,6 +345,9 @@ public class AnalyzerGuru {
         }
         matchers.addAll(factory.getMatchers());
         factories.add(factory);
+
+        FileAnalyzer fa = factory.getAnalyzer();
+        FILETYPE_FACTORIES.put(fa.getFileTypeName(), factory);
     }
 
     /**
@@ -383,6 +393,17 @@ public class AnalyzerGuru {
      */
     public static FileAnalyzer getAnalyzer() {
         return DEFAULT_ANALYZER_FACTORY.getAnalyzer();
+    }
+
+    /**
+     * Gets an analyzer for the specified {@code fileTypeName} if it accords
+     * with a known {@link FileAnalyzer#getFileTypeName()}.
+     * @param fileTypeName a defined name
+     * @return a defined instance if known or otherwise {@code null}
+     */
+    public static FileAnalyzer getAnalyzer(String fileTypeName) {
+        FileAnalyzerFactory factory = FILETYPE_FACTORIES.get(fileTypeName);
+        return factory == null ? null : factory.getAnalyzer();
     }
 
     /**

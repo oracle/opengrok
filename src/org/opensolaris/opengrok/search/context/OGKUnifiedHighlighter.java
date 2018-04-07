@@ -41,6 +41,7 @@ import org.apache.lucene.search.uhighlight.PhraseHelper;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.CharacterRunAutomaton;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -62,6 +63,8 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
 
     private int tabSize;
 
+    private String fileTypeName;
+
     /**
      * Initializes an instance with
      * {@link UnifiedHighlighter#UnifiedHighlighter(org.apache.lucene.search.IndexSearcher, org.apache.lucene.analysis.Analyzer)}
@@ -82,12 +85,56 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
         this.env = env;
     }
 
+    /**
+     * Gets a file type name-specific analyzer during the execution of
+     * {@link #highlightFieldsUnion(java.lang.String[], org.apache.lucene.search.Query, int, int)},
+     * or just gets the object passed in to the constructor at all other times.
+     * @return a defined instance
+     */
+    @Override
+    public Analyzer getIndexAnalyzer() {
+        String ftname = fileTypeName;
+        if (ftname == null) {
+            return indexAnalyzer;
+        }
+        Analyzer fa = AnalyzerGuru.getAnalyzer(ftname);
+        return fa == null ? indexAnalyzer : fa;
+    }
+
     public int getTabSize() {
         return tabSize;
     }
 
     public void setTabSize(int value) {
         this.tabSize = value;
+    }
+
+    /**
+     * Transiently arranges that {@link #getIndexAnalyzer()} returns a file type
+     * name-specific analyzer during a subsequent call of
+     * {@link #highlightFieldsUnionWork(java.lang.String[], org.apache.lucene.search.Query, int, int)}.
+     * @param fields a defined instance
+     * @param query a defined instance
+     * @param docId a valid document ID
+     * @param lineLimit the maximum number of lines to return
+     * @return a defined instance or else {@code null} if there are no results
+     * @throws IOException if accessing the Lucene document fails
+     */
+    public String highlightFieldsUnion(String[] fields, Query query,
+            int docId, int lineLimit) throws IOException {
+        /**
+         * Setting fileTypeName has to happen before getFieldHighlighter() is
+         * called by highlightFieldsAsObjects() so that the result of
+         * getIndexAnalyzer() (if it is called due to requiring ANALYSIS) can be
+         * influenced by fileTypeName.
+         */
+        Document doc = searcher.doc(docId);
+        fileTypeName = doc == null ? null : doc.get(QueryBuilder.TYPE);
+        try {
+            return highlightFieldsUnionWork(fields, query, docId, lineLimit);
+        } finally {
+            fileTypeName = null;
+        }
     }
 
     /**
@@ -99,10 +146,10 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
      * @param query a defined instance
      * @param docId a valid document ID
      * @param lineLimit the maximum number of lines to return
-     * @return {@code null} if there are no results or a defined instance
-     * @throws IOException
+     * @return a defined instance or else {@code null} if there are no results
+     * @throws IOException if accessing the Lucene document fails
      */
-    public String highlightFieldsUnion(String[] fields, Query query,
+    protected String highlightFieldsUnionWork(String[] fields, Query query,
             int docId, int lineLimit) throws IOException {
         int[] maxPassagesCopy = new int[fields.length];
         /**
@@ -154,9 +201,6 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
      * {@code cacheCharsThreshold} is exceeded. Specifically if that number is
      * 0, then only one document is fetched no matter what. Values in the array
      * of {@link CharSequence} will be {@code null} if no value was found."
-     * @param fields
-     * @param docIter
-     * @param cacheCharsThreshold
      * @return a defined instance
      * @throws IOException if an I/O error occurs
      */
@@ -214,13 +258,11 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
              * postings should be sufficient in the comment for
              * shouldHandleMultiTermQuery(String): "MTQ highlighting can be
              * expensive, particularly when using offsets in postings."
-             *     DEFS are stored with term vectors to avoid this problem.
-             *     FULL should be approximately fine with re-analysis using an
-             * on-the-fly PlainAnalyzer.
-             *     REFS should be approximately fine with re-analysis using an
-             * on-the-fly PlainAnalyzer. It might not accord with the true
-             * language symbol tokenizer, but it should not be wildly
-             * divergent.
+             *     DEFS are stored with term vectors to avoid this problem,
+             * since re-analysis would not at all accord with ctags Definitions.
+             *     For FULL and REFS, highlightFieldsUnion() arranges that
+             * getIndexAnalyzer() can return a TYPE-specific analyzer for use by
+             * getOffsetStrategy() -- if re-ANALYSIS is required.
              */
             switch (field) {
                 case QueryBuilder.FULL:
