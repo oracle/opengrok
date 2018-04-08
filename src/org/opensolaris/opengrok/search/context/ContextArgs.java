@@ -50,11 +50,11 @@ public class ContextArgs {
     public ContextArgs(short contextSurround, short contextLimit) {
         if (contextSurround < 0) {
             throw new IllegalArgumentException(
-                "`contextSurround' cannot be negative");
+                "contextSurround cannot be negative");
         }
         if (contextLimit < 1) {
             throw new IllegalArgumentException(
-                "`contextLimit' must be positive");
+                "contextLimit must be positive");
         }
         this.contextSurround = contextSurround;
         this.contextLimit = contextLimit;

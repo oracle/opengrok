@@ -64,7 +64,7 @@ public class StrictLineBreakIterator extends BreakIterator {
     @Override
     public int next(int n) {
         if (n < 0) {
-            throw new IllegalArgumentException("`n' cannot be negative");
+            throw new IllegalArgumentException("n cannot be negative");
         }
 
         int noff = current();
@@ -195,7 +195,7 @@ public class StrictLineBreakIterator extends BreakIterator {
     @Override
     public void setText(CharacterIterator newText) {
         if (newText == null) {
-            throw new IllegalArgumentException("`newText' is null");
+            throw new IllegalArgumentException("newText is null");
         }
         this.charIt = newText;
         this.breaks.clear();

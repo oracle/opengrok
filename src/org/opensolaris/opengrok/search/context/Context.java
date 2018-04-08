@@ -90,7 +90,7 @@ public class Context {
      */
     public Context(Query query, QueryBuilder qbuilder) {
         if (qbuilder == null) {
-            throw new IllegalArgumentException("`qbuilder' is null");
+            throw new IllegalArgumentException("qbuilder is null");
         }
 
         this.query = query;

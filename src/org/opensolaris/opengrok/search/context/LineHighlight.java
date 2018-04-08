@@ -25,7 +25,6 @@ package org.opensolaris.opengrok.search.context;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.opensolaris.opengrok.web.HtmlConsts;
 import org.opensolaris.opengrok.web.Util;
@@ -48,7 +47,7 @@ public class LineHighlight {
 
     public LineHighlight(int lineno) {
         if (lineno < 0) {
-            throw new IllegalArgumentException("`lineno' cannot be negative");
+            throw new IllegalArgumentException("lineno cannot be negative");
         }
         this.lineno = lineno;
     }
@@ -98,7 +97,7 @@ public class LineHighlight {
      */
     public void addMarkup(PhraseHighlight phi) {
         if (phi == null) {
-            throw new IllegalArgumentException("`phi' is null");
+            throw new IllegalArgumentException("phi is null");
         }
         if (markups == null) {
             markups = new ArrayList<>();
@@ -126,7 +125,7 @@ public class LineHighlight {
      */
     public void setLelide(int value) {
         if (value < 0) {
-            throw new IllegalArgumentException("`value' is negative");
+            throw new IllegalArgumentException("value is negative");
         }
         this.lelide = value;
     }
@@ -144,7 +143,7 @@ public class LineHighlight {
      */
     public void setRelide(int value) {
         if (value < 0) {
-            throw new IllegalArgumentException("`value' is negative");
+            throw new IllegalArgumentException("value is negative");
         }
         this.relide = value;
     }

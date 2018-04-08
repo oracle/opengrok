@@ -88,7 +88,7 @@ public class QueryBuilder {
      */
     public QueryBuilder reset(QueryBuilder other) {
         if (other == null) {
-            throw new IllegalArgumentException("`other' is null");
+            throw new IllegalArgumentException("other is null");
         }
         if (this != other) {
             queries.clear();

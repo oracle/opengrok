@@ -149,7 +149,7 @@ public class ContextFormatter extends PassageFormatter {
      */
     public void setMoreLimit(int value) {
         if (value < 0) {
-            throw new IllegalArgumentException("`value' is negative");
+            throw new IllegalArgumentException("value is negative");
         }
         this.moreLimit = value;
     }
@@ -200,7 +200,7 @@ public class ContextFormatter extends PassageFormatter {
     public Object format(Passage[] passages, String originalText) {
         String lineUrl = url;
         if (lineUrl == null) {
-            throw new IllegalStateException("`Url' property is null");
+            throw new IllegalStateException("Url property is null");
         }
 
         if (this.originalText == null || !this.originalText.equals(

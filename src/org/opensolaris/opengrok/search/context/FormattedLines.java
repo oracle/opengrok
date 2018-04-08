@@ -92,7 +92,7 @@ public class FormattedLines {
      */
     public String put(int lineno, String line) {
         if (line == null) {
-            throw new IllegalArgumentException("`line' is null");
+            throw new IllegalArgumentException("line is null");
         }
         return lines.put(lineno, line);
     }

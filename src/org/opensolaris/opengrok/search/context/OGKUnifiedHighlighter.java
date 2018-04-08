@@ -80,7 +80,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
         super(indexSearcher, indexAnalyzer);
 
         if (env == null) {
-            throw new IllegalArgumentException("`env' is null");
+            throw new IllegalArgumentException("env is null");
         }
         this.env = env;
     }

@@ -43,7 +43,7 @@ public class PassageConverter {
      */
     public PassageConverter(ContextArgs args) {
         if (args == null) {
-            throw new IllegalArgumentException("`args' is null");
+            throw new IllegalArgumentException("args is null");
         }
         this.args = args;
     }

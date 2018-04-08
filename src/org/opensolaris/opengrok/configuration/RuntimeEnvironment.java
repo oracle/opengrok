@@ -1325,7 +1325,7 @@ public final class RuntimeEnvironment {
     public void setContextLimit(Short value)
             throws IllegalArgumentException {
         if (value < 1) {
-            throw new IllegalArgumentException("`value' is not positive");
+            throw new IllegalArgumentException("value is not positive");
         }
         contextLimit = value;
     }
@@ -1354,7 +1354,7 @@ public final class RuntimeEnvironment {
     public void setContextSurround(Short value)
             throws IllegalArgumentException {
         if (value < 0) {
-            throw new IllegalArgumentException("`value' is negative");
+            throw new IllegalArgumentException("value is negative");
         }
         contextSurround = value;
     }
