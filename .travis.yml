@@ -1,25 +1,33 @@
-dist: trusty
-sudo: required
 language: java
-jdk:
-  - oraclejdk8
 cache:
   directories:
   - $HOME/.m2
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      jdk: oraclejdk8
+    - os: osx
+      osx_image: xcode7.3
 before_install:
- - sudo apt-get update -qq
- - sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs pep8
- - sudo ./scripts/install-bitkeeper.sh
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq; fi
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs pep8; fi
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo ./scripts/install-bitkeeper.sh; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ctags cvs monotone; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install pep8; fi
 install: true
 
 before_script:
- - bk --version
- - hg --version
- - git --version
- - svn --version
- - cvs --version
- - mtn --version
- - bzr version
+ - if `which bk`; then bk --version; fi
+ - if `which hg`; then hg --version; fi
+ - if `which git`; then git --version; fi
+ - if `which svn`; then svn --version; fi
+ - if `which cvs`; then cvs --version; fi
+ - if `which mtn`; then mtn --version; fi
+ - if `which bzr`; then bzr version; fi
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd opengrok-indexer && mvn javadoc:javadoc && cd ../opengrok-web && mvn javadoc:javadoc && cd ..; fi
 
 env:
   global:
@@ -27,10 +35,13 @@ env:
    #   via the "travis encrypt" command using the project repo's public key
    - secure: "O_cda5pWDBAP-O3_0nG5RQ"
 
+#
+# If compilation fails, we do not want to run the tests. Travis runs everything
+# in 'script' no matter if an individual command fails or not. This kludgy
+# looking shell incantation takes care of that.
+#
 script: "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile \
-            && cd opengrok-indexer && mvn javadoc:javadoc \
-            && cd ../opengrok-web && mvn javadoc:javadoc \
-            && cd .. && mvn verify -B -Djunit-force-all=true"
+             && mvn verify -B"
 
 addons:
   coverity_scan:
