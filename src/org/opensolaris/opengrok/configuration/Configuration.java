@@ -1036,11 +1036,11 @@ public final class Configuration {
             }
             return contents.toString();
         } catch (java.io.FileNotFoundException e) {
-            /*
-             * should usually not happen
-             */
+            LOGGER.log(Level.WARNING, "failed to find file: {0}",
+                e.getMessage());
         } catch (java.io.IOException e) {
-            LOGGER.log(Level.WARNING, "failed to read header include file: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING, "failed to read file: {0}",
+                e.getMessage());
         } finally {
             if (input != null) {
                 try {
