@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import static org.opensolaris.opengrok.configuration.RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG;
 
 public class NormalMessageTest {
 
@@ -79,7 +80,7 @@ public class NormalMessageTest {
 
     @Test
     public void testApplySingle() throws Exception {
-        Message m = new NormalMessage().addTag("main");
+        Message m = new NormalMessage().addTag(MESSAGES_MAIN_PAGE_TAG);
         m.setText("text");
         Assert.assertEquals(0, env.getMessagesInTheSystem());
         m.apply(env);
@@ -91,11 +92,12 @@ public class NormalMessageTest {
         Message[] m = makeArray(new NormalMessage(), new NormalMessage(), new NormalMessage());
 
         for (int i = 0; i < m.length; i++) {
-            m[i].addTag("main");
+            m[i].addTag(MESSAGES_MAIN_PAGE_TAG);
             m[i].addTag("project");
             m[i].addTag("pull");
             m[i].setText("text");
             m[i].setCreated(new Date(System.currentTimeMillis() + i * 1000));
+            m[i].setExpiration(m[0].getExpiration());
         }
 
         Assert.assertEquals(0, env.getMessagesInTheSystem());
@@ -108,9 +110,9 @@ public class NormalMessageTest {
         Assert.assertEquals(3 * 3, env.getMessagesInTheSystem());
         Assert.assertNotNull(env.getMessages());
         Assert.assertEquals(3, env.getMessages().size());
-        Assert.assertNotNull(env.getMessages("main"));
-        Assert.assertEquals(3, env.getMessages("main").size());
-        Assert.assertEquals(new TreeSet<Message>(Arrays.asList(m)), env.getMessages("main"));
+        Assert.assertNotNull(env.getMessages(MESSAGES_MAIN_PAGE_TAG));
+        Assert.assertEquals(3, env.getMessages(MESSAGES_MAIN_PAGE_TAG).size());
+        Assert.assertEquals(new TreeSet<Message>(Arrays.asList(m)), env.getMessages(MESSAGES_MAIN_PAGE_TAG));
 
         Assert.assertNotNull(env.getMessages("project"));
         Assert.assertEquals(3, env.getMessages("project").size());
@@ -126,9 +128,10 @@ public class NormalMessageTest {
         Date d = new Date();
 
         for (int i = 0; i < m.length; i++) {
-            m[i].addTag("main");
+            m[i].addTag(MESSAGES_MAIN_PAGE_TAG);
             m[i].setText("text");
             m[i].setCreated(d);
+            m[i].setExpiration(m[0].getExpiration());
         }
 
         Assert.assertEquals(0, env.getMessagesInTheSystem());
@@ -140,8 +143,8 @@ public class NormalMessageTest {
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         Assert.assertNotNull(env.getMessages());
         Assert.assertEquals(1, env.getMessages().size());
-        Assert.assertNotNull(env.getMessages("main"));
-        Assert.assertEquals(1, env.getMessages("main").size());
+        Assert.assertNotNull(env.getMessages(MESSAGES_MAIN_PAGE_TAG));
+        Assert.assertEquals(1, env.getMessages(MESSAGES_MAIN_PAGE_TAG).size());
     }
 
 }
