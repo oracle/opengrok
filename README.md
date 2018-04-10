@@ -81,69 +81,7 @@ as a project.
 
 ### 3.2 Messages
 
-Deployed OpenGrok can receive couple of messages through the active socket which
-usually listens for the main configuration file. These are used in the web
-application and displayed to the users. One can easily notify users about some
-important events, for example that the reindex is being in progress and that
-the searched information can be inconsistent.
-
-The OpenGrok comes with a tool which allows you to send these messages without
-any problem. It is called **Messages** and it is located under the tools directory.
-See the file for usage and more information.
-
-#### 3.2.1 Tags
-
-Any message can use tags which makes it more specific for the application.
-Messages which tag match some OpenGrok project are considered project specific
-and the information contained in them are displayed only for the specific projects.
-
-There is a key tag `main` which is exclusive for displaying
-messages on the OpenGrok landing page - like a common information.
-
-#### 3.2.2 Types
-
-Currently supported message types:
-
-1. **NormalMessage (normal)** – this message is designed to display some information in the web application.
-    Use tags to target a specific project.
-
-2. **AbortMessage (abort)** – this message can delete some already published information in
-    the web application.
-    Use tags to restrict the deletion only to specific projects.
-
-3. **StatsMessage (stats)** – this message is designed to retrieve some information from the web application.
-
-    The purpose of the message is specified in the text field as one of:
-
-    * **reload** – the application reloads the statistics file
-                and returns the loaded statistics
-    * **clean**  – the application cleans its current statistics
-                and returns the empty statistics
-    * **get** – the application returns current statistics
-
-4. **ConfigMessage (config)** – this message performs some configuration communication with the webapp,
-    depending on tag.
-    * **setconf** – tag sends config to webapp and requires a file as an argument.
-    * **getconf** – tag retrieves the configuration from the webapp.
-    * **set** – tag sets particular configuration option in the webapp.
-    * **auth** – tag requires "reload" text and
-                 reloads all authorization plugins.
-
-5. **RefreshMesssage (refresh)** – sent at the end of partial reindex to trigger refresh of `SearcherManagers`.
-
-6. **ProjectMessage** – used for adding/deleting projects and partial (per-project) reindex.
-
-  * **add** – adds project(s) and its repositories to the configuration.
-    If the project already exists, refresh list of its repositories.
-  * **delete** – removes project(s) and its repositores from the configuration.
-    Also deletes its data under data root (but not the source code).
-  * **indexed** – mark the project(s) as indexed so it becomes visible in the UI
-  * **get-repos** – get list of repositories in the form of relative paths to source root for given project(s)
-  * **get-repos-type** – get repository type(s) for given project(s)
-
-6. **RepositoryMessage** – used for getting repository info.
-
-  * **get-repo-type** – get repository type
+See https://github.com/oracle/opengrok/wiki/Messages
 
 ## 4. OpenGrok install
 
