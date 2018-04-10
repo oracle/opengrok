@@ -8,9 +8,26 @@
 
 ## webapp parameters
 
+You might need to modify the web application if you don't store the
+configuration file in the default location
+(`/var/opengrok/etc/configuration.xml`).
+
+To configure the webapp `source.war`, look into the parameters defined in
+`WEB-INF/web.xml` of `source.war` (use jar or zip/unzip or your preferred zip
+tool to get into it - e.g. extract the `web.xml` file from `source.war` (`unzip
+source.war WEB-INF/web.xml`) file, edit `web.xml` and re-package the jar file
+(`zip -u source.war WEB-INF/web.xml`) ) file and change those `web.xml`
+parameters appropriately. These sample parameters need modifying(there are
+more options, refer to manual or read param comments).
+
 To configure the webapp `source.war`, look into the parameters defined in
 `web.xml` of `source.war` file and change them (see note1) appropriately.
 
+* **CONFIGURATION** – the absolute path to XML file containing project configuration
+  (e.g. `/var/opengrok/etc/configuration.xml`)
+* **ConfigAddress** – port for remote updates to configuration, optional, but advised(since there is no authentication)
+  to be set to `localhost:<some_port>` (e.g. `localhost:2424`), if you choose `some_port` below 1024 you have to have
+  root privileges
 * **HEADER** – the fragment of HTML that will be used to display title or
               logo of your project
 * **SRC_ROOT** – absolute path name of the root directory of your source tree
