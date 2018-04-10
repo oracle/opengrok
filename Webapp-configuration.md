@@ -3,6 +3,7 @@
 <!-- toc -->
 - [webapp parameters](#webapp-parameters)
   * [Changing webapp parameters](#changing-webapp-params)
+  * [Changing webapp name](#changing-webapp-name)
 - [Path Descriptions](#path-descriptions)
 <!-- tocstop -->
 
@@ -104,6 +105,35 @@ file named `source.war`, you can change it as follows:
      `TOMCAT/conf/Catalina/localhost` or `TOMCAT/conf/Standalone/localhost`.
 
      This file will contain something like the Context described above.
+
+### Changing webapp name
+
+If you need to change name of the web application from source to something
+else you need to use special option `-w <new_name>` for indexer to create
+proper xrefs, besides changing the `.war` file name. Be sure that when this
+changed you reindex cleanly from scratch. Examples below show just
+deploying `source.war`, but you can use it to deploy your `new_name.war` too.
+
+Deploy the modified `.war` file in glassfish/Sun Java App Server:
+
+* **Option 1**:
+  Use browser and log into glassfish web administration interface: Common Tasks / Applications / Web Applications
+  , button Deploy and point it to your `source.war` webarchive
+
+* **Option 2**:
+  Copy the `source.war` file to
+    `GLASSFISH/domains/YOURDOMAIN/autodeploy` directory, glassfish will try
+    to deploy it "auto magically".
+
+* **Option 3**:
+  Use cli from GLASSFISH directory:
+
+  ```bash
+  ./bin/asadmin deploy /path/to/source.war
+  ```
+  Deploy the modified `.war` file in tomcat:
+    just copy the `source.war` file to `TOMCAT_INSTALL/webapps` directory.
+
 
 ## Path Descriptions
 
