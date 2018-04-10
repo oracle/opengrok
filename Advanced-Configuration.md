@@ -25,8 +25,8 @@ The thing about configuration in OpenGrok is that two different services have to
 
 Let us make some definitions before we start. We take the default values for the terms we use:
 
- - main configuration `/var/opengrok/etc/configuration.xml
- - read only configuration `/var/opengrok/etc/read-only.xml
+ - main configuration `/var/opengrok/etc/configuration.xml`
+ - read only configuration `/var/opengrok/etc/read-only.xml`
  - listen address for the web application `localhost:2424`
 
 The flow is as follows:
