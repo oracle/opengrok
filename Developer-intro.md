@@ -78,6 +78,8 @@ To run tests in single file, open the file from the left column which contains t
 
 Also, OpenGrok repository is setup so that pushes will trigger [Travis](https://travis-ci.org) builds so it is not necessary to run tests on your workstation - just commit and push to Github.
 
+See [Developers wiki](https://github.com/oracle/opengrok/wiki/Developers) for more info on testing.
+
 ### Publish changes
 
 Once done with your changes, save them in Netbeans, `git commit` and `push` them to your repository (or you can do the Git dance directly from Netbeans using the Team -> Git menu). From there it is possible to create new pull request to the upstream master branch using the standard Github process (https://help.github.com/articles/creating-a-pull-request - again Github help describes this in detail).
