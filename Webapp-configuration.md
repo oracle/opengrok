@@ -1,5 +1,3 @@
-# Webapp configuration
-
 <!-- toc -->
 - [webapp parameters](#webapp-parameters)
   * [Changing webapp parameters](#changing-webapp-params)
