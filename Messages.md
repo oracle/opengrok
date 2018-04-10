@@ -30,7 +30,7 @@ While there are visible messages in the user interface, you can send a couple of
 regarding configuration and web application statistics. All types are listed below.
 
 The OpenGrok comes with a tool which allows you to send these messages without
-any problem. It is called **Messages** and it is located under the tools directory.
+any problem. It is called `Messages` and it is located under the tools directory.
 See the file for usage and more information.
 
 ## Types
