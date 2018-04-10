@@ -29,6 +29,10 @@ the searched information can be inconsistent.
 While there are visible messages in the user interface, you can send a couple of other messages
 regarding configuration and web application statistics. All types are listed below.
 
+The OpenGrok comes with a tool which allows you to send these messages without
+any problem. It is called **Messages** and it is located under the tools directory.
+See the file for usage and more information.
+
 ## Types
 
 Currently supported message types:
@@ -37,11 +41,13 @@ Currently supported message types:
 
     This message is designed to display some information in the web application.
     Use tags to target a specific project.
+
 2. `AbortMessage` (abort)
 
     This message can delete some already published information in
     the web application.
     Use tags to restrict the deletion only to specific projects.
+
 3. `StatsMessage` (stats)
 
     This message is designed to retrieve some information from the web application.
@@ -49,12 +55,18 @@ Currently supported message types:
      - "reload"  the application reloads the statistics file and returns the loaded statistics
      - "clean"   the application cleans its current statistics and returns the empty statistics
      - "get"     the application returns current statistics
+
 4. `ConfigMessage` (config)
 
      This message retrieves or sends a configuration to the webapp,
      depending on tag. 
-      - "setconf" tag sends config to webapp and requires a file as argument. 
-      - "set" tag sets a particular property in the webapp, see `--help` for more details.
+
+    * **setconf** – tag sends config to webapp and requires a file as an argument.
+    * **getconf** – tag retrieves the configuration from the webapp.
+    * **set** – tag sets particular configuration option in the webapp.
+    * **auth** – tag requires "reload" text and
+                 reloads all authorization plugins.
+
 5. `RefreshMesssage` (refresh)
 
     Sent at the end of partial reindex to trigger refresh of SearcherManagers.
@@ -63,9 +75,19 @@ Currently supported message types:
 
     Get project listings and information.
 
+  * **add** – adds project(s) and its repositories to the configuration.
+    If the project already exists, refresh list of its repositories.
+  * **delete** – removes project(s) and its repositores from the configuration.
+    Also deletes its data under data root (but not the source code).
+  * **indexed** – mark the project(s) as indexed so it becomes visible in the UI
+  * **get-repos** – get list of repositories in the form of relative paths to source root for given project(s)
+  * **get-repos-type** – get repository type(s) for given project(s)
+
 7. `RepositoryMessage`
 
     Get repository information.
+
+  * **get-repo-type** – get repository type
 
 
 ## Tags
