@@ -57,7 +57,7 @@ The problem now is that there is no way to persistently store any customizations
 
 ## Read only configuration
 
-Therefore we substitute the persistent storage with another configuration file `/var/opengrok/etc/read-only.xml` which has the same syntax as the main `/var/opengrok/etc/configuration.xml` and contain the customized values. This file is passed to the indexer as a `-R` parameter and is decoded before the indexer runs. The indexer then fills the rest of the values which are usualy configurable from the command line interface.
+Therefore we substitute the persistent storage with another configuration file `/var/opengrok/etc/read-only.xml` which has the same syntax as the main `/var/opengrok/etc/configuration.xml` and contain the customized values. This file is passed to the indexer as a `-R` parameter and is decoded before the indexer runs. The indexer then fills the rest of the values which are usually configurable from the command line interface.
 
 **This is the ONLY way how to make a persistent configuration changes in your OpenGrok instance for options that are not customizable as an indexer parameter!**
 
@@ -117,7 +117,7 @@ Save this content into `/var/opengrok/etc/read-only.xml` and use the [steps abov
 
 ## Generating group structure
 
-There is a shortcut for generating group structure embedded to the `Groups` tools. More information is in the [project groupings](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Groupings).
+There is a shortcut for generating group structure embedded to the `Groups` tools. More information is in the [project groupings](https://github.com/OpenGrok/OpenGrok/wiki/Project-groups).
 
 # Real time web application change
 
