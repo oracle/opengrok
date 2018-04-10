@@ -1,3 +1,5 @@
+# Table of contents
+
 <!-- toc -->
 - [webapp parameters](#webapp-parameters)
   * [Changing webapp parameters](#changing-webapp-params)
@@ -5,7 +7,7 @@
 - [Path Descriptions](#path-descriptions)
 <!-- tocstop -->
 
-## webapp parameters
+# webapp parameters
 
 You might need to modify the web application if you don't store the
 configuration file in the default location
@@ -46,7 +48,7 @@ To configure the webapp `source.war`, look into the parameters defined in
     The contents of this file will be displayed as the error page when
     the user is forbidden to see a particular project with `HTTP 403` code.
 
-### Changing webapp parameters
+## Changing webapp parameters
 
 `web.xml` is the deployment descriptor for the web application. It is in a Jar
 file named `source.war`, you can change it as follows:
@@ -104,7 +106,7 @@ file named `source.war`, you can change it as follows:
 
      This file will contain something like the Context described above.
 
-### Changing webapp name
+## Changing webapp name
 
 If you need to change name of the web application from source to something
 else you need to use special option `-w <new_name>` for indexer to create
@@ -133,7 +135,7 @@ Deploy the modified `.war` file in glassfish/Sun Java App Server:
     just copy the `source.war` file to `TOMCAT_INSTALL/webapps` directory.
 
 
-## Path Descriptions
+# Path Descriptions
 
 OpenGrok can use path descriptions in various places (e.g. while showing
 directory listings or search results). Example descriptions are in `paths.tsv`
@@ -165,4 +167,3 @@ then the `paths.tsv` file contents can look like this:
 ```
 
 Note that only some paths can have a description.
-
