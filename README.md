@@ -521,49 +521,7 @@ java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search
 
 ## 7. Change web application properties or name
 
-You might need to modify the web application if you don't store the
-configuration file in the default location
-(`/var/opengrok/etc/configuration.xml`).
-
-To configure the webapp `source.war`, look into the parameters defined in
-`WEB-INF/web.xml` of `source.war` (use jar or zip/unzip or your preferred zip
-tool to get into it - e.g. extract the `web.xml` file from `source.war` (`unzip
-source.war WEB-INF/web.xml`) file, edit `web.xml` and re-package the jar file
-(`zip -u source.war WEB-INF/web.xml`) ) file and change those `web.xml`
-parameters appropriately. These sample parameters need modifying(there are
-more options, refer to manual or read param comments).
-
-* **CONFIGURATION** – the absolute path to XML file containing project configuration
-  (e.g. `/var/opengrok/etc/configuration.xml`)
-* **ConfigAddress** – port for remote updates to configuration, optional, but advised(since there is no authentication)
-  to be set to `localhost:<some_port>` (e.g. `localhost:2424`), if you choose `some_port` below 1024 you have to have
-  root privileges
-
-If you need to change name of the web application from source to something
-else you need to use special option `-w <new_name>` for indexer to create
-proper xrefs, besides changing the `.war` file name. Be sure that when this
-changed you reindex cleanly from scratch. Examples below show just
-deploying `source.war`, but you can use it to deploy your `new_name.war` too.
-
-Deploy the modified `.war` file in glassfish/Sun Java App Server:
-
-* **Option 1**:
-  Use browser and log into glassfish web administration interface: Common Tasks / Applications / Web Applications
-  , button Deploy and point it to your `source.war` webarchive
-
-* **Option 2**:
-  Copy the `source.war` file to
-    `GLASSFISH/domains/YOURDOMAIN/autodeploy` directory, glassfish will try
-    to deploy it "auto magically".
-
-* **Option 3**:
-  Use cli from GLASSFISH directory:
-
-  ```bash
-  ./bin/asadmin deploy /path/to/source.war
-  ```
-  Deploy the modified `.war` file in tomcat:
-    just copy the `source.war` file to `TOMCAT_INSTALL/webapps` directory.
+See https://github.com/oracle/opengrok/wiki/Webapp-configuration
 
 
 ## 8. Information for developers
