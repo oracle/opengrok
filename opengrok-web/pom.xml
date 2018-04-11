@@ -5,13 +5,13 @@
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>opengrok-web</artifactId>
     <packaging>war</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1-rc1006</version>
     <name>OpenGrok Web</name>
 
     <parent>
         <groupId>org.opensolaris.opengrok</groupId>
-        <artifactId>opengrok</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <artifactId>opengrok-top</artifactId>
+        <version>1.1-rc1006</version>
     </parent>
 
     <build>
@@ -35,7 +35,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>opengrok-indexer</artifactId>
+            <artifactId>opengrok</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

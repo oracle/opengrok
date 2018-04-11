@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.opensolaris.opengrok</groupId>
+    <artifactId>opengrok-top</artifactId>
+    <version>1.1-rc1006</version>
+  </parent>
+
+  <artifactId>opengrok-dist</artifactId>
+
+  <packaging>pom</packaging>
+
+  <name>Distribution</name>
+
+  <!--
+       NOTE: These dependency declarations are required to sort this project
+       to the end of the line in the multimodule build and to get the jar files.
+  -->
+  <dependencies>
+    <dependency>
+      <groupId>org.opensolaris.opengrok</groupId>
+      <artifactId>opengrok</artifactId>
+      <version>1.1-rc1006</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.opensolaris.opengrok</groupId>
+      <artifactId>opengrok-web</artifactId>
+      <version>1.1-rc1006</version>
+      <type>war</type>
+    </dependency>
+  </dependencies>
+
+  <build>
+      <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.6.0</version>
+            <executions>
+              <execution>
+    	        <id>man-page</id>
+    	        <phase>package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+    	  <executable>java</executable>
+              <outputFile>${project.build.directory}/dist/opengrok.1</outputFile>
+              <arguments>
+                <argument>-classpath</argument>
+                <argument>${project.basedir}/../opengrok-indexer/target/opengrok-${version}.jar</argument>
+                <argument>org.opensolaris.opengrok.index.Indexer</argument>
+                <argument>--man</argument>
+              </arguments>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>copy-dependencies</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                  <overWriteReleases>false</overWriteReleases>
+                  <overWriteSnapshots>false</overWriteSnapshots>
+                  <overWriteIfNewer>true</overWriteIfNewer>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.1.0</version>
+            <configuration>
+              <finalName>opengrok-${version}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptors>
+                <descriptor>assembly.xml</descriptor>
+              </descriptors>
+            </configuration>
+            <executions>
+              <execution>
+                <id>create-archive</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+      </plugins>
+  </build>
+
+</project>
