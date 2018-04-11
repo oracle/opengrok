@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -26,9 +26,9 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opensolaris.opengrok</groupId>
-    <artifactId>opengrok</artifactId>
+    <artifactId>opengrok-top</artifactId>
     <packaging>pom</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1-rc1006</version>
     <name>OpenGrok</name>
     <url>http://opengrok.github.com/OpenGrok/</url>
 
@@ -56,6 +56,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
         <module>plugins</module>
         <module>opengrok-indexer</module>
         <module>opengrok-web</module>
+        <module>distribution</module>
     </modules>
 
     <properties>
@@ -138,6 +139,15 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
     <build>
         <plugins>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.1.0</version>
+          <configuration>
+            <descriptors>
+              <descriptor>assembly.xml</descriptor>
+            </descriptors>
+          </configuration>
+        </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
