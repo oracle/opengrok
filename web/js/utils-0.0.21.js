@@ -449,6 +449,7 @@
  *  init: function ($window) {
  *      // called when creating the new window
  *      // you can modify the new window object - it's jquery object
+ *      // you must return the modified window object
  *  },
  *  load: function ($window) {
  *      // called when the page is successfully loaded
@@ -477,6 +478,9 @@
  * $myWindow.update(data) to trigger your update callback with given data or
  * $myWindow.move(position) to move the window to the given position
  *    if no position is given it may be determined from the mouse position
+ *
+ * For custom content in the window you can use body() function:
+ * $myWindow.body().append($('<div>').addClass('important-div'))
  *
  * @author Kryštof Tulinger
  */
@@ -596,14 +600,16 @@
             }
 
             this.addCallback('init', function ($window) {
-                var $top, $close, $controls
+                var $top, $close, $controls, $header, $body;
 
                 $top = $("<div>").addClass('clearfix')
                         .append($("<div>").addClass("pull-left").append($("<b>").text(this.options.title || "Window")))
-                        .append($close = $("<a href=\"#\" class=\"pull-right minimize\">x</a>"))
+                        .append($("<div>").addClass('pull-right').append($close = $("<a href=\"#\" class=\"minimize\">x</a>")))
 
-                $controls = $('<div>')
-                        .addClass('clearfix')
+                $header = $("<div>").addClass('window-header')
+                        .append($top);
+
+                $body = $("<div>").addClass("window-body")
                         .append(self.$errors = $('<div>').css('text-align', 'center'))
 
                 $window = $("<div>")
@@ -611,14 +617,31 @@
                         .addClass('diff_navigation_style')
                         .css('z-index', 15000)
                         .hide()
-                        .append($top)
-                        .append($("<hr>"))
-                        .append($controls)
+                        .append($header)
+                        .append($body);
 
                 $close.click(function () {
                     $window.hide()
                     return false;
                 });
+
+                /**
+                 * Get the element for the window body.
+                 * This should be used to place your desired content.
+                 *
+                 * The returned object has a method {@code window()}
+                 * which returns the whole window.
+                 *
+                 * {@code $window} is equivalent to {@code $window.body().window()}
+                 *
+                 * @returns jQuery object of the window body
+                 */
+                $window.body = function () {
+                    $body.window = function () {
+                        return $window;
+                    }
+                    return $body;
+                }
 
                 /**
                  * Display custom error message in the window
@@ -703,7 +726,7 @@
                     that.clientY = e.clientY;
                 })
                 $(document).keyup(function (e) {
-                    var key = e.keyCode
+                    var key = e.keyCode;
                     switch (key) {
                         case 27: // esc
                             that.$window.hide();
@@ -832,6 +855,7 @@
                     return $window
                             .attr('id', 'intelli_win')
                             .addClass('intelli-window')
+                            .body()
                             .append($controls)
                             .append($("<h2>").addClass('symbol-name'))
                             .append($("<span>").addClass('symbol-description'))
@@ -841,7 +865,8 @@
                             .append($("<h5>").text("In project \"" + this.project + "\""))
                             .append($secondList)
                             .append($("<h5>").text("On Google"))
-                            .append($thirdList);
+                            .append($thirdList)
+                            .window();
                 },
                 load: function ($window) {
                     var that = this;
@@ -1055,7 +1080,9 @@
                             .addClass('messages-window')
                             .addClass('diff_navigation_style')
                             .css({top: '150px', right: '20px'})
+                            .body()
                             .append(this.$messages = $("<div>"))
+                            .window();
                 },
                 load: function ($window) {
                     $window.mouseenter(function () {
@@ -1128,7 +1155,9 @@
                             .addClass('scopes-window')
                             .addClass('diff_navigation_style')
                             .css({top: '150px', right: '20px'})
+                            .body()
                             .append(this.$scopes = $("<div>"))
+                            .window();
                 },
                 load: function ($window) {
                     $window.hide().css('top', $("#content").offset().top + 10 + 'px')
@@ -1194,8 +1223,11 @@
                             .attr('id', 'navigate_win')
                             .addClass('navigate-window')
                             .addClass('diff_navigation_style')
-                            .css({top: '150px', right: '20px'})
+                            .addClass('diff_navigation_style')
+                            .css({top: '150px', right: '20px', height: this.defaultHeight + 'px'})
+                            .body()
                             .append(this.$content)
+                            .window();
                 },
                 load: function ($window) {
                     var that = this
@@ -1254,6 +1286,7 @@
             }, options || {
             }), $.extend({
                 $content: $('<div>'),
+                defaultHeight: 480,
                 buildLink: function (href, name, c) {
                     return $('<a>').attr('href', '#' + href).attr('title', this.escapeHtml(name)).addClass(c).html(this.escapeHtml(name)).click(lnshow)
                 },
@@ -1278,7 +1311,7 @@
                             $.scopesWindow.is(':visible')) {
                         a.top = $.scopesWindow.position().top + $.scopesWindow.outerHeight() + 20;
                     }
-                    a.height = Math.min(parseFloat($w.css('max-height')) || 480, $(browserWindow).outerHeight() - a.top - ($w.outerHeight(true) - $w.height()) - 20);
+                    a.height = Math.min(parseFloat($w.css('max-height')) || this.defaultHeight, $(browserWindow).outerHeight() - a.top - ($w.outerHeight(true) - $w.height()) - 20);
 
                     if (a.height == $w.height() && a.top == this.getTopOffset())
                         return $w;
