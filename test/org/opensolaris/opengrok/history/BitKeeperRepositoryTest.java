@@ -48,7 +48,7 @@ import org.opensolaris.opengrok.util.TestRepository;
 /**
  * Tests for BitKeeperRepository.
  *
- * @author James Service <jas2701@googlemail.com>
+ * @author James Service &lt;jas2701@googlemail.com&gt;
  */
 @ConditionalRun(condition = RepositoryInstalled.BitKeeperInstalled.class)
 public class BitKeeperRepositoryTest {

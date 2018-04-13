@@ -43,7 +43,7 @@ import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
 
 /**
- * Tests the {@link XMLXref} class.
+ * Tests the {@code XMLXref} class.
  */
 public class XMLXrefTest {
 

@@ -74,7 +74,7 @@ public class ConfigurationTest {
 
     /**
      * Verify that encoding of Group class does  not contain transient members.
-     * @throws Exception 
+     * @throws Exception exception
      */
     @Test
     public void testTransientKeywordGroups() throws Exception {
@@ -114,7 +114,7 @@ public class ConfigurationTest {
      * to several {@link Group}s shall be stored in a set while this
      * {@link Group} does not have a name yet (= {@code null}).
      *
-     * @throws IOException
+     * @throws IOException I/O exception
      * @see ClassUtil#remarkTransientFields(java.lang.Class)
      * ClassUtil#remarkTransientFields() for suggested solution
      */

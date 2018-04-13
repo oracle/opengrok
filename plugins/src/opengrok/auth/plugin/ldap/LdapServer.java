@@ -176,7 +176,7 @@ public class LdapServer {
      * @param cons controls for the LDAP request
      * @return LDAP enumeration with the results
      *
-     * @throws NamingException
+     * @throws NamingException naming exception
      */
     public NamingEnumeration<SearchResult> search(String name, String filter, SearchControls cons) throws NamingException {
         return search(name, filter, cons, false);
@@ -191,7 +191,7 @@ public class LdapServer {
      * @param reconnected flag if the request has failed previously
      * @return LDAP enumeration with the results
      *
-     * @throws NamingException
+     * @throws NamingException naming exception
      */
     public NamingEnumeration<SearchResult> search(String name, String filter, SearchControls controls, boolean reconnected)
             throws NamingException {

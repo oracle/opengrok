@@ -60,6 +60,7 @@ public class CVSHistoryParserTest {
 
     /**
      * Test of parse method, of class CVSHistoryParser.
+     * @throws Exception exception
      */
     @Test
     public void parseEmpty() throws Exception {

@@ -79,11 +79,11 @@ public class User {
 
     /**
      * Implemented for the forced authentication as described
-     * {@link https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm#i1006381}
+     * @see <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm#i1006381">mod_osso documentation</a>
      *
      * @param forcedAuthDate the date of the forced authentication trigger
      * @param newLoginDate the date of the new login
-     * @return
+     * @return true if login date was before forced auth date or cookie timestamp
      */
     public boolean isForcedTimeouted(Date forcedAuthDate, Date newLoginDate) {
         if (cookieTimestamp == null || forcedAuthDate == null || newLoginDate == null) {

@@ -37,6 +37,7 @@ public class SummarizerTest {
      * If the last token in a text fragment is a token we're searching for,
      * and that token is also present earlier in the fragment, getSummary()
      * used to throw a StringIndexOutOfBoundsException. Bug #15858.
+     * @throws Exception exception
      */
     @Test
     public void bug15858() throws Exception {

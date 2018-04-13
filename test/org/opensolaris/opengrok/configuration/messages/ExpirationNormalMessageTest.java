@@ -65,6 +65,7 @@ public class ExpirationNormalMessageTest {
     /**
      * This doesn't make sense since we're testing the behaviour of the timer
      * thread.
+     * @throws Exception exception
      */
     @Test
     public void testExpirationConcurrent() throws Exception {

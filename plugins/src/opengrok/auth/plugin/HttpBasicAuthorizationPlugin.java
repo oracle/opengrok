@@ -17,9 +17,12 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
+
+package opengrok.auth.plugin;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;

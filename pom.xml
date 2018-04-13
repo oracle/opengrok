@@ -176,11 +176,23 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
 		<version>${mavenjavadocplugin.version}</version>
+		<configuration>
+		  <excludePackageNames>org.apache.commons.jrcs.*</excludePackageNames>
+		</configuration>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>javadoc</goal>
+                      <goal>test-javadoc</goal>
+                    </goals>
+                    <phase>verify</phase>
+                  </execution>
+                </executions>
             </plugin>
-           <plugin>
-            <artifactId>maven-project-info-reports-plugin</artifactId>
-            <version>2.9</version>
-           </plugin>
+            <plugin>
+              <artifactId>maven-project-info-reports-plugin</artifactId>
+              <version>2.9</version>
+            </plugin>
         </plugins>
     </build>
 

@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
@@ -26,7 +26,7 @@ import java.util.Date;
 
 /**
  * Implementation of timestamp decoding as mentinoned in
- * {@link https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm}
+ * @see <a href="https://docs.oracle.com/cd/B28196_01/idmanage.1014/b15997/mod_osso.htm">mod_osso documentation</a>
  * in chapter 9.5.
  *
  * @author Krystof Tulinger
@@ -38,7 +38,7 @@ public class Timestamp {
      *
      * @param cookie string representing the timestamp cookie
      * @return java date object
-     * @throws NumberFormatException
+     * @throws NumberFormatException number format exception
      */
     public static Date decodeTimeCookie(String cookie) throws NumberFormatException {
         return new Date(Long.parseLong(cookie, 16) * 1000);

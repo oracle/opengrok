@@ -51,7 +51,7 @@ public class DefinitionsTokenStreamTest {
      * Tests sampleplain.cc v. sampletags_cc with no expand-tabs and
      * no supplement when ctags's pattern excerpt is insufficient w.r.t.
      * `signature'.
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     @Test
     public void testCppDefinitionsForRawContentUnsupplemented()
@@ -73,7 +73,7 @@ public class DefinitionsTokenStreamTest {
      * Tests sampleplain.cc v. sampletags_cc with no expand-tabs but
      * supplementing when ctags's pattern excerpt is insufficient w.r.t.
      * `signature'.
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     @Test
     public void testCppDefinitionsWithRawContent1() throws IOException {
@@ -87,7 +87,7 @@ public class DefinitionsTokenStreamTest {
      * Tests sampleplain.cc v. sampletags_cc with expand-tabs and
      * supplementing when ctags's pattern excerpt is insufficient w.r.t.
      * `signature'.
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
      */
     @Test
     public void testCppDefinitionsWithRawContent2() throws IOException {

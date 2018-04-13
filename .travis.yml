@@ -27,7 +27,6 @@ before_script:
  - if `which cvs`; then cvs --version; fi
  - if `which mtn`; then mtn --version; fi
  - if `which bzr`; then bzr version; fi
- # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd opengrok-indexer && mvn javadoc:javadoc && cd ../opengrok-web && mvn javadoc:javadoc && cd ..; fi
 
 env:
   global:

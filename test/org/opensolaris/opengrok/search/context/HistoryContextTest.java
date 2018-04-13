@@ -186,7 +186,7 @@ public class HistoryContextTest {
 
     /**
      * Test URI and HTML encoding of {@code writeMatch()}.
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testWriteMatch() throws IOException {
