@@ -60,15 +60,14 @@ deploy:
     - mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
     prerelease: true
     api_key:
-      secure: sCPR3INSECAj3VcIr2eKVOfWVs4mJbOe9WLVrnV0zo9ITRsSFxvjOPbtlQVcr3kQSlYfPsw4EqWcZMXe7usGOlBqKPd8eipce0QFo7sZbeOFHwBO5VHvtiaeyeGnDSmxfpjgwHvUkIQ8hc2EAbJ/sx8qtg+bfcLobiiW4xcCzc+j1Tbjv84CO46m7GiV3ZW63yB/q/5MCxqUOwd2A4FnN5vKS03SLklNra1iuTJzi9jhcN0I+Y9rzwLDzkNQnZhC0nlVgks1AMtv/DCK5a3hYrzXU5x3mHZ2r+qMfWaXQ081odQctzs5JciJrtbm18H9esPNKKLiHmn6d8HjXR5g65VPoJZnj/gTrldGSKX+dQPJWAFTrf2R8zcKlBMtkLpJQKNmsoYBbXAyvlxTQshWDOeVRmyNB0HZwPHb3vfnqfXWFYi7f3+3hnV41m111huZ+8EdVcNbPAddlKvzaJ09sXbmNzSKduaF+f+BGfRMmBT+3eyOLQXPY3++nMeJ1BRxL78OWCeqDVi+jxSbdSNIo7bvo2NK3FVWMEanGpEKdJgbR8N+PPL+0VRTziYNtHQ7j1W2QmIs0YRF93f2TrnY4qj9CUMcm+qcLnRtcWtK6gHBxe93ojosn6pTZNTgOWgHyQDXiksevUyIvs80AtVEGNFgkj4WAbFRtWiMeRgTgZQ=
+      secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
     file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
     skip_cleanup: true
     on:
-      # XXX
-      repo: vladak/OpenGrok
+      repo: oracle/opengrok
       tags: true
       condition: "$TRAVIS_TAG =~ rc[0-9]+$"
-      # XXX branch: master
+      branch: master
   # Full release
   - provider: releases
     script:
@@ -76,12 +75,11 @@ deploy:
     - echo "$TRAVIS_BRANCH"
     - mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
     api_key:
-      secure: sCPR3INSECAj3VcIr2eKVOfWVs4mJbOe9WLVrnV0zo9ITRsSFxvjOPbtlQVcr3kQSlYfPsw4EqWcZMXe7usGOlBqKPd8eipce0QFo7sZbeOFHwBO5VHvtiaeyeGnDSmxfpjgwHvUkIQ8hc2EAbJ/sx8qtg+bfcLobiiW4xcCzc+j1Tbjv84CO46m7GiV3ZW63yB/q/5MCxqUOwd2A4FnN5vKS03SLklNra1iuTJzi9jhcN0I+Y9rzwLDzkNQnZhC0nlVgks1AMtv/DCK5a3hYrzXU5x3mHZ2r+qMfWaXQ081odQctzs5JciJrtbm18H9esPNKKLiHmn6d8HjXR5g65VPoJZnj/gTrldGSKX+dQPJWAFTrf2R8zcKlBMtkLpJQKNmsoYBbXAyvlxTQshWDOeVRmyNB0HZwPHb3vfnqfXWFYi7f3+3hnV41m111huZ+8EdVcNbPAddlKvzaJ09sXbmNzSKduaF+f+BGfRMmBT+3eyOLQXPY3++nMeJ1BRxL78OWCeqDVi+jxSbdSNIo7bvo2NK3FVWMEanGpEKdJgbR8N+PPL+0VRTziYNtHQ7j1W2QmIs0YRF93f2TrnY4qj9CUMcm+qcLnRtcWtK6gHBxe93ojosn6pTZNTgOWgHyQDXiksevUyIvs80AtVEGNFgkj4WAbFRtWiMeRgTgZQ=
+      secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
     file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
     skip_cleanup: true
     on:
-      # XXX
-      repo: vladak/OpenGrok
+      repo: oracle/opengrok
       tags: true
       condition: "! $TRAVIS_TAG =~ rc[0-9]+$"
-      # XXX branch: master
+      branch: master
