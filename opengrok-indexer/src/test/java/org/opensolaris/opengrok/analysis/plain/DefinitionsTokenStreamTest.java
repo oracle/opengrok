@@ -64,8 +64,8 @@ public class DefinitionsTokenStreamTest {
         overrides.put(48, new SimpleEntry<>(",", "path"));
 
         testDefinitionsVsContent(false,
-            "org/opensolaris/opengrok/analysis/c/sample.cc",
-            "org/opensolaris/opengrok/analysis/c/sampletags_cc", 65, false,
+            "analysis/c/sample.cc",
+            "analysis/c/sampletags_cc", 65, false,
             overrides);
     }
 
@@ -78,8 +78,8 @@ public class DefinitionsTokenStreamTest {
     @Test
     public void testCppDefinitionsWithRawContent1() throws IOException {
         testDefinitionsVsContent(false,
-            "org/opensolaris/opengrok/analysis/c/sample.cc",
-            "org/opensolaris/opengrok/analysis/c/sampletags_cc", 65, true,
+            "analysis/c/sample.cc",
+            "analysis/c/sampletags_cc", 65, true,
             null);
     }
 
@@ -92,8 +92,8 @@ public class DefinitionsTokenStreamTest {
     @Test
     public void testCppDefinitionsWithRawContent2() throws IOException {
         testDefinitionsVsContent(true,
-            "org/opensolaris/opengrok/analysis/c/sample.cc",
-            "org/opensolaris/opengrok/analysis/c/sampletags_cc", 65, true,
+            "analysis/c/sample.cc",
+            "analysis/c/sampletags_cc", 65, true,
             null);
     }
 
