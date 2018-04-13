@@ -5,13 +5,13 @@
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>jrcs</artifactId>
     <packaging>jar</packaging>
-    <version>1.1-rc1006</version>
+    <version>1.1-rc22</version>
     <name>Java RCS</name>
 
     <parent>
         <groupId>org.opensolaris.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.1-rc1006</version>
+        <version>1.1-rc22</version>
     </parent>
 
     <dependencies>
