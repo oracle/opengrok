@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.search;
 
@@ -43,6 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.MultiReader;
@@ -122,6 +124,7 @@ public class SearchEngine {
      * Holds value of property indexDatabase.
      */
     private Query query;
+    private QueryBuilder queryBuilder;
     private final CompatibleAnalyser analyzer = new CompatibleAnalyser();
     private Context sourceContext;
     private HistoryContext historyContext;
@@ -234,8 +237,39 @@ public class SearchEngine {
         }
     }
 
+    /**
+     * Gets the instance from {@code search(...)} if it was called.
+     * @return defined instance or {@code null}
+     */
     public String getQuery() {
-        return query.toString();
+        return query != null ? query.toString() : null;
+    }
+
+    /**
+     * Gets the instance from {@code search(...)} if it was called.
+     * @return defined instance or {@code null}
+     */
+    public Query getQueryObject() {
+        return query;
+    }
+
+    /**
+     * Gets the builder from {@code search(...)} if it was called.
+     * <p>
+     * (Modifying the builder will have no effect on this
+     * {@link SearchEngine}.)
+     * @return defined instance or {@code null}
+     */
+    public QueryBuilder getQueryBuilder() {
+        return queryBuilder;
+    }
+
+    /**
+     * Gets the searcher from {@code search(...)} if it was called.
+     * @return defined instance or {@code null}
+     */
+    public IndexSearcher getSearcher() {
+        return searcher;
     }
 
     /**
@@ -329,10 +363,9 @@ public class SearchEngine {
         data = RuntimeEnvironment.getInstance().getDataRootPath();
         docs.clear();
 
-        QueryBuilder queryBuilder = createQueryBuilder();
-
+        QueryBuilder newBuilder = createQueryBuilder();
         try {
-            query = queryBuilder.build();
+            query = newBuilder.build();
             if (query != null) {
 
                 if (projects.isEmpty()) {
@@ -357,7 +390,7 @@ public class SearchEngine {
             sourceContext = null;
             summarizer = null;
             try {
-                sourceContext = new Context(query, queryBuilder.getQueries());
+                sourceContext = new Context(query, newBuilder);
                 if (sourceContext.isEmpty()) {
                     sourceContext = null;
                 }
@@ -377,7 +410,30 @@ public class SearchEngine {
             }
         }
         int count = hits == null ? 0 : hits.length;
+        queryBuilder = newBuilder;
         return count;
+    }
+
+    /**
+     * Gets the queried score docs from {@code search(...)} if it was called.
+     * @return a defined instance if a query succeeded, or {@code null}
+     */
+    public ScoreDoc[] scoreDocs() {
+        return hits;
+    }
+
+    /**
+     * Gets the document of the specified {@code docId} from
+     * {@code search(...)} if it was called.
+     * @return a defined instance if a query succeeded
+     * @throws java.io.IOException if an error occurs obtaining the Lucene
+     * document by ID
+     */
+    public Document doc(int docId) throws IOException {
+        if (searcher == null) {
+            throw new IllegalStateException("search(...) did not succeed");
+        }
+        return searcher.doc(docId);
     }
 
     /**
@@ -449,6 +505,7 @@ public class SearchEngine {
                 int nhits = docs.size();
 
                 if (sourceContext != null) {
+                    sourceContext.toggleAlt();
                     try {
                         if (Genre.PLAIN == genre && (source != null)) {
                             // SRCROOT is read with UTF-8 as a default.

@@ -66,7 +66,7 @@ public class DefinitionsTokenStream extends TokenStream {
      * @throws IOException if I/O error occurs
      */
     public void initialize(Definitions defs, StreamSource src,
-        ReaderWrapper wrapper) throws IOException {
+            ReaderWrapper wrapper) throws IOException {
         if (defs == null) {
             throw new IllegalArgumentException("`defs' is null");
         }

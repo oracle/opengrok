@@ -30,6 +30,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -79,6 +80,22 @@ public class QueryBuilder {
      * platforms and it would be harder to test.)
      */
     private final Map<String, String> queries = new TreeMap<>();
+
+    /**
+     * Sets the instance to the state of {@code other}.
+     * @param other a defined instance
+     * @return {@code this}
+     */
+    public QueryBuilder reset(QueryBuilder other) {
+        if (other == null) {
+            throw new IllegalArgumentException("other is null");
+        }
+        if (this != other) {
+            queries.clear();
+            queries.putAll(other.queries);
+        }
+        return this;
+    }
 
     /**
      * Set search string for the "full" field.
@@ -251,6 +268,39 @@ public class QueryBuilder {
      */
     public Map<String, String> getQueries() {
         return Collections.unmodifiableMap(queries);
+    }
+
+    /**
+     * Gets a list of fields from {@link #getQueries()} which are extracted
+     * from source text and which therefore can be used for context
+     * presentations -- in the order of most specific to least.
+     * @return a defined, possibly-empty list
+     */
+    public List<String> getContextFields() {
+        List<String> fields = new ArrayList<>(queries.size());
+        /**
+         * setFreetext() allows query fragments that specify a field name with
+         * a colon (e.g., "defs:ensure_cache" in the "Full Search" box), so the
+         * context fields (i.e., the result of this method) are not just the
+         * keys of `queries' but need a full parsing to be determined.
+         */
+        Query query;
+        try {
+            query = build();
+        } catch (ParseException ex) {
+            return fields;
+        }
+        String queryString = query.toString("");
+        if (queryString.contains(DEFS + ":")) {
+            fields.add(DEFS);
+        }
+        if (queryString.contains(REFS + ":")) {
+            fields.add(REFS);
+        }
+        if (queryString.contains(FULL + ":")) {
+            fields.add(FULL);
+        }
+        return fields;
     }
 
     /**

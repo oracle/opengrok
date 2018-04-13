@@ -19,7 +19,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
-Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
 -->
 <project name="OpenGrok" default="jar" basedir="." xmlns:jacoco="antlib:org.jacoco.ant"
@@ -507,6 +507,18 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         <available file="${lucene-analyzers-common.jar}" type="file" property="lucene-analyzers-common.jar.present">
             <filepath refid="plainlib.search.path"/>
         </available>
+        <available file="${lucene-highlighter.jar}" type="file" property="lucene-highlighter.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>
+        <available file="${lucene-join.jar}" type="file" property="lucene-join.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>
+        <available file="${lucene-memory.jar}" type="file" property="lucene-memory.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>
+        <available file="${lucene-queries.jar}" type="file" property="lucene-queries.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>
         <available file="${lucene-queryparser.jar}" type="file" property="lucene-queryparser.jar.present">
             <filepath refid="plainlib.search.path"/>
         </available>
@@ -518,6 +530,10 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                 <and>
                     <isset property="lucene-core.jar.present"/>
                     <isset property="lucene-analyzers-common.jar.present"/>
+                    <isset property="lucene-highlighter.jar.present"/>
+                    <isset property="lucene-join.jar.present"/>
+                    <isset property="lucene-memory.jar.present"/>
+                    <isset property="lucene-queries.jar.present"/>
                     <isset property="lucene-queryparser.jar.present"/>
                     <isset property="lucene-suggest.jar.present"/>
                 </and>
@@ -535,6 +551,14 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
              dest="lib/${lucene-core.jar}" verbose="true" usetimestamp="true"/>
         <get src="${mvn.repository}/org/apache/lucene/lucene-analyzers-common/${lucene.version}/${lucene-analyzers-common.jar}"
              dest="lib/${lucene-analyzers-common.jar}" verbose="true" usetimestamp="true"/>
+        <get src="${mvn.repository}/org/apache/lucene/lucene-highlighter/${lucene.version}/${lucene-highlighter.jar}"
+             dest="lib/${lucene-highlighter.jar}" verbose="true" usetimestamp="true"/>
+        <get src="${mvn.repository}/org/apache/lucene/lucene-join/${lucene.version}/${lucene-join.jar}"
+             dest="lib/${lucene-join.jar}" verbose="true" usetimestamp="true"/>
+        <get src="${mvn.repository}/org/apache/lucene/lucene-memory/${lucene.version}/${lucene-memory.jar}"
+             dest="lib/${lucene-memory.jar}" verbose="true" usetimestamp="true"/>
+        <get src="${mvn.repository}/org/apache/lucene/lucene-queries/${lucene.version}/${lucene-queries.jar}"
+             dest="lib/${lucene-queries.jar}" verbose="true" usetimestamp="true"/>
         <get src="${mvn.repository}/org/apache/lucene/lucene-queryparser/${lucene.version}/${lucene-queryparser.jar}"
              dest="lib/${lucene-queryparser.jar}" verbose="true" usetimestamp="true"/>
         <get src="${mvn.repository}/org/apache/lucene/lucene-suggest/${lucene.version}/${lucene-suggest.jar}"

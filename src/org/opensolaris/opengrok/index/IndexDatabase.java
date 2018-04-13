@@ -50,6 +50,8 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.codecs.lucene50.Lucene50StoredFieldsFormat;
+import org.apache.lucene.codecs.lucene70.Lucene70Codec;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -395,6 +397,13 @@ public class IndexDatabase {
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setRAMBufferSizeMB(env.getRamBufferSize());
+            /**
+             * Most data in OpenGrok is indexed but not stored, so use the best
+             * compression on the minority of data that is stored, since it
+             * should not have a detrimental impact on overall throughput.
+             */
+            iwc.setCodec(new Lucene70Codec(
+                Lucene50StoredFieldsFormat.Mode.BEST_COMPRESSION));
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
             completer = new PendingFileCompleter();

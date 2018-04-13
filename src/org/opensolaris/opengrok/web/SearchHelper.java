@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner. 
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.web;
 
@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +41,6 @@ import java.util.stream.Collectors;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanQuery;
@@ -50,6 +50,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
@@ -61,12 +62,15 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
+import org.opensolaris.opengrok.index.IndexAnalysisSettings;
+import org.opensolaris.opengrok.index.IndexAnalysisSettingsAccessor;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.search.Summarizer;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
@@ -146,6 +150,11 @@ public class SearchHelper {
      */
     public String errorMsg;
     /**
+     * the reader used to open the index. Automatically set via
+     * {@link #prepareExec(SortedSet)}.
+     */
+    private IndexReader reader;
+    /**
      * the searcher used to open/search the index. Automatically set via
      * {@link #prepareExec(SortedSet)}.
      */
@@ -169,7 +178,7 @@ public class SearchHelper {
      */
     public long totalHits;
     /**
-     * the query created by the used {@link QueryBuilder} via
+     * the query created by {@link #builder} via
      * {@link #prepareExec(SortedSet)}.
      */
     public Query query;
@@ -204,6 +213,11 @@ public class SearchHelper {
      * Default query parse error message prefix
      */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
+
+    /**
+     * Key is Project name or empty string for null Project
+     */
+    private Map<String, IndexAnalysisSettings> mappedAnalysisSettings;
 
     /**
      * User readable description for file types. Only those listed in
@@ -246,6 +260,7 @@ public class SearchHelper {
             return this;
         }
 
+        mappedAnalysisSettings = null;
         // the Query created by the QueryBuilder
         try {
             indexDir = new File(dataRoot, IndexDatabase.INDEX_DIR);
@@ -258,7 +273,8 @@ public class SearchHelper {
             if (projects.isEmpty()) {
                 // no project setup
                 FSDirectory dir = FSDirectory.open(indexDir.toPath());
-                searcher = new IndexSearcher(DirectoryReader.open(dir));
+                reader = DirectoryReader.open(dir);
+                searcher = new IndexSearcher(reader);
                 closeOnDestroy = true;
             } else {
                 // Check list of project names first to make sure all of them
@@ -288,10 +304,10 @@ public class SearchHelper {
                 // We use MultiReader even for single project. This should
                 // not matter given that MultiReader is just a cheap wrapper
                 // around set of IndexReader objects.
-                MultiReader multireader = RuntimeEnvironment.getInstance().
-                    getMultiReader(projects, searcherList);
-                if (multireader != null) {
-                    searcher = new IndexSearcher(multireader);
+                reader = RuntimeEnvironment.getInstance().getMultiReader(
+                    projects, searcherList);
+                if (reader != null) {
+                    searcher = new IndexSearcher(reader);
                 } else {
                     errorMsg = "Failed to initialize search. Check the index.";
                     return this;
@@ -520,7 +536,7 @@ public class SearchHelper {
             return this;
         }
         try {
-            sourceContext = new Context(query, builder.getQueries());
+            sourceContext = new Context(query, builder);
             summarizer = new Summarizer(query, new CompatibleAnalyser());
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Summarizer: {0}", e.getMessage());
@@ -549,5 +565,103 @@ public class SearchHelper {
                 LOGGER.log(Level.WARNING, "cannot release indexSearcher", ex);
             }
         }
+    }
+
+    /**
+     * Searches for a document for a single file from the index.
+     * @param file the file whose definitions to find
+     * @return {@link ScoreDoc#doc} or -1 if it could not be found
+     * @throws IOException if an error happens when accessing the index
+     * @throws ParseException if an error happens when building the Lucene query
+     */
+    public int searchSingle(File file) throws IOException,
+            ParseException {
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String path;
+        try {
+            path = env.getPathRelativeToSourceRoot(file);
+        } catch (ForbiddenSymlinkException e) {
+            LOGGER.log(Level.FINER, e.getMessage());
+            return -1;
+        }
+        //sanitize windows path delimiters
+        //in order not to conflict with Lucene escape character
+        path = path.replace("\\", "/");
+
+        QueryBuilder singleBuilder = new QueryBuilder();
+        if (builder != null) {
+            singleBuilder.reset(builder);
+        }
+        query = singleBuilder.setPath(path).build();
+
+        TopDocs top = searcher.search(query, 1);
+        if (top.totalHits == 0) {
+            return -1;
+        }
+
+        int docID = top.scoreDocs[0].doc;
+        Document doc = searcher.doc(docID);
+
+        String foundPath = doc.get(QueryBuilder.PATH);
+        // Only use the result if PATH matches exactly.
+        if (!path.equals(foundPath)) {
+            return -1;
+        }
+
+        return docID;
+    }
+
+    /**
+     * Gets the persisted tabSize via {@link #getSettings(java.lang.String)} if
+     * available or returns the {@code proj} tabSize if available -- or zero.
+     * @param proj a defined instance or {@code null} if no project is active
+     * @return tabSize
+     * @throws IOException if an I/O error occurs querying the active reader
+     */
+    public int getTabSize(Project proj) throws IOException {
+        String projectName = proj != null ? proj.getName() : null;
+        IndexAnalysisSettings settings = getSettings(projectName);
+        int tabSize;
+        if (settings != null && settings.getTabSize() != null) {
+            tabSize = settings.getTabSize();
+        } else {
+            tabSize = proj != null ? proj.getTabSize() : 0;
+        }
+        return tabSize;
+    }
+
+    /**
+     * Gets the settings for a specified project, querying the active reader
+     * upon the first call after {@link #prepareExec(java.util.SortedSet)}.
+     * @param projectName a defined instance or {@code null} if no project is
+     * active (or empty string to mean the same thing)
+     * @return a defined instance or {@code null} if none is found
+     * @throws IOException if an I/O error occurs querying the active reader
+     */
+    public IndexAnalysisSettings getSettings(String projectName)
+            throws IOException {
+        if (mappedAnalysisSettings == null) {
+            IndexAnalysisSettingsAccessor dao =
+                new IndexAnalysisSettingsAccessor();
+            IndexAnalysisSettings[] setts = dao.read(reader, Short.MAX_VALUE);
+            mappedAnalysisSettings = map(setts);
+        }
+
+        String k = projectName != null ? projectName : "";
+        return mappedAnalysisSettings.get(k);
+    }
+
+    private Map<String, IndexAnalysisSettings> map(
+        IndexAnalysisSettings[] setts) {
+
+        Map<String, IndexAnalysisSettings> res = new HashMap<>();
+        for (int i = 0; i < setts.length; ++i) {
+            IndexAnalysisSettings settings = setts[i];
+            String k = settings.getProjectName() != null ?
+                settings.getProjectName() : "";
+            res.put(k, settings);
+        }
+        return res;
     }
 }
