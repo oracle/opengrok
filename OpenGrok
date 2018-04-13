@@ -927,7 +927,7 @@ UpdateDescriptionCache()
 
 OpenGrokUsage()
 {
-    [ "$1" == "--detailed" ] && helpargs=$1
+    [ "$1" = "--detailed" ] && helpargs=$1
     echo "Options for opengrok.jar:" 1>&2
     ${DO} ${JAVA} ${JAVA_OPTS} -jar "${OPENGROK_JAR}" '-?' $helpargs
 }
