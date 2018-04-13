@@ -754,7 +754,7 @@ public class RuntimeEnvironmentTest {
     /**
      * Testing invalid flag property.
      *
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test(expected = IOException.class)
     public void testAuthorizationFlagDecodeInvalid() throws IOException {
@@ -781,7 +781,7 @@ public class RuntimeEnvironmentTest {
     /**
      * Testing invalid class names for authorization checks.
      *
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test(expected = IOException.class)
     public void testAuthorizationDecodeInvalid() throws IOException {
@@ -1079,7 +1079,8 @@ public class RuntimeEnvironmentTest {
     /**
      * Verify that getPathRelativeToSourceRoot() returns path relative to
      * source root for both directories and symbolic links.
-     * @throws java.io.IOException
+     * @throws java.io.IOException I/O exception
+     * @throws ForbiddenSymlinkException forbidden symlink exception
      */
     @Test
     public void testGetPathRelativeToSourceRoot() throws IOException,

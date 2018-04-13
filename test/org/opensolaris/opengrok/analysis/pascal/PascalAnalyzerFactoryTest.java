@@ -82,17 +82,17 @@ public class PascalAnalyzerFactoryTest {
             analyzer.setCtags(new Ctags());
         }
     }
-    
+
     @AfterClass
     public static void tearDownClass() throws Exception {
         ctags.close();
         ctags = null;
     }
-    
+
     /**
      * Test of writeXref method, of class PascalAnalyzerFactory.
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @Test
     public void testAnalyzer() throws Exception {

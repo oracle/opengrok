@@ -37,34 +37,20 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
     </parent>
 
     <build>
-        <sourceDirectory>.</sourceDirectory>
-	<!-- Note that the plugins/UserPlugin/test/ directory is added via the build-helper plugin below -->
-        <testSourceDirectory>LdapPlugin/test</testSourceDirectory>
+        <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
 
         <testResources>
             <testResource>
                 <targetPath>opengrok/auth/plugin/</targetPath>
-                <directory>LdapPlugin/test/opengrok/auth/plugin/</directory>
+                <directory>test/opengrok/auth/plugin/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
         </testResources>
- 
+
         <plugins>
-
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>2.0.2</version>
-            <configuration>
-              <includes>
-                <include>**/LdapPlugin/src/**</include>
-                <include>**/UserPlugin/src/**</include>
-                <include>*Plugin.java</include>
-              </includes>
-            </configuration>
-          </plugin>
-
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
@@ -74,27 +60,6 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
                   </systemPropertyVariables>
               </configuration>
           </plugin>
-
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <version>1.8</version>
-            <executions>
-                <execution>
-                    <id>add-test-source</id>
-                    <phase>generate-test-sources</phase>
-                    <goals>
-                        <goal>add-test-source</goal>
-                    </goals>
-                    <configuration>
-                        <sources>
-                            <directory>UserPlugin/test</directory>
-                        </sources>
-                    </configuration>
-                </execution>
-            </executions>
-          </plugin>
-
         </plugins>
     </build>
 

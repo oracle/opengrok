@@ -44,7 +44,8 @@ import org.opensolaris.opengrok.configuration.Project;
  * </ul>
  *
  * <p>
- * The intended methods to implement are the and {@link #checkEntity(HttpServletRequest, Project)
+ * The intended methods to implement are the
+ * {@link #checkEntity(HttpServletRequest, Project)} and
  * {@link #checkEntity(HttpServletRequest, Group)}.
  * </p>
  *

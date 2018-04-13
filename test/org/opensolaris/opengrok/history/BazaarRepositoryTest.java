@@ -71,7 +71,7 @@ public class BazaarRepositoryTest {
 
     /**
      * Test of parseAnnotation method, of class GitRepository.
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @Test
     public void parseAnnotation() throws Exception {

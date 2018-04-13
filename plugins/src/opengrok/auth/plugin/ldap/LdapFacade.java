@@ -108,7 +108,6 @@ public class LdapFacade extends AbstractLdapProvider {
      * Transforms the attributes to the set of strings used for authorization.
      *
      * Currently this behaves like it get all records stored in
-     * {@link #LDAP_VALUES}
      */
     private static class ContentAttributeMapper implements AttributeMapper<Map<String, Set<String>>> {
 
@@ -242,7 +241,6 @@ public class LdapFacade extends AbstractLdapProvider {
      * @param values match these LDAP values
      *
      * @return set of strings describing the user's attributes
-     * @see #LDAP_VALUES
      */
     @Override
     public Map<String, Set<String>> lookupLdapContent(User user, String filter, String[] values) {

@@ -75,7 +75,7 @@ public class ContextTest {
     /**
      * Tests for the isEmpty() method.
      *
-     * @throws org.apache.lucene.queryparser.classic.ParseException
+     * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
     public void testIsEmpty() throws ParseException {
@@ -115,7 +115,7 @@ public class ContextTest {
     /**
      * Tests for the getContext() method.
      *
-     * @throws org.apache.lucene.queryparser.classic.ParseException
+     * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
     public void testGetContext() throws ParseException {
@@ -131,6 +131,7 @@ public class ContextTest {
      * @param limit true if limited, quick context scan should be used
      * @param hitList true if output should be written to a list instead of a
      * writer
+     * @throws ParseException parse exception
      */
     private void testGetContext(boolean limit, boolean hitList)
             throws ParseException {
@@ -268,7 +269,7 @@ public class ContextTest {
      * long (&gt;100 characters) line which contains a match is not terminated
      * with a newline character before the buffer boundary. Bug #383.
      *
-     * @throws org.apache.lucene.queryparser.classic.ParseException
+     * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
     public void testLongLineNearBufferBoundary() throws ParseException {
@@ -295,7 +296,7 @@ public class ContextTest {
      * Test that we get the [all...] link if a very long line crosses the buffer
      * boundary. Bug 383.
      *
-     * @throws org.apache.lucene.queryparser.classic.ParseException
+     * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
     public void testAllLinkWithLongLines() throws ParseException {
@@ -324,7 +325,7 @@ public class ContextTest {
      * truncated, and that &hellip; is appended to show that the line is
      * truncated. Bug 383.
      *
-     * @throws org.apache.lucene.queryparser.classic.ParseException
+     * @throws org.apache.lucene.queryparser.classic.ParseException parse exception
      */
     @Test
     public void testLongTruncatedLine() throws ParseException {
@@ -354,7 +355,7 @@ public class ContextTest {
      * Test that valid HTML is generated for a match that spans multiple lines.
      * It used to nest the tags incorrectly. Bug #15632.
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @Test
     public void testMultiLineMatch() throws Exception {
@@ -401,7 +402,7 @@ public class ContextTest {
      * Verify that the matching lines are shown in their original form and not
      * lower-cased (bug #16848).
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @Test
     public void bug16848() throws Exception {
@@ -418,7 +419,7 @@ public class ContextTest {
     /**
      * The results from mixed-case symbol search should contain tags.
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @Test
     public void bug17582() throws Exception {
@@ -455,6 +456,7 @@ public class ContextTest {
      * @param builder builder for the query we want to test
      * @param lines the expected line numbers in the hit list
      * @param tags the expected tags in the hit list
+     * @throws Exception exception
      */
     private void bug17582(QueryBuilder builder, int[] lines, String[] tags)
             throws Exception {
@@ -479,7 +481,7 @@ public class ContextTest {
     /**
      * Test that regexp search has matched words in context.
      *
-     * @throws ParseException
+     * @throws ParseException parse exception
      */
     @Test
     public void regexpSearchContextTest() throws ParseException {
@@ -499,7 +501,7 @@ public class ContextTest {
      * @param expectWordInContext Word expected to be found by 'queryString' in
      * 'searchInText' and to be included in context. Set null if context is
      * expected to be empty.
-     * @throws ParseException
+     * @throws ParseException parse exception
      */
     private void searchContextTestHelper(String searchInText, String queryString, String expectWordInContext) throws ParseException {
         Reader in = new StringReader(searchInText);
