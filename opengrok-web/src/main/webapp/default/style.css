@@ -820,16 +820,6 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
     margin-bottom: 1em;
 }
 
-/* "Navigate Style" */
-.diff_navigation_style {
-    border: solid 1px #c0c0c0;
-    border-radius: 5px;
-    box-shadow: 10px 10px 5px #888888;
-    background-color: rgb(255,255,204);
-    position: absolute;
-    padding: 1em;
-}
-
 /* "Tooltip Style (minor information)" */
 .tooltip {
     position: absolute;
@@ -841,8 +831,32 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
     position: fixed;
     font-size: 12px;
     font-family: monospace;
-    overflow: auto;
+    overflow: hidden;
     z-index: 10;
+}
+
+.window-header {
+    padding: 10px;
+    min-height: 20px;
+    border-bottom: 1px solid black;
+}
+
+.window-body {
+    overflow: auto;
+    height: calc(
+        100% /* whole window */
+        - 40px /* height of the header + its padding-top + padding-bottom */
+        - 1px /* border of the header */
+        - 20px /* padding-top + padding-bottom */
+        );
+    padding-left: 10px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    width: calc(
+        100% /* whole window */
+        - 20px /* padding-left + padding-right */
+        );
 }
 
 .intelli-window {
@@ -905,7 +919,6 @@ a.scope            { /* scope              */ color: steelblue; font-weight: bol
     border-radius: 5px;
     box-shadow: 10px 10px 5px #888888;
     background-color: rgb(255,255,204);
-    padding: 1em;
 }
 
 .diff_navigation {

@@ -211,28 +211,45 @@ public class Definitions implements Serializable {
          * Scope of tag definition
          */
         public final String signature;
+        /**
+         * The starting offset (possibly approximate) of {@link #symbol} from
+         * the start of the line
+         */
+        public final int lineStart;
+        /**
+         * The ending offset (possibly approximate) of {@link #symbol} from
+         * the start of the line
+         */
+        public final int lineEnd;
 
         /**
          * A non-serialized marker for marking a tag to avoid its reuse.
          */
         public transient boolean used;
 
-        protected Tag(int line, String symbol, String type, String text, String namespace, String signature) {
+        protected Tag(int line, String symbol, String type, String text,
+                String namespace, String signature, int lineStart,
+                int lineEnd) {
             this.line = line;
             this.symbol = symbol;
             this.type = type;
             this.text = text;
             this.namespace = namespace;
             this.signature = signature;
+            this.lineStart = lineStart;
+            this.lineEnd = lineEnd;
         }
     }
 
-    public void addTag(int line, String symbol, String type, String text) {
-        addTag(line, symbol, type, text, null, null);
+    public void addTag(int line, String symbol, String type, String text,
+            int lineStart, int lineEnd) {
+        addTag(line, symbol, type, text, null, null, lineStart, lineEnd);
     }
 
-    public void addTag(int line, String symbol, String type, String text, String namespace, String signature) {
-        Tag new_tag = new Tag(line, symbol, type, text, namespace, signature);
+    public void addTag(int line, String symbol, String type, String text,
+            String namespace, String signature, int lineStart, int lineEnd) {
+        Tag new_tag = new Tag(line, symbol, type, text, namespace, signature,
+            lineStart, lineEnd);
         tags.add(new_tag);
         Set<Integer> lines = symbols.get(symbol);
         if (lines == null) {

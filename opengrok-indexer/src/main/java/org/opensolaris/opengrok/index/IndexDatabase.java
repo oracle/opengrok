@@ -50,6 +50,8 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.codecs.lucene50.Lucene50StoredFieldsFormat;
+import org.apache.lucene.codecs.lucene70.Lucene70Codec;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -110,7 +112,9 @@ public class IndexDatabase {
 
     private Project project;
     private FSDirectory indexDirectory;
+    private IndexReader reader;
     private IndexWriter writer;
+    private IndexAnalysisSettings settings;
     private PendingFileCompleter completer;
     private TermsEnum uidIter;
     private IgnoredNames ignoredNames;
@@ -382,12 +386,24 @@ public class IndexDatabase {
         this.parallelizer = parallelizer;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+        reader = null;
+        writer = null;
+        settings = null;
+        uidIter = null;
+
         IOException finishingException = null;
         try {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setRAMBufferSizeMB(env.getRamBufferSize());
+            /**
+             * Most data in OpenGrok is indexed but not stored, so use the best
+             * compression on the minority of data that is stored, since it
+             * should not have a detrimental impact on overall throughput.
+             */
+            iwc.setCodec(new Lucene70Codec(
+                Lucene50StoredFieldsFormat.Mode.BEST_COMPRESSION));
             writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
             completer = new PendingFileCompleter();
@@ -422,7 +438,11 @@ public class IndexDatabase {
                 }
 
                 String startuid = Util.path2uid(dir, "");
-                IndexReader reader = DirectoryReader.open(indexDirectory); // open existing index
+                reader = DirectoryReader.open(indexDirectory); // open existing index
+                settings = readAnalysisSettings();
+                if (settings == null) {
+                    settings = new IndexAnalysisSettings();
+                }
                 Terms terms = null;
                 int numDocs = reader.numDocs();
                 if (numDocs > 0) {
@@ -683,6 +703,8 @@ public class IndexDatabase {
         for (IndexChangedListener listener : listeners) {
             listener.fileAdd(path, fa.getClass().getSimpleName());
         }
+
+        ctags.setTabSize(project != null ? project.getTabSize() : 0);
         if (ctags.getBinary() != null) fa.setCtags(ctags);
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
@@ -976,14 +998,25 @@ public class IndexDatabase {
                             }
                         }
 
-                        // If the file was not modified, skip to the next one.
+                        /**
+                         * If the file was not modified, probably skip to the
+                         * next one.
+                         */
                         if (uidIter != null && uidIter.term() != null
                                 && uidIter.term().bytesEquals(buid)) {
-                            BytesRef next = uidIter.next(); // keep matching docs
+                            boolean chkres = chkSettings(path);
+                            if (!chkres) {
+                                removeFile(false);
+                            }
+
+                            BytesRef next = uidIter.next();
                             if (next == null) {
                                 uidIter = null;
                             }
-                            continue;
+
+                            if (chkres) {
+                                continue; // keep matching docs
+                            }
                         }
                     }
 
@@ -1047,8 +1080,8 @@ public class IndexDatabase {
                             ret = false;
                         } finally {
                             if (pctags != null) {
+                                pctags.reset();
                                 ctagsPool.release(pctags);
-                                pctags = null;
                             }
                         }
 
@@ -1471,6 +1504,8 @@ public class IndexDatabase {
     private void finishWriting() throws IOException {
         boolean hasPendingCommit = false;
         try {
+            writeAnalysisSettings();
+
             writer.prepareCommit();
             hasPendingCommit = true;
 
@@ -1488,6 +1523,42 @@ public class IndexDatabase {
                 "An error occurred while finishing writer and completer", e);
             throw e;
         }
+    }
+
+    /**
+     * Verify TABSIZE, or return a value to indicate mismatch.
+     * @param path the source file path
+     * @return {@code false} if a mismatch is detected
+     */
+    private boolean chkSettings(String path) {
+        int reqTabSize = project != null && project.hasTabSizeSetting() ?
+            project.getTabSize() : 0;
+        Integer actTabSize = settings.getTabSize();
+        if (actTabSize != null && !actTabSize.equals(reqTabSize)) {
+            LOGGER.log(Level.FINE, "Tabsize mismatch: {0}", path);
+            return false;
+        }
+
+        // TODO: verify ANALYZER_GURU_VERSION and ANALYZER_VERSION.
+
+        // Assume "true" if otherwise no discrepancies were observed.
+        return true;
+    }
+
+    private void writeAnalysisSettings() throws IOException {
+        settings = new IndexAnalysisSettings();
+        settings.setProjectName(project != null ? project.getName() : null);
+        settings.setTabSize(project != null && project.hasTabSizeSetting() ?
+            project.getTabSize() : 0);
+        // TODO: set ANALYZER_GURU and ANALYZER versions.
+
+        IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
+        dao.write(writer, settings);
+    }
+
+    private IndexAnalysisSettings readAnalysisSettings() throws IOException {
+        IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
+        return dao.read(reader);
     }
 
     private class IndexDownArgs {

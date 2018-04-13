@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.uue;
 
@@ -27,13 +27,13 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
+import org.opensolaris.opengrok.analysis.OGKTextField;
 import org.opensolaris.opengrok.analysis.WriteXrefArgs;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
@@ -56,7 +56,8 @@ public class UuencodeAnalyzer extends TextAnalyzer {
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
         //this is to explicitly use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
-        TextField full = new TextField(QueryBuilder.FULL, symbolTokenizer);
+        OGKTextField full = new OGKTextField(QueryBuilder.FULL,
+            this.symbolTokenizer);
         this.symbolTokenizer.setReader(getReader(src.getStream()));
         doc.add(full);
                 

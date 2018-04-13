@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 /* Portions Copyright 2008 Peter Bray */
 package org.opensolaris.opengrok.history;
@@ -124,9 +124,6 @@ class RazorHistoryParser {
                             parseDebug("Setting Message : '" + details + "'");
                             entry.setMessage(details);
                             lastWasTitle = true;
-                        } else if ("ISSUE".equals(infoType)) {
-                            parseDebug("Adding CR : '" + details + "'");
-                            entry.addChangeRequest(details);
                         } else {
                             parseDebug("Ignoring Info Type Line '" + line + "'");
                         }

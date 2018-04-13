@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.haskell;
 
@@ -93,7 +93,8 @@ public class HaskellXrefTest {
         ByteArrayOutputStream sampleOutputStream = new ByteArrayOutputStream();
 
         Definitions defs = new Definitions();
-        defs.addTag(6, "x'y'", "functions", "x'y' = let f' = 1; g'h = 2 in f' + g'h");
+        defs.addTag(6, "x'y'", "functions",
+            "x'y' = let f' = 1; g'h = 2 in f' + g'h", 0, 0);
         int actLOC;
         try {
             actLOC = writeHaskellXref(sampleInputStream,

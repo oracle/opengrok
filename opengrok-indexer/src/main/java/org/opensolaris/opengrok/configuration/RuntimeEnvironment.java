@@ -44,6 +44,7 @@ import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
@@ -136,7 +137,20 @@ public final class RuntimeEnvironment {
     private int messagesInTheSystem = 0;
 
     private Statistics statistics = new Statistics();
-    
+
+    /**
+     * Stores a transient value when
+     * {@link #setContextLimit(java.lang.Short)} is called -- i.e. the
+     * value is not mediated to {@link Configuration}.
+     */
+    private Short contextLimit;
+    /**
+     * Stores a transient value when
+     * {@link #setContextSurround(java.lang.Short)} is called -- i.e. the
+     * value is not mediated to {@link Configuration}.
+     */
+    private Short contextSurround;
+
     private static final IndexTimestamp indexTime = new IndexTimestamp();
 
     /**
@@ -408,9 +422,11 @@ public final class RuntimeEnvironment {
      * @throws FileNotFoundException if the file is not relative to source root
      * @throws ForbiddenSymlinkException if symbolic-link checking encounters
      * an ineligible link
+     * @throws InvalidPathException if the path cannot be decoded
      */
     public String getPathRelativeToSourceRoot(File file, int stripCount)
-            throws IOException, ForbiddenSymlinkException {
+            throws IOException, ForbiddenSymlinkException, FileNotFoundException,
+            InvalidPathException {
         String sourceRoot = getSourceRootPath();
         if (sourceRoot == null) {
             throw new FileNotFoundException("Source Root Not Found");
@@ -1288,7 +1304,64 @@ public final class RuntimeEnvironment {
     public void setListDirsFirst(boolean flag) {
         threadConfig.get().setListDirsFirst(flag);
     }
-    
+
+    /**
+     * Gets the total number of context lines per file to show: either the last
+     * value passed successfully to {@link #setContextLimit(java.lang.Short)}
+     * or {@link Configuration#getContextLimit()} as a default.
+     * @return a value greater than zero
+     */
+    public short getContextLimit() {
+        return contextLimit != null ? contextLimit :
+            threadConfig.get().getContextLimit();
+    }
+
+    /**
+     * Sets the total number of context lines per file to show, or resets to use
+     * {@link Configuration#getContextLimit()}.
+     * <p>
+     * N.b. the value is not mediated to {@link Configuration}.
+     * @param value a defined value or {@code null} to reset to use the
+     * {@link Configuration#getContextSurround()}
+     * @throws IllegalArgumentException if {@code value} is not positive
+     */
+    public void setContextLimit(Short value)
+            throws IllegalArgumentException {
+        if (value < 1) {
+            throw new IllegalArgumentException("value is not positive");
+        }
+        contextLimit = value;
+    }
+
+    /**
+     * Gets the number of context lines to show before or after any match:
+     * either the last value passed successfully to
+     * {@link #setContextSurround(java.lang.Short)} or
+     * {@link Configuration#getContextSurround()} as a default.
+     * @return a value greater than or equal to zero
+     */
+    public short getContextSurround() {
+        return contextSurround != null ? contextSurround :
+            threadConfig.get().getContextSurround();
+    }
+
+    /**
+     * Sets the number of context lines to show before or after any match, or
+     * resets to use {@link Configuration#getContextSurround()}.
+     * <p>
+     * N.b. the value is not mediated to {@link Configuration}.
+     * @param value a defined value or {@code null} to reset to use the
+     * {@link Configuration#getContextSurround()}
+     * @throws IllegalArgumentException if {@code value} is negative
+     */
+    public void setContextSurround(Short value)
+            throws IllegalArgumentException {
+        if (value < 0) {
+            throw new IllegalArgumentException("value is negative");
+        }
+        contextSurround = value;
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *

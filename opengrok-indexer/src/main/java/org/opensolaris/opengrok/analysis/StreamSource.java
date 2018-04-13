@@ -19,14 +19,17 @@
 
 /*
  * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This class lets you create {@code InputStream}s that read data from a
@@ -61,6 +64,23 @@ public abstract class StreamSource {
             @Override
             public InputStream getStream() throws IOException {
                 return new BufferedInputStream(new FileInputStream(file));
+            }
+        };
+    }
+
+    /**
+     * Helper method that creates a {@code StreamSource} instance that
+     * reads data from a String.
+     * @param str the source string
+     * @return a stream source that reads from {@code str}
+     */
+    public static StreamSource fromString(final String str) {
+        return new StreamSource() {
+            private final byte[] sbuf = str.getBytes(StandardCharsets.UTF_8);
+
+            @Override
+            public InputStream getStream() throws IOException {
+                return new ByteArrayInputStream(sbuf);
             }
         };
     }

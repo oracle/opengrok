@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -177,7 +177,7 @@ public class JFlexXrefTest {
     private void bug15890Anchor(Class<? extends JFlexSymbolMatcher> klass,
         String path) throws Exception {
         File file = new File(repository.getSourceRoot() + File.separator + path);
-        Definitions defs = ctags.doCtags(file.getAbsolutePath() + "\n");
+        Definitions defs = ctags.doCtags(file.getAbsolutePath());
 
         // Input files contain non-ascii characters and are encoded in UTF-8
         Reader in = new InputStreamReader(new FileInputStream(file), "UTF-8");
@@ -381,7 +381,7 @@ public class JFlexXrefTest {
         String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
         Reader in = new InputStreamReader(new FileInputStream(filename), "UTF-8");
         JFlexXref xref = new JFlexXref(new SQLXref(in));
-        xref.setDefs(ctags.doCtags(filename + "\n"));
+        xref.setDefs(ctags.doCtags(filename));
         // The next call used to fail with an ArrayIndexOutOfBoundsException.
         xref.write(new StringWriter());
     }

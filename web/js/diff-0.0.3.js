@@ -119,9 +119,11 @@
                                 top: '150px',
                                 right: '20px',
                                 'min-width': '300px'})
+                            .body()
                             .append($controls)
                             .append(this.$summary)
                             .append(this.$progress)
+                            .window()
                 },
                 load: function ($window) {
                     var that = this

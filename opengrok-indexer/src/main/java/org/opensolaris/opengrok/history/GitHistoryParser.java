@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.InvalidPathException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -139,6 +140,8 @@ class GitHistoryParser implements Executor.StreamHandler {
                     } catch (FileNotFoundException e) { //NOPMD
                         // If the file is not located under the source root,
                         // ignore it (bug #11664).
+                    } catch (InvalidPathException e) {
+                        LOGGER.log(Level.WARNING, e.getMessage());
                     }
                 }
             }

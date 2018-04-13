@@ -276,6 +276,8 @@ PKG pkgsend add file tools/sync/teamware.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/teamware.py
 PKG pkgsend add file tools/sync/utils.py \
     mode=0555 owner=root group=bin path=/usr/opengrok/bin/utils.py
+PKG pkgsend add file tools/sync/projadm.py \
+    mode=0555 owner=root group=bin path=/usr/opengrok/bin/projadm.py
 
 PKG pkgsend add file dist/opengrok.jar \
     mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
@@ -303,13 +305,12 @@ PKG pkgsend add file doc/ctags.config \
 # install libs
 LV=7.2.1
 for file in ant.jar \
-    bcel-6.0.jar \
+    bcel-6.2.jar \
     lucene-analyzers-common-${LV}.jar \
     lucene-core-${LV}.jar \
     lucene-queryparser-${LV}.jar \
     lucene-suggest-${LV}.jar \
     jrcs.jar \
-    swing-layout-0.9.jar \
     json-simple-1.1.1.jar
 do
    PKG pkgsend add file dist/lib/${file} mode=0444 owner=root group=bin \

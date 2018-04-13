@@ -20,6 +20,7 @@
 /*
  * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -66,7 +67,7 @@ public class DefinitionsTest {
         Set<String> result = instance.getSymbols();
         assertNotNull(result);
         assertEquals(result.size(), 0);
-        instance.addTag(1, "found", "", "");
+        instance.addTag(1, "found", "", "", 0, 0);
         result = instance.getSymbols();
         assertNotNull(result);
         assertEquals(result.size(), 1);
@@ -78,7 +79,7 @@ public class DefinitionsTest {
     @Test
     public void hasSymbol() {
         Definitions instance = new Definitions();
-        instance.addTag(1, "found", "", "");
+        instance.addTag(1, "found", "", "", 0, 0);
         assertEquals(instance.hasSymbol("notFound"), false);
         assertEquals(instance.hasSymbol("found"), true);
     }
@@ -91,7 +92,7 @@ public class DefinitionsTest {
         Definitions instance = new Definitions();
         String[] type= new String[1];
         type[0]="";
-        instance.addTag(1, "found", "", "");
+        instance.addTag(1, "found", "", "", 0, 0);
         assertEquals(instance.hasDefinitionAt("found", 0, type), false);
         assertEquals(instance.hasDefinitionAt("found", 1, type), true);
         assertEquals(instance.hasDefinitionAt("found", 2, type), false);
@@ -105,9 +106,9 @@ public class DefinitionsTest {
     @Test
     public void occurrences() {
         Definitions instance = new Definitions();
-        instance.addTag(1, "one", "", "");
-        instance.addTag(1, "two", "", "");
-        instance.addTag(3, "two", "", "");
+        instance.addTag(1, "one", "", "", 0, 0);
+        instance.addTag(1, "two", "", "", 0, 0);
+        instance.addTag(3, "two", "", "", 0, 0);
         assertEquals(instance.occurrences("one"), 1);
         assertEquals(instance.occurrences("two"), 2);
         assertEquals(instance.occurrences("notFound"), 0);
@@ -120,10 +121,10 @@ public class DefinitionsTest {
     public void numberOfSymbols() {
         Definitions instance = new Definitions();
         assertEquals(instance.numberOfSymbols(), 0);
-        instance.addTag(1, "one", "", "");
+        instance.addTag(1, "one", "", "", 0, 0);
         assertEquals(instance.numberOfSymbols(), 1);
-        instance.addTag(1, "two", "", "");
-        instance.addTag(3, "two", "", "");
+        instance.addTag(1, "two", "", "", 0, 0);
+        instance.addTag(3, "two", "", "", 0, 0);
         assertEquals(instance.numberOfSymbols(), 2);
     }
 
@@ -134,11 +135,11 @@ public class DefinitionsTest {
     public void getTags() {
         Definitions instance = new Definitions();
         assertEquals(instance.getTags().size(), 0);
-        instance.addTag(1, "one", "", "");
+        instance.addTag(1, "one", "", "", 0, 0);
         assertEquals(instance.getTags().size(), 1);
-        instance.addTag(1, "two", "", "");
+        instance.addTag(1, "two", "", "", 0, 0);
         assertEquals(instance.getTags().size(), 2);
-        instance.addTag(3, "two", "", "");
+        instance.addTag(3, "two", "", "", 0, 0);
         assertEquals(instance.getTags().size(), 3);
     }
 
@@ -149,7 +150,7 @@ public class DefinitionsTest {
     public void addTag() {
         Definitions instance = new Definitions();
         assertEquals(instance.getTags().size(), 0);
-        instance.addTag(1, "one", "", "");
+        instance.addTag(1, "one", "", "", 0, 0);
         assertEquals(instance.getTags().size(), 1);
     }
 
@@ -159,7 +160,7 @@ public class DefinitionsTest {
     @Test
     public void serialize() throws Exception {
         Definitions instance = new Definitions();
-        instance.addTag(1, "one", "", "");
+        instance.addTag(1, "one", "", "", 0, 0);
         byte serial[] = instance.serialize();
         Definitions instance2 = Definitions.deserialize(serial);
         assertEquals(instance.getTags().size(), instance2.getTags().size());

@@ -19,7 +19,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
-Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -49,6 +49,22 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-highlighter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-join</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-memory</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queries</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
@@ -255,7 +271,7 @@ Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
                     <executable>pep8</executable>
                     <arguments>
                         <argument>-v</argument>
-                        <argument>--exclude=filelock.py,test_command.py</argument>
+                        <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>
                         <argument>${project.basedir}/../tools/sync</argument>
                     </arguments>
                 </configuration>

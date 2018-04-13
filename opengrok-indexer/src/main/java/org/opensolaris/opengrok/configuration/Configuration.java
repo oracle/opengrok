@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -92,6 +92,13 @@ public final class Configuration {
      * value.
      */
     private static final String NEGATIVE_NUMBER_ERROR = "Invalid value for \"%s\" - \"%s\". Expected value greater or equal than 0";
+    /**
+     * Error string for non-positive numbers (could be int, double, long, ...).
+     * First argument is the name of the property, second argument is the actual
+     * value.
+     */
+    private static final String NONPOSITIVE_NUMBER_ERROR =
+        "Invalid value for \"%s\" - \"%s\". Expected value greater than 0";
 
     private String ctags;
 
@@ -186,6 +193,8 @@ public final class Configuration {
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
+    private short contextLimit; // initialized non-zero in ctor
+    private short contextSurround;
     private boolean lastEditedDisplayMode;
     private String CTagsExtraOptionsFile;
     private int scanningDepth;
@@ -389,6 +398,8 @@ public final class Configuration {
         setCachePages(5);
         setCommandTimeout(600); // 10 minutes
         setCompressXref(true);
+        setContextLimit((short)10);
+        //contextSurround is default(short)
         //ctags is default(String)
         setCurrentIndexedCollapseThreshold(27);
         setDataRoot(null);
@@ -542,6 +553,52 @@ public final class Configuration {
      */
     public void setMandoc(String value) {
         this.mandoc = value;
+    }
+
+    /**
+     * Gets the total number of context lines per file to show in cases where it
+     * is limited. Default is 10.
+     * @return a value greater than zero
+     */
+    public short getContextLimit() {
+        return contextLimit;
+    }
+
+    /**
+     * Sets the total number of context lines per file to show in cases where it
+     * is limited.
+     * @param value a value greater than zero
+     * @throws IllegalArgumentException if {@code value} is not positive
+     */
+    public void setContextLimit(short value) throws IllegalArgumentException {
+        if (value < 1) {
+            throw new IllegalArgumentException(
+                String.format(NONPOSITIVE_NUMBER_ERROR, "contextLimit", value));
+        }
+        this.contextLimit = value;
+    }
+
+    /**
+     * Gets the number of context lines to show before or after any match.
+     * Default is zero.
+     * @return a value greater than or equal to zero
+     */
+    public short getContextSurround() {
+        return contextSurround;
+    }
+
+    /**
+     * Sets the number of context lines to show before or after any match.
+     * @param value a value greater than or equal to zero
+     * @throws IllegalArgumentException if {@code value} is negative
+     */
+    public void setContextSurround(short value)
+            throws IllegalArgumentException {
+        if (value < 0) {
+            throw new IllegalArgumentException(
+                String.format(NEGATIVE_NUMBER_ERROR, "contextSurround", value));
+        }
+        this.contextSurround = value;
     }
 
     public int getCachePages() {
@@ -1036,11 +1093,11 @@ public final class Configuration {
             }
             return contents.toString();
         } catch (java.io.FileNotFoundException e) {
-            /*
-             * should usually not happen
-             */
+            LOGGER.log(Level.WARNING, "failed to find file: {0}",
+                e.getMessage());
         } catch (java.io.IOException e) {
-            LOGGER.log(Level.WARNING, "failed to read header include file: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING, "failed to read file: {0}",
+                e.getMessage());
         } finally {
             if (input != null) {
                 try {

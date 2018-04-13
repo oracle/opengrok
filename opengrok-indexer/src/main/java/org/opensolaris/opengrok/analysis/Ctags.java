@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,13 +39,14 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.util.SourceSplitter;
 
 /**
  * Provides Ctags by having a running subprocess of ctags.
  *
  * @author Chandan
  */
-public class Ctags {
+public class Ctags implements Resettable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Ctags.class);
 
@@ -57,6 +59,7 @@ public class Ctags {
     //default: setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
     private String binary;
     private String CTagsExtraOptionsFile = null;
+    private int tabSize;
 
     private boolean junit_testing = false;
 
@@ -78,11 +81,33 @@ public class Ctags {
         this.binary = binary;
     }
 
+    public int getTabSize() {
+        return tabSize;
+    }
+
+    public void setTabSize(int tabSize) {
+        this.tabSize = tabSize;
+    }
+
     public void setCTagsExtraOptionsFile(String CTagsExtraOptionsFile) {
         this.CTagsExtraOptionsFile = CTagsExtraOptionsFile;
     }
 
+    /**
+     * Resets the instance for use for another file but without closing any
+     * running ctags instance.
+     */
+    @Override
+    public void reset() {
+        setTabSize(0);
+    }
+
+    /**
+     * {@link #reset()}, and close any running ctags instance.
+     * @throws IOException not really thrown -- but logged
+     */
     public void close() throws IOException {
+        reset();
         IOUtils.close(ctagsIn);
         if (ctags != null) {
             closing = true;
@@ -353,9 +378,11 @@ public class Ctags {
         }
 
         CtagsReader rdr = new CtagsReader();
+        rdr.setSplitterSupplier(() -> { return trySplitSource(file); });
+        rdr.setTabSize(tabSize);
         Definitions ret;
         try {
-            ctagsIn.write(file);
+            ctagsIn.write(file + "\n");
             if (Thread.interrupted()) throw new InterruptedException("write()");
             ctagsIn.flush();
             if (Thread.interrupted()) throw new InterruptedException("flush()");
@@ -415,6 +442,7 @@ public class Ctags {
         };
 
         CtagsReader rdr = new CtagsReader();
+        rdr.setTabSize(tabSize);
         try {
             readTags(rdr);
         } catch (InterruptedException ex) {
@@ -467,5 +495,23 @@ public class Ctags {
             LOGGER.log(Level.WARNING, "CTags parsing problem: ", e);
         }
         LOGGER.severe("CTag reader cycle was interrupted!");
+    }
+
+    /**
+     * Attempts to create a {@link SourceSplitter} instance with content from
+     * the specified file.
+     * @return a defined instance or {@code null} on failure (without exception)
+     */
+    private static SourceSplitter trySplitSource(String filename) {
+        SourceSplitter splitter = new SourceSplitter();
+        try {
+            StreamSource src = StreamSource.fromFile(new File(filename));
+            splitter.reset(src);
+        } catch (NullPointerException|IOException ex) {
+            LOGGER.log(Level.WARNING, "Failed to re-read {0}", filename);
+            return null;
+        }
+        LOGGER.log(Level.FINEST, "Re-read {0}", filename);
+        return splitter;
     }
 }

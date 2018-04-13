@@ -20,6 +20,7 @@
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -28,8 +29,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Unit tests for the ExpandTabsReader class.
@@ -92,4 +95,29 @@ public class ExpandTabsReaderTest {
         assertEquals("    xyz", sb.toString());
     }
 
+    /**
+     * Tests that line offsets are translated as expected.
+     */
+    @Test
+    public void testTranslate() {
+        final String INPUT = "abc\tdef\t\t12345678\t1\t1234567\tabc";
+
+        int tbsz = 8;
+        assertEquals(0,  ExpandTabsReader.translate(INPUT, 0,  tbsz)); // a
+        assertEquals(2,  ExpandTabsReader.translate(INPUT, 2,  tbsz)); // c
+        assertEquals(3,  ExpandTabsReader.translate(INPUT, 3,  tbsz)); // \t
+        assertEquals(8,  ExpandTabsReader.translate(INPUT, 4,  tbsz)); // d
+        assertEquals(10, ExpandTabsReader.translate(INPUT, 6,  tbsz)); // f
+        assertEquals(11, ExpandTabsReader.translate(INPUT, 7,  tbsz)); // \t
+        assertEquals(16, ExpandTabsReader.translate(INPUT, 8,  tbsz)); // \t
+        assertEquals(24, ExpandTabsReader.translate(INPUT, 9,  tbsz)); // 1
+        assertEquals(31, ExpandTabsReader.translate(INPUT, 16, tbsz)); // 8
+        assertEquals(32, ExpandTabsReader.translate(INPUT, 17, tbsz)); // \t
+        assertEquals(40, ExpandTabsReader.translate(INPUT, 18, tbsz)); // 1
+        assertEquals(41, ExpandTabsReader.translate(INPUT, 19, tbsz)); // \t
+        assertEquals(48, ExpandTabsReader.translate(INPUT, 20, tbsz)); // 1
+        assertEquals(54, ExpandTabsReader.translate(INPUT, 26, tbsz)); // 7
+        assertEquals(55, ExpandTabsReader.translate(INPUT, 27, tbsz)); // \t
+        assertEquals(56, ExpandTabsReader.translate(INPUT, 28, tbsz)); // a
+    }
 }

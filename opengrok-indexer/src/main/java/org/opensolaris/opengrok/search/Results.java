@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.search;
@@ -82,21 +82,28 @@ public final class Results {
      * @throws CorruptIndexException
      * @throws IOException
      */
-    private static Map<String, ArrayList<Document>> createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx)
+    private static Map<String, ArrayList<Integer>> createMap(
+        IndexSearcher searcher, ScoreDoc[] hits, int startIdx, long stopIdx)
             throws CorruptIndexException, IOException {
-        LinkedHashMap<String, ArrayList<Document>> dirHash =
+
+        LinkedHashMap<String, ArrayList<Integer>> dirHash =
                 new LinkedHashMap<>();
         for (int i = startIdx; i < stopIdx; i++) {
             int docId = hits[i].doc;
             Document doc = searcher.doc(docId);
+
             String rpath = doc.get(QueryBuilder.PATH);
+            if (rpath == null) {
+                continue;
+            }
+
             String parent = rpath.substring(0, rpath.lastIndexOf('/'));
-            ArrayList<Document> dirDocs = dirHash.get(parent);
+            ArrayList<Integer> dirDocs = dirHash.get(parent);
             if (dirDocs == null) {
                 dirDocs = new ArrayList<>();
                 dirHash.put(parent, dirDocs);
             }
-            dirDocs.add(doc);
+            dirDocs.add(docId);
         }
         return dirHash;
     }
@@ -162,7 +169,9 @@ public final class Results {
         String xrefPrefixE = ctxE + Prefix.XREF_P;
         File xrefDataDir = new File(sh.dataRoot, Prefix.XREF_P.toString());
 
-        for (Map.Entry<String, ArrayList<Document>> entry :
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        for (Map.Entry<String, ArrayList<Integer>> entry :
                 createMap(sh.searcher, sh.hits, start, end).entrySet()) {
             String parent = entry.getKey();
             out.write("<tr class=\"dir\"><td colspan=\"3\"><a href=\"");
@@ -186,8 +195,14 @@ public final class Results {
                 out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
                 out.write("</a>");
             }
+
+            int tabSize = sh.getTabSize(p);
+            PrintPlainFinalArgs fargs = new PrintPlainFinalArgs(out, sh, env,
+                xrefPrefix, tabSize, morePrefix);
+
             out.write("</td></tr>");
-            for (Document doc : entry.getValue()) {
+            for (int docId : entry.getValue()) {
+                Document doc = sh.searcher.doc(docId);
                 String rpath = doc.get(QueryBuilder.PATH);
                 String rpathE = Util.URIEncodePath(rpath);
                 DateFormat df;
@@ -197,7 +212,7 @@ public final class Results {
                 out.write(xrefPrefixE);
                 out.write(rpathE);
                 out.write("\"");
-                if (RuntimeEnvironment.getInstance().isLastEditedDisplayMode()) {
+                if (env.isLastEditedDisplayMode()) {
                     try {
                         // insert last edited date if possible
                         df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
@@ -217,18 +232,6 @@ public final class Results {
                 out.write("</td><td><tt class=\"con\">");
                 if (sh.sourceContext != null) {
                     Genre genre = Genre.get(doc.get("t"));
-                    Definitions tags = null;
-                    IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
-                    if (tagsField != null) {
-                        tags = Definitions.deserialize(tagsField.binaryValue().bytes);
-                    }
-                    Scopes scopes;
-                    IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
-                    if (scopesField != null) {
-                        scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
-                    } else {
-                        scopes = new Scopes();
-                    }
                     if (Genre.XREFABLE == genre && sh.summarizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);
                         // FIXME use Highlighter from lucene contrib here,
@@ -238,14 +241,8 @@ public final class Results {
                     } else if (Genre.HTML == genre && sh.summarizer != null) {
                         String htags = getTags(sh.sourceRoot, rpath, false);
                         out.write(sh.summarizer.getSummary(htags).toString());
-                    } else {
-                        // SRCROOT is read with UTF-8 as a default.
-                        Reader r = genre == Genre.PLAIN ?
-                            IOUtils.createBOMStrippedReader(
-                            new FileInputStream(new File(sh.sourceRoot, rpath)),
-                            StandardCharsets.UTF_8.name()) : null;
-                        sh.sourceContext.getContext(r, out, xrefPrefix, morePrefix, 
-                                rpath, tags, true, sh.builder.isDefSearch(), null, scopes);
+                    } else if (genre == Genre.PLAIN) {
+                        printPlain(fargs, doc, docId, rpath);
                     }
                 }
 
@@ -258,7 +255,66 @@ public final class Results {
         }
     }
 
+    private static void printPlain(PrintPlainFinalArgs fargs, Document doc,
+        int docId, String rpath) throws ClassNotFoundException, IOException {
+
+        fargs.shelp.sourceContext.toggleAlt();
+
+        boolean didPresentNew = fargs.shelp.sourceContext.getContext2(fargs.env,
+            fargs.shelp.searcher, docId, fargs.out, fargs.xrefPrefix,
+            fargs.morePrefix, true, fargs.tabSize);
+
+        if (!didPresentNew) {
+            /**
+             * Fall back to the old view, which re-analyzes text using
+             * PlainLinetokenizer. E.g., when source code is updated (thus
+             * affecting timestamps) but re-indexing is not yet complete.
+             */
+            Definitions tags = null;
+            IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
+            if (tagsField != null) {
+                tags = Definitions.deserialize(tagsField.binaryValue().bytes);
+            }
+            Scopes scopes;
+            IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
+            if (scopesField != null) {
+                scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
+            } else {
+                scopes = new Scopes();
+            }
+            boolean isDefSearch = fargs.shelp.builder.isDefSearch();
+            // SRCROOT is read with UTF-8 as a default.
+            try (Reader r = IOUtils.createBOMStrippedReader(new FileInputStream(
+                    new File(fargs.shelp.sourceRoot, rpath)),
+                    StandardCharsets.UTF_8.name())) {
+                fargs.shelp.sourceContext.getContext(r, fargs.out,
+                    fargs.xrefPrefix, fargs.morePrefix, rpath, tags, true,
+                    isDefSearch, null, scopes);
+            }
+        }
+    }
+
     private static String htmlize(String raw) {
         return Util.htmlize(raw);
+    }
+
+    private static class PrintPlainFinalArgs {
+        final Writer out;
+        final SearchHelper shelp;
+        final RuntimeEnvironment env;
+        final String xrefPrefix;
+        final String morePrefix;
+        final int tabSize;
+
+        public PrintPlainFinalArgs(Writer out, SearchHelper shelp,
+                RuntimeEnvironment env, String xrefPrefix, int tabSize,
+                String morePrefix) {
+            this.out = out;
+            this.shelp = shelp;
+            this.env = env;
+            this.xrefPrefix = xrefPrefix;
+            this.morePrefix = morePrefix;
+            this.tabSize = tabSize;
+        }
     }
 }

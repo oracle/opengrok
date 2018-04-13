@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -94,10 +95,11 @@ public class PathUtils {
      * for portions of {@code path}
      * @throws ForbiddenSymlinkException if symbolic-link checking is active
      * and it encounters an ineligible link
+     * @throws InvalidPathException if path cannot be decoded
      */
     public static String getRelativeToCanonical(String path, String canonical,
         Set<String> allowedSymlinks)
-            throws IOException, ForbiddenSymlinkException {
+            throws IOException, ForbiddenSymlinkException, InvalidPathException {
 
         if (path.equals(canonical)) return "";
 

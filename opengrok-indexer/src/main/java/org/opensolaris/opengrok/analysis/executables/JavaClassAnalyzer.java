@@ -25,7 +25,6 @@ package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -59,10 +58,11 @@ import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Utility;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.IteratorReader;
+import org.opensolaris.opengrok.analysis.OGKTextField;
+import org.opensolaris.opengrok.analysis.OGKTextVecField;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -141,13 +141,13 @@ public class JavaClassAnalyzer extends FileAnalyzer {
          */
 
         String dstr = dout.toString();
-        doc.add(new TextField(QueryBuilder.DEFS, dstr, Store.YES));
+        doc.add(new OGKTextField(QueryBuilder.DEFS, dstr, Store.YES));
 
         String rstr = rout.toString();
-        doc.add(new TextField(QueryBuilder.REFS, rstr, Store.YES));
+        doc.add(new OGKTextField(QueryBuilder.REFS, rstr, Store.YES));
 
         String fstr = fout.toString();
-        doc.add(new TextField(QueryBuilder.FULL, fstr, Store.YES));
+        doc.add(new OGKTextField(QueryBuilder.FULL, fstr, Store.YES));
     }
 
     

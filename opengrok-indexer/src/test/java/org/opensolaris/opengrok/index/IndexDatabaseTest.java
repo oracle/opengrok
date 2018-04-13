@@ -164,7 +164,7 @@ public class IndexDatabaseTest {
         // Check that the file was indexed successfully in terms of generated data.
         checkDataExistence(projectName + File.separator + fileName, true);
         origNumFiles = idb.getNumFiles();
-        Assert.assertEquals(6, origNumFiles);
+        Assert.assertEquals(7, origNumFiles);
 
         // Remove the file and reindex using IndexDatabase directly.
         File file = new File(repository.getSourceRoot(), projectName + File.separator + fileName);
