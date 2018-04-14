@@ -132,7 +132,7 @@ public class RubyXrefTest {
 
     private String getHtmlBegin() {
         return "<!DOCTYPE html>\n" +
-            "<html>\n" +
+            "<html lang=\"en\">\n" +
             "<head>\n" +
             "<meta charset=\"UTF-8\">\n" +
             "<title>sampleFile - OpenGrok cross reference" +

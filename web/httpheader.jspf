@@ -46,7 +46,8 @@ org.opensolaris.opengrok.web.PageConfig"
     String dstyle = styleDir + '/' + "style.css";
     String pstyle = styleDir + '/' + "print.css";
 %><!DOCTYPE html>
-<html class="<%= request.getServletPath().length() > 0 ? request.getServletPath().substring(1) : "" %>">
+<html lang="en"
+      class="<%= request.getServletPath().length() > 0 ? request.getServletPath().substring(1) : "" %>">
 <head>
 <meta charset="UTF-8">
 <meta name="robots" content="noindex,nofollow" />
