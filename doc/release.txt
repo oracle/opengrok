@@ -13,20 +13,11 @@ version is released:
 Checklist for releasing OpenGrok:
 ---------------------------------
 
-0) set new version
-
-   mvn versions:set -DgenerateBackupPoms=false -DnewVersion=1.1-rcXYZ
-
-   Then commit and push the change:
-
-     git commit --all
-     git push
-
-1) build must be clean
+0) build must be clean
 
    mvn clean package
 
-2) sanity check:
+1) sanity check:
 
    - index
    - deploy webapp
@@ -39,7 +30,7 @@ Checklist for releasing OpenGrok:
        - check sorting using multiple criteria
      - perform search using multiple fields across multiple projects
 
-3) check all tests, tests code coverage:
+2) check all tests, tests code coverage:
    junit, pmd, findbugs, checkstyle, emma, jdepend
 
    emma reports should be based according to what is set for the release,
@@ -48,6 +39,15 @@ Checklist for releasing OpenGrok:
    Jenkins can help here.
 
    The release is OK, once above is fulfilled to our satisfaction.
+
+3) set new version
+
+   mvn versions:set -DgenerateBackupPoms=false -DnewVersion=1.1-rcXYZ
+
+   Then commit and push the change:
+
+     git commit --all
+     git push
 
 4) Trigger release creation
 
