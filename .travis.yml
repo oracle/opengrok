@@ -39,8 +39,7 @@ env:
 # in 'script' no matter if an individual command fails or not. This kludgy
 # looking shell incantation takes care of that.
 #
-script: "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile \
-             && mvn verify -B"
+script: "mvn -B -V verify"
 
 addons:
   coverity_scan:
