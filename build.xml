@@ -1312,34 +1312,5 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         </javac>
     </target>
 
-    <target name="release" depends="dist,package">
-        <exec os="SunOS" executable="${tools.dir}/dorelease.py" failonerror="true">
-	    <!--
-	        For some reason, long options can only be used with '=',
-		so use short options for better readability.
-	    -->
-	    <arg value="-D new"/>
-	    <!--
-                Some day we might get the repository information from the origin
-		as reported by 'git remote' command. This will enable forked
-		projects to create their releases easily.
-	    -->
-	    <arg value="-r oracle/OpenGrok"/>
-	    <arg value="-t ${version}"/>
-	    <!--
-	         The directory of the files should really be ${dist.dir}
-	         however it does not work.
-            -->
-	    <arg file="dist/${tardest}"/>
-	    <!--
-	         These 2 files should really be conditional
-	         to avoid the whole target to be SunOS dependent
-		 however 'arg' does not allow 'if'.
-	    -->
-	    <arg file="dist/OSOLopengrok-${version}.pkg"/>
-	    <arg file="dist/${distname}-${version}.p5p"/>
-        </exec>
-    </target>
-
     <target name="all" depends="clean,plugins,jar,compile.jsp,test,javadoc,pmd,findbugs-xml,checkstyle" />
 </project>
