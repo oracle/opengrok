@@ -197,7 +197,7 @@ def main():
         user = arguments.user[0]
 
     try:
-        os.environ["OPENGROK_RELEASE_DEBUG"]
+        os.environ["RELEASE_DEBUG"]
         debug = True
     except:
         debug = False
