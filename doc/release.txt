@@ -2,7 +2,7 @@ Release criteria
 ----------------
 
 Ideally, the following minimum criteria should be fulfilled before a new
-version is released:
+final (i.e. non-prerelease) version is released:
 
   - The code coverage for blocks must be at least 80%
   - No findbugs warnings
