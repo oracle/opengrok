@@ -74,7 +74,7 @@ public class PassageConverterTest {
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
-        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD));
+        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD),1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
         PassageConverter cvt = getConverter((short)0);
@@ -106,7 +106,7 @@ public class PassageConverterTest {
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
-        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD));
+        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD),1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
         PassageConverter cvt = getConverter((short)0);
@@ -140,7 +140,7 @@ public class PassageConverterTest {
         Passage p = new Passage();
         p.setStartOffset(poff);
         p.setEndOffset(poff + PHRASE.length());
-        p.addMatch(poff, p.getEndOffset(), new BytesRef(PHRASE));
+        p.addMatch(poff, p.getEndOffset(), new BytesRef(PHRASE),1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
         PassageConverter cvt = getConverter((short)0);
@@ -180,7 +180,7 @@ public class PassageConverterTest {
         Passage p = new Passage();
         p.setStartOffset(0);
         p.setEndOffset(DOC2.length());
-        p.addMatch(0, p.getEndOffset(), new BytesRef(DOC2));
+        p.addMatch(0, p.getEndOffset(), new BytesRef(DOC2),1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
         PassageConverter cvt = getConverter((short)0);
