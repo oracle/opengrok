@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -37,7 +37,7 @@ import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.Node;
 import org.apache.commons.jrcs.rcs.ParseException;
 import org.apache.commons.jrcs.rcs.Version;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.logger.LoggerFactory;
 
 
 /**

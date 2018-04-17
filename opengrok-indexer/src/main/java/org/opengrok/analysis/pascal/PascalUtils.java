@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.pascal;
+package org.opengrok.analysis.pascal;
 
 import java.util.regex.Pattern;
 

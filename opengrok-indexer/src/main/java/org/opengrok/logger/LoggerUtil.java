@@ -18,12 +18,12 @@
  */
 
  /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.logger;
+package org.opengrok.logger;
 
-import org.opensolaris.opengrok.logger.formatter.ConsoleFormatter;
-import org.opensolaris.opengrok.logger.formatter.FileLogFormatter;
+import org.opengrok.logger.formatter.ConsoleFormatter;
+import org.opengrok.logger.formatter.FileLogFormatter;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class LoggerUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggerUtil.class);
 
-    public static final String BASE_LOGGER = "org.opensolaris.opengrok";
+    public static final String BASE_LOGGER = "org.opengrok";
     private static final int DEFAULT_FILEHANDLER_LIMIT = 52428800;
     private static final int DEFAULT_FILEHANDLER_COUNT = 3;
 

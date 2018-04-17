@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,12 +35,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.index.Indexer;
-import org.opensolaris.opengrok.index.IndexerTest;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.index.Indexer;
+import org.opengrok.index.IndexerTest;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.util.TestRepository;
 
 /**
  * Unit tests for the {@code SearchHelper} class.

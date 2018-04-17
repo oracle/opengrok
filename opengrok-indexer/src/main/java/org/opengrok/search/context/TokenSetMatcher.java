@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.search.context;
+package org.opengrok.search.context;
 
 import java.util.Comparator;
 import java.util.Set;

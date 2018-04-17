@@ -21,8 +21,8 @@ source files.
 
 List of these files for your convenience:
 Under Apache license( http://www.apache.org/licenses/LICENSE-2.0 ): 
-src/org/opensolaris/opengrok/search/Summarizer.java
-src/org/opensolaris/opengrok/search/Summary.java
+src/org/opengrok/search/Summarizer.java
+src/org/opengrok/search/Summary.java
 
 --------------------------------------------------------------------
 

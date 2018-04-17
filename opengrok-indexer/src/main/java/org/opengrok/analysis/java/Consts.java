@@ -18,10 +18,9 @@
  */
 
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.analysis.java;
+package org.opengrok.analysis.java;
 
 import java.util.HashSet;
 import java.util.Set;

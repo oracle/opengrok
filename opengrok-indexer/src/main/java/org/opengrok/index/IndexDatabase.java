@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
@@ -77,22 +77,22 @@ import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.Ctags;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.messages.Message;
-import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
-import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.util.ObjectPool;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.Ctags;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.messages.Message;
+import org.opengrok.history.HistoryException;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.util.ForbiddenSymlinkException;
+import org.opengrok.util.IOUtils;
+import org.opengrok.util.ObjectPool;
+import org.opengrok.web.Util;
 
 /**
  * This class is used to create / update the index databases. Currently we use

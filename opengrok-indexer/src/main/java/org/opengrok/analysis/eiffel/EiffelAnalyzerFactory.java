@@ -21,11 +21,11 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.eiffel;
+package org.opengrok.analysis.eiffel;
 
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.analysis.FileAnalyzerFactory;
 
 /**
  * Represents a factory to create {@link EiffelAnalyzer} instances.

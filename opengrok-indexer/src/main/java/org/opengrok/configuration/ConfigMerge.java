@@ -18,9 +18,9 @@
  */
 
  /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -31,7 +31,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.ParseException;
-import org.opensolaris.opengrok.util.Getopt;
+import org.opengrok.util.Getopt;
 
 /**
  * Merge 2 config files together. More precisely, take the 1st as a base and

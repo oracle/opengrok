@@ -9,7 +9,7 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.Reader;
 import org.apache.lucene.analysis.TokenStream;

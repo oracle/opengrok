@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,7 +30,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.StreamSource;
 
 /**
  * Represents a reader of source text to find end-of-line tokens -- in
@@ -44,7 +44,7 @@ public class LineBreaker {
 
     /**
      * Calls
-     * {@link #reset(org.opensolaris.opengrok.analysis.StreamSource, org.opensolaris.opengrok.util.ReaderWrapper)}
+     * {@link #reset(org.opengrok.analysis.StreamSource, org.opengrok.util.ReaderWrapper)}
      * with {@code src} and {@code null}.
      * @param src a defined instance
      * @throws java.io.IOException if an I/O error occurs

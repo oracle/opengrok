@@ -18,13 +18,12 @@
  */
 
 /*
- * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.document;
+package org.opengrok.analysis.document;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,15 +32,15 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.WriteXrefArgs;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.opensolaris.opengrok.analysis.Xrefer;
-import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
-import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
+import org.opengrok.analysis.Xrefer;
+import static org.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opengrok.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link TroffXref} class.

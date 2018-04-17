@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 /**
  * Represents a linkage type indicator from a language lexer for categorizing

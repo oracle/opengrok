@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -39,10 +39,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
+import org.opengrok.web.Util;
 
 /**
  * Access to a Mercurial repository.
@@ -58,7 +58,7 @@ public class MercurialRepository extends Repository {
      * the property name used to obtain the client command for this repository
      */
     public static final String CMD_PROPERTY_KEY
-            = "org.opensolaris.opengrok.history.Mercurial";
+            = "org.opengrok.history.Mercurial";
     /**
      * the command to use to access the repository if none was given explicitly
      */
@@ -69,7 +69,7 @@ public class MercurialRepository extends Repository {
      * forest-extension in Mercurial adds repositories inside the repositories.
      */
     public static final String NOFOREST_PROPERTY_KEY
-            = "org.opensolaris.opengrok.history.mercurial.disableForest";
+            = "org.opengrok.history.mercurial.disableForest";
 
     static final String CHANGESET = "changeset: ";
     static final String USER = "user: ";

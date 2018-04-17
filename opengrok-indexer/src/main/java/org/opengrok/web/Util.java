@@ -18,12 +18,12 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,15 +62,15 @@ import java.util.zip.GZIPInputStream;
 import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.opensolaris.opengrok.Info;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.messages.Message;
-import org.opensolaris.opengrok.history.Annotation;
-import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.Info;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.messages.Message;
+import org.opengrok.history.Annotation;
+import org.opengrok.history.HistoryException;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * Class for useful functions.

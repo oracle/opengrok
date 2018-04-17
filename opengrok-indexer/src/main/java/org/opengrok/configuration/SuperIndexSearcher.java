@@ -17,10 +17,10 @@
  * CDDL HEADER END
  */
 
- /*
-  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
-  */
-package org.opensolaris.opengrok.configuration;
+/*
+ * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+ */
+package org.opengrok.configuration;
 
 import java.util.concurrent.ExecutorService;
 import org.apache.lucene.index.IndexReader;

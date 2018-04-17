@@ -18,18 +18,18 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.plain;
+package org.opengrok.analysis.plain;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.util.IOUtils;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.util.IOUtils;
 
 public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
 

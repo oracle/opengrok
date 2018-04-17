@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.xml;
+package org.opengrok.analysis.xml;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,15 +32,15 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.WriteXrefArgs;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.opensolaris.opengrok.analysis.Xrefer;
-import org.opensolaris.opengrok.analysis.plain.XMLAnalyzerFactory;
-import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
-import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
+import org.opengrok.analysis.Xrefer;
+import org.opengrok.analysis.plain.XMLAnalyzerFactory;
+import static org.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opengrok.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link XMLXref} class.

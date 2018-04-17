@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opengrok.configuration.messages;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,10 +28,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.util.BooleanUtil;
-import org.opensolaris.opengrok.util.ClassUtil;
-
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.util.ClassUtil;
 
 /**
  * A message to retrieve/change the configuration.

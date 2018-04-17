@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.search;
+package org.opengrok.search;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;

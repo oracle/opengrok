@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2014, 2017 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -33,8 +33,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.tools.ant.util.Base64Converter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.opensolaris.opengrok.search.Hit;
-import org.opensolaris.opengrok.search.SearchEngine;
+import org.opengrok.search.Hit;
+import org.opengrok.search.SearchEngine;
 
 public class JSONSearchServlet extends HttpServlet {
 

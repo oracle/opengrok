@@ -18,25 +18,24 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.document;
+package org.opengrok.analysis.document;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.apache.lucene.document.Document;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.analysis.TextAnalyzer;
-import org.opensolaris.opengrok.analysis.OGKTextField;
-import org.opensolaris.opengrok.analysis.WriteXrefArgs;
-import org.opensolaris.opengrok.analysis.Xrefer;
-import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.JFlexTokenizer;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.TextAnalyzer;
+import org.opengrok.analysis.OGKTextField;
+import org.opengrok.analysis.WriteXrefArgs;
+import org.opengrok.analysis.Xrefer;
+import org.opengrok.search.QueryBuilder;
 
 /**
  * Analyzes [tn]roff files Created on September 30, 2005

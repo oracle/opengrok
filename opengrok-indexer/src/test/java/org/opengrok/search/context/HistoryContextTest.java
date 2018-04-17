@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.search.context;
+package org.opengrok.search.context;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,17 +38,16 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.search.Hit;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.search.Hit;
+import org.opengrok.util.TestRepository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRule;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.RepositoryInstalled;
+import org.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Unit tests for the {@code HistoryContext} class.
@@ -64,7 +63,7 @@ public class HistoryContextTest {
     public static void setUpClass() throws Exception {
         repositories = new TestRepository();
         repositories.create(HistoryContextTest.class.getResourceAsStream(
-                "/org/opensolaris/opengrok/history/repositories.zip"));
+                "/org/opengrok/history/repositories.zip"));
         RuntimeEnvironment.getInstance().setRepositories(repositories.getSourceRoot());
     }
 

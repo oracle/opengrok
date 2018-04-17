@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 /**
  * Represents the metadata for a pending file renaming.

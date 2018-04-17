@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.archive;
+package org.opengrok.analysis.archive;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -29,13 +29,13 @@ import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.document.Document;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.IteratorReader;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.analysis.OGKTextField;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.IteratorReader;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.OGKTextField;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.web.Util;
 
 /**
  * Analyzes Zip files Created on September 22, 2005

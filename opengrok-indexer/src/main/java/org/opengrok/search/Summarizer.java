@@ -16,7 +16,7 @@
 // modified by Lubos Kosco 2010 to upgrade lucene to 3.0.0
 // modified by Lubos Kosco 2014 to upgrade lucene to 4.9.0
 // TODO : rewrite this to use Highlighter from lucene contrib ...
-package org.opensolaris.opengrok.search;
+package org.opengrok.search;
 
 import java.io.IOException;
 import java.util.ArrayList;

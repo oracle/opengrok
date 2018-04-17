@@ -18,15 +18,12 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.logger.formatter;
+package org.opengrok.logger.formatter;
 
-import org.opensolaris.opengrok.Info;
+import org.opengrok.Info;
 
-/**
- *
- */
 public class SimpleConsoleFormatter extends LogFormatter {
     private static final String FORMAT = "%1$tH:%1$tM:%1$tS %4$s: %5$s%6$s%n";
 

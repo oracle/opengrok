@@ -18,9 +18,9 @@
  */
 
  /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.authorization;
+package org.opengrok.authorization;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,7 +34,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * Class loader for authorization plugins.
@@ -47,13 +47,13 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationPluginClassLoader.class);
     private final static String[] CLASS_WHITELIST = new String[]{
-        "org.opensolaris.opengrok.configuration.Group",
-        "org.opensolaris.opengrok.configuration.Project",
-        "org.opensolaris.opengrok.configuration.RuntimeEnvironment",
-        "org.opensolaris.opengrok.authorization.IAuthorizationPlugin",
-        "org.opensolaris.opengrok.authorization.plugins.*",
-        "org.opensolaris.opengrok.util.*",
-        "org.opensolaris.opengrok.logger.*"
+        "org.opengrok.configuration.Group",
+        "org.opengrok.configuration.Project",
+        "org.opengrok.configuration.RuntimeEnvironment",
+        "org.opengrok.authorization.IAuthorizationPlugin",
+        "org.opengrok.authorization.plugins.*",
+        "org.opengrok.util.*",
+        "org.opengrok.logger.*"
     };
 
     private final static String[] PACKAGE_BLACKLIST = new String[]{
@@ -152,7 +152,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     }
 
     private void checkClassname(String name) throws SecurityException {
-        if (name.startsWith("org.opensolaris.opengrok.")
+        if (name.startsWith("org.opengrok.")
                 && !checkWhiteList(name)) {
             throw new SecurityException("Tried to load a blacklisted class \"" + name + "\"\n"
                     + "Allowed classes from opengrok package are only: "

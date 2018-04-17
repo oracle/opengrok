@@ -8,7 +8,7 @@
  * Copyright © 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.IOException;
 import java.util.Enumeration;

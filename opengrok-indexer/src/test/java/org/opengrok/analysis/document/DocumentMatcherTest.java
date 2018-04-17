@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.document;
+package org.opengrok.analysis.document;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +29,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.FileAnalyzerFactory;
 
 /**
  * Represents a container for tests of {@link DocMatcher} subclasses

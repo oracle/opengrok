@@ -18,12 +18,11 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,25 +30,24 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
-import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.document.MandocAnalyzer;
-import org.opensolaris.opengrok.analysis.document.TroffAnalyzer;
-import org.opensolaris.opengrok.analysis.executables.ELFAnalyzer;
-import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
-import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer;
-import org.opensolaris.opengrok.analysis.perl.PerlAnalyzer;
-import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
-import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
-import org.opensolaris.opengrok.analysis.sh.ShAnalyzer;
-import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
+import org.opengrok.analysis.archive.ZipAnalyzer;
+import org.opengrok.analysis.c.CxxAnalyzerFactory;
+import org.opengrok.analysis.document.MandocAnalyzer;
+import org.opengrok.analysis.document.TroffAnalyzer;
+import org.opengrok.analysis.executables.ELFAnalyzer;
+import org.opengrok.analysis.executables.JarAnalyzer;
+import org.opengrok.analysis.executables.JavaClassAnalyzer;
+import org.opengrok.analysis.perl.PerlAnalyzer;
+import org.opengrok.analysis.plain.PlainAnalyzer;
+import org.opengrok.analysis.plain.XMLAnalyzer;
+import org.opengrok.analysis.sh.ShAnalyzer;
+import org.opengrok.analysis.sh.ShAnalyzerFactory;
 import static org.junit.Assert.*;
 
 /**

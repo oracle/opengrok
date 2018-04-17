@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 --%><%@page errorPage="error.jsp" import="
@@ -36,10 +36,10 @@ org.apache.commons.jrcs.diff.Chunk,
 org.apache.commons.jrcs.diff.Delta,
 org.apache.commons.jrcs.diff.Diff,
 org.apache.commons.jrcs.diff.Revision,
-org.opensolaris.opengrok.analysis.AnalyzerGuru,
-org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
-org.opensolaris.opengrok.web.DiffData,
-org.opensolaris.opengrok.web.DiffType"
+org.opengrok.analysis.AnalyzerGuru,
+org.opengrok.analysis.FileAnalyzer.Genre,
+org.opengrok.web.DiffData,
+org.opengrok.web.DiffType"
 %><%!
 private String getAnnotateRevision(DiffData data) {
     if (data.type == DiffType.OLD || data.type == DiffType.NEW) {

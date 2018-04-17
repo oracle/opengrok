@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,11 +26,11 @@
  * Cross reference a Clojure file
  */
 
-package org.opensolaris.opengrok.analysis.clojure;
+package org.opengrok.analysis.clojure;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.web.HtmlConsts;
 %%
 %public
 %class ClojureXref

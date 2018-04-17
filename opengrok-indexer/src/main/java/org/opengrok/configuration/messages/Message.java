@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opengrok.configuration.messages;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -45,9 +45,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.XmlEofOutputStream;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.XmlEofOutputStream;
 
 /**
  * If you extend this file, don't forget to add an information into the root

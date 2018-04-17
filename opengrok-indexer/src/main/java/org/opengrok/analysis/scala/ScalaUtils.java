@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.scala;
+package org.opengrok.analysis.scala;
 
 import java.util.regex.Pattern;
 

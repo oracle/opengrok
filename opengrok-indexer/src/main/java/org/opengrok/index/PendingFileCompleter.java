@@ -21,7 +21,7 @@
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,14 +39,14 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * Represents a tracker of pending file deletions and renamings that can later
  * be executed.
  * <p>
  * {@link PendingFileCompleter} is not generally thread-safe, as only
- * {@link #add(org.opensolaris.opengrok.index.PendingFileRenaming)} is expected
+ * {@link #add(org.opengrok.index.PendingFileRenaming)} is expected
  * to be run in parallel; that method is thread-safe -- but only among other
  * callers of the same method.
  * <p>
@@ -55,10 +55,10 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
  * additions of {@link PendingFileDeletion}s and {@link PendingFileRenaming}s
  * are indicated.
  * <p>
- * {@link #add(org.opensolaris.opengrok.index.PendingFileDeletion)} should only
+ * {@link #add(org.opengrok.index.PendingFileDeletion)} should only
  * be called in serial from a single thread in an isolated stage.
  * <p>
- * {@link #add(org.opensolaris.opengrok.index.PendingFileRenaming)}, as noted,
+ * {@link #add(org.opengrok.index.PendingFileRenaming)}, as noted,
  * can be called in parallel in an isolated stage.
  */
 class PendingFileCompleter {

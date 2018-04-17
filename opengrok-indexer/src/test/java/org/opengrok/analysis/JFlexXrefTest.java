@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,26 +40,26 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.c.CXref;
-import org.opensolaris.opengrok.analysis.c.CxxXref;
-import org.opensolaris.opengrok.analysis.csharp.CSharpXref;
-import org.opensolaris.opengrok.analysis.document.TroffXref;
-import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.fortran.FortranXref;
-import org.opensolaris.opengrok.analysis.haskell.HaskellXref;
-import org.opensolaris.opengrok.analysis.java.JavaXref;
-import org.opensolaris.opengrok.analysis.lisp.LispXref;
-import org.opensolaris.opengrok.analysis.perl.PerlXref;
-import org.opensolaris.opengrok.analysis.plain.PlainXref;
-import org.opensolaris.opengrok.analysis.plain.XMLXref;
-import org.opensolaris.opengrok.analysis.scala.ScalaXref;
-import org.opensolaris.opengrok.analysis.sh.ShXref;
-import org.opensolaris.opengrok.analysis.sql.SQLXref;
-import org.opensolaris.opengrok.analysis.tcl.TclXref;
-import org.opensolaris.opengrok.analysis.uue.UuencodeXref;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.analysis.c.CXref;
+import org.opengrok.analysis.c.CxxXref;
+import org.opengrok.analysis.csharp.CSharpXref;
+import org.opengrok.analysis.document.TroffXref;
+import org.opengrok.analysis.executables.JavaClassAnalyzerFactory;
+import org.opengrok.analysis.fortran.FortranXref;
+import org.opengrok.analysis.haskell.HaskellXref;
+import org.opengrok.analysis.java.JavaXref;
+import org.opengrok.analysis.lisp.LispXref;
+import org.opengrok.analysis.perl.PerlXref;
+import org.opengrok.analysis.plain.PlainXref;
+import org.opengrok.analysis.plain.XMLXref;
+import org.opengrok.analysis.scala.ScalaXref;
+import org.opengrok.analysis.sh.ShXref;
+import org.opengrok.analysis.sql.SQLXref;
+import org.opengrok.analysis.tcl.TclXref;
+import org.opengrok.analysis.uue.UuencodeXref;
+import org.opengrok.configuration.RuntimeEnvironment;
+import static org.opengrok.util.CustomAssertions.assertLinesEqual;
+import org.opengrok.util.TestRepository;
 import org.xml.sax.InputSource;
 
 /**
@@ -83,7 +83,7 @@ public class JFlexXrefTest {
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
         repository = new TestRepository();
         repository.create(JFlexXrefTest.class.getResourceAsStream(
-                "/org/opensolaris/opengrok/index/source.zip"));
+                "/org/opengrok/index/source.zip"));
     }
 
     @AfterClass

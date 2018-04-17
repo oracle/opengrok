@@ -18,34 +18,34 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
 
 --%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Iterator"%>
-<%@page import="org.opensolaris.opengrok.web.Scripts"%>
+<%@page import="org.opengrok.web.Scripts"%>
 <%@page import="org.json.simple.JSONArray"%>
-<%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
+<%@page import="org.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.text.ParseException"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.Date"%>
-<%@page import="org.opensolaris.opengrok.web.Prefix"%>
-<%@page import="org.opensolaris.opengrok.web.ProjectHelper"%>
+<%@page import="org.opengrok.web.Prefix"%>
+<%@page import="org.opengrok.web.ProjectHelper"%>
 <%@page import="java.util.LinkedList"%>
 <%@page import="java.util.Collections"%>
 <%@page import="java.util.Comparator"%>
 <%@page import="java.util.Collection"%>
 <%@page import="java.io.File"%>
-<%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
-<%@page import="org.opensolaris.opengrok.history.RepositoryInfo"%>
-<%@page import="org.opensolaris.opengrok.history.Repository"%>
-<%@page import="org.opensolaris.opengrok.web.Util"%>
-<%@page import="org.opensolaris.opengrok.configuration.Project"%>
-<%@page import="org.opensolaris.opengrok.configuration.Group"%>
+<%@page import="org.opengrok.configuration.RuntimeEnvironment"%>
+<%@page import="org.opengrok.history.RepositoryInfo"%>
+<%@page import="org.opengrok.history.Repository"%>
+<%@page import="org.opengrok.web.Util"%>
+<%@page import="org.opengrok.configuration.Project"%>
+<%@page import="org.opengrok.configuration.Group"%>
 <%@page import="java.util.List"%>
-<%@page import="org.opensolaris.opengrok.web.PageConfig"%>
+<%@page import="org.opengrok.web.PageConfig"%>
 <%
 {
     PageConfig cfg = PageConfig.get(request);

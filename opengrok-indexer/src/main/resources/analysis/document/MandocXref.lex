@@ -18,20 +18,20 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.document;
+package org.opengrok.analysis.document;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import org.opensolaris.opengrok.analysis.JFlexNonXref;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.analysis.plain.PlainXref;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.analysis.JFlexNonXref;
+import org.opengrok.analysis.JFlexXref;
+import org.opengrok.analysis.plain.PlainXref;
+import org.opengrok.configuration.RuntimeEnvironment;
 %%
 %public
 %class MandocXref

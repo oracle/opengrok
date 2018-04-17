@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opengrok.configuration.messages;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,15 +30,15 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.MercurialRepositoryTest;
-import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.index.Indexer;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.RepositoryInstalled;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.history.MercurialRepositoryTest;
+import org.opengrok.history.RepositoryFactory;
+import org.opengrok.history.RepositoryInfo;
+import org.opengrok.index.Indexer;
+import org.opengrok.util.TestRepository;
 
 /**
  * Test repository message handling.

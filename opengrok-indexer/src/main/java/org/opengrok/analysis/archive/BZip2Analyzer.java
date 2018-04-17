@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.archive;
+package org.opengrok.analysis.archive;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -30,10 +30,10 @@ import java.io.Writer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.tools.bzip2.CBZip2InputStream;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.StreamSource;
 
 /**
  * Analyzes a BZip2 file Created on September 22, 2005

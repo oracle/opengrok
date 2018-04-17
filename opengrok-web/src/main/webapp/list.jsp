@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
 
@@ -41,19 +41,19 @@ java.util.logging.Level,
 java.util.zip.GZIPInputStream,
 javax.servlet.http.HttpServletResponse,
 
-org.opensolaris.opengrok.analysis.AnalyzerGuru,
-org.opensolaris.opengrok.analysis.Definitions,
-org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
-org.opensolaris.opengrok.analysis.FileAnalyzerFactory,
-org.opensolaris.opengrok.history.Annotation,
-org.opensolaris.opengrok.index.IndexDatabase,
-org.opensolaris.opengrok.search.DirectoryEntry,
-org.opensolaris.opengrok.search.DirectoryExtraReader,
-org.opensolaris.opengrok.search.FileExtra,
-org.opensolaris.opengrok.util.FileExtraZipper,
-org.opensolaris.opengrok.util.IOUtils,
-org.opensolaris.opengrok.web.DirectoryListing,
-org.opensolaris.opengrok.web.SearchHelper"
+org.opengrok.analysis.AnalyzerGuru,
+org.opengrok.analysis.Definitions,
+org.opengrok.analysis.FileAnalyzer.Genre,
+org.opengrok.analysis.FileAnalyzerFactory,
+org.opengrok.history.Annotation,
+org.opengrok.index.IndexDatabase,
+org.opengrok.search.DirectoryEntry,
+org.opengrok.search.DirectoryExtraReader,
+org.opengrok.search.FileExtra,
+org.opengrok.util.FileExtraZipper,
+org.opengrok.util.IOUtils,
+org.opengrok.web.DirectoryListing,
+org.opengrok.web.SearchHelper"
 %><%
 {
     // need to set it here since requesting parameters

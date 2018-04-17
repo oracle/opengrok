@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2016 Nikolay Denev.
  */
 
-package org.opensolaris.opengrok.analysis.rust;
+package org.opengrok.analysis.rust;
 
 import java.util.HashSet;
 import java.util.Set;

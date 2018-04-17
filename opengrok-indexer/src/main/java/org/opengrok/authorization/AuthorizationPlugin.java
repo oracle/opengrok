@@ -18,19 +18,19 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.authorization;
+package org.opengrok.authorization;
 
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Nameable;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Nameable;
+import org.opengrok.configuration.Project;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * This is a subclass of {@link AuthorizationEntity} and is a wrapper to a

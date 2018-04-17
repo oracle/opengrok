@@ -18,10 +18,10 @@
  */
 
  /*
-  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
   * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
   */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
@@ -81,28 +81,28 @@ import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.opensolaris.opengrok.authorization.AuthorizationFramework;
-import org.opensolaris.opengrok.authorization.AuthorizationStack;
-import org.opensolaris.opengrok.configuration.messages.Message;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.index.Filter;
-import org.opensolaris.opengrok.index.IgnoredNames;
-import org.opensolaris.opengrok.index.IndexDatabase;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.util.XmlEofInputStream;
-import org.opensolaris.opengrok.web.Statistics;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.authorization.AuthorizationFramework;
+import org.opengrok.authorization.AuthorizationStack;
+import org.opengrok.configuration.messages.Message;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.history.RepositoryInfo;
+import org.opengrok.index.Filter;
+import org.opengrok.index.IgnoredNames;
+import org.opengrok.index.IndexDatabase;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
+import org.opengrok.util.IOUtils;
+import org.opengrok.util.XmlEofInputStream;
+import org.opengrok.web.Statistics;
+import org.opengrok.web.Util;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
-import static org.opensolaris.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
-import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
-import org.opensolaris.opengrok.util.PathUtils;
+import static org.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
+import org.opengrok.util.ForbiddenSymlinkException;
+import org.opengrok.util.PathUtils;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -175,7 +175,7 @@ public final class RuntimeEnvironment {
     public static synchronized ExecutorService getHistoryExecutor() {
         if (historyExecutor == null) {
             int num = Runtime.getRuntime().availableProcessors();
-            String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheThreads");
+            String total = System.getProperty("org.opengrok.history.NumCacheThreads");
             if (total != null) {
                 try {
                     num = Integer.valueOf(total);
@@ -203,7 +203,7 @@ public final class RuntimeEnvironment {
     public static synchronized ExecutorService getHistoryRenamedExecutor() {
         if (historyRenamedExecutor == null) {
             int num = Runtime.getRuntime().availableProcessors();
-            String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheRenamedThreads");
+            String total = System.getProperty("org.opengrok.history.NumCacheRenamedThreads");
             if (total != null) {
                 try {
                     num = Integer.valueOf(total);
@@ -569,7 +569,7 @@ public final class RuntimeEnvironment {
      * Gets the name of the ctags program to use: either the last value passed
      * successfully to {@link #setCtags(java.lang.String)}, or
      * {@link Configuration#getCtags()}, or the system property for
-     * {@code "org.opensolaris.opengrok.analysis.Ctags"}, or "ctags" as a
+     * {@code "org.opengrok.analysis.Ctags"}, or "ctags" as a
      * default.
      * @return a defined value
      */
@@ -577,7 +577,7 @@ public final class RuntimeEnvironment {
         String value;
         return ctags != null ? ctags : (value =
             threadConfig.get().getCtags()) != null ? value :
-            System.getProperty("org.opensolaris.opengrok.analysis.Ctags",
+            System.getProperty("org.opengrok.analysis.Ctags",
             "ctags");
     }
 
@@ -599,7 +599,7 @@ public final class RuntimeEnvironment {
      * Gets the name of the mandoc program to use: either the last value passed
      * successfully to {@link #setMandoc(java.lang.String)}, or
      * {@link Configuration#getMandoc()}, or the system property for
-     * {@code "org.opensolaris.opengrok.analysis.Mandoc"}, or {@code null} as a
+     * {@code "org.opengrok.analysis.Mandoc"}, or {@code null} as a
      * default.
      * @return a defined instance or {@code null}
      */
@@ -607,7 +607,7 @@ public final class RuntimeEnvironment {
         String value;
         return mandoc != null ? mandoc : (value =
             threadConfig.get().getMandoc()) != null ? value :
-            System.getProperty("org.opensolaris.opengrok.analysis.Mandoc");
+            System.getProperty("org.opengrok.analysis.Mandoc");
     }
 
     /**
@@ -661,7 +661,7 @@ public final class RuntimeEnvironment {
                         + "Please use option -c to specify path to a good "
                         + "Exuberant Ctags program.\n"
                         + "Or set it in java property "
-                        + "org.opensolaris.opengrok.analysis.Ctags", getCtags());
+                        + "org.opengrok.analysis.Ctags", getCtags());
                 exCtagsFound = false;
             } else {
                 if (isUnivCtags) {
@@ -1830,7 +1830,7 @@ public final class RuntimeEnvironment {
      *
      * @param m message containing the configuration
      * @param reindex is the message result of reindex
-     * @see #applyConfig(org.opensolaris.opengrok.configuration.Configuration,
+     * @see #applyConfig(org.opengrok.configuration.Configuration,
      * boolean) applyConfig(config, reindex)
      */
     public void applyConfig(Message m, boolean reindex) {

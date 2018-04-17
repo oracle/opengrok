@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opengrok.search.QueryBuilder;
 
 /**
  * Represents a test class for {@link IndexAnalysisSettings}.

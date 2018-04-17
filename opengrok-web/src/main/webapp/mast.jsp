@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
@@ -29,19 +29,19 @@ After include you are here: /body/div#page/div#content/
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="org.json.simple.JSONArray"%>
-<%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
+<%@page import="org.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
-<%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
+<%@page import="org.opengrok.configuration.RuntimeEnvironment"%>
 <%@ page session="false" errorPage="error.jsp" import="
 java.io.File,
 java.io.IOException,
 
-org.opensolaris.opengrok.configuration.Project,
-org.opensolaris.opengrok.history.HistoryGuru,
-org.opensolaris.opengrok.web.EftarFileReader,
-org.opensolaris.opengrok.web.PageConfig,
-org.opensolaris.opengrok.web.Prefix,
-org.opensolaris.opengrok.web.Util"%><%
+org.opengrok.configuration.Project,
+org.opengrok.history.HistoryGuru,
+org.opengrok.web.EftarFileReader,
+org.opengrok.web.PageConfig,
+org.opengrok.web.Prefix,
+org.opengrok.web.Util"%><%
 /* ---------------------- mast.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);

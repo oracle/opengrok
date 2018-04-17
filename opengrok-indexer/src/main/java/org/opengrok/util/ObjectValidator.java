@@ -7,7 +7,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 /**
   * Represents an API for validation of an object of the pool and for its

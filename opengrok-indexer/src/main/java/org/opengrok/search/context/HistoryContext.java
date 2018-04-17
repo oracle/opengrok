@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.search.context;
+package org.opengrok.search.context;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,15 +36,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.lucene.search.Query;
-import org.opensolaris.opengrok.history.History;
-import org.opensolaris.opengrok.history.HistoryEntry;
-import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.Hit;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.web.Prefix;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.history.History;
+import org.opengrok.history.HistoryEntry;
+import org.opengrok.history.HistoryException;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.Hit;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.web.Prefix;
+import org.opengrok.web.Util;
 
 /**
  * it is supposed to get the matching lines from history log files.

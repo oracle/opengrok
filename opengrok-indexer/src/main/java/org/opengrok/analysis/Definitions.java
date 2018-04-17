@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

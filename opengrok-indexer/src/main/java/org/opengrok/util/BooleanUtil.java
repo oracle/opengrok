@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 /**
  * boolean utility functions

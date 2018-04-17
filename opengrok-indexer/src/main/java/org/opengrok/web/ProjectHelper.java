@@ -17,10 +17,10 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +29,11 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
+import org.opengrok.history.RepositoryInfo;
 
-import static org.opensolaris.opengrok.web.PageConfig.OPEN_GROK_PROJECT;
+import static org.opengrok.web.PageConfig.OPEN_GROK_PROJECT;
 
 /**
  * Preprocessing of projects, repositories and groups for the UI

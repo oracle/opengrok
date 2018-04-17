@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -33,7 +33,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  *

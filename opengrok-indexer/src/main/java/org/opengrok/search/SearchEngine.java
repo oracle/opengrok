@@ -18,10 +18,10 @@
  */
 
  /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.search;
+package org.opengrok.search;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,22 +55,22 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
-import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.Scopes;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
-import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.index.IndexDatabase;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.Summary.Fragment;
-import org.opensolaris.opengrok.search.context.Context;
-import org.opensolaris.opengrok.search.context.HistoryContext;
-import org.opensolaris.opengrok.web.PageConfig;
-import org.opensolaris.opengrok.web.Prefix;
-import org.opensolaris.opengrok.web.ProjectHelper;
+import org.opengrok.analysis.CompatibleAnalyser;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.analysis.Scopes;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.SuperIndexSearcher;
+import org.opengrok.history.HistoryException;
+import org.opengrok.index.IndexDatabase;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.Summary.Fragment;
+import org.opengrok.search.context.Context;
+import org.opengrok.search.context.HistoryContext;
+import org.opengrok.web.PageConfig;
+import org.opengrok.web.Prefix;
+import org.opengrok.web.ProjectHelper;
 
 /**
  * This is an encapsulation of the details on how to search in the index

@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.executables;
+package org.opengrok.analysis.executables;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -30,13 +30,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.analysis.OGKTextField;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.OGKTextField;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.web.Util;
 
 /**
  * Analyzes JAR, WAR, EAR (Java Archive) files. Created on September 22, 2005

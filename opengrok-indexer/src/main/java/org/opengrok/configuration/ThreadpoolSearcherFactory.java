@@ -18,13 +18,12 @@
  */
 
  /*
-  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+  * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
   */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.io.IOException;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherFactory;
 
 /**

@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,9 +39,9 @@ import java.util.Locale;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
 
 /**
  * An interface for an external repository.

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -32,9 +32,9 @@ import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
 import opengrok.auth.plugin.ldap.FakeLdapFacade;
 import opengrok.auth.plugin.ldap.LdapFacade;
-import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
+import org.opengrok.authorization.IAuthorizationPlugin;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
 
 /**
  * Abstract class for all plug-ins working with LDAP. Takes care of

@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opengrok.configuration.messages;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.opensolaris.opengrok.util.Getopt;
+import org.opengrok.util.Getopt;
 
 public final class Messages {
 

@@ -18,14 +18,14 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page import="org.opensolaris.opengrok.web.Util"%>
-<%@page import="org.opensolaris.opengrok.history.HistoryGuru"%>
+<%@page import="org.opengrok.web.Util"%>
+<%@page import="org.opengrok.history.HistoryGuru"%>
 <%@page import="java.io.File"%>
 <%@page errorPage="error.jsp" import="
 java.text.Format,
@@ -34,10 +34,10 @@ java.util.Date,
 java.util.Set,
 java.util.regex.Pattern,
 
-org.opensolaris.opengrok.history.History,
-org.opensolaris.opengrok.history.HistoryEntry,
-org.opensolaris.opengrok.history.HistoryException,
-org.opensolaris.opengrok.configuration.RuntimeEnvironment"
+org.opengrok.history.History,
+org.opengrok.history.HistoryEntry,
+org.opengrok.history.HistoryException,
+org.opengrok.configuration.RuntimeEnvironment"
 %>
 <%/* ---------------------- history.jsp start --------------------- */
 {

@@ -17,10 +17,10 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +31,10 @@ import javax.servlet.http.Cookie;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.RepositoryInfo;
 
 public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
 

@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 /**
  * Bazaar specific tag class with ability to compare itself with generic

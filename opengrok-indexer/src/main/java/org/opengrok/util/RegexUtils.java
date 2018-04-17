@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 /**
  * Represents a container for regex-related utility methods.

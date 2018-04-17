@@ -18,9 +18,9 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -201,9 +201,9 @@ public class GroupsTest {
 
     final static String BASIC_CONFIGURATION = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<java version=\"1.8.0_65\" class=\"java.beans.XMLDecoder\">\n"
-            + " <object class=\"org.opensolaris.opengrok.configuration.Configuration\" id=\"Configuration0\">\n"
+            + " <object class=\"org.opengrok.configuration.Configuration\" id=\"Configuration0\">\n"
             + "    <void method=\"addGroup\">\n"
-            + "        <object class=\"org.opensolaris.opengrok.configuration.Group\">\n"
+            + "        <object class=\"org.opengrok.configuration.Group\">\n"
             + "            <void property=\"name\">\n"
             + "                <string>ctags</string>\n"
             + "            </void>\n"
@@ -211,7 +211,7 @@ public class GroupsTest {
             + "                <string></string>\n"
             + "            </void>\n"
             + "            <void method=\"addGroup\">\n"
-            + "                <object class=\"org.opensolaris.opengrok.configuration.Group\">\n"
+            + "                <object class=\"org.opengrok.configuration.Group\">\n"
             + "                    <void property=\"name\">\n"
             + "                        <string>ctags 5.6</string>\n"
             + "                    </void>\n"
@@ -221,7 +221,7 @@ public class GroupsTest {
             + "                </object>\n"
             + "            </void>\n"
             + "            <void method=\"addGroup\">\n"
-            + "                <object class=\"org.opensolaris.opengrok.configuration.Group\">\n"
+            + "                <object class=\"org.opengrok.configuration.Group\">\n"
             + "                    <void property=\"name\">\n"
             + "                        <string>ctags 5.7</string>\n"
             + "                    </void>\n"
@@ -231,7 +231,7 @@ public class GroupsTest {
             + "                </object>\n"
             + "            </void>\n"
             + "            <void method=\"addGroup\">\n"
-            + "                <object class=\"org.opensolaris.opengrok.configuration.Group\">\n"
+            + "                <object class=\"org.opengrok.configuration.Group\">\n"
             + "                    <void property=\"name\">\n"
             + "                        <string>ctags 5.8</string>\n"
             + "                    </void>\n"
@@ -243,7 +243,7 @@ public class GroupsTest {
             + "        </object>\n"
             + "    </void>\n"
             + "    <void method=\"addGroup\">\n"
-            + "        <object class=\"org.opensolaris.opengrok.configuration.Group\">\n"
+            + "        <object class=\"org.opengrok.configuration.Group\">\n"
             + "            <void property=\"name\">\n"
             + "                <string>apache</string>\n"
             + "            </void>\n"
@@ -253,7 +253,7 @@ public class GroupsTest {
             + "        </object>\n"
             + "    </void>\n"
             + "    <void method=\"addGroup\">\n"
-            + "        <object class=\"org.opensolaris.opengrok.configuration.Group\">\n"
+            + "        <object class=\"org.opengrok.configuration.Group\">\n"
             + "            <void property=\"name\">\n"
             + "                <string>opengrok</string>\n"
             + "            </void>\n"

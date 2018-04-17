@@ -21,7 +21,7 @@
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 // "How do I make a Class extend Observable when it has extended another class too?"
 // Answered by adamski, https://stackoverflow.com/users/127479/adamski,

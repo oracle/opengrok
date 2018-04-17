@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,11 +47,11 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldDocs;
-import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.index.IndexDatabase;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opengrok.analysis.CompatibleAnalyser;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.index.IndexDatabase;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.QueryBuilder;
 
 /**
  * Generate SCM history for directory by using the Index database. (Please note

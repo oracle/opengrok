@@ -18,13 +18,13 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.analysis.c;
+package org.opengrok.analysis.c;
 
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.analysis.FileAnalyzerFactory;
 
 public class CxxAnalyzerFactory extends FileAnalyzerFactory {
     

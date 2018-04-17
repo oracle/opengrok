@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.search;
+package org.opengrok.search;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,8 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.util.Getopt;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.util.Getopt;
 
 /**
  * Search and list the matching files

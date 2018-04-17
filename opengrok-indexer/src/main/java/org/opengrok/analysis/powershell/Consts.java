@@ -18,11 +18,10 @@
  */
 
 /*
- * Copyright 2017 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.analysis.powershell;
+package org.opengrok.analysis.powershell;
 
 import java.util.HashSet;
 import java.util.Set;

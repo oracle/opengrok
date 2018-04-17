@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -35,8 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
 
 /**
  * Parse a stream of CVS log comments.

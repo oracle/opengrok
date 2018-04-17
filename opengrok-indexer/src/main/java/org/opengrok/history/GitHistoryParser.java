@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -38,11 +38,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
-import org.opensolaris.opengrok.util.StringUtils;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
+import org.opengrok.util.ForbiddenSymlinkException;
+import org.opengrok.util.StringUtils;
 
 /**
  * Parse a stream of Git log comments.

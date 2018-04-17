@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,10 +26,10 @@
  * Gets Pascal symbols - ignores comments, strings, keywords
  */
 
-package org.opensolaris.opengrok.analysis.pascal;
+package org.opengrok.analysis.pascal;
 
 import java.util.Locale;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class PascalSymbolTokenizer

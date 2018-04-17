@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,9 +26,9 @@
  * Gets Java symbols - ignores comments, strings, keywords
  */
 
-package org.opensolaris.opengrok.analysis.java;
+package org.opengrok.analysis.java;
 
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class JavaSymbolTokenizer

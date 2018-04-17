@@ -16,15 +16,15 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 --%><%@page import="
 java.util.EnumSet,
 java.util.Date,
 
-org.opensolaris.opengrok.web.PageConfig,
-org.opensolaris.opengrok.web.Prefix"
+org.opengrok.web.PageConfig,
+org.opengrok.web.Prefix"
 %><%!
 /* ---------------------- foot.jspf members start --------------------- */
     private static EnumSet<Prefix> needAddDiv = EnumSet.of(

@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 import java.util.Arrays;
 import java.util.Map;
@@ -27,9 +27,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
-import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
+import org.opengrok.authorization.IAuthorizationPlugin;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
 
 /**
  * This class is a full example of a working plugin from HTTP Basic tutorial on

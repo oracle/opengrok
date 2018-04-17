@@ -18,17 +18,16 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
-import org.opensolaris.opengrok.configuration.Project;
+import org.opengrok.configuration.Project;
 
 /**
  * Wrapper around Reader to expand tabs to spaces in the input.

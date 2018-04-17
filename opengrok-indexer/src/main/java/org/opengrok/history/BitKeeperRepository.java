@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +30,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.jrcs.rcs.InvalidVersionNumberException;
 import org.apache.commons.jrcs.rcs.Version;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
 
 /**
  * Access to a BitKeeper repository.
@@ -47,7 +47,7 @@ public class BitKeeperRepository extends Repository {
     /**
      * The property name used to obtain the client command for this repository.
      */
-    public static final String CMD_PROPERTY_KEY = "org.opensolaris.opengrok.history.BitKeeper";
+    public static final String CMD_PROPERTY_KEY = "org.opengrok.history.BitKeeper";
     /**
      * The command to use to access the repository if none was given explicitly.
      */

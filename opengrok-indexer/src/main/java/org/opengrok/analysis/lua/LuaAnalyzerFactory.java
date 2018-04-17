@@ -18,14 +18,14 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.analysis.lua;
+package org.opengrok.analysis.lua;
 
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.analysis.FileAnalyzerFactory;
 
 /**
  * @author Evan Kinney

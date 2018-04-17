@@ -18,11 +18,11 @@
  */
 
  /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -42,7 +42,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Test of the methods in <code>org.opensolaris.opengrok.web.Util</code>.
+ * Test of the methods in <code>org.opengrok.web.Util</code>.
  */
 public class UtilTest {
 

@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,8 +29,8 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
 
 /**
  * BitKeeperTagParser handles parsing the output of `bk tags` into a set of tag entries.

@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.executables;
+package org.opengrok.analysis.executables;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,8 +29,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.FileAnalyzerFactory;
 
 /**
  * Represents a container for tests of {@link JavaClassAnalyzerFactory}.

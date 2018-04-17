@@ -17,12 +17,12 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -36,11 +36,11 @@ import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
-import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opengrok.analysis.plain.PlainFullTokenizer;
+import org.opengrok.analysis.plain.PlainSymbolTokenizer;
+import org.opengrok.configuration.Project;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.QueryBuilder;
 
 /**
  * Base class for all different File Analyzers

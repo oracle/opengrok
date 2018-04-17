@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,16 +26,16 @@
  * Cross reference a PHP file
  */
 
-package org.opensolaris.opengrok.analysis.php;
+package org.opengrok.analysis.php;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.analysis.EmphasisHint;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.EmphasisHint;
+import org.opengrok.web.HtmlConsts;
 %%
 %public
 %class PhpXref

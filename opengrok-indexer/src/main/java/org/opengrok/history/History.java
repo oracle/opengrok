@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.util.ArrayList;
 import java.util.List;

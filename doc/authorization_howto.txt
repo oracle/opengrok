@@ -101,14 +101,14 @@ like: session, attributes, getUser(), getPrincipal()
 Restrictions
 ------------
 
-Custom classloader restricts the plugin to load only this classes from org.opensolaris.opengrok package:
+Custom classloader restricts the plugin to load only this classes from org.opengrok package:
 
     private final static String[] classWhitelist = new String[]{
-        "org.opensolaris.opengrok.configuration.Group",
-        "org.opensolaris.opengrok.configuration.Project",
-        "org.opensolaris.opengrok.authorization.IAuthorizationPlugin",
-        "org.opensolaris.opengrok.util.*",
-        "org.opensolaris.opengrok.logger.*",
+        "org.opengrok.configuration.Group",
+        "org.opengrok.configuration.Project",
+        "org.opengrok.authorization.IAuthorizationPlugin",
+        "org.opengrok.util.*",
+        "org.opengrok.logger.*",
     };
 
 And explicitly forbids these packages to be extended.

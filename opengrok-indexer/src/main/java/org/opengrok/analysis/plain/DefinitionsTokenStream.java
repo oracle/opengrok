@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.plain;
+package org.opengrok.analysis.plain;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,12 +30,12 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.PendingToken;
-import org.opensolaris.opengrok.analysis.PendingTokenOffsetsComparator;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.util.LineBreaker;
-import org.opensolaris.opengrok.util.ReaderWrapper;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.analysis.PendingToken;
+import org.opengrok.analysis.PendingTokenOffsetsComparator;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.util.LineBreaker;
+import org.opengrok.util.ReaderWrapper;
 
 /**
  * Represents a token stream from {@link Definitions}.
@@ -84,7 +84,7 @@ public class DefinitionsTokenStream extends TokenStream {
 
     /**
      * Publishes the next, pending token from
-     * {@link #initialize(org.opensolaris.opengrok.analysis.Definitions, org.opensolaris.opengrok.analysis.StreamSource, org.opensolaris.opengrok.util.ReaderWrapper)},
+     * {@link #initialize(org.opengrok.analysis.Definitions, org.opengrok.analysis.StreamSource, org.opengrok.util.ReaderWrapper)},
      * if one is available.
      * @return false if no more tokens; otherwise true
      * @throws IOException in case of I/O error

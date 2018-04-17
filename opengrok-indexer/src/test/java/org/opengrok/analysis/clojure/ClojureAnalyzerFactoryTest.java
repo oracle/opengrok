@@ -18,23 +18,23 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.clojure;
+package org.opengrok.analysis.clojure;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.Ctags;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.analysis.Ctags;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.util.TestRepository;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,7 +47,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 
-import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
+import static org.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 /**
  * @author Farid Zakaria
@@ -74,7 +74,7 @@ public class ClojureAnalyzerFactoryTest {
 
         repository = new TestRepository();
         repository.create(ClojureAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opensolaris/opengrok/index/source.zip"));
+                "/org/opengrok/index/source.zip"));
 
         ClojureAnalyzerFactory analFact = new ClojureAnalyzerFactory();
         analyzer = analFact.getAnalyzer();

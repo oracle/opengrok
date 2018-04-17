@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -31,7 +31,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.util.TestRepository;
 
 import static org.junit.Assert.*;
 

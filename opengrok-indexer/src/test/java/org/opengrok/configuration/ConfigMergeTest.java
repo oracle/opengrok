@@ -18,15 +18,13 @@
  */
 
  /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
-import java.io.File;
-import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.opensolaris.opengrok.configuration.ConfigMerge.merge;
+import static org.opengrok.configuration.ConfigMerge.merge;
 
 /**
  *

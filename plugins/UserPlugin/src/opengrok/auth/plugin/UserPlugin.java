@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -28,9 +28,9 @@ import opengrok.auth.plugin.decoders.FakeOSSOHeaderDecoder;
 import opengrok.auth.plugin.decoders.OSSOHeaderDecoder;
 import opengrok.auth.plugin.decoders.IUserDecoder;
 import opengrok.auth.plugin.entity.User;
-import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
+import org.opengrok.authorization.IAuthorizationPlugin;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
 
 /**
  * Authorization plug-in to extract user info from HTTP headers.

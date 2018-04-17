@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011 Jens Elkner.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 /**
  * A simple container for search suggestions.

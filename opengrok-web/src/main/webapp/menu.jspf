@@ -18,19 +18,19 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page import="org.json.simple.JSONArray"%>
-<%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
-<%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
+<%@page import="org.opengrok.configuration.RuntimeEnvironment"%>
+<%@page import="org.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.LinkedList"%>
-<%@page import="org.opensolaris.opengrok.configuration.Group"%>
-<%@page import="org.opensolaris.opengrok.web.ProjectHelper"%>
-<%@page import="org.opensolaris.opengrok.web.SearchHelper"%>
+<%@page import="org.opengrok.configuration.Group"%>
+<%@page import="org.opengrok.web.ProjectHelper"%>
+<%@page import="org.opengrok.web.SearchHelper"%>
 <%@page import="java.util.Map"%>
 <%@page import="
 java.util.SortedSet,
@@ -40,11 +40,11 @@ java.util.List,
 java.util.HashMap,
 java.util.ArrayList,
 
-org.opensolaris.opengrok.configuration.Project,
-org.opensolaris.opengrok.search.QueryBuilder,
-org.opensolaris.opengrok.web.PageConfig,
-org.opensolaris.opengrok.web.Prefix,
-org.opensolaris.opengrok.web.Util"
+org.opengrok.configuration.Project,
+org.opengrok.search.QueryBuilder,
+org.opengrok.web.PageConfig,
+org.opengrok.web.Prefix,
+org.opengrok.web.Util"
 %><%
 /* ---------------------- menu.jspf start --------------------- */
 {

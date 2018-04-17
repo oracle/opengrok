@@ -21,19 +21,19 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.analysis.Ctags;
-import org.opensolaris.opengrok.analysis.CtagsValidator;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.BoundedBlockingObjectPool;
-import org.opensolaris.opengrok.util.ObjectFactory;
-import org.opensolaris.opengrok.util.ObjectPool;
+import org.opengrok.analysis.Ctags;
+import org.opengrok.analysis.CtagsValidator;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.BoundedBlockingObjectPool;
+import org.opengrok.util.ObjectFactory;
+import org.opengrok.util.ObjectPool;
 
 /**
  * Represents a container for executors that enable parallelism for indexing

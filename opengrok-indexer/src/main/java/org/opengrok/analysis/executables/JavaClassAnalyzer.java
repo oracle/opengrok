@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.executables;
+package org.opengrok.analysis.executables;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,9 +41,7 @@ import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.classfile.ConstantDouble;
 import org.apache.bcel.classfile.ConstantFloat;
 import org.apache.bcel.classfile.ConstantInteger;
-import org.apache.bcel.classfile.ConstantInvokeDynamic;
 import org.apache.bcel.classfile.ConstantLong;
-import org.apache.bcel.classfile.ConstantMethodHandle;
 import org.apache.bcel.classfile.ConstantMethodType;
 import org.apache.bcel.classfile.ConstantModule;
 import org.apache.bcel.classfile.ConstantNameAndType;
@@ -58,16 +56,14 @@ import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Utility;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.IteratorReader;
-import org.opensolaris.opengrok.analysis.OGKTextField;
-import org.opensolaris.opengrok.analysis.OGKTextVecField;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.OGKTextField;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.web.Util;
 
 /**
  * Analyzes Java Class files Created on September 23, 2005

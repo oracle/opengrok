@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.plain;
+package org.opengrok.analysis.plain;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,11 +36,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.ExpandTabsReader;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.util.StreamUtils;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.analysis.ExpandTabsReader;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.util.IOUtils;
+import org.opengrok.util.StreamUtils;
 
 /**
  * Represents a container for tests of {@link DefinitionsTokenStream}.

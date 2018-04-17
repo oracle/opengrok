@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.search.context;
+package org.opengrok.search.context;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,16 +40,16 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.index.Indexer;
-import org.opensolaris.opengrok.util.TestRepository;
-import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.search.SearchEngine;
-import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.plain.PlainAnalyzerFactory;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.index.Indexer;
+import org.opengrok.util.TestRepository;
+import org.opengrok.history.RepositoryFactory;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.search.SearchEngine;
+import static org.opengrok.util.CustomAssertions.assertLinesEqual;
 
 /**
  * Represents a container for tests of {@link SearchEngine{ with
@@ -72,7 +72,7 @@ public class SearchAndContextFormatterTest {
 
         env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty(
-            "org.opensolaris.opengrok.analysis.Ctags", "ctags"));
+            "org.opengrok.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         RepositoryFactory.initializeIgnoredNames(env);

@@ -18,19 +18,19 @@
  */
 
 /*
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRule;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.RepositoryInstalled;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.util.TestRepository;
 
 import java.io.File;
 import java.util.Date;
@@ -41,7 +41,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.opensolaris.opengrok.history.MercurialRepositoryTest.runHgCommand;
+import static org.opengrok.history.MercurialRepositoryTest.runHgCommand;
 
 /**
  * Test file based history cache with special focus on incremental reindex.

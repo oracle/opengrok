@@ -18,17 +18,17 @@
  */
 
  /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
-import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
-import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opengrok.analysis.plain.PlainFullTokenizer;
+import org.opengrok.analysis.plain.PlainSymbolTokenizer;
+import org.opengrok.search.QueryBuilder;
 
 public class CompatibleAnalyser extends Analyzer {
 

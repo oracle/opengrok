@@ -7,7 +7,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -17,7 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * Represents a subclass of {@link AbstractObjectPool} and implementation of

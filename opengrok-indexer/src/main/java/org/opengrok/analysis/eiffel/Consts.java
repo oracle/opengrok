@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.eiffel;
+package org.opengrok.analysis.eiffel;
 
 import java.util.HashSet;
 import java.util.Set;

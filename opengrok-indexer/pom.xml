@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -26,7 +26,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.opensolaris.opengrok</groupId>
+        <groupId>org.opengrok</groupId>
         <artifactId>opengrok</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
@@ -83,7 +83,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <artifactId>json-simple</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opensolaris.opengrok</groupId>
+            <groupId>org.opengrok</groupId>
             <artifactId>jrcs</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -107,7 +107,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.opensolaris.opengrok.index.Indexer</mainClass>
+                            <mainClass>org.opengrok.index.Indexer</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -164,7 +164,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 </executions>                                                                                                                                                                                                                
                 <configuration>                                                                                                                                                                                                              
                     <filesToInclude>                                                                                                                                                                                                         
-                        ${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.java             
+                        ${basedir}/target/generated-sources/jflex/org/opengrok/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/plain/PlainSymbolTokenizer.java
                     </filesToInclude>                                                                                                                                                                                                        
                     <replacements>                                                                                                                                                                                                           
                         <replacement>                                                                                                                                                                                                        

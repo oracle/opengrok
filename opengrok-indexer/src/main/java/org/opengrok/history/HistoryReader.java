@@ -18,16 +18,15 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
-import org.opensolaris.opengrok.util.IOUtils;
+import org.opengrok.util.IOUtils;
 
 /**
  * Class for reading history entries in a way suitable for indexing by Lucene.

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.util.Collections;
 import java.util.Date;

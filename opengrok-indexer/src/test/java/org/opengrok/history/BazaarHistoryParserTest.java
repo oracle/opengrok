@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,7 +30,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.RuntimeEnvironment;
 import static org.junit.Assert.*;
 
 /**

@@ -18,39 +18,35 @@
  */
 
 /*
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.io.File;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.After;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.MercurialRepositoryTest;
-import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.util.FileUtilities;
-import org.opensolaris.opengrok.util.TestRepository;
-import org.opensolaris.opengrok.util.IOUtils;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.RepositoryInstalled;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.history.MercurialRepositoryTest;
+import org.opengrok.history.RepositoryInfo;
+import org.opengrok.util.FileUtilities;
+import org.opengrok.util.TestRepository;
+import org.opengrok.util.IOUtils;
 
 /**
  * Test indexer w.r.t. repositories.
@@ -94,7 +90,7 @@ public class IndexerRepoTest {
     /**
      * Test that symlinked directories from source root get their relative
      * path set correctly in RepositoryInfo objects.
-     * @throws org.opensolaris.opengrok.index.IndexerException
+     * @throws org.opengrok.index.IndexerException
      * @throws java.io.IOException
      */
     @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)

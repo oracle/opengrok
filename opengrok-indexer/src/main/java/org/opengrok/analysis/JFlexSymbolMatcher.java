@@ -21,11 +21,11 @@
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.util.StringUtils;
+import org.opengrok.util.StringUtils;
 
 /**
  * Represents an abstract base class for subclasses of
@@ -89,7 +89,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link SymbolMatchedListener#symbolMatched(org.opensolaris.opengrok.analysis.SymbolMatchedEvent)}
+     * {@link SymbolMatchedListener#symbolMatched(org.opengrok.analysis.SymbolMatchedEvent)}
      * for a subscribed listener.
      * @param str the symbol string
      * @param start the symbol start position
@@ -105,7 +105,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link SymbolMatchedListener#sourceCodeSeen(org.opensolaris.opengrok.analysis.SourceCodeSeenEvent)}
+     * {@link SymbolMatchedListener#sourceCodeSeen(org.opengrok.analysis.SourceCodeSeenEvent)}
      * for all subscribed listeners in turn.
      * @param start the source code start position
      */
@@ -129,7 +129,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#nonSymbolMatched(org.opensolaris.opengrok.analysis.TextMatchedEvent)}
+     * {@link NonSymbolMatchedListener#nonSymbolMatched(org.opengrok.analysis.TextMatchedEvent)}
      * for a subscribed listener.
      * @param str the text string
      * @param start the text start position
@@ -145,7 +145,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#nonSymbolMatched(org.opensolaris.opengrok.analysis.TextMatchedEvent)}
+     * {@link NonSymbolMatchedListener#nonSymbolMatched(org.opengrok.analysis.TextMatchedEvent)}
      * for a subscribed listener.
      * @param str the text string
      * @param hint the text hint
@@ -163,7 +163,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#keywordMatched(org.opensolaris.opengrok.analysis.TextMatchedEvent)}
+     * {@link NonSymbolMatchedListener#keywordMatched(org.opengrok.analysis.TextMatchedEvent)}
      * for a subscribed listener.
      * @param str the text string
      * @param start the text start position
@@ -181,7 +181,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * Calls {@link #setLineNumber(int)} with the sum of
      * {@link #getLineNumber()} and the number of LFs in {@code str}, and then
      * raises
-     * {@link NonSymbolMatchedListener#endOfLineMatched(org.opensolaris.opengrok.analysis.TextMatchedEvent)}
+     * {@link NonSymbolMatchedListener#endOfLineMatched(org.opengrok.analysis.TextMatchedEvent)}
      * for a subscribed listener.
      * @param str the text string
      * @param start the text start position
@@ -198,7 +198,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#disjointSpanChanged(org.opensolaris.opengrok.analysis.DisjointSpanChangedEvent)}
+     * {@link NonSymbolMatchedListener#disjointSpanChanged(org.opengrok.analysis.DisjointSpanChangedEvent)}
      * for a subscribed listener.
      * @param className the text string
      * @param position the text position
@@ -226,7 +226,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
+     * {@link NonSymbolMatchedListener#linkageMatched(org.opengrok.analysis.LinkageMatchedEvent)}
      * of {@link LinkageType#URI} for a subscribed listener.
      * <p>First, the end of {@code uri} is possibly trimmed (with a
      * corresponding call to {@link #yypushback(int)}) based on the result
@@ -278,7 +278,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
+     * {@link NonSymbolMatchedListener#linkageMatched(org.opengrok.analysis.LinkageMatchedEvent)}
      * of {@link LinkageType#FILELIKE} for a subscribed listener.
      * @param str the text string
      * @param start the text start position
@@ -294,7 +294,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#pathlikeMatched(org.opensolaris.opengrok.analysis.PathlikeMatchedEvent)}
+     * {@link NonSymbolMatchedListener#pathlikeMatched(org.opengrok.analysis.PathlikeMatchedEvent)}
      * for a subscribed listener.
      * @param str the path text string
      * @param sep the path separator
@@ -314,7 +314,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
+     * {@link NonSymbolMatchedListener#linkageMatched(org.opengrok.analysis.LinkageMatchedEvent)}
      * of {@link LinkageType#EMAIL} for a subscribed listener.
      * @param str the text string
      * @param start the text start position
@@ -330,7 +330,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
+     * {@link NonSymbolMatchedListener#linkageMatched(org.opengrok.analysis.LinkageMatchedEvent)}
      * of {@link LinkageType#LABEL} for a subscribed listener.
      * @param str the text string (literal capture)
      * @param start the text start position
@@ -347,7 +347,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
+     * {@link NonSymbolMatchedListener#linkageMatched(org.opengrok.analysis.LinkageMatchedEvent)}
      * of {@link LinkageType#LABELDEF} for a subscribed listener.
      * @param str the text string (literal capture)
      * @param start the text start position
@@ -363,7 +363,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
+     * {@link NonSymbolMatchedListener#linkageMatched(org.opengrok.analysis.LinkageMatchedEvent)}
      * of {@link LinkageType#QUERY} for a subscribed listener.
      * @param str the text string
      * @param start the text start position
@@ -379,7 +379,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#linkageMatched(org.opensolaris.opengrok.analysis.LinkageMatchedEvent)}
+     * {@link NonSymbolMatchedListener#linkageMatched(org.opengrok.analysis.LinkageMatchedEvent)}
      * of {@link LinkageType#REFS} for a subscribed listener.
      * @param str the text string
      * @param start the text start position
@@ -395,7 +395,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
-     * {@link NonSymbolMatchedListener#scopeChanged(org.opensolaris.opengrok.analysis.ScopeChangedEvent)}
+     * {@link NonSymbolMatchedListener#scopeChanged(org.opengrok.analysis.ScopeChangedEvent)}
      * for a subscribed listener.
      * @param action the scope change action
      * @param str the text string

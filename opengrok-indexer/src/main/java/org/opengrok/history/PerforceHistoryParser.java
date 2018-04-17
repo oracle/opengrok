@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.util.Executor;
 
 /**
  * Parse source history for a Perforce Repository

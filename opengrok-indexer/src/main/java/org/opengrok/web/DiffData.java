@@ -19,12 +19,12 @@
 
 /*
  * Copyright 2009 - 2011 Jens Elkner.
- * Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import org.apache.commons.jrcs.diff.Revision;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.analysis.FileAnalyzer.Genre;
 
 /**
  * A simple container to store the data required to generated a view of diffs

@@ -17,11 +17,11 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-package org.opensolaris.opengrok.analysis.php;
+package org.opengrok.analysis.php;
 
 import java.util.HashSet;
 import java.util.Set;

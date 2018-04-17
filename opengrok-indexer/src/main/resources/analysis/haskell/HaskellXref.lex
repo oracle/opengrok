@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,11 +26,11 @@
  * Cross reference a Haskell file
  */
 
-package org.opensolaris.opengrok.analysis.haskell;
+package org.opengrok.analysis.haskell;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.web.HtmlConsts;
 
 /**
  * @author Harry Pan

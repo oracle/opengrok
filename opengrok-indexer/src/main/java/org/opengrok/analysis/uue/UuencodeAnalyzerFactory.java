@@ -18,15 +18,15 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin &lt;C++@Cns.SU&gt;
  */
 
-package org.opensolaris.opengrok.analysis.uue;
+package org.opengrok.analysis.uue;
 
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.analysis.FileAnalyzerFactory;
 
 /**
  * @author Constantine A. Murenin &lt;http://cnst.su/&gt;

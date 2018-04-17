@@ -18,10 +18,9 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.text.ParseException;
 import org.junit.After;
@@ -32,7 +31,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * JUnit test for org.opensolaris.opengrok.util.Getopt
+ * JUnit test for org.opengrok.util.Getopt
  */
 public class GetoptTest {
 

@@ -13,11 +13,11 @@
         <param-value>localhost:2424</param-value>
     </context-param>
     <listener>
-        <listener-class>org.opensolaris.opengrok.web.WebappListener</listener-class>
+        <listener-class>org.opengrok.web.WebappListener</listener-class>
     </listener>
     <filter>
         <filter-name>AuthorizationFilter</filter-name>
-        <filter-class>org.opensolaris.opengrok.web.AuthorizationFilter</filter-class>
+        <filter-class>org.opengrok.web.AuthorizationFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
@@ -25,7 +25,7 @@
     </filter-mapping>
     <filter>
         <filter-name>StatisticsFilter</filter-name>
-        <filter-class>org.opensolaris.opengrok.web.StatisticsFilter</filter-class>
+        <filter-class>org.opengrok.web.StatisticsFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>StatisticsFilter</filter-name>
@@ -33,7 +33,7 @@
     </filter-mapping>
     <filter>
         <filter-name>ExpiresHalfHourFilter</filter-name>
-        <filter-class>org.opensolaris.opengrok.web.ResponseHeaderFilter</filter-class>
+        <filter-class>org.opengrok.web.ResponseHeaderFilter</filter-class>
         <init-param>
             <param-name>Cache-Control</param-name>
             <param-value>max-age=1800</param-value>
@@ -41,7 +41,7 @@
     </filter>
     <filter>
         <filter-name>ExpiresOneDayFilter</filter-name>
-        <filter-class>org.opensolaris.opengrok.web.ResponseHeaderFilter</filter-class>
+        <filter-class>org.opengrok.web.ResponseHeaderFilter</filter-class>
         <init-param>
             <param-name>Cache-Control</param-name>
             <param-value>max-age=86400</param-value>
@@ -70,7 +70,7 @@
     </servlet>
     <servlet>
         <servlet-name>json</servlet-name>
-        <servlet-class>org.opensolaris.opengrok.web.JSONSearchServlet</servlet-class>
+        <servlet-class>org.opengrok.web.JSONSearchServlet</servlet-class>
     </servlet>
     <servlet>
         <display-name>Source History</display-name>

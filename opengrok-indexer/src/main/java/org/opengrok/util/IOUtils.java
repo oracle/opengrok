@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2011 Trond Norbye 
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.io.BufferedInputStream;
 import java.io.Closeable;
@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * A small utility class to provide common functionality related to

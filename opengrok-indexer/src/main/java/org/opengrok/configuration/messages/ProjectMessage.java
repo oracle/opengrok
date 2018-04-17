@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opengrok.configuration.messages;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,17 +34,17 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.Repository;
-import static org.opensolaris.opengrok.history.RepositoryFactory.getRepository;
-import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.index.IndexDatabase;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
-import org.opensolaris.opengrok.util.IOUtils;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.history.Repository;
+import static org.opengrok.history.RepositoryFactory.getRepository;
+import org.opengrok.history.RepositoryInfo;
+import org.opengrok.index.IndexDatabase;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.ForbiddenSymlinkException;
+import org.opengrok.util.IOUtils;
 
 
 /**

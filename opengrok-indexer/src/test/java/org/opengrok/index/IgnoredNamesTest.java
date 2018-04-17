@@ -18,15 +18,14 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -44,11 +43,11 @@ import junit.framework.AssertionFailedError;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.c.CAnalyzerFactoryTest;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.util.FileUtilities;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.analysis.c.CAnalyzerFactoryTest;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.RepositoryFactory;
+import org.opengrok.util.FileUtilities;
+import org.opengrok.util.TestRepository;
 
 /**
  *
@@ -62,7 +61,7 @@ public class IgnoredNamesTest {
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opensolaris/opengrok/index/source.zip"));
+                "/org/opengrok/index/source.zip"));
 
         // Populate ignored lists with repository specific entries.
         RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());

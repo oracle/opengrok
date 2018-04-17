@@ -18,17 +18,17 @@
  */
 
 /*
- * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
+import org.opengrok.analysis.plain.PlainFullTokenizer;
 
 public final class HistoryAnalyzer extends Analyzer {
 

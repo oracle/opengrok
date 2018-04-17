@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -37,7 +37,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * An Extremely Fast Tagged Attribute Read-only File System

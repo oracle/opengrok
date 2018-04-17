@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.archive;
+package org.opengrok.analysis.archive;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -32,12 +32,11 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * Analyzes GZip files Created on September 22, 2005

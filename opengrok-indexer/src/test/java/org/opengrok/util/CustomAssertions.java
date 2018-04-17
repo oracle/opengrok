@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -34,9 +34,9 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.JFlexTokenizer;
+import static org.opengrok.util.StreamUtils.copyStream;
 
 /**
  * Represents a container for custom test assertion methods

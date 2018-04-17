@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.search.context;
+package org.opengrok.search.context;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -43,10 +43,10 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.search.Hit;
-import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.search.Hit;
+import org.opengrok.search.QueryBuilder;
 import org.w3c.dom.Document;
 
 public class ContextTest {

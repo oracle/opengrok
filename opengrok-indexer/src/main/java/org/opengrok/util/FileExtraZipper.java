@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,8 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.opensolaris.opengrok.search.DirectoryEntry;
-import org.opensolaris.opengrok.search.FileExtra;
+import org.opengrok.search.DirectoryEntry;
+import org.opengrok.search.FileExtra;
 
 /**
  * Represents a transformer of lists of files and {@link FileExtra} instances

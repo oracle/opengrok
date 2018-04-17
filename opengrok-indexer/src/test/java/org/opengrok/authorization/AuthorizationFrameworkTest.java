@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.authorization;
+package org.opengrok.authorization;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,11 +33,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.opensolaris.opengrok.condition.DeliberateRuntimeException;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Nameable;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.web.DummyHttpServletRequest;
+import org.opengrok.condition.DeliberateRuntimeException;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Nameable;
+import org.opengrok.configuration.Project;
+import org.opengrok.web.DummyHttpServletRequest;
 
 @RunWith(Parameterized.class)
 public class AuthorizationFrameworkTest {

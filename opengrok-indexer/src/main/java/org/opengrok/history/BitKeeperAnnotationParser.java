@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,8 +26,8 @@ import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
 
 /**
  * BitKeeperAnnotationParser handles parsing the output of `bk annotate` into an annotation object.

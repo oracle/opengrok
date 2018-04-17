@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.haskell;
+package org.opengrok.analysis.haskell;
 
 import java.util.regex.Pattern;
 

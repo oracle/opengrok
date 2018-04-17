@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.util.EnumMap;
 import java.util.function.Supplier;
@@ -30,8 +30,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.SourceSplitter;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.SourceSplitter;
 
 /**
  * Represents a reader of output from runs of ctags.

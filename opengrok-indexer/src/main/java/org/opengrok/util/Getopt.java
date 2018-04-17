@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.text.ParseException;
 import java.util.ArrayList;

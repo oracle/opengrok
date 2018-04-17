@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,13 +46,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.opensolaris.opengrok.configuration.Configuration.RemoteSCM;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.index.IgnoredNames;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
-import org.opensolaris.opengrok.util.PathUtils;
-import org.opensolaris.opengrok.util.Statistics;
+import org.opengrok.configuration.Configuration.RemoteSCM;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.index.IgnoredNames;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.ForbiddenSymlinkException;
+import org.opengrok.util.PathUtils;
+import org.opengrok.util.Statistics;
 
 /**
  * The HistoryGuru is used to implement an transparent layer to the various
@@ -349,7 +349,7 @@ public final class HistoryGuru {
      * @param directory the directory whose files to check
      * @return a map from file names to modification times for the files that
      * the history cache has information about
-     * @throws org.opensolaris.opengrok.history.HistoryException if history cannot be retrieved
+     * @throws org.opengrok.history.HistoryException if history cannot be retrieved
      */
     public Map<String, Date> getLastModifiedTimes(File directory)
             throws HistoryException {

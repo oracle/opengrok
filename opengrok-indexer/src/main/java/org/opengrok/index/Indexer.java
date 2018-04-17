@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,31 +41,29 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.opensolaris.opengrok.Info;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.AnalyzerGuruHelp;
-import org.opensolaris.opengrok.configuration.Configuration;
-import org.opensolaris.opengrok.configuration.ConfigurationHelp;
-import org.opensolaris.opengrok.configuration.LuceneLockName;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.messages.Message;
-import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.Repository;
-import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.logger.LoggerUtil;
-import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.OptionParser;
-import org.opensolaris.opengrok.util.Statistics;
+import org.opengrok.Info;
+import org.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.AnalyzerGuruHelp;
+import org.opengrok.configuration.Configuration;
+import org.opengrok.configuration.ConfigurationHelp;
+import org.opengrok.configuration.LuceneLockName;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.messages.Message;
+import org.opengrok.history.HistoryException;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.history.Repository;
+import org.opengrok.history.RepositoryFactory;
+import org.opengrok.history.RepositoryInfo;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.logger.LoggerUtil;
+import org.opengrok.util.Executor;
+import org.opengrok.util.OptionParser;
+import org.opengrok.util.Statistics;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file

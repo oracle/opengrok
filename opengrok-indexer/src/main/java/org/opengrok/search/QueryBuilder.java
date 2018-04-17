@@ -18,11 +18,11 @@
  */
 
 /* 
- * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.search;
+package org.opengrok.search;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

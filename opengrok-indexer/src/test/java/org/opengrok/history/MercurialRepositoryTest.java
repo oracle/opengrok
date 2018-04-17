@@ -18,19 +18,19 @@
  */
 
 /*
- * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRule;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.RepositoryInstalled;
+import org.opengrok.util.Executor;
+import org.opengrok.util.TestRepository;
 
 import java.io.File;
 import java.io.IOException;

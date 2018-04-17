@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,7 +38,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
-import static org.opensolaris.opengrok.util.RandomString.generate;
+import static org.opengrok.util.RandomString.generate;
 
 /**
  * <p>

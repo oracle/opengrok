@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -28,8 +28,8 @@ import opengrok.auth.plugin.util.DummyHttpServletRequestUser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
 
 /**
  *

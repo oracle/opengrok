@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -40,10 +40,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRule;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.RepositoryInstalled;
+import org.opengrok.util.TestRepository;
 
 /**
  * Tests for BitKeeperRepository.

@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -38,8 +38,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
 
 /**
  * Access to Surround SCM repository.
@@ -55,7 +55,7 @@ public class SSCMRepository extends Repository {
      * The property name used to obtain the client command for this repository.
      */
     public static final String CMD_PROPERTY_KEY
-            = "org.opensolaris.opengrok.history.sscm";
+            = "org.opengrok.history.sscm";
     /**
      * The command to use to access the repository if none was given explicitly
      */

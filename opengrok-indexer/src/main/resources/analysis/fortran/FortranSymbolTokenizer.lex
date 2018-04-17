@@ -18,13 +18,13 @@
  */
 
 /*
- * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.fortran;
+package org.opengrok.analysis.fortran;
 
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class FortranSymbolTokenizer

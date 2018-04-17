@@ -21,13 +21,13 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.search.context;
+package org.opengrok.search.context;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.web.HtmlConsts;
+import org.opengrok.web.Util;
 
 /**
  * Represents a collection of metadata related to highlighting a single line

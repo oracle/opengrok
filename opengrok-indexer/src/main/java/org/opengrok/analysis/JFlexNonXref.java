@@ -18,12 +18,12 @@
  */
 
 /*
- * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
@@ -31,12 +31,12 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.Scopes.Scope;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.Annotation;
-import org.opensolaris.opengrok.util.StringUtils;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.Scopes.Scope;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.Annotation;
+import org.opengrok.util.StringUtils;
+import org.opengrok.web.Util;
 
 /**
  * Represents a base class for non-traditional xref lexers whose
@@ -230,7 +230,7 @@ public abstract class JFlexNonXref extends JFlexStateStacker
 
     /**
      * Calls
-     * {@link JFlexXrefUtils#appendLink(java.io.Writer, org.opensolaris.opengrok.analysis.JFlexLexer, java.lang.String, boolean, java.util.regex.Pattern)}
+     * {@link JFlexXrefUtils#appendLink(java.io.Writer, org.opengrok.analysis.JFlexLexer, java.lang.String, boolean, java.util.regex.Pattern)}
      * with the active {@link Writer}, the field {@code matcher}, {@code url},
      * {@code doEndingPushback}, and {@code collateralCapture}.
      * @param url the URL to append

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
@@ -27,12 +27,11 @@
  * This is supposed to get the matching lines from sourcefile.
  * since lucene does not easily give the match context.
  */
-package org.opensolaris.opengrok.search.context;
+package org.opengrok.search.context;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,17 +43,17 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.Scopes;
-import org.opensolaris.opengrok.analysis.Scopes.Scope;
-import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.Hit;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.Scopes;
+import org.opengrok.analysis.Scopes.Scope;
+import org.opengrok.analysis.plain.PlainAnalyzerFactory;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.Hit;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.util.IOUtils;
+import org.opengrok.web.Util;
 
 public class Context {
 
@@ -127,7 +126,7 @@ public class Context {
      * @param morePrefix optional link to more... page
      * @param limit a value indicating if the number of matching lines should be
      * limited. N.b. unlike
-     * {@link #getContext(java.io.Reader, java.io.Writer, java.lang.String, java.lang.String, java.lang.String, org.opensolaris.opengrok.analysis.Definitions, boolean, boolean, java.util.List, org.opensolaris.opengrok.analysis.Scopes)},
+     * {@link #getContext(java.io.Reader, java.io.Writer, java.lang.String, java.lang.String, java.lang.String, org.opengrok.analysis.Definitions, boolean, boolean, java.util.List, org.opengrok.analysis.Scopes)},
      * the {@code limit} argument will not be interpreted w.r.t.
      * {@link RuntimeEnvironment#isQuickContextScan()}.
      * @param tabSize optional positive tab size that must accord with the value

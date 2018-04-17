@@ -18,13 +18,13 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
 /**
  * for plain text tokenizers
  */
-package org.opensolaris.opengrok.search.context;
+package org.opengrok.search.context;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
@@ -32,10 +32,10 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
 import java.util.TreeMap;
-import org.opensolaris.opengrok.search.Hit;
-import org.opensolaris.opengrok.web.Util;
-import org.opensolaris.opengrok.analysis.Scopes;
-import org.opensolaris.opengrok.analysis.Scopes.Scope;
+import org.opengrok.search.Hit;
+import org.opengrok.web.Util;
+import org.opengrok.analysis.Scopes;
+import org.opengrok.analysis.Scopes.Scope;
 
 %%
 

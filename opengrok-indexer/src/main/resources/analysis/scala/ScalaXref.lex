@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,13 +26,13 @@
  * Cross reference a Scala file
  */
 
-package org.opensolaris.opengrok.analysis.scala;
+package org.opengrok.analysis.scala;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.analysis.EmphasisHint;
-import org.opensolaris.opengrok.util.StringUtils;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.EmphasisHint;
+import org.opengrok.util.StringUtils;
+import org.opengrok.web.HtmlConsts;
 %%
 %public
 %class ScalaXref

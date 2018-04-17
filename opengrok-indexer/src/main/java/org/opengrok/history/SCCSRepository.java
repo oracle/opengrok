@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,7 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * This class gives access to repositories built on top of SCCS (including
@@ -51,7 +51,7 @@ public class SCCSRepository extends Repository {
      * The property name used to obtain the client command for this repository.
      */
     public static final String CMD_PROPERTY_KEY
-            = "org.opensolaris.opengrok.history.SCCS";
+            = "org.opengrok.history.SCCS";
     /**
      * The command to use to access the repository if none was given explicitly
      */

@@ -18,19 +18,19 @@
  */
 
 /*
- * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 /*
  * Copyright (c) 2010, Trond Norbye <trond.norbye@gmail.com>. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.util.Executor;
 
 /**
  * Access to a Git repository.
@@ -45,7 +45,7 @@ public class RepoRepository extends Repository {
      * The property name used to obtain the client command for this repository.
      */
     public static final String CMD_PROPERTY_KEY
-            = "org.opensolaris.opengrok.history.repo";
+            = "org.opengrok.history.repo";
     /**
      * The command to use to access the repository if none was given explicitly
      */

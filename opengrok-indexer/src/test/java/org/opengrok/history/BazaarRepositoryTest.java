@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -30,9 +30,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRule;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.RepositoryInstalled;
 
 import static org.junit.Assert.*;
 

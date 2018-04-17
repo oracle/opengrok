@@ -18,12 +18,12 @@
  */
 
 /*
- * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -35,13 +35,13 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.Definitions.Tag;
-import org.opensolaris.opengrok.analysis.Scopes.Scope;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.util.StringUtils;
-import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.Definitions.Tag;
+import org.opengrok.analysis.Scopes.Scope;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.util.StringUtils;
+import org.opengrok.web.HtmlConsts;
+import org.opengrok.web.Util;
 
 /**
  * Represents a container for extracted, shared logic between {@link JFlexXref}

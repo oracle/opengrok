@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,11 +26,11 @@
  * Cross reference a Pascal file
  */
 
-package org.opensolaris.opengrok.analysis.pascal;
+package org.opengrok.analysis.pascal;
 
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.analysis.ScopeAction;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.ScopeAction;
+import org.opengrok.web.HtmlConsts;
 %%
 %public
 %class PascalXref

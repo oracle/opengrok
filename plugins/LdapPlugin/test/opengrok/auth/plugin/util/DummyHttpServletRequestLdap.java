@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin.util;
 
@@ -40,7 +40,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 import opengrok.auth.plugin.UserPlugin;
 import opengrok.auth.plugin.entity.User;
-import org.opensolaris.opengrok.util.RandomString;
+import org.opengrok.util.RandomString;
 
 public class DummyHttpServletRequestLdap implements HttpServletRequest {
 

@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
-import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.StreamSource;
 
 /**
  * Represents a splitter of source text into lines where end-of-line tokens --
@@ -168,7 +168,7 @@ public class SourceSplitter {
 
     /**
      * Calls
-     * {@link #reset(org.opensolaris.opengrok.analysis.StreamSource, org.opensolaris.opengrok.util.ReaderWrapper)}
+     * {@link #reset(org.opengrok.analysis.StreamSource, org.opengrok.util.ReaderWrapper)}
      * with {@code src} and {@code null}.
      * @param src a defined instance
      * @throws java.io.IOException if an I/O error occurs

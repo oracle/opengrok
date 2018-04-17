@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.scala;
+package org.opengrok.analysis.scala;
 
 import java.util.HashSet;
 import java.util.Set;

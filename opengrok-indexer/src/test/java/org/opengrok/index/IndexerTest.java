@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -46,20 +46,20 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRule;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.Repository;
-import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.FileUtilities;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.RepositoryInstalled;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.history.Repository;
+import org.opengrok.history.RepositoryFactory;
+import org.opengrok.history.RepositoryInfo;
+import org.opengrok.util.Executor;
+import org.opengrok.util.FileUtilities;
+import org.opengrok.util.TestRepository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

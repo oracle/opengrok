@@ -40,8 +40,8 @@
   <Match>
     <And>
       <Or>
-	<Class name="org.opensolaris.opengrok.search.context.PlainLineTokenizer"/>
-	<Class name="org.opensolaris.opengrok.analysis.tcl.TclSymbolTokenizer"/>
+	<Class name="org.opengrok.search.context.PlainLineTokenizer"/>
+	<Class name="org.opengrok.analysis.tcl.TclSymbolTokenizer"/>
       </Or>
       <Method name="yylex"/>
     </And>
@@ -50,7 +50,7 @@
 
   <!-- ignore generated analysis classes which don't need to override equals or hashcode -->
   <Match>
-      <Class name="~org\.opensolaris\.opengrok\.analysis.*"/>
+      <Class name="~org\.opengrok\.analysis.*"/>
       <Bug code="Eq"/>
   </Match>
 

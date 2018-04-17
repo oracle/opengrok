@@ -18,33 +18,31 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.plain;
+package org.opengrok.analysis.plain;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.ExpandTabsReader;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.analysis.OGKTextField;
-import org.opensolaris.opengrok.analysis.OGKTextVecField;
-import org.opensolaris.opengrok.analysis.Scopes;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.analysis.TextAnalyzer;
-import org.opensolaris.opengrok.analysis.WriteXrefArgs;
-import org.opensolaris.opengrok.analysis.Xrefer;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.util.NullWriter;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.analysis.ExpandTabsReader;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.JFlexTokenizer;
+import org.opengrok.analysis.JFlexXref;
+import org.opengrok.analysis.OGKTextField;
+import org.opengrok.analysis.OGKTextVecField;
+import org.opengrok.analysis.Scopes;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.TextAnalyzer;
+import org.opengrok.analysis.WriteXrefArgs;
+import org.opengrok.analysis.Xrefer;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.util.NullWriter;
 
 /**
  * Analyzer for plain text files Created on September 21, 2005

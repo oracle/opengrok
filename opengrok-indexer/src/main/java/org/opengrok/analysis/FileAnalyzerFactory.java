@@ -18,17 +18,17 @@
  */
 
 /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.analysis.FileAnalyzer.Genre;
 
 /**
  * Factory class which creates a {@code FileAnalyzer} object and

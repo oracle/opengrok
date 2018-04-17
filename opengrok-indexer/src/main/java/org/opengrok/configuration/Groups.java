@@ -18,9 +18,9 @@
  */
 
  /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.opensolaris.opengrok.util.Getopt;
+import org.opengrok.util.Getopt;
 
 /**
  *

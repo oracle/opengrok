@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.rust;
+package org.opengrok.analysis.rust;
 
 /**
  * Represents a container for Rust-related utility methods.

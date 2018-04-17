@@ -18,14 +18,14 @@
  */
 
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.opensolaris.opengrok.util.StringUtils.getReadableTime;
+import static org.opengrok.util.StringUtils.getReadableTime;
 
 public class Statistics {
         

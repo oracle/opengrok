@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner. 
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -56,22 +56,22 @@ import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.store.FSDirectory;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
-import org.opensolaris.opengrok.index.IndexAnalysisSettings;
-import org.opensolaris.opengrok.index.IndexAnalysisSettingsAccessor;
-import org.opensolaris.opengrok.index.IndexDatabase;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.search.Summarizer;
-import org.opensolaris.opengrok.search.context.Context;
-import org.opensolaris.opengrok.search.context.HistoryContext;
-import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
-import org.opensolaris.opengrok.util.IOUtils;
+import org.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.CompatibleAnalyser;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.SuperIndexSearcher;
+import org.opengrok.index.IndexAnalysisSettings;
+import org.opengrok.index.IndexAnalysisSettingsAccessor;
+import org.opengrok.index.IndexDatabase;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.search.Summarizer;
+import org.opengrok.search.context.Context;
+import org.opengrok.search.context.HistoryContext;
+import org.opengrok.util.ForbiddenSymlinkException;
+import org.opengrok.util.IOUtils;
 
 /**
  * Working set for a search basically to factor out/separate search related

@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 # Supported Environment Variables:
@@ -261,7 +261,7 @@ SetupInstanceConfiguration()
     JAVA_CLASSPATH="$CLASSPATH"
     JAVA_CLASSPATH="${JAVA_CLASSPATH}:${OPENGROK_JAR}"
     JAVA_OPTS="${JAVA_OPTS:--Xmx32m}"
-    MAIN_CLASS="org.opensolaris.opengrok.configuration.messages.Messages"
+    MAIN_CLASS="org.opengrok.configuration.messages.Messages"
 
     REMOTE_SERVER="localhost"
     REMOTE_PORT_NUM=2424

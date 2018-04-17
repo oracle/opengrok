@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.erlang;
+package org.opengrok.analysis.erlang;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import static org.opensolaris.opengrok.util.CustomAssertions.assertSymbolStream;
+import static org.opengrok.util.CustomAssertions.assertSymbolStream;
 
 /**
  * Tests the {@link ErlangSymbolTokenizer} class.

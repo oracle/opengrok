@@ -25,7 +25,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.opensolaris.opengrok</groupId>
+    <groupId>org.opengrok</groupId>
     <artifactId>opengrok</artifactId>
     <version>1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -207,7 +207,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                         ${project.build.directory}/findbugs-reports
                     </xmlOutputDirectory>
                     <effort>max</effort>
-                    <onlyAnalyze>org.opensolaris.opengrok.*</onlyAnalyze>
+                    <onlyAnalyze>org.opengrok.*</onlyAnalyze>
                 </configuration>
             </plugin>
             <plugin>

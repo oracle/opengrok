@@ -18,11 +18,10 @@
  */
 
 /*
- * Copyright 2010 Sun Micosystems.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import org.junit.After;
 import org.junit.AfterClass;

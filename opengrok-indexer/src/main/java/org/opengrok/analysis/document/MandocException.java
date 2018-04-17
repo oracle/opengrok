@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.document;
+package org.opengrok.analysis.document;
 
 /**
  * Represents an exception that occurs when mandoc exits non-zero.

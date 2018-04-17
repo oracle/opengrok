@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,12 +35,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.history.RepositoryFactory;
+import org.opengrok.util.TestRepository;
 
 /**
  * Unit tests for the {@code IndexDatabase} class.

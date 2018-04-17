@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok;
+package org.opengrok;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -99,9 +99,9 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <target name="-update-build-info"
             depends="-get-changeset-from-command,-get-changeset-from-file">
-        <mkdir dir="${build.classes.dir}/org/opensolaris/opengrok"/>
+        <mkdir dir="${build.classes.dir}/org/opengrok"/>
         <propertyfile
-            file="${build.classes.dir}/org/opensolaris/opengrok/info.properties">
+            file="${build.classes.dir}/org/opengrok/info.properties">
             <entry  key="version" value="${version}"/>
             <entry  key="changeset" value="${changeset}"/>
         </propertyfile>
@@ -141,11 +141,11 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
             <fileset dir="${test.bzr}/bzr"/>
         </copy>
 
-        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
+        <zip destfile="${build.test.classes.dir}/org/opengrok/index/source.zip"
               basedir="${test.sources}"
               update="false"
               defaultexcludes="no"/>
-        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
+        <zip destfile="${build.test.classes.dir}/org/opengrok/history/repositories.zip"
                 basedir="${test.repositories}"
                 excludes="mercurial/hg/**, mercurial/hgignore, git/git/**, bitkeeper/bk/**, bazaar/bzr/**"
                 update="false"
@@ -153,7 +153,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
         <copy
              file="${test.plugins_jar}"
-             tofile="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/testplugins.jar" />
+             tofile="${build.test.classes.dir}/org/opengrok/authorization/testplugins.jar" />
 
         <antcall target="-delete-generated-repository-files"/>
     </target>

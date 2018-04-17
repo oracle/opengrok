@@ -21,13 +21,12 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.io.IOException;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.StreamSource;
 
 /**
  * Represents a container for tests of {@link SourceSplitter}.

@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.java;
+package org.opengrok.analysis.java;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -36,9 +36,9 @@ import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.JFlexTokenizer;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * Tests the {@link JavaSymbolTokenizer} class.

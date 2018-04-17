@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
@@ -401,16 +401,16 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Override Built-in Properties
     # Assumption: We should not set properties to the empty string
     PROPERTIES="\
-${BK:+-Dorg.opensolaris.opengrok.history.BitKeeper=$BK} \
-${HG:+-Dorg.opensolaris.opengrok.history.Mercurial=$HG} \
-${CVS:+-Dorg.opensolaris.opengrok.history.cvs=$CVS} \
-${SVN:+-Dorg.opensolaris.opengrok.history.Subversion=$SVN} \
-${SCCS:+-Dorg.opensolaris.opengrok.history.SCCS=$SCCS} \
-${CLEARCASE:+-Dorg.opensolaris.opengrok.history.ClearCase=$CLEARCASE} \
-${GIT:+-Dorg.opensolaris.opengrok.history.git=$GIT} \
-${P4:+-Dorg.opensolaris.opengrok.history.Perforce=$P4} \
-${MTN:+-Dorg.opensolaris.opengrok.history.Monotone=$MTN} \
-${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
+${BK:+-Dorg.opengrok.history.BitKeeper=$BK} \
+${HG:+-Dorg.opengrok.history.Mercurial=$HG} \
+${CVS:+-Dorg.opengrok.history.cvs=$CVS} \
+${SVN:+-Dorg.opengrok.history.Subversion=$SVN} \
+${SCCS:+-Dorg.opengrok.history.SCCS=$SCCS} \
+${CLEARCASE:+-Dorg.opengrok.history.ClearCase=$CLEARCASE} \
+${GIT:+-Dorg.opengrok.history.git=$GIT} \
+${P4:+-Dorg.opengrok.history.Perforce=$P4} \
+${MTN:+-Dorg.opengrok.history.Monotone=$MTN} \
+${BZR:+-Dorg.opengrok.history.Bazaar=$BZR} \
 "
 
     # OPTIONAL: Show revision tags in History view.
@@ -424,7 +424,7 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
     # DELIVERED: An update program for EftarFile
     # Usage: <class> inputFile [inputFile ...] outputFile
     # EftarFile == An Extremely Fast Tagged Attribute Read-only File System
-    EFTAR_UPDATE="org.opensolaris.opengrok.web.EftarFile"
+    EFTAR_UPDATE="org.opengrok.web.EftarFile"
 
     # HARDCODED: Generated EftarFile (See web/*.jsp)
     EFTAR_OUTPUT_FILE="${DATA_ROOT}/index/dtags.eftar"

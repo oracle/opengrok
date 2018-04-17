@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  * (derived from Ctags.java).
  */
-package org.opensolaris.opengrok.analysis.document;
+package org.opengrok.analysis.document;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,9 +35,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.IOUtils;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.IOUtils;
 
 /**
  * Represents a wrapper to run mandoc binary to format manual page content

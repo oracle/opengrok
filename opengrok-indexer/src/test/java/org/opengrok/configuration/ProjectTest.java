@@ -18,9 +18,9 @@
  */
 
  /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;

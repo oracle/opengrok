@@ -18,16 +18,16 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.powershell;
+package org.opengrok.analysis.powershell;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.analysis.ScopeAction;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.ScopeAction;
+import org.opengrok.web.HtmlConsts;
 import java.util.Stack;
 import java.util.regex.Matcher;
 %%

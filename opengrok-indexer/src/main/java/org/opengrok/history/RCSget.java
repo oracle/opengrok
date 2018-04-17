@@ -18,10 +18,9 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -33,7 +32,7 @@ import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
 import org.apache.commons.jrcs.rcs.NodeNotFoundException;
 import org.apache.commons.jrcs.rcs.ParseException;
-import org.opensolaris.opengrok.util.IOUtils;
+import org.opengrok.util.IOUtils;
 
 /**
  * Virtualize RCS log as an input stream

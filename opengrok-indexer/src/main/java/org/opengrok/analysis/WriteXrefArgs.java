@@ -20,16 +20,16 @@
  /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.Reader;
 import java.io.Writer;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
+import org.opengrok.configuration.Project;
+import org.opengrok.history.Annotation;
 
 /**
  * Represents the arguments for the
- * {@link org.opensolaris.opengrok.analysis.FileAnalyzer#writeXref(org.opensolaris.opengrok.analysis.WriteXrefArgs)}
+ * {@link org.opengrok.analysis.FileAnalyzer#writeXref(org.opengrok.analysis.WriteXrefArgs)}
  * method.
  */
 public class WriteXrefArgs {

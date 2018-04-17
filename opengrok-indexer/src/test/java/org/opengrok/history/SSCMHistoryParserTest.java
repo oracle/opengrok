@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

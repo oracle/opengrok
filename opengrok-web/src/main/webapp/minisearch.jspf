@@ -16,19 +16,19 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
 
 --%>
 <%@ page session="false" errorPage="error.jsp" import="
 java.io.File,
 java.io.IOException,
 
-org.opensolaris.opengrok.configuration.Project,
-org.opensolaris.opengrok.history.HistoryGuru,
-org.opensolaris.opengrok.web.EftarFileReader,
-org.opensolaris.opengrok.web.PageConfig,
-org.opensolaris.opengrok.web.Prefix,
-org.opensolaris.opengrok.web.Util"%><%
+org.opengrok.configuration.Project,
+org.opengrok.history.HistoryGuru,
+org.opengrok.web.EftarFileReader,
+org.opengrok.web.PageConfig,
+org.opengrok.web.Prefix,
+org.opengrok.web.Util"%><%
     /* ---------------------- minisearch.jspf start --------------------- */
 {
         PageConfig cfg = PageConfig.get(request);

@@ -18,20 +18,20 @@
  */
 
 /*
- * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import org.opensolaris.opengrok.analysis.Scopes.Scope;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.Annotation;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.Scopes.Scope;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.Annotation;
+import org.opengrok.web.Util;
 
 /**
  * @author Lubos Kosco
@@ -62,7 +62,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
 
     /**
      * The following field is set to {@code true} (via
-     * {@link #sourceCodeSeen(org.opensolaris.opengrok.analysis.SourceCodeSeenEvent)})
+     * {@link #sourceCodeSeen(org.opengrok.analysis.SourceCodeSeenEvent)})
      * when applicable during lexing before a call to {@link #startNewLine()}
      * so that the lines-of-code count is also incremented.
      */
@@ -392,7 +392,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
 
     /**
      * Calls
-     * {@link JFlexXrefUtils#appendLink(java.io.Writer, org.opensolaris.opengrok.analysis.JFlexLexer, java.lang.String, boolean, java.util.regex.Pattern)}
+     * {@link JFlexXrefUtils#appendLink(java.io.Writer, org.opengrok.analysis.JFlexLexer, java.lang.String, boolean, java.util.regex.Pattern)}
      * with the active {@link Writer}, the instance's
      * {@link ScanningSymbolMatcher}, {@code url}, {@code false}, and
      * {@code null}.

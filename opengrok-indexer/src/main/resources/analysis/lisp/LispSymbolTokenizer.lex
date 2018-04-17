@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,9 +26,9 @@
  * Gets Lisp symbols - ignores comments, strings, keywords
  */
 
-package org.opensolaris.opengrok.analysis.lisp;
+package org.opengrok.analysis.lisp;
 
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class LispSymbolTokenizer

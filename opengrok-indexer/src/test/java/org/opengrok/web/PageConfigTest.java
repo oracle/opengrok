@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,18 +35,18 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opensolaris.opengrok.authorization.AuthControlFlag;
-import org.opensolaris.opengrok.authorization.AuthorizationFramework;
-import org.opensolaris.opengrok.authorization.AuthorizationPlugin;
-import org.opensolaris.opengrok.authorization.TestPlugin;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRule;
-import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.Annotation;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.authorization.AuthControlFlag;
+import org.opengrok.authorization.AuthorizationFramework;
+import org.opengrok.authorization.AuthorizationPlugin;
+import org.opengrok.authorization.TestPlugin;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.RepositoryInstalled;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.Annotation;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.util.TestRepository;
 
 import static org.junit.Assert.*;
 

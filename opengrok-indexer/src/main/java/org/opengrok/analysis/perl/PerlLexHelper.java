@@ -21,18 +21,18 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.perl;
+package org.opengrok.analysis.perl;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.Resettable;
-import org.opensolaris.opengrok.util.StringUtils;
-import org.opensolaris.opengrok.web.HtmlConsts;
-import org.opensolaris.opengrok.analysis.JFlexJointLexer;
-import org.opensolaris.opengrok.util.RegexUtils;
+import org.opengrok.analysis.Resettable;
+import org.opengrok.util.StringUtils;
+import org.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexJointLexer;
+import org.opengrok.util.RegexUtils;
 
 /**
  * Represents an API for object's using {@link PerlLexHelper}

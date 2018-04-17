@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,12 +35,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.index.IgnoredNames;
-import org.opensolaris.opengrok.search.DirectoryEntry;
-import org.opensolaris.opengrok.search.FileExtra;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.HistoryException;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.index.IgnoredNames;
+import org.opengrok.search.DirectoryEntry;
+import org.opengrok.search.FileExtra;
 
 /**
  * Generates HTML listing of a Directory
@@ -150,7 +150,7 @@ public class DirectoryListing {
      *  Gets filtered by {@link IgnoredNames}.
      * @return a possible empty list of README files included in the written
      *  listing.
-     * @throws org.opensolaris.opengrok.history.HistoryException when we cannot
+     * @throws org.opengrok.history.HistoryException when we cannot
      * get result from SCM
      *
      * @throws java.io.IOException when any I/O problem

@@ -18,14 +18,14 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page  session="false" errorPage="error.jsp" import="
 java.util.Set,
 
-org.opensolaris.opengrok.web.Util"
+org.opengrok.web.Util"
 %>
 <%
 {

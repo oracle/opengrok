@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,23 +54,23 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.jrcs.diff.Diff;
 import org.apache.commons.jrcs.diff.DifferentiationFailedException;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.ExpandTabsReader;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.authorization.AuthorizationFramework;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.messages.Message;
-import org.opensolaris.opengrok.history.Annotation;
-import org.opensolaris.opengrok.history.History;
-import org.opensolaris.opengrok.history.HistoryEntry;
-import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.index.IgnoredNames;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.util.IOUtils;
+import org.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.ExpandTabsReader;
+import org.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.authorization.AuthorizationFramework;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.messages.Message;
+import org.opengrok.history.Annotation;
+import org.opengrok.history.History;
+import org.opengrok.history.HistoryEntry;
+import org.opengrok.history.HistoryException;
+import org.opengrok.history.HistoryGuru;
+import org.opengrok.index.IgnoredNames;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.util.IOUtils;
 
 /**
  * A simple container to lazy initialize common vars wrt. a single request. It

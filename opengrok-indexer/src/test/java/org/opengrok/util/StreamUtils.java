@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -31,9 +31,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import static org.junit.Assert.assertNotNull;
-import org.opensolaris.opengrok.analysis.CtagsReader;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.CtagsReader;
+import org.opengrok.analysis.Definitions;
+import org.opengrok.analysis.StreamSource;
 
 /**
  * Represents a container for stream utility methods

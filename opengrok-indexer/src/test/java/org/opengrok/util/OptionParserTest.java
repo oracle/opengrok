@@ -17,10 +17,10 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Portions Copyright (c) 2017, Steven Haehn.
  */
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -30,7 +30,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.text.ParseException;
-import org.opensolaris.opengrok.index.Indexer;
+import org.opengrok.index.Indexer;
 
 /**
  *

@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -36,14 +36,14 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.opensolaris.opengrok.authorization.AuthorizationFramework;
-import org.opensolaris.opengrok.authorization.IAuthorizationPlugin;
-import org.opensolaris.opengrok.authorization.TestPlugin;
-import org.opensolaris.opengrok.configuration.Group;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.RepoRepository;
-import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opengrok.authorization.AuthorizationFramework;
+import org.opengrok.authorization.IAuthorizationPlugin;
+import org.opengrok.authorization.TestPlugin;
+import org.opengrok.configuration.Group;
+import org.opengrok.configuration.Project;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.RepoRepository;
+import org.opengrok.history.RepositoryInfo;
 
 public class ProjectHelperTestBase {
 

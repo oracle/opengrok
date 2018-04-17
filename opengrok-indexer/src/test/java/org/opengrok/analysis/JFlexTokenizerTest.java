@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -29,20 +29,20 @@ import java.io.StringReader;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.c.CSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.c.CxxSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.document.TroffFullTokenizer;
-import org.opensolaris.opengrok.analysis.fortran.FortranSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.haskell.HaskellSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.java.JavaSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.lisp.LispSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.perl.PerlSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
-import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.scala.ScalaSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.sh.ShSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.tcl.TclSymbolTokenizer;
-import org.opensolaris.opengrok.analysis.uue.UuencodeFullTokenizer;
+import org.opengrok.analysis.c.CSymbolTokenizer;
+import org.opengrok.analysis.c.CxxSymbolTokenizer;
+import org.opengrok.analysis.document.TroffFullTokenizer;
+import org.opengrok.analysis.fortran.FortranSymbolTokenizer;
+import org.opengrok.analysis.haskell.HaskellSymbolTokenizer;
+import org.opengrok.analysis.java.JavaSymbolTokenizer;
+import org.opengrok.analysis.lisp.LispSymbolTokenizer;
+import org.opengrok.analysis.perl.PerlSymbolTokenizer;
+import org.opengrok.analysis.plain.PlainFullTokenizer;
+import org.opengrok.analysis.plain.PlainSymbolTokenizer;
+import org.opengrok.analysis.scala.ScalaSymbolTokenizer;
+import org.opengrok.analysis.sh.ShSymbolTokenizer;
+import org.opengrok.analysis.tcl.TclSymbolTokenizer;
+import org.opengrok.analysis.uue.UuencodeFullTokenizer;
 import static org.junit.Assert.*;
 
 /**

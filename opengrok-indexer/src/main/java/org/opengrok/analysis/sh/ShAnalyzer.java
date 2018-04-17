@@ -18,17 +18,17 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.sh;
+package org.opengrok.analysis.sh;
 
 import java.io.Reader;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.JFlexTokenizer;
+import org.opengrok.analysis.JFlexXref;
+import org.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
 /**
  * Analyzes Shell scripts/Conf files etc., Created on September 21, 2005

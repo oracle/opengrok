@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,9 +26,9 @@
  * Gets Scala symbols - ignores comments, strings, keywords
  */
 
-package org.opensolaris.opengrok.analysis.scala;
+package org.opengrok.analysis.scala;
 
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class ScalaSymbolTokenizer

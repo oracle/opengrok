@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.analysis.javascript;
+package org.opengrok.analysis.javascript;
 
 import java.util.HashSet;
 import java.util.Set;

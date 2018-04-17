@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,9 +37,9 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import org.json.simple.parser.ParseException;
-import org.opensolaris.opengrok.authorization.AuthorizationFramework;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.authorization.AuthorizationFramework;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * Initialize webapp context

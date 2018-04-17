@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.opensolaris.opengrok.search;
+package org.opengrok.search;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.web.Util;
 
 /** A document summary dynamically generated to match a query. */
 public class Summary {

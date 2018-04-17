@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis.executables;
+package org.opengrok.analysis.executables;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -37,13 +37,13 @@ import java.util.logging.Logger;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.analysis.OGKTextField;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.StreamSource;
+import org.opengrok.analysis.OGKTextField;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.search.QueryBuilder;
+import org.opengrok.web.Util;
 
 /**
  * Analyzes ELF (Executable and Linking Format) files.

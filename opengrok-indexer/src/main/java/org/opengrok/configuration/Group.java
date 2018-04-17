@@ -18,16 +18,16 @@
  */
 
  /*
- * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.opensolaris.opengrok.util.ClassUtil;
+import org.opengrok.util.ClassUtil;
 
 /**
  * Placeholder for the information about subgroups of projects and repositories.

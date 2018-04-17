@@ -21,11 +21,11 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.sql;
+package org.opengrok.analysis.sql;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import org.opensolaris.opengrok.util.StringUtils;
+import org.opengrok.util.StringUtils;
 
 /**
  * Represents a test class for {@link SQLUtils}.

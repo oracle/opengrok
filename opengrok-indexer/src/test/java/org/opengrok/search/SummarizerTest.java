@@ -18,15 +18,14 @@
  */
 
 /*
- * Copyright 2010 Sun Micosystems.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.search;
+package org.opengrok.search;
 
 import org.apache.lucene.search.Query;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
+import org.opengrok.analysis.CompatibleAnalyser;
 import static org.junit.Assert.*;
 
 /**

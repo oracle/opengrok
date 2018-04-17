@@ -25,7 +25,7 @@ Header insertion can be done e.g. using the Modify headers Firefox plugin.
 ```xml
         <!-- get user cred from HTTP headers -->
         <void method="add">
-            <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+            <object class="org.opengrok.authorization.AuthorizationPlugin">
                 <void property="name">
                     <string>opengrok.auth.plugin.UserPlugin</string>
                 </void>
@@ -72,7 +72,7 @@ indexer via the -R option.
         <void property="stack">
             <!-- get user cred from HTTP headers -->
             <void method="add">
-                <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+                <object class="org.opengrok.authorization.AuthorizationPlugin">
                     <void property="name">
                         <string>opengrok.auth.plugin.UserPlugin</string>
                     </void>
@@ -84,7 +84,7 @@ indexer via the -R option.
 
             <!-- get email, ou and uid -->
             <void method="add">
-                <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+                <object class="org.opengrok.authorization.AuthorizationPlugin">
                     <void property="name">
                         <string>opengrok.auth.plugin.LdapUserPlugin</string>
                     </void>
@@ -103,7 +103,7 @@ indexer via the -R option.
             <!-- Authorization stacks follow -->
 
             <void method="add">
-                <object class="org.opensolaris.opengrok.authorization.AuthorizationStack">
+                <object class="org.opengrok.authorization.AuthorizationStack">
                     <void property="forProjects">
                         <void method="add">
                             <string>foo</string>
@@ -122,7 +122,7 @@ indexer via the -R option.
                     </void>
                     <void property="stack">
                         <void method="add">
-                            <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+                            <object class="org.opengrok.authorization.AuthorizationPlugin">
                                 <void property="name">
                                     <string>opengrok.auth.plugin.LdapAttrPlugin</string>
                                 </void>
@@ -142,7 +142,7 @@ indexer via the -R option.
                             </object>
                         </void>
                         <void method="add">
-                            <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+                            <object class="org.opengrok.authorization.AuthorizationPlugin">
                                 <void property="name">
                                     <string>opengrok.auth.plugin.LdapFilterPlugin</string>
                                 </void>

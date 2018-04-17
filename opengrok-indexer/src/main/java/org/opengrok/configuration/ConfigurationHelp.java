@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -35,12 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import org.opensolaris.opengrok.authorization.AuthControlFlag;
-import org.opensolaris.opengrok.authorization.AuthorizationPlugin;
-import org.opensolaris.opengrok.authorization.AuthorizationStack;
-import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.index.Filter;
-import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opengrok.authorization.AuthControlFlag;
+import org.opengrok.authorization.AuthorizationPlugin;
+import org.opengrok.authorization.AuthorizationStack;
+import org.opengrok.history.RepositoryInfo;
+import org.opengrok.index.Filter;
+import org.opengrok.index.IgnoredNames;
 
 /**
  * Represents a utility class to present some user-readable help regarding

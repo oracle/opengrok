@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.util.Date;
 

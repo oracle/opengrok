@@ -21,11 +21,11 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.eiffel;
+package org.opengrok.analysis.eiffel;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.web.HtmlConsts;
 %%
 %public
 %class EiffelXref

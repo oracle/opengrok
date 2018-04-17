@@ -21,7 +21,7 @@
  * Copyright 2011 Trond Norbye.  All rights reserved.
  * Use is subject to license terms.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import org.junit.After;
 import org.junit.AfterClass;

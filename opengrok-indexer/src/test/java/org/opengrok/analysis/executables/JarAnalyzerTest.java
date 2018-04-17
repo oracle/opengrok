@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.executables;
+package org.opengrok.analysis.executables;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,14 +33,14 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.authorization.AuthorizationFrameworkReloadTest;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.index.Indexer;
-import org.opensolaris.opengrok.util.TestRepository;
-import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.index.DefaultIndexChangedListener;
-import org.opensolaris.opengrok.index.IndexChangedListener;
-import org.opensolaris.opengrok.search.SearchEngine;
+import org.opengrok.authorization.AuthorizationFrameworkReloadTest;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.index.Indexer;
+import org.opengrok.util.TestRepository;
+import org.opengrok.history.RepositoryFactory;
+import org.opengrok.index.DefaultIndexChangedListener;
+import org.opengrok.index.IndexChangedListener;
+import org.opengrok.search.SearchEngine;
 
 /**
  * Represents a container for tests of {@link JarAnalyzer} and

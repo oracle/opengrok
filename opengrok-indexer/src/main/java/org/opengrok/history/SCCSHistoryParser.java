@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,11 +33,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.IOUtils;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.IOUtils;
 
 /**
  * Reads and filters out junk from a SCCS history file.

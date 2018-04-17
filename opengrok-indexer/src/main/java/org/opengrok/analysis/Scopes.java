@@ -18,9 +18,9 @@
  */
 
  /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

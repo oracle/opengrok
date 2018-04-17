@@ -18,14 +18,14 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.Scopes.Scope;
+import org.opengrok.analysis.Scopes.Scope;
 
 /**
  *

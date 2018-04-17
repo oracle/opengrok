@@ -18,16 +18,16 @@
  */
 
 /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.uue;
+package org.opengrok.analysis.uue;
 
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.analysis.EmphasisHint;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.analysis.EmphasisHint;
+import org.opengrok.web.HtmlConsts;
 %%
 %public
 %class UuencodeXref

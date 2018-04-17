@@ -18,17 +18,17 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.document;
-import org.opensolaris.opengrok.analysis.JFlexNonXref;
+package org.opengrok.analysis.document;
+import org.opengrok.analysis.JFlexNonXref;
 import java.io.IOException;
 import java.io.Writer;
-import org.opensolaris.opengrok.analysis.JFlexXrefUtils;
-import org.opensolaris.opengrok.web.Util;
+import org.opengrok.analysis.JFlexXrefUtils;
+import org.opengrok.web.Util;
 %%
 %public
 %class TroffXref

@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -38,8 +38,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.RepositoryFactory;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.RepositoryFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

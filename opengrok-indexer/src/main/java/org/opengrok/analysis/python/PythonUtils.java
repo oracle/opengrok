@@ -21,10 +21,10 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.python;
+package org.opengrok.analysis.python;
 
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.util.RegexUtils;
+import org.opengrok.util.RegexUtils;
 
 /**
  * Represents a container for Python-related utility methods

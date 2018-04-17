@@ -17,8 +17,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc. All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
 #
 
 PATH="/usr/bin:/bin"
@@ -72,7 +71,7 @@ xx() {
 runjava() {
 	xx ${JAVA} ${JAVA_OPTS} ${JAVA_EXTRA_PARAMS}		\
 	-cp ${CLASSPATH}					\
-	org.opensolaris.opengrok.index.Indexer			\
+	org.opengrok.index.Indexer			\
 	${OG_DEF_PARAMS} ${OG_EXTRA_PARAMS}			\
 	${READ_XML_CONF}					\
 	-W ${XML_CONFIGURATION}					\

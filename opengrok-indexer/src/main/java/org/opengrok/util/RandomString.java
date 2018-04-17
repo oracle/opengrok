@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 /**
  * Utility class that can generate various random strings.

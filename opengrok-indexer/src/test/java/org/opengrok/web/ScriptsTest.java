@@ -18,9 +18,9 @@
  */
 
  /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.opensolaris.opengrok.web.Scripts.Script;
+import org.opengrok.web.Scripts.Script;
 
 /**
  *

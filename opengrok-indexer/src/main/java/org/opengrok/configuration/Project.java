@@ -17,10 +17,10 @@
  * CDDL HEADER END
  */
 
- /*
-  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,9 +31,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.ClassUtil;
-import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.ClassUtil;
+import org.opengrok.util.ForbiddenSymlinkException;
 
 /**
  * Placeholder for the information that builds up a project

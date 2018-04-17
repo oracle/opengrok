@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.condition;
+package org.opengrok.condition;
 
 /**
  * Represents an intentional exception thrown for testing purposes

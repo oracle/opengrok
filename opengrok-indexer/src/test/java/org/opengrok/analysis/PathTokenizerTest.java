@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import java.io.StringReader;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;

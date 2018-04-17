@@ -18,17 +18,15 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -38,8 +36,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -67,7 +65,7 @@ public class SubversionRepository extends Repository {
      * The property name used to obtain the client command for this repository.
      */
     public static final String CMD_PROPERTY_KEY
-            = "org.opensolaris.opengrok.history.Subversion";
+            = "org.opengrok.history.Subversion";
     /**
      * The command to use to access the repository if none was given explicitly
      */

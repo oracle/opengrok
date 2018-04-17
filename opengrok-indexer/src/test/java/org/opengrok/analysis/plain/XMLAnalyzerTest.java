@@ -18,20 +18,19 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.plain;
+package org.opengrok.analysis.plain;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.WriteXrefArgs;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.WriteXrefArgs;
 
 public class XMLAnalyzerTest {
     @Test

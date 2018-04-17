@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,13 +26,13 @@
  * Gets Perl symbols - ignores comments, strings, keywords
  */
 
-package org.opensolaris.opengrok.analysis.perl;
+package org.opengrok.analysis.perl;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.util.StringUtils;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.util.StringUtils;
+import org.opengrok.web.HtmlConsts;
 %%
 %public
 %class PerlSymbolTokenizer

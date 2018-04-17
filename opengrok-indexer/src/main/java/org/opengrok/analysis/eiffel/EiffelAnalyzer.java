@@ -21,14 +21,14 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.analysis.eiffel;
+package org.opengrok.analysis.eiffel;
 
 import java.io.Reader;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
+import org.opengrok.analysis.FileAnalyzer;
+import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.analysis.JFlexTokenizer;
+import org.opengrok.analysis.JFlexXref;
+import org.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 
 /**
  * Represents an analyzer for the Eiffel language.

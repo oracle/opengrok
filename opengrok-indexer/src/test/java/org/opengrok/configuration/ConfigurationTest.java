@@ -18,9 +18,9 @@
  */
 
  /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -36,7 +36,7 @@ import javax.xml.parsers.SAXParserFactory;
 import junit.framework.AssertionFailedError;
 import org.junit.Assert;
 import org.junit.Test;
-import org.opensolaris.opengrok.util.ClassUtil;
+import org.opengrok.util.ClassUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

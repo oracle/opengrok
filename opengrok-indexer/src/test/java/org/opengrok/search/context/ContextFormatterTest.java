@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.search.context;
+package org.opengrok.search.context;
 
 import org.apache.lucene.search.uhighlight.Passage;
 import org.apache.lucene.util.BytesRef;
@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opengrok.util.CustomAssertions.assertLinesEqual;
 
 /**
  * Represents a container for tests of {@link ContextFormatter}.

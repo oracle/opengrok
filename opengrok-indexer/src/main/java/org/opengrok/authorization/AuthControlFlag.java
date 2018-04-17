@@ -17,10 +17,10 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.authorization;
+package org.opengrok.authorization;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;

@@ -47,12 +47,12 @@ java.util.logging.FileHandler.limit = 52428800
 # 30 files
 java.util.logging.FileHandler.count = 30
 #java.util.logging.FileHandler.formatter = java.util.logging.XMLFormatter
-java.util.logging.FileHandler.formatter = org.opensolaris.opengrok.logger.formatter.SimpleFileLogFormatter
+java.util.logging.FileHandler.formatter = org.opengrok.logger.formatter.SimpleFileLogFormatter
 
 # Limit the message that are printed on the console to INFO and above.
 #java.util.logging.ConsoleHandler.level = INFO
 java.util.logging.ConsoleHandler.level = WARNING
-java.util.logging.ConsoleHandler.formatter = org.opensolaris.opengrok.logger.formatter.SimpleFileLogFormatter
+java.util.logging.ConsoleHandler.formatter = org.opengrok.logger.formatter.SimpleFileLogFormatter
 
 
 ############################################################

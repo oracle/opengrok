@@ -22,7 +22,7 @@
  */
 
 /*
- * See org.opensolaris.opengrok.util.StringUtils FNAME_CHARS_PAT where the
+ * See org.opengrok.util.StringUtils FNAME_CHARS_PAT where the
  * following regex is mirrored.
  */
 FNameChar = [a-zA-Z0-9_\-\.]

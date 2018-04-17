@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.configuration;
+package org.opengrok.configuration;
 
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
@@ -53,12 +53,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.opensolaris.opengrok.authorization.AuthControlFlag;
-import org.opensolaris.opengrok.authorization.AuthorizationStack;
-import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.index.Filter;
-import org.opensolaris.opengrok.index.IgnoredNames;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opengrok.authorization.AuthControlFlag;
+import org.opengrok.authorization.AuthorizationStack;
+import org.opengrok.history.RepositoryInfo;
+import org.opengrok.index.Filter;
+import org.opengrok.index.IgnoredNames;
+import org.opengrok.logger.LoggerFactory;
 
 /**
  * Placeholder class for all configuration variables. Due to the multithreaded
@@ -294,7 +294,7 @@ public final class Configuration {
      *
      * @return current tab size set.
      * @see Project#getTabSize()
-     * @see org.opensolaris.opengrok.analysis.ExpandTabsReader
+     * @see org.opengrok.analysis.ExpandTabsReader
      */
     public int getTabSize() {
         return tabSize;
@@ -306,7 +306,7 @@ public final class Configuration {
      *
      * @param tabSize tabsize to set.
      * @see Project#setTabSize(int)
-     * @see org.opensolaris.opengrok.analysis.ExpandTabsReader
+     * @see org.opengrok.analysis.ExpandTabsReader
      */
     public void setTabSize(int tabSize) {
         this.tabSize = tabSize;
@@ -793,8 +793,8 @@ public final class Configuration {
 
     /**
      * Set the URL prefix to be used by the {@link
-     * org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer} as well
-     * as lexers (see {@link org.opensolaris.opengrok.analysis.JFlexXref}) when
+     * org.opengrok.analysis.executables.JavaClassAnalyzer} as well
+     * as lexers (see {@link org.opengrok.analysis.JFlexXref}) when
      * they create output with html links.
      *
      * @param urlPrefix prefix to use.

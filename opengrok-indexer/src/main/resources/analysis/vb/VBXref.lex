@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -26,11 +26,11 @@
  * Cross reference a VB file
  */
 
-package org.opensolaris.opengrok.analysis.vb;
+package org.opengrok.analysis.vb;
 
 import java.io.IOException;
-import org.opensolaris.opengrok.analysis.JFlexSymbolMatcher;
-import org.opensolaris.opengrok.web.HtmlConsts;
+import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.web.HtmlConsts;
 %%
 %public
 %class VBXref

@@ -18,10 +18,10 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.analysis;
+package org.opengrok.analysis;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -117,7 +117,7 @@ public class CtagsParserTest {
         assertEquals(37, cDefs.getTags().size());
         assertEquals(31, ucDefs.getTags().size());
 
-        String uc_java = "org.opensolaris.opengrok.analysis.java\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^package org.opensolaris.opengrok.analysis.java;$/;\"\tpackage\tline:23\n"
+        String uc_java = "org.opengrok.analysis.java\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^package org.opengrok.analysis.java;$/;\"\tpackage\tline:23\n"
                 + "Sample\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^public class Sample {$/;\"\tclass\tline:25\n"
                 + "MY_MEMBER\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^    static private String MY_MEMBER = \"value\";$/;\"\tfield\tline:27\tclass:Sample\n"
                 + "Sample\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^    public Sample() {$/;\"\tmethod\tline:29\tclass:Sample\tsignature:()\n"
@@ -131,7 +131,7 @@ public class CtagsParserTest {
                 + "num1\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^        int num1, num2;$/;\"\tlocal\tline:61\n"
                 + "num2\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^        int num1, num2;$/;\"\tlocal\tline:61";
         //note for java we disable local vars for exuberant ctags, but enable for universal ones
-        String c_java = "org.opensolaris.opengrok.analysis.java\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^package org.opensolaris.opengrok.analysis.java;$/;\"\tpackage\tline:23\n"
+        String c_java = "org.opengrok.analysis.java\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^package org.opengrok.analysis.java;$/;\"\tpackage\tline:23\n"
                 + "Sample\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^public class Sample {$/;\"\tclass\tline:25\n"
                 + "MY_MEMBER\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^    static private String MY_MEMBER = \"value\";$/;\"\tfield\tline:27\tclass:Sample\n"
                 + "Sample\thome/jobs/OpenGrokAnt/workspace/testdata/sources/java/Sample.java\t/^    public Sample() {$/;\"\tmethod\tline:29\tclass:Sample\tsignature:()\n"

@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.util;
+package org.opengrok.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,8 +31,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.index.IgnoredNames;
 import static org.junit.Assert.*;
 
 /**

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 /**
  * Represents a container class for string constants related to production of
