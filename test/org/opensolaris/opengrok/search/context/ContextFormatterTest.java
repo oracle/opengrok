@@ -61,7 +61,7 @@ public class ContextFormatterTest {
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
-        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD));
+        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD),1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
         // First, test with contextCount==0
@@ -103,7 +103,7 @@ public class ContextFormatterTest {
         Passage p = new Passage();
         p.setStartOffset(0);
         p.setEndOffset(DOC2.length());
-        p.addMatch(0, p.getEndOffset(), new BytesRef(DOC2));
+        p.addMatch(0, p.getEndOffset(), new BytesRef(DOC2),1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
         /**
@@ -136,7 +136,7 @@ public class ContextFormatterTest {
         Passage p = new Passage();
         p.setStartOffset(woff);
         p.setEndOffset(woff + WORD.length());
-        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD));
+        p.addMatch(woff, p.getEndOffset(), new BytesRef(WORD),1);
         assertEquals("getNumMatches()", 1, p.getNumMatches());
 
         // First, test with contextCount==0
