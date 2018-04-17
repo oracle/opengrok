@@ -39,7 +39,7 @@ public class JavaClassAnalyzerFactoryTest {
 
     /**
      * Tests a Java .class file.
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testJavaClassWrtAnalyzerGuru() throws IOException {
@@ -56,7 +56,7 @@ public class JavaClassAnalyzerFactoryTest {
 
     /**
      * Tests a dylib with spurious CAFEBABE.
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testDylibCafebabeWrtAnalyzerGuru() throws IOException {

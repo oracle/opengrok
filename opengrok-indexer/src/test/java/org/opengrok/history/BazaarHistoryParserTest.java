@@ -67,6 +67,7 @@ public class BazaarHistoryParserTest {
 
     /**
      * Test of parse method, of class BazaarHistoryParser.
+     * @throws Exception exception
      */
     @Test
     public void parseEmpty() throws Exception {

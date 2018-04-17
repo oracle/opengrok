@@ -4,13 +4,14 @@
 
     <parent>
         <groupId>org.opengrok</groupId>
-        <artifactId>opengrok</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <artifactId>opengrok-top</artifactId>
+        <version>1.1-rc23</version>
     </parent>
 
     <artifactId>jrcs</artifactId>
     <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <version>1.1-rc23</version>
 
     <name>Java RCS</name>
 

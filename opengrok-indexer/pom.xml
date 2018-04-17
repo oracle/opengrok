@@ -27,12 +27,12 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
     <parent>
         <groupId>org.opengrok</groupId>
-        <artifactId>opengrok</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <artifactId>opengrok-top</artifactId>
+        <version>1.1-rc23</version>
     </parent>
 
     <artifactId>opengrok-indexer</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1-rc23</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok Indexer</name>
@@ -102,26 +102,22 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <build>
 
         <plugins>
+
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.opengrok.index.Indexer</mainClass>
+                            <mainClass>org.opensolaris.opengrok.index.Indexer</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
+                        <manifestEntries>
+                        </manifestEntries>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
                 </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
@@ -133,7 +129,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>generate-sources</phase>
                         <configuration>
                             <lexDefinitions>
                                 <lexDefinition>${basedir}/target/jflex-sources</lexDefinition>
@@ -149,53 +144,53 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             at least for PlainFullTokenizer, PlainSymbolTokenizer, JavaScriptSymbolTokenizer, JavaSymbolTokenizer
             use below
             -->
- 
-            <plugin>                                                                                                                                                                                                                        
-                <groupId>com.google.code.maven-replacer-plugin</groupId>                                                                                                                                                                     
-                <artifactId>replacer</artifactId>                                                                                                                                                                                            
-                <version>1.5.3</version>                                                                                                                                                                                                     
-                <executions>                                                                                                                                                                                                                 
-                    <execution>                                                                                                                                                                                                              
-                        <phase>generate-sources</phase>                                                                                                                                                                                      
-                        <goals>                                                                                                                                                                                                              
-                            <goal>replace</goal>                                                                                                                                                                                             
-                        </goals>                                                                                                                                                                                                             
-                    </execution>                                                                                                                                                                                                             
-                </executions>                                                                                                                                                                                                                
-                <configuration>                                                                                                                                                                                                              
-                    <filesToInclude>                                                                                                                                                                                                         
-                        ${basedir}/target/generated-sources/jflex/org/opengrok/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/plain/PlainSymbolTokenizer.java
-                    </filesToInclude>                                                                                                                                                                                                        
-                    <replacements>                                                                                                                                                                                                           
-                        <replacement>                                                                                                                                                                                                        
-                            <token>private static final int ZZ_BUFFERSIZE =</token>                                                                                                                                                          
-                            <value>private int ZZ_BUFFERSIZE =</value>                                                                                                                                                                       
-                        </replacement>                                                                                                                                                                                                       
-                        <replacement>                                                                                                                                                                                                        
-                            <token>int requested = zzBuffer\.length - zzEndRead;</token>                                                                                                                                                     
-                            <value>int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;</value>                                                                                                                               
-                        </replacement>                                                                                                                                                                                                       
-                        <replacement>                                                                                                                                                                                                        
-                            <token>(zzFinalHighSurrogate = 1;)(\r?\n)</token>                                                                                                                                                                
-                            <value>$1$2          if (numRead == 1) { return true; }$2</value>                                                                                                                                                
-                        </replacement>                                                                                                                                                                                                       
-                                                                                                                                                                                                                                             
-                        <replacement>                                                                                                                                                                                                        
-                            <token>[ \t]*/\* is the buffer big enough\? \*/\s+if \(zzCurrentPos >= zzBuffer\.length.*?\}[ \t]*\r?\n</token>                                                                                                  
-                            <value></value>                                                                                                                                                                                                  
-                        </replacement>                                                                                                                                                                                                       
-                        <!-- also revert 0 character check that got in with 1.6.1 : https://github.com/jflex-de/jflex/blob/master/jflex/examples/zero-reader/README.md -->                                                                                           
-                        <replacement>                                                                                                                                                                                                        
-                            <token>[ \t]*/\* not supposed to occur according to specification of java\.io\.Reader \*/\s+if \(numRead == 0.*?\}[ \t]*\r?\n</token>                                                                            
-                            <value></value>                                                                                                                                                                                                  
-                        </replacement>                                                                                                                                                                                                       
-                                                                                                                                                                                                                                             
-                    </replacements>                                                                                                                                                                                                          
-                    <regexFlags>                                                                                                                                                                                                      
-                        <regexFlag>DOTALL</regexFlag>                                                                                                                                                                                 
-                    </regexFlags>                                                                                                                                                                                                   
-                </configuration>                                                                                                                                                                                                             
-            </plugin>                                        
+
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <filesToInclude>
+                        ${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.java
+                    </filesToInclude>
+                    <replacements>
+                        <replacement>
+                            <token>private static final int ZZ_BUFFERSIZE =</token>
+                            <value>private int ZZ_BUFFERSIZE =</value>
+                        </replacement>
+                        <replacement>
+                            <token>int requested = zzBuffer\.length - zzEndRead;</token>
+                            <value>int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;</value>
+                        </replacement>
+                        <replacement>
+                            <token>(zzFinalHighSurrogate = 1;)(\r?\n)</token>
+                            <value>$1$2          if (numRead == 1) { return true; }$2</value>
+                        </replacement>
+
+                        <replacement>
+                            <token>[ \t]*/\* is the buffer big enough\? \*/\s+if \(zzCurrentPos >= zzBuffer\.length.*?\}[ \t]*\r?\n</token>
+                            <value></value>
+                        </replacement>
+                        <!-- also revert 0 character check that got in with 1.6.1 : https://github.com/jflex-de/jflex/blob/master/jflex/examples/zero-reader/README.md -->
+                        <replacement>
+                            <token>[ \t]*/\* not supposed to occur according to specification of java\.io\.Reader \*/\s+if \(numRead == 0.*?\}[ \t]*\r?\n</token>
+                            <value></value>
+                        </replacement>
+
+                    </replacements>
+                    <regexFlags>
+                        <regexFlag>DOTALL</regexFlag>
+                    </regexFlags>
+                </configuration>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

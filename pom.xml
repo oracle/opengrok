@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 -->
@@ -26,8 +26,9 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.opengrok</groupId>
-    <artifactId>opengrok</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <artifactId>opengrok-top</artifactId>
+    <packaging>pom</packaging>
+    <version>1.1-rc23</version>
     <packaging>pom</packaging>
 
     <name>OpenGrok</name>
@@ -49,6 +50,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
         <module>plugins</module>
         <module>opengrok-indexer</module>
         <module>opengrok-web</module>
+        <module>distribution</module>
     </modules>
 
     <scm>
@@ -58,7 +60,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
     </scm>
 
     <properties>
-        <lucene.version>7.2.1</lucene.version>
+        <lucene.version>7.3.0</lucene.version>
         <mavenjavadocplugin.version>2.10.4</mavenjavadocplugin.version>
         <compileSource>1.8</compileSource>
         <compileTarget>1.8</compileTarget>
@@ -159,6 +161,15 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -185,7 +196,19 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${mavenjavadocplugin.version}</version>
+		        <version>${mavenjavadocplugin.version}</version>
+		        <configuration>
+		            <excludePackageNames>org.apache.commons.jrcs.*</excludePackageNames>
+		        </configuration>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>javadoc</goal>
+                      <goal>test-javadoc</goal>
+                    </goals>
+                    <phase>verify</phase>
+                  </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-project-info-reports-plugin</artifactId>

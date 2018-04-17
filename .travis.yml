@@ -27,7 +27,6 @@ before_script:
  - if `which cvs`; then cvs --version; fi
  - if `which mtn`; then mtn --version; fi
  - if `which bzr`; then bzr version; fi
- - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then cd opengrok-indexer && mvn javadoc:javadoc && cd ../opengrok-web && mvn javadoc:javadoc && cd ..; fi
 
 env:
   global:
@@ -40,8 +39,7 @@ env:
 # in 'script' no matter if an individual command fails or not. This kludgy
 # looking shell incantation takes care of that.
 #
-script: "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile \
-             && mvn verify -B"
+script: "mvn -B -V verify"
 
 addons:
   coverity_scan:
@@ -51,3 +49,36 @@ addons:
       branch_pattern: "coverity_scan"
       #    build_command_prepend: "mvn clean"
       build_command: "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile"
+
+deploy:
+  # Pre-release
+  - provider: releases
+    script:
+    - echo "$TRAVIS_TAG"
+    - echo "$TRAVIS_BRANCH"
+    - mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
+    prerelease: true
+    api_key:
+      secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
+    file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
+    skip_cleanup: true
+    on:
+      repo: oracle/opengrok
+      tags: true
+      condition: "$TRAVIS_TAG =~ rc[0-9]+$"
+      branch: master
+  # Full release
+  - provider: releases
+    script:
+    - echo "$TRAVIS_TAG"
+    - echo "$TRAVIS_BRANCH"
+    - mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
+    api_key:
+      secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
+    file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
+    skip_cleanup: true
+    on:
+      repo: oracle/opengrok
+      tags: true
+      condition: "! $TRAVIS_TAG =~ rc[0-9]+$"
+      branch: master

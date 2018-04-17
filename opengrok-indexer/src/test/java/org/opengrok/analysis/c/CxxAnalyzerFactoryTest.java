@@ -94,6 +94,7 @@ public class CxxAnalyzerFactoryTest {
 
     /**
      * Test of writeXref method, of class CAnalyzerFactory.
+     * @throws Exception exception
      */
     @Test
     public void testScopeAnalyzer() throws Exception {

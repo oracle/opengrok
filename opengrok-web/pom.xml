@@ -4,12 +4,12 @@
 
     <parent>
         <groupId>org.opengrok</groupId>
-        <artifactId>opengrok</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <artifactId>opengrok-top</artifactId>
+        <version>1.1-rc23</version>
     </parent>
 
     <artifactId>opengrok-web</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1-rc23</version>
     <packaging>war</packaging>
 
     <name>OpenGrok Web</name>
@@ -52,7 +52,6 @@
                 </configuration>
             </plugin>
         </plugins>
-
     </build>
 
 </project>

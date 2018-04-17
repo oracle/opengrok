@@ -95,7 +95,7 @@ public class CAnalyzerFactoryTest {
     /**
      * Test of writeXref method, of class CAnalyzerFactory.
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @Test
     public void testScopeAnalyzer() throws Exception {

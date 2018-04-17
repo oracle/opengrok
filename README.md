@@ -85,23 +85,10 @@ See https://github.com/oracle/opengrok/wiki/Messages
 
 ## 4. OpenGrok install
 
-### 4.1 Installing on Solaris from *.p5p file
+Grab a tar ball from https://github.com/oracle/opengrok/releases and
+extract it.
 
-#### 4.1.0 Install
-
-The file `<package_name>.p5p` you can easily use as a new publisher for the `pkg` command.
-
-```
-pkg install --no-refresh -g /path/to/file <package_name>.p5p opengrok
-```
-
-#### 4.1.1 Update
-
-You can also update OpenGrok software with the `*.p5p` file by running a command
-
-```
-pkg update --no-refresh -g /path/to/file/<package_name>.p5p 'pkg://opengrok/*'
-```
+See https://github.com/OpenGrok/platform for OS specific integration.
 
 ## 5. OpenGrok setup
 
@@ -138,8 +125,8 @@ set `OPENGROK_GENERATE_HISTORY` environment variable to `off` during indexing.
 
 ### 5.2 Using Opengrok shell wrapper script to create indexes
 
-For \*nix systems there is a shell script called `OpenGrok` which simplifies most
-of the tasks. It has been tested on Solaris and Linux distributions.
+For \*nix systems there is a shell script called `OpenGrok` which simplifies
+most of the tasks. It has been tested on Solaris and Linux distributions.
 
 #### 5.2.1 Deploy the web application
 
@@ -332,54 +319,11 @@ OpenGrok indexpart /myproj
 
 The last argument is path relative to `SRC_ROOT`.
 
-### 5.3 Using SMF service (Solaris) to maintain OpenGrok indexes
-
-If you installed OpenGrok from the OSOLopengrok package, it will work out of
-the box. Should you need to configure it (e.g. because of non-default `SRC_ROOT`
-or `DATA_ROOT` paths) it is done via the `opengrok` property group of the
-service like this:
-
-```bash
-svccfg -s opengrok setprop opengrok/srcdir="/absolute/path/to/your/sourcetree"
-svccfg -s opengrok setprop opengrok/maxmemory="2048"
-```
-
-Then make the service start the indexing, at this point it would be nice if
-the web application is already running.
-
-Now enable the service:
-
-```bash
-svcadm enable -rs opengrok
-```
-
-Note that this will enable tomcat service as dependency.
-
-When the service starts indexing for first time, it's already enabled and
-depending on tomcat, so at this point the web application should be
-already running.
-
-Note that indexing is not done when the opengrok service is disabled.
-
-To rebuild the index later (e.g. after source code changed) just run:
-
-```bash
-svcadm refresh opengrok
-```
-
-The service makes it possible to supply part of the configuration via the
-`opengrok/readonly_config` service property which is set to
-`/etc/opengrok/readonly_configuration.xml` by default.
-
-Note: before removing the package please disable the service.
-If you don't do it, it will not be removed automatically.
-In such case please remove it manually.
-
 ### 5.4 Using command line interface to create indexes
 
 There are 2 (or 3) steps needed for this task.
 
-#### 5.4.1 Populate DATA_ROOT Directory
+#### 5.4.1 Populate DATA\_ROOT Directory
 
 * **Option 1. OpenGrok**:
   There is a sample shell script `OpenGrok` that is suitable

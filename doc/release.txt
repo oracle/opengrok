@@ -1,8 +1,8 @@
 Release criteria
 ----------------
 
-Ideally, the following minimum criteria should be fulfilled before a new version
-is released:
+Ideally, the following minimum criteria should be fulfilled before a new
+final (i.e. non-prerelease) version is released:
 
   - The code coverage for blocks must be at least 80%
   - No findbugs warnings
@@ -13,26 +13,11 @@ is released:
 Checklist for releasing OpenGrok:
 ---------------------------------
 
-../ext_lib - is a directory where we keep latest JFlex.jar and all necessary
-jars/dirs for tests
+0) build must be clean
 
-0) set proper version in build.xml
+   mvn clean package
 
-   <property name="version" value="???"/>
-
-   and put some stuff into CHANGES.txt
-
-   Then commit and push the change:
-
-     git commit build.xml
-     git push
-
-1) build must be clean
-
-   ant clean
-   ant # defaults to jar currently
-
-2) sanity check:
+1) sanity check:
 
    - index
    - deploy webapp
@@ -45,67 +30,34 @@ jars/dirs for tests
        - check sorting using multiple criteria
      - perform search using multiple fields across multiple projects
 
-3) check all tests, tests code coverage:
+2) check all tests, tests code coverage:
    junit, pmd, findbugs, checkstyle, emma, jdepend
 
-They should be ok, currently only checkstyle has 8 warnings, the rest is
-clean; emma reports should be based according to what is set for the release,
-usually it's overall coverage above 80%)
+   emma reports should be based according to what is set for the release,
+   usually it's overall coverage above 80%.
 
-(jenkins can help here, see README.txt on setup)
+   Jenkins can help here.
 
-The release is OK, once above is fulfilled to our satisfaction.
+   The release is OK, once above is fulfilled to our satisfaction.
 
-4) produce proper distributions
+3) set new version
 
-Check them before upload, always try to build on Solaris, since GNU tar might
-create a non-standard compliant .tgz version and tag from step 0) will be used
-to produce the archive
+   mvn versions:set -DgenerateBackupPoms=false -DnewVersion=1.1-rcXYZ
 
-  ant dist
-  ant package
+   Then commit and push the change:
 
-The command above creates both formats of package .pkg and .p5p into the directory dist
+     git commit --all
+     git push
 
+4) Trigger release creation
 
-Note that for the IPS package *.p5p the version names are translated this way:
+     git tag 1.1-rcXYZ
+     git push origin tag 1.1-rcXYZ
 
-0.12          ~       0.12.0.1.0
-0.<n>         ~       0.<n>.0.1.0
-...
+   Wait for the build to finish and release created.
 
-0.12-rc1      ~       0.12.0.0.1
-0.12-rc<i>    ~       0.12.0.0.<i>
-...
-
-(Note that the release candidate must follow immediately after the basic version
-number (0.12))
-
-
-0.12.1        ~       0.12.1.0.0
-0.12.<j>      ~       0.12.<j>.0.0
-...
-
-0.12.0.1      ~       0.12.0.1.1
-0.12.0.<k>    ~       0.12.0.1.<k>
-...
-
-5) Create the release and upload the files via GitHub API:
-
-   First, make sure these environment variables are set:
-
-      GITHUB_USER (your Github user name)
-      GITHUB_PASSWORD (your Github password)
-      https_proxy (set to host:port of proxy if behind HTTP proxy)
-      DO_PRERELEASE (set to non-empty if creating release candidate)
-
-   Next:
-
-      ant release
-
-   Now go to https://github.com/OpenGrok/OpenGrok/releases and edit the text
+   Go to https://github.com/OpenGrok/OpenGrok/releases and edit the text
    of the release, e.g. adding list of issues fixed, whether complete reindex
    is necessary etc.
 
-5) Send announcement to opengrok-users@yahoogroups.com
-
+5) Send announcement to opengrok-users@yahoogroups.com, Slack channel etc.

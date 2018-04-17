@@ -69,51 +69,48 @@ Supported Environment Variables for configuring the default setup:
                                   generated
   - OPENGROK_CTAGS              Full path to Exuberant or Universal CTags binary
   - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
-                                options for CTags program (for its --options
-                                switch), default is DATA_ROOT/etc/ctags.config
+                                  options for CTags program (for its --options
+                                  switch). Default is DATA_ROOT/etc/ctags.config
   - OPENGROK_MANDOC             Full path to mandoc(1) binary
   - OPENGROK_LOCKING            Locking mode on|off|simple|native (default off)
-                                ("on" is an alias for "simple")
+                                  ("on" is an alias for "simple")
   - JAVA_HOME                   Full Path to Java Installation Root
   - JAVA                        Full Path to java binary (to enable 64bit JDK)
   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
-                                or enabling server JDK)
-                                JAVA_OPTS=-Xmx2048m is the default!
+                                  or enabling server JDK)
+                                  JAVA_OPTS=-Xmx2048m is the default!
   - OPENGROK_APP_SERVER         Application Server ("Tomcat", "Glassfish" or
-                                "Resin")
+                                  "Resin")
   - OPENGROK_WAR_TARGET_TOMCAT  Tomcat Specific WAR Target Directory
   - OPENGROK_WAR_TARGET_GLASSFISH Glassfish Specific WAR Target Directory
   - OPENGROK_WAR_TARGET_RESIN   Resin Specific WAR Target Directory
   - OPENGROK_WAR_TARGET         Fallback WAR Target Directory
   - OPENGROK_TOMCAT_BASE        Base Directory for Tomcat (contains webapps)
-  - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish
-                                (contains domains)
+  - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish (contains domains)
   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
   - OPENGROK_RESIN_BASE         Base Directory for Resin (contains webapps)
   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
   - OPENGROK_PROGRESS           Shows progress in %(percentage) of working
-                                through project, it's good to have Verbose
-                                Mode enabled too, cost of this is one more
-                                traversal of the project before indexing it(*)
-  - OPENGROK_RENAMED_FILES_HISTORY If set to "on", get full history of
-                                renamed files for SCMs that support it (Git,
-                                Mercurial).
-                                The default is off.
-                                When set to on, the indexing is slower,
-                                especially in the presence of
-                                lots of renamed files in the repository.
+                                  through project. It's good to have Verbose
+                                  Mode enabled too. (*)
+  - OPENGROK_RENAMED_FILES_HISTORY Get full history of renamed files for SCMs
+                                  that support it (Git, Mercurial). When set to
+                                  on, the indexing is slower, especially in the
+                                  presence of lots of renamed files in the
+                                  repository.
+                                  on|off (default off) (^)
   - OPENGROK_GENERATE_HISTORY   Influence history cache generation
-                                Following values are recognized:
-                                  on		- enabled (default)
+                                  Following values are recognized:
+                                  on		- enabled (default) (^)
                                   off		- disabled for indexing and UI
                                   dirbased	- indexing enabled only for
                                                   repos which can fetch history
                                                   for directory
                                   local		- for local repos only
                                   uionly	- enabled for UI only
-  - OPENGROK_ENABLE_PROJECTS    Enable projects (set it to true or false)
-                                Every directory in SRC_ROOT is
-                                  considered a separate project
+  - OPENGROK_ENABLE_PROJECTS    Enable projects, where every directory in
+                                  SRC_ROOT is considered a separate project.
+                                  on|off (default on) (^)
   - OPENGROK_IGNORE_PATTERNS    Set ignored patterns for indexer to skip.
                                   OPENGROK_IGNORE_PATTERNS="-i dummy"
                                   OPENGROK_IGNORE_PATTERNS="-i f:dummy"
@@ -121,36 +118,36 @@ Supported Environment Variables for configuring the default setup:
                                   Multiple entries can be joined together:
                                     "-i dummy -i d:tmp -i f:dummy"
   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
-  - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
-                                (by default 3 directories from SRC_ROOT)
+  - OPENGROK_SCAN_DEPTH         How deep should scanning for repos go
+                                  (by default 3 directories from SRC_ROOT)
   - OPENGROK_WEBAPP_CFGADDR     Web app address to send configuration to
-                                (use "none" to avoid sending it to web app)
+                                  (use "none" to avoid sending it to web app)
   - OPENGROK_WEBAPP_CONTEXT     Context URL of the OpenGrok webapp
-                                (by default /source)
-                                - FULL reindex is needed once this is used
-                                (old already indexed files won't be refreshed)
-  - OPENGROK_WPREFIX            Disable wildcard prefix search query
-                                support (*)
+                                  (by default /source). FULL reindex is needed
+                                  once this is used (old already indexed files
+                                  won't be refreshed)
+  - OPENGROK_WPREFIX            Disable wildcard prefix search query support (*)
   - OPENGROK_TAG                Enable parsing of revision tags into the History
-                                view
+                                  view
   - OPENGROK_READ_XML_CONFIGURATION file with read only configuration
                                 - temporary workaround for bug # 327
   - OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 16" - set RAM buffer size for flushing,
-                                default is 16MB per thread, you might try to
-                                increase it to 256MB, but do increase JVM to
-                                4/8/16GB ! Lucene defaults to 8 threads.
-                                Increase JVM memory as noted using JAVA_OPTS
+                                  default is 16MB per thread, you might try to
+                                  increase it to 256MB, but do increase JVM to
+                                  4/8/16GB ! Lucene defaults to 8 threads.
+                                  Increase JVM memory as noted using JAVA_OPTS
   - OPENGROK_PARALLELISM        Default is 0, meaning that parallelism is
                                   determined from available processors.
   - OPENGROK_LOGGER_CONFIG_PATH Set path to custom logging.properties file.
-  - OPENGROK_SUBVERSION_USERNAME name of the user that should be used for
-                                fetching the history from subversion
-  - OPENGROK_SUBVERSION_PASSWORD password of the user that should be used for
-                                fetching the history from subversion
-  - OPENGROK_PROFILER           Pause to await user input for profiling.
+  - OPENGROK_SUBVERSION_USERNAME Name of the user that should be used for
+                                  fetching the history from subversion
+  - OPENGROK_SUBVERSION_PASSWORD Password of the user that should be used for
+                                  fetching the history from subversion
+  - OPENGROK_PROFILER           Pause to await user input for profiling. (*)
 
 Notes:
   (*) Any Non-Empty String will enable these options
+  (^) on|true|1 are synonyms, as are off|false|0
 
 Supported Operating Systems:
   - Solaris 11  (SunOS 5.11)
@@ -309,9 +306,8 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Enable Projects
     #           (Every directory in SRC_ROOT is considered a separate project)
     OPENGROK_ENABLE_PROJECTS="${OPENGROK_ENABLE_PROJECTS:-true}"
-    case $OPENGROK_ENABLE_PROJECTS in
-        true) ENABLE_PROJECTS="-P" ;;
-        false) ENABLE_PROJECTS="" ;;
+    case "$OPENGROK_ENABLE_PROJECTS" in
+        off|false|0) ENABLE_PROJECTS="" ;;
         *) ENABLE_PROJECTS="-P" ;;
     esac
 
@@ -322,24 +318,20 @@ DefaultInstanceConfiguration()
         SCAN_FOR_REPOSITORY=""
     fi
 
-    # OPTIONAL: Disable remote repository support (CVS or SVN) [on by default]
-    GENERATE_HISTORY="-r on"
-    if [ -n "${OPENGROK_GENERATE_HISTORY}" ]
-    then
-        GENERATE_HISTORY="-r ${OPENGROK_GENERATE_HISTORY}"
-    fi
+    # OPTIONAL: remote repository support (CVS or SVN) [on by default]
+    OPENGROK_GENERATE_HISTORY="${OPENGROK_GENERATE_HISTORY:-on}"
+    case "$OPENGROK_GENERATE_HISTORY" in
+        off|false|0) GENERATE_HISTORY="-r off" ;;
+        on|true|1) GENERATE_HISTORY="-r on -H" ;;
+        *) GENERATE_HISTORY="-r $OPENGROK_GENERATE_HISTORY -H" ;;
+    esac
 
-    if [ "$OPENGROK_GENERATE_HISTORY" != "off" ]
-    then
-        GENERATE_HISTORY="${GENERATE_HISTORY} -H"
-    fi
-
-    if [ "$OPENGROK_RENAMED_FILES_HISTORY" != "on" ]
-    then
-        RENAMED_FILES_HISTORY="--renamedHistory off"
-    else
-        RENAMED_FILES_HISTORY="--renamedHistory on"
-    fi
+    # OPTIONAL: Detect historical renamings if supported [off by default]
+    OPENGROK_RENAMED_FILES_HISTORY="${OPENGROK_RENAMED_FILES_HISTORY:-off}"
+    case "$OPENGROK_RENAMED_FILES_HISTORY" in
+        on|true|1) RENAMED_FILES_HISTORY="--renamedHistory on" ;;
+        *) RENAMED_FILES_HISTORY="--renamedHistory off" ;;
+    esac
 
     # OPTIONAL: override depth of scanning for repositories
     if [ -n "${OPENGROK_SCAN_DEPTH}" ]

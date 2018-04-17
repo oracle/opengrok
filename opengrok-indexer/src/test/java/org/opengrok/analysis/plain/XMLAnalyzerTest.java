@@ -80,6 +80,7 @@ public class XMLAnalyzerTest {
     /**
      * XML special chars inside a string were not escaped if single quotes
      * were used around the string. Bug #15859.
+     * @throws IOException I/O exception
      */
     @Test
     public void xrefWithSpecialCharsInStringLiterals() throws IOException {

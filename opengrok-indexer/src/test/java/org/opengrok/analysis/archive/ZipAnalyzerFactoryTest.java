@@ -38,7 +38,7 @@ public class ZipAnalyzerFactoryTest {
 
     /**
      * Tests a ZIP file.
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testZipWrtAnalyzerGuru() throws IOException {

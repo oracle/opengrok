@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.analysis.document;
@@ -32,13 +32,13 @@ import org.junit.Test;
 import org.opengrok.analysis.FileAnalyzerFactory;
 
 /**
- * Represents a container for tests of {@link DocMatcher} subclasses
+ * Represents a container for tests of {@link DocumentMatcher} subclasses
  */
 public class DocumentMatcherTest {
 
     /**
      * Tests a mdoc(5)-style document.
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testMdocDocument() throws IOException {
@@ -63,7 +63,7 @@ public class DocumentMatcherTest {
 
     /**
      * Tests a mandoc(5)-style document.
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testMandocDocument() throws IOException {
@@ -92,7 +92,7 @@ public class DocumentMatcherTest {
     /**
      * Tests a fake UTF-16LE mandoc(5)-style document to affirm that encoding
      * determination is valid.
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testMandocBOMDocument() throws IOException {

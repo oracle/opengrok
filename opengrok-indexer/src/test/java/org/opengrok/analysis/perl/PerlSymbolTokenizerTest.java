@@ -95,6 +95,7 @@ public class PerlSymbolTokenizerTest {
 
     /**
      * Test sample.pl v. samplesymbols.txt
+     * @throws Exception exception
      */
     @Test
     public void testPerlSymbolStream() throws Exception {

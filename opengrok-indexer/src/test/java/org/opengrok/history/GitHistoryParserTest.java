@@ -70,6 +70,7 @@ public class GitHistoryParserTest {
 
     /**
      * Test of parse method, of class GitHistoryParser.
+     * @throws Exception exception
      */
     @Test
     public void parseEmpty() throws Exception {
@@ -80,8 +81,7 @@ public class GitHistoryParserTest {
 
     /**
      * Parse something that could come out from the Memcached repository
-     * 
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @Test
     public void parseALaMemcached() throws Exception {
@@ -217,8 +217,8 @@ public class GitHistoryParserTest {
 
     /**
      * Parse something that could come out from the linux kernel repository
-     * 
-     * @throws java.lang.Exception
+     *
+     * @throws java.lang.Exception exception
      */
     @Test
     public void parseALaLK() throws Exception {

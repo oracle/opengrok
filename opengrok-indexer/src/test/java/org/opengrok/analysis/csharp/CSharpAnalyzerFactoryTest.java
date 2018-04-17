@@ -89,6 +89,7 @@ public class CSharpAnalyzerFactoryTest {
 
     /**
      * Test of writeXref method, of class CSharpAnalyzerFactory.
+     * @throws Exception exception
      */
     @Test
     public void testScopeAnalyzer() throws Exception {

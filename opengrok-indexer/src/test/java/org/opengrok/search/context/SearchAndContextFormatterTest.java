@@ -52,7 +52,7 @@ import org.opengrok.search.SearchEngine;
 import static org.opengrok.util.CustomAssertions.assertLinesEqual;
 
 /**
- * Represents a container for tests of {@link SearchEngine{ with
+ * Represents a container for tests of {@link SearchEngine} with
  * {@link ContextFormatter} etc.
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}

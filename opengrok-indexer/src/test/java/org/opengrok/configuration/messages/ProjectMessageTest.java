@@ -216,6 +216,7 @@ public class ProjectMessageTest {
     /**
      * Test that if the "add" message is applied on already existing project,
      * the repository list is refreshed.
+     * @throws Exception exception
      */
     @Test
     public void testRepositoryRefresh() throws Exception {
@@ -246,7 +247,7 @@ public class ProjectMessageTest {
     /**
      * This test needs to perform indexing so that it can be verified that
      * the delete message handling performs removal of the index data.
-     * @throws Exception 
+     * @throws Exception exception
      */
     @Test
     public void testDelete() throws Exception {

@@ -43,7 +43,7 @@ import static org.opengrok.util.CustomAssertions.assertLinesEqual;
 import static org.opengrok.util.StreamUtils.copyStream;
 
 /**
- * Tests the {@link XMLXref} class.
+ * Tests the {@code XMLXref} class.
  */
 public class XMLXrefTest {
 

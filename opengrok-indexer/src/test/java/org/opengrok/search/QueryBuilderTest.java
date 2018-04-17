@@ -36,6 +36,7 @@ public class QueryBuilderTest {
        
     /**
      * Test of setFreetext method, of class QueryBuilder.
+     * @throws ParseException parse exception
      */
     @Test
     public void testParsePath() throws ParseException {        

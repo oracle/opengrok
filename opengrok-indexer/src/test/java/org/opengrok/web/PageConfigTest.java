@@ -359,7 +359,7 @@ public class PageConfigTest {
     /**
      * Test the case when the source root is null
      *
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test(expected = FileNotFoundException.class)
     public void testCheckSourceRootExistence1() throws IOException {
@@ -379,7 +379,7 @@ public class PageConfigTest {
     /**
      * Test the case when source root is empty
      *
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test(expected = FileNotFoundException.class)
     public void testCheckSourceRootExistence2() throws IOException {
@@ -398,7 +398,7 @@ public class PageConfigTest {
     /**
      * Test the case when source root does not exist
      *
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testCheckSourceRootExistence3() throws IOException {
@@ -420,7 +420,7 @@ public class PageConfigTest {
     /**
      * Test the case when source root can not be read
      *
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testCheckSourceRootExistence4() throws IOException {
@@ -446,7 +446,7 @@ public class PageConfigTest {
     /**
      * Test a successful check
      *
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testCheckSourceRootExistence5() throws IOException {

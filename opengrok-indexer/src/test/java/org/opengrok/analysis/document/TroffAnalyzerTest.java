@@ -59,7 +59,7 @@ public class TroffAnalyzerTest {
      * Test method for {@link org.opengrok.analysis.document
      * .TroffAnalyzer#TroffAnalyzer(org.opengrok.analysis.FileAnalyzerFactory)}.
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -83,7 +83,7 @@ public class TroffAnalyzerTest {
     }
 
     /**
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
@@ -95,14 +95,14 @@ public class TroffAnalyzerTest {
     }
 
     /**
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @Before
     public void setUp() throws Exception {
     }
 
     /**
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception exception
      */
     @After
     public void tearDown() throws Exception {
@@ -113,7 +113,7 @@ public class TroffAnalyzerTest {
      *  .TroffAnalyzer#analyze(org.apache.lucene.document.Document,
      *      java.io.InputStream)}.
      *
-     * @throws IOException
+     * @throws IOException I/O exception
      */
     @Test
     public void testAnalyze() throws IOException {

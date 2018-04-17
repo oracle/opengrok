@@ -60,6 +60,7 @@ public class ClearCaseHistoryParserTest {
 
     /**
      * Test of parse method, of class ClearCaseHistoryParser.
+     * @throws Exception exception
      */
     @Test
     public void parseFileHistory() throws Exception {
@@ -123,6 +124,7 @@ public class ClearCaseHistoryParserTest {
     
    /**
      * Test of parse method, of class ClearCaseHistoryParser.
+     * @throws Exception exception
      */
     @Test
     public void parseDirHistory() throws Exception {

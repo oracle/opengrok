@@ -26,12 +26,12 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
 
     <parent>
         <groupId>org.opengrok</groupId>
-        <artifactId>opengrok</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <artifactId>opengrok-top</artifactId>
+        <version>1.1-rc23</version>
     </parent>
 
     <artifactId>plugins</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1-rc23</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok authorization plugins</name>
@@ -55,65 +55,48 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
     </dependencies>
 
     <build>
-        <sourceDirectory>.</sourceDirectory>
-        <!-- Note that the plugins/UserPlugin/test/ directory is added via the build-helper plugin below -->
-        <testSourceDirectory>LdapPlugin/test</testSourceDirectory>
+        <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
 
         <testResources>
             <testResource>
                 <targetPath>opengrok/auth/plugin/</targetPath>
-                <directory>LdapPlugin/test/opengrok/auth/plugin/</directory>
+                <directory>test/opengrok/auth/plugin/</directory>
                 <excludes>
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
         </testResources>
- 
+
         <plugins>
-
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.0.2</version>
-                <configuration>
-                    <includes>
-                        <include>**/LdapPlugin/src/**</include>
-                        <include>**/UserPlugin/src/**</include>
-                        <include>*Plugin.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <systemPropertyVariables>
-                        <junit-force-all>true</junit-force-all>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <id>add-test-source</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <directory>UserPlugin/test</directory>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                  <systemPropertyVariables>
+                      <junit-force-all>true</junit-force-all>
+                  </systemPropertyVariables>
+              </configuration>
+          </plugin>
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opengrok</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
+	<dependency>
+	    <groupId>junit</groupId>
+	    <artifactId>junit</artifactId>
+	    <version>4.12</version>
+            <scope>test</scope>
+	</dependency>
+    </dependencies>
 
 </project>
