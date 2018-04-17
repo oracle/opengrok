@@ -39,7 +39,7 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>opengrok-indexer</artifactId>
+            <artifactId>opengrok</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -80,23 +80,5 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
           </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>opengrok</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-        </dependency>
-	<dependency>
-	    <groupId>junit</groupId>
-	    <artifactId>junit</artifactId>
-	    <version>4.12</version>
-            <scope>test</scope>
-	</dependency>
-    </dependencies>
 
 </project>

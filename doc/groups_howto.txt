@@ -198,7 +198,7 @@ with configuration like this:
 
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_65" class="java.beans.XMLDecoder">
- <object class="org..opengrok.configuration.Configuration" id="Configuration0">
+ <object class="org.opengrok.configuration.Configuration" id="Configuration0">
     <void method="addGroup">
         <object class="org.opengrok.configuration.Group">
             <void property="name">

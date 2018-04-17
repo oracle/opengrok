@@ -31,7 +31,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <version>1.1-rc23</version>
     </parent>
 
-    <artifactId>opengrok-indexer</artifactId>
+    <artifactId>opengrok</artifactId>
     <version>1.1-rc23</version>
     <packaging>jar</packaging>
 
@@ -110,7 +110,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.opensolaris.opengrok.index.Indexer</mainClass>
+                            <mainClass>org.opengrok.index.Indexer</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
@@ -159,7 +159,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 </executions>
                 <configuration>
                     <filesToInclude>
-                        ${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.java
+                        ${basedir}/target/generated-sources/jflex/org/opengrok/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/plain/PlainSymbolTokenizer.java
                     </filesToInclude>
                     <replacements>
                         <replacement>

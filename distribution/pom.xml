@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.opensolaris.opengrok</groupId>
+    <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
     <version>1.1-rc23</version>
   </parent>
@@ -22,13 +22,13 @@
   -->
   <dependencies>
     <dependency>
-      <groupId>org.opensolaris.opengrok</groupId>
+      <groupId>org.opengrok</groupId>
       <artifactId>opengrok</artifactId>
       <version>1.1-rc23</version>
     </dependency>
 
     <dependency>
-      <groupId>org.opensolaris.opengrok</groupId>
+      <groupId>org.opengrok</groupId>
       <artifactId>opengrok-web</artifactId>
       <version>1.1-rc23</version>
       <type>war</type>
@@ -37,30 +37,6 @@
 
   <build>
       <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.6.0</version>
-            <executions>
-              <execution>
-    	        <id>man-page</id>
-    	        <phase>package</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-    	  <executable>java</executable>
-              <outputFile>${project.build.directory}/dist/opengrok.1</outputFile>
-              <arguments>
-                <argument>-classpath</argument>
-                <argument>${project.basedir}/../opengrok-indexer/target/opengrok-${version}.jar</argument>
-                <argument>org.opensolaris.opengrok.index.Indexer</argument>
-                <argument>--man</argument>
-              </arguments>
-            </configuration>
-          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
@@ -80,6 +56,30 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.6.0</version>
+            <executions>
+              <execution>
+                <id>man-page</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <executable>java</executable>
+              <outputFile>${project.build.directory}/dist/opengrok.1</outputFile>
+              <arguments>
+                <argument>-classpath</argument>
+                <argument>${project.build.directory}/dist/opengrok-${version}.jar</argument>
+                <argument>org.opengrok.index.Indexer</argument>
+                <argument>--man</argument>
+              </arguments>
+            </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-assembly-plugin</artifactId>

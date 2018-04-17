@@ -23,7 +23,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>opengrok-indexer</artifactId>
+            <artifactId>opengrok</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

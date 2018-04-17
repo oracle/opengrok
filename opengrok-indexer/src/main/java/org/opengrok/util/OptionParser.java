@@ -784,7 +784,7 @@ public class OptionParser {
         StringWriter wrt = new StringWriter();
         PrintWriter out = new PrintWriter(wrt);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                     getClass().getResourceAsStream("/org/opengrok/index/opengrok.xml"), "US-ASCII"))) {
+                     getClass().getResourceAsStream("/manpage/opengrok.xml"), "US-ASCII"))) {
             spool(reader, out, "___INSERT_DATE___");
             out.print("<refmiscinfo class=\"date\">");
             out.print(DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date()));
