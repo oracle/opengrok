@@ -13,11 +13,6 @@ E.g.
 ANT_OPTS="-Dhttp.proxyHost=?.? -Dhttp.proxyPort=80" ant
 ```
 
-## Package build
-
-Run `ant package` to create package (specific for the operating system this is
-being executed on) under the `dist/` directory.
-
 # Unit testing
 
 **Note**: For full coverage report, a proper junit test environment is required.
