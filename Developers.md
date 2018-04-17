@@ -1,3 +1,7 @@
+# General
+
+- do not add binary files to the repository, all dependencies should be automatically downloadable.
+
 # Building
 
 Just run `ant` from command line in the top-level directory or use build
