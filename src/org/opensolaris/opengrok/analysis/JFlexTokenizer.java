@@ -105,7 +105,7 @@ public class JFlexTokenizer extends Tokenizer
      */
     @Override
     public void symbolMatched(SymbolMatchedEvent evt) {
-        setAttribs(evt.getStr(), evt.getStart(), evt.getEnd());
+        setAttribs(evt.getNormalizedStr(), evt.getStart(), evt.getEnd());
     }
 
     /**
