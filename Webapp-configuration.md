@@ -35,8 +35,8 @@ To configure the webapp `source.war`, look into the parameters defined in
 `WEB-INF/web.xml` of `source.war` (use jar or zip/unzip or your preferred zip
 tool to get into it - e.g. extract the `web.xml` file from `source.war` (`unzip
 source.war WEB-INF/web.xml`) file, edit `web.xml` and re-package the jar file
-(`zip -u source.war WEB-INF/web.xml`) ) file and change those `web.xml`
-parameters appropriately. These sample parameters need modifying(there are
+(`zip -u source.war WEB-INF/web.xml`) file and change those `web.xml`
+parameters appropriately. These sample parameters need modifying (there are
 more options, refer to manual or read param comments).
 
 To configure the webapp `source.war`, look into the parameters defined in
