@@ -148,7 +148,7 @@ public class CtagsReader {
          * VALIDATION happens of input - but then we gain LOTS of speed, due to
          * not comparing the same field names again and again fully.
          */
-        public static int charCmpEndOffset = 0;
+        public static int charCmpEndOffset = 1; // Need to distinguish FORTRAN's subroutine from signature
 
         /**
          * Quickly get if the field name matches allowed/consumed ones
