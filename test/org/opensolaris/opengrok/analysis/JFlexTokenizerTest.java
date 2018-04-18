@@ -76,7 +76,8 @@ public class JFlexTokenizerTest {
         // create a text fragment that it understands
         testOffsetAttribute(FortranSymbolTokenizer.class,
                 "1 token1 = token2 + token3",
-                new String[]{"token1", "token2", "token3"});
+                new String[]{"token1", "token2", "token3"},
+                true);
     }
 
     /**
@@ -98,6 +99,11 @@ public class JFlexTokenizerTest {
     private void testOffsetAttribute(Class<? extends JFlexSymbolMatcher> klass,
             String inputText, String[] expectedTokens)
             throws Exception {
+        testOffsetAttribute(klass, inputText, expectedTokens, false);
+    }
+    private void testOffsetAttribute(Class<? extends JFlexSymbolMatcher> klass,
+            String inputText, String[] expectedTokens, Boolean matchPrefix)
+            throws Exception {
         JFlexSymbolMatcher matcher = klass.getConstructor(Reader.class).
             newInstance(new StringReader(inputText));
         JFlexTokenizer tokenizer = new JFlexTokenizer(matcher);
@@ -109,7 +115,11 @@ public class JFlexTokenizerTest {
         while (tokenizer.incrementToken()) {
             assertTrue("too many tokens", count < expectedTokens.length);
             String expected = expectedTokens[count];
-            assertEquals("term", expected, term.toString());
+            if (matchPrefix) {
+                assertEquals("term", term.toString().indexOf(expected), 0);
+            } else {
+                assertEquals("term", expected, term.toString());
+            }
             assertEquals("start",
                     inputText.indexOf(expected), offset.startOffset());
             assertEquals("end",
