@@ -216,7 +216,7 @@ public class CtagsReader {
             //log.fine("SKIPPING LINE - NO TAB");
             return;
         }
-        String def = normalizeIdentifier.apply(tagLine.substring(0, p));
+        String def = tagLine.substring(0, p);
         int mstart = tagLine.indexOf('\t', p + 1);
 
         String kind = null;
@@ -286,8 +286,10 @@ public class CtagsReader {
                 " I will continue with line # 0) for symbol {0}", def);
         }
 
+        // NOTE: bestIndexOfTag searches the source, so it needs the
+        // precise, non-nomralized symbol.
         CpatIndex cidx = bestIndexOfTag(lineno, whole, def);
-        addTag(defs, cidx.lineno, def, type, match, classInher, signature,
+        addTag(defs, cidx.lineno, normalizeIdentifier.apply(def), type, match, classInher, signature,
             cidx.lineStart, cidx.lineEnd);
 
         String[] args;
