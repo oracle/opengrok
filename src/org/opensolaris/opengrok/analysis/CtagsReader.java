@@ -97,7 +97,7 @@ public class CtagsReader {
     private Function<String, String> normalizeIdentifier = str -> str;
 
     public void setNormalizeIdentifier(Function<String, String> normalize) {
-        normalizeIdentifier = normalize;
+        this.normalizeIdentifier = normalize;
     }
 
     /**
@@ -287,7 +287,7 @@ public class CtagsReader {
         }
 
         // NOTE: bestIndexOfTag searches the source, so it needs the
-        // precise, non-nomralized symbol.
+        // precise, non-normalized symbol.
         CpatIndex cidx = bestIndexOfTag(lineno, whole, def);
         addTag(defs, cidx.lineno, normalizeIdentifier.apply(def), type, match, classInher, signature,
             cidx.lineStart, cidx.lineEnd);

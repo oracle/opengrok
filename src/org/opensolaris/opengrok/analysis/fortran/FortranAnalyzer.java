@@ -55,12 +55,4 @@ public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
     protected JFlexXref newXref(Reader reader) {
         return new JFlexXref(new FortranXref(reader));
     }
-
-    @Override
-    public void setCtags(Ctags ctags) {
-        this.ctags = ctags;
-        if (this.ctags != null) {
-            this.ctags.setNormalizeIdentifier(FortranAnalyzer::normalizeIdentifier);
-        }
-    }
 }

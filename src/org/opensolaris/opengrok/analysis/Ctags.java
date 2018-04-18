@@ -34,7 +34,6 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
@@ -66,8 +65,6 @@ public class Ctags implements Resettable {
     private String CTagsExtraOptionsFile = null;
     private int tabSize;
 
-    private Function<String, String> normalizeIdentifier = str -> str;
-
     private boolean junit_testing = false;
 
     /**
@@ -94,10 +91,6 @@ public class Ctags implements Resettable {
 
     public void setTabSize(int tabSize) {
         this.tabSize = tabSize;
-    }
-
-    public void setNormalizeIdentifier(Function<String, String> normalizeIdentifier) {
-        this.normalizeIdentifier = normalizeIdentifier;
     }
 
     public void setCTagsExtraOptionsFile(String CTagsExtraOptionsFile) {
