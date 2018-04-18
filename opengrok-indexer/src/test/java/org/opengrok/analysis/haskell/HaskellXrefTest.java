@@ -70,7 +70,7 @@ public class HaskellXrefTest {
     private static int writeHaskellXref(InputStream is, PrintStream os,
         Definitions defs) throws IOException {
         os.println(
-                "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
+                "<!DOCTYPE html><html lang=\"en\"><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
                 + "href=\"http://localhost:8080/source/default/style.css\" /><title>Haskell Xref Test</title></head>");
         os.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
