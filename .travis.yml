@@ -42,7 +42,7 @@ env:
 script: "mvn -B -V verify"
 
 after_success:
- - mvn clean test jacoco:report coveralls:report
+ - mvn clean test jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report
 
 addons:
   coverity_scan:
