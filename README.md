@@ -1,8 +1,10 @@
 
-Copyright (c) 2006, 2017 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
 
 
-# OpenGrok - a wicked fast source browser [![Build Status](https://travis-ci.org/oracle/opengrok.svg?branch=master)](https://travis-ci.org/oracle/opengrok)
+# OpenGrok - a wicked fast source browser
+[![Build Status](https://travis-ci.org/oracle/opengrok.svg?branch=master)](https://travis-ci.org/oracle/opengrok)
+[![Coverage Status](https://coveralls.io/repos/oracle/opengrok/badge.svg?branch=master)](https://coveralls.io/r/oracle/opengrok?branch=master)
 
 1.  [Introduction](#1-introduction)
 2.  [Requirements](#2-requirements)

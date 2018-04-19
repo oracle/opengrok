@@ -39,7 +39,8 @@ env:
 # in 'script' no matter if an individual command fails or not. This kludgy
 # looking shell incantation takes care of that.
 #
-script: "mvn -B -V verify"
+script:
+ - mvn -B -V verify jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report
 
 addons:
   coverity_scan:

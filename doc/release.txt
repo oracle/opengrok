@@ -4,7 +4,7 @@ Release criteria
 Ideally, the following minimum criteria should be fulfilled before a new
 final (i.e. non-prerelease) version is released:
 
-  - The code coverage for blocks must be at least 80%
+  - The overall code coverage must be at least 70%
   - No findbugs warnings
   - No stoppers
   - All bugs and enhancements must be evaluated
@@ -19,7 +19,7 @@ Checklist for releasing OpenGrok:
 
 1) sanity check:
 
-   - index
+   - index fairly large code base, ideally multiple projects
    - deploy webapp
    - check UI:
      - history view
@@ -30,13 +30,9 @@ Checklist for releasing OpenGrok:
        - check sorting using multiple criteria
      - perform search using multiple fields across multiple projects
 
-2) check all tests, tests code coverage:
-   junit, pmd, findbugs, checkstyle, emma, jdepend
+2) check all tests pass, test code coverage is above given threshold
 
-   emma reports should be based according to what is set for the release,
-   usually it's overall coverage above 80%.
-
-   Jenkins can help here.
+   Additional tools to use: pmd, findbugs, checkstyle, jdepend
 
    The release is OK, once above is fulfilled to our satisfaction.
 
@@ -60,4 +56,5 @@ Checklist for releasing OpenGrok:
    of the release, e.g. adding list of issues fixed, whether complete reindex
    is necessary etc.
 
-5) Send announcement to opengrok-users@yahoogroups.com, Slack channel etc.
+5) Send announcement to opengrok-users@yahoogroups.com,
+   the #opengrok Slack channel etc.
