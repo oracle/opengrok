@@ -42,4 +42,4 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 
 ## Changing read-only configuration
 
-XXX
+See https://github.com/oracle/opengrok/wiki/Read-only-configuration#putting-read-only-configuration-into-effect
