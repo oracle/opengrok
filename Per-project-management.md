@@ -42,21 +42,4 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 
 ## Changing read-only configuration
 
-The following is assuming that OpenGrok base directory is `/opengrok`.
-
-- backup current config
-- make any necessary changes to `/opengrok/etc/readonly_configuration.xml`
-- perform sanity check, e.g.:
-```
-  OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml \
-     Groups list
-```
-- if you are adding project and changing regular expression of project group, try matching it: 
-```
-  OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml \
-      Groups match PROJECT_TO_BE_ADDED
-```
-- get current config from the webapp, merge it with read-only configuration and upload the new config to the webapp
-```
-   projadm -b /opengrok -R /opengrok/etc/readonly_configuration.xml -r -u
-```
+XXX
