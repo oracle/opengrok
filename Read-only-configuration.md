@@ -127,12 +127,12 @@ This tool only works for primitive java types and has only meaning for the optio
 
 ## Complete configuration change
   
-    With the [Messages](https://github.com/OpenGrok/OpenGrok/wiki/Messages) tool you can send a brand new configuration to the web application.
+With the [Messages](https://github.com/OpenGrok/OpenGrok/wiki/Messages) tool you can send a brand new configuration to the web application.
 
-    ```bash
-    $ tools/Messages -n config setconf /var/opengrok/etc/configuration.xml
-    ```
+```bash
+$ tools/Messages -n config setconf /var/opengrok/etc/configuration.xml
+```
 
-    The above will send the configuration in the `/var/opengrok/etc/configuration.xml` to the web application and replace its previous configuration.
+The above will send the configuration in the `/var/opengrok/etc/configuration.xml` to the web application and replace its previous configuration.
 
 However, as mentioned in the configuration flow, these changes **are not** persistent as they vanish when the web application receives the new configuration.
