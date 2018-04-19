@@ -110,6 +110,10 @@ $ Groups empty
 
 Save this content into `/var/opengrok/etc/read-only.xml` and use the [steps above](#read-only-configuration) to add the read only configuration to the indexer run.
 
+## Generating group structure
+
+There is a shortcut for generating group structure embedded to the `Groups` tools. More information is in the [project groupings](https://github.com/OpenGrok/OpenGrok/wiki/Project-groups).
+
 # Putting read-only configuration into effect
 
 The following is assuming that OpenGrok base directory is `/opengrok`.
@@ -132,10 +136,6 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
 ```
 
 This is particularly handy when using [per-project management ](https://github.com/oracle/opengrok/wiki/Per-project-management)
-
-## Generating group structure
-
-There is a shortcut for generating group structure embedded to the `Groups` tools. More information is in the [project groupings](https://github.com/OpenGrok/OpenGrok/wiki/Project-groups).
 
 # Real time web application change
 
