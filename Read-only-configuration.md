@@ -9,7 +9,7 @@
   * [List of most common configuration options](#list-of-most-common-configuration-options)
 - [Generating the read only configuration](#generating-the-read-only-configuration)
   * [Generating group structure](#generating-group-structure)
-- [Putting read-only configuration into effect](#putting-ro-config-into-effect)
+- [Putting read-only configuration into effect](#putting-read-only-config-into-effect)
 - [Real time web application change](#real-time-web-application-change)
 
 <!-- tocstop -->
