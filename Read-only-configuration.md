@@ -142,9 +142,9 @@ There is a shortcut for generating group structure embedded to the `Groups` tool
 Mostly for testing purposes it is available also to test some of the settings in the web application without the need to run the indexer. To do this there is a tool [Messages](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Messages) which can send a configuration message to the web application.
 
 ```bash
-$ tools/Messages -n config -t set "pluginDirectory = /var/opengrok/src"
-$ tools/Messages -n config -t set "authorizationWatchdogEnabled = true"
-$ tools/Messages -n config -t set "hitsPerPage = 10" # instead of 25
+$ Messages -n config -t set "pluginDirectory = /var/opengrok/src"
+$ Messages -n config -t set "authorizationWatchdogEnabled = true"
+$ Messages -n config -t set "hitsPerPage = 10" # instead of 25
 ```
 
 This tool only works for primitive java types and has only meaning for the options which actually changes some behaviour in the web application.
@@ -154,7 +154,7 @@ This tool only works for primitive java types and has only meaning for the optio
 With the [Messages](https://github.com/OpenGrok/OpenGrok/wiki/Messages) tool you can send a brand new configuration to the web application.
 
 ```bash
-$ tools/Messages -n config setconf /var/opengrok/etc/configuration.xml
+$ Messages -n config setconf /var/opengrok/etc/configuration.xml
 ```
 
 The above will send the configuration in the `/var/opengrok/etc/configuration.xml` to the web application and replace its previous configuration.
