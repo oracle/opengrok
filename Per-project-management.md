@@ -45,7 +45,7 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 The following is assuming that OpenGrok base directory is `/opengrok`.
 
 - backup current config
-- make any necessary changes to /opengrok/etc/readonly_configuration.xml
+- make any necessary changes to `/opengrok/etc/readonly_configuration.xml`
 - perform sanity check 
 ```
   OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml \
