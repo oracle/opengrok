@@ -78,7 +78,7 @@ At this point it might be quite difficult to guess the syntax of the xml file fo
 You can generate an empty configuration object with the `empty` subcommand:
 
 ```bash
-$ tools/Groups empty
+$ Groups empty
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_121" class="java.beans.XMLDecoder">
  <object class="org.opensolaris.opengrok.configuration.Configuration"/>
@@ -88,7 +88,7 @@ $ tools/Groups empty
 About how to add some options please refer to the main configuration `/var/opengrok/etc/configuration.xml` and try to simulate the same process. Mostly the following is applicable:
 
 ```bash
-$ tools/Groups empty
+$ Groups empty
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_121" class="java.beans.XMLDecoder">
  <object class="org.opensolaris.opengrok.configuration.Configuration">
