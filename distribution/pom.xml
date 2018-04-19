@@ -55,7 +55,7 @@
               <outputFile>${project.build.directory}/dist/opengrok.1</outputFile>
               <arguments>
                 <argument>-classpath</argument>
-                <argument>${project.basedir}/../opengrok-indexer/target/opengrok-${version}.jar</argument>
+                <argument>${project.basedir}/../opengrok-indexer/target/opengrok-${project.version}.jar</argument>
                 <argument>org.opensolaris.opengrok.index.Indexer</argument>
                 <argument>--man</argument>
               </arguments>
@@ -85,7 +85,7 @@
             <artifactId>maven-assembly-plugin</artifactId>
             <version>3.1.0</version>
             <configuration>
-              <finalName>opengrok-${version}</finalName>
+              <finalName>opengrok-${project.version}</finalName>
               <appendAssemblyId>false</appendAssemblyId>
               <descriptors>
                 <descriptor>assembly.xml</descriptor>
