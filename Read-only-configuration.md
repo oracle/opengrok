@@ -9,6 +9,7 @@
   * [List of most common configuration options](#list-of-most-common-configuration-options)
 - [Generating the read only configuration](#generating-the-read-only-configuration)
   * [Generating group structure](#generating-group-structure)
+- [Putting read-only configuration into effect](#putting-ro-config-into-effect)
 - [Real time web application change](#real-time-web-application-change)
 
 <!-- tocstop -->
@@ -107,7 +108,7 @@ $ Groups empty
 
 Save this content into `/var/opengrok/etc/read-only.xml` and use the [steps above](#read-only-configuration) to add the read only configuration to the indexer run.
 
-# Putting read-only configuration into effect:
+# Putting read-only configuration into effect
 
 The following is assuming that OpenGrok base directory is `/opengrok`.
 
