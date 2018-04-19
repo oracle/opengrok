@@ -435,6 +435,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <!-- Test helper class with name that confuses surefire -->
                         <exclude>**/TestRepository.java</exclude>
                     </excludes>
+		    <argLine>${surefireArgLine}</argLine>
                 </configuration>
             </plugin>
 
