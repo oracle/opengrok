@@ -46,7 +46,7 @@ The flow is as follows:
 
     Thus, the `configuration.xml` file serves as a persistent storage for both the indexer and the weapp.
 
-The problem now is that there is no way to persistently store any customizations. All of them get wiped out always when the reindex is finished and the configuration is overwritten.
+This presents a problem of how to store any customizations since all of them get wiped out always when the reindex is finished and the configuration is overwritten.
 
 ## Read only configuration
 
