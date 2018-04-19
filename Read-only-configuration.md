@@ -13,7 +13,7 @@
 
 <!-- tocstop -->
 
-# Configuration style
+# Configuration of indexer vs. configuration of webapp
 
 There are too many options which can be passed to the OpenGrok instance. Some of them have a meaning only for the indexer while some of them only for the web application instance. There are even those which apply for both of the cases.
 
