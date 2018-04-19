@@ -28,7 +28,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
     <packaging>pom</packaging>
-    <version>1.1-rc23</version>
+    <version>1.1-rc24</version>
     <name>OpenGrok</name>
     <url>http://opengrok.github.com/OpenGrok/</url>
 
