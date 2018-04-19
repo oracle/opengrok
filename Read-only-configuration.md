@@ -35,7 +35,7 @@ The flow is as follows:
   
     Indexer is usually run with the `-W` parameter which tells the path where to write the configuration to. Let say it is default to `/var/opengrok/etc/configuration.xml`. The indexer runs and **overwrites** the possible existing file with the new configuration it gathered while doing its work.
 
-    The word *overwrites* here is somewhat important because if you made a customization in that file - **it will simply disappear**. This is radically different to how configuration files are treated e.g. in Unix world.
+    The word *overwrites* here is somewhat important because if you made a customization in that file - **it will simply disappear**. This is radically different to how configuration files are treated e.g. in Unix world where one expects that the application never changes its configuration file.
 
     At the end of indexing it will usually (depends on whether the `-U` option is used) send the new configuration through the `localhost:2424` communication protocol to the web application so that it can refresh its inner structures to reflect the changes.
 
