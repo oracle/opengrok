@@ -159,6 +159,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <version>3.6.1</version>
             </plugin>
             <plugin>
+		<!-- UNIT TEST RUNNER -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -166,6 +167,14 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                         <reuseForks>false</reuseForks>
                 </configuration>
                 <version>2.20</version>
+		<executions>
+			<execution>
+				<id>run-unit-tests</id>
+				<goals>
+					<goal>test</goal>
+				</goals>
+			</execution>
+		</executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -277,21 +286,12 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 </reportSets>
             </plugin>
             <plugin>
-		<!-- UNIT TEST RUNNER -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
                 <version>2.20</version>
 		<configuration>
 			<argLine>${surefireArgLine}</argLine>
 		</configuration>
-		<executions>
-			<execution>
-				<id>run-unit-tests</id>
-				<goals>
-					<goal>test</goal>
-				</goals>
-			</execution>
-		</executions>
             </plugin>
 	    <!-- CODE COVERAGE PUBLISHER -->
 	    <plugin>
