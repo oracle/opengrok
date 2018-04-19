@@ -134,5 +134,3 @@ $ tools/Messages -n config setconf /var/opengrok/etc/configuration.xml
 ```
 
 The above will send the configuration in the `/var/opengrok/etc/configuration.xml` to the web application and replace its previous configuration.
-
-However, as mentioned in the configuration flow, these changes **are not** persistent as they vanish when the web application receives the new configuration.
