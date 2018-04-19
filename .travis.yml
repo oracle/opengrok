@@ -41,6 +41,9 @@ env:
 #
 script: "mvn -B -V verify"
 
+after_success:
+ - mvn clean test jacoco:report coveralls:report
+
 addons:
   coverity_scan:
     project:
