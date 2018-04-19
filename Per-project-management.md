@@ -46,7 +46,7 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
 
 - backup current config
 - make any necessary changes to `/opengrok/etc/readonly_configuration.xml`
-- perform sanity check 
+- perform sanity check, e.g.:
 ```
   OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml \
      Groups list
