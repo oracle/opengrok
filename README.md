@@ -39,7 +39,7 @@ Official page of the project is on:
 * Source Code Management installation depending on type of repositories indexed
 * If you want to build OpenGrok:
   * Ant (1.9.4 and later)
-    <http://ant.apache.org/>
+    <http://ant.apache.org/> or Maven <https://maven.apache.org/>
   * JFlex
     <http://www.jflex.de/>
   * Netbeans (optional, at least 8.2, will need Ant 1.9.4)
