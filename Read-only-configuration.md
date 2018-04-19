@@ -65,7 +65,7 @@ Therefore we substitute the persistent storage with another configuration file `
 
 ## OpenGrok Shell Wrapper
 
-For those who prefer the `OpenGrok` shell wrapper instead of directly running the java virtual machine; there is an environment variable `OPENGROK_READ_XML_CONFIGURATION` which should point to the read only configuration file and this file is later passed to the indexer under the `-R` option.
+On Unix systems, for those who prefer the `OpenGrok` shell wrapper instead of directly running the `java` with the `opengrok.jar` directly; there is an environment variable `OPENGROK_READ_XML_CONFIGURATION` which should point to the read only configuration file and this file is later passed to the indexer under the `-R` option.
 
 ```bash
 OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/read-only.xml ./OpenGrok index
