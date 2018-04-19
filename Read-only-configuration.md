@@ -47,7 +47,7 @@ The flow is as follows:
 
 3. Configuration message to the web application
   
-    With the [Messages](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Messages) tool you can send a brand new configuration to the web application.
+    With the [Messages](https://github.com/OpenGrok/OpenGrok/wiki/Messages) tool you can send a brand new configuration to the web application.
 
     ```bash
     $ tools/Messages -n config setconf /var/opengrok/etc/configuration.xml
