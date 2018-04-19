@@ -45,16 +45,6 @@ The flow is as follows:
 
     Thus, the `configuration.xml` file serves as a persistent storage for both the indexer and the weapp.
 
-3. Configuration message to the web application
-  
-    With the [Messages](https://github.com/OpenGrok/OpenGrok/wiki/Messages) tool you can send a brand new configuration to the web application.
-
-    ```bash
-    $ tools/Messages -n config setconf /var/opengrok/etc/configuration.xml
-    ```
-
-    The above will send the configuration in the `/var/opengrok/etc/configuration.xml` to the web application and replace its previous configuration.
-
 The problem now is that there is no way to persistently store any customizations. All of them get wiped out always when the reindex is finished and the configuration is overwritten.
 
 ## Read only configuration
@@ -123,6 +113,8 @@ There is a shortcut for generating group structure embedded to the `Groups` tool
 
 # Real time web application change
 
+## Single property change
+
 Mostly for testing purposes it is available also to test some of the settings in the web application without the need to run the indexer. To do this there is a tool [Messages](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Messages) which can send a configuration message to the web application.
 
 ```bash
@@ -132,5 +124,15 @@ $ tools/Messages -n config -t set "hitsPerPage = 10" # instead of 25
 ```
 
 This tool only works for primitive java types and has only meaning for the options which actually changes some behaviour in the web application.
+
+## Complete configuration change
+  
+    With the [Messages](https://github.com/OpenGrok/OpenGrok/wiki/Messages) tool you can send a brand new configuration to the web application.
+
+    ```bash
+    $ tools/Messages -n config setconf /var/opengrok/etc/configuration.xml
+    ```
+
+    The above will send the configuration in the `/var/opengrok/etc/configuration.xml` to the web application and replace its previous configuration.
 
 However, as mentioned in the configuration flow, these changes **are not** persistent as they vanish when the web application receives the new configuration.
