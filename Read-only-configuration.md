@@ -44,7 +44,7 @@ The flow is as follows:
   
     When the application starts (the server starts, deploy) it reads the configuration from the the `/var/opengrok/etc/configuration.xml` directly. If the file does not exist, the application warns the user in the browser and the initial index run is needed (as described above) as this usually means that the indexer has not run yet.
 
-    This file is particularly important in case the server container is restarted or the server rebooted - the webapp can then read the configuration and start serving the requests.
+    This file is particularly important in case the server container is restarted or the server rebooted - the webapp can then read the configuration and start serving the requests (without having to run the indexer to actually generate the configuration).
 
     Thus, the `configuration.xml` file serves as a persistent storage for both the indexer and the weapp.
 
