@@ -28,11 +28,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.1-rc23</version>
+        <version>1.1-rc24</version>
     </parent>
 
     <artifactId>opengrok</artifactId>
-    <version>1.1-rc23</version>
+    <version>1.1-rc24</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok Indexer</name>
@@ -138,7 +138,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     </execution>
                 </executions>
             </plugin>
-            
+
             <!-- patches jflex generated files to stop increasing buffer beyond token size that lucene accepts
             https://github.com/OpenGrok/OpenGrok/issues/1170 make parsers stop producing tokens > 32766 chars
             at least for PlainFullTokenizer, PlainSymbolTokenizer, JavaScriptSymbolTokenizer, JavaSymbolTokenizer
@@ -247,6 +247,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <!-- Test helper class with name that confuses surefire -->
                         <exclude>**/TestRepository.java</exclude>
                     </excludes>
+		            <argLine>${surefireArgLine}</argLine>
                 </configuration>
             </plugin>
 

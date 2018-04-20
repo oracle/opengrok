@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.1-rc23</version>
+    <version>1.1-rc24</version>
   </parent>
 
   <artifactId>opengrok-dist</artifactId>
@@ -24,13 +24,13 @@
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok</artifactId>
-      <version>1.1-rc23</version>
+      <version>1.1-rc24</version>
     </dependency>
 
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok-web</artifactId>
-      <version>1.1-rc23</version>
+      <version>1.1-rc24</version>
       <type>war</type>
     </dependency>
   </dependencies>
@@ -75,7 +75,7 @@
               <outputFile>${project.build.directory}/dist/opengrok.1</outputFile>
               <arguments>
                 <argument>-classpath</argument>
-                <argument>${project.build.directory}/dist/opengrok-${version}.jar</argument>
+                <argument>${project.build.directory}/dist/opengrok-${project.version}.jar</argument>
                 <argument>org.opengrok.index.Indexer</argument>
                 <argument>--man</argument>
               </arguments>
@@ -85,7 +85,7 @@
             <artifactId>maven-assembly-plugin</artifactId>
             <version>3.1.0</version>
             <configuration>
-              <finalName>opengrok-${version}</finalName>
+              <finalName>opengrok-${project.version}</finalName>
               <appendAssemblyId>false</appendAssemblyId>
               <descriptors>
                 <descriptor>assembly.xml</descriptor>

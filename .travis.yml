@@ -15,7 +15,7 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs pep8; fi
  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo ./scripts/install-bitkeeper.sh; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ctags cvs monotone; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ctags cvs; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install pep8; fi
 install: true
 
@@ -39,7 +39,8 @@ env:
 # in 'script' no matter if an individual command fails or not. This kludgy
 # looking shell incantation takes care of that.
 #
-script: "mvn -B -V verify"
+script:
+ - mvn -B -V verify jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report
 
 addons:
   coverity_scan:
