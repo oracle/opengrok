@@ -179,7 +179,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <version>3.6.1</version>
             </plugin>
             <plugin>
-		        <!-- UNIT TEST RUNNER -->
+                <!-- UNIT TEST RUNNER -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -187,47 +187,47 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                         <reuseForks>false</reuseForks>
                 </configuration>
                 <version>2.20</version>
-		        <executions>
-			        <execution>
-				        <id>run-unit-tests</id>
-				        <goals>
-					        <goal>test</goal>
-				        </goals>
-			        </execution>
-		        </executions>
+                <executions>
+                    <execution>
+                        <id>run-unit-tests</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.9</version>
+                <version>0.8.1</version>
                 <executions>
-			        <!-- Prepare execution with Surefire -->
-			        <execution>
-				        <id>pre-unit-test</id>
-				        <goals>
-					        <goal>prepare-agent</goal>
-				        </goals>
-				        <configuration>
-					        <propertyName>surefireArgLine</propertyName>
-				        </configuration>
-			        </execution>
-			        <!-- Generate report after tests are run -->
-			        <execution>
-				        <id>post-unit-test</id>
+                    <!-- Prepare execution with Surefire -->
+                    <execution>
+                        <id>pre-unit-test</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>surefireArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <!-- Generate report after tests are run -->
+                    <execution>
+                        <id>post-unit-test</id>
                         <phase>test</phase>
-				        <goals>
-					        <goal>report</goal>
-				        </goals>
-			        </execution>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-		        <version>${mavenjavadocplugin.version}</version>
-		        <configuration>
-		            <excludePackageNames>org.apache.commons.jrcs.*</excludePackageNames>
-		        </configuration>
+                <version>${mavenjavadocplugin.version}</version>
+                <configuration>
+                    <excludePackageNames>org.apache.commons.jrcs.*</excludePackageNames>
+                </configuration>
                 <executions>
                   <execution>
                     <goals>
@@ -309,16 +309,16 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
                 <version>2.20</version>
-		        <configuration>
-			        <argLine>${surefireArgLine}</argLine>
-		        </configuration>
+                <configuration>
+                    <argLine>${surefireArgLine}</argLine>
+                </configuration>
             </plugin>
             <!-- CODE COVERAGE PUBLISHER -->
-	        <plugin>
-		        <groupId>org.eluder.coveralls</groupId>
-		        <artifactId>coveralls-maven-plugin</artifactId>
-		        <version>3.1.0</version>
-	        </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>3.1.0</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
