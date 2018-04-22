@@ -54,7 +54,6 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.SortedDocValuesField;
-import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
@@ -354,6 +353,10 @@ public class AnalyzerGuru {
         return ANALYZER_VERSIONS.getOrDefault(fileTypeName, Long.MIN_VALUE);
     }
 
+    public static Map<String, Long> getAnalyzersVersionNos() {
+        return Collections.unmodifiableMap(ANALYZER_VERSIONS);
+    }
+
     public static Map<String, FileAnalyzerFactory> getExtensionsMap() {
         return Collections.unmodifiableMap(ext);
     }
@@ -571,8 +574,6 @@ public class AnalyzerGuru {
 
             String type = fa.getFileTypeName();
             doc.add(new StringField(QueryBuilder.TYPE, type, Store.YES));
-
-            doc.add(new StoredField(QueryBuilder.ZVER, fa.getVersionNo()));
         }
     }
 

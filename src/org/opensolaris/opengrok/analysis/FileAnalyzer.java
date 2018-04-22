@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
 

@@ -24,19 +24,30 @@
 package org.opensolaris.opengrok.index;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
- * Represents a test class for {@link IndexAnalysisSettings}.
+ * Represents a test class for {@link IndexAnalysisSettings2}.
  */
-public class IndexAnalysisSettingsTest {
+public class IndexAnalysisSettings2Test {
 
     private static final String PROJECT_NAME = "foo-1-2-3";
     private static final long ANALYZER_GURU_VERSION = 3;
     private static final int TABSIZE = 17;
+    private static final Map<String, Long> ANALYZER_VERSIONS = new HashMap<>();
+
+    @BeforeClass
+    public static void setUpClass() {
+        ANALYZER_VERSIONS.put("abc", 6L);
+        ANALYZER_VERSIONS.put("ABC", 45L);
+        ANALYZER_VERSIONS.put("d e", Long.MAX_VALUE - 19);
+    }
 
     @Test
     public void shouldAffirmINDEX_ANALYSIS_SETTINGS_OBJUID() {
@@ -49,10 +60,10 @@ public class IndexAnalysisSettingsTest {
     @Test
     public void shouldRoundTripANullObject() throws IOException,
             ClassNotFoundException {
-        IndexAnalysisSettings obj = new IndexAnalysisSettings();
+        IndexAnalysisSettings2 obj = new IndexAnalysisSettings2();
         byte[] bin = obj.serialize();
 
-        IndexAnalysisSettings res = IndexAnalysisSettings.deserialize(bin);
+        IndexAnalysisSettings2 res = IndexAnalysisSettings2.deserialize(bin);
         assertNotNull(res);
         assertEquals("projectName", null, res.getProjectName());
         assertEquals("tabSize", null, res.getTabSize());
@@ -62,13 +73,13 @@ public class IndexAnalysisSettingsTest {
     @Test
     public void shouldRoundTripADefinedObject() throws IOException,
             ClassNotFoundException {
-        IndexAnalysisSettings obj = new IndexAnalysisSettings();
+        IndexAnalysisSettings2 obj = new IndexAnalysisSettings2();
         obj.setProjectName(PROJECT_NAME);
         obj.setAnalyzerGuruVersion(ANALYZER_GURU_VERSION);
         obj.setTabSize(TABSIZE);
         byte[] bin = obj.serialize();
 
-        IndexAnalysisSettings res = IndexAnalysisSettings.deserialize(bin);
+        IndexAnalysisSettings2 res = IndexAnalysisSettings2.deserialize(bin);
         assertNotNull(res);
         assertEquals("projectName", PROJECT_NAME, res.getProjectName());
         assertEquals("tabSize", TABSIZE, (int)res.getTabSize());

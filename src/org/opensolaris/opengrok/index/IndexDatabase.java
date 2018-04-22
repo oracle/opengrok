@@ -118,7 +118,7 @@ public class IndexDatabase {
     private FSDirectory indexDirectory;
     private IndexReader reader;
     private IndexWriter writer;
-    private IndexAnalysisSettings settings;
+    private IndexAnalysisSettings2 settings;
     private PendingFileCompleter completer;
     private TermsEnum uidIter;
     private PostingsEnum postsIter;
@@ -166,7 +166,6 @@ public class IndexDatabase {
 
     static {
         CHECK_FIELDS = new HashSet<>();
-        CHECK_FIELDS.add(QueryBuilder.ZVER);
         CHECK_FIELDS.add(QueryBuilder.TYPE);
     }
 
@@ -453,7 +452,7 @@ public class IndexDatabase {
                 reader = DirectoryReader.open(indexDirectory); // open existing index
                 settings = readAnalysisSettings();
                 if (settings == null) {
-                    settings = new IndexAnalysisSettings();
+                    settings = new IndexAnalysisSettings2();
                 }
                 Terms terms = null;
                 int numDocs = reader.numDocs();
@@ -1609,11 +1608,9 @@ public class IndexDatabase {
                 }
             }
 
-            // Verify ZVER, or return a value to indicate mismatch.
+            // Verify Analyzer version, or return a value to indicate mismatch.
             long reqVersion = AnalyzerGuru.getAnalyzerVersionNo(fileTypeName);
-            IndexableField zver = doc.getField(QueryBuilder.ZVER);
-            Long actVersion = zver == null ? null :
-                zver.numericValue().longValue();
+            Long actVersion = settings.getAnalyzerVersion(fileTypeName);
             if (actVersion == null || !actVersion.equals(reqVersion)) {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.log(Level.FINE, "{0} version mismatch: {1}",
@@ -1635,17 +1632,18 @@ public class IndexDatabase {
     }
 
     private void writeAnalysisSettings() throws IOException {
-        settings = new IndexAnalysisSettings();
+        settings = new IndexAnalysisSettings2();
         settings.setProjectName(project != null ? project.getName() : null);
         settings.setTabSize(project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0);
-        // TODO: set ANALYZER_GURU and ANALYZER versions.
+        settings.setAnalyzerGuruVersion(AnalyzerGuru.getVersionNo());
+        settings.setAnalyzersVersions(AnalyzerGuru.getAnalyzersVersionNos());
 
         IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
         dao.write(writer, settings);
     }
 
-    private IndexAnalysisSettings readAnalysisSettings() throws IOException {
+    private IndexAnalysisSettings2 readAnalysisSettings() throws IOException {
         IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
         return dao.read(reader);
     }
