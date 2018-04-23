@@ -144,7 +144,10 @@ file (delivered as `/usr/opengrok/doc/paths.tsv` by OpenGrok package on Solaris)
 The `paths.tsv` file is read by OpenGrok indexing script from the configuration
 directory (the same where `configuration.xml` is located) which will create file
 `dtags.eftar` in the `index` subdirectory under `DATA_ROOT` directory which will
-then be used by the webapp to display the descriptions.
+then be used by the OpenGrok web application to display the descriptions. This "compilation" of configuration file
+into a binary file is done to get quick path-to-description in the web application.
+
+Remember that for the path descriptions to be put into effect either reindex has to be done or use the `updateDesc` sub-command of the `OpenGrok` shell script to update just the path descriptions.
 
 The file contains descriptions for directories one per line. Path to the
 directory and its description are separated by tab. The path to the directory
