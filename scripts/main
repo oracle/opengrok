@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#
+# Do not run coverage for forks as most people do not have Coveralls enabled
+# for their fork.
+#
+extra_args=""
+if [ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" ]; then
+	extra_args="jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report"
+fi
+
+mvn -B -V verify $extra_args
