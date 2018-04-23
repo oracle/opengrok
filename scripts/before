@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if `which bk`; then bk --version; fi
+if `which hg`; then hg --version; fi
+if `which git`; then git --version; fi
+if `which svn`; then svn --version; fi
+if `which cvs`; then cvs --version; fi
+if `which mtn`; then mtn --version; fi
+if `which bzr`; then bzr version; fi
