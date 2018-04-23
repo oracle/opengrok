@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
@@ -131,7 +131,9 @@ public class RepositoryInfo implements Serializable {
             // `directoryNameRelative' must start with a '/', as it is
             // elsewhere directly appended to env.getSourceRootPath() and
             // also stored as such.
-            if (!path.equals(originalPath)) path = File.separator + path;
+            if (!path.equals(originalPath)) {
+                path = File.separator + path;
+            }
         } catch (IOException e) {
             path = originalPath;
             LOGGER.log(Level.SEVERE, String.format(

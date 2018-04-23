@@ -855,10 +855,15 @@ public final class HistoryGuru {
                         e);
                     return null;
                 }
-                String inRootPath = Paths.get(rootKey, rel).toString();
-                Repository r = repositories.get(inRootPath);
-                if (r != null) {
-                    return r;
+                Repository repo;
+                if (rel.equals(nextPath)) {
+                    repo = repositories.get(nextPath);
+                } else {
+                    String inRootPath = Paths.get(rootKey, rel).toString();
+                    repo = repositories.get(inRootPath);
+                }
+                if (repo != null) {
+                    return repo;
                 }
             }
 
