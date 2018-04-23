@@ -34,13 +34,7 @@ env:
    #   via the "travis encrypt" command using the project repo's public key
    - secure: "O_cda5pWDBAP-O3_0nG5RQ"
 
-#
-# If compilation fails, we do not want to run the tests. Travis runs everything
-# in 'script' no matter if an individual command fails or not. This kludgy
-# looking shell incantation takes care of that.
-#
-script:
- - mvn -B -V verify jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report
+script: scripts/main
 
 addons:
   coverity_scan:
