@@ -6,6 +6,7 @@
 #
 extra_args=""
 if [ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" ]; then
+	echo "Enabling Jacoco/Coveralls"
 	extra_args="jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report"
 fi
 
