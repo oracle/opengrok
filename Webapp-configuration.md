@@ -5,6 +5,7 @@
 - [webapp parameters](#webapp-parameters)
   * [Changing webapp parameters](#changing-webapp-params)
   * [Changing webapp name](#changing-webapp-name)
+- [Default projects](#default-projects)
 - [Path Descriptions](#path-descriptions)
 <!-- tocstop -->
 
@@ -133,6 +134,13 @@ Deploy the modified `.war` file in glassfish/Sun Java App Server:
   Deploy the modified `.war` file in tomcat:
     just copy the `source.war` file to `TOMCAT_INSTALL/webapps` directory.
 
+# Default projects
+
+It is possible to set a list of projects that will be selected by default in the UI if the user did not previously select any. Once the user selects a project, this setting will be stored in a cookie and will override the set of default projects.
+
+To specify default projects, either use:
+  - the `-p` option when running the indexer directly from `opengrok.jar` file. Can be specified multiple times.
+  - the `OPENGROK_DEFAULT_PROJECTS` environment variable when using the `OpenGrok` shell script. The variable holds the set of projects paths relative to source root and starting with `/`. Multiple values can be separated with comma.
 
 # Path Descriptions
 
