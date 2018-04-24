@@ -45,8 +45,7 @@ To configure the webapp `source.war`, look into the parameters defined in
 * **CONFIGURATION** – the absolute path to XML file containing project configuration
   (e.g. `/var/opengrok/etc/configuration.xml`)
 * **ConfigAddress** – port for remote updates to configuration, optional, but advised(since there is no authentication)
-  to be set to `localhost:<some_port>` (e.g. `localhost:2424`), if you choose `some_port` below 1024 you have to have
-  root privileges
+  to be set to `localhost:<some_port>` (e.g. `localhost:2424`), if you choose `some_port` below 1024 usually you have to make sure the server is running with elevated privileges.
 
 ## Changing webapp parameters
 
