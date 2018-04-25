@@ -56,7 +56,12 @@ thead {
     background-color: #c5d5a9;
 }
 
-tbody tr:nth-child(EVEN) { /* alternate color for odd rows */
+/* alternate color for odd rows, search-result class handles this by itself */
+tbody:not(.search-result) tr:nth-child(EVEN) {
+    background-color: #e8e8f0;
+}
+
+.search-result-even-row {
     background-color: #e8e8f0;
 }
 
