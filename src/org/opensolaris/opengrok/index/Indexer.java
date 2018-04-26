@@ -41,8 +41,6 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +59,7 @@ import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opensolaris.opengrok.index.IndexVersion.IndexVersionException;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.logger.LoggerUtil;
 import org.opensolaris.opengrok.util.Executor;
@@ -91,6 +90,7 @@ public final class Indexer {
     private static boolean searchRepositories = false;
     private static boolean noindex = false;
     private static boolean awaitProfiler;
+    private static boolean checkIndexVersion = false;
 
     private static boolean help;
     private static String helpUsage;
@@ -108,7 +108,7 @@ public final class Indexer {
     private static int port = 0;
 
     public static OptionParser openGrok = null;
-
+    
     public static Indexer getInstance() {
         return index;
     }
@@ -143,6 +143,20 @@ public final class Indexer {
                 }
                 System.exit(status);
             }
+            
+            // Check version of index(es) versus current Lucene version and exit
+            // with return code indicating success or failure.
+            if (checkIndexVersion) {
+                int retval = 0;
+                try {
+                    IndexVersion.check(cfg);
+                } catch (IndexVersionException e) {
+                    System.err.printf("Index version check failed: %s", e);
+                    retval = 1;
+                }
+                System.exit(retval);
+            }
+            
             if (awaitProfiler) pauseToAwaitProfiler();
 
             env = RuntimeEnvironment.getInstance();
@@ -430,6 +444,11 @@ public final class Indexer {
                 }
             );
 
+            parser.on("--checkIndexVersion",
+                    "Check if current Lucene version matches index version").Do( v -> {
+                checkIndexVersion = true;
+            });
+            
             parser.on("-d", "--dataRoot", "=/path/to/data/root",
                 "The directory where OpenGrok stores the generated data.").
                 Do( drPath -> {

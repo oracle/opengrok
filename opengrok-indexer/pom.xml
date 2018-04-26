@@ -284,6 +284,13 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     <exclude>*.java</exclude>
                 </excludes>
             </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/index/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/index/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
         </testResources>
 
         <plugins>
@@ -496,6 +503,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-backward-codecs</artifactId>
+	    <version>${lucene.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
