@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -182,7 +182,7 @@ public class DirectoryListing {
         out.write("<th>#Lines</th>\n");
         out.write("<th>LOC</th>\n");
         if (offset > 0) {
-            out.write("<th><tt>Description</tt></th>\n");
+            out.write("<th><samp>Description</samp></th>\n");
         }
         out.write("</tr>\n</thead>\n<tbody>\n");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();

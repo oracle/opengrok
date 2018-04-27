@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -229,7 +229,7 @@ public final class Results {
                 out.write(">");
                 out.write(htmlize(rpath.substring(rpath.lastIndexOf('/') + 1)));
                 out.write("</a>");
-                out.write("</td><td><tt class=\"con\">");
+                out.write("</td><td><code class=\"con\">");
                 if (sh.sourceContext != null) {
                     Genre genre = Genre.get(doc.get("t"));
                     if (Genre.XREFABLE == genre && sh.summarizer != null) {
@@ -250,7 +250,7 @@ public final class Results {
                     sh.historyContext.getContext(new File(sh.sourceRoot, rpath),
                             rpath, out, sh.contextPath);
                 }
-                out.write("</tt></td></tr>\n");
+                out.write("</code></td></tr>\n");
             }
         }
     }

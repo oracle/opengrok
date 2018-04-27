@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
@@ -582,7 +582,7 @@ public final class Util {
      * it is a character that has a special meaning in a regexp.
      *
      * @param c the character that the regexp should match
-     * @return a six-character string on the form <tt>&#92;u</tt><i>hhhh</i>
+     * @return a six-character string in the form of <code>&#92;u</code><i>hhhh</i>
      */
     private static String escapeForRegex(char c) {
         StringBuilder sb = new StringBuilder(6);
