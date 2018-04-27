@@ -38,7 +38,7 @@ a:active, a:hover {
     text-decoration: underline;
 }
 
-img, tt, form, pre {
+img, form, pre, code, samp {
     border: 0;
 }
 
@@ -298,9 +298,6 @@ html.diff #whole_header {
     margin-left: 1ex;
     margin-top: 1ex;
     margin-right: 1ex;
-}
-
-#Masthead tt { /* slashes in the xref: line */
 }
 
 #sbar, #bar { /* default navbar */

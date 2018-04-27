@@ -42,10 +42,9 @@ public interface BlockingObjectPool<T> extends ObjectPool<T> {
      * from implementation to implementation.
      *
      * @param time amount of time to wait before giving up,
-     *   in units of <tt>unit</tt>
-     * @param unit a <tt>TimeUnit</tt> determining
-     *   how to interpret the
-     *        <tt>timeout</tt> parameter
+     *   in units of {@code unit}
+     * @param unit a {@code TimeUnit} determining
+     *   how to interpret the {@code timeout} parameter
      * @return T an instance of the Object
      * of type T from the pool.
      * @throws InterruptedException
