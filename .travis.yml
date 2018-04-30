@@ -10,38 +10,15 @@ matrix:
       jdk: oraclejdk8
     - os: osx
       osx_image: xcode7.3
-before_install:
- - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq; fi
- - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs pep8; fi
- - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo ./scripts/install-bitkeeper.sh; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ctags cvs; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install pep8; fi
+before_install: scripts/before_install
 install: true
-
-before_script:
- - if `which bk`; then bk --version; fi
- - if `which hg`; then hg --version; fi
- - if `which git`; then git --version; fi
- - if `which svn`; then svn --version; fi
- - if `which cvs`; then cvs --version; fi
- - if `which mtn`; then mtn --version; fi
- - if `which bzr`; then bzr version; fi
-
+before_script: scripts/before
 env:
   global:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
    #   via the "travis encrypt" command using the project repo's public key
    - secure: "O_cda5pWDBAP-O3_0nG5RQ"
-
-#
-# If compilation fails, we do not want to run the tests. Travis runs everything
-# in 'script' no matter if an individual command fails or not. This kludgy
-# looking shell incantation takes care of that.
-#
-script:
- - mvn -B -V verify jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report
-
+script: scripts/main
 addons:
   coverity_scan:
     project:
@@ -50,7 +27,6 @@ addons:
       branch_pattern: "coverity_scan"
       #    build_command_prepend: "mvn clean"
       build_command: "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile"
-
 deploy:
   # Pre-release
   - provider: releases

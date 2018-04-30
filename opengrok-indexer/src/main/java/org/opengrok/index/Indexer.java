@@ -59,6 +59,7 @@ import org.opengrok.history.HistoryGuru;
 import org.opengrok.history.Repository;
 import org.opengrok.history.RepositoryFactory;
 import org.opengrok.history.RepositoryInfo;
+import org.opengrok.index.IndexVersion.IndexVersionException;
 import org.opengrok.logger.LoggerFactory;
 import org.opengrok.logger.LoggerUtil;
 import org.opengrok.util.Executor;
@@ -89,6 +90,7 @@ public final class Indexer {
     private static boolean searchRepositories = false;
     private static boolean noindex = false;
     private static boolean awaitProfiler;
+    private static boolean checkIndexVersion = false;
 
     private static boolean help;
     private static String helpUsage;
@@ -141,6 +143,20 @@ public final class Indexer {
                 }
                 System.exit(status);
             }
+
+            // Check version of index(es) versus current Lucene version and exit
+            // with return code indicating success or failure.
+            if (checkIndexVersion) {
+                int retval = 0;
+                try {
+                    IndexVersion.check(cfg);
+                } catch (IndexVersionException e) {
+                    System.err.printf("Index version check failed: %s", e);
+                    retval = 1;
+                }
+                System.exit(retval);
+            }
+
             if (awaitProfiler) pauseToAwaitProfiler();
 
             env = RuntimeEnvironment.getInstance();
@@ -427,6 +443,11 @@ public final class Indexer {
                     cfg.setCtags((String)ctagsPath);
                 }
             );
+
+            parser.on("--checkIndexVersion",
+                    "Check if current Lucene version matches index version").Do( v -> {
+                checkIndexVersion = true;
+            });
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root",
                 "The directory where OpenGrok stores the generated data.").

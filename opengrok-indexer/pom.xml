@@ -28,11 +28,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.1-rc24</version>
+        <version>1.1-rc25</version>
     </parent>
 
     <artifactId>opengrok</artifactId>
-    <version>1.1-rc24</version>
+    <version>1.1-rc25</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok Indexer</name>
@@ -69,6 +69,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-backward-codecs</artifactId>
+            <version>${lucene.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>

@@ -171,6 +171,8 @@ public final class Results {
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+        boolean evenRow = true;
+        out.write("<tbody class=\"search-result\">");
         for (Map.Entry<String, ArrayList<Integer>> entry :
                 createMap(sh.searcher, sh.hits, start, end).entrySet()) {
             String parent = entry.getKey();
@@ -190,8 +192,7 @@ public final class Results {
                     && (messages = Util.messagesToJson(p,
                             RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG
                     )).size() > 0) {
-                out.write(" <a ");
-                out.write("href=\"" + xrefPrefix + "/" + p.getName() + "\">");
+                out.write(" <a href=\"" + xrefPrefix + "/" + p.getName() + "\">");
                 out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
                 out.write("</a>");
             }
@@ -205,31 +206,24 @@ public final class Results {
                 Document doc = sh.searcher.doc(docId);
                 String rpath = doc.get(QueryBuilder.PATH);
                 String rpathE = Util.URIEncodePath(rpath);
-                DateFormat df;
-                out.write("<tr>");
+                if (evenRow) {
+                    out.write("<tr class=\"search-result-even-row\">");
+                } else {
+                    out.write("<tr>");
+                }
+                evenRow = !evenRow;
                 Util.writeHAD(out, sh.contextPath, rpathE, false);
                 out.write("<td class=\"f\"><a href=\"");
                 out.write(xrefPrefixE);
                 out.write(rpathE);
                 out.write("\"");
                 if (env.isLastEditedDisplayMode()) {
-                    try {
-                        // insert last edited date if possible
-                        df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-                        String dd = df.format(DateTools.stringToDate(doc.get("date")));
-                        out.write(" class=\"result-annotate\" title=\"");
-                        out.write("Last modified: ");
-                        out.write(dd);
-                        out.write("\"");
-                    } catch (ParseException ex) {
-                        LOGGER.log(
-                                Level.WARNING, "An error parsing date information", ex);
-                    }
+                    printLastEditedDate(out, doc);
                 }
                 out.write(">");
                 out.write(htmlize(rpath.substring(rpath.lastIndexOf('/') + 1)));
                 out.write("</a>");
-                out.write("</td><td><tt class=\"con\">");
+                out.write("</td><td><code class=\"con\">");
                 if (sh.sourceContext != null) {
                     Genre genre = Genre.get(doc.get("t"));
                     if (Genre.XREFABLE == genre && sh.summarizer != null) {
@@ -250,8 +244,22 @@ public final class Results {
                     sh.historyContext.getContext(new File(sh.sourceRoot, rpath),
                             rpath, out, sh.contextPath);
                 }
-                out.write("</tt></td></tr>\n");
+                out.write("</code></td></tr>\n");
             }
+        }
+        out.write("</tbody>");
+    }
+
+    private static void printLastEditedDate(final Writer out, final Document doc) throws IOException {
+        try {
+            DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+            String dd = df.format(DateTools.stringToDate(doc.get("date")));
+            out.write(" class=\"result-annotate\" title=\"");
+            out.write("Last modified: ");
+            out.write(dd);
+            out.write("\"");
+        } catch (ParseException ex) {
+            LOGGER.log(Level.WARNING, "An error parsing date information", ex);
         }
     }
 

@@ -70,8 +70,8 @@ internal settings on your OpenGrok server.</p><%
         } else {
         %><p>
 For security reasons, printing of internal settings is not enabled by
-default. To enable, set the property <tt>chattyStatusPage</tt> to
-<tt>true</tt> in <tt>configuration.xml</tt>.</p><%
+default. To enable, set the property <code>chattyStatusPage</code> to
+<code>true</code> in <code>configuration.xml</code>.</p><%
         }
         %>
         </div>

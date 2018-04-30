@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update -qq; fi
+if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+	sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs pep8;
+fi
+if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo ./scripts/install-bitkeeper.sh; fi
+if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ctags cvs; fi
+if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install pep8; fi

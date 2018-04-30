@@ -111,6 +111,9 @@ Supported Environment Variables for configuring the default setup:
   - OPENGROK_ENABLE_PROJECTS    Enable projects, where every directory in
                                   SRC_ROOT is considered a separate project.
                                   on|off (default on) (^)
+  - OPENGROK_DEFAULT_PROJECTS   List of projects (relative to source root,
+                                starting with slash) separated with comma to be
+				selected by default in the UI.
   - OPENGROK_IGNORE_PATTERNS    Set ignored patterns for indexer to skip.
                                   OPENGROK_IGNORE_PATTERNS="-i dummy"
                                   OPENGROK_IGNORE_PATTERNS="-i f:dummy"
@@ -310,6 +313,15 @@ DefaultInstanceConfiguration()
         off|false|0) ENABLE_PROJECTS="" ;;
         *) ENABLE_PROJECTS="-P" ;;
     esac
+
+    if [ -n "${ENABLE_PROJECTS}" ]
+    then
+        DEFAULT_PROJECTS=""
+        for proj in $( IFS=","; echo ${OPENGROK_DEFAULT_PROJECTS} )
+	do
+            DEFAULT_PROJECTS="-p $proj ${DEFAULT_PROJECTS}"
+        done
+    fi
 
     # OPTIONAL: Scanning Options (for Mercurial repositories)
     SCAN_FOR_REPOSITORY="-S"
@@ -845,6 +857,20 @@ CreateRuntimeRequirements()
     fi
 }
 
+CheckIndexVersion()
+{
+    if [ ! -f "${XML_CONFIGURATION}" ]
+    then
+        return
+    fi
+    if ! MinimalInvocation --checkIndexVersion -R "${XML_CONFIGURATION}" -d "${DATA_ROOT}"
+    then
+        echo "\nIndex version check failed. You might want to remove all data" \
+            "under the data root directory ${DATA_ROOT} and reindex.\n"
+        exit 1
+    fi
+}
+
 MinimalInvocation()
 {
     ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    	\
@@ -880,9 +906,10 @@ CommonInvocation()
 StdInvocation()
 {
     CommonInvocation		\
-        -W ${XML_CONFIGURATION}	\
+        -W "${XML_CONFIGURATION}"	\
 	${SCAN_FOR_REPOSITORY}	\
 	${ENABLE_PROJECTS}	\
+	${DEFAULT_PROJECTS}	\
         -s "${SRC_ROOT}"	\
 	-d "${DATA_ROOT}"	\
 	"${@}"
@@ -1044,12 +1071,14 @@ case "${1}" in
 
     update)
         ValidateConfiguration
+        CheckIndexVersion
         CreateRuntimeRequirements
         UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     updateQuietly)
         ValidateConfiguration
+        CheckIndexVersion
         CreateRuntimeRequirements
         QUIET="-q"
         VERBOSE=""
@@ -1076,6 +1105,7 @@ case "${1}" in
             SRC_ROOT="${2}"
         fi
         ValidateConfiguration
+        CheckIndexVersion
         CreateRuntimeRequirements
         UpdateGeneratedData && UpdateDescriptionCache
         ;;
@@ -1090,6 +1120,7 @@ case "${1}" in
 	    FatalError "need configuration via OPENGROK_READ_XML_CONFIGURATION"
 	fi
         ValidateConfiguration
+        CheckIndexVersion
         CreateRuntimeRequirements
         UpdateDataPartial $@
         ;;

@@ -38,7 +38,7 @@ a:active, a:hover {
     text-decoration: underline;
 }
 
-img, tt, form, pre {
+img, form, pre, code, samp {
     border: 0;
 }
 
@@ -56,7 +56,12 @@ thead {
     background-color: #c5d5a9;
 }
 
-tbody tr:nth-child(EVEN) { /* alternate color for odd rows */
+/* alternate color for odd rows, search-result class handles this by itself */
+tbody:not(.search-result) tr:nth-child(EVEN) {
+    background-color: #e8e8f0;
+}
+
+.search-result-even-row {
     background-color: #e8e8f0;
 }
 
@@ -298,9 +303,6 @@ html.diff #whole_header {
     margin-left: 1ex;
     margin-top: 1ex;
     margin-right: 1ex;
-}
-
-#Masthead tt { /* slashes in the xref: line */
 }
 
 #sbar, #bar { /* default navbar */
