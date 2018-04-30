@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,12 +35,12 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.configuration.Configuration;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.util.FileUtilities;
-import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.configuration.Configuration;
+import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.RepositoryFactory;
+import org.opengrok.util.FileUtilities;
+import org.opengrok.util.IOUtils;
+import org.opengrok.util.TestRepository;
 
 /**
  * Verify index version check.
@@ -61,8 +61,7 @@ public class IndexVersionTest {
     @Before
     public void setUp() throws IOException {
         repository = new TestRepository();
-        repository.create(IndexerTest.class.
-                getResourceAsStream("/org/opensolaris/opengrok/history/repositories.zip"));
+        repository.create(IndexerTest.class.getResourceAsStream("/org/opengrok/history/repositories.zip"));
         oldIndexDataDir = null;
     }
 
@@ -117,7 +116,7 @@ public class IndexVersionTest {
         Files.createDirectory(indexPath);
         File indexDir = new File(indexPath.toString());
         assertTrue("index directory check", indexDir.isDirectory());
-        URL oldindex = getClass().getResource("oldindex.zip");
+        URL oldindex = getClass().getResource("/index/oldindex.zip");
         assertNotNull("resource needs to be non null", oldindex);
         File archive = new File(oldindex.getPath());
         assertTrue("archive exists", archive.isFile());
