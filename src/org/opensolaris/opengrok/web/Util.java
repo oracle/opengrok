@@ -1740,7 +1740,7 @@ public final class Util {
             String buildLink = buildLink(name, url, true);
             return pattern.matcher(text).replaceAll(buildLink);
         } catch (URISyntaxException | MalformedURLException ex) {
-            LOGGER.log(Level.WARNING, "The given URL '{0}' is not valid", url);
+            LOGGER.log(Level.WARNING, "The given URL ''{0}'' is not valid", url);
             return text;
         }
     }
