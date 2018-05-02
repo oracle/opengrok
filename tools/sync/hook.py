@@ -26,7 +26,7 @@ from command import Command
 import logging
 
 
-def run_hook(logger, script, path):
+def run_hook(logger, script, path, env):
     """
     Change a working directory to specified path, run a command
     and change the working directory back to its original value.
@@ -37,7 +37,7 @@ def run_hook(logger, script, path):
     ret = 0
     logger.debug("Running hook '{}' in directory {}".
                  format(script, path))
-    cmd = Command([script], work_dir=path)
+    cmd = Command([script], work_dir=path, env_vars=env)
     cmd.execute()
     if cmd.state is not "finished" or cmd.getretcode() != 0:
         logger.error("command failed: {} -> {}".format(cmd, cmd.getretcode()))
