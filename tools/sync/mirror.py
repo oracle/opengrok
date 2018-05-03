@@ -48,7 +48,7 @@ from commands import Commands, CommandsBase
 from repository import Repository
 from mercurial import MercurialRepository
 from repofactory import get_repository
-from utils import is_exe, check_create_dir
+from utils import is_exe, check_create_dir, get_int
 from hook import run_hook
 from readconfig import read_config
 from opengrok import get_repos, get_config_value, get_repo_type
@@ -156,11 +156,13 @@ if __name__ == '__main__':
     if hookdir:
         logger.debug("Hook directory = {}".format(hookdir))
 
-    command_timeout = config.get(CMD_TIMEOUT_PROPERTY)
+    command_timeout = get_int(logger, "command timeout",
+                              config.get(CMD_TIMEOUT_PROPERTY))
     if command_timeout:
         logger.debug("Global command timeout = {}".format(command_timeout))
 
-    hook_timeout = config.get(HOOK_TIMEOUT_PROPERTY)
+    hook_timeout = get_int(logger, "hook timeout",
+                           config.get(HOOK_TIMEOUT_PROPERTY))
     if hook_timeout:
         logger.debug("Global hook timeout = {}".format(hook_timeout))
 
@@ -172,13 +174,19 @@ if __name__ == '__main__':
         logger.debug("Project '{}' has specific (non-default) config".
                      format(args.project))
 
-        project_command_timeout = project_config.get(CMD_TIMEOUT_PROPERTY)
+        project_command_timeout = get_int(logger, "command timeout for "
+                                          "project {}".format(args.project),
+                                          project_config.
+                                          get(CMD_TIMEOUT_PROPERTY))
         if project_command_timeout:
             command_timeout = project_command_timeout
             logger.debug("Project command timeout = {}".
                          format(command_timeout))
 
-        project_hook_timeout = project_config.get(HOOK_TIMEOUT_PROPERTY)
+        project_hook_timeout = get_int(logger, "hook timeout for "
+                                       "project {}".format(args.project),
+                                       project_config.
+                                       get(HOOK_TIMEOUT_PROPERTY))
         if project_hook_timeout:
             hook_timeout = project_hook_timeout
             logger.debug("Project hook timeout = {}".

@@ -71,3 +71,17 @@ def get_command(logger, path, name):
     logger.debug("{} = {}".format(name, cmd_file))
 
     return cmd_file
+
+
+def get_int(logger, name, value):
+    """
+    If the supplied value is integer, return it. Otherwise return None.
+    """
+    if not value:
+        return None
+
+    try:
+        return int(value)
+    except ValueError:
+        logger.error("'{}' is not a number: {}".format(name, value))
+        return None
