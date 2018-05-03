@@ -14,11 +14,13 @@ Both scripts take configuration either in JSON or YAML.
 
 Use e.g. like this:
 
-  `# sync.py -c /scripts/sync.conf -d /ws-local/ -p`
+```bash
+  $ sync.py -c /scripts/sync.conf -d /ws-local/ -p
+```
 
 where the `sync.conf` file contents might look like this:
 
-```
+```json
   {
      "commands": [["/usr/opengrok/bin/Messages", "-c", "info", "-e", "+1 hour",
                    "-n", "normal", "-t", "ARG", "resync + reindex in progress"],
@@ -67,7 +69,7 @@ log directory.
 
 The `mirror-config.yml` configuration file contents can look e.g. like this:
 
-```
+```YML
 #
 # Commands (or paths - for specific repository types only)
 #
