@@ -278,7 +278,7 @@ if __name__ == '__main__':
                 logger.info("Running pre hook")
                 if run_hook(logger, prehook,
                             os.path.join(source_root, args.project),
-                            config.get['proxy'] if use_proxy else None,
+                            config['proxy'] if use_proxy else None,
                             hook_timeout) != 0:
                     logger.error("pre hook failed")
                     logging.shutdown()
