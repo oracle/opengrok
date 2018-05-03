@@ -199,7 +199,7 @@ class Command:
             self.logger.error("Got OS error", exc_info=True)
             self.state = Command.ERRORED
         except TimeoutException as e:
-            self.logger.error("Timed out", exc_info=True)
+            self.logger.error("Timed out")
             self.state = Command.TIMEDOUT
         else:
             self.state = Command.FINISHED
