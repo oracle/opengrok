@@ -139,7 +139,7 @@ if __name__ == '__main__':
                     try:
                         pattern = re.compile(proj)
                     except re.error:
-                        logger.error("Not a valid regular exception: {}".
+                        logger.error("Not a valid regular expression: {}".
                                      format(proj))
                         continue
 
