@@ -93,8 +93,8 @@ class Command:
                     if not self.condition.wait(self.timeout):
                         p = self.popen
                         self.logger.info("Terminating command {} with PID {} "
-                                         "after timeout".
-                                         format(p.args, p.pid))
+                                         "after timeout of {} seconds".
+                                         format(p.args, p.pid, self.timeout))
                         self.popen.terminate()
                         self.exception = TimeoutException("Command {} with pid"
                                                           " {} timed out".
