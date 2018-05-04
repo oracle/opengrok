@@ -117,6 +117,8 @@ The `opengrok-master` project contains a RCS repository that would make the mirr
 
 Multiple projects can share the same configuration using regular expressions as demonstrated with the `jdk.*` pattern in the above configuration. The patterns are matched from top to the bottom of the configuration file, first match wins.
 
+The `history` project is marked as disabled. This means that the `mirror.py` script will exit with special value of 2 that is interpreted by the `sync.py` script to avoid any reindex. It is not treated as an error.
+
 In batch mode, messages will be logged to a log file under the `logdir` directory specified in the configuration and rotated for each run, up to default count (8) or count specified using the `--backupcount` option.
 
 If pre and post mirroring hooks are specified, they are run before and after project synchronization. If any of the hooks fail, the program is immediately terminated. However, if the synchronization (that is run in between the hook scripts) fails, the post hook will be executed anyway. This is done so that the project is in sane state - usually the post hook which is used to apply extract source archives and apply patches. If the pre hook is used to clean up the extracted work and project synchronization failed, the project would be left barebone.
