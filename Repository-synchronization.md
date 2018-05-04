@@ -67,6 +67,8 @@ log directory.
 
 # mirror.py
 
+The script synchronized the repositories of projects by running appropriate commands (e.g. `git pull` for Git). While it can run perfectly fine standalone, it is meant to be run from within `sync.py` (see above).
+
 The `mirror-config.yml` configuration file contents can look e.g. like this:
 
 ```YML
