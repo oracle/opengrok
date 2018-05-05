@@ -243,8 +243,9 @@ if __name__ == '__main__':
     try:
         with lock.acquire(timeout=0):
             if prehook and run_hook(logger, prehook,
-                                    os.path.join(source_root,
-                                                 args.project)) != 0:
+                                    os.path.join(source_root, args.project),
+                                    config['proxy'] if use_proxy else None
+                                    ) != 0:
                 logger.error("pre hook failed")
                 logging.shutdown()
                 sys.exit(1)
@@ -286,8 +287,9 @@ if __name__ == '__main__':
                         ret = 1
 
             if posthook and run_hook(logger, posthook,
-                                     os.path.join(source_root,
-                                                  args.project)) != 0:
+                                     os.path.join(source_root, args.project),
+                                     config['proxy'] if use_proxy else None
+                                     ) != 0:
                 logger.error("post hook failed")
                 logging.shutdown()
                 sys.exit(1)

@@ -114,7 +114,7 @@ public class LdapUserPlugin extends AbstractLdapPlugin {
         String filter = getFilter(user);
         if ((records = getLdapProvider().lookupLdapContent(null, filter,
                 new String[]{"uid", "mail", "ou"})) == null) {
-            LOGGER.log(Level.WARNING, "failed to get LDAP contents for user '{0}' with filter '{1}'",
+            LOGGER.log(Level.WARNING, "failed to get LDAP contents for user ''{0}'' with filter ''{1}''",
                     new Object[]{user, filter});
             return;
         }
