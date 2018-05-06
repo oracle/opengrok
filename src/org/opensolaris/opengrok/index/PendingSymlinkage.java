@@ -24,46 +24,48 @@
 package org.opensolaris.opengrok.index;
 
 /**
- * Represents the metadata for a pending file renaming.
+ * Represents the metadata for a pending symbolic linkage.
  */
-public final class PendingFileRenaming {
-    private final String absolutePath;
-    private final String transientPath;
+public final class PendingSymlinkage {
+    private final String sourcePath;
+    private final String targetRelPath;
 
-    public PendingFileRenaming(String absolutePath, String transientPath) {
-        this.absolutePath = absolutePath;
-        this.transientPath = transientPath;
+    public PendingSymlinkage(String sourcePath, String targetRelPath) {
+        this.sourcePath = sourcePath;
+        this.targetRelPath = targetRelPath;
     }
 
     /**
-     * @return the final, absolute path
+     * @return the source, absolute path
      */
-    public String getAbsolutePath() {
-        return absolutePath;
+    public String getSourcePath() {
+        return sourcePath;
     }
 
     /**
-     * @return the transient, absolute path
+     * @return the target, relative path
      */
-    public String getTransientPath() {
-        return transientPath;
+    public String getTargetRelPath() {
+        return targetRelPath;
     }
 
     /**
-     * Compares {@code absolutePath} to the other object's value.
+     * Compares {@code sourcePath} to the other object's value.
      * @param o other object for comparison
      * @return {@code true} if the two compared objects are identical;
      * otherwise false
      */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof PendingFileRenaming)) return false;
-        PendingFileRenaming other = (PendingFileRenaming)o;
-        return this.absolutePath.equals(other.absolutePath);
+        if (!(o instanceof PendingSymlinkage)) {
+            return false;
+        }
+        PendingSymlinkage other = (PendingSymlinkage)o;
+        return this.sourcePath.equals(other.sourcePath);
     }
 
     @Override
     public int hashCode() {
-        return this.absolutePath.hashCode();
+        return this.sourcePath.hashCode();
     }
 }
