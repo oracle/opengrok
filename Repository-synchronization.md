@@ -91,6 +91,8 @@ proxy:
 hookdir: /tmp/hooks
 # per-project hooks relative to 'hookdir' above
 logdir: /tmp/logs
+command_timeout: 300
+hook_timeout: 1200
 #
 # Per project configuration.
 #
@@ -101,6 +103,7 @@ projects:
     disabled: true
   userland:
     proxy: true
+    hook_timeout: 3600
     hooks:
       pre: userland-pre.ksh
       post: userland-post.ksh
@@ -124,3 +127,5 @@ The `history` project is marked as disabled. This means that the `mirror.py` scr
 In batch mode, messages will be logged to a log file under the `logdir` directory specified in the configuration and rotated for each run, up to default count (8) or count specified using the `--backupcount` option.
 
 If pre and post mirroring hooks are specified, they are run before and after project synchronization. If any of the hooks fail, the program is immediately terminated. However, if the synchronization (that is run in between the hook scripts) fails, the post hook will be executed anyway. This is done so that the project is in sane state - usually the post hook which is used to apply extract source archives and apply patches. If the pre hook is used to clean up the extracted work and project synchronization failed, the project would be left barebone.
+
+Both repository synchronization commands and hooks can have a timeout. By default there is no timeout, unless specified in the configuration file. There are global and per project timeouts, the latter overriding the former. For instance, in the above configuration file, the `userland` project overrides global hook timeout to 1 hour while inheriting the command timeout.
