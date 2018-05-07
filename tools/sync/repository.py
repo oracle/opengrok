@@ -22,6 +22,7 @@
 #
 
 import abc
+from command import Command
 
 
 class Repository:
@@ -31,10 +32,12 @@ class Repository:
 
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, logger, path, project, command, env, hooks):
+    def __init__(self, logger, path, project, command, env, hooks,
+                 timeout):
         self.logger = logger
         self.path = path
         self.project = project
+        self.timeout = timeout
         if env:
             self.env = env
         else:
@@ -42,6 +45,10 @@ class Repository:
 
     def __str__(self):
         return self.path
+
+    def getCommand(self, cmd, **kwargs):
+        kwargs['timeout'] = self.timeout
+        return Command(cmd, **kwargs)
 
     def sync(self):
         # Eventually, there might be per-repository hooks added here.

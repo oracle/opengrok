@@ -48,7 +48,7 @@ from commands import Commands, CommandsBase
 from repository import Repository
 from mercurial import MercurialRepository
 from repofactory import get_repository
-from utils import is_exe, check_create_dir
+from utils import is_exe, check_create_dir, get_int
 from hook import run_hook
 from readconfig import read_config
 from opengrok import get_repos, get_config_value, get_repo_type
@@ -68,6 +68,10 @@ if __name__ == '__main__':
     ret = 0
     output = []
     dirs_to_process = []
+
+    # "constants"
+    HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
+    CMD_TIMEOUT_PROPERTY = 'command_timeout'
 
     parser = argparse.ArgumentParser(description='project mirroring')
 
@@ -135,7 +139,7 @@ if __name__ == '__main__':
                     try:
                         pattern = re.compile(proj)
                     except re.error:
-                        logger.error("Not a valid regular exception: {}".
+                        logger.error("Not a valid regular expression: {}".
                                      format(proj))
                         continue
 
@@ -152,6 +156,16 @@ if __name__ == '__main__':
     if hookdir:
         logger.debug("Hook directory = {}".format(hookdir))
 
+    command_timeout = get_int(logger, "command timeout",
+                              config.get(CMD_TIMEOUT_PROPERTY))
+    if command_timeout:
+        logger.debug("Global command timeout = {}".format(command_timeout))
+
+    hook_timeout = get_int(logger, "hook timeout",
+                           config.get(HOOK_TIMEOUT_PROPERTY))
+    if hook_timeout:
+        logger.debug("Global hook timeout = {}".format(hook_timeout))
+
     prehook = None
     posthook = None
     ignored_repos = []
@@ -159,6 +173,24 @@ if __name__ == '__main__':
     if project_config:
         logger.debug("Project '{}' has specific (non-default) config".
                      format(args.project))
+
+        project_command_timeout = get_int(logger, "command timeout for "
+                                          "project {}".format(args.project),
+                                          project_config.
+                                          get(CMD_TIMEOUT_PROPERTY))
+        if project_command_timeout:
+            command_timeout = project_command_timeout
+            logger.debug("Project command timeout = {}".
+                         format(command_timeout))
+
+        project_hook_timeout = get_int(logger, "hook timeout for "
+                                       "project {}".format(args.project),
+                                       project_config.
+                                       get(HOOK_TIMEOUT_PROPERTY))
+        if project_hook_timeout:
+            hook_timeout = project_hook_timeout
+            logger.debug("Project hook timeout = {}".
+                         format(hook_timeout))
 
         if project_config.get('ignored_repos'):
             ignored_repos = project_config.get('ignored_repos')
@@ -242,13 +274,15 @@ if __name__ == '__main__':
                              args.project + "-mirror.lock"))
     try:
         with lock.acquire(timeout=0):
-            if prehook and run_hook(logger, prehook,
-                                    os.path.join(source_root, args.project),
-                                    config['proxy'] if use_proxy else None
-                                    ) != 0:
-                logger.error("pre hook failed")
-                logging.shutdown()
-                sys.exit(1)
+            if prehook:
+                logger.info("Running pre hook")
+                if run_hook(logger, prehook,
+                            os.path.join(source_root, args.project),
+                            config['proxy'] if use_proxy else None,
+                            hook_timeout) != 0:
+                    logger.error("pre hook failed")
+                    logging.shutdown()
+                    sys.exit(1)
 
             #
             # If one of the repositories fails to sync, the whole project sync
@@ -258,7 +292,7 @@ if __name__ == '__main__':
                 logger.debug("Repository path = {}".format(repo_path))
 
                 if repo_path in ignored_repos:
-                    logger.debug("repository {} ignored".format(repo_path))
+                    logger.info("repository {} ignored".format(repo_path))
                     continue
 
                 repo_type = get_repo_type(logger, repo_path, messages_file)
@@ -275,24 +309,29 @@ if __name__ == '__main__':
                                       args.project,
                                       config.get('commands'),
                                       config['proxy'] if use_proxy else None,
-                                      None)
+                                      None,
+                                      command_timeout)
                 if not repo:
                     logger.error("Cannot get repository for {}".
                                  format(repo_path))
                     ret = 1
                 else:
+                    logger.info("Synchronizing repository {}".
+                                format(repo_path))
                     if repo.sync() != 0:
                         logger.error("failed to sync repository {}".
                                      format(repo_path))
                         ret = 1
 
-            if posthook and run_hook(logger, posthook,
-                                     os.path.join(source_root, args.project),
-                                     config['proxy'] if use_proxy else None
-                                     ) != 0:
-                logger.error("post hook failed")
-                logging.shutdown()
-                sys.exit(1)
+            if posthook:
+                logger.info("Running post hook")
+                if run_hook(logger, posthook,
+                            os.path.join(source_root, args.project),
+                            config['proxy'] if use_proxy else None,
+                            hook_timeout) != 0:
+                    logger.error("post hook failed")
+                    logging.shutdown()
+                    sys.exit(1)
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)
