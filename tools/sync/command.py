@@ -33,6 +33,7 @@ class TimeoutException(Exception):
     """
     Exception returned when command exceeded its timeout.
     """
+    pass
 
 
 class Command:
@@ -103,7 +104,7 @@ class Command:
                     else:
                         return None
 
-            def getexception(self):
+            def get_exception(self):
                 return self.exception
 
         class OutputThread(threading.Thread):
@@ -188,7 +189,7 @@ class Command:
             p.wait()
 
             if self.timeout:
-                e = timeout_thread.getexception()
+                e = timeout_thread.get_exception()
                 if e:
                     raise e
         except KeyboardInterrupt as e:
