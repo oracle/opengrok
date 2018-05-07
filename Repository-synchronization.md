@@ -69,7 +69,9 @@ log directory.
 
 The script synchronized the repositories of projects by running appropriate commands (e.g. `git pull` for Git). While it can run perfectly fine standalone, it is meant to be run from within `sync.py` (see above).
 
-The `mirror-config.yml` configuration file contents can look e.g. like this:
+## Configuration example
+
+The configuration file contents in YML can look e.g. like this:
 
 ```YML
 #
@@ -120,12 +122,22 @@ In the above config, the `userland` project will be run with environment variabl
 
 The `opengrok-master` project contains a RCS repository that would make the mirroring fail (since `mirror.py` does not support RCS yet) so it is marked as ignored.
 
+## Project matching
+
 Multiple projects can share the same configuration using regular expressions as demonstrated with the `jdk.*` pattern in the above configuration. The patterns are matched from top to the bottom of the configuration file, first match wins.
+
+## Disabling project mirroring
 
 The `history` project is marked as disabled. This means that the `mirror.py` script will exit with special value of 2 that is interpreted by the `sync.py` script to avoid any reindex. It is not treated as an error.
 
+# Batch mode
+
 In batch mode, messages will be logged to a log file under the `logdir` directory specified in the configuration and rotated for each run, up to default count (8) or count specified using the `--backupcount` option.
 
+# Hooks
+
 If pre and post mirroring hooks are specified, they are run before and after project synchronization. If any of the hooks fail, the program is immediately terminated. However, if the synchronization (that is run in between the hook scripts) fails, the post hook will be executed anyway. This is done so that the project is in sane state - usually the post hook which is used to apply extract source archives and apply patches. If the pre hook is used to clean up the extracted work and project synchronization failed, the project would be left barebone.
+
+## Timeouts
 
 Both repository synchronization commands and hooks can have a timeout. By default there is no timeout, unless specified in the configuration file. There are global and per project timeouts, the latter overriding the former. For instance, in the above configuration file, the `userland` project overrides global hook timeout to 1 hour while inheriting the command timeout.
