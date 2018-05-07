@@ -95,7 +95,7 @@ class Command:
                         self.logger.info("Terminating command {} with PID {} "
                                          "after timeout of {} seconds".
                                          format(p.args, p.pid, self.timeout))
-                        self.popen.terminate()
+                        p.terminate()
                         self.exception = TimeoutException("Command {} with pid"
                                                           " {} timed out".
                                                           format(p.args,
