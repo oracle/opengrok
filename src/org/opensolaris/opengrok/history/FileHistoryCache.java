@@ -740,7 +740,7 @@ class FileHistoryCache implements HistoryCache {
                 try {
                     input.close();
                 } catch (java.io.IOException e) {
-                    LOGGER.log(Level.FINEST, "failed to close", e);
+                    LOGGER.log(Level.WARNING, "failed to close", e);
                 }
             }
         } catch (java.io.FileNotFoundException e) {
