@@ -29,6 +29,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a serializable gathering of some top-level metadata concerning the
@@ -36,10 +39,9 @@ import java.io.Serializable;
  * re-compared upon each indexing run since changes to them might require
  * re-indexing particular files or in certain cases all files.
  */
-@Deprecated
-public final class IndexAnalysisSettings implements Serializable {
+public final class IndexAnalysisSettings2 implements Serializable {
 
-    private static final long serialVersionUID = 1005610724146719938L;
+    private static final long serialVersionUID = 1172403004716059609L;
 
     private String projectName;
 
@@ -56,6 +58,14 @@ public final class IndexAnalysisSettings implements Serializable {
      * @serial
      */
     private Long analyzerGuruVersion;
+
+    /**
+     * (nullable because otherwise custom de-serialization does not work, as a
+     * {@code final} initialized value may not actually happen because Java
+     * de-serialization circumvents normal construction.)
+     * @serial
+     */
+    private Map<String, Long> analyzersVersions = new HashMap<>();
 
     /**
      * Gets the project name to be used to distinguish different instances of
@@ -94,6 +104,32 @@ public final class IndexAnalysisSettings implements Serializable {
     }
 
     /**
+     * Gets the version number for the specified file type name if it exists
+     * @return a defined value or {@code null} if unknown
+     */
+    public Long getAnalyzerVersion(String fileTypeName) {
+        return analyzersVersions.get(fileTypeName);
+    }
+
+    /**
+     * Gets an unmodifiable view of the map of file type names to version
+     * numbers.
+     * @return a defined instance
+     */
+    public Map<String, Long> getAnalyzersVersions() {
+        return Collections.unmodifiableMap(analyzersVersions);
+    }
+
+    /**
+     * Replaces the contents of the instance's map with the {@code values}.
+     * @param values a defined instance
+     */
+    public void setAnalyzersVersions(Map<String, Long> values) {
+        analyzersVersions.clear();
+        analyzersVersions.putAll(values);
+    }
+
+    /**
      * Creates a binary representation of this object.
      * @return a byte array representing this object
      * @throws  IOException Any exception thrown by the underlying
@@ -116,11 +152,11 @@ public final class IndexAnalysisSettings implements Serializable {
      * @throws ClassCastException if the array contains an object of another
      * type than {@code IndexAnalysisSettings}
      */
-    public static IndexAnalysisSettings deserialize(byte[] bytes)
+    public static IndexAnalysisSettings2 deserialize(byte[] bytes)
             throws IOException, ClassNotFoundException {
         ObjectInputStream in = new ObjectInputStream(
             new ByteArrayInputStream(bytes));
-        return (IndexAnalysisSettings)in.readObject();
+        return (IndexAnalysisSettings2)in.readObject();
     }
 
     private void readObject(ObjectInputStream in) throws ClassNotFoundException,
@@ -137,6 +173,20 @@ public final class IndexAnalysisSettings implements Serializable {
         hasValue = in.readBoolean();
         long vlong = in.readLong();
         analyzerGuruVersion = hasValue ? vlong : null;
+
+        /**
+         * De-serialization circumvents normal construction, so the following
+         * field could be null.
+         */
+        if (analyzersVersions == null) {
+            analyzersVersions = new HashMap<>();
+        }
+        int analyzerCount = in.readInt();
+        for (int i = 0; i < analyzerCount; ++i) {
+            vstring = in.readUTF();
+            vlong = in.readLong();
+            analyzersVersions.put(vstring, vlong);
+        }
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -148,5 +198,16 @@ public final class IndexAnalysisSettings implements Serializable {
 
         out.writeBoolean(analyzerGuruVersion != null); // hasValue
         out.writeLong(analyzerGuruVersion == null ? 0 : analyzerGuruVersion);
+
+        int analyzerCount = analyzersVersions.size();
+        out.writeInt(analyzerCount);
+        for (Map.Entry<String, Long> entry : analyzersVersions.entrySet()) {
+            out.writeUTF(entry.getKey());
+            out.writeLong(entry.getValue());
+            --analyzerCount;
+        }
+        if (analyzerCount != 0) {
+            throw new IllegalStateException("analyzersVersions were modified");
+        }
     }
 }

@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.c;
 
@@ -46,6 +46,17 @@ public class CAnalyzer extends AbstractSourceCodeAnalyzer {
     protected CAnalyzer(FileAnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new CSymbolTokenizer(
             FileAnalyzer.dummyReader)));
+    }
+
+    /**
+     * Gets a version number to be used to tag processed documents so that
+     * re-analysis can be re-done later if a stored version number is different
+     * from the current implementation.
+     * @return 20171218_00
+     */
+    @Override
+    protected int getSpecializedVersionNo() {
+        return 20171218_00; // Edit comment above too!
     }
         
     /**

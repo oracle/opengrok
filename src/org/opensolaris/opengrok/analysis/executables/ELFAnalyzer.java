@@ -75,6 +75,17 @@ public class ELFAnalyzer extends FileAnalyzer {
         super(factory);
     }
 
+    /**
+     * Gets a version number to be used to tag processed documents so that
+     * re-analysis can be re-done later if a stored version number is different
+     * from the current implementation.
+     * @return 20180112_00
+     */
+    @Override
+    protected int getSpecializedVersionNo() {
+        return 20180112_00; // Edit comment above too!
+    }
+
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         String fullpath = doc.get("fullpath");
