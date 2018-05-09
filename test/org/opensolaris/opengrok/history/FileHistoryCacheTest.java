@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -72,11 +72,9 @@ public class FileHistoryCacheTest {
 
     /**
      * Clean up after the test. Remove the test repositories.
-     *
-     * @throws java.lang.Exception
      */
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         repositories.destroy();
         repositories = null;
 
@@ -94,7 +92,7 @@ public class FileHistoryCacheTest {
      * @param expected the expected entry
      * @param actual the actual entry
      * @param isdir was the history generated for a directory
-     * @throws AssertFailure if the two entries don't match
+     * @throws AssertionError if the two entries don't match
      */
     private void assertSameEntries(
             List<HistoryEntry> expected, List<HistoryEntry> actual, boolean isdir) {
@@ -112,7 +110,7 @@ public class FileHistoryCacheTest {
      * @param expected the expected list of entries
      * @param actual the actual list of entries
      * @param isdir was the history generated for directory
-     * @throws AssertFailure if the two lists don't match
+     * @throws AssertionError if the two lists don't match
      */
     private void assertSameEntry(HistoryEntry expected, HistoryEntry actual, boolean isdir) {
         assertEquals(expected.getAuthor(), actual.getAuthor());
@@ -130,10 +128,8 @@ public class FileHistoryCacheTest {
     /**
      * Basic tests for the {@code store()} method on cache with disabled
      * handling of renamed files.
-     *
-     * @throws java.lang.Exception
      */
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testStoreAndGetNotRenamed() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
@@ -158,10 +154,8 @@ public class FileHistoryCacheTest {
      * then importing couple of changesets which add both file changes and tags.
      * The last history entry before the import is important as it needs to be
      * retagged when old history is merged with the new one.
-     *
-     * @throws java.lang.Exception
      */
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testStoreAndGetIncrementalTags() throws Exception {
         // Enable tagging of history entries.
@@ -234,10 +228,8 @@ public class FileHistoryCacheTest {
 
     /**
      * Basic tests for the {@code store()} and {@code get()} methods.
-     *
-     * @throws java.lang.Exception
      */
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testStoreAndGet() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
@@ -359,10 +351,8 @@ public class FileHistoryCacheTest {
      * - perform incremental reindex
      * - change+rename the file again
      * - incremental reindex
-     *
-     * @throws Exception
      */
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testRenameFileThenDoIncrementalReindex() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
@@ -488,10 +478,8 @@ public class FileHistoryCacheTest {
      * with renamed file produces correct history for the renamed file
      * (i.e. there should not be history entries from the default branch made
      * there after the branch was created).
-     *
-     * @throws Exception
      */
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testRenamedFilePlusChangesBranched() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");

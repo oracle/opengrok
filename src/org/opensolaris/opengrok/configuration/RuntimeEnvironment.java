@@ -18,7 +18,7 @@
  */
 
  /*
-  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
   * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
   */
 package org.opensolaris.opengrok.configuration;
@@ -654,7 +654,7 @@ public final class RuntimeEnvironment {
             Executor executor = new Executor(new String[]{getCtags(), "--version"});
             executor.exec(false);
             String output = executor.getOutputString();
-            boolean isUnivCtags = output!=null?output.contains("Universal Ctags"):false;
+            boolean isUnivCtags = output != null && output.contains("Universal Ctags");
             if (output == null || (!output.contains("Exuberant Ctags") && !isUnivCtags)) {
                 LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
                         + "(tried running " + "{0}" + ")\n"

@@ -40,5 +40,6 @@ import java.lang.annotation.Target;
 @Documented
 public @interface ConditionalRun {
 
-    Class<? extends RunCondition> condition();
+    Class<? extends RunCondition> value();
+
 }

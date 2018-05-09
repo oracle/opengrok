@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
@@ -28,22 +28,21 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.After;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.MercurialRepositoryTest;
@@ -57,7 +56,11 @@ import org.opensolaris.opengrok.util.IOUtils;
  *
  * @author Vladimir Kotal
  */
+@ConditionalRun(CtagsInstalled.class)
 public class IndexerRepoTest {
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     TestRepository repository;
 
@@ -94,10 +97,8 @@ public class IndexerRepoTest {
     /**
      * Test that symlinked directories from source root get their relative
      * path set correctly in RepositoryInfo objects.
-     * @throws org.opensolaris.opengrok.index.IndexerException
-     * @throws java.io.IOException
      */
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testSymlinks() throws IndexerException, IOException {
 
@@ -164,33 +165,25 @@ public class IndexerRepoTest {
      * Test cleanup of renamed thread pool after indexing with -H.
      */
     @Test
-    public void testMainWithH() throws IOException {
+    public void testMainWithH() {
         System.out.println("Generate index by using command line options with -H");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateExuberantCtags()) {
-            String[] argv = {"-S", "-H", "-s", repository.getSourceRoot(),
+        String[] argv = {"-S", "-H", "-s", repository.getSourceRoot(),
                 "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
-            Indexer.main(argv);
-            checkNumberOfThreads();
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use.");
-        }
+        Indexer.main(argv);
+        checkNumberOfThreads();
     }
 
     /**
      * Test cleanup of renamed thread pool after indexing without -H.
      */
     @Test
-    public void testMainWithoutH() throws IOException {
+    public void testMainWithoutH() {
         System.out.println("Generate index by using command line options without -H");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateExuberantCtags()) {
-            String[] argv = {"-S", "-P", "-s", repository.getSourceRoot(),
+        String[] argv = {"-S", "-P", "-s", repository.getSourceRoot(),
                 "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
-            Indexer.main(argv);
-            checkNumberOfThreads();
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use.");
-        }
+        Indexer.main(argv);
+        checkNumberOfThreads();
     }
 }

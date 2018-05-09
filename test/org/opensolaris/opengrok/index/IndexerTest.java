@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -64,12 +66,12 @@ import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  *
  * @author Trond Norbye
  */
+@ConditionalRun(CtagsInstalled.class)
 public class IndexerTest {
 
     TestRepository repository;
@@ -79,10 +81,8 @@ public class IndexerTest {
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        assertTrue("No point in running indexer tests without valid ctags",
-            env.validateExuberantCtags());
         RepositoryFactory.initializeIgnoredNames(env);
 
         parallelizer = new IndexerParallelizer(env);
@@ -115,23 +115,19 @@ public class IndexerTest {
     public void testIndexGeneration() throws Exception {
         System.out.println("Generating index by using the class methods");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateExuberantCtags()) {
-            env.setSourceRoot(repository.getSourceRoot());
-            env.setDataRoot(repository.getDataRoot());
-            env.setVerbose(true);
-            env.setHistoryEnabled(false);
-            Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Arrays.asList(new String[]{"/c"})),
-                    false, false, null, null, new ArrayList<>(), false);
-            Indexer.getInstance().doIndexerExecution(true, null, null);
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
-        }
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        env.setVerbose(true);
+        env.setHistoryEnabled(false);
+        Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Collections.singletonList("/c")),
+                false, false, null, null, new ArrayList<>(), false);
+        Indexer.getInstance().doIndexerExecution(true, null, null);
     }
 
     /**
      * Test that rescanning for projects does not erase customization of
      * existing projects. Bug #16006.
-     * @throws java.lang.Exception*/
+     */
     @Test
     public void testRescanProjects() throws Exception {
         // Generate one project that will be found in source.zip, and set
@@ -191,20 +187,15 @@ public class IndexerTest {
 
     /**
      * Test of doIndexerExecution method, of class Indexer.
-     * @throws java.io.IOException
      */
     @Test
-    public void testMain() throws IOException {
+    public void testMain() {
         System.out.println("Generate index by using command line options");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateExuberantCtags()) {
-            String[] argv = {"-S", "-P", "-H", "-Q", "off", "-s",
+        String[] argv = {"-S", "-P", "-H", "-Q", "off", "-s",
                 repository.getSourceRoot(), "-d", repository.getDataRoot(),
                 "-v", "-c", env.getCtags()};
-            Indexer.main(argv);
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
-        }
+        Indexer.main(argv);
     }
 
     private class MyIndexChangeListener implements IndexChangedListener {
@@ -261,7 +252,7 @@ public class IndexerTest {
             }
         }
 
-        if (r != null && r.isWorking() && env.validateExuberantCtags()) {
+        if (r != null && r.isWorking()) {
             Project project = new Project("rfe2575");
             project.setPath("/rfe2575");
             IndexDatabase idb = new IndexDatabase(project);
@@ -279,8 +270,7 @@ public class IndexerTest {
             assertEquals(1, listener.files.size());
             RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
         } else {
-            System.out.println("Skipping test. Repository for rfe2575 not found" +
-                " or could not find a ctags or an sccs I could use in path.");
+            System.out.println("Skipping test. Repository for rfe2575 not found or an sccs I could use in path.");
         }
     }
 
@@ -334,13 +324,9 @@ public class IndexerTest {
      * @throws Exception 
      */
     @Test
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void testRemoveFileOnFileChange() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-        if (!env.validateExuberantCtags()) {
-            System.out.println("Skipping test due to no ctags");
-        }
 
         TestRepository testrepo = new TestRepository();
         testrepo.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
@@ -405,18 +391,14 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
 
-        if (env.validateExuberantCtags()) {
-            Project project = new Project("bug3430");
-            project.setPath("/bug3430");
-            IndexDatabase idb = new IndexDatabase(project);
-            assertNotNull(idb);
-            MyIndexChangeListener listener = new MyIndexChangeListener();
-            idb.addIndexChangedListener(listener);
-            idb.update(parallelizer);
-            assertEquals(1, listener.files.size());
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
-        }
+        Project project = new Project("bug3430");
+        project.setPath("/bug3430");
+        IndexDatabase idb = new IndexDatabase(project);
+        assertNotNull(idb);
+        MyIndexChangeListener listener = new MyIndexChangeListener();
+        idb.addIndexChangedListener(listener);
+        idb.update(parallelizer);
+        assertEquals(1, listener.files.size());
     }
 
     /**
@@ -429,29 +411,24 @@ public class IndexerTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
 
-        if (env.validateExuberantCtags()) {
-            String ppath = "/bug3430";
-            Project project = new Project("bug3430", ppath);
-            IndexDatabase idb = new IndexDatabase(project);
-            assertNotNull(idb);
-            MyIndexChangeListener listener = new MyIndexChangeListener();
-            idb.addIndexChangedListener(listener);
-            idb.update(parallelizer);
-            assertEquals(1, listener.files.size());
-            listener.reset();
-            repository.addDummyFile(ppath);
-            idb.update(parallelizer);
-            assertEquals("No new file added", 1, listener.files.size());
-            repository.removeDummyFile(ppath);
-            idb.update(parallelizer);
-            assertEquals("(added)files changed unexpectedly", 1,
-                listener.files.size());
-            assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
-            assertEquals("Should have added then removed the same file",
+        String ppath = "/bug3430";
+        Project project = new Project("bug3430", ppath);
+        IndexDatabase idb = new IndexDatabase(project);
+        assertNotNull(idb);
+        MyIndexChangeListener listener = new MyIndexChangeListener();
+        idb.addIndexChangedListener(listener);
+        idb.update(parallelizer);
+        assertEquals(1, listener.files.size());
+        listener.reset();
+        repository.addDummyFile(ppath);
+        idb.update(parallelizer);
+        assertEquals("No new file added", 1, listener.files.size());
+        repository.removeDummyFile(ppath);
+        idb.update(parallelizer);
+        assertEquals("(added)files changed unexpectedly", 1, listener.files.size());
+        assertEquals("Didn't remove the dummy file", 1, listener.removedFiles.size());
+        assertEquals("Should have added then removed the same file",
                 listener.files.peek(), listener.removedFiles.peek());
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
-        }
     }
 
     /**
@@ -479,19 +456,16 @@ public class IndexerTest {
             executor = new Executor(new String[]{"mkfifo", repository.getSourceRoot() + "/testBug11896/FIFO"});
             executor.exec(true);
 
-            if (env.validateExuberantCtags()) {
-                Project project = new Project("testBug11896");
-                project.setPath("/testBug11896");
-                IndexDatabase idb = new IndexDatabase(project);
-                assertNotNull(idb);
-                MyIndexChangeListener listener = new MyIndexChangeListener();
-                idb.addIndexChangedListener(listener);
-                System.out.println("Trying to index a special file - FIFO in this case.");
-                idb.update(parallelizer);
-                assertEquals(0, listener.files.size());
-            } else {
-                System.out.println("Skipping test. Could not find a ctags I could use in path.");
-            }
+            Project project = new Project("testBug11896");
+            project.setPath("/testBug11896");
+            IndexDatabase idb = new IndexDatabase(project);
+            assertNotNull(idb);
+            MyIndexChangeListener listener = new MyIndexChangeListener();
+            idb.addIndexChangedListener(listener);
+            System.out.println("Trying to index a special file - FIFO in this case.");
+            idb.update(parallelizer);
+            assertEquals(0, listener.files.size());
+
         } else {
             System.out.println("Skipping test for bug 11896. Could not find a mkfifo in path.");
         }
