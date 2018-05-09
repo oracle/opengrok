@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.c;
@@ -40,12 +40,16 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexableField;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.TestRepository;
@@ -54,11 +58,15 @@ import org.opensolaris.opengrok.util.TestRepository;
  *
  * @author Tomas Kotal
  */
+@ConditionalRun(CtagsInstalled.class)
 public class CAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
     private static FileAnalyzer analyzer;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {

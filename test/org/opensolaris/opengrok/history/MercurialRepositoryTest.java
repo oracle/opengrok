@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
@@ -48,7 +48,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests for MercurialRepository.
  */
-@ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+@ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
 public class MercurialRepositoryTest {
 
     @Rule

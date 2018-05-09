@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -32,13 +32,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.FileUtilities;
@@ -55,8 +55,8 @@ public class HistoryGuruTest {
     private static TestRepository repository = new TestRepository();
     private static final List<File> FILES = new ArrayList<>();
 
-    public HistoryGuruTest() {
-    }
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -90,16 +90,8 @@ public class HistoryGuruTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         repository.destroy();
-    }
-
-    @Before
-    public void setUp() throws IOException {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test
@@ -156,7 +148,7 @@ public class HistoryGuruTest {
     }
     
     @Test
-    @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testAddRemoveRepositories() {
         HistoryGuru instance = HistoryGuru.getInstance();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();

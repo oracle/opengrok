@@ -18,21 +18,17 @@
  */
 
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.condition;
 
-public interface RunCondition {
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
-    String FORCE_ALL_PROPERTY = "junit-force-all";
+public class CtagsInstalled implements RunCondition {
 
-    default boolean isForcedOrSatisfied() {
-        if (Boolean.getBoolean(FORCE_ALL_PROPERTY)) {
-            return true;
-        }
-        return isSatisfied();
+    @Override
+    public boolean isSatisfied() {
+        return RuntimeEnvironment.getInstance().validateExuberantCtags();
     }
-
-    boolean isSatisfied();
 
 }

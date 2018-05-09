@@ -33,11 +33,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
@@ -59,12 +61,15 @@ import org.opensolaris.opengrok.util.TestRepository;
  *
  * @author Vladimir Kotal
  */
-@ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+@ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
 public class ProjectMessageTest {
     
     RuntimeEnvironment env;
 
     private static TestRepository repository = new TestRepository();
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @Before
     public void setUp() throws IOException {
@@ -250,11 +255,9 @@ public class ProjectMessageTest {
      * @throws Exception exception
      */
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void testDelete() throws Exception {
         String projectsToDelete[] = { "git", "svn" };
-
-        assertTrue("No point in running indexer tests without valid ctags",
-                RuntimeEnvironment.getInstance().validateExuberantCtags());
 
         // Add a group matching the project to be added.
         String groupName = "gitgroup";

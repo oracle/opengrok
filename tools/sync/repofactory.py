@@ -28,7 +28,8 @@ from svn import SubversionRepository
 from git import GitRepository
 
 
-def get_repository(logger, path, repo_type, project, commands, env, hooks):
+def get_repository(logger, path, repo_type, project, commands, env, hooks,
+                   timeout):
     """
     Repository factory. Returns a Repository derived object according
     to the type specified or None if given repository type cannot
@@ -41,22 +42,22 @@ def get_repository(logger, path, repo_type, project, commands, env, hooks):
     if repo_lower in ["mercurial", "hg"]:
         return MercurialRepository(logger, path, project,
                                    commands.get("hg"),
-                                   env, hooks)
+                                   env, hooks, timeout)
     elif repo_lower in ["teamware", "sccs"]:
         return TeamwareRepository(logger, path, project,
                                   commands.get("teamware"),
-                                  env, hooks)
+                                  env, hooks, timeout)
     elif repo_lower.lower() == "cvs":
         return CVSRepository(logger, path, project,
                              commands.get("cvs"),
-                             env, hooks)
+                             env, hooks, timeout)
     elif repo_lower in ["svn", "subversion"]:
         return SubversionRepository(logger, path, project,
                                     commands.get("svn"),
-                                    env, hooks)
+                                    env, hooks, timeout)
     elif repo_lower == "git":
         return GitRepository(logger, path, project,
                              commands.get("git"),
-                             env, hooks)
+                             env, hooks, timeout)
     else:
         return None

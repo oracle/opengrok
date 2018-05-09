@@ -27,9 +27,9 @@ from shutil import which
 
 
 class GitRepository(Repository):
-    def __init__(self, logger, path, project, command, env, hooks):
+    def __init__(self, logger, path, project, command, env, hooks, timeout):
 
-        super().__init__(logger, path, project, command, env, hooks)
+        super().__init__(logger, path, project, command, env, hooks, timeout)
 
         if command:
             self.command = command
@@ -42,7 +42,8 @@ class GitRepository(Repository):
 
     def reposync(self):
         hg_command = [self.command, "pull", "--ff-only"]
-        cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
+        cmd = self.getCommand(hg_command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:

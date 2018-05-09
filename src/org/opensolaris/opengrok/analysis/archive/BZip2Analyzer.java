@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -55,11 +55,23 @@ public class BZip2Analyzer extends FileAnalyzer {
     protected BZip2Analyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
-    private FileAnalyzer fa;
+
+    /**
+     * Gets a version number to be used to tag processed documents so that
+     * re-analysis can be re-done later if a stored version number is different
+     * from the current implementation.
+     * @return 20180111_00
+     */
+    @Override
+    protected int getSpecializedVersionNo() {
+        return 20180111_00; // Edit comment above too!
+    }
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut)
             throws IOException, InterruptedException {
+        FileAnalyzer fa;
+
         StreamSource bzSrc = wrap(src);
         String path = doc.get("path");
         if (path != null
@@ -69,9 +81,7 @@ public class BZip2Analyzer extends FileAnalyzer {
             try (InputStream in = bzSrc.getStream()) {
                 fa = AnalyzerGuru.getAnalyzer(in, newname);
             }
-            if (fa instanceof BZip2Analyzer) {
-                fa = null;
-            } else {
+            if (!(fa instanceof BZip2Analyzer)) {
                 if (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
                     this.g = Genre.XREFABLE;
                 } else {

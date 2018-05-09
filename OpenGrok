@@ -120,6 +120,14 @@ Supported Environment Variables for configuring the default setup:
                                   OPENGROK_IGNORE_PATTERNS="-i d:dummy"
                                   Multiple entries can be joined together:
                                     "-i dummy -i d:tmp -i f:dummy"
+  - OPENGROK_ASSIGNMENTS        Assign/Unassign specialized analyzers using
+                                  (.ext|prefix.):(-|Analyzer) syntax. E.g.,
+                                  .lib:Ignorant,Makefile.:- to set files ending
+                                  with .LIB (case-insensitive) to use the
+                                  IgnorantAnalyzerFactory (case-sensitive due to
+                                  Java limitation), and to clear special
+                                  handling for files starting with MAKEFILE
+                                  (case-insensitive and no full-stop)
   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
   - OPENGROK_SCAN_DEPTH         How deep should scanning for repos go
                                   (by default 3 directories from SRC_ROOT)
@@ -448,6 +456,11 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
     if [ -n "${OPENGROK_PROGRESS}" ]
     then
         PROGRESS="--progress"
+    fi
+
+    if [ "$OPENGROK_ASSIGNMENTS" != "" ]; then
+        ASSIGNMENTS="`echo $OPENGROK_ASSIGNMENTS | sed 's/[:space:]+/_/g'`"
+        ASSIGNMENTS="-A `echo $ASSIGNMENTS | sed 's/,/ -A /g'`"
     fi
 }
 
@@ -896,6 +909,7 @@ CommonInvocation()
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
         ${OPENGROK_PARALLELISM:+--threads} ${OPENGROK_PARALLELISM}	\
+        ${ASSIGNMENTS}							\
         ${READ_XML_CONF}                                        	\
         ${WEBAPP_CONFIG}						\
         ${WEBAPP_CONTEXT}						\

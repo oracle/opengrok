@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -39,6 +39,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.c.CXref;
 import org.opensolaris.opengrok.analysis.c.CxxXref;
@@ -57,6 +58,9 @@ import org.opensolaris.opengrok.analysis.sh.ShXref;
 import org.opensolaris.opengrok.analysis.sql.SQLXref;
 import org.opensolaris.opengrok.analysis.tcl.TclXref;
 import org.opensolaris.opengrok.analysis.uue.UuencodeXref;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 import org.opensolaris.opengrok.util.TestRepository;
@@ -69,6 +73,9 @@ public class JFlexXrefTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     /**
      * This is what we expect to find at the beginning of the first line
@@ -160,6 +167,7 @@ public class JFlexXrefTest {
      * used to cause trouble.
      */
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void testBug15890Anchor() throws Exception {
         bug15890Anchor(CXref.class, "c/bug15890.c");
         bug15890Anchor(CxxXref.class, "c/bug15890.c");
@@ -377,6 +385,7 @@ public class JFlexXrefTest {
     }
 
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void bug18586() throws IOException, InterruptedException {
         String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
         Reader in = new InputStreamReader(new FileInputStream(filename), "UTF-8");
@@ -391,6 +400,7 @@ public class JFlexXrefTest {
      * This originally became a problem after upgrade to JFlex 1.5.0.
      */
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void unterminatedHeredoc() throws IOException {
         JFlexXref xref = new JFlexXref(new ShXref(new StringReader(
                 "cat << EOF\nunterminated heredoc")));

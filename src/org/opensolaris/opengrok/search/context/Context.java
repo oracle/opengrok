@@ -131,7 +131,8 @@ public class Context {
      * the {@code limit} argument will not be interpreted w.r.t.
      * {@link RuntimeEnvironment#isQuickContextScan()}.
      * @param tabSize optional positive tab size that must accord with the value
-     * used when indexing
+     * used when indexing or else postings may be wrongly shifted until
+     * re-indexing
      * @return Did it get any matching context?
      */
     public boolean getContext2(RuntimeEnvironment env, IndexSearcher searcher,

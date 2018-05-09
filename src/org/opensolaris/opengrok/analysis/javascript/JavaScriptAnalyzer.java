@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.javascript;
 
@@ -45,6 +45,17 @@ public class JavaScriptAnalyzer extends AbstractSourceCodeAnalyzer {
         super(factory, new JFlexTokenizer(new JavaScriptSymbolTokenizer(
             FileAnalyzer.dummyReader)));
     }    
+
+    /**
+     * Gets a version number to be used to tag processed documents so that
+     * re-analysis can be re-done later if a stored version number is different
+     * from the current implementation.
+     * @return 20180118_00
+     */
+    @Override
+    protected int getSpecializedVersionNo() {
+        return 20180118_00; // Edit comment above too!
+    }
 
     /**
      * Creates a wrapped {@link JavaScriptXref} instance.

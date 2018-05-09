@@ -26,6 +26,14 @@ import logging
 import subprocess
 import string
 import threading
+import time
+
+
+class TimeoutException(Exception):
+    """
+    Exception returned when command exceeded its timeout.
+    """
+    pass
 
 
 class Command:
@@ -38,14 +46,17 @@ class Command:
     FINISHED = "finished"
     INTERRUPTED = "interrupted"
     ERRORED = "errored"
+    TIMEDOUT = "timed out"
 
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
-                 excl_subst=False, work_dir=None, env_vars=None):
+                 excl_subst=False, work_dir=None, env_vars=None, timeout=None):
         self.cmd = cmd
         self.state = "notrun"
         self.excl_subst = excl_subst
         self.work_dir = work_dir
         self.env_vars = env_vars
+        self.timeout = timeout
+        self.pid = None
 
         self.logger = logger or logging.getLogger(__name__)
         logging.basicConfig()
@@ -60,6 +71,41 @@ class Command:
         """
         Execute the command and capture its output and return code.
         """
+
+        class TimeoutThread(threading.Thread):
+            """
+            Wait until the timeout specified in seconds expires and kill
+            the process specified by the Popen object after that.
+            If timeout expires, TimeoutException is stored in the object
+            and can be retrieved by the caller.
+            """
+
+            def __init__(self, logger, timeout, condition, p):
+                super(TimeoutThread, self).__init__()
+                self.timeout = timeout
+                self.popen = p
+                self.condition = condition
+                self.logger = logger
+                self.start()
+                self.exception = None
+
+            def run(self):
+                with self.condition:
+                    if not self.condition.wait(self.timeout):
+                        p = self.popen
+                        self.logger.info("Terminating command {} with PID {} "
+                                         "after timeout of {} seconds".
+                                         format(p.args, p.pid, self.timeout))
+                        p.terminate()
+                        self.exception = TimeoutException("Command {} with pid"
+                                                          " {} timed out".
+                                                          format(p.args,
+                                                                 p.pid))
+                    else:
+                        return None
+
+            def get_exception(self):
+                return self.exception
 
         class OutputThread(threading.Thread):
             """
@@ -116,19 +162,36 @@ class Command:
                                   format(self.work_dir), exc_info=True)
                 return
 
-        othr = OutputThread()
+        timeout_thread = None
+        output_thread = OutputThread()
         try:
+            start_time = time.time()
             self.logger.debug("working directory = {}".format(os.getcwd()))
             self.logger.debug("command = {}".format(self.cmd))
             if self.env_vars:
                 my_env = os.environ.copy()
                 my_env.update(self.env_vars)
                 p = subprocess.Popen(self.cmd, stderr=subprocess.STDOUT,
-                                     stdout=othr, env=my_env)
+                                     stdout=output_thread, env=my_env)
             else:
                 p = subprocess.Popen(self.cmd, stderr=subprocess.STDOUT,
-                                     stdout=othr)
+                                     stdout=output_thread)
+
+            self.pid = p.pid
+
+            if self.timeout:
+                condition = threading.Condition()
+                self.logger.debug("Setting timeout to {}".format(self.timeout))
+                timeout_thread = TimeoutThread(self.logger, self.timeout,
+                                               condition, p)
+
+            self.logger.debug("Waiting for process with PID {}".format(p.pid))
             p.wait()
+
+            if self.timeout:
+                e = timeout_thread.get_exception()
+                if e:
+                    raise e
         except KeyboardInterrupt as e:
             self.logger.info("Got KeyboardException while processing ",
                              exc_info=True)
@@ -136,13 +199,22 @@ class Command:
         except OSError as e:
             self.logger.error("Got OS error", exc_info=True)
             self.state = Command.ERRORED
+        except TimeoutException as e:
+            self.logger.error("Timed out")
+            self.state = Command.TIMEDOUT
         else:
             self.state = Command.FINISHED
             self.returncode = int(p.returncode)
             self.logger.debug("{} -> {}".format(self.cmd, self.getretcode()))
         finally:
-            othr.close()
-            self.out = othr.getoutput()
+            if self.timeout != 0 and timeout_thread:
+                with condition:
+                    condition.notifyAll()
+            output_thread.close()
+            self.out = output_thread.getoutput()
+            elapsed_time = time.time() - start_time
+            self.logger.debug("Command {} took {} seconds".
+                              format(self.cmd, int(elapsed_time)))
 
         if orig_work_dir:
             try:
@@ -199,3 +271,6 @@ class Command:
 
     def getstate(self):
         return self.state
+
+    def getpid(self):
+        return self.pid

@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -381,12 +382,12 @@ class FileHistoryCache implements HistoryCache {
             // failure), do not create the CachedRevision file as this would
             // create confusion (once it starts working again).
             LOGGER.log(Level.WARNING,
-                "Could not store history for repo {0}",
+                "Could not store history for repository {0}",
                 repository.getDirectoryName());
         } else {
             storeLatestCachedRevision(repository, latestRev);
             LOGGER.log(Level.FINE,
-                "Done storing history for repo {0}",
+                "Done storing history for repository {0}",
                 repository.getDirectoryName());
         }
     }
@@ -415,7 +416,7 @@ class FileHistoryCache implements HistoryCache {
         }
 
         LOGGER.log(Level.FINE,
-            "Storing history for repo {0}",
+            "Storing history for repository {0}",
             new Object[] {repository.getDirectoryName()});
 
         // Firstly store the history for the top-level directory.
@@ -471,6 +472,7 @@ class FileHistoryCache implements HistoryCache {
          * which will be handled separately below.
          */
         final File root = RuntimeEnvironment.getInstance().getSourceRootFile();
+        int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
                 if (env.isHandleHistoryOfRenamedFiles() &&
@@ -484,7 +486,10 @@ class FileHistoryCache implements HistoryCache {
 
             doFileHistory(map_entry.getKey(), map_entry.getValue(),
                 env, repository, null, root, false);
+            fileHistoryCount++;
         }
+
+        LOGGER.log(Level.FINE, "Stored history for {0} files", fileHistoryCount);
 
         if (!env.isHandleHistoryOfRenamedFiles()) {
             finishStore(repository, latestRev);
@@ -527,6 +532,7 @@ class FileHistoryCache implements HistoryCache {
         }
         final Repository repositoryF = repository;
         final CountDownLatch latch = new CountDownLatch(renamed_map.size());
+        AtomicInteger renamedFileHistoryCount = new AtomicInteger();
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : renamed_map.entrySet()) {
             RuntimeEnvironment.getHistoryRenamedExecutor().submit(new Runnable() {
                 @Override
@@ -536,6 +542,7 @@ class FileHistoryCache implements HistoryCache {
                             env, repositoryF,
                             new File(env.getSourceRootPath() + map_entry.getKey()),
                             root, true);
+                        renamedFileHistoryCount.getAndIncrement();
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
                         LOGGER.log(Level.WARNING,
@@ -554,6 +561,8 @@ class FileHistoryCache implements HistoryCache {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE, "latch exception ",ex);
         }
+        LOGGER.log(Level.FINE, "Stored history for {0} renamed files",
+                renamedFileHistoryCount.intValue());
         finishStore(repository, latestRev);
     }
 
@@ -712,7 +721,7 @@ class FileHistoryCache implements HistoryCache {
                    writer.close();
                }
            } catch (IOException ex) {
-               LOGGER.log(Level.FINEST, "Cannot close file", ex);
+               LOGGER.log(Level.WARNING, "Cannot close file", ex);
            }
         }
     }
@@ -740,7 +749,7 @@ class FileHistoryCache implements HistoryCache {
                 try {
                     input.close();
                 } catch (java.io.IOException e) {
-                    LOGGER.log(Level.FINEST, "failed to close", e);
+                    LOGGER.log(Level.WARNING, "failed to close", e);
                 }
             }
         } catch (java.io.FileNotFoundException e) {

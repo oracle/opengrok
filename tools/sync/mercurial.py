@@ -27,9 +27,9 @@ from shutil import which
 
 
 class MercurialRepository(Repository):
-    def __init__(self, logger, path, project, command, env, hooks):
+    def __init__(self, logger, path, project, command, env, hooks, timeout):
 
-        super().__init__(logger, path, project, command, env, hooks)
+        super().__init__(logger, path, project, command, env, hooks, timeout)
 
         if command:
             self.command = command
@@ -42,7 +42,8 @@ class MercurialRepository(Repository):
 
     def get_branch(self):
         hg_command = [self.command, "branch"]
-        cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
+        cmd = self.getCommand(hg_command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
         cmd.execute()
         if cmd.getstate() != Command.FINISHED:
             self.logger.debug(cmd.getoutput())
@@ -66,7 +67,8 @@ class MercurialRepository(Repository):
         if branch != "default":
             hg_command.append("-b")
             hg_command.append(branch)
-        cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
+        cmd = self.getCommand(hg_command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         #
@@ -81,7 +83,8 @@ class MercurialRepository(Repository):
         if branch != "default":
             hg_command.append("-b")
             hg_command.append(branch)
-        cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
+        cmd = self.getCommand(hg_command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
@@ -93,7 +96,8 @@ class MercurialRepository(Repository):
         # some servers do not support it.
         if branch == "default":
             hg_command.append("--check")
-        cmd = Command(hg_command, work_dir=self.path, env_vars=self.env)
+        cmd = self.getCommand(hg_command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:

@@ -29,14 +29,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.MercurialRepositoryTest;
 import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -45,12 +47,18 @@ import org.opensolaris.opengrok.util.TestRepository;
  * 
  * @author Vladimir Kotal
  */
+@ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+@ConditionalRun(RepositoryInstalled.GitInstalled.class)
+@ConditionalRun(CtagsInstalled.class)
 public class RepositoryMessageTest {
     
-    RuntimeEnvironment env;
+    private RuntimeEnvironment env;
 
-    private static TestRepository repository = new TestRepository();
-    
+    private TestRepository repository;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
+
     @Before
     public void setUp() throws IOException {
         repository = new TestRepository();
@@ -72,7 +80,7 @@ public class RepositoryMessageTest {
 
             // This should match Configuration constructor.
             env.setProjects(new ConcurrentHashMap<>());
-            env.setRepositories(new ArrayList<RepositoryInfo>());
+            env.setRepositories(new ArrayList<>());
             env.getProjectRepositoriesMap().clear();
         }
 
@@ -92,9 +100,7 @@ public class RepositoryMessageTest {
         m.setText("get-repo-type");
         Assert.assertTrue(MessageTest.assertValid(m));
     }
-    
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
-    @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
+
     @Test
     public void testGetRepositoryType() throws Exception {
         Message m = new RepositoryMessage();
