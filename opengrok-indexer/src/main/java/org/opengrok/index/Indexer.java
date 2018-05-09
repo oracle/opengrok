@@ -286,6 +286,9 @@ public final class Indexer {
                 }
             }
 
+            LOGGER.log(Level.INFO, "Indexer version {0} ({1})",
+                    new Object[]{ Info.getVersion(), Info.getRevision()});
+            
             // Get history first.
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
                     defaultProjects,
