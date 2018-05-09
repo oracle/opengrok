@@ -654,7 +654,7 @@ public final class RuntimeEnvironment {
             Executor executor = new Executor(new String[]{getCtags(), "--version"});
             executor.exec(false);
             String output = executor.getOutputString();
-            boolean isUnivCtags = output!=null?output.contains("Universal Ctags"):false;
+            boolean isUnivCtags = output != null && output.contains("Universal Ctags");
             if (output == null || (!output.contains("Exuberant Ctags") && !isUnivCtags)) {
                 LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
                         + "(tried running " + "{0}" + ")\n"

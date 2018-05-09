@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.history;
@@ -39,14 +39,13 @@ import static org.junit.Assert.*;
  *
  * @author Vladimir Kotal
  */
-@ConditionalRun(condition = RepositoryInstalled.RCSInstalled.class)
+@ConditionalRun(RepositoryInstalled.RCSInstalled.class)
 public class RCSRepositoryTest {
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     static private TestRepository repository = new TestRepository();
-    private GitRepository instance;
 
     @BeforeClass
     public static void setUpClass() throws IOException {

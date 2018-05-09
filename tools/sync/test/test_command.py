@@ -1,9 +1,33 @@
 #!/usr/bin/env python3
 
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# See LICENSE.txt included in this distribution for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at LICENSE.txt.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+#
+# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+
 import unittest
 import logging
 import sys
 import os
+import time
 
 sys.path.insert(0, os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..')))
@@ -74,6 +98,28 @@ class TestApp(unittest.TestCase):
     def test_str(self):
         cmd = Command(["foo", "bar"])
         self.assertEqual("foo bar", str(cmd))
+
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    def test_timeout(self):
+        timeout = 30
+        cmd = Command(["/bin/sleep", str(timeout)], timeout=3)
+        start_time = time.time()
+        cmd.execute()
+        # Check the process is no longer around.
+        self.assertIsNotNone(cmd.getpid())
+        self.assertRaises(ProcessLookupError, os.kill, cmd.getpid(), 0)
+        elapsed_time = time.time() - start_time
+        self.assertTrue(elapsed_time < timeout)
+        self.assertEqual(Command.TIMEDOUT, cmd.getstate())
+        self.assertEqual(None, cmd.getretcode())
+
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    def test_notimeout(self):
+        cmd_timeout = 30
+        cmd = Command(["/bin/sleep", "3"], timeout=cmd_timeout)
+        cmd.execute()
+        self.assertEqual(Command.FINISHED, cmd.getstate())
+        self.assertEqual(0, cmd.getretcode())
 
 
 if __name__ == '__main__':

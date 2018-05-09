@@ -30,12 +30,16 @@ import java.util.TreeSet;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.opengrok.analysis.Definitions;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.Project;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.history.HistoryGuru;
@@ -45,18 +49,18 @@ import org.opengrok.util.TestRepository;
 /**
  * Unit tests for the {@code IndexDatabase} class.
  */
+@ConditionalRun(CtagsInstalled.class)
 public class IndexDatabaseTest {
 
     private static TestRepository repository;
     private static IndexerParallelizer parallelizer;
 
-    public IndexDatabaseTest() {
-    }
+    @ClassRule
+    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        assertTrue("No ctags available", env.validateExuberantCtags());
 
         repository = new TestRepository();
         repository.create(

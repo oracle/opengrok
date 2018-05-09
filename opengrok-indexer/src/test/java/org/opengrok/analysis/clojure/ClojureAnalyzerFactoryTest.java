@@ -27,11 +27,15 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.analysis.Ctags;
 import org.opengrok.analysis.Definitions;
 import org.opengrok.analysis.FileAnalyzer;
 import org.opengrok.analysis.StreamSource;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.search.QueryBuilder;
 import org.opengrok.util.TestRepository;
@@ -46,17 +50,20 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-
-import static org.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
+import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 /**
  * @author Farid Zakaria
  */
+@ConditionalRun(CtagsInstalled.class)
 public class ClojureAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
     private static FileAnalyzer analyzer;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {
@@ -126,6 +133,5 @@ public class ClojureAnalyzerFactoryTest {
         assertTrue(definitions.hasDefinitionAt("Farid", 24, type));
         assertThat(type[0], is("definition"));
     }
-
 
 }

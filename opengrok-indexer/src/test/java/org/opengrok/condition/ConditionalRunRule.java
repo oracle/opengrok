@@ -33,7 +33,6 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- *
  * This rule can be added to a Junit test and will look for the annotation
  * {@link ConditionalRun} on either the test class or method. The test is then
  * skipped through Junit's {@link Assume} capabilities if the
@@ -52,14 +51,14 @@ public class ConditionalRunRule implements TestRule {
     public Statement apply(Statement aStatement, Description aDescription) {
         if (hasConditionalIgnoreAnnotationOnMethod(aDescription)) {
             RunCondition condition = getIgnoreConditionOnMethod(aDescription);
-            if (!condition.isSatisfied()) {
+            if (!condition.isForcedOrSatisfied()) {
                 return new IgnoreStatement(condition);
             }
         }
 
         if (hasConditionalIgnoreAnnotationOnClass(aDescription)) {
             RunCondition condition = getIgnoreConditionOnClass(aDescription);
-            if (!condition.isSatisfied()) {
+            if (!condition.isForcedOrSatisfied()) {
                 return new IgnoreStatement(condition);
             }
         }
@@ -77,6 +76,9 @@ public class ConditionalRunRule implements TestRule {
     }
 
     private static boolean hasConditionalIgnoreAnnotationOnMethod(Description aDescription) {
+        if (aDescription.getMethodName() == null) { // if @ClassRule is used
+            return false;
+        }
         try {
             // this is possible because test methods must not have any argument
             Method testMethod = aDescription.getTestClass().getMethod(aDescription.getMethodName());
@@ -127,7 +129,7 @@ public class ConditionalRunRule implements TestRule {
             this.mTestClass = aTestClass;
             this.conditionTypes = new ArrayList<>(annotation.length);
             for (int i = 0; i < annotation.length; i++) {
-                this.conditionTypes.add(i, annotation[i].condition());
+                this.conditionTypes.add(i, annotation[i].value());
             }
         }
 

@@ -63,10 +63,12 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
@@ -108,15 +110,18 @@ public class IndexDatabase {
     private static final Comparator<File> FILENAME_COMPARATOR =
         (File p1, File p2) -> p1.getName().compareTo(p2.getName());
 
+    private static final Set<String> CHECK_FIELDS;
+
     private final Object INSTANCE_LOCK = new Object();
 
     private Project project;
     private FSDirectory indexDirectory;
     private IndexReader reader;
     private IndexWriter writer;
-    private IndexAnalysisSettings settings;
+    private IndexAnalysisSettings2 settings;
     private PendingFileCompleter completer;
     private TermsEnum uidIter;
+    private PostingsEnum postsIter;
     private IgnoredNames ignoredNames;
     private Filter includedNames;
     private AnalyzerGuru analyzerGuru;
@@ -157,6 +162,11 @@ public class IndexDatabase {
         this.project = project;
         lockfact = NoLockFactory.INSTANCE;
         initialize();
+    }
+
+    static {
+        CHECK_FIELDS = new HashSet<>();
+        CHECK_FIELDS.add(QueryBuilder.TYPE);
     }
 
     /**
@@ -390,6 +400,7 @@ public class IndexDatabase {
         writer = null;
         settings = null;
         uidIter = null;
+        postsIter = null;
 
         IOException finishingException = null;
         try {
@@ -441,7 +452,7 @@ public class IndexDatabase {
                 reader = DirectoryReader.open(indexDirectory); // open existing index
                 settings = readAnalysisSettings();
                 if (settings == null) {
-                    settings = new IndexAnalysisSettings();
+                    settings = new IndexAnalysisSettings2();
                 }
                 Terms terms = null;
                 int numDocs = reader.numDocs();
@@ -695,10 +706,7 @@ public class IndexDatabase {
      */
     private void addFile(File file, String path, Ctags ctags)
             throws IOException, InterruptedException {
-        FileAnalyzer fa;
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-            fa = AnalyzerGuru.getAnalyzer(in, path);
-        }
+        FileAnalyzer fa = getAnalyzerFor(file, path);
 
         for (IndexChangedListener listener : listeners) {
             listener.fileAdd(path, fa.getClass().getSimpleName());
@@ -747,6 +755,15 @@ public class IndexDatabase {
         setDirty();
         for (IndexChangedListener listener : listeners) {
             listener.fileAdded(path, fa.getClass().getSimpleName());
+        }
+    }
+
+    private FileAnalyzer getAnalyzerFor(File file, String path)
+            throws IOException {
+        FileAnalyzer fa;
+        try (InputStream in = new BufferedInputStream(
+                new FileInputStream(file))) {
+            return AnalyzerGuru.getAnalyzer(in, path);
         }
     }
 
@@ -1004,7 +1021,7 @@ public class IndexDatabase {
                          */
                         if (uidIter != null && uidIter.term() != null
                                 && uidIter.term().bytesEquals(buid)) {
-                            boolean chkres = chkSettings(path);
+                            boolean chkres = chkSettings(file, path);
                             if (!chkres) {
                                 removeFile(false);
                             }
@@ -1526,11 +1543,13 @@ public class IndexDatabase {
     }
 
     /**
-     * Verify TABSIZE, or return a value to indicate mismatch.
+     * Verify TABSIZE, and evaluate AnalyzerGuru version together with ZVER --
+     * or return a value to indicate mismatch.
+     * @param file the source file object
      * @param path the source file path
      * @return {@code false} if a mismatch is detected
      */
-    private boolean chkSettings(String path) {
+    private boolean chkSettings(File file, String path) throws IOException {
         int reqTabSize = project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0;
         Integer actTabSize = settings.getTabSize();
@@ -1539,24 +1558,92 @@ public class IndexDatabase {
             return false;
         }
 
-        // TODO: verify ANALYZER_GURU_VERSION and ANALYZER_VERSION.
+        int n = 0;
+        postsIter = uidIter.postings(postsIter);
+        while (postsIter.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
+            ++n;
+            // Read a limited-fields version of the document.
+            Document doc = reader.document(postsIter.docID(), CHECK_FIELDS);
+            if (doc == null) {
+                LOGGER.log(Level.FINER, "No Document: {0}", path);
+                continue;
+            }
+
+            long reqGuruVersion = AnalyzerGuru.getVersionNo();
+            Long actGuruVersion = settings.getAnalyzerGuruVersion();
+            /**
+             * For an older OpenGrok index that does not yet have a defined,
+             * stored analyzerGuruVersion, break so that no extra work is done.
+             * After a re-index, the guru version check will be active.
+             */
+            if (actGuruVersion == null) {
+                break;
+            }
+
+            String fileTypeName;
+            if (actGuruVersion.equals(reqGuruVersion)) {
+                fileTypeName = doc.get(QueryBuilder.TYPE);
+                if (fileTypeName == null) {
+                    // (Should not get here, but break just in case.)
+                    LOGGER.log(Level.FINEST, "Missing TYPE field: {0}", path);
+                    break;
+                }
+            } else {
+                /**
+                 * If the stored guru version does not match, re-verify the
+                 * selection of analyzer or return a value to indicate the
+                 * analyzer is now mis-matched.
+                 */
+                LOGGER.log(Level.FINER, "Guru version mismatch: {0}", path);
+
+                FileAnalyzer fa = getAnalyzerFor(file, path);
+                fileTypeName = fa.getFileTypeName();
+                String oldTypeName = doc.get(QueryBuilder.TYPE);
+                if (!fileTypeName.equals(oldTypeName)) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Changed {0} to {1}: {2}",
+                            new Object[]{oldTypeName, fileTypeName, path});
+                    }
+                    return false;
+                }
+            }
+
+            // Verify Analyzer version, or return a value to indicate mismatch.
+            long reqVersion = AnalyzerGuru.getAnalyzerVersionNo(fileTypeName);
+            Long actVersion = settings.getAnalyzerVersion(fileTypeName);
+            if (actVersion == null || !actVersion.equals(reqVersion)) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "{0} version mismatch: {1}",
+                        new Object[]{fileTypeName, path});
+                }
+                return false;
+            }
+
+            // The versions checks have passed.
+            break;
+        }
+        if (n < 1) {
+            LOGGER.log(Level.FINER, "Missing index Documents: {0}", path);
+            return false;
+        }
 
         // Assume "true" if otherwise no discrepancies were observed.
         return true;
     }
 
     private void writeAnalysisSettings() throws IOException {
-        settings = new IndexAnalysisSettings();
+        settings = new IndexAnalysisSettings2();
         settings.setProjectName(project != null ? project.getName() : null);
         settings.setTabSize(project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0);
-        // TODO: set ANALYZER_GURU and ANALYZER versions.
+        settings.setAnalyzerGuruVersion(AnalyzerGuru.getVersionNo());
+        settings.setAnalyzersVersions(AnalyzerGuru.getAnalyzersVersionNos());
 
         IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
         dao.write(writer, settings);
     }
 
-    private IndexAnalysisSettings readAnalysisSettings() throws IOException {
+    private IndexAnalysisSettings2 readAnalysisSettings() throws IOException {
         IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
         return dao.read(reader);
     }

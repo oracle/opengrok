@@ -37,8 +37,11 @@ import java.util.List;
 import org.junit.After;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.condition.RepositoryInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.history.HistoryGuru;
@@ -53,7 +56,11 @@ import org.opengrok.util.IOUtils;
  *
  * @author Vladimir Kotal
  */
+@ConditionalRun(CtagsInstalled.class)
 public class IndexerRepoTest {
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     TestRepository repository;
 
@@ -90,10 +97,8 @@ public class IndexerRepoTest {
     /**
      * Test that symlinked directories from source root get their relative
      * path set correctly in RepositoryInfo objects.
-     * @throws org.opengrok.index.IndexerException
-     * @throws java.io.IOException
      */
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void testSymlinks() throws IndexerException, IOException {
 
@@ -160,33 +165,25 @@ public class IndexerRepoTest {
      * Test cleanup of renamed thread pool after indexing with -H.
      */
     @Test
-    public void testMainWithH() throws IOException {
+    public void testMainWithH() {
         System.out.println("Generate index by using command line options with -H");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateExuberantCtags()) {
-            String[] argv = {"-S", "-H", "-s", repository.getSourceRoot(),
+        String[] argv = {"-S", "-H", "-s", repository.getSourceRoot(),
                 "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
-            Indexer.main(argv);
-            checkNumberOfThreads();
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use.");
-        }
+        Indexer.main(argv);
+        checkNumberOfThreads();
     }
 
     /**
      * Test cleanup of renamed thread pool after indexing without -H.
      */
     @Test
-    public void testMainWithoutH() throws IOException {
+    public void testMainWithoutH() {
         System.out.println("Generate index by using command line options without -H");
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateExuberantCtags()) {
-            String[] argv = {"-S", "-P", "-s", repository.getSourceRoot(),
+        String[] argv = {"-S", "-P", "-s", repository.getSourceRoot(),
                 "-d", repository.getDataRoot(), "-v", "-c", env.getCtags()};
-            Indexer.main(argv);
-            checkNumberOfThreads();
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use.");
-        }
+        Indexer.main(argv);
+        checkNumberOfThreads();
     }
 }

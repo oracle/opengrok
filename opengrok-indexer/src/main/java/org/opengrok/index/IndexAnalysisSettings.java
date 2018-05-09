@@ -36,6 +36,7 @@ import java.io.Serializable;
  * re-compared upon each indexing run since changes to them might require
  * re-indexing particular files or in certain cases all files.
  */
+@Deprecated
 public final class IndexAnalysisSettings implements Serializable {
 
     private static final long serialVersionUID = 1005610724146719938L;

@@ -27,9 +27,9 @@ from shutil import which
 
 
 class SubversionRepository(Repository):
-    def __init__(self, logger, path, project, command, env, hooks):
+    def __init__(self, logger, path, project, command, env, hooks, timeout):
 
-        super().__init__(logger, path, project, command, env, hooks)
+        super().__init__(logger, path, project, command, env, hooks, timeout)
 
         if command:
             self.command = command
@@ -67,7 +67,8 @@ class SubversionRepository(Repository):
                                no_proxy)
 
         svn_command.append("update")
-        cmd = Command(svn_command, work_dir=self.path, env_vars=self.env)
+        cmd = self.getCommand(svn_command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:

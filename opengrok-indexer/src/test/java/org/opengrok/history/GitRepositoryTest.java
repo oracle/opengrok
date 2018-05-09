@@ -49,7 +49,7 @@ import org.opengrok.configuration.RuntimeEnvironment;
  *
  * @author austvik
  */
-@ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
+@ConditionalRun(RepositoryInstalled.GitInstalled.class)
 public class GitRepositoryTest {
 
     @Rule

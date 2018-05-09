@@ -23,7 +23,6 @@
  */
 package org.opengrok.history;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +44,7 @@ import org.opengrok.configuration.RuntimeEnvironment;
  *
  * @author Trond Norbye
  */
-@ConditionalRun(condition = RepositoryInstalled.PerforceInstalled.class)
+@ConditionalRun(RepositoryInstalled.PerforceInstalled.class)
 public class PerforceRepositoryTest {
 
     @Rule
@@ -55,11 +54,8 @@ public class PerforceRepositoryTest {
     private static List<File> files;
     private static final File root = new File("/export/opengrok_p4_test");
 
-    public PerforceRepositoryTest() {
-    }
-
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() {
         if (!root.exists()) {
             skip=true;
             return;
@@ -67,10 +63,6 @@ public class PerforceRepositoryTest {
         files = new ArrayList<>();
         RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
         FileUtilities.getAllFiles(root, files, false);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {        
     }
 
     @Test

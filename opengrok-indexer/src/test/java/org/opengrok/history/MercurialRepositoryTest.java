@@ -48,7 +48,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests for MercurialRepository.
  */
-@ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+@ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
 public class MercurialRepositoryTest {
 
     @Rule

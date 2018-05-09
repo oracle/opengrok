@@ -33,13 +33,11 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.condition.ConditionalRun;
@@ -53,24 +51,13 @@ import org.opengrok.util.TestRepository;
  *
  * @author austvik
  */
-@ConditionalRun(condition = RepositoryInstalled.CvsInstalled.class)
+@ConditionalRun(RepositoryInstalled.CvsInstalled.class)
 public class CVSRepositoryTest {
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     CVSRepository instance;
-
-    public CVSRepositoryTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     private TestRepository repository;
 

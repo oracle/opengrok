@@ -17,12 +17,22 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.condition;
 
 public interface RunCondition {
 
-    public boolean isSatisfied();
+    String FORCE_ALL_PROPERTY = "junit-force-all";
+
+    default boolean isForcedOrSatisfied() {
+        if (Boolean.getBoolean(FORCE_ALL_PROPERTY)) {
+            return true;
+        }
+        return isSatisfied();
+    }
+
+    boolean isSatisfied();
+
 }

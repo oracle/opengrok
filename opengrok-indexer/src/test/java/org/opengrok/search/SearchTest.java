@@ -27,13 +27,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.index.Indexer;
 import org.opengrok.index.IndexerTest;
@@ -48,12 +52,15 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Trond Norbye
  */
+@ConditionalRun(CtagsInstalled.class)
 public class SearchTest {
 
     static TestRepository repository;
-    static boolean skip = false;
     static PrintStream err = System.err;
     static File configFile;
+
+    @ClassRule
+    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -64,19 +71,14 @@ public class SearchTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
 
-        if (env.validateExuberantCtags()) {
-            env.setSourceRoot(repository.getSourceRoot());
-            env.setDataRoot(repository.getDataRoot());
-            env.setVerbose(false);
-            env.setHistoryEnabled(false);
-            Indexer.getInstance().prepareIndexer(env, true, true,
-                    new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        env.setVerbose(false);
+        env.setHistoryEnabled(false);
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                    new TreeSet<>(Collections.singletonList("/c")),
                     false, false, null, null, new ArrayList<>(), false);
-            Indexer.getInstance().doIndexerExecution(true, null, null);
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
-            skip = true;
-        }
+        Indexer.getInstance().doIndexerExecution(true, null, null);
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
@@ -103,9 +105,6 @@ public class SearchTest {
 
     @Test
     public void testParseCmdLine() {
-        if (skip) {
-            return;
-        }
         Search instance = new Search();
 
         assertTrue(instance.parseCmdLine(new String[]{}));
@@ -139,10 +138,6 @@ public class SearchTest {
      */
     @Test
     public void testSearch() {
-        if (skip) {
-            return;
-        }
-
         Search instance = new Search();
 
         assertFalse(instance.search());
@@ -212,9 +207,6 @@ public class SearchTest {
 
     @Test
     public void testSearchNotFound() {
-        if (skip) {
-            return;
-        }
         Search instance = new Search();
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "path_that_can't_be_found"}));
@@ -240,9 +232,6 @@ public class SearchTest {
 
     @Test
     public void testDumpResults() {
-        if (skip) {
-            return;
-        }
         Search instance = new Search();
         assertTrue(instance.parseCmdLine(new String[]{"-p", "Non-existing-makefile-Makefile"}));
         assertTrue(instance.search());
@@ -266,9 +255,6 @@ public class SearchTest {
      */
     @Test
     public void testMain() {
-        if (skip) {
-            return;
-        }
         PrintStream out = System.out;
         ByteArrayOutputStream array = new ByteArrayOutputStream();
         System.setOut(new PrintStream(array));
@@ -283,10 +269,6 @@ public class SearchTest {
      */
     @Test
     public void testJavascriptLongLine() {
-        if (skip) {
-            return;
-        }
-        
         Search instance = new Search();
         
         assertTrue(instance.parseCmdLine(new String[]{"-f", "\"beforelongline\"","-p", "\"testlong.js\""}));

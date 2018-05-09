@@ -39,6 +39,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.analysis.c.CXref;
 import org.opengrok.analysis.c.CxxXref;
@@ -57,8 +58,11 @@ import org.opengrok.analysis.sh.ShXref;
 import org.opengrok.analysis.sql.SQLXref;
 import org.opengrok.analysis.tcl.TclXref;
 import org.opengrok.analysis.uue.UuencodeXref;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
-import static org.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
 import org.opengrok.util.TestRepository;
 import org.xml.sax.InputSource;
 
@@ -69,6 +73,9 @@ public class JFlexXrefTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     /**
      * This is what we expect to find at the beginning of the first line
@@ -160,6 +167,7 @@ public class JFlexXrefTest {
      * used to cause trouble.
      */
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void testBug15890Anchor() throws Exception {
         bug15890Anchor(CXref.class, "c/bug15890.c");
         bug15890Anchor(CxxXref.class, "c/bug15890.c");
@@ -377,6 +385,7 @@ public class JFlexXrefTest {
     }
 
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void bug18586() throws IOException, InterruptedException {
         String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
         Reader in = new InputStreamReader(new FileInputStream(filename), "UTF-8");
@@ -391,6 +400,7 @@ public class JFlexXrefTest {
      * This originally became a problem after upgrade to JFlex 1.5.0.
      */
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void unterminatedHeredoc() throws IOException {
         JFlexXref xref = new JFlexXref(new ShXref(new StringReader(
                 "cat << EOF\nunterminated heredoc")));

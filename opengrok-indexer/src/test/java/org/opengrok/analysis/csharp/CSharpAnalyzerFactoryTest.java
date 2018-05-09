@@ -33,6 +33,7 @@ import java.io.StringWriter;
 import org.apache.lucene.document.Field;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
@@ -41,6 +42,9 @@ import org.opengrok.analysis.FileAnalyzer;
 import org.opengrok.analysis.Scopes;
 import org.opengrok.analysis.Scopes.Scope;
 import org.opengrok.analysis.StreamSource;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.search.QueryBuilder;
 import org.opengrok.util.TestRepository;
@@ -49,11 +53,15 @@ import org.opengrok.util.TestRepository;
  *
  * @author Tomas Kotal
  */
+@ConditionalRun(CtagsInstalled.class)
 public class CSharpAnalyzerFactoryTest {
 
     private static Ctags ctags;
     private static TestRepository repository;
     private static FileAnalyzer analyzer;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {

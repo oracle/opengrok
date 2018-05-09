@@ -26,15 +26,17 @@ package org.opengrok.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.Project;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.index.Indexer;
@@ -46,16 +48,12 @@ import org.opengrok.util.TestRepository;
  * Unit tests for the {@code SearchHelper} class.
  */
 public class SearchHelperTest {
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
+
     TestRepository repository;
     RuntimeEnvironment env;
-    
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     @Before
     public void setUp() throws IOException {
@@ -78,7 +76,7 @@ public class SearchHelperTest {
         System.out.println("Generating index by using the class methods");
 
         Indexer.getInstance().prepareIndexer(env, true, true,
-            new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+            new TreeSet<>(Collections.singletonList("/c")),
             false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
     }
@@ -120,16 +118,11 @@ public class SearchHelperTest {
     }    
     
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void testSearchAfterReindex() {
         SortedSet<String> projectNames = new TreeSet<>();
-        SearchHelper searchHelper;
 
         env.setProjectsEnabled(true);
-
-        if (!env.validateExuberantCtags()) {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
-            return;
-        }
 
         try {
             reindex();
@@ -139,7 +132,7 @@ public class SearchHelperTest {
 
         // Search for existing term in single project.
         projectNames.add("c");
-        searchHelper = this.getSearchHelper("foobar")
+        SearchHelper searchHelper = this.getSearchHelper("foobar")
             .prepareExec(projectNames).executeQuery().prepareSummary();
         Assert.assertNull(searchHelper.errorMsg);
         System.out.println("single project search returned " +

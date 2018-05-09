@@ -24,11 +24,8 @@
 package org.opengrok.index;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.search.QueryBuilder;
 
@@ -40,14 +37,6 @@ public class IndexAnalysisSettingsTest {
     private static final String PROJECT_NAME = "foo-1-2-3";
     private static final long ANALYZER_GURU_VERSION = 3;
     private static final int TABSIZE = 17;
-    private static final Map<String, Long> ANALYZER_VERSIONS = new HashMap<>();
-
-    @BeforeClass
-    public static void setUpClass() {
-        ANALYZER_VERSIONS.put("abc", 6L);
-        ANALYZER_VERSIONS.put("ABC", 45L);
-        ANALYZER_VERSIONS.put("d e", Long.MAX_VALUE - 19);
-    }
 
     @Test
     public void shouldAffirmINDEX_ANALYSIS_SETTINGS_OBJUID() {

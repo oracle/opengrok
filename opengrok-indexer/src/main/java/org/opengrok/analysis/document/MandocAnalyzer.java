@@ -51,6 +51,17 @@ public class MandocAnalyzer extends TextAnalyzer {
             FileAnalyzer.dummyReader)));
     }
 
+    /**
+     * Gets a version number to be used to tag processed documents so that
+     * re-analysis can be re-done later if a stored version number is different
+     * from the current implementation.
+     * @return 20171218_00
+     */
+    @Override
+    protected int getSpecializedVersionNo() {
+        return 20171218_00; // Edit comment above too!
+    }
+
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut)
         throws IOException {

@@ -62,7 +62,7 @@ import org.opengrok.analysis.Definitions;
 import org.opengrok.configuration.Project;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.configuration.SuperIndexSearcher;
-import org.opengrok.index.IndexAnalysisSettings;
+import org.opengrok.index.IndexAnalysisSettings2;
 import org.opengrok.index.IndexAnalysisSettingsAccessor;
 import org.opengrok.index.IndexDatabase;
 import org.opengrok.logger.LoggerFactory;
@@ -217,7 +217,7 @@ public class SearchHelper {
     /**
      * Key is Project name or empty string for null Project
      */
-    private Map<String, IndexAnalysisSettings> mappedAnalysisSettings;
+    private Map<String, IndexAnalysisSettings2> mappedAnalysisSettings;
 
     /**
      * User readable description for file types. Only those listed in
@@ -621,7 +621,7 @@ public class SearchHelper {
      */
     public int getTabSize(Project proj) throws IOException {
         String projectName = proj != null ? proj.getName() : null;
-        IndexAnalysisSettings settings = getSettings(projectName);
+        IndexAnalysisSettings2 settings = getSettings(projectName);
         int tabSize;
         if (settings != null && settings.getTabSize() != null) {
             tabSize = settings.getTabSize();
@@ -639,12 +639,12 @@ public class SearchHelper {
      * @return a defined instance or {@code null} if none is found
      * @throws IOException if an I/O error occurs querying the active reader
      */
-    public IndexAnalysisSettings getSettings(String projectName)
+    public IndexAnalysisSettings2 getSettings(String projectName)
             throws IOException {
         if (mappedAnalysisSettings == null) {
             IndexAnalysisSettingsAccessor dao =
                 new IndexAnalysisSettingsAccessor();
-            IndexAnalysisSettings[] setts = dao.read(reader, Short.MAX_VALUE);
+            IndexAnalysisSettings2[] setts = dao.read(reader, Short.MAX_VALUE);
             mappedAnalysisSettings = map(setts);
         }
 
@@ -652,12 +652,12 @@ public class SearchHelper {
         return mappedAnalysisSettings.get(k);
     }
 
-    private Map<String, IndexAnalysisSettings> map(
-        IndexAnalysisSettings[] setts) {
+    private Map<String, IndexAnalysisSettings2> map(
+        IndexAnalysisSettings2[] setts) {
 
-        Map<String, IndexAnalysisSettings> res = new HashMap<>();
+        Map<String, IndexAnalysisSettings2> res = new HashMap<>();
         for (int i = 0; i < setts.length; ++i) {
-            IndexAnalysisSettings settings = setts[i];
+            IndexAnalysisSettings2 settings = setts[i];
             String k = settings.getProjectName() != null ?
                 settings.getProjectName() : "";
             res.put(k, settings);

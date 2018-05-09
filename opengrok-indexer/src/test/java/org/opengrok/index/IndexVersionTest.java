@@ -34,7 +34,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.Configuration;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.history.RepositoryFactory;
@@ -47,13 +51,16 @@ import org.opengrok.util.TestRepository;
  * @author Vladimir Kotal
  */
 public class IndexVersionTest {
-    
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
+
     TestRepository repository;
     RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private File oldIndexDataDir;
     
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         RepositoryFactory.initializeIgnoredNames(env);
     }
@@ -79,16 +86,12 @@ public class IndexVersionTest {
      * @throws Exception 
      */
     private void testIndexVersion(boolean projectsEnabled) throws Exception {
-        if (env.validateExuberantCtags()) {
-            env.setVerbose(true);
-            env.setHistoryEnabled(false);
-            env.setProjectsEnabled(projectsEnabled);
-            Indexer.getInstance().prepareIndexer(env, true, true, null,
-                    false, false, null, null, new ArrayList<>(), false);
-            Indexer.getInstance().doIndexerExecution(true, null, null);
-        } else {
-            System.out.println("Skipping test. Could not find a ctags program that could be used.");
-        }
+        env.setVerbose(true);
+        env.setHistoryEnabled(false);
+        env.setProjectsEnabled(projectsEnabled);
+        Indexer.getInstance().prepareIndexer(env, true, true, null,
+                false, false, null, null, new ArrayList<>(), false);
+        Indexer.getInstance().doIndexerExecution(true, null, null);
 
         IndexVersion.check(env.getConfiguration());
     }
@@ -99,11 +102,13 @@ public class IndexVersionTest {
     }
     
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void testIndexVersionNoProjects() throws Exception {
         testIndexVersion(true);
     }
     
     @Test
+    @ConditionalRun(CtagsInstalled.class)
     public void testIndexVersionProjects() throws Exception {
         testIndexVersion(false);
     }

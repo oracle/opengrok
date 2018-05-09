@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opengrok.condition;
 
@@ -30,30 +30,30 @@ import org.junit.Test;
  *
  * @author Krystof Tulinger
  */
-@ConditionalRun(condition = RunningRepeatableConditionTest.TrueRunCondition.class)
-@ConditionalRun(condition = RunningRepeatableConditionTest.TrueRunCondition.class)
-@ConditionalRun(condition = RunningRepeatableConditionTest.TrueRunCondition.class)
+@ConditionalRun(RunningRepeatableConditionTest.TrueRunCondition.class)
+@ConditionalRun(RunningRepeatableConditionTest.TrueRunCondition.class)
+@ConditionalRun(RunningRepeatableConditionTest.TrueRunCondition.class)
 public class RunningRepeatableConditionTest {
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
-    @ConditionalRun(condition = TrueRunCondition.class)
-    @ConditionalRun(condition = TrueRunCondition.class)
-    @ConditionalRun(condition = TrueRunCondition.class)
-    @ConditionalRun(condition = TrueRunCondition.class)
-    @ConditionalRun(condition = TrueRunCondition.class)
+    @ConditionalRun(TrueRunCondition.class)
+    @ConditionalRun(TrueRunCondition.class)
+    @ConditionalRun(TrueRunCondition.class)
+    @ConditionalRun(TrueRunCondition.class)
+    @ConditionalRun(TrueRunCondition.class)
     @Test
     public void testRunningTest() {
         Assert.assertTrue("This test shall run", true);
     }
 
-    @ConditionalRun(condition = TrueRunCondition.class)
-    @ConditionalRun(condition = FalseRunCondition.class)
-    @ConditionalRun(condition = TrueRunCondition.class)
+    @ConditionalRun(TrueRunCondition.class)
+    @ConditionalRun(FalseRunCondition.class)
+    @ConditionalRun(TrueRunCondition.class)
     @Test
-    public void testSkippedTest() throws NoSuchMethodException {
-        Assert.assertTrue("This test must be skipped", false);
+    public void testSkippedTest() {
+        Assert.fail("This test must be skipped");
     }
 
     protected static class TrueRunCondition implements RunCondition {

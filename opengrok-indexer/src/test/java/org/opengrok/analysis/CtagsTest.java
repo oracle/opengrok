@@ -25,14 +25,15 @@
 package org.opengrok.analysis;
 
 import java.io.File;
-import java.io.IOException;
-import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.util.TestRepository;
 
@@ -40,12 +41,14 @@ import org.opengrok.util.TestRepository;
  *
  * @author Lubos Kosco
  */
-public class CtagsTest {    
+@ConditionalRun(CtagsInstalled.class)
+public class CtagsTest {
+
     private static Ctags ctags;
     private static TestRepository repository;
 
-    public CtagsTest() {
-    }
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -65,9 +68,6 @@ public class CtagsTest {
         String extraOptionsFile =
                 repository.getSourceRoot() + "/bug19195/ctags.config";
         ctags.setCTagsExtraOptionsFile(extraOptionsFile);
-
-        assertTrue("No point in running ctags tests without valid ctags",
-                RuntimeEnvironment.getInstance().validateExuberantCtags());
     }
 
     @AfterClass
@@ -78,17 +78,9 @@ public class CtagsTest {
         repository = null;
     }
 
-    @Before
-    public void setUp() throws IOException {        
-    }
-
-    @After
-    public void tearDown() {        
-    }
-
     /**
      * Helper method that gets the definitions for a file in the repository.
-     * @param file file name relative to source root
+     * @param fileName file name relative to source root
      * @return the definitions found in the file
      */
     private static Definitions getDefs(String fileName) throws Exception {

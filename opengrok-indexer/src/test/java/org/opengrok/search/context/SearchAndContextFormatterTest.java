@@ -27,7 +27,7 @@ package org.opengrok.search.context;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeSet;
 import org.apache.lucene.document.Document;
@@ -39,9 +39,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.opengrok.analysis.FileAnalyzer;
 import org.opengrok.analysis.plain.PlainAnalyzerFactory;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.history.HistoryGuru;
 import org.opengrok.index.Indexer;
@@ -57,12 +61,15 @@ import static org.opengrok.util.CustomAssertions.assertLinesEqual;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
+@ConditionalRun(CtagsInstalled.class)
 public class SearchAndContextFormatterTest {
 
     private static RuntimeEnvironment env;
     private static TestRepository repository;
     private static File configFile;
-    private static boolean skip = false;
+
+    @ClassRule
+    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -77,20 +84,14 @@ public class SearchAndContextFormatterTest {
         env.setDataRoot(repository.getDataRoot());
         RepositoryFactory.initializeIgnoredNames(env);
 
-        if (env.validateExuberantCtags()) {
-            env.setSourceRoot(repository.getSourceRoot());
-            env.setDataRoot(repository.getDataRoot());
-            env.setVerbose(false);
-            env.setHistoryEnabled(false);
-            Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        env.setVerbose(false);
+        env.setHistoryEnabled(false);
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                new TreeSet<>(Collections.singletonList("/c")),
                 false, false, null, null, new ArrayList<>(), false);
-            Indexer.getInstance().doIndexerExecution(true, null, null);
-        } else {
-            System.out.println(
-                "Skipping test. Could not find a ctags I could use in path.");
-            skip = true;
-        }
+        Indexer.getInstance().doIndexerExecution(true, null, null);
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
@@ -102,7 +103,6 @@ public class SearchAndContextFormatterTest {
     public static void tearDownClass() throws Exception {
         repository.destroy();
         configFile.delete();
-        skip = false;
     }
 
     @Before
@@ -115,17 +115,10 @@ public class SearchAndContextFormatterTest {
 
     @Test
     public void testSearch() throws IOException, InvalidTokenOffsetsException {
-        if (skip) {
-            return;
-        }
-
-        SearchEngine instance;
-        int noHits;
-
-        instance = new SearchEngine();
+        SearchEngine instance = new SearchEngine();
         instance.setFreetext("embedded");
         instance.setFile("main.c");
-        noHits = instance.search();
+        int noHits = instance.search();
         assertTrue("noHits should be positive", noHits > 0);
         String[] frags = getFirstFragments(instance);
         assertNotNull("getFirstFragments() should return something", frags);

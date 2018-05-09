@@ -94,7 +94,7 @@ public class HistoryContextTest {
     }
 
     @Test
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_3args() throws Exception {
         String path = "/mercurial/Makefile";
         String filename = repositories.getSourceRoot() + path;
@@ -141,7 +141,7 @@ public class HistoryContextTest {
     }
 
     @Test
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_4args() throws Exception {
         String path = "/mercurial/Makefile";
         File file = new File(repositories.getSourceRoot() + path);

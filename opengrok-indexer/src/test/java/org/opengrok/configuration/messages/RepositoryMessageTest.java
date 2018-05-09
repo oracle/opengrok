@@ -29,8 +29,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRepeatable;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.condition.RepositoryInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.history.HistoryGuru;
@@ -45,12 +49,20 @@ import org.opengrok.util.TestRepository;
  * 
  * @author Vladimir Kotal
  */
+@ConditionalRunRepeatable({
+        @ConditionalRun(RepositoryInstalled.MercurialInstalled.class),
+        @ConditionalRun(RepositoryInstalled.GitInstalled.class),
+        @ConditionalRun(CtagsInstalled.class)
+})
 public class RepositoryMessageTest {
     
     RuntimeEnvironment env;
 
     private static TestRepository repository = new TestRepository();
-    
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
+
     @Before
     public void setUp() throws IOException {
         repository = new TestRepository();
@@ -92,9 +104,7 @@ public class RepositoryMessageTest {
         m.setText("get-repo-type");
         Assert.assertTrue(MessageTest.assertValid(m));
     }
-    
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
-    @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
+
     @Test
     public void testGetRepositoryType() throws Exception {
         Message m = new RepositoryMessage();

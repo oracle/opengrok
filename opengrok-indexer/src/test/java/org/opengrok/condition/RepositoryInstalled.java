@@ -40,8 +40,6 @@ import org.opengrok.history.SubversionRepository;
  */
 public abstract class RepositoryInstalled implements RunCondition {
 
-    static final String FORCE_ALL_PROPERTY = "junit-force-all";
-
     private final String name;
     private final Repository repository;
 
@@ -52,9 +50,6 @@ public abstract class RepositoryInstalled implements RunCondition {
 
     @Override
     public boolean isSatisfied() {
-        if (Boolean.getBoolean(FORCE_ALL_PROPERTY)) {
-            return true;
-        }
         if (Boolean.getBoolean(forceSystemProperty())) {
             return true;
         }

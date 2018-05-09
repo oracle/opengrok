@@ -26,14 +26,18 @@ package org.opengrok.search;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.opengrok.condition.ConditionalRun;
+import org.opengrok.condition.ConditionalRunRule;
+import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.history.HistoryGuru;
 import org.opengrok.index.Indexer;
@@ -47,11 +51,14 @@ import org.opengrok.history.RepositoryFactory;
  *
  * @author Trond Norbye
  */
+@ConditionalRun(CtagsInstalled.class)
 public class SearchEngineTest {
 
     static TestRepository repository;
-    static boolean skip = false;
     static File configFile;
+
+    @ClassRule
+    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -63,19 +70,15 @@ public class SearchEngineTest {
         env.setDataRoot(repository.getDataRoot());
         RepositoryFactory.initializeIgnoredNames(env);
 
-        if (env.validateExuberantCtags()) {
-            env.setSourceRoot(repository.getSourceRoot());
-            env.setDataRoot(repository.getDataRoot());
-            env.setVerbose(false);
-            env.setHistoryEnabled(false);
-            Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        env.setVerbose(false);
+        env.setHistoryEnabled(false);
+        Indexer.getInstance().prepareIndexer(env, true, true,
+                new TreeSet<>(Collections.singletonList("/c")),
                 false, false, null, null, new ArrayList<>(), false);
-            Indexer.getInstance().doIndexerExecution(true, null, null);
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
-            skip = true;
-        }
+        Indexer.getInstance().doIndexerExecution(true, null, null);
+
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
@@ -164,10 +167,6 @@ public class SearchEngineTest {
 
     @Test
     public void testSearch() {
-        if (skip) {
-            return;
-        }
-
         List<Hit> hits = new ArrayList<>();
 
         SearchEngine instance = new SearchEngine();
