@@ -32,7 +32,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRepeatable;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
@@ -40,7 +39,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.MercurialRepositoryTest;
 import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -49,16 +47,14 @@ import org.opensolaris.opengrok.util.TestRepository;
  * 
  * @author Vladimir Kotal
  */
-@ConditionalRunRepeatable({
-        @ConditionalRun(RepositoryInstalled.MercurialInstalled.class),
-        @ConditionalRun(RepositoryInstalled.GitInstalled.class),
-        @ConditionalRun(CtagsInstalled.class)
-})
+@ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+@ConditionalRun(RepositoryInstalled.GitInstalled.class)
+@ConditionalRun(CtagsInstalled.class)
 public class RepositoryMessageTest {
     
-    RuntimeEnvironment env;
+    private RuntimeEnvironment env;
 
-    private static TestRepository repository = new TestRepository();
+    private TestRepository repository;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
@@ -84,7 +80,7 @@ public class RepositoryMessageTest {
 
             // This should match Configuration constructor.
             env.setProjects(new ConcurrentHashMap<>());
-            env.setRepositories(new ArrayList<RepositoryInfo>());
+            env.setRepositories(new ArrayList<>());
             env.getProjectRepositoriesMap().clear();
         }
 
