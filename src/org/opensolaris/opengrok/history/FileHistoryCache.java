@@ -712,7 +712,7 @@ class FileHistoryCache implements HistoryCache {
                    writer.close();
                }
            } catch (IOException ex) {
-               LOGGER.log(Level.FINEST, "Cannot close file", ex);
+               LOGGER.log(Level.WARNING, "Cannot close file", ex);
            }
         }
     }
