@@ -62,7 +62,7 @@ import org.opengrok.condition.ConditionalRun;
 import org.opengrok.condition.ConditionalRunRule;
 import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.configuration.RuntimeEnvironment;
-import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
+import static org.opengrok.util.CustomAssertions.assertLinesEqual;
 import org.opengrok.util.TestRepository;
 import org.xml.sax.InputSource;
 

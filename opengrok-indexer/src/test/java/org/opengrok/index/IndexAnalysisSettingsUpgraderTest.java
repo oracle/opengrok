@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.index;
+package org.opengrok.index;
 
 import java.io.IOException;
 import java.util.Map;
@@ -31,7 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opengrok.analysis.AnalyzerGuru;
 
 /**
  * Represents a test container for {@link IndexAnalysisSettingsUpgrader}.

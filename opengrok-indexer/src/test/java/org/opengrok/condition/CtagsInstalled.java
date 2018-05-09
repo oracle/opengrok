@@ -20,9 +20,9 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.condition;
+package org.opengrok.condition;
 
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.RuntimeEnvironment;
 
 public class CtagsInstalled implements RunCondition {
 

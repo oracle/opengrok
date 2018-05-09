@@ -50,7 +50,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
+import static org.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 /**
  * @author Farid Zakaria
