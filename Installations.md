@@ -16,3 +16,4 @@
 * http://code.metager.de/source/ &mdash; almost every open-source project you've ever heard of _(expect delays, search takes between 4s and 8s)_
 * https://opengrok.housegordon.com &mdash; GNU (and some non-gnu) projects
 * http://src.couchbase.org/source/ &mdash; Couchbase DB
+* https://codesearch.dokuwiki.org &mdash; DokuWiki plugins and templates
