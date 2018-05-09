@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
@@ -30,12 +30,16 @@ import java.util.TreeSet;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -45,18 +49,18 @@ import org.opensolaris.opengrok.util.TestRepository;
 /**
  * Unit tests for the {@code IndexDatabase} class.
  */
+@ConditionalRun(CtagsInstalled.class)
 public class IndexDatabaseTest {
 
     private static TestRepository repository;
     private static IndexerParallelizer parallelizer;
 
-    public IndexDatabaseTest() {
-    }
+    @ClassRule
+    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        assertTrue("No ctags available", env.validateExuberantCtags());
 
         repository = new TestRepository();
         repository.create(

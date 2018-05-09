@@ -18,12 +18,11 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +44,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  *
  * @author Trond Norbye
  */
-@ConditionalRun(condition = RepositoryInstalled.PerforceInstalled.class)
+@ConditionalRun(RepositoryInstalled.PerforceInstalled.class)
 public class PerforceRepositoryTest {
 
     @Rule
@@ -55,11 +54,8 @@ public class PerforceRepositoryTest {
     private static List<File> files;
     private static final File root = new File("/export/opengrok_p4_test");
 
-    public PerforceRepositoryTest() {
-    }
-
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() {
         if (!root.exists()) {
             skip=true;
             return;
@@ -67,10 +63,6 @@ public class PerforceRepositoryTest {
         files = new ArrayList<>();
         RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());
         FileUtilities.getAllFiles(root, files, false);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {        
     }
 
     @Test

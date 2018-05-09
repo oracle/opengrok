@@ -17,6 +17,9 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.history;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -50,7 +53,7 @@ import org.opensolaris.opengrok.util.TestRepository;
  *
  * @author James Service &lt;jas2701@googlemail.com&gt;
  */
-@ConditionalRun(condition = RepositoryInstalled.BitKeeperInstalled.class)
+@ConditionalRun(RepositoryInstalled.BitKeeperInstalled.class)
 public class BitKeeperRepositoryTest {
 
     @Rule

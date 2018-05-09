@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -102,7 +102,7 @@ public class PageConfigTest {
         }
     }
 
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @Test
     public void canProcessHistory() {
         // Expect no redirection (that is, empty string is returned) for a
@@ -305,7 +305,7 @@ public class PageConfigTest {
     }
 
     @Test
-    @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetAnnotation() {
         final String[] revisions = {"aa35c258", "bb74b7e8"};
 

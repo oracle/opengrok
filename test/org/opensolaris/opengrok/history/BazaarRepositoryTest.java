@@ -18,16 +18,14 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
 import java.io.Reader;
 import java.io.StringReader;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
@@ -40,24 +38,13 @@ import static org.junit.Assert.*;
  *
  * @author austvik
  */
-@ConditionalRun(condition = RepositoryInstalled.BazaarInstalled.class)
+@ConditionalRun(RepositoryInstalled.BazaarInstalled.class)
 public class BazaarRepositoryTest {
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     BazaarRepository instance;
-
-    public BazaarRepositoryTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
 
     @Before
     public void setUp() {

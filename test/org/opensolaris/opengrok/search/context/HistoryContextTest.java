@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -38,7 +38,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -95,7 +94,7 @@ public class HistoryContextTest {
     }
 
     @Test
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_3args() throws Exception {
         String path = "/mercurial/Makefile";
         String filename = repositories.getSourceRoot() + path;
@@ -142,7 +141,7 @@ public class HistoryContextTest {
     }
 
     @Test
-    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     public void testGetContext_4args() throws Exception {
         String path = "/mercurial/Makefile";
         File file = new File(repositories.getSourceRoot() + path);
