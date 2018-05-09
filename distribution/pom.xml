@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.opensolaris.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.1-rc25</version>
+    <version>1.1-rc26</version>
   </parent>
 
   <artifactId>opengrok-dist</artifactId>
@@ -24,13 +24,13 @@
     <dependency>
       <groupId>org.opensolaris.opengrok</groupId>
       <artifactId>opengrok</artifactId>
-      <version>1.1-rc25</version>
+      <version>1.1-rc26</version>
     </dependency>
 
     <dependency>
       <groupId>org.opensolaris.opengrok</groupId>
       <artifactId>opengrok-web</artifactId>
-      <version>1.1-rc25</version>
+      <version>1.1-rc26</version>
       <type>war</type>
     </dependency>
   </dependencies>
