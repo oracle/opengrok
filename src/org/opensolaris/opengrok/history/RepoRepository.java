@@ -79,7 +79,7 @@ public class RepoRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File f = new File(file, ".repo");
             return f.exists() && f.isDirectory();
@@ -123,12 +123,17 @@ public class RepoRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         return null;
     }
 
     @Override
-    String determineBranch() {
+    String determineBranch(boolean interactive) {
+        return null;
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
         return null;
     }
 }

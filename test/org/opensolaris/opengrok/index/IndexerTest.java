@@ -247,7 +247,7 @@ public class IndexerTest {
         Repository r = null;
         for (RepositoryInfo ri : repos) {
             if (ri.getDirectoryName().equals(repository.getSourceRoot() + "/rfe2575")) {
-                r = RepositoryFactory.getRepository(ri);
+                r = RepositoryFactory.getRepository(ri, false);
                 break;
             }
         }

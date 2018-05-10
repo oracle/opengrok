@@ -311,6 +311,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setCommandTimeout(timeout);
     }
 
+    public int getInteractiveCommandTimeout() {
+        return threadConfig.get().getInteractiveCommandTimeout();
+    }
+
+    public void setInteractiveCommandTimeout(int timeout) {
+        threadConfig.get().setInteractiveCommandTimeout(timeout);
+    }
+    
     public Statistics getStatistics() {
         return statistics;
     }
@@ -1373,6 +1381,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Read configuration from a file and put it into effect.
+     * @param file the file to read
+     * @param interactive true if run in interactive mode
+     * @throws IOException 
+     */
+    public void readConfiguration(File file, boolean interactive) throws IOException {
+        setConfiguration(Configuration.read(file), null, interactive);
+    }
+    
+    /**
      * Write the current configuration to a file
      *
      * @param file the file to write the configuration into
@@ -1493,10 +1511,10 @@ public final class RuntimeEnvironment {
      * @param configuration what configuration to use
      */
     public void setConfiguration(Configuration configuration) {
-        setConfiguration(configuration, null);
+        setConfiguration(configuration, null, false);
     }
 
-    public void setConfiguration(Configuration configuration, List<String> subFileList) {
+    public void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
         this.configuration = configuration;
         // HistoryGuru constructor uses environment properties so register()
         // needs to be called first.
@@ -1516,10 +1534,10 @@ public final class RuntimeEnvironment {
         // Set the working repositories in HistoryGuru.
         if (subFileList != null) {
             histGuru.invalidateRepositories(
-                configuration.getRepositories(), subFileList);
+                configuration.getRepositories(), subFileList, interactive);
         } else {
-            histGuru.invalidateRepositories(
-                configuration.getRepositories());
+            histGuru.invalidateRepositories(configuration.getRepositories(),
+                    interactive);
         }
         // The invalidation of repositories above might have excluded some
         // repositories in HistoryGuru so the configuration needs to reflect that.

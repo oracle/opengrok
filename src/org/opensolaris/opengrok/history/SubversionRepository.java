@@ -18,17 +18,14 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -36,15 +33,12 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.ext.DefaultHandler2;
 
 /**
  * Access to a Subversion repository.
@@ -106,7 +100,7 @@ public class SubversionRepository extends Repository {
 
     /**
      * Get {@code Document} corresponding to the parsed XML output from 
-     * 'svn info' command.
+     * {@code svn info} command.
      * @return document with data from {@code info} or null if the {@code svn}
      * command failed
      */
@@ -119,7 +113,8 @@ public class SubversionRepository extends Repository {
         cmd.add("--xml");
         File directory = new File(getDirectoryName());
 
-        Executor executor = new Executor(cmd, directory);
+        Executor executor = new Executor(cmd, directory,
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         if (executor.exec() == 0) {
             try {
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -199,7 +194,7 @@ public class SubversionRepository extends Repository {
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, String sinceRevision,
-            int numEntries) throws IOException {
+            int numEntries, boolean interactive) throws IOException {
 
         String filename = getRepoRelativePath(file);
 
@@ -226,7 +221,13 @@ public class SubversionRepository extends Repository {
             cmd.add(escapeFileName(filename));
         }
 
-        return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
+        if (interactive) {
+            return new Executor(cmd, new File(getDirectoryName()),
+                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        } else {
+            return new Executor(cmd, new File(getDirectoryName()),
+                    sinceRevision != null || numEntries > 0);
+        }
     }
 
     @Override
@@ -255,7 +256,8 @@ public class SubversionRepository extends Repository {
         cmd.add(rev);
         cmd.add(escapeFileName(filename));
 
-        Executor executor = new Executor(cmd, directory);
+        Executor executor = new Executor(cmd, directory,
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         if (executor.exec() == 0) {
             ret = executor.getOutputStream();
         }
@@ -270,18 +272,19 @@ public class SubversionRepository extends Repository {
 
     @Override
     History getHistory(File file) throws HistoryException {
-        return getHistory(file, null);
+        return getHistory(file, null, 0, false);
     }
 
     @Override
     History getHistory(File file, String sinceRevision) throws HistoryException {
-        return getHistory(file, sinceRevision, 0);
+        return getHistory(file, sinceRevision, 0, false);
     }
 
-    private History getHistory(File file, String sinceRevision, int numEntries)
+    private History getHistory(File file, String sinceRevision, int numEntries,
+            boolean interactive)
             throws HistoryException {
         return new SubversionHistoryParser().parse(file, this, sinceRevision,
-                numEntries);
+                numEntries, interactive);
     }
 
     private String escapeFileName(String name) {
@@ -291,66 +294,8 @@ public class SubversionRepository extends Repository {
         return name + "@";
     }
 
-    private static class AnnotateHandler extends DefaultHandler2 {
-
-        String rev;
-        String author;
-        final Annotation annotation;
-        final StringBuilder sb;
-
-        AnnotateHandler(String filename) {
-            annotation = new Annotation(filename);
-            sb = new StringBuilder();
-        }
-
-        @Override
-        public void startElement(String uri, String localName, String qname,
-                Attributes attr) {
-            sb.setLength(0);
-            if (null != qname) {
-                switch (qname) {
-                    case "entry":
-                        rev = null;
-                        author = null;
-                        break;
-                    case "commit":
-                        rev = attr.getValue("revision");
-                        break;
-                }
-            }
-        }
-
-        @Override
-        public void endElement(String uri, String localName, String qname) {
-            if (null != qname) {
-                switch (qname) {
-                    case "author":
-                        author = sb.toString();
-                        break;
-                    case "entry":
-                        annotation.addLine(rev, author, true);
-                        break;
-                }
-            }
-        }
-
-        @Override
-        public void characters(char[] arg0, int arg1, int arg2) {
-            sb.append(arg0, arg1, arg2);
-        }
-    }
-
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        SAXParser saxParser = null;
-        try {
-            saxParser = factory.newSAXParser();
-        } catch (ParserConfigurationException | SAXException ex) {
-            IOException err = new IOException("Failed to create SAX parser", ex);
-            throw err;
-        }
-
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
@@ -363,32 +308,19 @@ public class SubversionRepository extends Repository {
             argv.add(revision);
         }
         argv.add(escapeFileName(file.getName()));
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        pb.directory(file.getParentFile());
-        Process process = null;
-        Annotation ret = null;
-        try {
-            process = pb.start();
-            AnnotateHandler handler = new AnnotateHandler(file.getName());
-            try (BufferedInputStream in
-                    = new BufferedInputStream(process.getInputStream())) {
-                saxParser.parse(in, handler);
-                ret = handler.annotation;
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE,
-                        "An error occurred while parsing the xml output", e);
-            }
-        } finally {
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException e) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
+        
+        Executor executor = new Executor(argv, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        SubversionAnnotationParser parser = new SubversionAnnotationParser(file.getName());
+        int status = executor.exec(true, parser);
+        if (status != 0) {
+            LOGGER.log(Level.WARNING,
+                    "Failed to get annotations for: \"{0}\" Exit code: {1}",
+                    new Object[]{file.getAbsolutePath(), String.valueOf(status)});
+            throw new IOException(executor.getErrorString());
+        } else {
+            return parser.getAnnotation();
         }
-        return ret;
     }
 
     @Override
@@ -421,7 +353,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File f = new File(file, ".svn");
             return f.exists() && f.isDirectory();
@@ -454,7 +386,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    String determineParent() {
+    String determineParent(boolean interactive) {
         String part = null;
         Document document = getInfoDocument();
 
@@ -466,7 +398,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    String determineBranch() throws IOException {
+    String determineBranch(boolean interactive) throws IOException {
         String branch = null;
         Document document = getInfoDocument();
 
@@ -483,11 +415,11 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    public String determineCurrentVersion() throws IOException {
+    public String determineCurrentVersion(boolean interactive) throws IOException {
         String curVersion = null;
 
         try {
-            History hist = getHistory(new File(getDirectoryName()), null, 1);
+            History hist = getHistory(new File(getDirectoryName()), null, 1, interactive);
             if (hist != null) {
                 List<HistoryEntry> hlist = hist.getHistoryEntries();
                 if (hlist != null && hlist.size() > 0) {

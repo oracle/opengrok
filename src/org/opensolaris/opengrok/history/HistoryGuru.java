@@ -895,7 +895,7 @@ public final class HistoryGuru {
      * @param repos list of repositories
      * @param dirs list of directories that might correspond to the repositories
      */
-    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs) {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs, boolean interactive) {
         if (repos != null && !repos.isEmpty() && dirs != null && !dirs.isEmpty()) {
             List<RepositoryInfo> newrepos = new ArrayList<>();
             for (RepositoryInfo i : repos) {
@@ -910,7 +910,7 @@ public final class HistoryGuru {
             repos = newrepos;
         }
 
-        invalidateRepositories(repos);
+        invalidateRepositories(repos, interactive);
     }
 
     /**
@@ -927,7 +927,7 @@ public final class HistoryGuru {
      * @param repos collection of repositories to invalidate.
      * If null or empty, the internal map of repositories will be cleared.
      */
-    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos) {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, boolean interactive) {
         if (repos == null || repos.isEmpty()) {
             repositoryRoots.clear();
             repositories.clear();
@@ -965,7 +965,7 @@ public final class HistoryGuru {
                 @Override
                 public void run() {
                     try {
-                        Repository r = RepositoryFactory.getRepository(rinfo);
+                        Repository r = RepositoryFactory.getRepository(rinfo, interactive);
                         if (r == null) {
                             LOGGER.log(Level.WARNING,
                                     "Failed to instantiate internal repository data for {0} in {1}",

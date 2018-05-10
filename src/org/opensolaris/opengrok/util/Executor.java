@@ -73,7 +73,7 @@ public class Executor {
     }
 
     /**
-     * Create a new instance of the Executor
+     * Create a new instance of the Executor with default command timeout value.
      * @param cmdList A list containing the command to execute
      * @param workingDirectory The directory the process should have as the
      *                         working directory
@@ -195,23 +195,22 @@ public class Executor {
             });
             thread.start();
 
+            int timeout = this.timeout;
             /*
              * Setup timer so if the process get stuck we can terminate it and
-             * make progress instead of hanging the whole indexer.
+             * make progress instead of hanging the whole operation.
              */
-            if (this.timeout != 0) {
+            if (timeout != 0) {
                 // invoking the constructor starts the background thread
                 timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override public void run() {
-                        LOGGER.log(Level.INFO,
-                            "Terminating process of command {0} in directory {1} " +
-                            "due to timeout {2} seconds",
-                            new Object[] {cmd_str, dir_str,
-                            RuntimeEnvironment.getInstance().getCommandTimeout()});
+                        LOGGER.log(Level.WARNING,
+                            String.format("Terminating process of command %s in directory %s " +
+                            "due to timeout %d seconds", cmd_str, dir_str, timeout / 1000));
                         proc.destroy();
                     }
-                }, this.timeout);
+                }, timeout);
             }
 
             handler.processStream(process.getInputStream());

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
@@ -30,13 +30,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
@@ -70,10 +69,7 @@ public class MonotoneRepository extends Repository {
     @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
-
         File directory = new File(getDirectoryName());
-
-        Process process = null;
         String revision = rev;
 
         try {
@@ -81,11 +77,12 @@ public class MonotoneRepository extends Repository {
                     .substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {RepoCommand, "cat", "-r", revision, filename};
-            process = Runtime.getRuntime().exec(argv, null, directory);
+            Executor executor = new Executor(Arrays.asList(argv), directory,
+                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
-            try (InputStream in = process.getInputStream()) {
+            try (InputStream in = executor.getOutputStream()) {
                 int len;
 
                 while ((len = in.read(buffer)) != -1) {
@@ -99,16 +96,6 @@ public class MonotoneRepository extends Repository {
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get history: {0}", exp.getClass().toString());
-        } finally {
-            // Clean up zombie-processes...
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
         }
 
         return ret;
@@ -144,19 +131,14 @@ public class MonotoneRepository extends Repository {
 
         return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
     }
-    /**
-     * Pattern used to extract author/revision from hg annotate.
-     */
-    private static final Pattern ANNOTATION_PATTERN
-            = Pattern.compile("^(\\w+)\\p{Punct}\\p{Punct} by (\\S+)");
 
     /**
-     * Annotate the specified file/revision.
+     * Annotate the specified file/revision using the {@code mnt annotate} command.
      *
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
-     * @throws java.io.IOException if I/O exception occured
+     * @throws java.io.IOException if I/O exception occurred or the command failed
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
@@ -172,29 +154,18 @@ public class MonotoneRepository extends Repository {
         cmd.add(file.getName());
         File directory = new File(getDirectoryName());
 
-        Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
+        Executor executor = new Executor(cmd, directory,
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        MonotoneAnnotationParser parser = new MonotoneAnnotationParser(file);
+        int status = executor.exec(true, parser);
+        if (status != 0) {
+            LOGGER.log(Level.WARNING,
+                    "Failed to get annotations for: \"{0}\" Exit code: {1}",
+                    new Object[]{file.getAbsolutePath(), String.valueOf(status)});
             throw new IOException(executor.getErrorString());
+        } else {
+            return parser.getAnnotation();
         }
-
-        Annotation ret;
-        try (BufferedReader in = new BufferedReader(executor.getOutputReader())) {
-            ret = new Annotation(file.getName());
-            String line;
-            String author = null;
-            String rev = null;
-            while ((line = in.readLine()) != null) {
-                Matcher matcher = ANNOTATION_PATTERN.matcher(line);
-                if (matcher.find()) {
-                    rev = matcher.group(1);
-                    author = matcher.group(2);
-                    ret.addLine(rev, author, true);
-                } else {
-                    ret.addLine(rev, author, true);
-                }
-            }
-        }
-        return ret;
     }
 
     @Override
@@ -232,7 +203,7 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         File f = new File(file, "_MTN");
         return f.exists() && f.isDirectory();
     }
@@ -278,7 +249,7 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         String parent = null;
         File directory = new File(getDirectoryName());
 
@@ -288,12 +259,12 @@ public class MonotoneRepository extends Repository {
         cmd.add("ls");
         cmd.add("vars");
         cmd.add("database");
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.directory(directory);
-        Process process;
-        process = pb.start();
+        Executor executor = new Executor(cmd, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
+        executor.exec();
 
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader in = new BufferedReader(executor.getOutputReader())) {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("database") && line.contains("default-server")) {
@@ -312,7 +283,12 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    String determineBranch() {
+    String determineBranch(boolean interactive) {
+        return null;
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
         return null;
     }
 }

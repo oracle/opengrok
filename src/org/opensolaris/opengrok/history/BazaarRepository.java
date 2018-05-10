@@ -23,28 +23,22 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a Bazaar repository.
- *
  */
 public class BazaarRepository extends Repository {
 
@@ -52,7 +46,7 @@ public class BazaarRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
     /**
-     * The property name used to obtain the client command for thisrepository.
+     * The property name used to obtain the client command for this repository.
      */
     public static final String CMD_PROPERTY_KEY
             = "org.opensolaris.opengrok.history.Bazaar";
@@ -146,12 +140,6 @@ public class BazaarRepository extends Repository {
     }
 
     /**
-     * Pattern used to extract author/revision from bzr blame.
-     */
-    private static final Pattern BLAME_PATTERN
-            = Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
-
-    /**
      * Annotate the specified file/revision.
      *
      * @param file file to annotate
@@ -173,39 +161,19 @@ public class BazaarRepository extends Repository {
         }
         cmd.add(file.getName());
 
-        Executor exec = new Executor(cmd, file.getParentFile());
-        int status = exec.exec();
+        Executor executor = new Executor(cmd, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        BazaarAnnotationParser parser = new BazaarAnnotationParser(file.getName());
+        int status = executor.exec(true, parser);
 
         if (status != 0) {
             LOGGER.log(Level.WARNING,
                     "Failed to get annotations for: \"{0}\" Exit code: {1}",
                     new Object[]{file.getAbsolutePath(), String.valueOf(status)});
+            throw new IOException(executor.getErrorString());
+        } else {
+            return parser.getAnnotation();
         }
-
-        return parseAnnotation(exec.getOutputReader(), file.getName());
-    }
-
-    protected Annotation parseAnnotation(Reader input, String fileName)
-            throws IOException {
-        BufferedReader in = new BufferedReader(input);
-        Annotation ret = new Annotation(fileName);
-        String line = "";
-        int lineno = 0;
-        Matcher matcher = BLAME_PATTERN.matcher(line);
-        while ((line = in.readLine()) != null) {
-            ++lineno;
-            matcher.reset(line);
-            if (matcher.find()) {
-                String rev = matcher.group(1);
-                String author = matcher.group(2).trim();
-                ret.addLine(rev, author, true);
-            } else {
-                LOGGER.log(Level.SEVERE,
-                        "Error: did not find annotation in line {0}: [{1}]",
-                        new Object[]{String.valueOf(lineno), line});
-            }
-        }
-        return ret;
     }
 
     @Override
@@ -247,7 +215,7 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File f = new File(file, ".bzr");
             return f.exists() && f.isDirectory();
@@ -295,62 +263,29 @@ public class BazaarRepository extends Repository {
      * @param directory Directory where we list tags
      */
     @Override
-    protected void buildTagList(File directory) {
+    protected void buildTagList(File directory, boolean interactive) {
         this.tagList = new TreeSet<>();
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("tags");
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        pb.directory(directory);
-        Process process = null;
-
-        try {
-            process = pb.start();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = in.readLine()) != null) {
-                    String parts[] = line.split("  *");
-                    if (parts.length < 2) {
-                        throw new HistoryException("Tag line contains more than 2 columns: " + line);
-                    }
-                    // Grrr, how to parse tags with spaces inside?
-                    // This solution will loose multiple spaces;-/
-                    String tag = parts[0];
-                    for (int i = 1; i < parts.length - 1; ++i) {
-                        tag += " " + parts[i];
-                    }
-                    TagEntry tagEntry = new BazaarTagEntry(Integer.parseInt(parts[parts.length - 1]), tag);
-                    // Bazaar lists multiple tags on more lines. We need to merge those into single TagEntry
-                    TagEntry higher = this.tagList.ceiling(tagEntry);
-                    if (higher != null && higher.equals(tagEntry)) {
-                        // Found in the tree, merge tags
-                        this.tagList.remove(higher);
-                        tagEntry.setTags(higher.getTags() + ", " + tag);
-                    }
-                    this.tagList.add(tagEntry);
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
-            this.tagList = null;
-        } catch (HistoryException e) {
-            LOGGER.log(Level.WARNING, "Failed to parse tag list: {0}", e.getMessage());
-            this.tagList = null;
-        }
-
-        if (process != null) {
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                // the process is still running??? just kill it..
-                process.destroy();
-            }
+        
+        Executor executor = new Executor(argv, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
+        final BazaarTagParser parser = new BazaarTagParser();
+        int status = executor.exec(true, parser);
+        if (status != 0) {
+            LOGGER.log(Level.WARNING,
+                    "Failed to get tags for: \"{0}\" Exit code: {1}",
+                    new Object[]{directory.getAbsolutePath(), String.valueOf(status)});
+        } else {
+            tagList = parser.getEntries();
         }
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
@@ -358,7 +293,9 @@ public class BazaarRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("config");
         cmd.add("parent_location");
-        Executor executor = new Executor(cmd, directory);
+        Executor executor = new Executor(cmd, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
@@ -367,7 +304,12 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
-    String determineBranch() {
+    String determineBranch(boolean interactive) {
+        return null;
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
         return null;
     }
 }

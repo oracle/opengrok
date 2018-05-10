@@ -49,9 +49,9 @@ public class Annotation {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Annotation.class);
 
-    private final List<Line> lines = new ArrayList<Line>();
-    private final Map<String, String> desc = new HashMap<String, String>();
-    private final Map<String, Integer> fileVersions = new HashMap<String, Integer>(); //maps revision to file version
+    private final List<Line> lines = new ArrayList<>();
+    private final Map<String, String> desc = new HashMap<>();
+    private final Map<String, Integer> fileVersions = new HashMap<>(); // maps revision to file version
     private int widestRevision;
     private int widestAuthor;
     private final String filename;
