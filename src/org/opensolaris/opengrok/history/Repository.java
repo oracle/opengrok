@@ -338,7 +338,7 @@ public abstract class Repository extends RepositoryInfo {
             // by changes in the revision numbers since the last update
             // (bug #14724) so we'll try to regenerate the cache from
             // scratch instead.
-            LOGGER.log(Level.INFO,
+            LOGGER.log(Level.WARNING,
                     "Failed to get partial history. Attempting to "
                     + "recreate the history cache from scratch.", he);
             history = null;
