@@ -26,10 +26,13 @@ package org.opensolaris.opengrok.index;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +57,9 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
  * {@link #complete()} should only be called by a single thread after all
  * additions of {@link PendingFileDeletion}s and {@link PendingFileRenaming}s
  * are indicated.
+ * <p>
+ * {@link #add(org.opensolaris.opengrok.index.PendingSymlinkage)} should only
+ * be called in serial from a single thread in an isolated stage.
  * <p>
  * {@link #add(org.opensolaris.opengrok.index.PendingFileDeletion)} should only
  * be called in serial from a single thread in an isolated stage.
@@ -98,6 +104,8 @@ class PendingFileCompleter {
 
     private final Set<PendingFileRenaming> renames = new HashSet<>();
 
+    private final Set<PendingSymlinkage> linkages = new HashSet<>();
+
     /**
      * Adds the specified element to this instance's set if it is not already
      * present.
@@ -107,6 +115,17 @@ class PendingFileCompleter {
      */
     public boolean add(PendingFileDeletion e) {
         return deletions.add(e);
+    }
+
+    /**
+     * Adds the specified element to this instance's set if it is not already
+     * present.
+     * @param e element to be added to this set
+     * @return {@code true} if this instance's set did not already contain the
+     * specified element
+     */
+    public boolean add(PendingSymlinkage e) {
+        return linkages.add(e);
     }
 
     /**
@@ -128,7 +147,8 @@ class PendingFileCompleter {
 
     /**
      * Complete all the tracked file operations: first in a stage for pending
-     * deletions and then in a stage for pending renamings.
+     * deletions next in a stage for pending renamings, and finally in a stage
+     * for pending symbolic linkages.
      * <p>
      * All operations in each stage are tried in parallel, and any failure is
      * caught and raises an exception (after all items in the stage have been
@@ -138,15 +158,17 @@ class PendingFileCompleter {
      * {@link PendingFileDeletion#getAbsolutePath()}; for a version of the path
      * with {@link #PENDING_EXTENSION} appended; and also for the path's parent
      * directory, which does nothing if the directory is not empty.
-     * @return the number of successful deletions and renamings
-     * @throws java.io.IOException
+     * @return the number of successful operations
+     * @throws java.io.IOException if an I/O error occurs
      */
     public int complete() throws IOException {
         int numDeletions = completeDeletions();
         LOGGER.log(Level.FINE, "deleted {0} file(s)", numDeletions);
         int numRenamings = completeRenamings();
         LOGGER.log(Level.FINE, "renamed {0} file(s)", numRenamings);
-        return numDeletions + numRenamings;
+        int numLinkages = completeLinkages();
+        LOGGER.log(Level.FINE, "affirmed links for {0} path(s)", numLinkages);
+        return numDeletions + numRenamings + numLinkages;
     }
 
     /**
@@ -242,6 +264,51 @@ class PendingFileCompleter {
         return numPending - numFailures;
     }
 
+    /**
+     * Attempts to link the tracked elements, catching any failures, and
+     * throwing an exception if any failed.
+     * @return the number of successful linkages
+     */
+    private int completeLinkages() throws IOException {
+        int numPending = linkages.size();
+        int numFailures = 0;
+
+        if (numPending < 1) {
+            return 0;
+        }
+
+        List<PendingSymlinkageExec> pendingExecs =
+            linkages.parallelStream().map(f ->
+                new PendingSymlinkageExec(f.getSourcePath(),
+                        f.getTargetRelPath())).collect(Collectors.toList());
+
+        Map<Boolean, List<PendingSymlinkageExec>> bySuccess =
+            pendingExecs.parallelStream().collect(
+                Collectors.groupingByConcurrent((x) -> {
+                    try {
+                        doLink(x);
+                        return true;
+                    } catch (IOException e) {
+                        x.exception = e;
+                        return false;
+                    }
+                }));
+        linkages.clear();
+
+        List<PendingSymlinkageExec> failures = bySuccess.getOrDefault(
+                Boolean.FALSE, null);
+        if (failures != null && failures.size() > 0) {
+            numFailures = failures.size();
+            double pctFailed = 100.0 * numFailures / numPending;
+            String exmsg = String.format(
+                    "%d failures (%.1f%%) while linking pending paths",
+                    numFailures, pctFailed);
+            throw new IOException(exmsg, failures.get(0).exception);
+        }
+
+        return numPending - numFailures;
+    }
+
     private void doDelete(PendingFileDeletionExec del) throws IOException {
         File f = new File(del.absolutePath + PENDING_EXTENSION);
         File parent = f.getParentFile();
@@ -266,14 +333,92 @@ class PendingFileCompleter {
             Files.move(Paths.get(ren.source), Paths.get(ren.target),
                 StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to move file: {0}\n\t=> {1}",
+            LOGGER.log(Level.WARNING, "Failed to move file: {0} -> {1}",
                 new Object[]{ren.source, ren.target});
-                throw e;
+            throw e;
         }
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "Moved pending as file: {0}",
                 ren.target);
         }
+    }
+
+    private void doLink(PendingSymlinkageExec lnk) throws IOException {
+        try {
+            if (!needLink(lnk)) {
+                return;
+            }
+            Path sourcePath = Paths.get(lnk.source);
+            deleteFileOrDirectory(sourcePath);
+            Files.createSymbolicLink(sourcePath, Paths.get(lnk.targetRel));
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to link: {0} -> {1}",
+                    new Object[]{lnk.source, lnk.targetRel});
+            throw e;
+        }
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "Linked pending: {0} -> {1}",
+                    new Object[]{lnk.source, lnk.targetRel});
+        }
+    }
+
+    private boolean needLink(PendingSymlinkageExec lnk) {
+        File src = new File(lnk.source);
+        Path srcpth = src.toPath();
+        // needed if source doesn't exist or isn't a symlink
+        if (!src.exists() || !Files.isSymbolicLink(srcpth)) {
+            return true;
+        }
+
+        // Re-resolve target.
+        Path tgtpth = srcpth.getParent().resolve(Paths.get(lnk.targetRel));
+
+        // Re-canonicalize source and target.
+        String srcCanonical;
+        String tgtCanonical;
+        try {
+            srcCanonical = src.getCanonicalPath();
+            tgtCanonical = tgtpth.toFile().getCanonicalPath();
+        } catch (IOException ex) {
+            return true;
+        }
+        // not needed if source's canonical matches re-resolved target canonical
+        if (tgtCanonical.equals(srcCanonical)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * <a href="https://stackoverflow.com/questions/779519/delete-directories-recursively-in-java">
+     * Q: "Delete directories recursively in Java"
+     * </a>,
+     * <a href="https://stackoverflow.com/a/779529/933163">
+     * A: "In Java 7+ you can use {@code Files} class."</a>,
+     * <a href="https://stackoverflow.com/users/1679995/tomasz-dzi%C4%99cielewski">
+     * Tomasz Dzięcielewski
+     * </a>
+     * @param start the starting file
+     */
+    private void deleteFileOrDirectory(Path start) throws IOException {
+        if (!start.toFile().exists()) {
+            return;
+        }
+        Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file,
+                    BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc)
+                    throws IOException {
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     /**
@@ -384,6 +529,16 @@ class PendingFileCompleter {
         public PendingFileRenamingExec(String source, String target) {
             this.source = source;
             this.target = target;
+        }
+    }
+
+    private class PendingSymlinkageExec {
+        public String source;
+        public String targetRel;
+        public IOException exception;
+        public PendingSymlinkageExec(String source, String relTarget) {
+            this.source = source;
+            this.targetRel = relTarget;
         }
     }
 

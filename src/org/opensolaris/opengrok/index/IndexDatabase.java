@@ -34,9 +34,13 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.ConnectException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +117,9 @@ public class IndexDatabase {
     private static final Set<String> CHECK_FIELDS;
 
     private final Object INSTANCE_LOCK = new Object();
+
+    /** Key is canonical path; Value is the first accepted, absolute path. */
+    private final Map<String, String> acceptedNonlocalSymlinks = new HashMap<>();
 
     private Project project;
     private FSDirectory indexDirectory;
@@ -401,6 +408,7 @@ public class IndexDatabase {
         settings = null;
         uidIter = null;
         postsIter = null;
+        acceptedNonlocalSymlinks.clear();
 
         IOException finishingException = null;
         try {
@@ -792,9 +800,15 @@ public class IndexDatabase {
      * Check if I should accept this file into the index database
      *
      * @param file the file to check
+     * @param outLocalRelPath optional output array whose 0-th element is set
+     * to a relative path if and only if the {@code file} is a symlink targeting
+     * a local directory (N.b. method will return {@code false})
      * @return true if the file should be included, false otherwise
      */
-    private boolean accept(File file) {
+    private boolean accept(File file, String[] outLocalRelPath) {
+        if (outLocalRelPath != null) {
+            outLocalRelPath[0] = null;
+        }
 
         String absolutePath = file.getAbsolutePath();
 
@@ -816,13 +830,16 @@ public class IndexDatabase {
         }
 
         try {
-            String canonicalPath = file.getCanonicalPath();
-            if (!absolutePath.equals(canonicalPath)
-                && !acceptSymlink(absolutePath, canonicalPath)) {
-
-                LOGGER.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
-                    new Object[]{absolutePath, canonicalPath});
-                return false;
+            Path absolute = Paths.get(absolutePath);
+            if (Files.isSymbolicLink(absolute)) {
+                File canonical = file.getCanonicalFile();
+                if (!absolutePath.equals(canonical.getPath())
+                        && !acceptSymlink(absolute, canonical,
+                                outLocalRelPath)) {
+                    LOGGER.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
+                        new Object[]{absolutePath, canonical});
+                    return false;
+                }
             }
             //below will only let go files and directories, anything else is considered special and is not added
             if (!file.isFile() && !file.isDirectory()) {
@@ -856,7 +873,20 @@ public class IndexDatabase {
         return res;
     }
 
-    private boolean accept(File parent, File file) {
+    /**
+     * Determines if {@code file} should be accepted into the index database.
+     * @param parent parent of {@code file}
+     * @param file directory object under consideration
+     * @param outLocalRelPath optional output array whose 0-th element is set
+     * to a relative path if and only if the {@code file} is a symlink targeting
+     * a local directory (N.b. method will return {@code false})
+     * @return {@code true} if the file should be included; else {@code false}
+     */
+    private boolean accept(File parent, File file, String[] outLocalRelPath) {
+        if (outLocalRelPath != null) {
+            outLocalRelPath[0] = null;
+        }
+
         try {
             File f1 = parent.getCanonicalFile();
             File f2 = file.getCanonicalFile();
@@ -876,7 +906,7 @@ public class IndexDatabase {
                 }
             }
 
-            return accept(file);
+            return accept(file, outLocalRelPath);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Failed to resolve name: {0} {1}",
                     new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
@@ -887,21 +917,53 @@ public class IndexDatabase {
     /**
      * Check if I should accept the path containing a symlink
      *
-     * @param absolutePath the path with a symlink to check
-     * @param canonicalPath the canonical path to the file
-     * @return true if the file should be accepted, false otherwise
+     * @param absolute the path with a symlink to check
+     * @param canonical the canonical file object
+     * @param outLocalRelPath optional output array whose 0-th element is set
+     * to a relative path if and only if {@code absolute} is a symlink targeting
+     * a local directory, {@code canonical} (N.b. method will return
+     * {@code false})
+     * @return {@code true} if the file should be accepted; else {@code false}
      */
-    private boolean acceptSymlink(String absolutePath, String canonicalPath) throws IOException {
-        // Always accept local symlinks
-        if (isLocal(canonicalPath)) {
-            return true;
+    private boolean acceptSymlink(Path absolute, File canonical,
+            String[] outLocalRelPath) throws IOException {
+        if (outLocalRelPath != null) {
+            outLocalRelPath[0] = null;
         }
 
+        if (isLocal(canonical.getPath())) {
+            if (!canonical.isDirectory()) {
+                // Always accept symlinks to local non-directories.
+                return true;
+            } else {
+                /**
+                 * Do not accept symlinks to local directories, because the
+                 * canonical target will be indexed on its own -- but
+                 * relativize() a path to be returned in outLocalRelPath so that
+                 * a symlink can be replicated in xref/.
+                 **/
+                if (outLocalRelPath != null) {
+                    outLocalRelPath[0] = absolute.getParent().relativize(
+                            canonical.toPath()).toString();
+                }
+                return false;
+            }
+        }
+
+        // No need to synchronize, as indexDown() runs on one thread.
+        if (acceptedNonlocalSymlinks.containsKey(canonical.getPath())) {
+            return false;
+        }
+
+        String absolstr = absolute.toString();
         for (String allowedSymlink : RuntimeEnvironment.getInstance().getAllowedSymlinks()) {
-            if (absolutePath.startsWith(allowedSymlink)) {
+            if (absolstr.startsWith(allowedSymlink)) {
                 String allowedTarget = new File(allowedSymlink).getCanonicalPath();
-                if (canonicalPath.startsWith(allowedTarget)
-                        && absolutePath.substring(allowedSymlink.length()).equals(canonicalPath.substring(allowedTarget.length()))) {
+                String canonstr = canonical.getPath();
+                if (canonstr.startsWith(allowedTarget)
+                        && absolstr.substring(allowedSymlink.length()).equals(
+                                canonstr.substring(allowedTarget.length()))) {
+                    acceptedNonlocalSymlinks.put(canonstr, absolstr);
                     return true;
                 }
             }
@@ -966,7 +1028,20 @@ public class IndexDatabase {
             return;
         }
 
-        if (!accept(dir)) {
+        String[] outLocalRelPath = new String[1];
+        if (!accept(dir, outLocalRelPath)) {
+            /**
+             * If outLocalRelPath[0] is defined, then a local symlink was
+             * detected but not "accepted" to avoid redundancy with its
+             * canonical target. Set up for a deferred recreation of the symlink
+             * for xref/.
+             */
+            if (outLocalRelPath[0] != null) {
+                File xrefPath = new File(xrefDir, parent);
+                PendingSymlinkage psym = new PendingSymlinkage(
+                        xrefPath.getAbsolutePath(), outLocalRelPath[0]);
+                completer.add(psym);
+            }
             return;
         }
 
@@ -979,9 +1054,15 @@ public class IndexDatabase {
         Arrays.sort(files, FILENAME_COMPARATOR);
 
         for (File file : files) {
-            if (accept(dir, file)) {
-                String path = parent + '/' + file.getName();
-
+            String path = parent + '/' + file.getName();
+            if (!accept(dir, file, outLocalRelPath)) {
+                if (outLocalRelPath[0] != null) {
+                    File xrefPath = new File(xrefDir, path);
+                    PendingSymlinkage psym = new PendingSymlinkage(
+                            xrefPath.getAbsolutePath(), outLocalRelPath[0]);
+                    completer.add(psym);
+                }
+            } else {
                 if (file.isDirectory()) {
                     indexDown(file, path, args);
                 } else {
@@ -1527,7 +1608,7 @@ public class IndexDatabase {
             hasPendingCommit = true;
 
             int n = completer.complete();
-            LOGGER.log(Level.FINE, "completed {0} file(s)", n);
+            LOGGER.log(Level.FINE, "completed {0} object(s)", n);
 
             // Just before commit(), reset the `hasPendingCommit' flag,
             // since after commit() is called, there is no need for
