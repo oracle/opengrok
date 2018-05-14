@@ -54,6 +54,7 @@ public final class IgnoredFiles extends Filter {
         ".sln",
         ".vsmdi", // Visual Studio tests
         "*.dll",
+        "*.DLL",
         ".opengrok_skip_history",
     };
 
