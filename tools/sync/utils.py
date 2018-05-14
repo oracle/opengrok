@@ -58,7 +58,7 @@ def get_command(logger, path, name):
         if not is_exe(cmd_file):
             logger.error("file {} is not executable file".
                          format(path))
-            sys.exit(1)
+            return None
     else:
         cmd_file = which(name)
         if not cmd_file:
@@ -68,7 +68,7 @@ def get_command(logger, path, name):
             if not cmd_file:
                 logger.error("cannot determine path to the {} script".
                              format(name))
-                sys.exit(1)
+                return None
     logger.debug("{} = {}".format(name, cmd_file))
 
     return cmd_file
