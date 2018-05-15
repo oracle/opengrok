@@ -66,13 +66,7 @@ OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/read-only.xml ./OpenGrok index
 
 ## List of most common configuration options
 
-This is a list of the most common configuration options which are not available as an indexer switch.
-
- - `pluginDirectory`
- - `authorizationWatchdogEnabled`
- - `pluginConfiguration`
- - `groups`
- - ...
+see https://github.com/oracle/opengrok/wiki/Indexer-configuration
 
 # Generating the read only configuration
 
