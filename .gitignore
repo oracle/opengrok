@@ -46,7 +46,6 @@ jacoco
 jacoco.exec
 cov-int.zip
 cov-int/*
-egrok/bin
 pmd.bat
 *.iml
 .idea
