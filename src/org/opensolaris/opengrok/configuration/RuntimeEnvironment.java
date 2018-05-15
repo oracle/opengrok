@@ -73,8 +73,8 @@ import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.configuration.messages.AbortMessage;
 import org.opensolaris.opengrok.configuration.messages.ConfigMessage;
 import org.opensolaris.opengrok.configuration.messages.Message;
+import org.opensolaris.opengrok.configuration.messages.MessageHandler;
 import org.opensolaris.opengrok.configuration.messages.MessageListener;
-import org.opensolaris.opengrok.configuration.messages.Messages;
 import org.opensolaris.opengrok.configuration.messages.NormalMessage;
 import org.opensolaris.opengrok.configuration.messages.ProjectMessage;
 import org.opensolaris.opengrok.configuration.messages.RefreshMessage;
@@ -1780,6 +1780,13 @@ public final class RuntimeEnvironment {
         messageListener.addHandler(RepositoryMessage.class, new RepositoryMessageHandler(this));
 
         messageListener.addHandler(StatsMessage.class, new StatsMessageHandler(this));
+    }
+
+    public void addMessageHandler(final Class<? extends Message> messageType, final MessageHandler handler) {
+        if (messageListener == null) {
+            throw new IllegalStateException("Cannot add message handler because no message listener is started");
+        }
+        messageListener.addHandler(messageType, handler);
     }
 
     public void stopConfigurationListenerThread() {

@@ -28,7 +28,57 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 import java.time.Instant;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.processMessage;
+
 public class MessageListenerTest {
+
+    private static class BooleanWrapper {
+        private boolean value = false;
+    }
+
+    @Test
+    public void addHandlerTest() throws Exception {
+        BooleanWrapper bw = new BooleanWrapper();
+
+        MessageListener listener = new MessageListener();
+        listener.addHandler(NormalMessage.class, m -> {
+            bw.value = true;
+            return Response.empty();
+        });
+
+        processMessage(listener, new Message.Builder<>(NormalMessage.class).build());
+
+        assertTrue(bw.value);
+    }
+
+    @Test
+    public void removeHandlerTest() throws Exception {
+        BooleanWrapper bw = new BooleanWrapper();
+
+        MessageHandler handler = m -> {
+            bw.value = true;
+            return Response.empty();
+        };
+        MessageListener listener = new MessageListener();
+        listener.addHandler(NormalMessage.class, handler);
+        listener.removeHandler(NormalMessage.class, handler);
+
+        processMessage(listener, new Message.Builder<>(NormalMessage.class).build());
+
+        assertFalse(bw.value);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addHandlerNullTest() {
+        new MessageListener().addHandler(NormalMessage.class, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeHandlerNullTest() {
+        new MessageListener().removeHandler(NormalMessage.class, null);
+    }
 
     @Test
     public void testCanAcceptMessage() throws Exception {
@@ -40,17 +90,17 @@ public class MessageListenerTest {
                 .addTag("main")
                 .setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() - 3000));
 
-        Assert.assertFalse(listener.canAcceptMessage(mb.build()));
+        assertFalse(listener.canAcceptMessage(mb.build()));
         mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() - 2000));
-        Assert.assertFalse(listener.canAcceptMessage(mb.build()));
+        assertFalse(listener.canAcceptMessage(mb.build()));
         mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() - 1000));
-        Assert.assertFalse(listener.canAcceptMessage(mb.build()));
+        assertFalse(listener.canAcceptMessage(mb.build()));
         mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() - 1));
-        Assert.assertFalse(listener.canAcceptMessage(mb.build()));
+        assertFalse(listener.canAcceptMessage(mb.build()));
         mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 50));
-        Assert.assertTrue(listener.canAcceptMessage(mb.build()));
+        assertTrue(listener.canAcceptMessage(mb.build()));
         mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 100));
-        Assert.assertTrue(listener.canAcceptMessage(mb.build()));
+        assertTrue(listener.canAcceptMessage(mb.build()));
 
         Assert.assertEquals(0, listener.getMessagesInTheSystem());
 
@@ -64,9 +114,9 @@ public class MessageListenerTest {
 
             MessageTestUtils.setCreated(m2, Instant.ofEpochMilli(now + i));
 
-            Assert.assertTrue(listener.canAcceptMessage(m2));
+            assertTrue(listener.canAcceptMessage(m2));
 
-            MessageTestUtils.processMessage(listener, m2);
+            processMessage(listener, m2);
 
             Assert.assertEquals(i + 1, listener.getMessagesInTheSystem());
         }
@@ -78,8 +128,8 @@ public class MessageListenerTest {
                     .setText("text")
                     .setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 5000)).build();
 
-            Assert.assertFalse(listener.canAcceptMessage(m2));
-            MessageTestUtils.processMessage(listener, m2);
+            assertFalse(listener.canAcceptMessage(m2));
+            processMessage(listener, m2);
             Assert.assertEquals(listener.getMessageLimit(), listener.getMessagesInTheSystem());
         }
 
