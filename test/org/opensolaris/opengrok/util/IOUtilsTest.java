@@ -17,37 +17,30 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opensolaris.opengrok.util;
 
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
 
-public class MessageTest {
+public class IOUtilsTest {
 
-    /**
-     * Test that a {@code Message} instance can be encoded and decoded without errors.
-     */
     @Test
-    public void testEncodeDecode() {
-        Message m1 = new Message.Builder<>(NormalMessage.class).build();
-
-        String encoded = m1.getEncoded();
-
-        Message m2 = Message.decodeObject(encoded);
-
-        assertEquals(m1, m2);
+    public void testInputStreamToString() throws IOException {
+        String testString = "test string";
+        String result = IOUtils.toString(new ByteArrayInputStream(testString.getBytes()));
+        assertEquals(testString, result);
     }
 
-    public static boolean assertValid(Message m) {
-        try {
-            m.validate();
-        } catch (Exception ex) {
-            return false;
-        }
-        return true;
+    @Test(expected = IllegalArgumentException.class)
+    public void testInputStreamToStringNull() throws IOException {
+        IOUtils.toString(null);
     }
+
 }

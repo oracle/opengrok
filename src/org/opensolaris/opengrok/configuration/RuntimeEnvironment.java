@@ -23,10 +23,6 @@
   */
 package org.opensolaris.opengrok.configuration;
 
-import java.beans.XMLDecoder;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,10 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -57,18 +50,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -83,7 +70,21 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.authorization.AuthorizationStack;
+import org.opensolaris.opengrok.configuration.messages.AbortMessage;
+import org.opensolaris.opengrok.configuration.messages.ConfigMessage;
 import org.opensolaris.opengrok.configuration.messages.Message;
+import org.opensolaris.opengrok.configuration.messages.MessageListener;
+import org.opensolaris.opengrok.configuration.messages.Messages;
+import org.opensolaris.opengrok.configuration.messages.NormalMessage;
+import org.opensolaris.opengrok.configuration.messages.ProjectMessage;
+import org.opensolaris.opengrok.configuration.messages.RefreshMessage;
+import org.opensolaris.opengrok.configuration.messages.RepositoryMessage;
+import org.opensolaris.opengrok.configuration.messages.Response;
+import org.opensolaris.opengrok.configuration.messages.StatsMessage;
+import org.opensolaris.opengrok.configuration.messages.handler.ConfigMessageHandler;
+import org.opensolaris.opengrok.configuration.messages.handler.ProjectMessageHandler;
+import org.opensolaris.opengrok.configuration.messages.handler.RepositoryMessageHandler;
+import org.opensolaris.opengrok.configuration.messages.handler.StatsMessageHandler;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
@@ -91,8 +92,6 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.util.XmlEofInputStream;
 import org.opensolaris.opengrok.web.Statistics;
 import org.opensolaris.opengrok.web.Util;
 
@@ -120,23 +119,14 @@ public final class RuntimeEnvironment {
     private static ExecutorService searchExecutor = null;
 
     private final Map<Project, List<RepositoryInfo>> repository_map = new ConcurrentHashMap<>();
-    private final Map<Project, Set<Group>> project_group_map = new TreeMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
 
     private String configHost;
     private int configPort;
 
-    public static final String MESSAGES_MAIN_PAGE_TAG = "main";
-    /*
-    initial capacity - default 16
-    initial load factor - default 0.75f
-    initial concurrency level - number of concurrently updating threads (default 16)
-        - just two (the timer, configuration listener) so set it to small value
-    */
-    private final ConcurrentMap<String, SortedSet<Message>> tagMessages = new ConcurrentHashMap<>(16, 0.75f, 5);
-    private int messagesInTheSystem = 0;
-
     private Statistics statistics = new Statistics();
+
+    private MessageListener messageListener;
 
     /**
      * Stores a transient value when
@@ -1408,10 +1398,11 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void writeConfiguration(String host, int port) throws IOException {
-        Message m = Message.createMessage("config");
-        m.addTag("setconf");
-        m.addTag("reindex");
-        m.setText(configuration.getXMLRepresentationAsString());
+        Message m = new Message.Builder<>(ConfigMessage.class)
+                .addTag("setconf")
+                .addTag("reindex")
+                .setText(configuration.getXMLRepresentationAsString())
+                .build();
         try {
             m.validate();
         } catch (Exception ex) {
@@ -1425,7 +1416,10 @@ public final class RuntimeEnvironment {
     }
 
     protected void writeConfiguration() throws IOException {
-        writeConfiguration(configServerSocket.getInetAddress(), configServerSocket.getLocalPort());
+        if (messageListener == null) {
+            throw new IllegalStateException("Cannot write configuration because ");
+        }
+        writeConfiguration(messageListener.getAddress(), messageListener.getPort());
     }
 
     /**
@@ -1438,13 +1432,14 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void signalTorefreshSearcherManagers(List<String> subFiles, String host, int port) throws IOException {
-        Message m = Message.createMessage("refresh");
+        Message.Builder messageBuilder = new Message.Builder<>(RefreshMessage.class);
+
         for (String proj : subFiles) {
             // subFile entries start with path separator so get basename
             // to convert them to project names.
-            m.addTag(new File(proj).getName());
+            messageBuilder.addTag(new File(proj).getName());
         }
-        m.write(host, port);
+        messageBuilder.build().write(host, port);
     }
 
     /**
@@ -1548,22 +1543,13 @@ public final class RuntimeEnvironment {
         return this.threadConfig.get();
     }
 
-    private Timer expirationTimer;
-
-    private static SortedSet<Message> emptyMessageSet(SortedSet<Message> toRet) {
-        return toRet == null ? new TreeSet<>() : toRet;
-    }
-
     /**
      * Get the default set of messages for the main tag.
      *
      * @return set of messages
      */
     public SortedSet<Message> getMessages() {
-        if (expirationTimer == null) {
-            expireMessages();
-        }
-        return emptyMessageSet(tagMessages.get(MESSAGES_MAIN_PAGE_TAG));
+        return messageListener.getMessages();
     }
 
     /**
@@ -1573,156 +1559,7 @@ public final class RuntimeEnvironment {
      * @return set of messages
      */
     public SortedSet<Message> getMessages(String tag) {
-        if (expirationTimer == null) {
-            expireMessages();
-        }
-        return emptyMessageSet(tagMessages.get(tag));
-    }
-
-    /**
-     * Add a message to the application.
-     * Also schedules a expiration timer to remove this message after its expiration.
-     *
-     * @param m the message
-     */
-    public void addMessage(Message m) {
-        if (!canAcceptMessage(m)) {
-            return;
-        }
-
-        if (expirationTimer == null) {
-            expireMessages();
-        }
-
-        boolean added = false;
-        for (String tag : m.getTags()) {
-            if (!tagMessages.containsKey(tag)) {
-                tagMessages.put(tag, new ConcurrentSkipListSet<>());
-            }
-            if (tagMessages.get(tag).add(m)) {
-                messagesInTheSystem++;
-                added = true;
-            }
-        }
-
-        if (added) {
-            if (expirationTimer != null) {
-                expirationTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        expireMessages();
-                    }
-                }, new Date(m.getExpiration().getTime() + 10));
-            }
-        }
-    }
-
-    /**
-     * Immediately remove all messages in the application.
-     */
-    public void removeAllMessages() {
-        tagMessages.clear();
-        messagesInTheSystem = 0;
-    }
-
-    /**
-     * Remove all messages containing at least on of the tags.
-     *
-     * @param tags set of tags
-     */
-    public void removeAnyMessage(Set<String> tags) {
-        removeAnyMessage(new Predicate<Message>() {
-            @Override
-            public boolean test(Message t) {
-                return t.hasAny(tags);
-            }
-        });
-    }
-
-    /**
-     * Remove messages which have expired.
-     */
-    private void expireMessages() {
-        removeAnyMessage(new Predicate<Message>() {
-            @Override
-            public boolean test(Message t) {
-                return t.isExpired();
-            }
-        });
-    }
-
-    /**
-     * Generic function to remove any message according to the result of the
-     * predicate.
-     *
-     * @param predicate the testing predicate
-     */
-    private void removeAnyMessage(Predicate<Message> predicate) {
-        int size;
-        for (Map.Entry<String, SortedSet<Message>> set : tagMessages.entrySet()) {
-            size = set.getValue().size();
-            set.getValue().removeIf(predicate);
-            messagesInTheSystem -= size - set.getValue().size();
-        }
-
-        tagMessages.entrySet().removeIf(new Predicate<Map.Entry<String, SortedSet<Message>>>() {
-            @Override
-            public boolean test(Map.Entry<String, SortedSet<Message>> t) {
-                return t.getValue().isEmpty();
-            }
-        });
-    }
-
-    /**
-     * Test if the application can receive this messages.
-     *
-     * @param m the message
-     * @return true if it can
-     */
-    public boolean canAcceptMessage(Message m) {
-        return messagesInTheSystem < getMessageLimit() && !m.isExpired();
-    }
-
-    /**
-     * Get the maximum number of messages in the application
-     *
-     * @see #getMessagesInTheSystem()
-     * @return the number
-     */
-    public int getMessageLimit() {
-        return threadConfig.get().getMessageLimit();
-    }
-
-    /**
-     * Set the maximum number of messages in the application
-     *
-     * @see #getMessagesInTheSystem()
-     * @param limit the new limit
-     */
-    public void setMessageLimit(int limit) {
-        threadConfig.get().setMessageLimit(limit);
-    }
-
-    /**
-     * Return number of messages present in the hash map.
-     *
-     * DISCLAIMER: This is not the real number of unique messages in the
-     * application because the same message is duplicated for all of the tags in
-     * the map.
-     *
-     * This is just a cheap counter to indicate how many messages are stored in
-     * total under different tags.
-     *
-     * Also one can bypass the counter by not calling
-     * {@link #addMessage(Message)}
-     *
-     * @return number of messages
-     */
-    public int getMessagesInTheSystem() {
-        if (expirationTimer == null) {
-            expireMessages();
-        }
-        return messagesInTheSystem;
+        return messageListener.getMessages(tag);
     }
 
     /**
@@ -1830,17 +1667,6 @@ public final class RuntimeEnvironment {
         this.authFramework = fw;
     }
 
-    private ServerSocket configServerSocket;
-
-    /**
-     * Try to stop the configuration listener thread
-     */
-    public void stopConfigurationListenerThread() {
-        IOUtils.close(configServerSocket);
-    }
-
-    private Thread configurationListenerThread;
-
     /**
      * Set configuration from a message. The message could have come from the
      * Indexer (in which case some extra work is needed) or is it just a request
@@ -1911,111 +1737,58 @@ public final class RuntimeEnvironment {
         indexTime.refreshDateForLastIndexRun();
     }
 
-    /**
-     * Start a thread to listen on a socket to receive new messages.
-     * The messages can contain various commands for the webapp, including
-     * upload of new configuration.
-     *
-     * @param endpoint The socket address to listen on
-     * @return true if the endpoint was available (and the thread was started)
-     */
     public boolean startConfigurationListenerThread(SocketAddress endpoint) {
-        boolean ret = false;
+        if (messageListener != null) {
+            throw new IllegalStateException("Cannot start configuration listener because it has already started");
+        }
+
+        messageListener = new MessageListener();
+        messageListener.setMessageLimit(threadConfig.get().getMessageLimit());
 
         try {
-            configServerSocket = new ServerSocket();
-            configServerSocket.bind(endpoint);
-            ret = true;
-            final ServerSocket sock = configServerSocket;
-            configurationListenerThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 15);
-                    while (!sock.isClosed()) {
-                        try (Socket s = sock.accept();
-                                BufferedInputStream in = new BufferedInputStream(new XmlEofInputStream(s.getInputStream()));
-                                OutputStream output = s.getOutputStream()) {
-                            bos.reset();
-                            LOGGER.log(Level.FINE, "OpenGrok: Got request from {0}",
-                                    s.getInetAddress().getHostAddress());
-
-                            byte[] buf = new byte[1024];
-                            int len;
-                            while ((len = in.read(buf)) != -1) {
-                                bos.write(buf, 0, len);
-                            }
-
-                            buf = bos.toByteArray();
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.log(Level.FINE, "new config:{0}", new String(buf));
-                            }
-
-                            Object obj;
-                            try (XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(buf))) {
-                                obj = d.readObject();
-                            }
-
-                            if (obj instanceof Message) {
-                                Message m = ((Message) obj);
-                                handleMessage(m, output);
-                            }
-                        } catch (IOException e) {
-                            LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
-                        } catch (RuntimeException e) {
-                            LOGGER.log(Level.SEVERE, "Error parsing config file: ", e);
-                        }
-                    }
-                }
-            }, "configurationListener");
-            configurationListenerThread.start();
-        } catch (UnknownHostException ex) {
-            LOGGER.log(Level.WARNING, "Problem resolving sender: ", ex);
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "I/O error when waiting for config: ", ex);
+            messageListener.start(endpoint);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Could not create message listener for endpoint: " + endpoint, e);
+            return false;
         }
 
-        if (!ret && configServerSocket != null) {
-            IOUtils.close(configServerSocket);
-        }
+        addDefaultMessageHandlers();
 
-        return ret;
+        return true;
     }
 
-    /**
-     * Handle incoming message.
-     *
-     * @param m message
-     * @param output output stream for errors or success
-     * @throws IOException
-     */
-    protected void handleMessage(Message m, final OutputStream output) throws IOException {
-        byte[] out;
-        if (!canAcceptMessage(m)) {
-            LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system",
-                    m.getTags());
-            output.write(Message.MESSAGE_LIMIT);
+    private void addDefaultMessageHandlers() {
+        messageListener.addHandler(AbortMessage.class, m -> {
+            messageListener.removeAnyMessage(m.getTags());
+            return Response.empty();
+        });
+
+        messageListener.addHandler(ConfigMessage.class, new ConfigMessageHandler(this));
+
+        messageListener.addHandler(NormalMessage.class, m -> {
+            messageListener.addMessage(m);
+            return Response.empty();
+        });
+
+        messageListener.addHandler(ProjectMessage.class, new ProjectMessageHandler(this));
+
+        messageListener.addHandler(RefreshMessage.class, m -> {
+            maybeRefreshIndexSearchers(m.getTags());
+            return Response.empty();
+        });
+
+        messageListener.addHandler(RepositoryMessage.class, new RepositoryMessageHandler(this));
+
+        messageListener.addHandler(StatsMessage.class, new StatsMessageHandler(this));
+    }
+
+    public void stopConfigurationListenerThread() {
+        if (messageListener == null) {
+            throw new IllegalStateException("Cannot stop configuration listener because it is already stopped");
         }
 
-        try {
-            out = m.apply(RuntimeEnvironment.getInstance());
-        } catch (Exception ex) {
-            LOGGER.log(Level.WARNING,
-                    String.format("Message dropped: {0} - message error", m.getTags()),
-                    ex);
-            output.write(Message.MESSAGE_ERROR);
-            output.write(ex.getMessage().getBytes());
-            return;
-        }
-
-        LOGGER.log(Level.FINER, "Message received: {0}",
-                m.getTags());
-        LOGGER.log(Level.FINER, "Messages in the system: {0}",
-                getMessagesInTheSystem());
-
-        output.write(Message.MESSAGE_OK);
-        if (out != null) {
-            output.write(out);
-        }
+        messageListener.stopConfigurationListenerThread();
+        messageListener = null;
     }
 
     private Thread watchDogThread;
@@ -2117,24 +1890,8 @@ public final class RuntimeEnvironment {
     }
 
     public void startExpirationTimer() {
-        if (expirationTimer != null) {
-            stopExpirationTimer();
-        }
-        expirationTimer = new Timer("expirationThread");
-        expireMessages();
+        messageListener.startExpirationTimer();
     }
-
-    /**
-     * Stops the watch dog service.
-     */
-    public void stopExpirationTimer() {
-        if (expirationTimer != null) {
-            expirationTimer.cancel();
-            expirationTimer = null;
-        }
-    }
-
-    private Thread indexReopenThread;
 
     private void maybeRefreshSearcherManager(SearcherManager sm) {
         try {
@@ -2273,4 +2030,16 @@ public final class RuntimeEnvironment {
         }
         return multiReader;
     }
+
+    public void onContextDestroyed() {
+        messageListener.stopConfigurationListenerThread();
+        stopWatchDogService();
+        messageListener.stopExpirationTimer();
+        try {
+            saveStatistics();
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
+        }
+    }
+
 }

@@ -38,7 +38,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -1210,7 +1209,7 @@ public final class Util {
                 out.write("\">\n");
                 for (Message m : set) {
                     out.write("<li class=\"message-group-item ");
-                    out.write(Util.encode(m.getClassName()));
+                    out.write(Util.encode(m.getCssClass()));
                     out.write("\" title=\"Expires on ");
                     out.write(Util.encode(df.format(m.getExpiration())));
                     out.write("\">");
@@ -1239,7 +1238,7 @@ public final class Util {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         for (Message m : set) {
             JSONObject message = new JSONObject();
-            message.put("class", Util.encode(m.getClassName()));
+            message.put("class", Util.encode(m.getCssClass()));
             message.put("expiration", Util.encode(df.format(m.getExpiration())));
             message.put("created", Util.encode(df.format(m.getCreated())));
             message.put("text", Util.encode(m.getText()));

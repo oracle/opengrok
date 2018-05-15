@@ -22,14 +22,14 @@
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.io.IOException;
-import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+
+import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.processMessage;
 
 /**
  * Test config message verification and handling.
@@ -38,218 +38,177 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 public class ConfigMessageTest {
 
-    RuntimeEnvironment env;
+    private RuntimeEnvironment env;
+
+    private MessageListener listener;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         env = RuntimeEnvironment.getInstance();
-        env.removeAllMessages();
+        listener = MessageTestUtils.initMessageListener(env);
+        listener.removeAllMessages();
     }
 
     @After
     public void tearDown() {
-        env.removeAllMessages();
+        listener.removeAllMessages();
+        listener.stopConfigurationListenerThread();
     }
 
     @Test
     public void testValidate() {
-        Message m = new ConfigMessage();
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.addTag("getconf");
-        Assert.assertTrue(MessageTest.assertValid(m));
-        m.setText("text");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setText(null);
-        Assert.assertTrue(MessageTest.assertValid(m));
-        m.setTags(new TreeSet<>());
-        m.addTag("setconf");
-        m.setText("text");
-        m.setClassName(null);
-        Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertNull(m.getClassName());
-        m.setTags(new TreeSet<>());
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setTags(new TreeSet<>());
-        m.addTag("foo");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setTags(new TreeSet<>());
-        m.addTag("getconf");
-        m.addTag("setconf");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setTags(new TreeSet<>());
-        m.addTag("reindex");
-        m.addTag("setconf");
-        Assert.assertTrue(MessageTest.assertValid(m));
-        m.setTags(new TreeSet<>());
-        m.setText(null);
-        m.addTag("set");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setTags(new TreeSet<>());
-        m.addTag("set");
-        m.setText("opt = 10");
-        Assert.assertTrue(MessageTest.assertValid(m));
-        m.setTags(new TreeSet<>());
-        m.addTag("set");
-        m.addTag("setconf");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setTags(new TreeSet<>());
-        m.addTag("set");
-        m.addTag("getconf");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setTags(new TreeSet<>());
-        m.addTag("get");
-        m.setText("sourceRoot");
-        Assert.assertTrue(MessageTest.assertValid(m));
+        Message.Builder<ConfigMessage> builder = new Message.Builder<>(ConfigMessage.class);
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.addTag("getconf");
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.setText("text");
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.setText(null);
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        builder.addTag("setconf");
+        builder.setText("text");
+        builder.setCssClass(null);
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        Assert.assertNull(builder.build().getCssClass());
+        builder.clearTags();
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        builder.addTag("foo");
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        builder.addTag("getconf");
+        builder.addTag("setconf");
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        builder.addTag("reindex");
+        builder.addTag("setconf");
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        builder.setText(null);
+        builder.addTag("set");
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        builder.addTag("set");
+        builder.setText("opt = 10");
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        builder.addTag("set");
+        builder.addTag("setconf");
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        builder.addTag("set");
+        builder.addTag("getconf");
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        builder.addTag("get");
+        builder.setText("sourceRoot");
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
     }
 
     @Test
     public void testApplySetAndGetBasicConfig() throws Exception {
-        Message m = new ConfigMessage();
         Configuration config = new Configuration();
         String srcRoot = "/foo";
         config.setSourceRoot(srcRoot);
 
+        Message.Builder<ConfigMessage> builder = new Message.Builder<>(ConfigMessage.class);
+
         // Set the config.
-        m.addTag("setconf");
+        builder.addTag("setconf");
         String configStr = config.getXMLRepresentationAsString();
-        m.setText(configStr);
-        m.apply(env);
+        builder.setText(configStr);
+        processMessage(listener, builder.build());
         Assert.assertEquals(env.getSourceRootPath(), srcRoot);
 
         // Get the config.
-        m.setTags(new TreeSet<>());
-        m.setText(null);
-        m.addTag("getconf");
-        byte[] out = m.apply(env);
-        String newconfStr = new String(out);
+        builder.clearTags();
+        builder.setText(null);
+        builder.addTag("getconf");
+
+        Response response = processMessage(listener, builder.build());
+        String newconfStr = response.getData().get(0);
         Assert.assertEquals(configStr, newconfStr);
-    }
-
-    @Test(expected = IOException.class)
-    public void testApplySetInvalidMethod() throws Exception {
-        Message m = new ConfigMessage();
-        m.setText("noMethodExists = 1000");
-        m.addTag("set");
-        m.apply(env);
-    }
-
-    @Test(expected = IOException.class)
-    public void testApplyGetInvalidMethod() throws Exception {
-        Message m = new ConfigMessage();
-        m.setText("FooBar");
-        m.addTag("get");
-        m.apply(env);
-    }
-    
-    @Test(expected = IOException.class)
-    public void testApplySetInvalidMethodParameter() throws Exception {
-        Message m = new ConfigMessage();
-        m.setText("setDefaultProjects = 1000"); // expecting Set
-        m.addTag("set");
-        m.apply(env);
     }
 
     @Test
     public void testApplySetOptionInteger() throws Exception {
-        Message m = new ConfigMessage();
-        m.setText("hitsPerPage = 1000");
-        m.addTag("set");
         Assert.assertEquals(25, env.getHitsPerPage());
-        m.apply(env);
-        Assert.assertEquals(1000, env.getHitsPerPage());
-        env.setHitsPerPage(25);
-    }
 
-    @Test(expected = IOException.class)
-    public void testApplySetOptionInvalidInteger() throws Exception {
-        Message m = new ConfigMessage();
-        m.setText("hitsPerPage = abcd");
-        m.addTag("set");
-        Assert.assertEquals(25, env.getHitsPerPage());
-        m.apply(env);
+        Message m = new Message.Builder<>(ConfigMessage.class)
+                .setText("hitsPerPage = 1000")
+                .addTag("set")
+                .build();
+
+        processMessage(listener, m);
+
         Assert.assertEquals(1000, env.getHitsPerPage());
         env.setHitsPerPage(25);
     }
 
     @Test
+    public void testApplySetOptionInvalidInteger() throws Exception {
+        Assert.assertEquals(25, env.getHitsPerPage());
+
+        Message m = new Message.Builder<>(ConfigMessage.class)
+                .setText("hitsPerPage = abcd")
+                .addTag("set")
+                .build();
+        processMessage(listener, m);
+
+        Assert.assertEquals(25, env.getHitsPerPage());
+    }
+
+    @Test
     public void testApplySetOptionBooleanTrue() throws Exception {
-        Message m = new ConfigMessage();
-        m.setText("chattyStatusPage = true");
-        m.addTag("set");
+        Message.Builder builder = new Message.Builder<>(ConfigMessage.class)
+                .setText("chattyStatusPage = true")
+                .addTag("set");
+
         env.setChattyStatusPage(false);
-        Assert.assertEquals(false, env.isChattyStatusPage());
-        m.apply(env);
-        Assert.assertEquals(true, env.isChattyStatusPage());
+        Assert.assertFalse(env.isChattyStatusPage());
+        processMessage(listener, builder.build());
+        Assert.assertTrue(env.isChattyStatusPage());
         env.setChattyStatusPage(false);
 
-        m.setText("chattyStatusPage = on");
+        builder.setText("chattyStatusPage = on");
         env.setChattyStatusPage(false);
-        Assert.assertEquals(false, env.isChattyStatusPage());
-        m.apply(env);
-        Assert.assertEquals(true, env.isChattyStatusPage());
+        Assert.assertFalse(env.isChattyStatusPage());
+        processMessage(listener, builder.build());
+        Assert.assertTrue(env.isChattyStatusPage());
         env.setChattyStatusPage(false);
 
-        m.setText("chattyStatusPage = 1");
+        builder.setText("chattyStatusPage = 1");
         env.setChattyStatusPage(false);
-        Assert.assertEquals(false, env.isChattyStatusPage());
-        m.apply(env);
-        Assert.assertEquals(true, env.isChattyStatusPage());
+        Assert.assertFalse(env.isChattyStatusPage());
+        processMessage(listener, builder.build());
+        Assert.assertTrue(env.isChattyStatusPage());
         env.setChattyStatusPage(false);
     }
 
     @Test
     public void testApplySetOptionBooleanFalse() throws Exception {
-        Message m = new ConfigMessage();
-        m.setText("chattyStatusPage = false");
-        m.addTag("set");
+        Message.Builder builder = new Message.Builder<>(ConfigMessage.class)
+                .setText("chattyStatusPage = false")
+                .addTag("set");
         env.setChattyStatusPage(true);
-        Assert.assertEquals(true, env.isChattyStatusPage());
-        m.apply(env);
-        Assert.assertEquals(false, env.isChattyStatusPage());
-        env.setChattyStatusPage(true);
-
-        m.setText("chattyStatusPage = off");
-        env.setChattyStatusPage(true);
-        Assert.assertEquals(true, env.isChattyStatusPage());
-        m.apply(env);
-        Assert.assertEquals(false, env.isChattyStatusPage());
+        Assert.assertTrue(env.isChattyStatusPage());
+        processMessage(listener, builder.build());
+        Assert.assertFalse(env.isChattyStatusPage());
         env.setChattyStatusPage(true);
 
-        m.setText("chattyStatusPage = 0");
+        builder.setText("chattyStatusPage = off");
         env.setChattyStatusPage(true);
-        Assert.assertEquals(true, env.isChattyStatusPage());
-        m.apply(env);
-        Assert.assertEquals(false, env.isChattyStatusPage());
-        env.setChattyStatusPage(true);
-
-        env.setChattyStatusPage(false);
-    }
-
-    @Test(expected = IOException.class)
-    public void testApplySetOptionInvalidBoolean1() throws Exception {
-        Message m = new ConfigMessage();
-        m.addTag("set");
-
-        m.setText("chattyStatusPage = 1000"); // only 1 is accepted as true
-        env.setChattyStatusPage(true);
-        Assert.assertEquals(true, env.isChattyStatusPage());
-        m.apply(env);
-        Assert.assertEquals(false, env.isChattyStatusPage());
+        Assert.assertTrue(env.isChattyStatusPage());
+        processMessage(listener, builder.build());
+        Assert.assertFalse(env.isChattyStatusPage());
         env.setChattyStatusPage(true);
 
-        env.setChattyStatusPage(false);
-    }
-
-    @Test(expected = IOException.class)
-    public void testApplySetOptionInvalidBoolean2() throws Exception {
-        Message m = new ConfigMessage();
-        m.addTag("set");
-
-        m.setText("chattyStatusPage = anything"); // fallback to false
+        builder.setText("chattyStatusPage = 0");
         env.setChattyStatusPage(true);
-        Assert.assertEquals(true, env.isChattyStatusPage());
-        m.apply(env);
-        Assert.assertEquals(false, env.isChattyStatusPage());
+        Assert.assertTrue(env.isChattyStatusPage());
+        processMessage(listener, builder.build());
+        Assert.assertFalse(env.isChattyStatusPage());
         env.setChattyStatusPage(true);
 
         env.setChattyStatusPage(false);
@@ -258,15 +217,16 @@ public class ConfigMessageTest {
     @Test
     public void testApplySetOptionString() throws Exception {
         String old = env.getUserPage();
-        Message m = new ConfigMessage();
-        m.addTag("set");
 
-        m.setText("userPage = http://users.portal.com?user=");
-        m.apply(env);
+        Message.Builder builder = new Message.Builder<>(ConfigMessage.class)
+                .addTag("set")
+                .setText("userPage = http://users.portal.com?user=");
+
+        processMessage(listener, builder.build());
         Assert.assertEquals("http://users.portal.com?user=", env.getUserPage());
 
-        m.setText("userPage = some complicated \"string\" with &#~Đ`[đ\\ characters");
-        m.apply(env);
+        builder.setText("userPage = some complicated \"string\" with &#~Đ`[đ\\ characters");
+        processMessage(listener, builder.build());
         Assert.assertEquals("some complicated \"string\" with &#~Đ`[đ\\ characters", env.getUserPage());
 
         env.setUserPage(old);
@@ -275,28 +235,40 @@ public class ConfigMessageTest {
     @Test
     public void testApplyGetOptionString() throws Exception {
         env.setSourceRoot("/foo/bar");
-        Message m = new ConfigMessage();
-        m.setText("sourceRoot");
-        m.addTag("get");
-        String val = new String(m.apply(env));
+        Message m = new Message.Builder<>(ConfigMessage.class)
+                .setText("sourceRoot")
+                .addTag("get")
+                .build();
+
+        Response response = processMessage(listener, m);
+
+        String val = response.getData().get(0);
         Assert.assertEquals(val, env.getConfiguration().getSourceRoot());
     }
     
     @Test
     public void testApplyGetOptionInteger() throws Exception {
-        Message m = new ConfigMessage();
-        m.setText("hitsPerPage");
-        m.addTag("get");
-        String val = new String(m.apply(env));
+        Message m = new Message.Builder<>(ConfigMessage.class)
+                .setText("hitsPerPage")
+                .addTag("get")
+                .build();
+
+        Response response = processMessage(listener, m);
+
+        String val = response.getData().get(0);
         Assert.assertEquals(val, Integer.toString(env.getHitsPerPage()));
     }
     
     @Test
     public void testApplyGetOptionBoolean() throws Exception {
-        Message m = new ConfigMessage();
-        m.setText("historyCache");
-        m.addTag("get");
-        String val = new String(m.apply(env));
+        Message m = new Message.Builder<>(ConfigMessage.class)
+                .setText("historyCache")
+                .addTag("get")
+                .build();
+
+        Response response = processMessage(listener, m);
+
+        String val = response.getData().get(0);
         Assert.assertEquals(val, Boolean.toString(env.getConfiguration().isHistoryCache()));
     }
 }

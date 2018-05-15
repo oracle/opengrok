@@ -18,16 +18,18 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
 import org.opensolaris.opengrok.util.Getopt;
 
 public final class Messages {
@@ -37,7 +39,7 @@ public final class Messages {
         String type = null;
         String text = null;
         List<String> tags = new ArrayList<>();
-        String className = null;
+        String cssClass = null;
         long expire = -1;
         String server = null;
         int port = -1;
@@ -56,12 +58,11 @@ public final class Messages {
         }
 
         int cmd;
-        File f;
         getopt.reset();
         while ((cmd = getopt.getOpt()) != -1) {
             switch (cmd) {
                 case 'c':
-                    className = getopt.getOptarg();
+                    cssClass = getopt.getOptarg();
                     break;
                 case 'e':
                     x = getopt.getOptarg();
@@ -79,6 +80,7 @@ public final class Messages {
                 case 'g':
                     tags.add(getopt.getOptarg());
                     break;
+                case '?':
                 case 'h':
                     a_usage();
                     System.exit(0);
@@ -102,10 +104,6 @@ public final class Messages {
                 case 't':
                     text = getopt.getOptarg();
                     break;
-                case '?':
-                    a_usage();
-                    System.exit(0);
-                    break;
                 default:
                     System.err.println("Internal Error - Not implemented option: " + (char) cmd);
                     b_usage();
@@ -126,35 +124,37 @@ public final class Messages {
             port = 2424;
         }
 
-        Message m = Message.createMessage(type);
-
-        if (m == null) {
+        Optional<Class<? extends Message>> optionalClass = getMessageClass(type);
+        if (!optionalClass.isPresent()) {
             System.err.println("Unknown message type " + type);
             b_usage();
             System.exit(1);
         }
 
+        Message.Builder messageBuilder = new Message.Builder<>(optionalClass.get());
+
         if (filepath != null) {
             try {
-                m.setTextFromFile(filepath);
+                messageBuilder.setTextFromFile(filepath);
             } catch (IOException ex) {
                 System.err.println("Cannot read '" + filepath + "': " + ex);
                 System.exit(1);
             }
         } else {
-            m.setText(text);
+            messageBuilder.setText(text);
         }
 
-        m.setClassName(className);
+        messageBuilder.setCssClass(cssClass);
 
         for (String tag : tags) {
-            m.addTag(tag);
+            messageBuilder.addTag(tag);
         }
 
         if (expire != -1 && expire > System.currentTimeMillis()) {
-            m.setExpiration(new Date(expire));
+            messageBuilder.setExpiration(Instant.ofEpochMilli(expire));
         }
 
+        Message m = messageBuilder.build();
         try {
             m.validate();
         } catch (Exception e) {
@@ -164,10 +164,9 @@ public final class Messages {
         }
 
         try {
-            byte[] out = m.write(server, port);
-            if (out != null) {
-                System.out.write(out);
-                System.out.println();
+            Response response = m.write(server, port);
+            for (String item : response.getData()) {
+                System.out.println(item);
             }
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
@@ -218,4 +217,34 @@ public final class Messages {
     private static final void b_usage() {
         System.err.println("Maybe try to run Messages -h");
     }
+
+    private static Optional<Class<? extends Message>> getMessageClass(final String messageType) {
+        Class<?> messageClass;
+        try {
+            messageClass = getClassForMessageType(messageType);
+        } catch (ClassNotFoundException e) {
+            return Optional.empty();
+        }
+
+        if (!isMessageSubclass(messageClass)) {
+            return Optional.empty();
+        }
+
+        @SuppressWarnings("unchecked")
+        Class<? extends Message> mcl = (Class<? extends Message>) messageClass;
+        return Optional.of(mcl);
+    }
+
+    private static Class<?> getClassForMessageType(final String messageType) throws ClassNotFoundException {
+        String classname = Message.class.getPackage().getName();
+        classname += "." + messageType.substring(0, 1).toUpperCase(Locale.getDefault());
+        classname += messageType.substring(1) + "Message";
+
+        return Class.forName(classname);
+    }
+
+    private static boolean isMessageSubclass(final Class<?> cl) {
+        return Message.class.isAssignableFrom(cl);
+    }
+
 }

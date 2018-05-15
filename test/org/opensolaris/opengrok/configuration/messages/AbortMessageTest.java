@@ -18,140 +18,155 @@
  */
 
  /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
+import static org.opensolaris.opengrok.configuration.messages.MessageListener.MESSAGES_MAIN_PAGE_TAG;
+import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.processMessage;
+
 public class AbortMessageTest {
 
-    RuntimeEnvironment env;
+    private MessageListener listener;
 
     @Before
-    public void setUp() {
-        env = RuntimeEnvironment.getInstance();
-        env.removeAllMessages();
+    public void setUp() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        listener = MessageTestUtils.initMessageListener(env);
+        listener.removeAllMessages();
     }
 
     @After
     public void tearDown() {
-        env.removeAllMessages();
+        listener.removeAllMessages();
+        listener.stopConfigurationListenerThread();
     }
 
     @Test
     public void testValidate() {
-        Message m = new AbortMessage();
-        Assert.assertTrue(MessageTest.assertValid(m));
-        m.setText("text");
-        Assert.assertTrue(MessageTest.assertValid(m));
-        m.setClassName(null);
-        Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertNull(m.getClassName());
-        m.setTags(new TreeSet<>());
-        Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertTrue(m.hasTag(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG));
+        Message.Builder builder = new Message.Builder<>(AbortMessage.class);
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.setText("text");
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.setCssClass(null);
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.clearTags();
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        Assert.assertTrue(builder.build().hasTag(MESSAGES_MAIN_PAGE_TAG));
     }
 
     @Test
     public void testApplyNoTag() throws Exception {
         Message m = new AbortMessage();
 
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        m.apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        processMessage(listener, m);
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplyNoTagEmpty() throws Exception {
-        Message m = new AbortMessage();
-        m.addTag("main");
+        Message m = new Message.Builder<>(AbortMessage.class)
+                .addTag("main")
+                .build();
 
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        m.apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        processMessage(listener, m);
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplyNoTagFull() throws Exception {
-        Message m = new NormalMessage().addTag("main");
-        m.setText("text");
-        m.apply(env);
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
-        new AbortMessage().apply(env);
+        deliverSimpleNormalMessage();
+
+        Assert.assertEquals(1, listener.getMessagesInTheSystem());
+        processMessage(listener, new Message.Builder<>(AbortMessage.class).build());
         // the main tag is added by default if no tag is present
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+    }
+
+    private void deliverSimpleNormalMessage() throws Exception {
+        Message m = new Message.Builder<>(NormalMessage.class)
+                .addTag("main")
+                .setText("text")
+                .build();
+        processMessage(listener, m);
     }
 
     @Test
     public void testApplySingle() throws Exception {
-        Message m = new NormalMessage().addTag("main");
-        m.setText("text");
-        m.apply(env);
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("main").apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        deliverSimpleNormalMessage();
+
+        Assert.assertEquals(1, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("main"));
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplySingleWrongTag() throws Exception {
-        Message m = new NormalMessage().addTag("main");
-        m.setText("text");
-        m.apply(env);
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("other").apply(env);
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
+        deliverSimpleNormalMessage();
+
+        Assert.assertEquals(1, listener.getMessagesInTheSystem());
+
+        processMessage(listener, getAbortMessageWithTags("other"));
+        Assert.assertEquals(1, listener.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplyReverse() throws Exception {
-        new AbortMessage().addTag("main").apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        Message m = new NormalMessage().addTag("main");
-        m.setText("text");
-        m.apply(env);
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("main"));
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+
+        deliverSimpleNormalMessage();
+        Assert.assertEquals(1, listener.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplyMultiple() throws Exception {
-        Message m = new NormalMessage().addTag("main");
-        m.setText("text");
-        m.apply(env);
-        m = new NormalMessage().addTag("project");
-        m.setText("text");
-        m.apply(env);
-        m = new NormalMessage().addTag("pull");
-        m.setText("text");
-        m.apply(env);
-        Assert.assertEquals(3, env.getMessagesInTheSystem());
+        deliverSimpleNormalMessage();
 
-        new AbortMessage().addTag("other").apply(env);
-        Assert.assertEquals(3, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("other pro").apply(env);
-        Assert.assertEquals(3, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("main").apply(env);
-        Assert.assertEquals(2, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("main").apply(env);
-        Assert.assertEquals(2, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("main").addTag("other").apply(env);
-        Assert.assertEquals(2, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("pull").addTag("project").apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("pull").addTag("project").apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("main").apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("pull").apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("project").apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        new AbortMessage().addTag("other").apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        Message m = new Message.Builder<>(NormalMessage.class).addTag("project").setText("text").build();
+        processMessage(listener, m);
+        m = new Message.Builder<>(NormalMessage.class).addTag("pull").setText("text").build();
+
+        processMessage(listener, m);
+        Assert.assertEquals(3, listener.getMessagesInTheSystem());
+
+        processMessage(listener, getAbortMessageWithTags("other"));
+        Assert.assertEquals(3, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("other pro"));
+        Assert.assertEquals(3, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("main"));
+        Assert.assertEquals(2, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("main"));
+        Assert.assertEquals(2, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("main", "other"));
+        Assert.assertEquals(2, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("pull", "project"));
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("pull", "project"));
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("main"));
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("pull"));
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("project"));
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        processMessage(listener, getAbortMessageWithTags("other"));
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+    }
+
+    private AbortMessage getAbortMessageWithTags(final String... tags) {
+        Message.Builder<AbortMessage> b = new Message.Builder<>(AbortMessage.class);
+        for (String t : tags) {
+            b.addTag(t);
+        }
+        return b.build();
     }
 }
