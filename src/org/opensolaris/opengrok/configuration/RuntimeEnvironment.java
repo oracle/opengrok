@@ -1417,7 +1417,7 @@ public final class RuntimeEnvironment {
 
     protected void writeConfiguration() throws IOException {
         if (messageListener == null) {
-            throw new IllegalStateException("Cannot write configuration because ");
+            throw new IllegalStateException("Cannot write configuration because message listener address is unknown");
         }
         writeConfiguration(messageListener.getAddress(), messageListener.getPort());
     }
@@ -1549,6 +1549,9 @@ public final class RuntimeEnvironment {
      * @return set of messages
      */
     public SortedSet<Message> getMessages() {
+        if (messageListener == null) {
+            throw new IllegalStateException("Cannot get messages because no message listener is started");
+        }
         return messageListener.getMessages();
     }
 
@@ -1559,6 +1562,9 @@ public final class RuntimeEnvironment {
      * @return set of messages
      */
     public SortedSet<Message> getMessages(String tag) {
+        if (messageListener == null) {
+            throw new IllegalStateException("Cannot get messages because no message listener is started");
+        }
         return messageListener.getMessages(tag);
     }
 
@@ -1758,35 +1764,35 @@ public final class RuntimeEnvironment {
     }
 
     private void addDefaultMessageHandlers() {
-        messageListener.addHandler(AbortMessage.class, m -> {
+        messageListener.addMessageHandler(AbortMessage.class, m -> {
             messageListener.removeAnyMessage(m.getTags());
             return Response.empty();
         });
 
-        messageListener.addHandler(ConfigMessage.class, new ConfigMessageHandler(this));
+        messageListener.addMessageHandler(ConfigMessage.class, new ConfigMessageHandler(this));
 
-        messageListener.addHandler(NormalMessage.class, m -> {
+        messageListener.addMessageHandler(NormalMessage.class, m -> {
             messageListener.addMessage(m);
             return Response.empty();
         });
 
-        messageListener.addHandler(ProjectMessage.class, new ProjectMessageHandler(this));
+        messageListener.addMessageHandler(ProjectMessage.class, new ProjectMessageHandler(this));
 
-        messageListener.addHandler(RefreshMessage.class, m -> {
+        messageListener.addMessageHandler(RefreshMessage.class, m -> {
             maybeRefreshIndexSearchers(m.getTags());
             return Response.empty();
         });
 
-        messageListener.addHandler(RepositoryMessage.class, new RepositoryMessageHandler(this));
+        messageListener.addMessageHandler(RepositoryMessage.class, new RepositoryMessageHandler(this));
 
-        messageListener.addHandler(StatsMessage.class, new StatsMessageHandler(this));
+        messageListener.addMessageHandler(StatsMessage.class, new StatsMessageHandler(this));
     }
 
     public void addMessageHandler(final Class<? extends Message> messageType, final MessageHandler handler) {
         if (messageListener == null) {
             throw new IllegalStateException("Cannot add message handler because no message listener is started");
         }
-        messageListener.addHandler(messageType, handler);
+        messageListener.addMessageHandler(messageType, handler);
     }
 
     public void stopConfigurationListenerThread() {
@@ -2039,9 +2045,11 @@ public final class RuntimeEnvironment {
     }
 
     public void onContextDestroyed() {
-        messageListener.stopConfigurationListenerThread();
+        if (messageListener != null) {
+            messageListener.stopConfigurationListenerThread();
+            messageListener.stopExpirationTimer();
+        }
         stopWatchDogService();
-        messageListener.stopExpirationTimer();
         try {
             saveStatistics();
         } catch (IOException ex) {

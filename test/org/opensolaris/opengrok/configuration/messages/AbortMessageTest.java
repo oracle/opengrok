@@ -45,7 +45,6 @@ public class AbortMessageTest {
     @After
     public void tearDown() {
         listener.removeAllMessages();
-        listener.stopConfigurationListenerThread();
     }
 
     @Test

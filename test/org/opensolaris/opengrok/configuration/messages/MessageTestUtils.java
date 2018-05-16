@@ -46,8 +46,7 @@ public class MessageTestUtils {
         f.set(message, Instant.now().minusMillis(1));
     }
 
-    public static MessageListener initMessageListener(final RuntimeEnvironment env)
-            throws Exception {
+    public static MessageListener initMessageListener(final RuntimeEnvironment env) throws Exception {
         MessageListener listener = new MessageListener();
         listener.setMessageLimit(env.getConfiguration().getMessageLimit());
 

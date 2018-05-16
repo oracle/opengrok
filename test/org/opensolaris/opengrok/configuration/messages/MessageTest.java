@@ -37,7 +37,7 @@ public class MessageTest {
 
         String encoded = m1.getEncoded();
 
-        Message m2 = Message.decodeObject(encoded);
+        Message m2 = Message.decode(encoded);
 
         assertEquals(m1, m2);
     }

@@ -70,7 +70,7 @@ public class ConfigMessageHandler implements MessageHandler {
                             matcher.group(2) // value
                     );
                 } catch (IOException e) {
-                    throw new HandleException(e.getMessage());
+                    throw new HandleException(e);
                 }
                 // apply the configuration - let the environment reload the configuration if necessary
                 env.applyConfig(env.getConfiguration(), false);
@@ -86,7 +86,7 @@ public class ConfigMessageHandler implements MessageHandler {
             try {
                 return Response.of(ClassUtil.invokeGetter(env.getConfiguration(), message.getText()));
             } catch (IOException e) {
-                throw new HandleException(e.getMessage());
+                throw new HandleException(e);
             }
         } else if (message.hasTag("setconf")) {
             env.applyConfig(message, message.hasTag("reindex"));

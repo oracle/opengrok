@@ -27,8 +27,12 @@ public interface MessageHandler {
 
     class HandleException extends Exception {
 
-        public HandleException(String message) {
+        public HandleException(final String message) {
             super(message);
+        }
+
+        public HandleException(final Throwable cause) {
+            super(cause);
         }
     }
 

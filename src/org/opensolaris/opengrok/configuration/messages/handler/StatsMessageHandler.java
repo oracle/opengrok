@@ -49,7 +49,7 @@ public class StatsMessageHandler implements MessageHandler {
                 try {
                     env.loadStatistics();
                 } catch (IOException | ParseException e) {
-                    throw new HandleException(e.getMessage());
+                    throw new HandleException(e);
                 }
                 break;
             case "clean":

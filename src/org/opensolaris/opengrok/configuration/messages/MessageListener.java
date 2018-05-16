@@ -36,7 +36,8 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -60,7 +61,7 @@ public class MessageListener {
 
     private final Gson gson = new Gson();
 
-    private final Map<Class<? extends Message>, Set<MessageHandler>> messageHandlers = new HashMap<>();
+    private final Map<Class<? extends Message>, List<MessageHandler>> messageHandlers = new HashMap<>();
 
     private ServerSocket configServerSocket;
 
@@ -78,10 +79,7 @@ public class MessageListener {
 
     private Timer expirationTimer;
 
-    public MessageListener() {
-    }
-
-    public void addHandler(final Class<? extends Message> messageType, final MessageHandler handler) {
+    public void addMessageHandler(final Class<? extends Message> messageType, final MessageHandler handler) {
         if (messageType == null) {
             throw new IllegalArgumentException("Cannot add handler for null message type");
         }
@@ -90,11 +88,11 @@ public class MessageListener {
         }
 
         synchronized (messageHandlers) {
-            messageHandlers.computeIfAbsent(messageType, key -> new HashSet<>()).add(handler);
+            messageHandlers.computeIfAbsent(messageType, key -> new LinkedList<>()).add(handler);
         }
     }
 
-    public void removeHandler(final Class<? extends Message> messageType, final MessageHandler handler) {
+    public void removeMessageHandler(final Class<? extends Message> messageType, final MessageHandler handler) {
         if (messageType == null) {
             throw new IllegalArgumentException("Cannot remove handler for null message type");
         }
@@ -103,13 +101,13 @@ public class MessageListener {
         }
 
         synchronized (messageHandlers) {
-            Set<MessageHandler> listeners = messageHandlers.get(messageType);
-            if (listeners == null || !listeners.contains(handler)) {
+            List<MessageHandler> handlers = messageHandlers.get(messageType);
+            if (handlers == null || !handlers.contains(handler)) {
                 LOGGER.log(Level.WARNING, "{0} is not registered as a handler", handler);
                 return;
             }
-            listeners.remove(handler);
-            if (listeners.isEmpty()) {
+            handlers.remove(handler);
+            if (handlers.isEmpty()) {
                 messageHandlers.remove(messageType);
             }
         }
@@ -185,7 +183,7 @@ public class MessageListener {
 
         if (!canAcceptMessage(m)) {
             LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system", m.getTags());
-            output.write(Message.MESSAGE_LIMIT);
+            output.write(Message.DeliveryStatus.OVER_LIMIT.getStatusCode());
             return;
         }
 
@@ -194,7 +192,7 @@ public class MessageListener {
             response = processMessage(m);
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, String.format("Message dropped: %s - message error", m), ex);
-            output.write(Message.MESSAGE_ERROR);
+            output.write(Message.DeliveryStatus.ERROR.getStatusCode());
             output.write(ex.getMessage().getBytes());
             return;
         }
@@ -202,7 +200,7 @@ public class MessageListener {
         LOGGER.log(Level.FINER, "Message received: {0}", m.getTags());
         LOGGER.log(Level.FINER, "Messages in the system: {0}", getMessagesInTheSystem());
 
-        output.write(Message.MESSAGE_OK);
+        output.write(Message.DeliveryStatus.OK.getStatusCode());
         output.write(gson.toJson(response).getBytes());
         output.flush();
     }
@@ -216,11 +214,11 @@ public class MessageListener {
 
         Response finalResponse = Response.empty();
         synchronized (messageHandlers) {
-            Set<MessageHandler> listeners = messageHandlers.get(messageType);
-            if (listeners != null) {
-                for (MessageHandler listener : listeners) {
+            List<MessageHandler> handlers = messageHandlers.get(messageType);
+            if (handlers != null) {
+                for (MessageHandler handler : handlers) {
                     try {
-                        Response response = listener.handle(message);
+                        Response response = processMessage(handler, message);
                         finalResponse = finalResponse.combine(response);
                     } catch (Exception e) { // exception in handler should not stop notifying other handlers
                         LOGGER.log(Level.WARNING, "Exception while processing message", e);
@@ -229,6 +227,17 @@ public class MessageListener {
             }
         }
         return finalResponse;
+    }
+
+    private Response processMessage(final MessageHandler handler, final Message message) {
+        Response response;
+        try {
+            response = handler.handle(message);
+        } catch (MessageHandler.HandleException e) {
+            response = Response.of(e.getMessage());
+            LOGGER.log(Level.WARNING, "Exception while processing message", e);
+        }
+        return response;
     }
 
     private static SortedSet<Message> emptyMessageSet(SortedSet<Message> toRet) {

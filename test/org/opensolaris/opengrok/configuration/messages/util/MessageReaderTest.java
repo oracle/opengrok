@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.opensolaris.opengrok.configuration.messages.Message;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.getTestConfigMessage;
 import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.getTestProjectMessage;
 
@@ -94,6 +95,7 @@ public class MessageReaderTest {
 
         try {
             is.readMessage();
+            fail("Reading first message should throw JsonSyntaxException");
         } catch (JsonSyntaxException e) {
             // expected
         }

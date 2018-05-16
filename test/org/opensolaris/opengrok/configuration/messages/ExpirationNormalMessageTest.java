@@ -43,10 +43,6 @@ public class ExpirationNormalMessageTest {
 
     private MessageListener listener;
 
-    private Message[] makeArray(Message... messages) {
-        return messages;
-    }
-
     @Before
     public void setUp() throws Exception {
         env = RuntimeEnvironment.getInstance();
@@ -128,18 +124,18 @@ public class ExpirationNormalMessageTest {
 
         Assert.assertEquals(2, listener.getMessagesInTheSystem());
         Assert.assertNotNull(env.getMessages());
-        Assert.assertEquals(new TreeSet<>(Arrays.asList(makeArray(m1, m2))), env.getMessages());
+        Assert.assertEquals(new TreeSet<>(Arrays.asList(m1, m2)), env.getMessages());
 
         for (int i = 0; i < 30; i++) {
             Assert.assertEquals(2, listener.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
-            Assert.assertEquals(new TreeSet<>(Arrays.asList(makeArray(m1, m2))), env.getMessages());
+            Assert.assertEquals(new TreeSet<>(Arrays.asList(m1, m2)), env.getMessages());
         }
         expire(m1);
         for (int i = 0; i < 30; i++) {
             Assert.assertEquals(1, listener.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
-            Assert.assertEquals(new TreeSet<>(Arrays.asList(makeArray(m2))), env.getMessages());
+            Assert.assertEquals(Collections.singleton(m2), env.getMessages());
         }
         expire(m2);
         Assert.assertEquals(0, listener.getMessagesInTheSystem());

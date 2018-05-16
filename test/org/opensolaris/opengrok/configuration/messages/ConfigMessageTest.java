@@ -52,7 +52,6 @@ public class ConfigMessageTest {
     @After
     public void tearDown() {
         listener.removeAllMessages();
-        listener.stopConfigurationListenerThread();
     }
 
     @Test

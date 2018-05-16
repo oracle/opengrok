@@ -73,7 +73,7 @@ public class ProjectMessageHandler implements MessageHandler {
         try {
             validateMore(env, message);
         } catch (ValidationException e) {
-            throw new HandleException(e.getMessage());
+            throw new HandleException(e);
         }
 
         String command = message.getText();
@@ -227,7 +227,7 @@ public class ProjectMessageHandler implements MessageHandler {
                             File.separator + dirName +
                             File.separator + projectName));
                 } catch (IOException e) {
-                    throw new HandleException(e.getMessage());
+                    throw new HandleException(e);
                 }
             }
             HistoryGuru guru = HistoryGuru.getInstance();
@@ -252,7 +252,7 @@ public class ProjectMessageHandler implements MessageHandler {
                             }
                         }).collect(Collectors.toSet()));
             } catch (HistoryException e) {
-                throw new HandleException(e.getMessage());
+                throw new HandleException(e);
             }
         }
     }
@@ -272,7 +272,7 @@ public class ProjectMessageHandler implements MessageHandler {
                             repo = getRepository(ri);
                         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException
                                 | InvocationTargetException e) {
-                            throw new HandleException(e.getMessage());
+                            throw new HandleException(e);
                         }
 
                         if (repo != null && repo.getCurrentVersion() != null &&
@@ -283,7 +283,7 @@ public class ProjectMessageHandler implements MessageHandler {
                             try {
                                 ri.setCurrentVersion(repo.determineCurrentVersion());
                             } catch (IOException e) {
-                                throw new HandleException(e.getMessage());
+                                throw new HandleException(e);
                             }
                         }
                     }
@@ -326,6 +326,5 @@ public class ProjectMessageHandler implements MessageHandler {
 
         return builder.build();
     }
-
 
 }

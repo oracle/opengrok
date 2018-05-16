@@ -43,7 +43,7 @@ public class MessageListenerTest {
         BooleanWrapper bw = new BooleanWrapper();
 
         MessageListener listener = new MessageListener();
-        listener.addHandler(NormalMessage.class, m -> {
+        listener.addMessageHandler(NormalMessage.class, m -> {
             bw.value = true;
             return Response.empty();
         });
@@ -62,8 +62,8 @@ public class MessageListenerTest {
             return Response.empty();
         };
         MessageListener listener = new MessageListener();
-        listener.addHandler(NormalMessage.class, handler);
-        listener.removeHandler(NormalMessage.class, handler);
+        listener.addMessageHandler(NormalMessage.class, handler);
+        listener.removeMessageHandler(NormalMessage.class, handler);
 
         processMessage(listener, new Message.Builder<>(NormalMessage.class).build());
 
@@ -72,12 +72,32 @@ public class MessageListenerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void addHandlerNullTest() {
-        new MessageListener().addHandler(NormalMessage.class, null);
+        new MessageListener().addMessageHandler(NormalMessage.class, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addHandlerNullTest2() {
+        new MessageListener().addMessageHandler(null, m -> Response.empty());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addHandlerNullTest3() {
+        new MessageListener().addMessageHandler(null, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void removeHandlerNullTest() {
-        new MessageListener().removeHandler(NormalMessage.class, null);
+        new MessageListener().removeMessageHandler(NormalMessage.class, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeHandlerNullTest2() {
+        new MessageListener().removeMessageHandler(null, m -> Response.empty());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeHandlerNullTest3() {
+        new MessageListener().removeMessageHandler(null, null);
     }
 
     @Test
@@ -134,7 +154,6 @@ public class MessageListenerTest {
         }
 
         listener.removeAllMessages();
-        listener.stopConfigurationListenerThread();
     }
 
 }

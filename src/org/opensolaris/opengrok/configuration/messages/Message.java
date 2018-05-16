@@ -59,10 +59,6 @@ public abstract class Message implements Comparable<Message> {
             .registerTypeAdapter(Message.class, new MessageDeserializer())
             .create();
 
-    public static final int MESSAGE_OK = 0x1;
-    public static final int MESSAGE_LIMIT = 0x2;
-    public static final int MESSAGE_ERROR = 0x4;
-
     protected static final long DEFAULT_EXPIRATION_IN_MINUTES = 10;
 
     private String text;
@@ -217,7 +213,7 @@ public abstract class Message implements Comparable<Message> {
      * @param port port number
      * @throws IOException if I/O exception occurred
      *
-     * @see #throwIfError(int c, String message)
+     * @see #throwIfError(DeliveryStatus, String message)
      *
      * @return possible output for this application, null if no output
      */
@@ -228,12 +224,14 @@ public abstract class Message implements Comparable<Message> {
 
                 mos.writeMessage(this);
 
-                int deliveryStatus = input.read();
-                if (deliveryStatus != Message.MESSAGE_OK) {
+                DeliveryStatus deliveryStatus = DeliveryStatus.fromStatusCode(input.read());
+                if (deliveryStatus != DeliveryStatus.OK) {
                     throwIfError(deliveryStatus, IOUtils.toString(input));
                 }
 
-                return gson.fromJson(new InputStreamReader(input), Response.class);
+                try (InputStreamReader reader = new InputStreamReader(input)) {
+                    return gson.fromJson(reader, Response.class);
+                }
             }
         }
     }
@@ -242,28 +240,28 @@ public abstract class Message implements Comparable<Message> {
         return gson.toJson(this);
     }
 
-    public static Message decodeObject(final String s) {
+    public static Message decode(final String s) {
         return gson.fromJson(s, Message.class);
     }
 
     /**
      * Decode the return code from the remote server.
      *
-     * @param c the code
+     * @param deliveryStatus status of the message delivery
      * @param message error message stored in string
      * @throws IOException if the return code meant an error
      */
-    protected void throwIfError(int c, String message) throws IOException {
-        switch (c) {
-            case MESSAGE_OK:
+    protected void throwIfError(final DeliveryStatus deliveryStatus, final String message) throws IOException {
+        switch (deliveryStatus) {
+            case OK:
                 break;
-            case MESSAGE_LIMIT:
+            case OVER_LIMIT:
                 throw new IOException(
                         String.format(
                                 "Message was not accepted by the remote server - "
                                 + "%s (error %#x).",
                                 message.length() > 0 ? message : "too many messages in the system",
-                                c));
+                                deliveryStatus.statusCode));
             default:
                 throw new IOException(
                         String.format(
@@ -271,15 +269,42 @@ public abstract class Message implements Comparable<Message> {
                                 message.length() > 0 ? "- " : "",
                                 message.length() > 0 ? message : "",
                                 message.length() > 0 ? " " : "",
-                                c));
+                                deliveryStatus.statusCode));
+        }
+    }
 
+    public enum DeliveryStatus {
+
+        OK(0x1), OVER_LIMIT(0x2), ERROR(0x4);
+
+        private final int statusCode;
+
+        DeliveryStatus(final int statusCode) {
+            this.statusCode = statusCode;
+        }
+
+        public static DeliveryStatus fromStatusCode(final int statusCode) {
+            for (DeliveryStatus ds : values()) {
+                if (ds.statusCode == statusCode) {
+                    return ds;
+                }
+            }
+            throw new IllegalArgumentException("Unknown status code " + statusCode);
+        }
+
+        public int getStatusCode() {
+            return statusCode;
         }
     }
 
     private static class MessageDeserializer implements JsonDeserializer<Message> {
 
         @Override
-        public Message deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) {
+        public Message deserialize(
+                final JsonElement jsonElement,
+                final Type type,
+                final JsonDeserializationContext context
+        ) {
             String classStr = jsonElement.getAsJsonObject().get("type").getAsString();
             Class<?> cl;
             try {
@@ -308,32 +333,30 @@ public abstract class Message implements Comparable<Message> {
         }
 
         public T build() {
-            T m = createMessage(messageClass);
+            T result = createMessage(messageClass);
 
-            Message castToParent = m;
+            ((Message) result).tags.addAll(tags);
 
-            castToParent.tags.addAll(tags);
-
-            if (castToParent.tags.isEmpty()) {
-                Set<String> defaultTags = m.getDefaultTags();
+            if (((Message) result).tags.isEmpty()) {
+                Set<String> defaultTags = result.getDefaultTags();
                 if (defaultTags != null) {
-                    castToParent.tags.addAll(defaultTags);
+                    ((Message) result).tags.addAll(defaultTags);
                 }
             }
 
             if (text != null) {
-                castToParent.text = text;
+                ((Message) result).text = text;
             }
 
             if (cssClass != null) {
-                castToParent.cssClass = cssClass;
+                ((Message) result).cssClass = cssClass;
             } else {
-                castToParent.cssClass = m.getDefaultCssClass();
+                ((Message) result).cssClass = result.getDefaultCssClass();
             }
             if (expiration != null) {
-                castToParent.expiration = expiration;
+                ((Message) result).expiration = expiration;
             }
-            return m;
+            return result;
         }
 
         private static <T> T createMessage(final Class<T> messageClass) {

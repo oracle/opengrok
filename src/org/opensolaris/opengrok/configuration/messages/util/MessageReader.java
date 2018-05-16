@@ -29,7 +29,7 @@ import java.util.Scanner;
 
 public class MessageReader implements AutoCloseable {
 
-    private Scanner scanner;
+    private final Scanner scanner;
 
     public MessageReader(final InputStream in) {
         if (in == null) {
@@ -40,7 +40,7 @@ public class MessageReader implements AutoCloseable {
 
     public Message readMessage() {
         String encodedMsg = scanner.next();
-        return Message.decodeObject(encodedMsg);
+        return Message.decode(encodedMsg);
     }
 
     @Override

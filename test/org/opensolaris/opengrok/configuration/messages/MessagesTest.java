@@ -147,7 +147,7 @@ public class MessagesTest {
         output = new String(newStdoutArray.toByteArray(), Charset.defaultCharset());
         outerr = new String(newStderrArray.toByteArray(), Charset.defaultCharset());
         Assert.assertTrue(
-                output.contains(String.format("%#x", Message.MESSAGE_LIMIT))
-                || outerr.contains(String.format("%#x", Message.MESSAGE_LIMIT)));
+                output.contains(String.format("%#x", Message.DeliveryStatus.OVER_LIMIT.getStatusCode()))
+                || outerr.contains(String.format("%#x", Message.DeliveryStatus.OVER_LIMIT.getStatusCode())));
     }
 }

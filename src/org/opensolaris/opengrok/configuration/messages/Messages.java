@@ -124,14 +124,14 @@ public final class Messages {
             port = 2424;
         }
 
-        Optional<Class<? extends Message>> optionalClass = getMessageClass(type);
-        if (!optionalClass.isPresent()) {
+        Optional<Class<? extends Message>> messageType = getMessageClass(type);
+        if (!messageType.isPresent()) {
             System.err.println("Unknown message type " + type);
             b_usage();
             System.exit(1);
         }
 
-        Message.Builder messageBuilder = new Message.Builder<>(optionalClass.get());
+        Message.Builder messageBuilder = new Message.Builder<>(messageType.get());
 
         if (filepath != null) {
             try {

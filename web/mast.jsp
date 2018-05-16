@@ -37,12 +37,12 @@ java.io.File,
 java.io.IOException,
 
 org.opensolaris.opengrok.configuration.Project,
+org.opensolaris.opengrok.configuration.messages.MessageListener,
 org.opensolaris.opengrok.history.HistoryGuru,
 org.opensolaris.opengrok.web.EftarFileReader,
 org.opensolaris.opengrok.web.PageConfig,
 org.opensolaris.opengrok.web.Prefix,
-org.opensolaris.opengrok.web.Util,
-org.opensolaris.opengrok.configuration.messages.MessageListener"%><%
+org.opensolaris.opengrok.web.Util"%><%
 /* ---------------------- mast.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
