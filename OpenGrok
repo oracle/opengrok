@@ -259,10 +259,10 @@ DefaultInstanceConfiguration()
     #           (the configuration used by Web/GUI interfaces)
     XML_CONFIGURATION="${OPENGROK_INSTANCE_BASE}/etc/configuration.xml"
 
-    # OPTIONAL: read only XML config, if it exists, it will be read
+    # OPTIONAL: read only XML configuration
     READ_XML_CONFIGURATION="${OPENGROK_READ_XML_CONFIGURATION:-}"
 
-    if [ -f "${READ_XML_CONFIGURATION}" ] ; then
+    if [ -n "${READ_XML_CONFIGURATION}" ] ; then
         READ_XML_CONF="-R ${READ_XML_CONFIGURATION}"
     fi
 
