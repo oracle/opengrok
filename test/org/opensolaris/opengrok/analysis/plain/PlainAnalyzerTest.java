@@ -32,9 +32,12 @@ import java.util.TreeSet;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
 import org.opensolaris.opengrok.history.RepositoryFactory;
@@ -48,6 +51,7 @@ import org.opensolaris.opengrok.search.SearchEngine;
  * <p>
  * Derived from Trond Norbye's {@code SearchEngineTest}
  */
+@ConditionalRun(CtagsInstalled.class)
 public class PlainAnalyzerTest {
 
     private static final String TURKISH_TEST_STRINGS = "TR.strings";
@@ -55,9 +59,11 @@ public class PlainAnalyzerTest {
     private static RuntimeEnvironment env;
     private static TestRepository repository;
     private static File configFile;
-    private static boolean skip = false;
     private static boolean originalProjectsEnabled;
     private static boolean originalAllNonWhitespace;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -78,19 +84,13 @@ public class PlainAnalyzerTest {
         env.setDataRoot(repository.getDataRoot());
         RepositoryFactory.initializeIgnoredNames(env);
 
-        if (env.validateExuberantCtags()) {
-            env.setVerbose(false);
-            env.setHistoryEnabled(false);
-            IndexChangedListener progress = new DefaultIndexChangedListener();
-            Indexer.getInstance().prepareIndexer(env, true, true,
-                new TreeSet<>(Arrays.asList(new String[]{"/c"})),
-                false, false, null, null, new ArrayList<>(), false);
-            Indexer.getInstance().doIndexerExecution(true, null, progress);
-        } else {
-            System.out.println(
-                "Skipping test. Could not find a ctags I could use in path.");
-            skip = true;
-        }
+        env.setVerbose(false);
+        env.setHistoryEnabled(false);
+        IndexChangedListener progress = new DefaultIndexChangedListener();
+        Indexer.getInstance().prepareIndexer(env, true, true,
+            new TreeSet<>(Arrays.asList(new String[]{"/c"})),
+            false, false, null, null, new ArrayList<>(), false);
+        Indexer.getInstance().doIndexerExecution(true, null, progress);
 
         configFile = File.createTempFile("configuration", ".xml");
         env.writeConfiguration(configFile);
@@ -107,15 +107,10 @@ public class PlainAnalyzerTest {
         if (configFile != null) {
             configFile.delete();
         }
-        skip = false;
     }
 
     @Test
     public void testSearchForPlainFiles() throws IOException {
-        if (skip) {
-            return;
-        }
-
         SearchEngine instance;
         int noHits;
 
