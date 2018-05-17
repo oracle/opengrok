@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -37,6 +38,7 @@ import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
+import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 /**
  * Represents a {@link Tokenizer} subclass that listens to OpenGrok language
@@ -167,6 +169,9 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
      */
     private final Set<PendingToken> symbolsSet = new HashSet<>();
 
+    /** to support rolling back addNonWhitespaceSubstrings() */
+    private final PendingTokenSnapshot snapshot = new PendingTokenSnapshot();
+
     /**
      * Tracks a transient list of sub-strings of a string, where the sub-strings
      * start at different left positions and use the entire rest of the
@@ -184,6 +189,9 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
     private Supplier<TokenizerMode> modeGetter;
 
     private PendingToken lastPublished;
+
+    /** initialized lazily as needed */
+    private PlainFullTokenizer plainTokenizer;
 
     /**
      * Initialize an instance, passing a {@link ScanningSymbolMatcher} which
@@ -516,6 +524,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
             return;
         }
 
+        snapshot.save();
         lsubs.clear();
         /*
          * Track a (not-published-here) entry for `fullsub' to be used for later
@@ -547,9 +556,13 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                 lsubs.add(new PendingSub(lsub, loff));
                 if (addEventToken(tok) && ++successes >=
                         MAX_NONWHITESPACE_SUBSTRINGS) {
+                    snapshot.rollback();
+                    addPlainTokens(fullsub, nonWhitespaceOff);
                     return;
                 }
                 if (++tries >= MAX_NONWHITESPACE_SUBSTRING_TRIES) {
+                    snapshot.rollback();
+                    addPlainTokens(fullsub, nonWhitespaceOff);
                     return;
                 }
             }
@@ -590,6 +603,8 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                             psub.start + lrsub.length());
                         if (addEventToken(tok)) {
                             if (++successes >= MAX_NONWHITESPACE_SUBSTRINGS) {
+                                snapshot.rollback();
+                                addPlainTokens(fullsub, nonWhitespaceOff);
                                 return;
                             }
                             // After one added token, break to circle in lsubs.
@@ -597,6 +612,8 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                             break;
                         }
                         if (++tries >= MAX_NONWHITESPACE_SUBSTRING_TRIES) {
+                            snapshot.rollback();
+                            addPlainTokens(fullsub, nonWhitespaceOff);
                             return;
                         }
                     }
@@ -756,6 +773,39 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         return currentIdx;
     }
 
+    /**
+     * Fallback to PlainFullTokenizer after
+     * {@link #addNonWhitespaceSubstrings(java.lang.String)} hit limit of
+     * {@link #MAX_NONWHITESPACE_SUBSTRINGS} or
+     * {@link #MAX_NONWHITESPACE_SUBSTRING_TRIES}.
+     */
+    private void addPlainTokens(String fullsub, int offset) {
+        if (plainTokenizer == null) {
+            plainTokenizer = new PlainFullTokenizer(FileAnalyzer.dummyReader);
+            plainTokenizer.setSymbolMatchedListener(
+                    new SymbolMatchedListener() {
+                        @Override
+                        public void symbolMatched(SymbolMatchedEvent evt) {
+                            addEventToken(new PendingToken(evt.getStr(),
+                                    offset + evt.getStart(),
+                                    offset + evt.getEnd()));
+                        }
+
+                        @Override
+                        public void sourceCodeSeen(SourceCodeSeenEvent evt) {}
+                    });
+        }
+
+        try (StringReader rdr = new StringReader(fullsub)) {
+            plainTokenizer.yyreset(rdr);
+            try {
+                while (plainTokenizer.yylex() != plainTokenizer.getYYEOF()) {}
+            } catch (IOException ex) {
+                // IOException not expected with StringReader
+            }
+        }
+    }
+
     private static class PendingSub {
         public final String str;
         public final int start;
@@ -766,6 +816,34 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         public PendingSub(String str, int start) {
             this.str = str;
             this.start = start;
+        }
+    }
+
+    private class PendingTokenSnapshot {
+        public final List<PendingToken> eventHopperSavelist = new ArrayList<>();
+        public final List<PendingToken> eventsSavelist = new ArrayList<>();
+        public final List<PendingToken> eventsSetSavelist = new ArrayList<>();
+
+        public void save() {
+            eventHopperSavelist.clear();
+            eventHopperSavelist.addAll(eventHopper);
+
+            eventsSavelist.clear();
+            eventsSavelist.addAll(events);
+
+            eventsSetSavelist.clear();
+            eventsSetSavelist.addAll(eventsSet);
+        }
+
+        public void rollback() {
+            eventHopper.clear();
+            eventHopper.addAll(eventHopperSavelist);
+
+            events.clear();
+            events.addAll(eventsSavelist);
+
+            eventsSet.clear();
+            eventsSet.addAll(eventsSetSavelist);
         }
     }
 }
