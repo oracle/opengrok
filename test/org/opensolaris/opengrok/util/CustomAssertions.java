@@ -109,7 +109,7 @@ public class CustomAssertions {
 
     /**
      * Calls
-     * {@link #assertSymbolStream(java.lang.Class, java.io.InputStream, java.util.List, boolean)}
+     * {@link #assertSymbolStream(java.lang.Class, java.io.InputStream, java.util.List, boolean, org.opensolaris.opengrok.analysis.TokenizerMode)}
      * with {@code klass}, {@code iss}, {@code expectedTokens} and
      * {@code false}, and {@code TokenizerMode.SYMBOLS_ONLY}.
      * @param klass the test class
