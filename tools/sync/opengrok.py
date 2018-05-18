@@ -63,7 +63,7 @@ def get_first_line(logger, command):
         return None
 
     if len(cmd.getoutput()) != 1:
-        logger.error("output from '{}' has more than 1 line ({})".
+        logger.error("output from '{}' does not have exactly 1 line ({})".
                      format(cmd, len(cmd.getoutput())))
         return None
 
