@@ -166,7 +166,10 @@ class Command:
         output_thread = OutputThread()
         try:
             start_time = time.time()
-            self.logger.debug("working directory = {}".format(os.getcwd()))
+            try:
+                self.logger.debug("working directory = {}".format(os.getcwd()))
+            except PermissionError:
+                pass
             self.logger.debug("command = {}".format(self.cmd))
             if self.env_vars:
                 my_env = os.environ.copy()
