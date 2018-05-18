@@ -96,5 +96,7 @@ def get_repo_type(logger, path, messages_file):
 
     line = get_first_line(logger, [messages_file, '-n', 'repository', '-t',
                           path, 'get-repo-type'])
+    if not line:
+        return None
     idx = line.rfind(":")
     return line[idx + 1:]
