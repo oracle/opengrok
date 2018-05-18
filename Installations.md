@@ -5,9 +5,6 @@
 * http://www.midnightbsd.org/opengrok/ &mdash; MidnightBSD, MirBSD and other BSDs
 * http://androidxref.com/ &mdash; Android
 
-## Programming languages:
-* http://lxr.php.net/ &mdash; PHP
-
 ## Office and IDE:
 * http://opengrok.libreoffice.org/ &mdash; LibreOffice
 
