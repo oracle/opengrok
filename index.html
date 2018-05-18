@@ -1,182 +1,187 @@
 <!doctype html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>{OpenGrok by OpenGrok</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width">
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
+</head>
+<body>
+<div class="wrapper">
+    <header>
         <img src="images/opengrok-logo.png">
         <p>"A wicked fast source browser"</p>
 
-        <p class="view"><a href="https://github.com/oracle/opengrok">View the Project on GitHub
-	<small>oracle/opengrok</small></a></p>
+        <p class="view">
+            <a href="https://github.com/oracle/opengrok">View the Project on GitHub
+                <small>oracle/opengrok</small>
+            </a>
+        </p>
 
-	<!--
-		Note: the images should have width at most 270px to match
-		      the style of the header element.
-	-->
-	<a href="images/opengrok-scr1.png">
-          <img src="images/opengrok-scr1_small.png">
-	</a>
-	<a href="images/opengrok-scr2.png">
-          <img src="images/opengrok-scr2_small.png">
-	</a>
+        <ul>
+            <li>
+                <a href="https://github.com/oracle/opengrok/releases">Download <strong>TAR Ball</strong></a>
+            </li>
+            <li>
+                <a href="http://demo.opengrok.org">Check out <strong>Demo</strong></a>
+            </li>
+        </ul>
 
-	<p>
-	Some of OpenGrok users:
-	<a href="http://nxr.netbsd.org/">NetBSD</a>,
-	<a href="https://opengrok.libreoffice.org">LibreOffice</a>,
-	<a href="http://lxr.php.net/">PHP</a>,
-	<a href="http://grok.openkomodo.com/">Openkomodo</a>,
-	<a href="http://src.illumos.org/source/">Illumos</a>
-	</p>
+        <p>
+            Some of OpenGrok users:
+            <a href="https://github.com/oracle/opengrok/wiki/Installations">installations</a>
+        </p>
 
-      </header>
-      <section>
+    </header>
+    <section>
         <h2>{OpenGrok</h2>
 
-<p>
-OpenGrok is a fast and usable source code search and cross reference engine. It
-helps you search, cross-reference and navigate your source tree. It
-understands various program file formats and history from many Source Code
-Management systems.
-In other words it lets you <i>grok</i> (profoundly understand)
-source code and is developed in the open, hence the name OpenGrok. It is
-written in Java.
-</p>
+        <p>
+            OpenGrok is a fast and usable source code search and cross reference engine. It
+            helps you search, cross-reference and navigate your source tree. It
+            understands various program file formats and history from many Source Code
+            Management systems.
+            In other words it lets you <i>grok</i> (profoundly understand)
+            source code and is developed in the open, hence the name OpenGrok. It is
+            written in Java.
+        </p>
 
-<p>
-Downloads: see <a href="https://github.com/oracle/opengrok/releases">releases</a>.
-</p>
+        <p>
+            Requirements:
+        </p>
 
-<p>
-Requirements:
-</p>
+        <ul>
+            <li>
+                Latest <a href="http://www.oracle.com/technetwork/java/">Java</a> 1.8
+            </li>
 
-<ul>
-  <li>
-  Latest <a href="http://www.oracle.com/technetwork/java/">Java</a> 1.8
-  </li>
+            <li>
+                A servlet container like <a href="https://javaee.github.io/glassfish/">GlassFish</a>
+                or <a href="http://tomcat.apache.org/">Tomcat</a> (8.x or later) also running with Java at least 1.8
+            </li>
 
-  <li>
-  A servlet container like <a href="https://javaee.github.io/glassfish/">GlassFish</a>
-  or <a href="http://tomcat.apache.org/">Tomcat</a> (8.x or later) also running with Java at least 1.8
-  </li>
+            <li>
+                <a href="https://github.com/universal-ctags/ctags">Universal ctags</a>
+                (Exuberant ctags work too)
+            </li>
+        </ul>
 
-  <li>
-  <a href="https://github.com/universal-ctags/ctags">Universal ctags</a>
-  (Exuberant ctags work too)
-  </li>
-</ul>
+        <p>
+            Wiki pages:
+        </p>
 
-<p>
-Wiki pages:
-</p>
+        <ul>
+            <li>
+                <a href="https://github.com/oracle/opengrok/wiki/Features">Features</a>
+            </li>
 
-<ul>
-  <li>
-  <a href="https://github.com/oracle/opengrok/wiki/Features">Features</a>
-  </li>
+            <li>
+                <a href="https://github.com/oracle/opengrok/wiki/Comparison-with-Similar-Tools">
+                    Comparison with Similar Tools
+                </a>
+            </li>
 
-  <li>
-  <a href="https://github.com/oracle/opengrok/wiki/Comparison-with-Similar-Tools">Comparison with Similar Tools</a>
-  </li>
+            <li>
+                <a href="https://github.com/oracle/opengrok/wiki/Supported-Revision-Control-Systems">
+                    Supported Revision Control Systems
+                </a>
+            </li>
 
-  <li>
-  <a href="https://github.com/oracle/opengrok/wiki/Supported-Revision-Control-Systems">Supported Revision Control Systems</a>
-  </li>
+            <li>
+                <a href="https://github.com/oracle/opengrok/wiki/Supported-Languages-and-Formats">
+                    Supported Languages and Formats
+                </a>
+            </li>
 
-  <li>
-  <a href="https://github.com/oracle/opengrok/wiki/Supported-Languages-and-Formats">Supported Languages and Formats</a>
-  </li>
+            <li>
+                <a href="https://github.com/oracle/opengrok/wiki/How-to-build-OpenGrok-from-source">
+                    How to build OpenGrok from source
+                </a>
+            </li>
 
-  <li>
-  <a href="https://github.com/oracle/opengrok/wiki/How-to-build-OpenGrok-from-source">How to build OpenGrok from source</a>
-  </li>
+            <li>
+                <a href="https://github.com/oracle/opengrok/wiki/How-to-install-OpenGrok">How to install OpenGrok</a>
+            </li>
 
-  <li>
-  <a href="https://github.com/oracle/opengrok/wiki/How-to-install-OpenGrok">How to install OpenGrok</a>
-  </li>
+            <li>
+                <a href="https://github.com/oracle/opengrok/wiki/Internals">Internals</a>
+            </li>
 
-  <li>
-  <a href="https://github.com/oracle/opengrok/wiki/Internals">Internals</a>
-  </li>
+            <li>
+                <a href="https://github.com/oracle/opengrok/wiki/Story-of-OpenGrok">Story of OpenGrok</a>
+            </li>
+        </ul>
 
-  <li>
-  <a href="https://github.com/oracle/opengrok/wiki/Story-of-OpenGrok">Story of OpenGrok</a>
-  </li>
-</ul>
+        <p>
+            Communication:
+        </p>
 
-<p>
-Communication:
-</p>
+        <ul>
+            <li>
+                <a href="https://github.com/oracle/opengrok/wiki/Discussions">Discussions
+                    (mailing lists, etc.)</a>
+            </li>
 
-<ul>
-  <li>
-  <a href="https://github.com/oracle/opengrok/wiki/Discussions">Discussions
-  (mailing lists, etc.)</a>
-  </li>
+            <li>
+                Bugs or feature requests should be reported via
+                <a href="https://github.com/oracle/opengrok/issues">Issues</a>.
+            </li>
 
-  <li>
-  Bugs or feature requests should be reported via
-  <a href="https://github.com/oracle/opengrok/issues">Issues</a>.
-  </li>
+            <li>
+                OpenGrok related blogs can be found using the
+                <a href="http://blogs.oracle.com/main/tags/opengrok">opengrok tag</a>.
+            </li>
 
-  <li>
-  OpenGrok related blogs can be found using the
-  <a href="http://blogs.oracle.com/main/tags/opengrok">opengrok tag</a>.
-  </li>
+            <li>
+                Join the OpenGrok users group on <a href="http://linkedin.com/">LinkedIn</a>.
+            </li>
 
-  <li>
-  Join the OpenGrok users group on <a href="http://linkedin.com/">LinkedIn</a>.
-  </li>
+            <li>
+                See the summary of the project on
+                <a href="http://www.ohloh.net/p/opengrok">Ohloh</a>.
+            </li>
+        </ul>
 
-  <li>
-  See the summary of the project on
-  <a href="http://www.ohloh.net/p/opengrok">Ohloh</a>.
-  </li>
-</ul>
+        <p>
+            License:
+        </p>
 
-<p>
-License:
-</p>
+        <p>
+            OpenGrok is an open source project and is distributed under
+            <a href="http://www.opensource.org/licenses/cddl1.php">CDDL</a>.
+            OpenGrok uses software libraries from <a href="http://apache.org/">Apache Software Foundation</a>.
+            This product includes software developed by
+            <a href="http://www.collab.net/">CollabNet</a>.
+        </p>
 
-<p>
-OpenGrok is an open source project and is distributed under
-<a href="http://www.opensource.org/licenses/cddl1.php">CDDL</a>.
-OpenGrok uses software libraries from <a href="http://apache.org/">Apache Software Foundation</a>.
-This product includes software developed by
-<a href="http://www.collab.net/">CollabNet</a>.
-</p>
-
-      </section>
-      <footer>
+    </section>
+    <footer>
         <p>This project is maintained by enthusiasts and volunteers all over the world.</p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by
-	<a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-              <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-3665334-1");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
+        <p>
+            <small>
+                Hosted on GitHub Pages &mdash; Theme by<a href="https://github.com/orderedlist">orderedlist</a>
+            </small>
+        </p>
+    </footer>
+</div>
+<script src="javascripts/scale.fix.js"></script>
+<script type="text/javascript">
+    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+    try {
+        var pageTracker = _gat._getTracker("UA-3665334-1");
+        pageTracker._trackPageview();
+    } catch (err) {
+    }
+</script>
 
-  </body>
+</body>
 </html>
