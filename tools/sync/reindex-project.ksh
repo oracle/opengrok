@@ -32,7 +32,7 @@ function reindex_one
 	#
 	typeset -r log_conf_dir=$OPENGROK_INSTANCE_BASE/log/configs
 	if [[ ! -d $log_conf_dir ]]; then
-		mkdir "$log_conf_dir"
+		mkdir -p "$log_conf_dir"
 		if (( $? != 0 )); then
 			print -u2 "cannot create directory $log_conf_dir"
 			return 1
@@ -43,7 +43,7 @@ function reindex_one
 	if [[ ! -f $log_conf || $template -nt $log_conf ]]; then
 		typeset project_log_dir=$OPENGROK_INSTANCE_BASE/log/$project_name
 		if [[ ! -d $project_log_dir ]]; then
-			mkdir "$project_log_dir"
+			mkdir -p "$project_log_dir"
 			if (( $? != 0 )); then
 				print -u2 "cannot create directory $project_log_dir"
 				return 1
