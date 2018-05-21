@@ -78,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('project')
     parser.add_argument('-D', '--debug', action='store_true',
                         help='Enable debug prints')
-    parser.add_argument('-c', '--config', required=True,
+    parser.add_argument('-c', '--config',
                         help='config file in JSON/YAML format')
     parser.add_argument('-m', '--messages',
                         help='path to the Messages binary')
@@ -95,18 +95,17 @@ if __name__ == '__main__':
 
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
-    config = read_config(logger, args.config)
-    if config is None:
-        logger.error("Cannot read config file from {}".format(args.config))
-        sys.exit(1)
+    if args.config:
+        config = read_config(logger, args.config)
+        if config is None:
+            logger.error("Cannot read config file from {}".format(args.config))
+            sys.exit(1)
+    else:
+        config = {}
 
     # Make sure the log directory exists.
-    try:
-        logdir = config["logdir"]
-    except:
-        logger.error("'logdir' does not exist in configuration")
-        sys.exit(1)
-    else:
+    logdir = config.get("logdir")
+    if logdir:
         check_create_dir(logdir)
 
     if args.messages:
@@ -129,28 +128,24 @@ if __name__ == '__main__':
     logger.debug("Source root = {}".format(source_root))
 
     project_config = None
-    try:
-        projects = config['projects']
-        if projects:
-            if projects.get(args.project):
-                project_config = projects.get(args.project)
-            else:
-                for proj in projects.keys():
-                    try:
-                        pattern = re.compile(proj)
-                    except re.error:
-                        logger.error("Not a valid regular expression: {}".
-                                     format(proj))
-                        continue
+    projects = config.get('projects')
+    if projects:
+        if projects.get(args.project):
+            project_config = projects.get(args.project)
+        else:
+            for proj in projects.keys():
+                try:
+                    pattern = re.compile(proj)
+                except re.error:
+                    logger.error("Not a valid regular expression: {}".
+                                 format(proj))
+                    continue
 
-                    if pattern.match(args.project):
-                        logger.debug("Project '{}' matched pattern '{}'".
-                                     format(args.project, proj))
-                        project_config = projects.get(proj)
-                        break
-    except KeyError:
-        # The project has no config, that's fine - defaults will be used.
-        pass
+                if pattern.match(args.project):
+                    logger.debug("Project '{}' matched pattern '{}'".
+                                 format(args.project, proj))
+                    project_config = projects.get(proj)
+                    break
 
     hookdir = config.get('hookdir')
     if hookdir:
@@ -236,6 +231,9 @@ if __name__ == '__main__':
 
     # Log messages to dedicated log file if running in batch mode.
     if args.batch:
+        if not logdir:
+            logger.error("The logdir property is required in batch mode")
+            sys.exit(1)
         logfile = os.path.join(logdir, args.project + ".log")
         logger.debug("Switching logging to the {} file".
                      format(logfile))
@@ -274,11 +272,11 @@ if __name__ == '__main__':
                              args.project + "-mirror.lock"))
     try:
         with lock.acquire(timeout=0):
+            proxy = config.get('proxy') if use_proxy else None
             if prehook:
                 logger.info("Running pre hook")
                 if run_hook(logger, prehook,
-                            os.path.join(source_root, args.project),
-                            config['proxy'] if use_proxy else None,
+                            os.path.join(source_root, args.project), proxy,
                             hook_timeout) != 0:
                     logger.error("pre hook failed")
                     logging.shutdown()
@@ -308,7 +306,7 @@ if __name__ == '__main__':
                                       repo_type,
                                       args.project,
                                       config.get('commands'),
-                                      config['proxy'] if use_proxy else None,
+                                      proxy,
                                       None,
                                       command_timeout)
                 if not repo:
@@ -326,8 +324,7 @@ if __name__ == '__main__':
             if posthook:
                 logger.info("Running post hook")
                 if run_hook(logger, posthook,
-                            os.path.join(source_root, args.project),
-                            config['proxy'] if use_proxy else None,
+                            os.path.join(source_root, args.project), proxy,
                             hook_timeout) != 0:
                     logger.error("post hook failed")
                     logging.shutdown()
