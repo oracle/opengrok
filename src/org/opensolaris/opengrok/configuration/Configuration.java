@@ -204,6 +204,7 @@ public final class Configuration {
     private final Map<String, String> cmds;  // repository type -> command
     private int tabSize;
     private int commandTimeout; // in seconds
+    private int interactiveCommandTimeout; // in seconds
     private boolean scopesEnabled;
     private boolean projectsEnabled;
     private boolean foldingEnabled;
@@ -348,6 +349,24 @@ public final class Configuration {
         this.commandTimeout = commandTimeout;
     }
 
+    public int getInteractiveCommandTimeout() {
+        return interactiveCommandTimeout;
+    }
+
+    /**
+     * Set the interactive command timeout to a new value.
+     *
+     * @param commandTimeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setInteractiveCommandTimeout(int commandTimeout) throws IllegalArgumentException {
+        if (commandTimeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "interactiveCommandTimeout", commandTimeout));
+        }
+        this.interactiveCommandTimeout = commandTimeout;
+    }
+    
     public String getStatisticsFilePath() {
         return statisticsFilePath;
     }
@@ -397,6 +416,7 @@ public final class Configuration {
         setBugPattern("\\b([12456789][0-9]{6})\\b");
         setCachePages(5);
         setCommandTimeout(600); // 10 minutes
+        setInteractiveCommandTimeout(30);
         setCompressXref(true);
         setContextLimit((short)10);
         //contextSurround is default(short)

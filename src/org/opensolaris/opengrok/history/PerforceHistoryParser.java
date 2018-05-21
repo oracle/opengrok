@@ -54,7 +54,7 @@ public class PerforceHistoryParser {
     History parse(File file, Repository repos) throws HistoryException {
         History history;
 
-        if (!PerforceRepository.isInP4Depot(file)) {
+        if (!PerforceRepository.isInP4Depot(file, false)) {
             return null;
         }
 

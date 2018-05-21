@@ -17,40 +17,35 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
- * handles parsing the output of the {@code bk annotate} command
- * into an annotation object.
- *
- * @author James Service  {@literal <jas2701@googlemail.com>}
+ * handles parsing the output of the {@code cleartool annotate}
+ * command into an annotation object.
  */
-public class BitKeeperAnnotationParser implements Executor.StreamHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(BitKeeperAnnotationParser.class);
-
+public class ClearCaseAnnotationParser implements Executor.StreamHandler {
+    
     /**
      * Store annotation created by processStream.
      */
     private final Annotation annotation;
-
+    
     /**
      * @param fileName the name of the file being annotated
      */
-    public BitKeeperAnnotationParser(String fileName) {
+    public ClearCaseAnnotationParser(String fileName) {
         annotation = new Annotation(fileName);
     }
-
+    
     /**
      * Returns the annotation that has been created.
      *
@@ -59,27 +54,19 @@ public class BitKeeperAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-
-    /**
-     * Process the output of a {@code bk annotate} command.
-     *
-     * Each input line should be in the following format:
-     *   USER\tREVISION\tTEXT
-     *
-     * @param input the executor input stream
-     * @throws IOException if the stream reader throws an IOException
-     */
+    
     @Override
     public void processStream(InputStream input) throws IOException {
-        final BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        for (String line = in.readLine(); line != null; line = in.readLine()) {
-            final String fields[] = line.split("\t");
-            if (fields.length >= 2) {
-                final String author = fields[0];
-                final String rev = fields[1];
-                annotation.addLine(rev, author, true);
-            } else {
-                LOGGER.log(Level.SEVERE, "Error: malformed BitKeeper annotate output {0}", line);
+        String line;
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(input))) {
+            while ((line = in.readLine()) != null) {
+                String parts[] = line.split("\\|");
+                String aAuthor = parts[0];
+                String aRevision = parts[1];
+                aRevision = aRevision.replace('\\', '/');
+
+                annotation.addLine(aRevision, aAuthor, true);
             }
         }
     }

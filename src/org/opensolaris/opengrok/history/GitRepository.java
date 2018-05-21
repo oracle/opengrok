@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -83,12 +84,6 @@ public class GitRepository extends Repository {
      * {@code getDateFormat()} should use this option.
      */
     private static final String GIT_DATE_OPT = "--date=iso8601-strict";
-
-    /**
-     * Pattern used to extract author/revision from git blame.
-     */
-    private static final Pattern BLAME_PATTERN
-            = Pattern.compile("^\\W*(\\w+).+?\\((\\D+).*$");
 
     public GitRepository() {
         type = "git";
@@ -173,22 +168,6 @@ public class GitRepository extends Repository {
     }
 
     /**
-     * Create a {@code Reader} that reads an {@code InputStream} using the
-     * correct character encoding.
-     *
-     * @param input a stream with the output from a log or blame command
-     * @return a reader that reads the input
-     * @throws IOException if the reader cannot be created
-     */
-    Reader newLogReader(InputStream input) throws IOException {
-        // Bug #17731: Git always encodes the log output using UTF-8 (unless
-        // overridden by i18n.logoutputencoding, but let's assume that hasn't
-        // been done for now). Create a reader that uses UTF-8 instead of the
-        // platform's default encoding.
-        return new InputStreamReader(input, "UTF-8");
-    }
-
-    /**
      * Try to get file contents for given revision.
      *
      * @param fullpath full pathname of the file
@@ -198,7 +177,6 @@ public class GitRepository extends Repository {
     private InputStream getHistoryRev(String fullpath, String rev) {
         InputStream ret = null;
         File directory = new File(getDirectoryName());
-        Process process = null;
 
         try {
             String filename = fullpath.substring(getDirectoryName().length() + 1);
@@ -208,11 +186,14 @@ public class GitRepository extends Repository {
                 "show",
                 rev + ":" + filename
             };
-            process = Runtime.getRuntime().exec(argv, null, directory);
+            
+            Executor executor = new Executor(Arrays.asList(argv), directory,
+                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+            int status = executor.exec();
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
-            try (InputStream in = process.getInputStream()) {
+            try (InputStream in = executor.getOutputStream()) {
                 int len;
                 while ((len = in.read(buffer)) != -1) {
                     if (len > 0) {
@@ -225,25 +206,17 @@ public class GitRepository extends Repository {
              * If exit value of the process was not 0 then the file did
              * not exist or internal git error occured.
              */
-            if (process.waitFor() == 0) {
+            if (status == 0) {
                 ret = new ByteArrayInputStream(out.toByteArray());
             } else {
                 ret = null;
             }
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,
-                    "Failed to get history: " + exp.getClass().toString(), exp);
-        } finally {
-            // Clean up zombie-processes...
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
+                    "Failed to get history for file {0} in revision {1}: ",
+                        new Object[]{fullpath, rev, exp.getClass().toString(), exp});
         }
+
         return ret;
     }
 
@@ -290,6 +263,22 @@ public class GitRepository extends Repository {
     }
 
     /**
+     * Create a {@code Reader} that reads an {@code InputStream} using the
+     * correct character encoding.
+     *
+     * @param input a stream with the output from a log or blame command
+     * @return a reader that reads the input
+     * @throws IOException if the reader cannot be created
+     */
+    static Reader newLogReader(InputStream input) throws IOException {
+        // Bug #17731: Git always encodes the log output using UTF-8 (unless
+        // overridden by i18n.logoutputencoding, but let's assume that hasn't
+        // been done for now). Create a reader that uses UTF-8 instead of the
+        // platform's default encoding.
+        return new InputStreamReader(input, "UTF-8");
+    }
+    
+    /**
      * Get the name of file in given revision.
      *
      * @param fullpath file path
@@ -304,7 +293,8 @@ public class GitRepository extends Repository {
         }
 
         if (changeset == null || changeset.isEmpty()) {
-            throw new IOException(String.format("Invalid changeset string for path %s: %s", fullpath, changeset));
+            throw new IOException(String.format("Invalid changeset string for path %s: %s",
+                    fullpath, changeset));
         }
 
         String file = fullpath.replace(getDirectoryName() + File.separator, "");
@@ -325,42 +315,39 @@ public class GitRepository extends Repository {
             fullpath
         };
 
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        Process process = Runtime.getRuntime().exec(argv, null, new File(getDirectoryName()));
-
-        try {
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                String line;
-                String rev = null;
-                Matcher m;
-                Pattern pattern = Pattern.compile("^R\\d+\\s(.*)\\s(.*)");
-                while ((line = in.readLine()) != null) {
-                    if (line.startsWith("commit ")) {
-                        rev = line.substring(7);
-                        continue;
-                    }
-
-                    if (changeset.equals(rev)) {
-                        break;
-                    }
-
-                    if ((m = pattern.matcher(line)).find()) {
-                        file = m.group(1);
-                    }
+        Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        int status = executor.exec();
+        
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(executor.getOutputStream()))) {
+            String line;
+            String rev = null;
+            Matcher m;
+            Pattern pattern = Pattern.compile("^R\\d+\\s(.*)\\s(.*)");
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("commit ")) {
+                    rev = line.substring(7);
+                    continue;
                 }
-            }
-        } finally {
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException e) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
+
+                if (changeset.equals(rev)) {
+                    break;
+                }
+
+                if ((m = pattern.matcher(line)).find()) {
+                    file = m.group(1);
                 }
             }
         }
 
+        if (status != 0) {
+            LOGGER.log(Level.WARNING,
+                    "Failed to get original name in revision {3} for: \"{0}\" Exit code: {1}",
+                    new Object[]{fullpath, String.valueOf(status), changeset});
+            return null;
+        }
+        
         return (fullpath.substring(0, getDirectoryName().length() + 1) + file);
     }
 
@@ -385,8 +372,10 @@ public class GitRepository extends Repository {
         }
         cmd.add(file.getName());
 
-        Executor exec = new Executor(cmd, file.getParentFile());
-        int status = exec.exec();
+        Executor exec = new Executor(cmd, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        GitAnnotationParser parser = new GitAnnotationParser(file.getName());
+        int status = exec.exec(true, parser);
 
         // File might have changed its location
         if (status != 0) {
@@ -412,32 +401,7 @@ public class GitRepository extends Repository {
                     new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
-        return parseAnnotation(
-                newLogReader(exec.getOutputStream()), file.getName());
-    }
-
-    protected Annotation parseAnnotation(Reader input, String fileName)
-            throws IOException {
-
-        BufferedReader in = new BufferedReader(input);
-        Annotation ret = new Annotation(fileName);
-        String line = "";
-        int lineno = 0;
-        Matcher matcher = BLAME_PATTERN.matcher(line);
-        while ((line = in.readLine()) != null) {
-            ++lineno;
-            matcher.reset(line);
-            if (matcher.find()) {
-                String rev = matcher.group(1);
-                String author = matcher.group(2).trim();
-                ret.addLine(rev, author, true);
-            } else {
-                LOGGER.log(Level.SEVERE,
-                        "Error: did not find annotation in line {0}: [{1}] of {2}",
-                        new Object[]{String.valueOf(lineno), line, fileName});
-            }
-        }
-        return ret;
+        return parser.getAnnotation();
     }
 
     @Override
@@ -481,7 +445,7 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File f = new File(file, ".git");
             return f.exists() && f.isDirectory();
@@ -532,10 +496,7 @@ public class GitRepository extends Repository {
         return true;
     }
 
-    private TagEntry buildTagEntry(File directory, String tags) throws HistoryException, IOException {
-        String hash = null;
-        Date date = null;
-
+    private TagEntry buildTagEntry(File directory, String tags, boolean interactive) throws HistoryException, IOException {
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
@@ -544,64 +505,34 @@ public class GitRepository extends Repository {
                 + "Date:%at");
         argv.add("-r");
         argv.add(tags + "^.." + tags);
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        pb.directory(directory);
-        Process process;
-        process = pb.start();
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (line.startsWith("commit")) {
-                    String parts[] = line.split(":");
-                    if (parts.length < 2) {
-                        throw new HistoryException("Tag line contains more than 2 columns: " + line);
-                    }
-                    hash = parts[1];
-                }
-                if (line.startsWith("Date")) {
-                    String parts[] = line.split(":");
-                    if (parts.length < 2) {
-                        throw new HistoryException("Tag line contains more than 2 columns: " + line);
-                    }
-                    date = new Date((long) (Integer.parseInt(parts[1])) * 1000);
-                }
-            }
-        }
-
-        try {
-            process.exitValue();
-        } catch (IllegalThreadStateException e) {
-            // the process is still running??? just kill it..
-            process.destroy();
-        }
-
-        // Git can have tags not pointing to any commit, but tree instead
-        // Lets use Unix timestamp of 0 for such commits
-        if (date == null) {
-            date = new Date(0);
-        }
-        TagEntry result = new GitTagEntry(hash, date, tags);
-        return result;
+        
+        Executor executor = new Executor(argv, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
+        GitTagParser parser = new GitTagParser(tags);
+        executor.exec(true, parser);
+        return parser.getEntries().first();
     }
 
     @Override
-    protected void buildTagList(File directory) {
+    protected void buildTagList(File directory, boolean interactive) {
         this.tagList = new TreeSet<>();
         ArrayList<String> argv = new ArrayList<>();
         LinkedList<String> tagsList = new LinkedList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("tag");
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        pb.directory(directory);
-        Process process = null;
+        
+        Executor executor = new Executor(argv, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
+        int status = executor.exec();
 
         try {
             // First we have to obtain list of all tags, and put it aside
             // Otherwise we can't use git to get date & hash for each tag
-            process = pb.start();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(
+                    executor.getOutputStream()))) {
                 String line;
                 while ((line = in.readLine()) != null) {
                     tagsList.add(line);
@@ -613,20 +544,17 @@ public class GitRepository extends Repository {
             this.tagList = null;
         }
 
-        // Make sure this git instance is not running any more
-        if (process != null) {
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                // the process is still running??? just kill it..
-                process.destroy();
-            }
+        if (status != 0) {
+            LOGGER.log(Level.WARNING,
+                "Failed to get tags for: \"{0}\" Exit code: {1}",
+                    new Object[]{directory.getAbsolutePath(), String.valueOf(status)});
+            this.tagList = null;
         }
-
+        
         try {
             // Now get hash & date for each tag
             for (String tags : tagsList) {
-                TagEntry tagEntry = buildTagEntry(directory, tags);
+                TagEntry tagEntry = buildTagEntry(directory, tags, interactive);
                 // Reverse the order of the list
                 this.tagList.add(tagEntry);
             }
@@ -642,7 +570,7 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         String parent = null;
         File directory = new File(getDirectoryName());
 
@@ -651,12 +579,12 @@ public class GitRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("remote");
         cmd.add("-v");
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.directory(directory);
-        Process process;
-        process = pb.start();
+        Executor executor = new Executor(cmd, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
+        executor.exec();
 
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(executor.getOutputStream()))) {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("origin") && line.contains("(fetch)")) {
@@ -675,7 +603,7 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    String determineBranch() throws IOException {
+    String determineBranch(boolean interactive) throws IOException {
         String branch = null;
         File directory = new File(getDirectoryName());
 
@@ -683,12 +611,12 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("branch");
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.directory(directory);
-        Process process;
-        process = pb.start();
+        Executor executor = new Executor(cmd, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
+        executor.exec();
 
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(executor.getOutputStream()))) {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("*")) {
@@ -702,7 +630,7 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    public String determineCurrentVersion() throws IOException {
+    public String determineCurrentVersion(boolean interactive) throws IOException {
         File directory = new File(getDirectoryName());
         List<String> cmd = new ArrayList<>();
         // The delimiter must not be contained in the date format emitted by
@@ -717,7 +645,8 @@ public class GitRepository extends Repository {
         cmd.add("--pretty=%cd" + delim + "%h %an %s");
         cmd.add(GIT_DATE_OPT);
 
-        Executor executor = new Executor(cmd, directory);
+        Executor executor = new Executor(cmd, directory,
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }

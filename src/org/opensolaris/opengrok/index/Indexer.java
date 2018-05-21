@@ -222,7 +222,7 @@ public final class Indexer {
             }
 
             // Set updated configuration in RuntimeEnvironment.
-            env.setConfiguration(cfg, subFilesList);
+            env.setConfiguration(cfg, subFilesList, false);
 
             // Let repository types to add items to ignoredNames.
             // This changes env so is called after the setConfiguration()
