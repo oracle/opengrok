@@ -983,8 +983,30 @@ DeployWar()
         FatalError "Missing Deployment Directory ${warTarget}"
     fi
 
+    APP_CONTEXT="source"
+    FINAL_WAR_NAME="source"
+    if [ "$applicationServer" = "Tomcat" ]
+    then
+        if [ ! -z ${OPENGROK_WEBAPP_CONTEXT+x} ]
+        then
+            APP_CONTEXT="${OPENGROK_WEBAPP_CONTEXT}"
+
+            # strip leading /
+            case ${APP_CONTEXT} in
+                /*) APP_CONTEXT=`echo ${APP_CONTEXT} | sed 's|^/||'`
+            esac
+
+            FINAL_WAR_NAME=`echo ${APP_CONTEXT} | sed 's|/|#|g'`
+
+            if [ -z "${FINAL_WAR_NAME}" ]
+            then
+                FINAL_WAR_NAME="ROOT"
+            fi
+        fi
+    fi
+
     Progress "Installing ${OPENGROK_DIST_WAR} to ${warTarget} ..."
-    ${DO} cp -p "${OPENGROK_DIST_WAR}" "${warTarget}/"
+    ${DO} cp -p "${OPENGROK_DIST_WAR}" "${warTarget}/${FINAL_WAR_NAME}.war"
     if [ $? != 0 ]
     then
         FatalError "Web Application Installation FAILED"
@@ -1011,7 +1033,7 @@ DeployWar()
         if [ -n "${EXTRACT_COMMAND}" ]
         then
             cd "${warTarget}"
-            eval "${EXTRACT_COMMAND} ${warTarget}/source.war WEB-INF/web.xml"
+            eval "${EXTRACT_COMMAND} ${warTarget}/${FINAL_WAR_NAME}.war WEB-INF/web.xml"
             if [ "${OPENGROK_INSTANCE_BASE}" != '/var/opengrok' ]
             then
                 sed -e 's:/var/opengrok/etc/configuration.xml:'"$XML_CONFIGURATION"':g' \
@@ -1028,7 +1050,7 @@ DeployWar()
 		mv "${warTarget}/WEB-INF/web.xml.tmp" \
 		    "${warTarget}/WEB-INF/web.xml"
             fi
-            eval "${COMPRESS_COMMAND} ${warTarget}/source.war WEB-INF/web.xml"
+            eval "${COMPRESS_COMMAND} ${warTarget}/${FINAL_WAR_NAME}.war WEB-INF/web.xml"
             rm -rf "${warTarget}/WEB-INF"
         fi
     fi
@@ -1039,7 +1061,7 @@ DeployWar()
     Progress "running, or wait until it loads the just installed web " \
         "application."
     Progress
-    Progress "OpenGrok should be available on <HOST>:<PORT>/source"
+    Progress "OpenGrok should be available on <HOST>:<PORT>/${APP_CONTEXT}"
     Progress "  where HOST and PORT are configured in ${applicationServer}."
     Progress
 }
