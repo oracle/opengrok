@@ -57,7 +57,7 @@ def get_first_line(logger, command):
 
     cmd = Command(command)
     cmd.execute()
-    if cmd.state is not "finished" or cmd.getretcode() != 0:
+    if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
         logger.error("execution of command '{}' failed with: {}"
                      .format(cmd, cmd.getoutputstr()))
         return None
