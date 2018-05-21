@@ -47,8 +47,9 @@ class CVSRepository(Repository):
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            self.logger.error("failed to perform update for {}".
-                              format(self.path))
+            self.logger.error("failed to perform update: command {}"
+                              "in directory {} exited with {}".
+                              format(hg_command, self.path, cmd.getretcode()))
             return 1
 
         return 0

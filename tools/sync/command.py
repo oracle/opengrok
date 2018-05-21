@@ -277,3 +277,13 @@ class Command:
 
     def getpid(self):
         return self.pid
+
+    def log_error(self, msg):
+        if self.state is Command.FINISHED:
+            self.logger.error("{}: command {} in directory {} exited with {}".
+                              format(msg, self.cmd, self.work_dir,
+                                     self.getretcode()))
+        else:
+            self.logger.error("{}: command {} in directory {} ended with "
+                              "invalid state".
+                              format(msg, self.cmd, self.work_dir, self.state))
