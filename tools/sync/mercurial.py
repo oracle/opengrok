@@ -66,22 +66,6 @@ class MercurialRepository(Repository):
             # Error logged allready in get_branch().
             return 1
 
-        hg_command = [self.command, "incoming", "-v"]
-        if branch != "default":
-            hg_command.append("-b")
-            hg_command.append(branch)
-        cmd = self.getCommand(hg_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
-        cmd.execute()
-        self.logger.info(cmd.getoutputstr())
-        #
-        # 'hg incoming' will return 1 if there are no incoming changesets,
-        # so do not check the return value.
-        #
-        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            cmd.log_error("failed to get incoming changesets")
-            return 1
-
         hg_command = [self.command, "pull"]
         if branch != "default":
             hg_command.append("-b")
