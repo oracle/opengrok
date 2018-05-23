@@ -267,9 +267,9 @@ public class ProjectMessageHandler implements MessageHandler {
                 List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
                 if (riList != null) {
                     for (RepositoryInfo ri : riList) {
-                        Repository repo = null;
+                        Repository repo;
                         try {
-                            repo = getRepository(ri);
+                            repo = getRepository(ri, false);
                         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException
                                 | InvocationTargetException e) {
                             throw new HandleException(e);
