@@ -18,7 +18,7 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
@@ -133,6 +133,8 @@ Supported Environment Variables for configuring the default setup:
                                   (by default 3 directories from SRC_ROOT)
   - OPENGROK_WEBAPP_CFGADDR     Web app address to send configuration to
                                   (use "none" to avoid sending it to web app)
+  - OPENGROK_WEBAPP_CONTEXT     Context URL of the OpenGrok webapp
+                                  (by default /source).
   - OPENGROK_WPREFIX            Disable wildcard prefix search query support (*)
   - OPENGROK_TAG                Enable parsing of revision tags into the History
                                   view
@@ -987,7 +989,7 @@ DeployWar()
     FINAL_WAR_NAME="source"
     if [ "$applicationServer" = "Tomcat" ]
     then
-        if [ ! -z ${OPENGROK_WEBAPP_CONTEXT+x} ]
+        if [ ! -z ${OPENGROK_WEBAPP_CONTEXT+x} ] # OPENGROK_WEBAPP_CONTEXT is set
         then
             APP_CONTEXT="${OPENGROK_WEBAPP_CONTEXT}"
 
