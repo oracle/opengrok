@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
-import java.time.Instant;
+import java.time.Duration;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -101,40 +101,19 @@ public class MessageListenerTest {
     }
 
     @Test
-    public void testCanAcceptMessage() throws Exception {
+    public void testMessageLimit() throws Exception {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         MessageListener listener = MessageTestUtils.initMessageListener(instance);
         listener.removeAllMessages();
 
-        Message.Builder<NormalMessage> mb = new Message.Builder<>(NormalMessage.class)
-                .addTag("main")
-                .setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() - 3000));
-
-        assertFalse(listener.canAcceptMessage(mb.build()));
-        mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() - 2000));
-        assertFalse(listener.canAcceptMessage(mb.build()));
-        mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() - 1000));
-        assertFalse(listener.canAcceptMessage(mb.build()));
-        mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() - 1));
-        assertFalse(listener.canAcceptMessage(mb.build()));
-        mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 50));
-        assertTrue(listener.canAcceptMessage(mb.build()));
-        mb.setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 100));
-        assertTrue(listener.canAcceptMessage(mb.build()));
-
         Assert.assertEquals(0, listener.getMessagesInTheSystem());
 
-        long now = System.currentTimeMillis();
         for (int i = 0; i < listener.getMessageLimit(); i++) {
             Message m2 = new Message.Builder<>(NormalMessage.class)
                     .addTag("main")
                     .setText("text")
-                    .setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 5000))
+                    .setDuration(Duration.ofMillis(5000 + i))
                     .build();
-
-            MessageTestUtils.setCreated(m2, Instant.ofEpochMilli(now + i));
-
-            assertTrue(listener.canAcceptMessage(m2));
 
             processMessage(listener, m2);
 
@@ -146,9 +125,8 @@ public class MessageListenerTest {
             Message m2 = new Message.Builder<>(NormalMessage.class)
                     .addTag("main")
                     .setText("text")
-                    .setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 5000)).build();
+                    .setDuration(Duration.ofMillis(5000)).build();
 
-            assertFalse(listener.canAcceptMessage(m2));
             processMessage(listener, m2);
             Assert.assertEquals(listener.getMessageLimit(), listener.getMessagesInTheSystem());
         }

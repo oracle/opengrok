@@ -22,15 +22,18 @@
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.time.Instant;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.MessageListener.AcceptedMessage;
 
 import static org.opensolaris.opengrok.configuration.messages.MessageListener.MESSAGES_MAIN_PAGE_TAG;
 import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.processMessage;
@@ -93,18 +96,15 @@ public class NormalMessageTest {
     public void testApplyMultiple() throws Exception {
         List<Message> msgs = new ArrayList<>();
 
-        Instant defaultExpiration = new NormalMessage().getExpiration();
-
         for (int i = 0; i < 3; i++) {
             Message m = new Message.Builder<>(NormalMessage.class)
                     .addTag(MESSAGES_MAIN_PAGE_TAG)
                     .addTag("project")
                     .addTag("pull")
                     .setText("text")
-                    .setExpiration(defaultExpiration)
+                    .setDuration(Duration.ofMillis(1000 + i))
                     .build();
 
-            MessageTestUtils.setCreated(m, Instant.ofEpochMilli(System.currentTimeMillis() + i * 1000));
             msgs.add(m);
         }
 
@@ -120,47 +120,17 @@ public class NormalMessageTest {
         Assert.assertEquals(3, env.getMessages().size());
         Assert.assertNotNull(env.getMessages(MESSAGES_MAIN_PAGE_TAG));
         Assert.assertEquals(3, env.getMessages(MESSAGES_MAIN_PAGE_TAG).size());
-        Assert.assertEquals(new TreeSet<>(msgs), env.getMessages(MESSAGES_MAIN_PAGE_TAG));
+        Assert.assertEquals(new TreeSet<>(msgs),
+                env.getMessages(MESSAGES_MAIN_PAGE_TAG).stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
 
         Assert.assertNotNull(env.getMessages("project"));
         Assert.assertEquals(3, env.getMessages("project").size());
-        Assert.assertEquals(new TreeSet<>(msgs), env.getMessages("project"));
+        Assert.assertEquals(new TreeSet<>(msgs),
+                env.getMessages("project").stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
         Assert.assertNotNull(env.getMessages("pull"));
         Assert.assertEquals(3, env.getMessages("pull").size());
-        Assert.assertEquals(new TreeSet<>(msgs), env.getMessages("pull"));
-    }
-
-    @Test
-    public void testApplyMultipleUnique() throws Exception {
-        List<Message> msgs = new ArrayList<>();
-
-        Instant instant = Instant.now();
-
-        Instant defaultExpiration = new NormalMessage().getExpiration();
-
-        for (int i = 0; i < 3; i++) {
-            Message m = new Message.Builder<>(NormalMessage.class)
-                    .addTag(MESSAGES_MAIN_PAGE_TAG)
-                    .setText("text")
-                    .setExpiration(defaultExpiration)
-                    .build();
-
-            MessageTestUtils.setCreated(m, instant);
-
-            msgs.add(m);
-        }
-
-        Assert.assertEquals(0, listener.getMessagesInTheSystem());
-
-        for (Message m : msgs) {
-            processMessage(listener, m);
-        }
-
-        Assert.assertEquals(1, listener.getMessagesInTheSystem());
-        Assert.assertNotNull(env.getMessages());
-        Assert.assertEquals(1, env.getMessages().size());
-        Assert.assertNotNull(env.getMessages(MESSAGES_MAIN_PAGE_TAG));
-        Assert.assertEquals(1, env.getMessages(MESSAGES_MAIN_PAGE_TAG).size());
+        Assert.assertEquals(new TreeSet<>(msgs),
+                env.getMessages("pull").stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
     }
 
 }

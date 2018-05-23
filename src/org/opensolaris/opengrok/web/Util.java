@@ -39,6 +39,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Date;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -65,7 +66,7 @@ import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.messages.Message;
+import org.opensolaris.opengrok.configuration.messages.MessageListener.AcceptedMessage;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -1187,7 +1188,7 @@ public final class Util {
      * @param out output
      * @param set set of messages
      */
-    public static void printMessages(Writer out, SortedSet<Message> set) {
+    public static void printMessages(Writer out, SortedSet<AcceptedMessage> set) {
         printMessages(out, set, false);
     }
 
@@ -1198,7 +1199,7 @@ public final class Util {
      * @param set set of messages
      * @param limited if the container should be limited
      */
-    public static void printMessages(Writer out, SortedSet<Message> set, boolean limited) {
+    public static void printMessages(Writer out, SortedSet<AcceptedMessage> set, boolean limited) {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         if (!set.isEmpty()) {
             try {
@@ -1207,15 +1208,15 @@ public final class Util {
                     out.write(" limited");
                 }
                 out.write("\">\n");
-                for (Message m : set) {
+                for (AcceptedMessage m : set) {
                     out.write("<li class=\"message-group-item ");
-                    out.write(Util.encode(m.getCssClass()));
+                    out.write(Util.encode(m.getMessage().getCssClass()));
                     out.write("\" title=\"Expires on ");
-                    out.write(Util.encode(df.format(m.getExpiration())));
+                    out.write(Util.encode(df.format(Date.from(m.getExpirationTime()))));
                     out.write("\">");
-                    out.write(Util.encode(df.format(m.getCreated())));
+                    out.write(Util.encode(df.format(Date.from(m.getAcceptedTime()))));
                     out.write(": ");
-                    out.write(m.getText());
+                    out.write(m.getMessage().getText());
                     out.write("</li>");
                 }
                 out.write("</ul>");
@@ -1233,17 +1234,17 @@ public final class Util {
      * @return json array containing the set of messages
      */
     @SuppressWarnings("unchecked")
-    public static JSONArray messagesToJson(SortedSet<Message> set) {
+    public static JSONArray messagesToJson(SortedSet<AcceptedMessage> set) {
         JSONArray array = new JSONArray();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
-        for (Message m : set) {
+        for (AcceptedMessage m : set) {
             JSONObject message = new JSONObject();
-            message.put("class", Util.encode(m.getCssClass()));
-            message.put("expiration", Util.encode(df.format(m.getExpiration())));
-            message.put("created", Util.encode(df.format(m.getCreated())));
-            message.put("text", Util.encode(m.getText()));
+            message.put("class", Util.encode(m.getMessage().getCssClass()));
+            message.put("expiration", Util.encode(df.format(Date.from(m.getExpirationTime()))));
+            message.put("created", Util.encode(df.format(Date.from(m.getAcceptedTime()))));
+            message.put("text", Util.encode(m.getMessage().getText()));
             JSONArray tags = new JSONArray();
-            for (String t : m.getTags()) {
+            for (String t : m.getMessage().getTags()) {
                 tags.add(Util.encode(t));
             }
             message.put("tags", tags);
@@ -1260,7 +1261,7 @@ public final class Util {
      */
     @SuppressWarnings("unchecked")
     public static JSONObject messagesToJsonObject(String tag) {
-        SortedSet<Message> messages = RuntimeEnvironment.getInstance().getMessages(tag);
+        SortedSet<AcceptedMessage> messages = RuntimeEnvironment.getInstance().getMessages(tag);
         if (messages.isEmpty()) {
             return null;
         }

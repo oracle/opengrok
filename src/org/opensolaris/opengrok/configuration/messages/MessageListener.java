@@ -34,11 +34,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Timer;
@@ -71,7 +73,7 @@ public class MessageListener {
     initial concurrency level - number of concurrently updating threads (default 16)
         - just two (the timer, configuration listener) so set it to small value
     */
-    private final ConcurrentMap<String, SortedSet<Message>> tagMessages = new ConcurrentHashMap<>(16, 0.75f, 5);
+    private final ConcurrentMap<String, SortedSet<AcceptedMessage>> tagMessages = new ConcurrentHashMap<>(16, 0.75f, 5);
 
     private int messagesInTheSystem = 0;
 
@@ -181,7 +183,7 @@ public class MessageListener {
     private void handleMessage(final Message m, final OutputStream output) throws IOException, ValidationException {
         m.validate();
 
-        if (!canAcceptMessage(m)) {
+        if (isMessageLimitExceeded()) {
             LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system", m.getTags());
             output.write(Message.DeliveryStatus.OVER_LIMIT.getStatusCode());
             return;
@@ -240,7 +242,7 @@ public class MessageListener {
         return response;
     }
 
-    private static SortedSet<Message> emptyMessageSet(SortedSet<Message> toRet) {
+    private static SortedSet<AcceptedMessage> emptyMessageSet(SortedSet<AcceptedMessage> toRet) {
         return toRet == null ? new TreeSet<>() : toRet;
     }
 
@@ -249,7 +251,7 @@ public class MessageListener {
      *
      * @return set of messages
      */
-    public SortedSet<Message> getMessages() {
+    public SortedSet<AcceptedMessage> getMessages() {
         if (expirationTimer == null) {
             expireMessages();
         }
@@ -262,7 +264,7 @@ public class MessageListener {
      * @param tag the message tag
      * @return set of messages
      */
-    public SortedSet<Message> getMessages(String tag) {
+    public SortedSet<AcceptedMessage> getMessages(String tag) {
         if (expirationTimer == null) {
             expireMessages();
         }
@@ -275,8 +277,17 @@ public class MessageListener {
      *
      * @param m the message
      */
-    public void addMessage(Message m) {
-        if (!canAcceptMessage(m)) {
+    public void addMessage(final Message m) {
+        if (m == null) {
+            throw new IllegalArgumentException("Cannot add null message");
+        }
+        try {
+            m.validate();
+        } catch (ValidationException e) {
+            throw new IllegalArgumentException("Cannot add invalid message", e);
+        }
+
+        if (isMessageLimitExceeded()) {
             return;
         }
 
@@ -284,26 +295,29 @@ public class MessageListener {
             expireMessages();
         }
 
+        AcceptedMessage acceptedMessage = new AcceptedMessage(m);
+        addMessage(acceptedMessage);
+    }
+
+    private void addMessage(final AcceptedMessage acceptedMessage) {
         boolean added = false;
-        for (String tag : m.getTags()) {
+        for (String tag : acceptedMessage.getMessage().getTags()) {
             if (!tagMessages.containsKey(tag)) {
                 tagMessages.put(tag, new ConcurrentSkipListSet<>());
             }
-            if (tagMessages.get(tag).add(m)) {
+            if (tagMessages.get(tag).add(acceptedMessage)) {
                 messagesInTheSystem++;
                 added = true;
             }
         }
 
-        if (added) {
-            if (expirationTimer != null) {
-                expirationTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        expireMessages();
-                    }
-                }, Date.from(m.getExpiration().plusMillis(10)));
-            }
+        if (added && expirationTimer != null) {
+            expirationTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    expireMessages();
+                }
+            }, Date.from(acceptedMessage.getExpirationTime().plusMillis(10)));
         }
     }
 
@@ -321,14 +335,14 @@ public class MessageListener {
      * @param tags set of tags
      */
     public void removeAnyMessage(Set<String> tags) {
-        removeAnyMessage(t -> t.hasAny(tags));
+        removeAnyMessage(t -> t.getMessage().hasAny(tags));
     }
 
     /**
      * Remove messages which have expired.
      */
     private void expireMessages() {
-        removeAnyMessage(Message::isExpired);
+        removeAnyMessage(AcceptedMessage::isExpired);
     }
 
     /**
@@ -337,25 +351,19 @@ public class MessageListener {
      *
      * @param predicate the testing predicate
      */
-    private void removeAnyMessage(Predicate<Message> predicate) {
+    private void removeAnyMessage(Predicate<AcceptedMessage> predicate) {
         int size;
-        for (Map.Entry<String, SortedSet<Message>> set : tagMessages.entrySet()) {
+        for (Map.Entry<String, SortedSet<AcceptedMessage>> set : tagMessages.entrySet()) {
             size = set.getValue().size();
             set.getValue().removeIf(predicate);
             messagesInTheSystem -= size - set.getValue().size();
         }
 
-        tagMessages.entrySet().removeIf(t -> t.getValue().isEmpty());
+        tagMessages.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     }
 
-    /**
-     * Test if the application can receive this messages.
-     *
-     * @param m the message
-     * @return true if it can
-     */
-    public boolean canAcceptMessage(Message m) {
-        return messagesInTheSystem < getMessageLimit() && !m.isExpired();
+    private boolean isMessageLimitExceeded() {
+        return messagesInTheSystem >= getMessageLimit();
     }
 
     /**
@@ -430,6 +438,60 @@ public class MessageListener {
             throw new IllegalStateException("Message listener has not started yet");
         }
         return configServerSocket.getLocalPort();
+    }
+
+    public static class AcceptedMessage implements Comparable<AcceptedMessage> {
+
+        private final Instant acceptedTime = Instant.now();
+
+        private final Message message;
+
+        private AcceptedMessage(final Message message) {
+            this.message = message;
+        }
+
+        public Instant getAcceptedTime() {
+            return acceptedTime;
+        }
+
+        public Message getMessage() {
+            return message;
+        }
+
+        public boolean isExpired() {
+            return getExpirationTime().isBefore(Instant.now());
+        }
+
+        public Instant getExpirationTime() {
+            return acceptedTime.plus(message.getDuration());
+        }
+
+        @Override
+        public int compareTo(final AcceptedMessage o) {
+            int cmpRes = acceptedTime.compareTo(o.acceptedTime);
+            if (cmpRes == 0) {
+                return message.compareTo(o.message);
+            }
+            return cmpRes;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            AcceptedMessage that = (AcceptedMessage) o;
+            return Objects.equals(acceptedTime, that.acceptedTime)
+                    && Objects.equals(message, that.message);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(acceptedTime, message);
+        }
     }
 
 }

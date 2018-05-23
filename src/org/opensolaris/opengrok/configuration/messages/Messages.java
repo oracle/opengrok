@@ -24,7 +24,8 @@ package org.opensolaris.opengrok.configuration.messages;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.time.Instant;
+import java.time.Duration;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -40,14 +41,14 @@ public final class Messages {
         String text = null;
         List<String> tags = new ArrayList<>();
         String cssClass = null;
-        long expire = -1;
+        Duration duration = null;
         String server = null;
         int port = -1;
         String filepath = null;
 
         String x;
 
-        Getopt getopt = new Getopt(argv, "c:e:f:g:hm:p:s:t:?");
+        Getopt getopt = new Getopt(argv, "c:d:f:g:hm:p:s:t:?");
 
         try {
             getopt.parse();
@@ -64,12 +65,12 @@ public final class Messages {
                 case 'c':
                     cssClass = getopt.getOptarg();
                     break;
-                case 'e':
+                case 'd':
                     x = getopt.getOptarg();
                     try {
-                        expire = Long.parseLong(x) * 1000;
-                    } catch (NumberFormatException e) {
-                        System.err.println("Cannot parse " + x + " into long");
+                        duration = Duration.parse(x);
+                    } catch (DateTimeParseException e) {
+                        System.err.println("Cannot parse " + x + ", allowed format: PnDTnHnMn.nS");
                         b_usage();
                         System.exit(1);
                     }
@@ -150,8 +151,8 @@ public final class Messages {
             messageBuilder.addTag(tag);
         }
 
-        if (expire != -1 && expire > System.currentTimeMillis()) {
-            messageBuilder.setExpiration(Instant.ofEpochMilli(expire));
+        if (duration != null) {
+            messageBuilder.setDuration(duration);
         }
 
         Message m = messageBuilder.build();
@@ -200,8 +201,8 @@ public final class Messages {
         System.err.println("Id");
         System.err.println("-i <id>              set the id of the message (default is auto-generated)");
         System.err.println();
-        System.err.println("Expiration");
-        System.err.println("-e <expire>          set the expire date int UTC timestamp (s)");
+        System.err.println("Duration");
+        System.err.println("-d <duration>        set the duration of the message (format PnDTnHnMn.nS)");
         System.err.println();
         System.err.println("Remote address");
         System.err.println("-s <remote address>  set the remote address where to send the message (default is 'localhost')");

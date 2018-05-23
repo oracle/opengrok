@@ -23,27 +23,26 @@
 package org.opensolaris.opengrok.configuration.messages;
 
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.MessageListener.AcceptedMessage;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.Instant;
+import java.time.Duration;
 
 public class MessageTestUtils {
 
     private MessageTestUtils() {
     }
 
-    public static void setCreated(final Message m, final Instant i) throws NoSuchFieldException, IllegalAccessException {
-        Field f = Message.class.getDeclaredField("created");
-        f.setAccessible(true);
-        f.set(m, i);
+    public static void expire(final AcceptedMessage message) throws NoSuchFieldException, IllegalAccessException {
+        expire(message.getMessage());
     }
 
     public static void expire(final Message message) throws NoSuchFieldException, IllegalAccessException {
-        Field f = Message.class.getDeclaredField("expiration");
+        Field f = Message.class.getDeclaredField("duration");
         f.setAccessible(true);
-        f.set(message, Instant.now().minusMillis(1));
+        f.set(message, Duration.ofMillis(-1));
     }
 
     public static MessageListener initMessageListener(final RuntimeEnvironment env) throws Exception {

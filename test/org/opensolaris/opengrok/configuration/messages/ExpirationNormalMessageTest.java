@@ -23,16 +23,19 @@
 package org.opensolaris.opengrok.configuration.messages;
 
 import java.lang.reflect.Method;
-import java.time.Instant;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.MessageListener.AcceptedMessage;
 
 import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.processMessage;
 import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.expire;
@@ -91,7 +94,7 @@ public class ExpirationNormalMessageTest {
         Assert.assertEquals(0, listener.getMessagesInTheSystem());
         Message m1 = new Message.Builder<>(NormalMessage.class)
                 .addTag("main")
-                .setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 2000000))
+                .setDuration(Duration.ofMillis(2000000))
                 .setText("text")
                 .build();
         listener.addMessage(m1);
@@ -100,7 +103,8 @@ public class ExpirationNormalMessageTest {
         for (int i = 0; i < 50; i++) {
             Assert.assertEquals(1, listener.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
-            Assert.assertEquals(new TreeSet<>(Collections.singleton(m1)), env.getMessages());
+            Assert.assertEquals(Collections.singleton(m1),
+                    env.getMessages().stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
         }
         expire(m1);
         Assert.assertEquals(0, listener.getMessagesInTheSystem());
@@ -110,48 +114,47 @@ public class ExpirationNormalMessageTest {
         Assert.assertEquals(0, listener.getMessagesInTheSystem());
         Message m1 = new Message.Builder<>(NormalMessage.class)
                 .addTag("main")
-                .setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 2000000))
+                .setDuration(Duration.ofMillis(2000000))
                 .setText("text")
                 .build();
         listener.addMessage(m1);
 
         Message m2 = new Message.Builder<>(NormalMessage.class)
                 .addTag("main")
-                .setExpiration(Instant.ofEpochMilli(System.currentTimeMillis() + 2000000))
+                .setDuration(Duration.ofMillis(2000000))
                 .setText("other text")
                 .build();
         listener.addMessage(m2);
 
         Assert.assertEquals(2, listener.getMessagesInTheSystem());
         Assert.assertNotNull(env.getMessages());
-        Assert.assertEquals(new TreeSet<>(Arrays.asList(m1, m2)), env.getMessages());
+        Assert.assertEquals(new TreeSet<>(Arrays.asList(m1, m2)),
+                env.getMessages().stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
 
         for (int i = 0; i < 30; i++) {
             Assert.assertEquals(2, listener.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
-            Assert.assertEquals(new TreeSet<>(Arrays.asList(m1, m2)), env.getMessages());
+            Assert.assertEquals(new TreeSet<>(Arrays.asList(m1, m2)),
+                    env.getMessages().stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
         }
         expire(m1);
         for (int i = 0; i < 30; i++) {
             Assert.assertEquals(1, listener.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
-            Assert.assertEquals(Collections.singleton(m2), env.getMessages());
+            Assert.assertEquals(Collections.singleton(m2),
+                    env.getMessages().stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
         }
         expire(m2);
         Assert.assertEquals(0, listener.getMessagesInTheSystem());
     }
 
     protected void runConcurrentModification() throws Exception {
-        long current = System.currentTimeMillis();
-        Instant expiration = Instant.ofEpochMilli(current + 2000000);
         Message.Builder builder = new Message.Builder<>(NormalMessage.class);
+        builder.addTag("main");
+        builder.setText("text");
         for (int i = 0; i < 500; i++) {
-            builder.clearTags();
-            builder.addTag("main");
-            builder.setText("text");
-            builder.setExpiration(expiration);
+            builder.setDuration(Duration.ofMillis(2000000 + i));
             Message m = builder.build();
-            MessageTestUtils.setCreated(m, Instant.ofEpochMilli(current - 2000 - i));
             processMessage(listener, m);
         }
 
@@ -170,7 +173,7 @@ public class ExpirationNormalMessageTest {
         t.setUncaughtExceptionHandler(h);
 
         // expire all
-        for (Message m : env.getMessages("main")) {
+        for (AcceptedMessage m : env.getMessages("main")) {
             expire(m);
         }
 
@@ -179,7 +182,7 @@ public class ExpirationNormalMessageTest {
                 t.start();
             }
             try {
-                for (Message m : env.getMessages("main")) {
+                for (AcceptedMessage m : env.getMessages("main")) {
                     // just iterate
                 }
             } catch (ConcurrentModificationException ex) {

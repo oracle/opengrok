@@ -38,9 +38,6 @@ public class NormalMessage extends Message {
         if (getText() == null) {
             throw new ValidationException("The message must contain a text.");
         }
-        if (getExpiration() == null) {
-            throw new ValidationException("The message must contain an expiration date.");
-        }
 
         super.validate();
     }

@@ -27,6 +27,8 @@ import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.security.Permission;
+import java.time.Duration;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -90,7 +92,7 @@ public class MessagesTest {
                 "-t", "sample message",
                 "-s", address,
                 "-p", "" + port,
-                "-e", "" + System.currentTimeMillis() / 1000 + 100000});
+                "-d", Duration.ofMillis(100000).toString()});
         } catch (ExitException ex) {
             return ex.getStatus();
         }
@@ -141,11 +143,11 @@ public class MessagesTest {
     @Test
     public void testMessageSendOverLimit() {
         listener.setMessageLimit(0);
-        String output, outerr;
 
         Assert.assertEquals(1, invokeMain());
-        output = new String(newStdoutArray.toByteArray(), Charset.defaultCharset());
-        outerr = new String(newStderrArray.toByteArray(), Charset.defaultCharset());
+        String output = new String(newStdoutArray.toByteArray(), Charset.defaultCharset());
+        String outerr = new String(newStderrArray.toByteArray(), Charset.defaultCharset());
+
         Assert.assertTrue(
                 output.contains(String.format("%#x", Message.DeliveryStatus.OVER_LIMIT.getStatusCode()))
                 || outerr.contains(String.format("%#x", Message.DeliveryStatus.OVER_LIMIT.getStatusCode())));

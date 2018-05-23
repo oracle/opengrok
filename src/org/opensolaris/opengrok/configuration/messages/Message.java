@@ -29,7 +29,7 @@ import java.lang.reflect.Type;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.Instant;
+import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Objects;
@@ -42,6 +42,10 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import org.opensolaris.opengrok.configuration.messages.util.MessageWriter;
 import org.opensolaris.opengrok.util.IOUtils;
 
@@ -57,15 +61,14 @@ public abstract class Message implements Comparable<Message> {
 
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(Message.class, new MessageDeserializer())
+            .registerTypeAdapter(Duration.class, new DurationAdapter())
             .create();
-
-    protected static final long DEFAULT_EXPIRATION_IN_MINUTES = 10;
 
     private String text;
     private String cssClass;
     private Set<String> tags = new TreeSet<>();
-    private Instant created = Instant.now();
-    private Instant expiration = created.plus(DEFAULT_EXPIRATION_IN_MINUTES, ChronoUnit.MINUTES);
+
+    private Duration duration = Duration.of(10, ChronoUnit.MINUTES);
 
     private final String type;
 
@@ -81,8 +84,8 @@ public abstract class Message implements Comparable<Message> {
      * @throws ValidationException if message has invalid format
      */
     public void validate() throws ValidationException {
-        if (getCreated() == null) {
-            throw new ValidationException("The message must contain a creation date.");
+        if (duration == null || duration.isNegative()) {
+            throw new ValidationException("The message must contain a duration.");
         }
     }
 
@@ -130,19 +133,8 @@ public abstract class Message implements Comparable<Message> {
         return new TreeSet<>(tags);
     }
 
-    public Instant getExpiration() {
-        return expiration;
-    }
-
-    public Instant getCreated() {
-        return created;
-    }
-
-    /**
-     * @return true if the message is expired
-     */
-    public boolean isExpired() {
-        return expiration.isBefore(Instant.now());
+    public Duration getDuration() {
+        return duration;
     }
 
     protected Set<String> getDefaultTags() {
@@ -155,27 +147,20 @@ public abstract class Message implements Comparable<Message> {
 
     @Override
     public int compareTo(Message m) {
-        int i;
-        if (created != null && (i = getCreated().compareTo(m.getCreated())) != 0) {
-            return i;
+        int cmpRes;
+        if (text != null && (cmpRes = getText().compareTo(m.getText())) != 0) {
+            return cmpRes;
         }
-        if (text != null && (i = getText().compareTo(m.getText())) != 0) {
-            return i;
+        if ((cmpRes = duration.compareTo(m.duration)) != 0) {
+            return cmpRes;
         }
-        if (expiration != null && (i = getExpiration().compareTo(m.getExpiration())) != 0) {
-            return i;
-        }
+
         return getTags().size() - m.getTags().size();
     }
 
     @Override
     public int hashCode() {
-        int hash = 1;
-        hash = 41 * hash + (this.created == null ? 0 : this.created.hashCode());
-        hash = 29 * hash + (this.text == null ? 0 : this.text.hashCode());
-        hash = 17 * hash + (this.tags == null ? 0 : this.tags.hashCode());
-        hash = 13 * hash + (this.expiration == null ? 0 : this.expiration.hashCode());
-        return hash;
+        return Objects.hash(text, tags, duration);
     }
 
     @Override
@@ -191,19 +176,9 @@ public abstract class Message implements Comparable<Message> {
         }
         final Message other = (Message) obj;
 
-        if (!Objects.equals(this.created, other.created)) {
-            return false;
-        }
-        if (!Objects.equals(this.expiration, other.expiration)) {
-            return false;
-        }
-        if (!Objects.equals(this.text, other.text)) {
-            return false;
-        }
-        if (!Objects.equals(this.tags, other.tags)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(duration, other.duration)
+                && Objects.equals(this.tags, other.tags)
+                && Objects.equals(this.text, other.text);
     }
 
     /**
@@ -316,6 +291,27 @@ public abstract class Message implements Comparable<Message> {
         }
     }
 
+    private static class DurationAdapter extends TypeAdapter<Duration> {
+
+        @Override
+        public void write(final JsonWriter writer, final Duration duration) throws IOException {
+            if (duration == null) {
+                writer.nullValue();
+                return;
+            }
+            writer.value(duration.toString());
+        }
+
+        @Override
+        public Duration read(final JsonReader reader) throws IOException {
+            if (reader.peek() == JsonToken.NULL) {
+                reader.nextNull();
+                return null;
+            }
+            return Duration.parse(reader.nextString());
+        }
+    }
+
     public static class Builder<T extends Message> {
 
         private final Class<T> messageClass;
@@ -326,7 +322,7 @@ public abstract class Message implements Comparable<Message> {
 
         private String cssClass;
 
-        private Instant expiration;
+        private Duration duration;
 
         public Builder(final Class<T> cl) {
             messageClass = cl;
@@ -353,8 +349,8 @@ public abstract class Message implements Comparable<Message> {
             } else {
                 ((Message) result).cssClass = result.getDefaultCssClass();
             }
-            if (expiration != null) {
-                ((Message) result).expiration = expiration;
+            if (duration != null) {
+                ((Message) result).duration = duration;
             }
             return result;
         }
@@ -396,8 +392,8 @@ public abstract class Message implements Comparable<Message> {
             return this;
         }
 
-        public Builder<T> setExpiration(final Instant expirationDate) {
-            this.expiration = expirationDate;
+        public Builder<T> setDuration(final Duration duration) {
+            this.duration = duration;
             return this;
         }
 
