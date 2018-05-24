@@ -53,13 +53,12 @@ Usage()
     echo ""
     echo "[OPTIONS]:"
     echo "  -c|--class                    css class to apply for the message (default info)"
-    echo "  -e|--expire                   human readable date of expiration (default +5 min) (*)"
+    echo "  -d|--duration                 duration of the message in format PnDTnHnMn.nS"
     echo "  -h|--help                     display this message and exit"
     echo "  -n|--type                     type of the message (default normal)"
     echo "  -p|--port                     remote port number of the application (default 2424)"
     echo "  -s|--server                   remote server of the application (default localhost)"
     echo "  -t|--tag                      tag the message/multiple options (default main)"
-    echo "  -u|--expire-timestamp         explicit UTC timestamp for expiration in sec"
     echo "  -v|--verbose                  verbose"
     echo ""
     echo "  (*) see man date: option --date (requires GNU date - use DATE env variable)"
@@ -144,7 +143,7 @@ StdInvocation()
     ${MESSAGE_TYPE:+-m} ${MESSAGE_TYPE:+"$MESSAGE_TYPE"} \
     ${MESSAGE_CLASS:+-c} ${MESSAGE_CLASS:+"$MESSAGE_CLASS"} \
     ${MESSAGE_TAGS:+"${MESSAGE_TAGS[@]}"} \
-    ${MESSAGE_EXPIRE_TIMESTAMP:+-e} ${MESSAGE_EXPIRE_TIMESTAMP:+"$MESSAGE_EXPIRE_TIMESTAMP"} \
+    ${MESSAGE_DURATION:+-d} ${MESSAGE_DURATION:+"$MESSAGE_DURATION"} \
     ${REMOTE_SERVER:+-s} ${REMOTE_SERVER:+"$REMOTE_SERVER"} \
     ${REMOTE_PORT_NUM:+-p} ${REMOTE_PORT_NUM:+"$REMOTE_PORT_NUM"} \
     ${MESSAGE_TEXT:+-t} ${MESSAGE_TEXT:+"$MESSAGE_TEXT"} \
@@ -197,8 +196,7 @@ Info()
             echo -e "\tMESSAGE_TYPE = "${MESSAGE_TYPE:-$MESSAGE_TYPE}
             echo -e "\tMESSAGE_TAGS = "${MESSAGE_TAGS[*]:-${MESSAGE_TAGS[*]}}
             echo -e "\tMESSAGE_CLASS = "${MESSAGE_CLASS:-$MESSAGE_CLASS}
-            echo -e "\tMESSAGE_EXPIRE = "${MESSAGE_EXPIRE:-$MESSAGE_EXPIRE}
-            echo -e "\tMESSAGE_EXPIRE_TIMESTAMP = "${MESSAGE_EXPIRE_TIMESTAMP:-$MESSAGE_EXPIRE_TIMESTAMP}
+            echo -e "\tMESSAGE_DURATION = "${MESSAGE_DURATION:-$MESSAGE_DURATION}
             echo -e "\tMESSAGE_TEXT = "${MESSAGE_TEXT:-$MESSAGE_TEXT}
             echo -e "\tMESSAGE_FILE = "${MESSAGE_FILE:-$MESSAGE_FILE}
             echo ""
@@ -268,7 +266,7 @@ SetupInstanceConfiguration()
     MESSAGE_TYPE="normal"
     typeset -a MESSAGE_TAGS
     MESSAGE_CLASS="info"
-    MESSAGE_EXPIRE="+5 min"
+    MESSAGE_DURATION="PT5M"
     unset MESSAGE_TEXT
     unset MESSAGE_FILE
     VERBOSE=false
@@ -342,10 +340,10 @@ do
             shift
             MESSAGE_CLASS=$(OneArgument "$@")
         ;;
-        -e|--expire)
+        -d|--duration)
             ExpectOption "$@"
             shift
-            MESSAGE_EXPIRE=$(OneArgument "$@")
+            MESSAGE_DURATION=$(OneArgument "$@")
         ;;
         -h|--help)
             Usage
@@ -371,11 +369,6 @@ do
             shift
             MESSAGE_TAGS+=(-g "$(OneArgument "$@")")
         ;;
-        -u|--expire-timestamp)
-            ExpectOption "$@"
-            shift
-            MESSAGE_EXPIRE_TIMESTAMP=$(OneArgument "$@")
-        ;;
         -v|--verbose)
             VERBOSE=true
         ;;
@@ -383,10 +376,10 @@ do
             echo "Unknown option \"$opt\"" && Usage && exit 5
         ;;
         *)
-	    tags=${MESSAGE_TAGS[@]}
-	    if [ "$MESSAGE_TYPE" = "config" -a "$tags" = "-g setconf" ]; then
+            tags=${MESSAGE_TAGS[@]}
+            if [ "$MESSAGE_TYPE" = "config" -a "$tags" = "-g setconf" ]; then
                 MESSAGE_FILE="$@"
-	    else
+            else
                 if [ $# -ne 1 ]
                 then
                     echo "Bad syntax. The text should be the last argument."
@@ -402,26 +395,11 @@ do
                     echo "Bad syntax. The text must be specified only once."
                     exit 3
                 fi
-	    fi
+            fi
         ;;
     esac
     shift
 done
-
-
-if [ $MESSAGE_TYPE != "config" ]; then
-    if [ ! -z "$MESSAGE_EXPIRE" -a -z "$MESSAGE_EXPIRE_TIMESTAMP" ]
-    then
-        MESSAGE_EXPIRE_TIMESTAMP=`"$DATE" --date="$MESSAGE_EXPIRE" +"%s"`
-        if [ $? -ne 0 ]
-        then
-            echo "The date couldn't parse the input '$MESSAGE_EXPIRE'."
-            echo "Consider installing gnu date and setting env variable DATE."
-            exit 5;
-        fi
-    fi
-fi
-
 
 Info
 StdInvocation
