@@ -30,6 +30,11 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.web.stats.report.JsonStatisticsReporter;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -47,20 +52,20 @@ public class StatsMessageTest {
     @Test
     public void testValidate() {
         Message m = new StatsMessage();
-        Assert.assertFalse(MessageTest.assertValid(m));
+        assertFalse(MessageTest.assertValid(m));
         m.setText("text");
-        Assert.assertFalse(MessageTest.assertValid(m));
+        assertFalse(MessageTest.assertValid(m));
         m.setText("get");
-        Assert.assertTrue(MessageTest.assertValid(m));
+        assertTrue(MessageTest.assertValid(m));
         m.setText("clean");
-        Assert.assertTrue(MessageTest.assertValid(m));
+        assertTrue(MessageTest.assertValid(m));
         m.setText("reload");
-        Assert.assertTrue(MessageTest.assertValid(m));
+        assertTrue(MessageTest.assertValid(m));
         m.setClassName(null);
-        Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertNull(m.getClassName());
+        assertTrue(MessageTest.assertValid(m));
+        assertNull(m.getClassName());
         m.setTags(new TreeSet<>());
-        Assert.assertTrue(MessageTest.assertValid(m));
+        assertTrue(MessageTest.assertValid(m));
         assertEquals(new TreeSet<>(), m.getTags());
     }
 
@@ -74,8 +79,8 @@ public class StatsMessageTest {
         } catch (Exception ex) {
             Assert.fail("Should not throw any exception");
         }
-        Assert.assertNotNull(out);
-        Assert.assertTrue(out.length > 0);
+        assertNotNull(out);
+        assertTrue(out.length > 0);
         assertEquals("{}", new String(out));
     }
 
@@ -90,8 +95,8 @@ public class StatsMessageTest {
         } catch (Exception ex) {
             Assert.fail("Should not throw any exception");
         }
-        Assert.assertNotNull(out);
-        Assert.assertTrue(out.length > 0);
+        assertNotNull(out);
+        assertTrue(out.length > 0);
         assertEquals("{}", new String(out));
     }
 
@@ -107,9 +112,9 @@ public class StatsMessageTest {
         } catch (Exception ex) {
             Assert.fail("Should not throw any exception");
         }
-        Assert.assertNotNull(out);
-        Assert.assertTrue(out.length > 0);
-        Assert.assertNotEquals("{}", new String(out));
+        assertNotNull(out);
+        assertTrue(out.length > 0);
+        assertNotEquals("{}", new String(out));
     }
 
     @Test

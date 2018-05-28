@@ -23,7 +23,6 @@
 package org.opensolaris.opengrok.web.stats;
 
 import org.apache.lucene.search.ScoreDoc;
-import org.junit.Assert;
 import org.junit.Test;
 import org.opensolaris.opengrok.web.SearchHelper;
 
@@ -34,6 +33,8 @@ import java.time.Instant;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -56,11 +57,11 @@ public class StatisticsTest {
     @Test
     public void testNewInstance() {
         Statistics stat = new Statistics();
-        Assert.assertNotNull(stat.getRequestCategories());
-        Assert.assertNotNull(stat.getTiming());
-        Assert.assertNotNull(stat.getTimingMin());
-        Assert.assertNotNull(stat.getTimingMax());
-        Assert.assertNotNull(stat.getTimingAvg());
+        assertNotNull(stat.getRequestCategories());
+        assertNotNull(stat.getTiming());
+        assertNotNull(stat.getTimingMin());
+        assertNotNull(stat.getTimingMax());
+        assertNotNull(stat.getTimingAvg());
 
         assertEquals(0, stat.getRequests());
         assertEquals(1, stat.getMinutes()); // current minute
@@ -105,21 +106,21 @@ public class StatisticsTest {
             Statistics stat = new Statistics();
             stat.addRequestTime(category, (long) (Math.random() * Long.MAX_VALUE));
             assertEquals(1, stat.getRequestCategories().size());
-            Assert.assertTrue(stat.getRequestCategories().containsKey(category));
-            Assert.assertNotNull(stat.getRequestCategories().get(category));
+            assertTrue(stat.getRequestCategories().containsKey(category));
+            assertNotNull(stat.getRequestCategories().get(category));
             assertEquals(1, stat.getRequestCategories().get(category).longValue());
             assertEquals(1, stat.getTiming().size());
             assertEquals(1, stat.getTimingMin().size());
             assertEquals(1, stat.getTimingMax().size());
             assertEquals(1, stat.getTimingAvg().size());
-            Assert.assertTrue(stat.getTiming().containsKey(category));
-            Assert.assertTrue(stat.getTimingMin().containsKey(category));
-            Assert.assertTrue(stat.getTimingMax().containsKey(category));
-            Assert.assertTrue(stat.getTimingAvg().containsKey(category));
-            Assert.assertNotNull(stat.getTiming().get(category));
-            Assert.assertNotNull(stat.getTimingMin().get(category));
-            Assert.assertNotNull(stat.getTimingMax().get(category));
-            Assert.assertNotNull(stat.getTimingAvg().get(category));
+            assertTrue(stat.getTiming().containsKey(category));
+            assertTrue(stat.getTimingMin().containsKey(category));
+            assertTrue(stat.getTimingMax().containsKey(category));
+            assertTrue(stat.getTimingAvg().containsKey(category));
+            assertNotNull(stat.getTiming().get(category));
+            assertNotNull(stat.getTimingMin().get(category));
+            assertNotNull(stat.getTimingMax().get(category));
+            assertNotNull(stat.getTimingAvg().get(category));
         }
     }
 
@@ -143,21 +144,21 @@ public class StatisticsTest {
         for (int i = 0; i < testCategories.length; i++) {
             stat.addRequestTime(testCategories[i], (long) (Math.random() * Long.MAX_VALUE));
             assertEquals(testSizes[i], stat.getRequestCategories().size());
-            Assert.assertTrue(stat.getRequestCategories().containsKey(testCategories[i]));
-            Assert.assertNotNull(stat.getRequestCategories().get(testCategories[i]));
+            assertTrue(stat.getRequestCategories().containsKey(testCategories[i]));
+            assertNotNull(stat.getRequestCategories().get(testCategories[i]));
             assertEquals(testValues[i], stat.getRequestCategories().get(testCategories[i]).longValue());
             assertEquals(testSizes[i], stat.getTiming().size());
             assertEquals(testSizes[i], stat.getTimingMin().size());
             assertEquals(testSizes[i], stat.getTimingMax().size());
             assertEquals(testSizes[i], stat.getTimingAvg().size());
-            Assert.assertTrue(stat.getTiming().containsKey(testCategories[i]));
-            Assert.assertTrue(stat.getTimingMin().containsKey(testCategories[i]));
-            Assert.assertTrue(stat.getTimingMax().containsKey(testCategories[i]));
-            Assert.assertTrue(stat.getTimingAvg().containsKey(testCategories[i]));
-            Assert.assertNotNull(stat.getTiming().get(testCategories[i]));
-            Assert.assertNotNull(stat.getTimingMin().get(testCategories[i]));
-            Assert.assertNotNull(stat.getTimingMax().get(testCategories[i]));
-            Assert.assertNotNull(stat.getTimingAvg().get(testCategories[i]));
+            assertTrue(stat.getTiming().containsKey(testCategories[i]));
+            assertTrue(stat.getTimingMin().containsKey(testCategories[i]));
+            assertTrue(stat.getTimingMax().containsKey(testCategories[i]));
+            assertTrue(stat.getTimingAvg().containsKey(testCategories[i]));
+            assertNotNull(stat.getTiming().get(testCategories[i]));
+            assertNotNull(stat.getTimingMin().get(testCategories[i]));
+            assertNotNull(stat.getTimingMax().get(testCategories[i]));
+            assertNotNull(stat.getTimingAvg().get(testCategories[i]));
         }
     }
 
