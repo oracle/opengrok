@@ -168,7 +168,7 @@ class Command:
                 return
 
         timeout_thread = None
-        sema = asyncio.Semaphore(value=1)
+        sema = asyncio.Semaphore(value=0)
         output_thread = OutputThread(sema, self.logger)
         try:
             start_time = time.time()
