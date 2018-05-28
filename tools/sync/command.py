@@ -27,6 +27,7 @@ import subprocess
 import string
 import threading
 import time
+import asyncio
 
 
 class TimeoutException(Exception):
@@ -113,14 +114,13 @@ class Command:
             stdout/stderr buffers fill up.
             """
 
-            def __init__(self, condition, logger):
+            def __init__(self, sema, logger):
                 super(OutputThread, self).__init__()
                 self.read_fd, self.write_fd = os.pipe()
                 self.pipe_fobj = os.fdopen(self.read_fd)
                 self.out = []
-                self.condition = condition
+                self.sema = sema
                 self.logger = logger
-                self.done = False
                 self.start()
 
             def run(self):
@@ -132,12 +132,9 @@ class Command:
                 while True:
                     line = self.pipe_fobj.readline()
                     if not line:
-                        self.done = True
                         self.logger.debug("end of output")
                         self.pipe_fobj.close()
-                        with self.condition:
-                            self.logger.debug("notifying")
-                            self.condition.notifyAll()
+                        self.sema.release()
                         return
 
                     self.out.append(line)
@@ -171,8 +168,8 @@ class Command:
                 return
 
         timeout_thread = None
-        output_condition = threading.Condition()
-        output_thread = OutputThread(output_condition, self.logger)
+        sema = asyncio.Semaphore(value=1)
+        output_thread = OutputThread(sema, self.logger)
         try:
             start_time = time.time()
             try:
@@ -230,9 +227,7 @@ class Command:
             # gracefully exit the read loop we have to close it here ourselves.
             output_thread.close()
             self.logger.debug("Waiting on output thread to finish reading")
-            if not output_thread.done:
-                with output_condition:
-                    output_condition.wait()
+            sema.acquire()
 
             self.out = output_thread.getoutput()
             elapsed_time = time.time() - start_time
