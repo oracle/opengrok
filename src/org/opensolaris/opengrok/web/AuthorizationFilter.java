@@ -35,14 +35,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.web.stats.StatisticsFilter;
 
 public class AuthorizationFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);
 
     @Override
-    public void init(FilterConfig fc) throws ServletException {
+    public void init(FilterConfig fc) {
     }
 
     @Override
@@ -66,7 +65,7 @@ public class AuthorizationFilter implements Filter {
             /**
              * Add the request to the statistics. This is called just once for a
              * single request otherwise the next filter will count the same
-             * request twice ({@link StatisticsFilter#collectStats}).
+             * request twice ({@link org.opensolaris.opengrok.web.stats.StatisticsFilter#collectStats}).
              *
              * In this branch of the if statement the filter processing stopped
              * and does not follow to the StatisticsFilter.
