@@ -126,8 +126,8 @@ class Command:
             def run(self):
                 """
                 It might happen that after the process is gone, the thread
-                still has data to read from the pipe. Hence, condition is used
-                to synchronize with the caller.
+                still has data to read from the pipe. Hence, a semaphore
+                is used to synchronize with the caller.
                 """
                 while True:
                     line = self.pipe_fobj.readline()
