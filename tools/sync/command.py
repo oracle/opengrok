@@ -222,9 +222,9 @@ class Command:
                 with time_condition:
                     time_condition.notifyAll()
 
-            # Strangely, the subprocess module does not close the write pipe
-            # descriptor it fetched via OutputThread's fileno() so in order to
-            # gracefully exit the read loop we have to close it here ourselves.
+            # The subprocess module does not close the write pipe descriptor
+            # it fetched via OutputThread's fileno() so in order to gracefully
+            # exit the read loop we have to close it here ourselves.
             output_thread.close()
             self.logger.debug("Waiting on output thread to finish reading")
             sema.acquire()
