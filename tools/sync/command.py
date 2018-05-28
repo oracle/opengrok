@@ -120,6 +120,7 @@ class Command:
                 self.out = []
                 self.condition = condition
                 self.logger = logger
+                self.done = False
                 self.start()
 
             def run(self):
@@ -131,6 +132,7 @@ class Command:
                 while True:
                     line = self.pipe_fobj.readline()
                     if not line:
+                        self.done = True
                         self.logger.debug("end of output")
                         self.pipe_fobj.close()
                         with self.condition:
@@ -228,8 +230,9 @@ class Command:
             # gracefully exit the read loop we have to close it here ourselves.
             output_thread.close()
             self.logger.debug("Waiting on output thread to finish reading")
-            with output_condition:
-                output_condition.wait()
+            if not output_thread.done:
+                with output_condition:
+                    output_condition.wait()
 
             self.out = output_thread.getoutput()
             elapsed_time = time.time() - start_time
