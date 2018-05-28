@@ -78,9 +78,6 @@ import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.configuration.messages.Message;
@@ -93,8 +90,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.XmlEofInputStream;
-import org.opensolaris.opengrok.web.Statistics;
-import org.opensolaris.opengrok.web.Util;
+import org.opensolaris.opengrok.web.stats.Statistics;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -1754,16 +1750,15 @@ public final class RuntimeEnvironment {
      * @throws IOException
      */
     public void saveStatistics(OutputStream out) throws IOException {
-        out.write(Util.statisticToJson(getStatistics()).toJSONString().getBytes());
+        out.write(getStatistics().encode().getBytes());
     }
 
     /**
      * Load statistics from JSON file specified in configuration.
      *
      * @throws IOException
-     * @throws ParseException
      */
-    public void loadStatistics() throws IOException, ParseException {
+    public void loadStatistics() throws IOException {
         if (getConfiguration().getStatisticsFilePath() == null) {
             throw new FileNotFoundException("Statistics file is not set (null)");
         }
@@ -1775,9 +1770,8 @@ public final class RuntimeEnvironment {
      *
      * @param in the file with json
      * @throws IOException
-     * @throws ParseException
      */
-    public void loadStatistics(File in) throws IOException, ParseException {
+    public void loadStatistics(File in) throws IOException {
         if (in == null) {
             throw new FileNotFoundException("Statistics file is not set (null)");
         }
@@ -1791,12 +1785,10 @@ public final class RuntimeEnvironment {
      *
      * @param in the file with json
      * @throws IOException
-     * @throws ParseException
      */
-    public void loadStatistics(InputStream in) throws IOException, ParseException {
+    public void loadStatistics(InputStream in) throws IOException {
         try (InputStreamReader iReader = new InputStreamReader(in)) {
-            JSONParser jsonParser = new JSONParser();
-            setStatistics(Util.jsonToStatistics((JSONObject) jsonParser.parse(iReader)));
+            setStatistics(Statistics.decode(iReader));
         }
     }
 

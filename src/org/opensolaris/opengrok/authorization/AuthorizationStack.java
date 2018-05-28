@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.Nameable;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.web.Statistics;
+import org.opensolaris.opengrok.web.stats.Statistics;
 
 /**
  * This is a subclass of {@link AuthorizationEntity} implementing the methods to

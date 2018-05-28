@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.web.stats.StatisticsFilter;
 
 public class AuthorizationFilter implements Filter {
 

@@ -25,7 +25,7 @@
     </filter-mapping>
     <filter>
         <filter-name>StatisticsFilter</filter-name>
-        <filter-class>org.opensolaris.opengrok.web.StatisticsFilter</filter-class>
+        <filter-class>org.opensolaris.opengrok.web.stats.StatisticsFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>StatisticsFilter</filter-name>

@@ -17,13 +17,12 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opensolaris.opengrok.web.stats;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -31,23 +30,23 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.opensolaris.opengrok.logger.LoggerFactory;
+
+import org.opensolaris.opengrok.web.PageConfig;
+import org.opensolaris.opengrok.web.Prefix;
+import org.opensolaris.opengrok.web.SearchHelper;
 
 public class StatisticsFilter implements Filter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StatisticsFilter.class);
     private static final String TIME_ATTRIBUTE = "statistics_time_start";
 
     @Override
-    public void init(FilterConfig fc) throws ServletException {
+    public void init(FilterConfig fc) {
     }
 
     @Override
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc)
             throws IOException, ServletException {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
-        HttpServletResponse httpRes = (HttpServletResponse) sr1;
 
         PageConfig config = PageConfig.get(httpReq);
         config.setRequestAttribute(TIME_ATTRIBUTE, System.currentTimeMillis());
@@ -64,8 +63,6 @@ public class StatisticsFilter implements Filter {
     }
 
     protected void collectStats(HttpServletRequest req, String category) {
-        Object o;
-        long processTime;
         PageConfig config = PageConfig.get(req);
         Statistics stats = config.getEnv().getStatistics();
 
@@ -75,8 +72,9 @@ public class StatisticsFilter implements Filter {
          */
         stats.addRequest();
 
-        if ((o = config.getRequestAttribute(TIME_ATTRIBUTE)) != null) {
-            processTime = System.currentTimeMillis() - (long) o;
+        Object timeAttr;
+        if ((timeAttr = config.getRequestAttribute(TIME_ATTRIBUTE)) != null) {
+            long processTime = System.currentTimeMillis() - (long) timeAttr;
 
             stats.addRequestTime("*", processTime); // add to all
             stats.addRequestTime(category, processTime); // add this category
@@ -88,13 +86,7 @@ public class StatisticsFilter implements Filter {
 
             SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
             if (helper != null) {
-                if (helper.hits == null || helper.hits.length == 0) {
-                    // empty search
-                    stats.addRequestTime("empty_search", processTime);
-                } else {
-                    // successful search
-                    stats.addRequestTime("successful_search", processTime);
-                }
+                stats.addSearchRequest(helper, processTime);
             }
         }
     }

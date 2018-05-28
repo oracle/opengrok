@@ -49,7 +49,7 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.web.Statistics;
+import org.opensolaris.opengrok.web.stats.Statistics;
 
 /**
  * Placeholder for performing authorization checks.

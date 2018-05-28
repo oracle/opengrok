@@ -17,21 +17,19 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
 import java.util.TreeSet;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.web.Statistics;
+import org.opensolaris.opengrok.web.stats.report.JsonStatisticsReporter;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -39,15 +37,11 @@ import org.opensolaris.opengrok.web.Statistics;
  */
 public class StatsMessageTest {
 
-    RuntimeEnvironment env;
+    private RuntimeEnvironment env;
 
     @Before
     public void setUp() {
         env = RuntimeEnvironment.getInstance();
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test
@@ -67,7 +61,7 @@ public class StatsMessageTest {
         Assert.assertNull(m.getClassName());
         m.setTags(new TreeSet<>());
         Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertEquals(new TreeSet<>(), m.getTags());
+        assertEquals(new TreeSet<>(), m.getTags());
     }
 
     @Test
@@ -82,7 +76,7 @@ public class StatsMessageTest {
         }
         Assert.assertNotNull(out);
         Assert.assertTrue(out.length > 0);
-        Assert.assertEquals("{}", new String(out));
+        assertEquals("{}", new String(out));
     }
 
     @Test
@@ -98,7 +92,7 @@ public class StatsMessageTest {
         }
         Assert.assertNotNull(out);
         Assert.assertTrue(out.length > 0);
-        Assert.assertEquals("{}", new String(out));
+        assertEquals("{}", new String(out));
     }
 
     @Test
@@ -132,34 +126,16 @@ public class StatsMessageTest {
             Assert.fail("Should not throw any exception");
         }
 
-        JSONParser p = new JSONParser();
-        Object o = null;
-        try {
-            o = p.parse(new String(out));
-        } catch (ParseException ex) {
-            Assert.fail("Should not throw any exception");
-        }
-        Assert.assertNotNull(o);
-
-        Statistics stat = Statistics.from((JSONObject) o);
-
-        Assert.assertTrue(stat instanceof Statistics);
-        Assert.assertEquals(1, stat.getRequests());
-        Assert.assertEquals(1, stat.getMinutes());
-        Assert.assertEquals(0, stat.getRequestCategories().size());
-        Assert.assertEquals(0, stat.getTiming().size());
+        String output = new String(out);
+        assertEquals(new JsonStatisticsReporter().report(RuntimeEnvironment.getInstance().getStatistics()), output);
     }
 
-    @Test
-    public void testInvalidReload() {
+    @Test(expected = Exception.class)
+    public void testInvalidReload() throws Exception {
         Message m = new StatsMessage();
         m.setText("reload");
         env.getConfiguration().setStatisticsFilePath("/file/that/doesnot/exists");
 
-        try {
-            m.apply(env);
-            Assert.fail("Should throw an exception");
-        } catch (Exception ex) {
-        }
+        m.apply(env);
     }
 }

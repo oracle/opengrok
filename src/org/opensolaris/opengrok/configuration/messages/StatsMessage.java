@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -26,10 +26,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.web.Statistics;
-import org.opensolaris.opengrok.web.Util;
+import org.opensolaris.opengrok.web.stats.Statistics;
+import org.opensolaris.opengrok.web.stats.report.JsonStatisticsReporter;
 
 /**
  *
@@ -37,16 +36,18 @@ import org.opensolaris.opengrok.web.Util;
  */
 public class StatsMessage extends Message {
 
-    static final List<String> ALLOWED_OPTIONS = Arrays.asList(new String[]{"get", "reload", "clean"});
+    static final List<String> ALLOWED_OPTIONS = Arrays.asList("get", "reload", "clean");
+
+    private static final JsonStatisticsReporter jsonReporter = new JsonStatisticsReporter();
 
     @Override
-    protected byte[] applyMessage(RuntimeEnvironment env) throws IOException, ParseException {
+    protected byte[] applyMessage(RuntimeEnvironment env) throws IOException {
         if (getText().equalsIgnoreCase("reload")) {
             env.loadStatistics();
         } else if (getText().equalsIgnoreCase("clean")) {
             env.setStatistics(new Statistics());
         }
-        return Util.statisticToJson(env.getStatistics()).toJSONString().getBytes();
+        return jsonReporter.report(env.getStatistics()).getBytes();
     }
 
     @Override

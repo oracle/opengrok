@@ -39,7 +39,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -1433,26 +1432,6 @@ public final class Util {
      */
     public static JSONArray messagesToJson(Group group) {
         return messagesToJson(group, new String[0]);
-    }
-
-    /**
-     * Convert statistics object into JSONObject.
-     *
-     * @param stats object containing statistics
-     * @return the json object
-     */
-    public static JSONObject statisticToJson(Statistics stats) {
-        return stats.toJson();
-    }
-
-    /**
-     * Convert JSONObject object into statistics.
-     *
-     * @param input object containing statistics
-     * @return the statistics object
-     */
-    public static Statistics jsonToStatistics(JSONObject input) {
-        return Statistics.from(input);
     }
 
     /**

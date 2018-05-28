@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.web.DummyHttpServletRequest;
-import org.opensolaris.opengrok.web.Statistics;
+import org.opensolaris.opengrok.web.stats.Statistics;
 
 /**
  * Test behavior of AuthorizationFramework {@code reload()} w.r.t. HTTP sessions.
