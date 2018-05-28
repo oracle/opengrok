@@ -296,7 +296,7 @@ if __name__ == '__main__':
                 repo_type = get_repo_type(logger, repo_path, messages_file)
                 if not repo_type:
                     logger.error("cannot determine type of {}".
-                                 format(repopath))
+                                 format(repo_path))
                     continue
 
                 logger.debug("Repository type = {}".format(repo_type))
