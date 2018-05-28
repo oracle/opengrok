@@ -31,9 +31,6 @@ org.opensolaris.opengrok.configuration.RuntimeEnvironment"
     PageConfig cfg = PageConfig.get(request);
     cfg.checkSourceRootExistence();
     cfg.setTitle("File not found");
-
-    String context = request.getContextPath();
-    cfg.getEnv().setUrlPrefix(context + Prefix.SEARCH_R + "?");
 }
 %><%@
 
