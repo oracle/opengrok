@@ -31,7 +31,7 @@ Official page of the project is on:
 ## 2. Requirements
 * Latest Java (at least 1.8)
   <http://www.oracle.com/technetwork/java/>
-* A servlet container like Tomcat (8.x or later) supporting Servlet 2.5 and JSP 2.1
+* A servlet container like Tomcat (8.x or later) supporting Servlet 3.1 and JSP 2.1
   <http://tomcat.apache.org/>
 * Exuberant Ctags or Universal Ctags
   <http://ctags.sourceforge.net/>

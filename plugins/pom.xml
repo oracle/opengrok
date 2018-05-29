@@ -72,7 +72,7 @@ Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <artifactId>javax.servlet-api</artifactId>
         </dependency>
 	<dependency>
 	    <groupId>junit</groupId>

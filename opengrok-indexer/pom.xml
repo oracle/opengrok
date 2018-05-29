@@ -515,7 +515,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <artifactId>javax.servlet-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
