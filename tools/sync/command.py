@@ -125,8 +125,8 @@ class Command:
             def run(self):
                 """
                 It might happen that after the process is gone, the thread
-                still has data to read from the pipe. Hence, a eventphore
-                is used to synchronize with the caller.
+                still has data to read from the pipe. Hence, event is used
+                to synchronize with the caller.
                 """
                 while True:
                     line = self.pipe_fobj.readline()
