@@ -29,7 +29,11 @@ import org.junit.Test;
 import org.opensolaris.opengrok.web.SearchHelper;
 import org.opensolaris.opengrok.web.stats.Statistics;
 
+import java.time.Duration;
+import java.util.Collections;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class JsonStatisticsReporterTest {
 
@@ -46,7 +50,7 @@ public class JsonStatisticsReporterTest {
     @Test
     public void requestEncodeTest() {
         Statistics stats = new Statistics();
-        stats.addRequest();
+        stats.addRequest("/");
 
         String report = reporter.report(stats);
 
@@ -59,34 +63,33 @@ public class JsonStatisticsReporterTest {
     @Test
     public void categoryEncodeTest() {
         Statistics stats = new Statistics();
-        stats.addRequest();
-        stats.addRequestTime("/", 100);
+        stats.addRequest("/", Duration.ofMillis(100));
 
         String report = reporter.report(stats);
 
         JsonParser parser = new JsonParser();
         JsonObject json = parser.parse(report).getAsJsonObject();
 
-        assertEquals(1, json.get(StatisticsReporter.REQUEST_CATEGORIES).getAsJsonObject().get("/").getAsInt());
+        assertEquals(1, json.get(StatisticsReporter.CATEGORIES_COUNTER).getAsJsonObject().get("/").getAsInt());
     }
 
     @Test
     public void searchStatsTest() {
         Statistics stats = new Statistics();
-        stats.addRequest();
 
         SearchHelper helper = new SearchHelper();
         helper.hits = new ScoreDoc[] {new ScoreDoc(1, 1)};
+        helper.totalHits = helper.hits.length;
 
-        stats.addSearchRequest(helper, 100);
+        stats.addRequest(Collections.singletonList("search"), Duration.ofMillis(100), helper);
 
         String report = reporter.report(stats);
 
         JsonParser parser = new JsonParser();
         JsonObject json = parser.parse(report).getAsJsonObject();
 
-        assertEquals(1, json.get(StatisticsReporter.SEARCH_REQUESTS).getAsInt());
-        assertEquals(0, json.get(StatisticsReporter.ZERO_HIT_SEARCH_COUNT).getAsInt());
+        assertEquals(1, json.get(StatisticsReporter.CATEGORIES_COUNTER).getAsJsonObject().get("search").getAsInt());
+        assertNull(json.get(StatisticsReporter.CATEGORIES_COUNTER).getAsJsonObject().get("empty_search"));
         assertEquals(1, json.get(StatisticsReporter.AVERAGE_SEARCH_HITS).getAsInt());
     }
 

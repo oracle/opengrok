@@ -18,11 +18,14 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -220,7 +223,7 @@ public class AuthorizationStack extends AuthorizationEntity {
             PluginSkippingPredicate skippingPredicate) {
 
         Statistics stats = RuntimeEnvironment.getInstance().getStatistics();
-        long time = System.currentTimeMillis();
+        Instant start = Instant.now();
 
         boolean overallDecision = true;
         for (AuthorizationEntity authEntity : getStack()) {
@@ -275,17 +278,16 @@ public class AuthorizationStack extends AuthorizationEntity {
                 }
             }
         }
-        time = System.currentTimeMillis() - time;
+        Duration time = Duration.between(start, Instant.now());
 
-        stats.addRequestTime(
-                String.format("authorization_in_stack_%s_%s", getName(), overallDecision ? "positive" : "negative"),
-                time);
-        stats.addRequestTime(
-                String.format("authorization_in_stack_%s_%s_of_%s", getName(), overallDecision ? "positive" : "negative", entity.getName()),
-                time);
-        stats.addRequestTime(
-                String.format("authorization_in_stack_%s_of_%s", getName(), entity.getName()),
-                time);
+        String overallDecisionStr = overallDecision ? "positive" : "negative";
+        List<String> categories = Arrays.asList(
+                String.format("authorization_in_stack_%s_%s", getName(), overallDecisionStr),
+                String.format("authorization_in_stack_%s_%s_of_%s", getName(), overallDecisionStr, entity.getName()),
+                String.format("authorization_in_stack_%s_of_%s", getName(), entity.getName())
+        );
+
+        stats.addTimingAndIncreaseCounter(categories, time);
 
         return overallDecision;
     }

@@ -28,6 +28,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -42,31 +44,73 @@ import org.opensolaris.opengrok.web.SearchHelper;
  * @author Krystof Tulinger
  */
 public class Statistics {
-
+    
     private static final Gson gson = new Gson();
 
-    private Instant timeStart = Instant.now();
+    private transient Instant timeStart = Instant.now();
 
-    private Map<String, Long> requestCategories = new TreeMap<>();
+    private Map<String, Long> categoriesCounter = new TreeMap<>();
     private Map<String, Long> timing = new TreeMap<>();
     private Map<String, Long> timingMin = new TreeMap<>();
     private Map<String, Long> timingMax = new TreeMap<>();
     private long[] dayHistogram = new long[24];
     private long[] monthHistogram = new long[31];
-    private long requests = 0;
-    private long minutes = 1;
-    private long requestsPerMinute = 0;
-    private long requestsPerMinuteMin = Long.MAX_VALUE;
-    private long requestsPerMinuteMax = Long.MIN_VALUE;
+    private volatile long requests = 0;
+    private volatile long minutes = 1;
+    private volatile long requestsPerMinute = 0;
+    private volatile long requestsPerMinuteMin = Long.MAX_VALUE;
+    private volatile long requestsPerMinuteMax = Long.MIN_VALUE;
 
-    private AtomicLong searchRequests = new AtomicLong();
-    private AtomicLong zeroHitSearchCount = new AtomicLong();
     private AtomicLong searchHitsAccumulator = new AtomicLong();
+
+    private final transient Object lock = new Object();
+
+    public void addRequest(final String category) {
+        if (category == null) {
+            return;
+        }
+        addRequest(Collections.singletonList(category));
+    }
+
+    public void addRequest(final List<String> categories) {
+        addRequest(categories, null);
+    }
+
+    public void addRequest(final String category, final Duration processTime) {
+        if (category == null) {
+            return;
+        }
+        addRequest(Collections.singletonList(category), processTime);
+    }
+
+    public void addRequest(final List<String> categories, final Duration processTime) {
+        addRequest(categories, processTime, null);
+    }
+
+    public void addRequest(final List<String> categories, final Duration processTime, final SearchHelper helper) {
+        synchronized (lock) {
+            if (categories == null || categories.isEmpty()) {
+                return;
+            }
+            addRequest();
+            for (String category : categories) {
+                increaseCounter(category);
+            }
+            if (processTime != null && !processTime.isNegative()) {
+                for (String category : categories) {
+                    addTiming(category, processTime);
+                }
+            }
+            if (helper != null) {
+                addSearchRequest(helper, processTime);
+            }
+        }
+    }
 
     /**
      * Adds a single request into all requests.
      */
-    public synchronized void addRequest() {
+    private void addRequest() {
         maybeRefresh();
 
         requestsPerMinute++;
@@ -86,24 +130,80 @@ public class Statistics {
     /**
      * Refreshes the last timestamp and number of minutes since start if needed.
      */
-    protected synchronized void maybeRefresh() {
-        Instant now = Instant.now();
+    private void maybeRefresh() {
+        synchronized (lock) {
+            Instant now = Instant.now();
 
-        if (timeStart.plus(1, ChronoUnit.MINUTES).isBefore(now)) {
-            // several minutes have passed
-            minutes += Duration.between(timeStart, now).toMinutes();
-            timeStart = now;
-            requestsPerMinute = 0;
+            if (timeStart.plus(1, ChronoUnit.MINUTES).isBefore(now)) {
+                // several minutes have passed
+                minutes += Duration.between(timeStart, now).toMinutes();
+                timeStart = now;
+                requestsPerMinute = 0;
+            }
         }
     }
 
-    /**
-     * Adds a request into the category
-     *
-     * @param category category
-     */
-    public synchronized void addRequest(String category) {
-        requestCategories.merge(category, 1L, (oldValue, value) -> oldValue + 1);
+    public void addTiming(final String category, final Duration processTime) {
+        synchronized (lock) {
+            Long val = timing.computeIfAbsent(category, key -> 0L);
+            Long min = timingMin.get(category);
+            Long max = timingMax.get(category);
+
+            long millis = processTime.toMillis();
+            if (max == null || millis > max) {
+                max = millis;
+            }
+            if (min == null || millis < min) {
+                min = millis;
+            }
+
+            val += millis;
+
+            timing.put(category, val);
+            timingMin.put(category, min);
+            timingMax.put(category, max);
+        }
+    }
+
+    public void increaseCounter(final String category) {
+        synchronized (lock) {
+            categoriesCounter.merge(category, 1L, Long::sum);
+        }
+    }
+
+    private void addSearchRequest(final SearchHelper helper, final Duration processTime) {
+        if (helper == null) {
+            return;
+        }
+        if (helper.hits == null || helper.hits.length == 0) { // empty search
+            increaseCounter("empty_search");
+            addTiming("empty_search", processTime);
+        } else { // successful search
+            searchHitsAccumulator.getAndUpdate(value -> value + helper.totalHits);
+            increaseCounter("successful_search");
+            addTiming("successful_search", processTime);
+        }
+    }
+
+    public void addTimingAndIncreaseCounter(final List<String> categories, final Duration processTime) {
+        synchronized (lock) {
+            if (categories == null) {
+                return;
+            }
+            for (String category : categories) {
+                addTimingAndIncreaseCounter(category, processTime);
+            }
+        }
+    }
+
+    public void addTimingAndIncreaseCounter(final String category, final Duration processTime) {
+        synchronized (lock) {
+            if (category == null) {
+                return;
+            }
+            addTiming(category, processTime);
+            increaseCounter(category);
+        }
     }
 
     /**
@@ -111,63 +211,52 @@ public class Statistics {
      * @param category category
      * @return Long value
      */
-    public synchronized Long getRequest(String category) {
-        return requestCategories.get(category);
+    public long getCount(final String category) {
+        synchronized (lock) {
+            Long val = categoriesCounter.get(category);
+            if (val == null) {
+                return 0;
+            }
+            return val;
+        }
     }
 
-    /**
-     * Adds a request's process time into given category.
-     *
-     * @param category category
-     * @param v time spent on processing this request
-     */
-    public synchronized void addRequestTime(String category, long v) {
-        addRequest(category);
-        Long val = timing.computeIfAbsent(category, key -> 0L);
-        Long min = timingMin.get(category);
-        Long max = timingMax.get(category);
-
-        if (max == null || v > max) {
-            max = v;
+    public Map<String, Long> getCategoriesCounter() {
+        synchronized (lock) {
+            return new TreeMap<>(categoriesCounter);
         }
-        if (min == null || v < min) {
-            min = v;
-        }
-
-        val += v;
-
-        timing.put(category, val);
-        timingMin.put(category, min);
-        timingMax.put(category, max);
-    }
-
-    public Map<String, Long> getRequestCategories() {
-        return requestCategories;
     }
 
     public Map<String, Long> getTiming() {
-        return timing;
+        synchronized (lock) {
+            return new TreeMap<>(timing);
+        }
     }
 
     public Map<String, Long> getTimingMin() {
-        return timingMin;
+        synchronized (lock) {
+            return new TreeMap<>(timingMin);
+        }
     }
 
     public Map<String, Long> getTimingMax() {
-        return timingMax;
+        synchronized (lock) {
+            return new TreeMap<>(timingMax);
+        }
     }
 
     /**
      * Get timing average for all requests.
      *
-     * @see #getRequestCategories()
+     * @see #getCategoriesCounter()
      * @return map of averages for each category
      */
     public Map<String, Double> getTimingAvg() {
         Map<String, Double> timingAvg = new TreeMap<>();
-        for (Map.Entry<String, Long> entry : timing.entrySet()) {
-            timingAvg.put(entry.getKey(), entry.getValue().doubleValue()
-                    / requestCategories.get(entry.getKey()));
+        synchronized (lock) {
+            for (Map.Entry<String, Long> entry : timing.entrySet()) {
+                timingAvg.put(entry.getKey(), entry.getValue().doubleValue() / getCount(entry.getKey()));
+            }
         }
         return timingAvg;
     }
@@ -206,45 +295,29 @@ public class Statistics {
     }
 
     public long[] getDayHistogram() {
-        return dayHistogram;
+        synchronized (lock) {
+            return Arrays.copyOf(dayHistogram, dayHistogram.length);
+        }
     }
 
     public long[] getMonthHistogram() {
-        return monthHistogram;
-    }
-
-    public long getSearchRequests() {
-        return searchRequests.get();
-    }
-
-    public long getZeroHitSearchCount() {
-        return zeroHitSearchCount.get();
+        synchronized (lock) {
+            return Arrays.copyOf(monthHistogram, monthHistogram.length);
+        }
     }
 
     public long getAverageSearchHits() {
-        long searchRequestsCount = getSearchRequests();
+        long searchRequestsCount = getCount("search");
         if (searchRequestsCount == 0) {
             return 0;
         }
         return searchHitsAccumulator.get() / searchRequestsCount;
     }
 
-    public void addSearchRequest(final SearchHelper helper, final long processTime) {
-        if (helper == null) { // ignore
-            return;
-        }
-        searchRequests.incrementAndGet();
-        if (helper.hits == null || helper.hits.length == 0) { // empty search
-            zeroHitSearchCount.incrementAndGet();
-            addRequestTime("empty_search", processTime);
-        } else { // successful search
-            searchHitsAccumulator.getAndUpdate(value -> value + helper.hits.length);
-            addRequestTime("successful_search", processTime);
-        }
-    }
-
     public String encode() {
-        return gson.toJson(this);
+        synchronized (lock) {
+            return gson.toJson(this);
+        }
     }
 
     public static Statistics decode(final String encoded) {
@@ -262,7 +335,7 @@ public class Statistics {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
@@ -275,23 +348,19 @@ public class Statistics {
                 && requestsPerMinute == that.requestsPerMinute
                 && requestsPerMinuteMin == that.requestsPerMinuteMin
                 && requestsPerMinuteMax == that.requestsPerMinuteMax
-                && Objects.equals(timeStart, that.timeStart)
-                && Objects.equals(requestCategories, that.requestCategories)
+                && Objects.equals(categoriesCounter, that.categoriesCounter)
                 && Objects.equals(timing, that.timing)
                 && Objects.equals(timingMin, that.timingMin)
                 && Objects.equals(timingMax, that.timingMax)
                 && Arrays.equals(dayHistogram, that.dayHistogram)
                 && Arrays.equals(monthHistogram, that.monthHistogram)
-                && searchRequests.get() == that.searchRequests.get()
-                && zeroHitSearchCount.get() == that.zeroHitSearchCount.get()
                 && searchHitsAccumulator.get() == that.searchHitsAccumulator.get();
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(timeStart, requestCategories, timing, timingMin, timingMax, requests, minutes,
-                requestsPerMinute, requestsPerMinuteMin, requestsPerMinuteMax, searchRequests.get(),
-                zeroHitSearchCount.get(), searchHitsAccumulator.get());
+        int result = Objects.hash(categoriesCounter, timing, timingMin, timingMax, requests, minutes,
+                requestsPerMinute, requestsPerMinuteMin, requestsPerMinuteMax, searchHitsAccumulator.get());
         result = 31 * result + Arrays.hashCode(dayHistogram);
         result = 31 * result + Arrays.hashCode(monthHistogram);
         return result;

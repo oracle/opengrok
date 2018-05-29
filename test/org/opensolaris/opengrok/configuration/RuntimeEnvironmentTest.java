@@ -33,6 +33,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -969,7 +970,7 @@ public class RuntimeEnvironmentTest {
                 + "\"xref\":2,"
                 + "\"root\":2235"
             + "},"
-            + "\"requestCategories\":{"
+            + "\"categoriesCounter\":{"
                 + "\"*\":4,"
                 + "\"xref\":3,"
                 + "\"root\":1"
@@ -1005,7 +1006,7 @@ public class RuntimeEnvironmentTest {
             0, 0, 0, 0, 0, 0, 0, 0, 1, 3,
             0}, stats.getMonthHistogram());
 
-        Assert.assertEquals(createMap(new Object[][]{{"*", 4L}, {"xref", 3L}, {"root", 1L}}), stats.getRequestCategories());
+        Assert.assertEquals(createMap(new Object[][]{{"*", 4L}, {"xref", 3L}, {"root", 1L}}), stats.getCategoriesCounter());
 
         Assert.assertEquals(createMap(new Object[][]{{"*", 2288L}, {"xref", 53L}, {"root", 2235L}}), stats.getTiming());
         Assert.assertEquals(createMap(new Object[][]{{"*", 2L}, {"xref", 2L}, {"root", 2235L}}), stats.getTimingMin());
@@ -1036,9 +1037,7 @@ public class RuntimeEnvironmentTest {
     public void testSaveStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setStatistics(new Statistics());
-        env.getStatistics().addRequest();
-        env.getStatistics().addRequest("root");
-        env.getStatistics().addRequestTime("root", 10L);
+        env.getStatistics().addRequest("root", Duration.ofMillis(10));
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             env.saveStatistics(out);

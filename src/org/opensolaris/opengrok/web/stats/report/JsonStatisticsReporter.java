@@ -55,7 +55,7 @@ public class JsonStatisticsReporter extends StatisticsReporter {
                 return obj;
             }
 
-            obj.add(REQUEST_CATEGORIES, context.serialize(stats.getRequestCategories()));
+            obj.add(CATEGORIES_COUNTER, context.serialize(stats.getCategoriesCounter()));
             obj.add(TIMING, context.serialize(stats.getTiming()));
             obj.add(TIMING_MIN, context.serialize(stats.getTimingMin()));
             obj.add(TIMING_MAX, context.serialize(stats.getTimingMax()));
@@ -68,8 +68,6 @@ public class JsonStatisticsReporter extends StatisticsReporter {
             obj.add(REQUESTS_PER_MINUTE_AVG, context.serialize(stats.getRequestsPerMinuteAvg()));
             obj.add(DAY_HISTOGRAM, context.serialize(stats.getDayHistogram()));
             obj.add(MONTH_HISTOGRAM, context.serialize(stats.getMonthHistogram()));
-            obj.add(SEARCH_REQUESTS, context.serialize(stats.getSearchRequests()));
-            obj.add(ZERO_HIT_SEARCH_COUNT, context.serialize(stats.getZeroHitSearchCount()));
             obj.add(AVERAGE_SEARCH_HITS, context.serialize(stats.getAverageSearchHits()));
 
             return obj;

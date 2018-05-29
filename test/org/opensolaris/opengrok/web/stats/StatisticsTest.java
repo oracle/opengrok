@@ -46,8 +46,8 @@ public class StatisticsTest {
     public void encodeDecodeTest() {
         Statistics stats = new Statistics();
 
-        stats.addRequest();
-        stats.addRequest();
+        stats.addRequest("/");
+        stats.addRequest("/");
 
         String encoded = stats.encode();
 
@@ -57,7 +57,7 @@ public class StatisticsTest {
     @Test
     public void testNewInstance() {
         Statistics stat = new Statistics();
-        assertNotNull(stat.getRequestCategories());
+        assertNotNull(stat.getCategoriesCounter());
         assertNotNull(stat.getTiming());
         assertNotNull(stat.getTimingMin());
         assertNotNull(stat.getTimingMax());
@@ -104,11 +104,11 @@ public class StatisticsTest {
         };
         for (String category : testCategories) {
             Statistics stat = new Statistics();
-            stat.addRequestTime(category, (long) (Math.random() * Long.MAX_VALUE));
-            assertEquals(1, stat.getRequestCategories().size());
-            assertTrue(stat.getRequestCategories().containsKey(category));
-            assertNotNull(stat.getRequestCategories().get(category));
-            assertEquals(1, stat.getRequestCategories().get(category).longValue());
+            stat.addTimingAndIncreaseCounter(category, Duration.ofMillis((long) (Math.random() * Long.MAX_VALUE)));
+            assertEquals(1, stat.getCategoriesCounter().size());
+            assertTrue(stat.getCategoriesCounter().containsKey(category));
+            assertNotNull(stat.getCategoriesCounter().get(category));
+            assertEquals(1, stat.getCategoriesCounter().get(category).longValue());
             assertEquals(1, stat.getTiming().size());
             assertEquals(1, stat.getTimingMin().size());
             assertEquals(1, stat.getTimingMax().size());
@@ -142,11 +142,11 @@ public class StatisticsTest {
         assertEquals(testCategories.length, testSizes.length);
 
         for (int i = 0; i < testCategories.length; i++) {
-            stat.addRequestTime(testCategories[i], (long) (Math.random() * Long.MAX_VALUE));
-            assertEquals(testSizes[i], stat.getRequestCategories().size());
-            assertTrue(stat.getRequestCategories().containsKey(testCategories[i]));
-            assertNotNull(stat.getRequestCategories().get(testCategories[i]));
-            assertEquals(testValues[i], stat.getRequestCategories().get(testCategories[i]).longValue());
+            stat.addTimingAndIncreaseCounter(testCategories[i], Duration.ofMillis((long) (Math.random() * Long.MAX_VALUE)));
+            assertEquals(testSizes[i], stat.getCategoriesCounter().size());
+            assertTrue(stat.getCategoriesCounter().containsKey(testCategories[i]));
+            assertNotNull(stat.getCategoriesCounter().get(testCategories[i]));
+            assertEquals(testValues[i], stat.getCategoriesCounter().get(testCategories[i]).longValue());
             assertEquals(testSizes[i], stat.getTiming().size());
             assertEquals(testSizes[i], stat.getTimingMin().size());
             assertEquals(testSizes[i], stat.getTimingMax().size());
@@ -175,7 +175,7 @@ public class StatisticsTest {
 
         for (int i = 0; i < testCategories.length; i++) {
             Statistics stat = new Statistics();
-            stat.addRequestTime(testCategories[i], testValues[i]);
+            stat.addTiming(testCategories[i], Duration.ofMillis(testValues[i]));
             assertEquals(testValues[i], stat.getTiming().get(testCategories[i]).longValue());
         }
     }
@@ -197,7 +197,7 @@ public class StatisticsTest {
         assertEquals(testCategories.length, testExpected.length);
 
         for (int i = 0; i < testCategories.length; i++) {
-            stat.addRequestTime(testCategories[i], testValues[i]);
+            stat.addTiming(testCategories[i], Duration.ofMillis(testValues[i]));
             assertEquals(testExpected[i], stat.getTiming().get(testCategories[i]).longValue());
         }
     }
@@ -206,6 +206,7 @@ public class StatisticsTest {
     public void testSearchStatsHitsNull() {
         SearchHelper helper = new SearchHelper();
         helper.hits = null;
+        helper.totalHits = 0;
 
         testSearchStats(helper, 1, 1, 0);
     }
@@ -218,10 +219,10 @@ public class StatisticsTest {
     ) {
         Statistics stats = new Statistics();
 
-        stats.addSearchRequest(searchHelper, 100);
+        stats.addRequest(Collections.singletonList("search"), Duration.ofMillis(100), searchHelper);
 
-        assertEquals(expectedSearchRequests, stats.getSearchRequests());
-        assertEquals(expectedEmptySearchRequests, stats.getZeroHitSearchCount());
+        assertEquals(expectedSearchRequests, stats.getCount("search"));
+        assertEquals(expectedEmptySearchRequests, stats.getCount("empty_search"));
         assertEquals(expectedAvgSearchHits, stats.getAverageSearchHits());
     }
 
@@ -229,6 +230,7 @@ public class StatisticsTest {
     public void testSearchStatsHitsEmpty() {
         SearchHelper helper = new SearchHelper();
         helper.hits = new ScoreDoc[0];
+        helper.totalHits = 0;
 
         testSearchStats(helper, 1, 1, 0);
     }
@@ -237,6 +239,7 @@ public class StatisticsTest {
     public void testSearchStats() {
         SearchHelper helper = new SearchHelper();
         helper.hits = Collections.nCopies(10, new ScoreDoc(1, 1)).toArray(new ScoreDoc[10]);
+        helper.totalHits = helper.hits.length;
 
         testSearchStats(helper, 1, 0, 10);
     }
@@ -247,15 +250,17 @@ public class StatisticsTest {
 
         SearchHelper helper = new SearchHelper();
         helper.hits = Collections.nCopies(10, new ScoreDoc(1, 1)).toArray(new ScoreDoc[10]);
+        helper.totalHits = helper.hits.length;
 
-        stats.addSearchRequest(helper, 100);
+        stats.addRequest(Collections.singletonList("search"), Duration.ofMillis(100), helper);
 
         helper.hits = Collections.nCopies(20, new ScoreDoc(1, 1)).toArray(new ScoreDoc[20]);
+        helper.totalHits = helper.hits.length;
 
-        stats.addSearchRequest(helper, 100);
+        stats.addRequest(Collections.singletonList("search"), Duration.ofMillis(100), helper);
 
-        assertEquals(2, stats.getSearchRequests());
-        assertEquals(0, stats.getZeroHitSearchCount());
+        assertEquals(2, stats.getCount("search"));
+        assertEquals(0, stats.getCount("empty_search"));
         assertEquals(15, stats.getAverageSearchHits());
     }
 

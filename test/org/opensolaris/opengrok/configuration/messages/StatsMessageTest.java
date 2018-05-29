@@ -103,7 +103,7 @@ public class StatsMessageTest {
     @Test
     public void testGet() {
         testClean();
-        env.getStatistics().addRequest();
+        env.getStatistics().addRequest("/");
         Message m = new StatsMessage();
         m.setText("get");
         byte[] out = null;

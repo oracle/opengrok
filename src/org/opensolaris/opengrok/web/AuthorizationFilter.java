@@ -18,11 +18,13 @@
  */
 
  /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
@@ -50,7 +52,7 @@ public class AuthorizationFilter implements Filter {
         HttpServletResponse httpRes = (HttpServletResponse) sr1;
 
         PageConfig config = PageConfig.get(httpReq);
-        long processTime = System.currentTimeMillis();
+        Instant startTime = Instant.now();
 
         Project p = config.getProject();
         if (p != null && !config.isAllowed(p)) {
@@ -62,18 +64,12 @@ public class AuthorizationFilter implements Filter {
                 LOGGER.log(Level.INFO, "Access denied for URI: {0}", httpReq.getRequestURI());
             }
             
-            /**
-             * Add the request to the statistics. This is called just once for a
-             * single request otherwise the next filter will count the same
-             * request twice ({@link org.opensolaris.opengrok.web.stats.StatisticsFilter#collectStats}).
-             *
+            /*
              * In this branch of the if statement the filter processing stopped
              * and does not follow to the StatisticsFilter.
              */
-            config.getEnv().getStatistics().addRequest();
-            config.getEnv().getStatistics().addRequest("requests_forbidden");
-            config.getEnv().getStatistics().addRequestTime("requests_forbidden",
-                    System.currentTimeMillis() - processTime);
+            config.getEnv().getStatistics().addRequest("requests_forbidden",
+                    Duration.between(startTime, Instant.now()));
             
             if (!config.getEnv().getConfiguration().getForbiddenIncludeFileContent().isEmpty()) {
                 sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);

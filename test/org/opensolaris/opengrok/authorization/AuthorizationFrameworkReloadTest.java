@@ -82,7 +82,7 @@ public class AuthorizationFrameworkReloadTest {
         // since the version was incremented. In this test we are not interested
         // in the actual result.
         framework.isAllowed(req, p);
-        assertNull(stats.getRequest("authorization_cache_hits"));
+        assertEquals(0, stats.getCount("authorization_cache_hits"));
         // Verify that the session no longer has the attribute.
         assertNull(session.getAttribute(attrName));
     }
@@ -132,8 +132,8 @@ public class AuthorizationFrameworkReloadTest {
         });
         t.start();
         
-        reloads = stats.getRequest("authorization_stack_reload");
-        assertNotNull(reloads);
+        reloads = stats.getCount("authorization_stack_reload");
+        assertTrue(reloads > 0);
         // Process number or requests and check that framework decision is consistent.
         for (int i = 0; i < 1000; i++) {
             req = new DummyHttpServletRequest();
@@ -153,7 +153,7 @@ public class AuthorizationFrameworkReloadTest {
         }
         
         // Double check that at least one reload() was done.
-        reloads = stats.getRequest("authorization_stack_reload") - reloads;
+        reloads = stats.getCount("authorization_stack_reload") - reloads;
         System.out.println("number of reloads: " + reloads);
         assertTrue(reloads > 0);
     }

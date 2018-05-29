@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.authorization;
 
@@ -28,6 +28,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -762,46 +764,42 @@ public final class AuthorizationFramework {
             m = new TreeMap<>();
         } else if ((val = m.get(entity.getName())) != null) {
             // cache hit
-            stats.addRequest("authorization_cache_hits");
+            stats.increaseCounter("authorization_cache_hits");
             return val;
         }
 
-        stats.addRequest("authorization_cache_misses");
+        stats.increaseCounter("authorization_cache_misses");
 
-        long time = 0;
-        boolean overallDecision = false;
-        
+        Instant checkStart;
+        boolean overallDecision;
+
         lock.readLock().lock();
         try {
             // Make sure there is a HTTP session that corresponds to current plugin version.
             HttpSession session;
             if (((session = request.getSession(false)) != null) && isSessionInvalid(session)) {
                 session.invalidate();
-                stats.addRequest("authorization_sessions_invalidated");
+                stats.increaseCounter("authorization_sessions_invalidated");
             }
             request.getSession().setAttribute(SESSION_VERSION, getPluginVersion());
 
-            time = System.currentTimeMillis();
+            checkStart = Instant.now();
 
             overallDecision = performCheck(entity, pluginPredicate, skippingPredicate);
         } finally {
             lock.readLock().unlock();
         }
 
-        if (time > 0) {
-            time = System.currentTimeMillis() - time;
+        Duration checkTime = Duration.between(checkStart, Instant.now());
 
-            stats.addRequestTime("authorization", time);
-            stats.addRequestTime(
-                    String.format("authorization_%s", overallDecision ? "positive" : "negative"),
-                    time);
-            stats.addRequestTime(
-                    String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()),
-                    time);
-            stats.addRequestTime(
-                    String.format("authorization_of_%s", entity.getName()),
-                    time);
-        }
+        List<String> categories = Arrays.asList(
+                "authorization",
+                String.format("authorization_%s", overallDecision ? "positive" : "negative"),
+                String.format("authorization_%s_of_%s", overallDecision ? "positive" : "negative", entity.getName()),
+                String.format("authorization_of_%s", entity.getName())
+        );
+
+        stats.addTimingAndIncreaseCounter(categories, checkTime);
         
         m.put(entity.getName(), overallDecision);
         request.setAttribute(cache, m);

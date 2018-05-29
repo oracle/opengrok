@@ -30,7 +30,7 @@ public abstract class StatisticsReporter {
     protected static final String TIMING_MIN = "timing_min";
     protected static final String TIMING_MAX = "timing_max";
     protected static final String TIMING_AVG = "timing_avg";
-    protected static final String REQUEST_CATEGORIES = "request_categories";
+    protected static final String CATEGORIES_COUNTER = "categories_counter";
     protected static final String REQUESTS = "requests";
     protected static final String MINUTES = "minutes";
     protected static final String REQUESTS_PER_MINUTE = "requests_per_minute";
@@ -39,8 +39,6 @@ public abstract class StatisticsReporter {
     protected static final String REQUESTS_PER_MINUTE_AVG = "requests_per_minute_avg";
     protected static final String DAY_HISTOGRAM = "day_histogram";
     protected static final String MONTH_HISTOGRAM = "month_histogram";
-    protected static final String SEARCH_REQUESTS = "search_requests";
-    protected static final String ZERO_HIT_SEARCH_COUNT = "zero_hit_search_count";
     protected static final String AVERAGE_SEARCH_HITS = "average_search_hits";
 
     public abstract String report(Statistics statistics);

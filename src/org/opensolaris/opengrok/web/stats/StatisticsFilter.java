@@ -23,6 +23,10 @@
 package org.opensolaris.opengrok.web.stats;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -49,45 +53,48 @@ public class StatisticsFilter implements Filter {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
 
         PageConfig config = PageConfig.get(httpReq);
-        config.setRequestAttribute(TIME_ATTRIBUTE, System.currentTimeMillis());
+        config.setRequestAttribute(TIME_ATTRIBUTE, Instant.now());
 
         fc.doFilter(sr, sr1);
 
-        if (httpReq.getRequestURI().replace(httpReq.getContextPath(), "").equals("/")
-                || httpReq.getRequestURI().replace(httpReq.getContextPath(), "").equals("")) {
-            collectStats(httpReq, "root");
+        String requestString = getRequestString(httpReq);
+        if (requestString.equals("/") || requestString.isEmpty()) {
+            collectStats(config, "root");
         } else if (config.getPrefix() != Prefix.UNKNOWN) {
             String prefix = config.getPrefix().toString().substring(1);
-            collectStats(httpReq, prefix);
+            collectStats(config, prefix);
         }
     }
 
-    protected void collectStats(HttpServletRequest req, String category) {
-        PageConfig config = PageConfig.get(req);
-        Statistics stats = config.getEnv().getStatistics();
+    private String getRequestString(final HttpServletRequest httpReq) {
+        return httpReq.getRequestURI().replace(httpReq.getContextPath(), "");
+    }
 
-        /**
-         * Add the request to the statistics. Be aware of the colliding call in
-         * {@code AuthorizationFilter#doFilter}.
-         */
-        stats.addRequest();
+    /**
+     * Add the request to the statistics. Be aware of the colliding call in
+     * {@link org.opensolaris.opengrok.web.AuthorizationFilter#doFilter}.
+     */
+    private void collectStats(PageConfig config, String category) {
+        Statistics stats = config.getEnv().getStatistics();
 
         Object timeAttr;
         if ((timeAttr = config.getRequestAttribute(TIME_ATTRIBUTE)) != null) {
-            long processTime = System.currentTimeMillis() - (long) timeAttr;
+            Duration processTime = Duration.between((Instant) timeAttr, Instant.now());
 
-            stats.addRequestTime("*", processTime); // add to all
-            stats.addRequestTime(category, processTime); // add this category
+            List<String> categories = new ArrayList<>(3);
+            categories.add("*");
+            categories.add(category);
 
             /* supplementary categories */
             if (config.getProject() != null) {
-                stats.addRequestTime("viewing_of_" + config.getProject().getName(), processTime);
+                categories.add("viewing_of_" + config.getProject().getName());
             }
 
             SearchHelper helper = (SearchHelper) config.getRequestAttribute(SearchHelper.REQUEST_ATTR);
-            if (helper != null) {
-                stats.addSearchRequest(helper, processTime);
-            }
+
+            stats.addRequest(categories, processTime, helper);
+        } else {
+            stats.addRequest(category);
         }
     }
 
