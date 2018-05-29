@@ -281,7 +281,7 @@ public final class Indexer {
                 try {
                 m.write(host, port);
                 } catch (ConnectException ce) {
-                    LOGGER.log(Level.SEVERE, "Misconfig of webapp host or port", ce);
+                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host or port", ce);
                     System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());
                 }
             }
