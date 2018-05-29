@@ -113,19 +113,19 @@ class Command:
             stdout/stderr buffers fill up.
             """
 
-            def __init__(self, sema, logger):
+            def __init__(self, event, logger):
                 super(OutputThread, self).__init__()
                 self.read_fd, self.write_fd = os.pipe()
                 self.pipe_fobj = os.fdopen(self.read_fd)
                 self.out = []
-                self.sema = sema
+                self.event = event
                 self.logger = logger
                 self.start()
 
             def run(self):
                 """
                 It might happen that after the process is gone, the thread
-                still has data to read from the pipe. Hence, a semaphore
+                still has data to read from the pipe. Hence, a eventphore
                 is used to synchronize with the caller.
                 """
                 while True:
@@ -133,7 +133,7 @@ class Command:
                     if not line:
                         self.logger.debug("end of output")
                         self.pipe_fobj.close()
-                        self.sema.release()
+                        self.event.set()
                         return
 
                     self.out.append(line)
@@ -167,8 +167,8 @@ class Command:
                 return
 
         timeout_thread = None
-        sema = threading.Semaphore(value=0)
-        output_thread = OutputThread(sema, self.logger)
+        event = threading.Event()
+        output_thread = OutputThread(event, self.logger)
         try:
             start_time = time.time()
             try:
@@ -226,7 +226,7 @@ class Command:
             # exit the read loop we have to close it here ourselves.
             output_thread.close()
             self.logger.debug("Waiting on output thread to finish reading")
-            sema.acquire()
+            event.wait()
 
             self.out = output_thread.getoutput()
             elapsed_time = time.time() - start_time
