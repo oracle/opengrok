@@ -420,14 +420,7 @@ See https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
 
-* Chandan B.N, (originally Sun Microsystems)
-* Trond Norbye, norbye.org
-* Knut Pape, eBriefkasten.de
-* Martin Englund, (originally Sun Microsystems)
-* Knut Anders Hatlen, Oracle.
-* Lubos Kosco, Oracle. <http://blogs.oracle.com/taz/>
-* Vladimir Kotal, Oracle. <http://blogs.oracle.com/vlad/>
-* Krystof Tulinger
+For full list of contributors see https://github.com/oracle/opengrok/graphs/contributors
 
 ## 11. Contact us
 
