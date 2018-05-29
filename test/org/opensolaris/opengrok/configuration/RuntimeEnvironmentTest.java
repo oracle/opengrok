@@ -465,14 +465,14 @@ public class RuntimeEnvironmentTest {
     public void testConfigListenerThread() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         SocketAddress addr = new InetSocketAddress(0);
-        assertTrue(instance.startConfigurationListenerThread(addr));
+        assertTrue(instance.startMessageListenerThread(addr));
         try {
             Thread.sleep(1000);
         } catch (InterruptedException exp) {
             // do nothing
         }
         instance.writeConfiguration();
-        instance.stopConfigurationListenerThread();
+        instance.stopMessageListenerThread();
     }
 
     @Test

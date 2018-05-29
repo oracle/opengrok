@@ -1744,7 +1744,7 @@ public final class RuntimeEnvironment {
         indexTime.refreshDateForLastIndexRun();
     }
 
-    public boolean startConfigurationListenerThread(SocketAddress endpoint) {
+    public boolean startMessageListenerThread(SocketAddress endpoint) {
         if (messageListener != null) {
             throw new IllegalStateException("Cannot start configuration listener because it has already started");
         }
@@ -1796,12 +1796,12 @@ public final class RuntimeEnvironment {
         messageListener.addMessageHandler(messageType, handler);
     }
 
-    public void stopConfigurationListenerThread() {
+    public void stopMessageListenerThread() {
         if (messageListener == null) {
             throw new IllegalStateException("Cannot stop configuration listener because it is already stopped");
         }
 
-        messageListener.stopConfigurationListenerThread();
+        messageListener.stopListenerThread();
         messageListener = null;
     }
 
@@ -2047,7 +2047,7 @@ public final class RuntimeEnvironment {
 
     public void onContextDestroyed() {
         if (messageListener != null) {
-            messageListener.stopConfigurationListenerThread();
+            messageListener.stopListenerThread();
             messageListener.stopExpirationTimer();
         }
         stopWatchDogService();

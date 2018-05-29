@@ -181,8 +181,17 @@ public abstract class Message implements Comparable<Message> {
                 && Objects.equals(this.text, other.text);
     }
 
+    @Override
+    public String toString() {
+        return "Message{" +
+                "text='" + text + '\'' +
+                ", tags=" + tags +
+                ", type='" + type + '\'' +
+                '}';
+    }
+
     /**
-     * Serialize the message as XML and send it into the socket.
+     * Serialize the message and send it into the socket.
      *
      * @param host host
      * @param port port number

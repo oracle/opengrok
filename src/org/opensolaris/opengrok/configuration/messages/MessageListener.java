@@ -89,6 +89,9 @@ public class MessageListener {
             throw new IllegalArgumentException("Cannot add null handler");
         }
 
+        LOGGER.log(Level.FINEST, "Adding message handler {0} for message type: {1}",
+                new Object[] {handler, messageType});
+
         synchronized (messageHandlers) {
             messageHandlers.computeIfAbsent(messageType, key -> new LinkedList<>()).add(handler);
         }
@@ -101,6 +104,9 @@ public class MessageListener {
         if (handler == null) {
             throw new IllegalArgumentException("Cannot remove null handler");
         }
+
+        LOGGER.log(Level.FINEST, "Removing message handler {0} for message type: {1}",
+                new Object[] {handler, messageType});
 
         synchronized (messageHandlers) {
             List<MessageHandler> handlers = messageHandlers.get(messageType);
@@ -118,7 +124,7 @@ public class MessageListener {
     /**
      * Try to stop the configuration listener thread
      */
-    public void stopConfigurationListenerThread() {
+    public void stopListenerThread() {
         IOUtils.close(configServerSocket);
     }
 
@@ -138,7 +144,7 @@ public class MessageListener {
             while (!configServerSocket.isClosed()) {
                 acceptConnection();
             }
-        }, "configurationListener").start();
+        }, "messagesListener").start();
     }
 
     private boolean isListening() {
@@ -166,11 +172,11 @@ public class MessageListener {
                 LOGGER.log(Level.SEVERE, "Socket error", e);
             }
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Error parsing config file: ", e);
+            LOGGER.log(Level.SEVERE, "Error reading message : ", e);
         } catch (ValidationException e) {
             LOGGER.log(Level.WARNING, "Received invalid message", e);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error parsing message : ", e);
         }
     }
 
@@ -184,7 +190,7 @@ public class MessageListener {
         m.validate();
 
         if (isMessageLimitExceeded()) {
-            LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system", m.getTags());
+            LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system", m);
             output.write(Message.DeliveryStatus.OVER_LIMIT.getStatusCode());
             return;
         }
@@ -199,7 +205,7 @@ public class MessageListener {
             return;
         }
 
-        LOGGER.log(Level.FINER, "Message received: {0}", m.getTags());
+        LOGGER.log(Level.FINER, "Message received: {0}", m);
         LOGGER.log(Level.FINER, "Messages in the system: {0}", getMessagesInTheSystem());
 
         output.write(Message.DeliveryStatus.OK.getStatusCode());
@@ -223,7 +229,7 @@ public class MessageListener {
                         Response response = processMessage(handler, message);
                         finalResponse = finalResponse.combine(response);
                     } catch (Exception e) { // exception in handler should not stop notifying other handlers
-                        LOGGER.log(Level.WARNING, "Exception while processing message", e);
+                        LOGGER.log(Level.WARNING, "Exception while processing message " + message, e);
                     }
                 }
             }
@@ -237,7 +243,7 @@ public class MessageListener {
             response = handler.handle(message);
         } catch (MessageHandler.HandleException e) {
             response = Response.of(e.getMessage());
-            LOGGER.log(Level.WARNING, "Exception while processing message", e);
+            LOGGER.log(Level.WARNING, "Exception while processing message " + message, e);
         }
         return response;
     }

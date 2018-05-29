@@ -198,9 +198,6 @@ public final class Messages {
         System.err.println("Class name");
         System.err.println("-c <class>           set the css class for the message (default is 'info')");
         System.err.println();
-        System.err.println("Id");
-        System.err.println("-i <id>              set the id of the message (default is auto-generated)");
-        System.err.println();
         System.err.println("Duration");
         System.err.println("-d <duration>        set the duration of the message (format PnDTnHnMn.nS)");
         System.err.println();

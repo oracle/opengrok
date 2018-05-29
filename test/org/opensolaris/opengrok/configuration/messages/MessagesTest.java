@@ -105,7 +105,7 @@ public class MessagesTest {
         System.setSecurityManager(new ExitExceptionSecurityManager());
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        while (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(
+        while (!RuntimeEnvironment.getInstance().startMessageListenerThread(
                 new InetSocketAddress("localhost", portNum))) {
             portNum++;
         }
@@ -123,7 +123,7 @@ public class MessagesTest {
     @After
     public void tearDown() {
         System.setSecurityManager(null);
-        RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
+        RuntimeEnvironment.getInstance().stopMessageListenerThread();
         System.setOut(stdout);
         System.setErr(stderr);
     }

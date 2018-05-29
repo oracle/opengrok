@@ -103,7 +103,7 @@ public class ProjectMessageTest {
             env.getProjectRepositoriesMap().clear();
         }
 
-        listener.stopConfigurationListenerThread();
+        listener.stopListenerThread();
         repository.destroy();
     }
 

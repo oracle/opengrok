@@ -53,7 +53,7 @@ public class NormalMessageTest {
     @After
     public void tearDown() {
         listener.removeAllMessages();
-        listener.stopConfigurationListenerThread();
+        listener.stopListenerThread();
     }
 
     @Test

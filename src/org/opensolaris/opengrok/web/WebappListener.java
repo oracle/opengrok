@@ -90,7 +90,7 @@ public final class WebappListener
             if (cfg.length == 2) {
                 try {
                     SocketAddress addr = new InetSocketAddress(InetAddress.getByName(cfg[0]), Integer.parseInt(cfg[1]));
-                    if (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(addr)) {
+                    if (!RuntimeEnvironment.getInstance().startMessageListenerThread(addr)) {
                         LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread");
                     }
                 } catch (NumberFormatException | UnknownHostException ex) {

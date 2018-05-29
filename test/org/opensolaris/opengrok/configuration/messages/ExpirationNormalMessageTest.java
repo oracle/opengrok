@@ -56,7 +56,7 @@ public class ExpirationNormalMessageTest {
     @After
     public void tearDown() {
         listener.removeAllMessages();
-        listener.stopConfigurationListenerThread();
+        listener.stopListenerThread();
     }
 
     @Test

@@ -117,9 +117,6 @@ public class ProjectMessageHandler implements MessageHandler {
             throw new ValidationException("Projects have to be enabled in order to use this message");
         }
 
-        // The same check can be done for the "delete" command however it is better
-        // to allow for some flexibility. The source can be deleted first and then
-        // the "delete" command can follow.
         if (command.equals("add")) {
             File srcRoot = env.getSourceRootFile();
             for (String projectName : message.getTags()) {
@@ -130,6 +127,7 @@ public class ProjectMessageHandler implements MessageHandler {
             }
         }
 
+        // do not perform directory check as in "add" because the code/data could be removed before the "delete" message
         if (command.equals("delete")) {
             for (String projectName : message.getTags()) {
                 if (!env.getProjects().containsKey(projectName)) {
@@ -147,7 +145,7 @@ public class ProjectMessageHandler implements MessageHandler {
 
             if (!env.getProjects().containsKey(projectName)) {
                 Project project = new Project(projectName, "/" + projectName);
-                project.setTabSize(env.getConfiguration().getTabSize());
+                project.completeWithDefaults(env.getConfiguration());
 
                 // Add repositories in this project.
                 List<RepositoryInfo> repos = getRepositoriesInDir(env, projDir);

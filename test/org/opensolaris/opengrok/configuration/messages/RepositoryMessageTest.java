@@ -81,7 +81,7 @@ public class RepositoryMessageTest {
     public void tearDown() {
         if (env != null) {
             listener.removeAllMessages();
-            listener.stopConfigurationListenerThread();
+            listener.stopListenerThread();
 
             // This should match Configuration constructor.
             env.setProjects(new ConcurrentHashMap<>());
