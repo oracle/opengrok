@@ -27,7 +27,6 @@ import subprocess
 import string
 import threading
 import time
-import asyncio
 
 
 class TimeoutException(Exception):
@@ -168,7 +167,7 @@ class Command:
                 return
 
         timeout_thread = None
-        sema = asyncio.Semaphore(value=0)
+        sema = threading.Semaphore(value=0)
         output_thread = OutputThread(sema, self.logger)
         try:
             start_time = time.time()
