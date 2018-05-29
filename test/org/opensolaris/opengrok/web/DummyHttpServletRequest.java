@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -26,18 +26,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
+import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.http.Part;
+
 import static org.opensolaris.opengrok.util.RandomString.generate;
 
 /**
@@ -57,7 +65,7 @@ import static org.opensolaris.opengrok.util.RandomString.generate;
  */
 public class DummyHttpServletRequest implements HttpServletRequest {
 
-    private final Map<String, Object> attrs = new HashMap<String, Object>();
+    private final Map<String, Object> attrs = new HashMap<>();
     
     private class DummyHttpSession implements HttpSession {
         private Map<String, Object> attrs = new HashMap<>();
@@ -91,8 +99,9 @@ public class DummyHttpServletRequest implements HttpServletRequest {
             return 3600;
         }
 
+        @Override
         @SuppressWarnings("deprecation")
-        public HttpSessionContext getSessionContext() {
+        public javax.servlet.http.HttpSessionContext getSessionContext() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -262,7 +271,12 @@ public class DummyHttpServletRequest implements HttpServletRequest {
         }
         return session;
     }
-    
+
+    @Override
+    public String changeSessionId() {
+        return null;
+    }
+
     @Override
     public boolean isRequestedSessionIdValid() {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -281,6 +295,36 @@ public class DummyHttpServletRequest implements HttpServletRequest {
     @Override @Deprecated
     public boolean isRequestedSessionIdFromUrl() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean authenticate(HttpServletResponse httpServletResponse) {
+        return false;
+    }
+
+    @Override
+    public void login(String s, String s1) {
+
+    }
+
+    @Override
+    public void logout() {
+
+    }
+
+    @Override
+    public Collection<Part> getParts() {
+        return null;
+    }
+
+    @Override
+    public Part getPart(String s) {
+        return null;
+    }
+
+    @Override
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass) {
+        return null;
     }
 
     @Override
@@ -306,6 +350,11 @@ public class DummyHttpServletRequest implements HttpServletRequest {
     @Override
     public int getContentLength() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public long getContentLengthLong() {
+        return 0;
     }
 
     @Override
@@ -426,5 +475,40 @@ public class DummyHttpServletRequest implements HttpServletRequest {
     @Override
     public int getLocalPort() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ServletContext getServletContext() {
+        return null;
+    }
+
+    @Override
+    public AsyncContext startAsync() throws IllegalStateException {
+        return null;
+    }
+
+    @Override
+    public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
+        return null;
+    }
+
+    @Override
+    public boolean isAsyncStarted() {
+        return false;
+    }
+
+    @Override
+    public boolean isAsyncSupported() {
+        return false;
+    }
+
+    @Override
+    public AsyncContext getAsyncContext() {
+        return null;
+    }
+
+    @Override
+    public DispatcherType getDispatcherType() {
+        return null;
     }
 }
