@@ -68,7 +68,9 @@ the project list when requesting search results):
   redirectPort="8443" />
   ```
 
-  Refer to docs of other containers for more info on how to achieve the same.
+Refer to docs of other containers for more info on how to achieve the same.
+
+Failure to do so will result in HTTP 400 errors after first query - with the error "Error parsing HTTP request header".
 
 The same tuning to Apache can be done with the `LimitRequestLine` directive:
 
