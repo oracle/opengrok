@@ -59,13 +59,13 @@ export JAVA_OPTS
 For tomcat you might also hit a limit for http header size (we use it to send
 the project list when requesting search results):
 
-* increase(add) in `conf/server.xml`
+* increase(add) in `conf/server.xml`, for example:
 
   ```xml
-  maxHttpHeaderSize
-  connectionTimeout="20000"
-  maxHttpHeaderSize="65536"
-  redirectPort="8443" />
+    <Connector port="8888" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               maxHttpHeaderSize="65536"
+               redirectPort="8443" />
   ```
 
 Refer to docs of other containers for more info on how to achieve the same.
