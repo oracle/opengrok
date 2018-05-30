@@ -1237,6 +1237,18 @@ public final class RuntimeEnvironment {
         return threadConfig.get().isHandleHistoryOfRenamedFiles();
     }
 
+    public boolean isHandleHistoryOfRenamedFilesForProject(Project project) {
+        if (hasProjects() && project != null) {
+            return project.isHandleRenamedFiles();
+        } else {
+            return isHandleHistoryOfRenamedFiles();
+        }
+    }
+    
+    public boolean isHandleHistoryOfRenamedFilesFor(String path) {
+        return isHandleHistoryOfRenamedFilesForProject(Project.getProject(path));
+    }
+    
     public void setRevisionMessageCollapseThreshold(int threshold) {
         threadConfig.get().setRevisionMessageCollapseThreshold(threshold);
     }

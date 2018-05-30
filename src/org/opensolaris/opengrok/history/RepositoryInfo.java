@@ -66,6 +66,8 @@ public class RepositoryInfo implements Serializable {
     protected String branch;
     protected String currentVersion;
 
+    private boolean handleRenamedFiles;
+    
     /**
      * format used for printing the date in {@code currentVersion}
      */
@@ -96,12 +98,19 @@ public class RepositoryInfo implements Serializable {
         return directoryNameRelative;
     }
 
+    public boolean isHandleRenamedFiles() {
+        return this.handleRenamedFiles;
+    }
+    
     /**
      * Set relative path to source root
      * @param dir directory
      */
     public void setDirectoryNameRelative(String dir) {
         this.directoryNameRelative = dir;
+        
+        handleRenamedFiles = RuntimeEnvironment.getInstance().
+                isHandleHistoryOfRenamedFilesFor(getDirectoryNameRelative());
     }
 
     /**
@@ -117,8 +126,7 @@ public class RepositoryInfo implements Serializable {
     /**
      * Specify the name of the root directory for this repository.
      *
-     * @param dir the new name of the root directory. Can be absolute
-     * path or relative to source root.
+     * @param dir the new root directory
      */
     public void setDirectoryName(File dir) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -141,9 +149,9 @@ public class RepositoryInfo implements Serializable {
         }
 
         if (path.startsWith(rootPath)) {
-            this.directoryNameRelative = path.substring(rootPath.length());
+            setDirectoryNameRelative(path.substring(rootPath.length()));
         } else {
-            this.directoryNameRelative = path;
+            setDirectoryNameRelative(path);
         }
     }
 
