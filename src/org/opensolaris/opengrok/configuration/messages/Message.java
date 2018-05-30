@@ -339,29 +339,32 @@ public abstract class Message implements Comparable<Message> {
 
         public T build() {
             T result = createMessage(messageClass);
+            fillData(result);
+            return result;
+        }
 
-            ((Message) result).tags.addAll(tags);
+        private void fillData(final Message message) {
+            message.tags.addAll(tags);
 
-            if (((Message) result).tags.isEmpty()) {
-                Set<String> defaultTags = result.getDefaultTags();
+            if (message.tags.isEmpty()) {
+                Set<String> defaultTags = message.getDefaultTags();
                 if (defaultTags != null) {
-                    ((Message) result).tags.addAll(defaultTags);
+                    message.tags.addAll(defaultTags);
                 }
             }
 
             if (text != null) {
-                ((Message) result).text = text;
+                message.text = text;
             }
 
             if (cssClass != null) {
-                ((Message) result).cssClass = cssClass;
+                message.cssClass = cssClass;
             } else {
-                ((Message) result).cssClass = result.getDefaultCssClass();
+                message.cssClass = message.getDefaultCssClass();
             }
             if (duration != null) {
-                ((Message) result).duration = duration;
+                message.duration = duration;
             }
-            return result;
         }
 
         private static <T> T createMessage(final Class<T> messageClass) {
