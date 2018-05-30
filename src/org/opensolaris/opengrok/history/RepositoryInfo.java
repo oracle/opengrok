@@ -92,16 +92,19 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
+     * @return true if the repository handles renamed files, false otherwise.
+     */
+    public boolean isHandleRenamedFiles() {
+        return this.handleRenamedFiles;
+    }
+    
+    /**
      * @return relative path to source root
      */
     public String getDirectoryNameRelative() {
         return directoryNameRelative;
     }
 
-    public boolean isHandleRenamedFiles() {
-        return this.handleRenamedFiles;
-    }
-    
     /**
      * Set relative path to source root
      * @param dir directory
@@ -110,7 +113,7 @@ public class RepositoryInfo implements Serializable {
         this.directoryNameRelative = dir;
         
         handleRenamedFiles = RuntimeEnvironment.getInstance().
-                isHandleHistoryOfRenamedFilesFor(getDirectoryNameRelative());
+                isHandleHistoryOfRenamedFilesFor(dir);
     }
 
     /**

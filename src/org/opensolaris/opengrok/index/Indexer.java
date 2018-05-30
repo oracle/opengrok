@@ -884,6 +884,40 @@ public final class Indexer {
             throw new IndexerException("Internal error, zapCache shouldn't be null");
         }
 
+        if (addProjects) {
+            File files[] = env.getSourceRootFile().listFiles();
+            Map<String,Project> projects = env.getProjects();
+
+            // Keep a copy of the old project list so that we can preserve
+            // the customization of existing projects.
+            Map<String, Project> oldProjects = new HashMap<>();
+            for (Project p : projects.values()) {
+                oldProjects.put(p.getName(), p);
+            }
+
+            projects.clear();
+
+            // Add a project for each top-level directory in source root.
+            for (File file : files) {
+                String name = file.getName();
+                String path = "/" + name;
+                if (oldProjects.containsKey(name)) {
+                    // This is an existing object. Reuse the old project,
+                    // possibly with customizations, instead of creating a
+                    // new with default values.
+                    Project p = oldProjects.get(name);
+                    p.setPath(path);
+                    p.setName(name);
+                    p.completeWithDefaults(env.getConfiguration());
+                    projects.put(name, p);
+                } else if (!name.startsWith(".") && file.isDirectory()) {
+                    // Found a new directory with no matching project, so
+                    // create a new project with default properties.
+                    projects.put(name, new Project(name, path, env.getConfiguration()));
+                }
+            }
+        }
+        
         if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
             long start = System.currentTimeMillis();
@@ -934,40 +968,6 @@ public final class Indexer {
                     }
                 }
                 return;
-            }
-        }
-
-        if (addProjects) {
-            File files[] = env.getSourceRootFile().listFiles();
-            Map<String,Project> projects = env.getProjects();
-
-            // Keep a copy of the old project list so that we can preserve
-            // the customization of existing projects.
-            Map<String, Project> oldProjects = new HashMap<>();
-            for (Project p : projects.values()) {
-                oldProjects.put(p.getName(), p);
-            }
-
-            projects.clear();
-
-            // Add a project for each top-level directory in source root.
-            for (File file : files) {
-                String name = file.getName();
-                String path = "/" + name;
-                if (oldProjects.containsKey(name)) {
-                    // This is an existing object. Reuse the old project,
-                    // possibly with customizations, instead of creating a
-                    // new with default values.
-                    Project p = oldProjects.get(name);
-                    p.setPath(path);
-                    p.setName(name);
-                    p.completeWithDefaults(env.getConfiguration());
-                    projects.put(name, p);
-                } else if (!name.startsWith(".") && file.isDirectory()) {
-                    // Found a new directory with no matching project, so
-                    // create a new project with default properties.
-                    projects.put(name, new Project(name, path, env.getConfiguration()));
-                }
             }
         }
 
