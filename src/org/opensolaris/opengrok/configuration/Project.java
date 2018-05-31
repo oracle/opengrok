@@ -71,8 +71,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * This flag sets per-project handling of renamed files.
      */
-    private enum propState { YES, NO, UNSET };
-    private propState handleRenamedFiles = propState.UNSET;
+    private Boolean handleRenamedFiles = null;
     
     /**
      * This marks the project as (not)ready before initial index is done. this
@@ -239,14 +238,14 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * @return true if this project handles renamed files.
      */
     public boolean isHandleRenamedFiles() {
-        return handleRenamedFiles == propState.YES;
+        return handleRenamedFiles;
     }
     
     /**
      * @param flag true if project should handle renamed files, false otherwise.
      */
     public void setHandleRenamedFiles(boolean flag) {
-        this.handleRenamedFiles = flag ? propState.YES : propState.NO;
+        this.handleRenamedFiles = flag;
     }
     
     /**
@@ -300,7 +299,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         }
         
         // Allow project to override global setting of renamed file handling.
-        if (handleRenamedFiles == propState.UNSET) {
+        if (handleRenamedFiles == null) {
             setHandleRenamedFiles(cfg.isHandleHistoryOfRenamedFiles());
         }
     }
