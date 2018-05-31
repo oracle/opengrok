@@ -238,7 +238,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * @return true if this project handles renamed files.
      */
     public boolean isHandleRenamedFiles() {
-        return handleRenamedFiles;
+        return handleRenamedFiles != null && handleRenamedFiles;
     }
     
     /**
