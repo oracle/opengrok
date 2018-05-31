@@ -36,8 +36,10 @@ The setting of per-project tunables is done in read-only configuration file (pas
 </java>
 ```
 
-## List of tunables
+## Tunables
 
-- `navigateWindowEnabled` (boolean): display navigate window automatically when browsing xrefs
-- `tabSize` (integer): size of tabulator in spaces
-- `handleRenamedFiles` (boolean): disables or enables handling of renamed files
+Tunable | Type | Since version | Meaning
+--------|------|---------------|--------
+`navigateWindowEnabled` | boolean | 1.1 | display navigate window automatically when browsing xrefs
+`tabSize` | integer | pre 0.12 | size of tabulator in spaces
+`handleRenamedFiles` | boolean | 1.1 | disables or enables handling of renamed files
