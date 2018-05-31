@@ -162,22 +162,22 @@ org.opensolaris.opengrok.web.Util"
     %>
     <tbody>
     <tr>
-        <td><label for="s1" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
+        <td><label for="q" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
         <td colspan="2"><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>
-	<td><label for="s2" title="Definition of function/variable/class">Definition</label></td>
+        <td><label for="defs" title="Definition of function/variable/class">Definition</label></td>
         <td colspan="2"><input class="q" tabindex="2" name="defs" id="defs" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="s3" title="Usage of function/variable/class">Symbol</label></td>
+        <td><label for="refs" title="Usage of function/variable/class">Symbol</label></td>
         <td colspan="2"><input class="q" tabindex="3" name="refs" id="refs" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="s4" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
+        <td><label for="path" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
         <td colspan="2"><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
@@ -185,7 +185,7 @@ org.opensolaris.opengrok.web.Util"
         if (cfg.getEnv().isHistoryEnabled()) {
     %>
     <tr>
-        <td><label for="s5" title="Search in log messages">History</label></td>
+        <td><label for="hist" title="Search in log messages">History</label></td>
         <td colspan="2"><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
@@ -193,7 +193,7 @@ org.opensolaris.opengrok.web.Util"
         }
     %>
     <tr>
-        <td id="typeLabelTd"><label for="s5">Type</label></td>
+        <td id="typeLabelTd"><label for="type">Type</label></td>
         <td><select class="q" tabindex="6" name="type" id="type"><%
                 String selection = queryParams.getType();
                 %>
