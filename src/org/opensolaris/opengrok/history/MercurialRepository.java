@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.history;
@@ -93,7 +93,7 @@ public class MercurialRepository extends Repository {
             + END_OF_ENTRY + "\\n";
 
     /**
-     * Template for formatting hg log output for directories.
+     * Template for formatting {@code hg log} output for directories.
      */
     private static final String DIR_TEMPLATE_RENAMED
             = TEMPLATE_STUB + FILE_LIST
@@ -104,7 +104,7 @@ public class MercurialRepository extends Repository {
 
     private static final Pattern LOG_COPIES_PATTERN
             = Pattern.compile("^(\\d+):(.*)");
-
+    
     public MercurialRepository() {
         type = "Mercurial";
         datePatterns = new String[]{
@@ -188,7 +188,7 @@ public class MercurialRepository extends Repository {
 
         cmd.add("--template");
         if (file.isDirectory()) {
-            cmd.add(env.isHandleHistoryOfRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
+            cmd.add(this.isHandleRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
         } else {
             cmd.add(FILE_TEMPLATE);
         }

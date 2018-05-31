@@ -60,7 +60,7 @@ public class GitHistoryParserTest {
 
     @Before
     public void setUp() {
-        instance = new GitHistoryParser();
+        instance = new GitHistoryParser(false);
     }
 
     @After

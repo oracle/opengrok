@@ -18,8 +18,8 @@
  */
 
  /*
-  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
- */
+  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
+  */
 package org.opensolaris.opengrok.configuration;
 
 import java.io.File;
@@ -68,6 +68,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     private boolean navigateWindowEnabled = false;
 
+    /**
+     * This flag sets per-project handling of renamed files.
+     */
+    private Boolean handleRenamedFiles = null;
+    
     /**
      * This marks the project as (not)ready before initial index is done. this
      * is to avoid all/multi-project searches referencing this project from
@@ -230,6 +235,20 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
+     * @return true if this project handles renamed files.
+     */
+    public boolean isHandleRenamedFiles() {
+        return handleRenamedFiles != null && handleRenamedFiles;
+    }
+    
+    /**
+     * @param flag true if project should handle renamed files, false otherwise.
+     */
+    public void setHandleRenamedFiles(boolean flag) {
+        this.handleRenamedFiles = flag;
+    }
+    
+    /**
      * Return groups where this project belongs
      *
      * @return set of groups|empty if none
@@ -263,7 +282,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     final public void completeWithDefaults(Configuration cfg) {
         Configuration defaultCfg = new Configuration();
         /**
-         * Choosing strategy for properties (tabSize here):
+         * Choosing strategy for properties (tabSize used as example here):
          * <pre>
          * this       cfg        defaultCfg   chosen value
          * ===============================================
@@ -277,6 +296,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
          */
         if (getTabSize() == defaultCfg.getTabSize()) {
             setTabSize(cfg.getTabSize());
+        }
+        
+        // Allow project to override global setting of renamed file handling.
+        if (handleRenamedFiles == null) {
+            setHandleRenamedFiles(cfg.isHandleHistoryOfRenamedFiles());
         }
     }
 

@@ -122,8 +122,8 @@ public class GitRepository extends Repository {
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
         cmd.add(GIT_DATE_OPT);
-
-        if (file.isFile() && RuntimeEnvironment.getInstance().isHandleHistoryOfRenamedFiles()) {
+        
+        if (file.isFile() && isHandleRenamedFiles()) {
             cmd.add("--follow");
         }
 
@@ -481,7 +481,7 @@ public class GitRepository extends Repository {
     History getHistory(File file, String sinceRevision)
             throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        History result = new GitHistoryParser().parse(file, this, sinceRevision);
+        History result = new GitHistoryParser(isHandleRenamedFiles()).parse(file, this, sinceRevision);
         // Assign tags to changesets they represent
         // We don't need to check if this repository supports tags,
         // because we know it :-)

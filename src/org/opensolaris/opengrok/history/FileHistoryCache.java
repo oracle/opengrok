@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
@@ -406,6 +407,7 @@ class FileHistoryCache implements HistoryCache {
     public void store(History history, Repository repository)
             throws HistoryException {
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        final boolean handleRenamedFiles = repository.isHandleRenamedFiles();
 
         String latestRev = null;
 
@@ -475,7 +477,7 @@ class FileHistoryCache implements HistoryCache {
         int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                if (env.isHandleHistoryOfRenamedFiles() &&
+                if (handleRenamedFiles &&
                     isRenamedFile(map_entry.getKey(), env, repository, history)) {
                         continue;
                 }
@@ -491,7 +493,7 @@ class FileHistoryCache implements HistoryCache {
 
         LOGGER.log(Level.FINE, "Stored history for {0} files", fileHistoryCount);
 
-        if (!env.isHandleHistoryOfRenamedFiles()) {
+        if (!handleRenamedFiles) {
             finishStore(repository, latestRev);
             return;
         }
