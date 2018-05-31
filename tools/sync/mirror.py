@@ -48,7 +48,7 @@ from commands import Commands, CommandsBase
 from repository import Repository
 from mercurial import MercurialRepository
 from repofactory import get_repository
-from utils import is_exe, check_create_dir, get_int
+from utils import is_exe, check_create_dir, get_int, diff_list
 from hook import run_hook
 from readconfig import read_config
 from opengrok import get_repos, get_config_value, get_repo_type
@@ -105,11 +105,11 @@ if __name__ == '__main__':
 
     GLOBAL_TUNABLES = ['hookdir', 'proxy', 'logdir', 'commands', 'projects',
                        HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
-    for key in config.keys():
-        if key not in GLOBAL_TUNABLES:
-            logger.error("uknown global configuration option '{}'"
-                         .format(key))
-            sys.exit(1)
+    diff = diff_list(config.keys(), GLOBAL_TUNABLES)
+    if diff:
+        logger.error("uknown global configuration option(s): '{}'"
+                     .format(diff))
+        sys.exit(1)
 
     # Make sure the log directory exists.
     logdir = config.get("logdir")
@@ -181,11 +181,11 @@ if __name__ == '__main__':
         KNOWN_PROJECT_TUNABLES = ['disabled', CMD_TIMEOUT_PROPERTY,
                                   HOOK_TIMEOUT_PROPERTY, 'proxy',
                                   'ignored_repos', 'hooks']
-        for key in project_config.keys():
-            if key not in KNOWN_PROJECT_TUNABLES:
-                logger.error("uknown project configuration option '{}' "
-                             "for project {}".format(key, args.project))
-                sys.exit(1)
+        diff = diff_list(project_config.keys(), KNOWN_PROJECT_TUNABLES)
+        if diff:
+            logger.error("uknown project configuration option(s) '{}' "
+                         "for project {}".format(diff, args.project))
+            sys.exit(1)
 
         project_command_timeout = get_int(logger, "command timeout for "
                                           "project {}".format(args.project),

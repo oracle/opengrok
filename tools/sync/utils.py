@@ -87,3 +87,11 @@ def get_int(logger, name, value):
     except ValueError:
         logger.error("'{}' is not a number: {}".format(name, value))
         return None
+
+
+def diff_list(first, second):
+    """
+    Get difference of lists.
+    """
+    second = set(second)
+    return [item for item in first if item not in second]
