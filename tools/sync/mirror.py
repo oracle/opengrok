@@ -103,6 +103,14 @@ if __name__ == '__main__':
     else:
         config = {}
 
+    GLOBAL_TUNABLES = ['hookdir', 'proxy', 'logdir', 'commands', 'projects',
+                       HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
+    for key in config.keys():
+        if key not in GLOBAL_TUNABLES:
+            logger.error("uknown global configuration option '{}'"
+                         .format(key))
+            sys.exit(1)
+
     # Make sure the log directory exists.
     logdir = config.get("logdir")
     if logdir:
@@ -169,6 +177,16 @@ if __name__ == '__main__':
         logger.debug("Project '{}' has specific (non-default) config".
                      format(args.project))
 
+        # Quick sanity check.
+        KNOWN_PROJECT_TUNABLES = ['disabled', CMD_TIMEOUT_PROPERTY,
+                                  HOOK_TIMEOUT_PROPERTY, 'proxy',
+                                  'ignored_repos', 'hooks']
+        for key in project_config.keys():
+            if key not in KNOWN_PROJECT_TUNABLES:
+                logger.error("uknown project configuration option '{}' "
+                             "for project {}".format(key, args.project))
+                sys.exit(1)
+
         project_command_timeout = get_int(logger, "command timeout for "
                                           "project {}".format(args.project),
                                           project_config.
@@ -187,8 +205,12 @@ if __name__ == '__main__':
             logger.debug("Project hook timeout = {}".
                          format(hook_timeout))
 
-        if project_config.get('ignored_repos'):
-            ignored_repos = project_config.get('ignored_repos')
+        ignored_repos = project_config.get('ignored_repos')
+        if ignored_repos:
+            if type(ignored_repos) is not list:
+                logger.error("ignored_repos for project {} is not a list".
+                             format(args.project))
+                sys.exit(1)
             logger.debug("has ignored repositories: {}".
                          format(ignored_repos))
 
