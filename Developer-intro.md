@@ -73,7 +73,7 @@ See [[Debugging wiki|Debugging]] for more information on debugging.
 
 To run tests in single file, open the file from the left column which contains the projects (e.g. opengrok -> Test Packages -> org.opensolaris.opengrok.history -> MercurialRepositoryTest.java) and right-click on it and select Test File (Ctrl+F6).
 
-Also, OpenGrok repository is setup so that pushes will trigger [Travis](https://travis-ci.org) builds so it is not necessary to run tests on your workstation - just commit and push to Github.
+Also, OpenGrok repository is setup so that pushes will trigger [Travis](https://travis-ci.org) builds so it is not necessary to run tests on your workstation - just commit and push to Github (first it is necessary to enable Travis for your fork on the Travis web).
 
 See [Developers wiki](https://github.com/oracle/opengrok/wiki/Developers) for more info on testing.
 
