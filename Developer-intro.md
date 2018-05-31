@@ -4,16 +4,13 @@ If you wanted to make a change to OpenGrok code base (small fix, new feature, an
 
 Firstly, create Github account (of course !).
 
-OpenGrok can be built and tested on Linux, OS X, BSD, Windows etc. too.
+OpenGrok can be built and tested on Linux, OS X, BSD, Solaris, Windows etc. You will need:
 
-E.g. for Solaris install:
-
-1. Solaris 11+
-2. JDK8 (`pkg install developer/java/jdk`)
-3. [Universal ctags](https://github.com/universal-ctags) (from source)
-4. Git (`pkg install git`)
-5. [Netbeans](https://netbeans.org/) (with bundled Tomcat or install Tomcat8 separately and point Netbeans to it. Note that latest stable Netbeans 8.2 does not work with Tomcat 8.5. Use Tomcat 8.0.)
-6. other SCMs (e.g. `pkg install mercurial subversion`, will be handy for testing)
+1. JDK8
+1. [Universal ctags](https://github.com/universal-ctags) (from source)
+1. Git (for cloning the repository), Subversion (needed for successful build)
+1. [Netbeans](https://netbeans.org/) (with bundled Tomcat or install Tomcat8 separately and point Netbeans to it. Note that latest stable Netbeans 8.2 does not work with Tomcat 8.5. Use Tomcat 8.0.)
+1. other SCMs 
 
 Also, it would not hurt if you created an issue (https://github.com/OpenGrok/OpenGrok/issues) and mentioned that you will be working on it.
 
