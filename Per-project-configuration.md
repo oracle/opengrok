@@ -38,5 +38,6 @@ The setting of per-project tunables is done in read-only configuration file (pas
 
 ## List of tunables
 
-- `navigateWindowEnabled` : display navigate window automatically when browsing xrefs
-- `tabSize`: size of tabulator in spaces
+- `navigateWindowEnabled` (boolean): display navigate window automatically when browsing xrefs
+- `tabSize` (integer): size of tabulator in spaces
+- `handleRenamedFiles` (boolean): disables or enables handling of renamed files
