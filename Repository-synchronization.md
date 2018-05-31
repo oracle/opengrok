@@ -110,8 +110,8 @@ projects:
       pre: userland-pre.ksh
       post: userland-post.ksh
   opengrok-master:
-    - ignored_repos:
-      /opengrok-master/testdata/repositories/rcs_test
+    ignored_repos:
+      - /opengrok-master/testdata/repositories/rcs_test
   jdk.*:
     proxy: true
     hooks:
