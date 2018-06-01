@@ -161,6 +161,8 @@ public final class RepositoryFactory {
                     repo.buildTagList(file, interactive);
                 }
 
+                repo.fillFromProject();
+                
                 break;
             }
         }

@@ -250,7 +250,7 @@ public final class HistoryGuru {
                 || (rscm == RemoteSCM.ON)
                 || (ui || ((rscm == RemoteSCM.DIRBASED) && (repo != null) && repo.hasHistoryForDirectories()));
 
-        if (repo != null && repo.isWorking() && repo.fileHasHistory(file)
+        if (repo != null && repo.isHistoryEnabled() && repo.isWorking() && repo.fileHasHistory(file)
                 && (!repo.isRemote() || doRemote)) {
 
             if (useCache() && historyCache.supportsRepository(repo)) {
@@ -387,14 +387,6 @@ public final class HistoryGuru {
             String path;
             try {
                 path = file.getCanonicalPath();
-                File skipRepository = new File(path, ".opengrok_skip_history");
-                // Should potential repository be ignored?
-                if (skipRepository.exists()) {
-                    LOGGER.log(Level.INFO,
-                        "Skipping history cache creation for {0} and its subdirectories",
-                        file.getAbsolutePath());
-                    continue;
-                }
 
                 Repository repository = null;
                 try {
@@ -576,6 +568,12 @@ public final class HistoryGuru {
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
 
+        if (!repository.isHistoryEnabled()) {
+            LOGGER.log(Level.INFO,
+                    "Skipping history cache creation of {0} repository in {1} and its subdirectories",
+                    new Object[]{type, path});
+        }
+        
         if (repository.isWorking()) {
             boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
             Statistics elapsed = new Statistics();
