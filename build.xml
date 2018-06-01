@@ -585,7 +585,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <include name="servlet-api-*.jar"/>
             </fileset>
         </delete>
-        <get src="${mvn.repository}/javax/servlet/servlet-api/${servlet-api.version}/${servlet-api.jar}"
+        <get src="${mvn.repository}/javax/servlet/javax.servlet-api/${servlet-api.version}/${servlet-api.jar}"
              dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
