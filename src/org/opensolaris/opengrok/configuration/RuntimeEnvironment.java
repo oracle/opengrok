@@ -803,7 +803,7 @@ public final class RuntimeEnvironment {
     public void setRepositories(String dir) {
         List<RepositoryInfo> repos = new ArrayList<>(HistoryGuru.getInstance().
                 addRepositories(new File[]{new File(dir)},
-                RuntimeEnvironment.getInstance().getIgnoredNames()));
+                    RuntimeEnvironment.getInstance().getIgnoredNames()));
         RuntimeEnvironment.getInstance().setRepositories(repos);
     }
 
@@ -1235,18 +1235,6 @@ public final class RuntimeEnvironment {
 
     public boolean isHandleHistoryOfRenamedFiles() {
         return threadConfig.get().isHandleHistoryOfRenamedFiles();
-    }
-
-    public boolean isHandleHistoryOfRenamedFilesForProject(Project project) {
-        if (hasProjects() && project != null) {
-            return project.isHandleRenamedFiles();
-        } else {
-            return isHandleHistoryOfRenamedFiles();
-        }
-    }
-    
-    public boolean isHandleHistoryOfRenamedFilesFor(String path) {
-        return isHandleHistoryOfRenamedFilesForProject(Project.getProject(path));
     }
     
     public void setRevisionMessageCollapseThreshold(int threshold) {

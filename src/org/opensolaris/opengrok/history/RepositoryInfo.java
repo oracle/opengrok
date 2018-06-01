@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.ClassUtil;
@@ -67,6 +68,7 @@ public class RepositoryInfo implements Serializable {
     protected String currentVersion;
 
     private boolean handleRenamedFiles;
+    private boolean historyEnabled;
     
     /**
      * format used for printing the date in {@code currentVersion}
@@ -99,6 +101,24 @@ public class RepositoryInfo implements Serializable {
     }
     
     /**
+     * @param flag true if the repository should handle renamed files, false otherwise.
+     */
+    public void setHandleRenamedFiles(boolean flag) {
+        this.handleRenamedFiles = flag;
+    }
+    
+    /**
+     * @return true if the repository should have history cache.
+     */
+    public boolean isHistoryEnabled() {
+        return this.historyEnabled;
+    }
+    
+    public void setHistoryEnabled(boolean flag) {
+        this.historyEnabled = flag;
+    }
+    
+    /**
      * @return relative path to source root
      */
     public String getDirectoryNameRelative() {
@@ -111,9 +131,6 @@ public class RepositoryInfo implements Serializable {
      */
     public void setDirectoryNameRelative(String dir) {
         this.directoryNameRelative = dir;
-        
-        handleRenamedFiles = RuntimeEnvironment.getInstance().
-                isHandleHistoryOfRenamedFilesFor(dir);
     }
 
     /**
@@ -254,6 +271,22 @@ public class RepositoryInfo implements Serializable {
 
     public void setCurrentVersion(String currentVersion) {
         this.currentVersion = currentVersion;
+    }
+    
+    /**
+     * Fill configurable properties from associated project (if any) or Configuration.
+     */
+    public void fillFromProject() {
+        Project proj = Project.getProject(getDirectoryNameRelative());
+        if (proj != null) {
+            setHistoryEnabled(proj.isHistoryEnabled());
+            setHandleRenamedFiles(proj.isHandleRenamedFiles());
+        } else {
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            
+            setHistoryEnabled(env.isHistoryEnabled());
+            setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
+        }
     }
     
     @Override

@@ -54,7 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
@@ -69,8 +68,8 @@ class FileHistoryCache implements HistoryCache {
 
     private final Object lock = new Object();
 
-    private final static String historyCacheDirName = "historycache";
-    private final static String latestRevFileName = "OpenGroklatestRev";
+    private final static String HISTORY_CACHE_DIR_NAME = "historycache";
+    private final static String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
     private final static String DIRECTORY_FILE_PREFIX = "OpenGrokDirHist";
 
     private boolean historyIndexDone = false;
@@ -201,7 +200,7 @@ class FileHistoryCache implements HistoryCache {
         StringBuilder sb = new StringBuilder();
         sb.append(env.getDataRootPath());
         sb.append(File.separatorChar);
-        sb.append(historyCacheDirName);
+        sb.append(HISTORY_CACHE_DIR_NAME);
 
         try {
             String add = env.getPathRelativeToSourceRoot(file);
@@ -589,7 +588,8 @@ class FileHistoryCache implements HistoryCache {
          * fetched in the first phase of indexing.
          */
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (isHistoryIndexDone() && repository.hasHistoryForDirectories() &&
+        if (isHistoryIndexDone() && repository.isHistoryEnabled() &&
+            repository.hasHistoryForDirectories() &&
             !env.isFetchHistoryWhenNotInCache()) {
                 return null;
         }
@@ -651,7 +651,7 @@ class FileHistoryCache implements HistoryCache {
         }
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File dir = env.getDataRootFile();
-        dir = new File(dir, FileHistoryCache.historyCacheDirName);
+        dir = new File(dir, FileHistoryCache.HISTORY_CACHE_DIR_NAME);
         try {
             dir = new File(dir, env.getPathRelativeToSourceRoot(
                 new File(repos.getDirectoryName())));
@@ -692,14 +692,14 @@ class FileHistoryCache implements HistoryCache {
         }
 
         return env.getDataRootPath() + File.separatorChar
-            + FileHistoryCache.historyCacheDirName
+            + FileHistoryCache.HISTORY_CACHE_DIR_NAME
             + repoDirBasename;
     }
 
     private String getRepositoryCachedRevPath(Repository repository) {
         String histDir = getRepositoryHistDataDirname(repository);
         if (histDir == null) return null;
-        return histDir + File.separatorChar + latestRevFileName;
+        return histDir + File.separatorChar + LATEST_REV_FILE_NAME;
     }
 
     /**
