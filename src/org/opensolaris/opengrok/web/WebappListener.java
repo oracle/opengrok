@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -28,7 +28,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
-import java.nio.file.WatchService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
@@ -36,7 +35,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
-import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -50,11 +48,6 @@ public final class WebappListener
         implements ServletContextListener, ServletRequestListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
-    private static final String ENABLE_AUTHORIZATION_WATCH_DOG = "enableAuthorizationWatchDog";
-    private static final String AUTHORIZATION_PLUGIN_DIRECTORY = "authorizationPluginDirectory";
-
-    private Thread thread;
-    private WatchService watcher;
 
     /**
      * {@inheritDoc}
@@ -106,10 +99,8 @@ public final class WebappListener
 
         try {
             RuntimeEnvironment.getInstance().loadStatistics();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
-        } catch (ParseException ex) {
-            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
         }
 
         if (env.getConfiguration().getPluginDirectory() != null && env.isAuthorizationWatchdog()) {
@@ -120,10 +111,8 @@ public final class WebappListener
 
         try {
             RuntimeEnvironment.getInstance().loadStatistics();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
-        } catch (ParseException ex) {
-            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
         }
     }
 

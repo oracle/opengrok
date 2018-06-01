@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration;
@@ -33,6 +33,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -41,8 +42,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.PatternSyntaxException;
+
+import com.google.gson.JsonParseException;
 import org.apache.tools.ant.filters.StringInputStream;
-import org.json.simple.parser.ParseException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -56,7 +58,7 @@ import org.opensolaris.opengrok.authorization.AuthorizationStack;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.configuration.messages.NormalMessage;
 import org.opensolaris.opengrok.history.RepositoryInfo;
-import org.opensolaris.opengrok.web.Statistics;
+import org.opensolaris.opengrok.web.stats.Statistics;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -943,48 +945,42 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testLoadEmptyStatistics() throws IOException, ParseException {
+    public void testLoadEmptyStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{}";
         try (InputStream in = new StringInputStream(json)) {
             env.loadStatistics(in);
         }
-        Assert.assertEquals(new Statistics().toJson(), env.getStatistics().toJson());
+        Assert.assertEquals(new Statistics().encode(), env.getStatistics().encode());
     }
 
     @Test
-    public void testLoadStatistics() throws IOException, ParseException {
+    public void testLoadStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{"
-            + "\"requests_per_minute_max\":3,"
+            + "\"requestsPerMinuteMax\":3,"
             + "\"timing\":{"
                 + "\"*\":2288,"
                 + "\"xref\":53,"
                 + "\"root\":2235"
             + "},"
             + "\"minutes\":756,"
-            + "\"timing_min\":{"
+            + "\"timingMin\":{"
                 + "\"*\":2,"
                 + "\"xref\":2,"
                 + "\"root\":2235"
             + "},"
-            + "\"timing_avg\":{"
-                + "\"*\":572.0,"
-                + "\"xref\":17.666666666666668,"
-                + "\"root\":2235.0"
-            + "},"
-            + "\"request_categories\":{"
+            + "\"categoriesCounter\":{"
                 + "\"*\":4,"
                 + "\"xref\":3,"
                 + "\"root\":1"
             + "},"
-            + "\"day_histogram\":[0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,1],"
+            + "\"dayHistogram\":[0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,1],"
             + "\"requests\":4,"
-            + "\"requests_per_minute_min\":1,"
-            + "\"requests_per_minute\":3,"
-            + "\"requests_per_minute_avg\":0.005291005291005291,"
-            + "\"month_histogram\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,0],"
-            + "\"timing_max\":{"
+            + "\"requestsPerMinuteMin\":1,"
+            + "\"requestsPerMinute\":3,"
+            + "\"monthHistogram\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,3,0],"
+            + "\"timingMax\":{"
                 + "\"*\":2235,"
                 + "\"xref\":48,"
                 + "\"root\":2235"
@@ -1010,15 +1006,15 @@ public class RuntimeEnvironmentTest {
             0, 0, 0, 0, 0, 0, 0, 0, 1, 3,
             0}, stats.getMonthHistogram());
 
-        Assert.assertEquals(createMap(new Object[][]{{"*", 4L}, {"xref", 3L}, {"root", 1L}}), stats.getRequestCategories());
+        Assert.assertEquals(createMap(new Object[][]{{"*", 4L}, {"xref", 3L}, {"root", 1L}}), stats.getCategoriesCounter());
 
         Assert.assertEquals(createMap(new Object[][]{{"*", 2288L}, {"xref", 53L}, {"root", 2235L}}), stats.getTiming());
         Assert.assertEquals(createMap(new Object[][]{{"*", 2L}, {"xref", 2L}, {"root", 2235L}}), stats.getTimingMin());
         Assert.assertEquals(createMap(new Object[][]{{"*", 2235L}, {"xref", 48L}, {"root", 2235L}}), stats.getTimingMax());
     }
 
-    @Test(expected = ParseException.class)
-    public void testLoadInvalidStatistics() throws ParseException, IOException {
+    @Test(expected = JsonParseException.class)
+    public void testLoadInvalidStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{ malformed json with missing bracket";
         try (InputStream in = new StringInputStream(json)) {
@@ -1029,10 +1025,11 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testSaveEmptyStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setStatistics(new Statistics());
+        Statistics stats = new Statistics();
+        env.setStatistics(stats);
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             env.saveStatistics(out);
-            Assert.assertEquals("{}", out.toString());
+            Assert.assertEquals(stats.encode(), out.toString());
         }
     }
 
@@ -1040,36 +1037,34 @@ public class RuntimeEnvironmentTest {
     public void testSaveStatistics() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setStatistics(new Statistics());
-        env.getStatistics().addRequest();
-        env.getStatistics().addRequest("root");
-        env.getStatistics().addRequestTime("root", 10L);
+        env.getStatistics().addRequest("root", Duration.ofMillis(10));
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             env.saveStatistics(out);
             Assert.assertNotEquals("{}", out.toString());
-            Assert.assertEquals(env.getStatistics().toJson().toJSONString(), out.toString());
+            Assert.assertEquals(env.getStatistics().encode(), out.toString());
         }
     }
 
     @Test(expected = IOException.class)
-    public void testSaveNullStatistics() throws IOException, ParseException {
+    public void testSaveNullStatistics() throws IOException {
         RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
         RuntimeEnvironment.getInstance().saveStatistics();
     }
 
     @Test(expected = IOException.class)
-    public void testSaveNullStatisticsFile() throws IOException, ParseException {
+    public void testSaveNullStatisticsFile() throws IOException {
         RuntimeEnvironment.getInstance().saveStatistics((File) null);
     }
 
     @Test(expected = IOException.class)
-    public void testLoadNullStatistics() throws IOException, ParseException {
+    public void testLoadNullStatistics() throws IOException {
         RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
         RuntimeEnvironment.getInstance().loadStatistics();
     }
 
     @Test(expected = IOException.class)
-    public void testLoadNullStatisticsFile() throws IOException, ParseException {
+    public void testLoadNullStatisticsFile() throws IOException {
         RuntimeEnvironment.getInstance().loadStatistics((File) null);
     }
 
