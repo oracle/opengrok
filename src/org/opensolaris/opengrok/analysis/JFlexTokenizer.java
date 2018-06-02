@@ -26,10 +26,10 @@ package org.opensolaris.opengrok.analysis;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -145,7 +145,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
      * Defines the ultimate queue of tokens to be produced by
      * {@link #incrementToken()}.
      */
-    private final Queue<PendingToken> events = new LinkedList<>();
+    private final Deque<PendingToken> events = new LinkedList<>();
 
     /**
      * Tracks unique pending tokens in {@link #events} (which is not
@@ -164,13 +164,12 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
      */
     private final List<PendingToken> eventHopper = new ArrayList<>();
 
+    private final List<PendingToken> snapshotEvents = new ArrayList<>();
+
     /**
      * Tracks unique symbol tokens -- until the next {@link #reset()}.
      */
     private final Set<PendingToken> symbolsSet = new HashSet<>();
-
-    /** to support rolling back addNonWhitespaceSubstrings() */
-    private final PendingTokenSnapshot snapshot = new PendingTokenSnapshot();
 
     /**
      * Tracks a transient list of sub-strings of a string, where the sub-strings
@@ -192,6 +191,10 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
 
     /** initialized lazily as needed */
     private PlainFullTokenizer plainTokenizer;
+
+    private boolean snapshotting;
+    private int snapshotEventCount;
+    private int snapshotEventHopperCount;
 
     /**
      * Initialize an instance, passing a {@link ScanningSymbolMatcher} which
@@ -276,6 +279,8 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         nonWhitespaceBuilder.setLength(0);
         nonWhitespaceOff = -1;
         symbolsSet.clear();
+
+        snapshotStop();
 
         Supplier<TokenizerMode> getter = modeGetter;
         if (getter != null) {
@@ -524,7 +529,18 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
             return;
         }
 
-        snapshot.save();
+        snapshotStart();
+        try {
+            addNonWhitespaceSubstrings1(fullsub);
+        } finally {
+            snapshotStop();
+        }
+    }
+
+    /**
+     * Subordinate of {@link #addNonWhitespaceSubstrings(java.lang.String)}.
+     */
+    private void addNonWhitespaceSubstrings1(String fullsub) {
         lsubs.clear();
         /*
          * Track a (not-published-here) entry for `fullsub' to be used for later
@@ -556,12 +572,12 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                 lsubs.add(new PendingSub(lsub, loff));
                 if (addEventToken(tok) && ++successes >=
                         MAX_NONWHITESPACE_SUBSTRINGS) {
-                    snapshot.rollback();
+                    snapshotRollback();
                     addPlainTokens(fullsub, nonWhitespaceOff);
                     return;
                 }
                 if (++tries >= MAX_NONWHITESPACE_SUBSTRING_TRIES) {
-                    snapshot.rollback();
+                    snapshotRollback();
                     addPlainTokens(fullsub, nonWhitespaceOff);
                     return;
                 }
@@ -603,7 +619,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                             psub.start + lrsub.length());
                         if (addEventToken(tok)) {
                             if (++successes >= MAX_NONWHITESPACE_SUBSTRINGS) {
-                                snapshot.rollback();
+                                snapshotRollback();
                                 addPlainTokens(fullsub, nonWhitespaceOff);
                                 return;
                             }
@@ -612,7 +628,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                             break;
                         }
                         if (++tries >= MAX_NONWHITESPACE_SUBSTRING_TRIES) {
-                            snapshot.rollback();
+                            snapshotRollback();
                             addPlainTokens(fullsub, nonWhitespaceOff);
                             return;
                         }
@@ -642,6 +658,10 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                 (lastPublished == null || !lastPublished.equals(tok)) &&
                 !symbolsSet.contains(tok)) {
             if (eventsSet.add(tok)) {
+                if (snapshotting) {
+                    snapshotEvents.add(tok);
+                }
+
                 switch (mode) {
                     case SYMBOLS_AND_NON_WHITESPACE:
                         /**
@@ -654,12 +674,24 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                          */
                         if (Character.isWhitespace(tok.str.charAt(0))) {
                             emptyHopperToQueue();
-                            return events.add(tok);
+                            events.add(tok);
+                            if (snapshotting) {
+                                ++snapshotEventCount;
+                            }
+                            return true;
                         } else {
-                            return eventHopper.add(tok);
+                            eventHopper.add(tok);
+                            if (snapshotting) {
+                                ++snapshotEventHopperCount;
+                            }
+                            return true;
                         }
                     default:
-                        return events.add(tok);
+                        events.add(tok);
+                        if (snapshotting) {
+                            ++snapshotEventCount;
+                        }
+                        return true;
                 }
             }
         }
@@ -680,6 +712,10 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         if (eventHopper.size() == 1) {
             events.add(eventHopper.get(0));
             eventHopper.clear();
+            if (snapshotting) {
+                ++snapshotEventCount;
+                --snapshotEventHopperCount;
+            }
             return;
         }
 
@@ -690,6 +726,9 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         String lastWord = "";
         for (PendingToken ntok : eventHopper) {
             events.add(ntok);
+            if (snapshotting) {
+                snapshotEvents.add(ntok);
+            }
 
             // When PendingToken `start' changes, begin a new `presentWord'.
             if (ntok.start != lastNewStart) {
@@ -738,6 +777,10 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                     lastWord = presentWord;
                 }
             }
+        }
+        if (snapshotting) {
+            snapshotEventCount += eventHopper.size();
+            snapshotEventHopperCount -= eventHopper.size();
         }
         eventHopper.clear();
     }
@@ -806,6 +849,43 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         }
     }
 
+    /**
+     * Unwinds events which were accounted for since the last, implicit call to
+     * {@link #snapshotInit()} (or since the instance was constructed).
+     */
+    private void snapshotRollback() {
+        while (snapshotEventCount-- > 0) {
+            events.removeLast();
+        }
+        while (snapshotEventHopperCount-- > 0) {
+            eventHopper.remove(eventHopper.size() - 1);
+        }
+        for (PendingToken evt : snapshotEvents) {
+            eventsSet.remove(evt);
+        }
+        snapshotEvents.clear();
+    }
+
+    /**
+     * Called implicitly via {@link #snapshotStart()} and
+     * {@link #snapshotStop()}
+     */
+    private void snapshotInit() {
+        snapshotEvents.clear();
+        snapshotEventCount = 0;
+        snapshotEventHopperCount = 0;
+    }
+
+    private void snapshotStart() {
+        snapshotInit();
+        snapshotting = true;
+    }
+
+    private void snapshotStop() {
+        snapshotInit();
+        snapshotting = false;
+    }
+
     private static class PendingSub {
         public final String str;
         public final int start;
@@ -816,34 +896,6 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         public PendingSub(String str, int start) {
             this.str = str;
             this.start = start;
-        }
-    }
-
-    private class PendingTokenSnapshot {
-        public final List<PendingToken> eventHopperSavelist = new ArrayList<>();
-        public final List<PendingToken> eventsSavelist = new ArrayList<>();
-        public final List<PendingToken> eventsSetSavelist = new ArrayList<>();
-
-        public void save() {
-            eventHopperSavelist.clear();
-            eventHopperSavelist.addAll(eventHopper);
-
-            eventsSavelist.clear();
-            eventsSavelist.addAll(events);
-
-            eventsSetSavelist.clear();
-            eventsSetSavelist.addAll(eventsSet);
-        }
-
-        public void rollback() {
-            eventHopper.clear();
-            eventHopper.addAll(eventHopperSavelist);
-
-            events.clear();
-            events.addAll(eventsSavelist);
-
-            eventsSet.clear();
-            eventsSet.addAll(eventsSetSavelist);
         }
     }
 }
