@@ -47,6 +47,7 @@ public class PlainFullTokenizerTest {
     @Test
     public void testPlainFullStreamSymbolsOnly() throws Exception {
         testPlainFullStream(TokenizerMode.SYMBOLS_ONLY,
+            "org/opensolaris/opengrok/analysis/plain/sampleplain.txt",
             "org/opensolaris/opengrok/analysis/plain/samplefullsymbols.txt");
     }
 
@@ -58,6 +59,7 @@ public class PlainFullTokenizerTest {
     @Test
     public void testPlainFullStreamBoth() throws Exception {
         testPlainFullStream(TokenizerMode.SYMBOLS_AND_NON_WHITESPACE,
+            "org/opensolaris/opengrok/analysis/plain/sampleplain.txt",
             "org/opensolaris/opengrok/analysis/plain/samplefullsymbols2.txt");
     }
 
@@ -69,7 +71,44 @@ public class PlainFullTokenizerTest {
     @Test
     public void testPlainFullStreamNonwhitespaceOnly() throws Exception {
         testPlainFullStream(TokenizerMode.NON_WHITESPACE_ONLY,
+            "org/opensolaris/opengrok/analysis/plain/sampleplain.txt",
             "org/opensolaris/opengrok/analysis/plain/samplefullsymbols3.txt");
+    }
+
+    /**
+     * Test TR.strings v. sampleTRfullsymbols.txt for
+     * {@link TokenizerMode#SYMBOLS_ONLY}.
+     * @throws java.lang.Exception thrown on error
+     */
+    @Test
+    public void testTRPlainFullStreamSymbolsOnly() throws Exception {
+        testPlainFullStream(TokenizerMode.SYMBOLS_ONLY,
+            "org/opensolaris/opengrok/analysis/plain/TR.strings",
+            "org/opensolaris/opengrok/analysis/plain/sampleTRfullsymbols.txt");
+    }
+
+    /**
+     * Test TR.strings v. sampleTRfullsymbols2.txt for
+     * {@link TokenizerMode#SYMBOLS_AND_NON_WHITESPACE}.
+     * @throws java.lang.Exception thrown on error
+     */
+    @Test
+    public void testTRPlainFullStreamBoth() throws Exception {
+        testPlainFullStream(TokenizerMode.SYMBOLS_AND_NON_WHITESPACE,
+            "org/opensolaris/opengrok/analysis/plain/TR.strings",
+            "org/opensolaris/opengrok/analysis/plain/sampleTRfullsymbols2.txt");
+    }
+
+    /**
+     * Test TR.strings v. sampleTRfullsymbols3.txt for
+     * {@link TokenizerMode#NON_WHITESPACE_ONLY}.
+     * @throws java.lang.Exception thrown on error
+     */
+    @Test
+    public void testTRPlainFullStreamNonwhitespaceOnly() throws Exception {
+        testPlainFullStream(TokenizerMode.NON_WHITESPACE_ONLY,
+            "org/opensolaris/opengrok/analysis/plain/TR.strings",
+            "org/opensolaris/opengrok/analysis/plain/sampleTRfullsymbols3.txt");
     }
 
     /**
@@ -91,7 +130,8 @@ public class PlainFullTokenizerTest {
      */
     @Test
     public void testMinPlainFullStreamSymbolsOnly() throws Exception {
-        testMinPlainFullStream(TokenizerMode.SYMBOLS_ONLY,
+        testPlainFullStream(TokenizerMode.SYMBOLS_ONLY,
+            "org/opensolaris/opengrok/analysis/plain/samplemin.txt",
             "org/opensolaris/opengrok/analysis/plain/sampleminfullsymbols.txt");
     }
 
@@ -102,7 +142,8 @@ public class PlainFullTokenizerTest {
      */
     @Test
     public void testMinPlainFullStreamBoth() throws Exception {
-        testMinPlainFullStream(TokenizerMode.SYMBOLS_AND_NON_WHITESPACE,
+        testPlainFullStream(TokenizerMode.SYMBOLS_AND_NON_WHITESPACE,
+            "org/opensolaris/opengrok/analysis/plain/samplemin.txt",
             "org/opensolaris/opengrok/analysis/plain/sampleminfullsymbols2.txt");
     }
 
@@ -113,22 +154,9 @@ public class PlainFullTokenizerTest {
      */
     @Test
     public void testMinPlainFullStreamNonwhitespaceOnly() throws Exception {
-        testMinPlainFullStream(TokenizerMode.NON_WHITESPACE_ONLY,
-            "org/opensolaris/opengrok/analysis/plain/sampleminfullsymbols3.txt");
-    }
-
-    private void testPlainFullStream(TokenizerMode mode, String symbolsFile)
-            throws Exception {
-        testPlainFullStream(mode,
-            "org/opensolaris/opengrok/analysis/plain/sampleplain.txt",
-            symbolsFile);
-    }
-
-    private void testMinPlainFullStream(TokenizerMode mode, String symbolsFile)
-            throws Exception {
-        testPlainFullStream(mode,
+        testPlainFullStream(TokenizerMode.NON_WHITESPACE_ONLY,
             "org/opensolaris/opengrok/analysis/plain/samplemin.txt",
-            symbolsFile);
+            "org/opensolaris/opengrok/analysis/plain/sampleminfullsymbols3.txt");
     }
 
     private void testPlainFullStream(TokenizerMode mode, String srcFile,

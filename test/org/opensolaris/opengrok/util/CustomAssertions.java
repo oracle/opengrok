@@ -23,10 +23,16 @@
 
 package org.opensolaris.opengrok.util;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -46,6 +52,8 @@ import static org.opensolaris.opengrok.util.StreamUtils.copyStream;
  * Represents a container for custom test assertion methods
  */
 public class CustomAssertions {
+    private static final int TOKEN_COUNT_THRESHOLD_DUMP = 300;
+
     /**
      * non-public so as to be just a static container class
      */
@@ -185,6 +193,16 @@ public class CustomAssertions {
         PositionIncrementAttribute pinc = tokenizer.getAttribute(
             PositionIncrementAttribute.class);
 
+        /**
+         * W.r.t. postings, Lucene is strict or else it throws e.g.
+         * java.lang.IllegalArgumentException: startOffset must be non-negative,
+         * and endOffset must be >= startOffset, and offsets must not go
+         * backwards startOffset=5892,endOffset=5899,lastStartOffset=26051 for
+         * field 'full'
+         */
+
+        int lastOffset = -1;
+        String lastCutValue = "<<<OPENGROK UNINITIALIZED>>>";
         int count = 0;
         List<SimpleEntry<String, Integer>> tokens = new ArrayList<>();
         while (tokenizer.incrementToken()) {
@@ -198,6 +216,21 @@ public class CustomAssertions {
                 cutValue = cutValue.toLowerCase();
             }
             assertEquals("cut term" + (1 + count), cutValue, termValue);
+
+            assertTrue("cut term" + (1 + count) + "[" + cutValue +
+                    "] startOffset " + offs.startOffset() +
+                    " should be <= endOffset " + offs.endOffset(),
+                    offs.startOffset() <= offs.endOffset());
+            if (offs.startOffset() < lastOffset) {
+                printTokens(tokens, caseInsensitive);
+            }
+            assertTrue("cut term" + (1 + count) + "[" + cutValue +
+                    "] startOffset " + offs.startOffset() +
+                    " should be >= last startOffset " + lastOffset + " [" +
+                    lastCutValue + "]", offs.startOffset() >= lastOffset);
+            lastOffset = offs.startOffset();
+            lastCutValue = cutValue;
+
             ++count;
         }
 
@@ -275,24 +308,54 @@ public class CustomAssertions {
      * to compare to e.g. samplesymbols.txt.
      */
     private static void printTokens(List<SimpleEntry<String, Integer>> tokens,
-        boolean withPosIncrements) {
+            boolean withPosIncrements) throws IOException {
 
-        System.out.println("BEGIN TOKENS =====");
+        Writer dumper = null;
+        int abridge = 0;
+        if (tokens.size() > TOKEN_COUNT_THRESHOLD_DUMP) {
+            abridge = tokens.size() - TOKEN_COUNT_THRESHOLD_DUMP;
+            File dumpFile = File.createTempFile("token_dump_", ".txt");
+            dumper = new BufferedWriter(new FileWriter(dumpFile));
+
+            System.out.println("(Dumping tokens to");
+            System.out.println(dumpFile);
+            System.out.println(")");
+        }
+
+        System.out.print("BEGIN TOKENS ");
+        if (abridge > 0) {
+            System.out.print("(abridged) ");
+        }
+        System.out.println("=====");
         for (int i = 0; i < tokens.size(); ++i) {
+            PrintStream consout = i >= abridge ? System.out : null;
             SimpleEntry<String, Integer> kv = tokens.get(i);
-            System.out.print(kv.getKey());
+            printString(kv.getKey(), consout, dumper);
 
             if (withPosIncrements) {
                 Integer v = kv.getValue();
                 if (v != null) {
-                    System.out.print("\t|");
-                    System.out.print(v);
+                    printString("\t|" + v, consout, dumper);
                 }
             }
 
-            System.out.println();
+            printString("\n", consout, dumper);
         }
         System.out.println("===== END TOKENS");
+
+        if (dumper != null) {
+            dumper.close();
+        }
+    }
+
+    private static void printString(String value, PrintStream consout,
+            Writer logout) throws IOException {
+        if (consout != null) {
+            consout.print(value);
+        }
+        if (logout != null) {
+            logout.append(value);
+        }
     }
 
     private static boolean anyPositionIncrements(

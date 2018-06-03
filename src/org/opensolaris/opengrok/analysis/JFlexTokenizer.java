@@ -30,6 +30,7 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -191,14 +192,19 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
 
     /** initialized lazily as needed */
     private PlainFullTokenizer plainTokenizer;
+    private int plainTokenizerOffset;
 
     private boolean snapshotting;
     private int snapshotEventCount;
     private int snapshotEventHopperCount;
 
+    private boolean caseInsensitive;
+
     /**
      * Initialize an instance, passing a {@link ScanningSymbolMatcher} which
-     * will be owned by the {@link JFlexTokenizer}.
+     * will be owned by the {@link JFlexTokenizer}. The tokenizer's
+     * {@link #isCaseInsensitive()} will be set to
+     * {@link ScanningSymbolMatcher#isDefaultCaseInsensitive()}.
      * @param matcher a defined instance
      */
     public JFlexTokenizer(ScanningSymbolMatcher matcher) {
@@ -209,6 +215,8 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         matcher.setSymbolMatchedListener(this);
         matcher.setNonSymbolMatchedListener(this);
         // The tokenizer will own the matcher, so we won't have to unsubscribe.
+
+        caseInsensitive = matcher.isDefaultCaseInsensitive();
     }
 
     /**
@@ -254,11 +262,28 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
     }
 
     /**
+     * Gets a value indicating if published tokens are lower-cased so a token
+     * stream will be case-insensitive. Default is {@code false}.
+     */
+    public boolean isCaseInsensitive() {
+        return caseInsensitive;
+    }
+
+    /**
+     * Sets a value indicating if published tokens are lower-cased so a token
+     * stream will be case-insensitive.
+     */
+    public void setCaseInsensitive(boolean value) {
+        caseInsensitive = value;
+    }
+
+    /**
      * Resets the instance and the instance's {@link ScanningSymbolMatcher}.
      * <p>
      * N.b. {@link #getTokenizerMode()} is not affected unless
      * {@link #setTokenizerModeSupplier(java.util.function.Supplier)} was called
-     * with a defined instance.
+     * with a defined instance, and {@link #isCaseInsensitive()} is not
+     * affected.
      * <p>
      * If necessary, users should have first called this instance's
      * {@link #setReader(java.io.Reader)} since the matcher will be
@@ -505,16 +530,22 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         if (nonWhitespaceBuilder.length() > 0) {
             String nonwhsp = nonWhitespaceBuilder.toString();
             nonWhitespaceBuilder.setLength(0);
-            PendingToken tok = new PendingToken(nonwhsp, nonWhitespaceOff,
-                nonWhitespaceOff + nonwhsp.length());
-            addEventToken(tok);
 
+            boolean abortedNonWhitespaceSubstrings = false;
             /*
              * In the most expansive mode, additional sub-strings within
              * non-whitespace matches are also tokenized.
              */
             if (mode == TokenizerMode.SYMBOLS_AND_NON_WHITESPACE) {
-                addNonWhitespaceSubstrings(nonwhsp);
+                if (!addNonWhitespaceSubstrings(nonwhsp)) {
+                    abortedNonWhitespaceSubstrings = true;
+                }
+            }
+
+            if (!abortedNonWhitespaceSubstrings) {
+                PendingToken tok = new PendingToken(nonwhsp, nonWhitespaceOff,
+                        nonWhitespaceOff + nonwhsp.length());
+                addEventToken(tok);
             }
         }
         nonWhitespaceOff = -1;
@@ -524,14 +555,14 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
      * Queues additional, word-boundary sub-string tokens found within
      * {@code fullsub}.
      */
-    private void addNonWhitespaceSubstrings(String fullsub) {
+    private boolean addNonWhitespaceSubstrings(String fullsub) {
         if (fullsub.length() < 1) {
-            return;
+            return false;
         }
 
         snapshotStart();
         try {
-            addNonWhitespaceSubstrings1(fullsub);
+            return addNonWhitespaceSubstrings1(fullsub);
         } finally {
             snapshotStop();
         }
@@ -540,7 +571,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
     /**
      * Subordinate of {@link #addNonWhitespaceSubstrings(java.lang.String)}.
      */
-    private void addNonWhitespaceSubstrings1(String fullsub) {
+    private boolean addNonWhitespaceSubstrings1(String fullsub) {
         lsubs.clear();
         /*
          * Track a (not-published-here) entry for `fullsub' to be used for later
@@ -574,12 +605,12 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                         MAX_NONWHITESPACE_SUBSTRINGS) {
                     snapshotRollback();
                     addPlainTokens(fullsub, nonWhitespaceOff);
-                    return;
+                    return false;
                 }
                 if (++tries >= MAX_NONWHITESPACE_SUBSTRING_TRIES) {
                     snapshotRollback();
                     addPlainTokens(fullsub, nonWhitespaceOff);
-                    return;
+                    return false;
                 }
             }
             moff = lsubMatcher.start() + 1;
@@ -621,7 +652,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                             if (++successes >= MAX_NONWHITESPACE_SUBSTRINGS) {
                                 snapshotRollback();
                                 addPlainTokens(fullsub, nonWhitespaceOff);
-                                return;
+                                return false;
                             }
                             // After one added token, break to circle in lsubs.
                             didAddToken = true;
@@ -630,7 +661,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                         if (++tries >= MAX_NONWHITESPACE_SUBSTRING_TRIES) {
                             snapshotRollback();
                             addPlainTokens(fullsub, nonWhitespaceOff);
-                            return;
+                            return false;
                         }
                     }
                 }
@@ -645,6 +676,8 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                 pidx = -1 + (pidx > 0 ? pidx : lsubs.size());
             }
         }
+
+        return true;
     }
 
     /**
@@ -654,10 +687,14 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
      * of pending tokens.
      */
     private boolean addEventToken(PendingToken tok) {
-        if (tok.str.length() > 0 && tok.str.length() <= MAX_TOKEN_CHARS &&
-                (lastPublished == null || !lastPublished.equals(tok)) &&
-                !symbolsSet.contains(tok)) {
-            if (eventsSet.add(tok)) {
+        if (tok.str.length() > 0 && tok.str.length() <= MAX_TOKEN_CHARS) {
+            if (caseInsensitive) {
+                tok = new PendingToken(tok.str.toLowerCase(Locale.ROOT),
+                        tok.start, tok.end);
+            }
+
+            if ((lastPublished == null || !lastPublished.equals(tok)) &&
+                    !symbolsSet.contains(tok) && eventsSet.add(tok)) {
                 if (snapshotting) {
                     snapshotEvents.add(tok);
                 }
@@ -823,6 +860,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
      * {@link #MAX_NONWHITESPACE_SUBSTRING_TRIES}.
      */
     private void addPlainTokens(String fullsub, int offset) {
+        plainTokenizerOffset = offset;
         if (plainTokenizer == null) {
             plainTokenizer = new PlainFullTokenizer(FileAnalyzer.dummyReader);
             plainTokenizer.setSymbolMatchedListener(
@@ -830,8 +868,8 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                         @Override
                         public void symbolMatched(SymbolMatchedEvent evt) {
                             addEventToken(new PendingToken(evt.getStr(),
-                                    offset + evt.getStart(),
-                                    offset + evt.getEnd()));
+                                    plainTokenizerOffset + evt.getStart(),
+                                    plainTokenizerOffset + evt.getEnd()));
                         }
 
                         @Override
@@ -851,7 +889,8 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
 
     /**
      * Unwinds events which were accounted for since the last, implicit call to
-     * {@link #snapshotInit()} (or since the instance was constructed).
+     * {@link #snapshotInit()} (or since the instance was constructed); and
+     * then call {@link #snapshotStop()}.
      */
     private void snapshotRollback() {
         while (snapshotEventCount-- > 0) {
@@ -863,7 +902,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
         for (PendingToken evt : snapshotEvents) {
             eventsSet.remove(evt);
         }
-        snapshotEvents.clear();
+        snapshotStop();
     }
 
     /**

@@ -79,6 +79,16 @@ import org.opensolaris.opengrok.util.TextTrieMap;
     }
 
     /**
+     * Gets a value indicating if the matcher is by-default case-insensitive --
+     * i.e. whether tokens should be lower-cased when published in a stream.
+     * @return {@code true}
+     */
+    @Override
+    public boolean isDefaultCaseInsensitive() {
+        return true;
+    }
+
+    /**
      * {@link PlainFullTokenizer} alters its behavior for modes which track all
      * non-whitespace so that its older parsing does not hurt newer support for
      * more comprehensive non-whitespace breaking nor support for plain-text
@@ -116,15 +126,15 @@ Number = [0-9]+|[0-9]+\.[0-9]+| "0[xX]" [0-9a-fA-F]+
 Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 %%
-{Identifier}|{Number}|{Printable}    {
-    String capturelc = yytext().toLowerCase(Locale.getDefault());
+{Identifier}|{Number}|{Printable} {
+    String capture = yytext();
     switch (mode) {
         case SYMBOLS_AND_NON_WHITESPACE:
         case NON_WHITESPACE_ONLY:
-            onNonSymbolMatched(capturelc, yychar);
+            onNonSymbolMatched(capture, yychar);
             break;
         default:
-            onSymbolMatched(capturelc, yychar);
+            onSymbolMatched(capture, yychar);
             return yystate();
     }
 }
@@ -133,8 +143,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     switch (mode) {
         case SYMBOLS_AND_NON_WHITESPACE:
         case NON_WHITESPACE_ONLY:
-            onNonSymbolMatched(yytext().toLowerCase(Locale.getDefault()),
-                yychar);
+            onNonSymbolMatched(yytext(), yychar);
             break;
         default:
             // noop

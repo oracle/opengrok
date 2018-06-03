@@ -39,6 +39,16 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     private String disjointSpanClassName;
 
     /**
+     * Gets a value indicating if the matcher is by-default case-insensitive --
+     * i.e. whether tokens should be lower-cased when published in a stream.
+     * @return {@code false} but subclasses should override where necessary
+     */
+    @Override
+    public boolean isDefaultCaseInsensitive() {
+        return false;
+    }
+
+    /**
      * Associates the specified listener, replacing the former one.
      * @param l defined instance
      */
@@ -126,6 +136,24 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
+     * {@link SymbolMatchedListener#symbolMatched(org.opensolaris.opengrok.analysis.SymbolMatchedEvent)}
+     * for a subscribed listener.
+     * @param literal the literal representation of the symbol
+     * @param str the symbol string
+     * @param start the symbol literal start position
+     */
+    protected void onSymbolMatched(String literal, String str, int start) {
+        SymbolMatchedListener l = symbolListener;
+        if (l != null) {
+            // TODO: publish literal through SymbolMatchedEvent.
+            SymbolMatchedEvent evt = new SymbolMatchedEvent(this, str, start,
+                    start + literal.length());
+            l.symbolMatched(evt);
+        }
+    }
+
+    /**
+     * Raises
      * {@link SymbolMatchedListener#sourceCodeSeen(org.opensolaris.opengrok.analysis.SourceCodeSeenEvent)}
      * for all subscribed listeners in turn.
      * @param start the source code start position
@@ -173,7 +201,7 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param start the text start position
      */
     protected void onNonSymbolMatched(String str, EmphasisHint hint,
-        int start) {
+            int start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, hint, start,

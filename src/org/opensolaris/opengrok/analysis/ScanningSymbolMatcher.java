@@ -32,6 +32,12 @@ public interface ScanningSymbolMatcher extends JFlexStackingLexer, Resettable,
     SymbolMatchedPublisher {
 
     /**
+     * Gets a value indicating if the matcher is by-default case-insensitive --
+     * i.e. whether tokens should be lower-cased when published in a stream.
+     */
+    boolean isDefaultCaseInsensitive();
+
+    /**
      * Implementers can override if necessary to alter their behavior for
      * different modes.
      */
