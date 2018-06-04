@@ -22,16 +22,11 @@
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.util.BooleanUtil;
-import org.opensolaris.opengrok.util.ClassUtil;
-
 
 /**
  * A message to retrieve/change the configuration.
@@ -41,88 +36,53 @@ import org.opensolaris.opengrok.util.ClassUtil;
  */
 public class ConfigMessage extends Message {
 
-    /**
-     * Pattern describes the java variable name and the assigned value.
-     * Examples:
-     * <ul>
-     * <li>variable = true</li>
-     * <li>stopOnClose = 10</li>
-     * </ul>
-     */
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("([a-z_]\\w*) = (.*)");
+    private static final Set<String> allowedTags = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "setconf",
+            "getconf",
+            "auth",
+            "get",
+            "set"
+    )));
 
-    @Override
-    protected byte[] applyMessage(RuntimeEnvironment env) throws IOException {
-        if (hasTag("getconf")) {
-            return env.getConfiguration().getXMLRepresentationAsString().getBytes();
-        } else if (hasTag("auth") && "reload".equalsIgnoreCase(getText())) {
-            env.getAuthorizationFramework().reload();
-        } else if (hasTag("set")) {
-            Matcher matcher = VARIABLE_PATTERN.matcher(getText());
-            if (matcher.find()) {
-                // set the property
-                ClassUtil.invokeSetter(
-                        env.getConfiguration(),
-                        matcher.group(1), // field
-                        matcher.group(2) // value
-                );
-                // apply the configuration - let the environment reload the configuration if necessary
-                env.applyConfig(env.getConfiguration(), false);
-                return String.format("Variable \"%s\" set to \"%s\".", matcher.group(1), matcher.group(2)).getBytes();
-            } else {
-                // invalid pattern
-                throw new IOException(
-                        String.format("The pattern \"%s\" does not match \"%s\".",
-                                VARIABLE_PATTERN.toString(),
-                                getText()));
-            }
-        } else if (hasTag("get")) {
-            return ClassUtil.invokeGetter(env.getConfiguration(), getText()).getBytes();
-        } else if (hasTag("setconf")) {
-            env.applyConfig(this, hasTag("reindex"));
-        }
-
-        return null;
+    ConfigMessage() {
     }
 
     @Override
-    public void validate() throws Exception {
-        Set<String> allowedTags = new TreeSet<>(Arrays.asList("setconf",
-                "getconf", "auth", "get", "set"));
+    public void validate() throws ValidationException {
 
         Set<String> tagCopy = new TreeSet<>(allowedTags);
         tagCopy.retainAll(getTags());
         if (tagCopy.size() > 1) {
-            throw new Exception("The message tag must be one of '" + allowedTags.toString() + "'");
+            throw new ValidationException("The message tag must be one of '" + allowedTags.toString() + "'");
         }
 
         if (hasTag("setconf")) {
             if (getText() == null) {
-                throw new Exception("The setconf message must contain a text.");
+                throw new ValidationException("The setconf message must contain a text.");
             }
         } else if (hasTag("getconf")) {
             if (getText() != null) {
-                throw new Exception("The getconf message should not contain a text.");
+                throw new ValidationException("The getconf message should not contain a text.");
             }
             if (getTags().size() != 1) {
-                throw new Exception("The getconf message should be the only tag.");
+                throw new ValidationException("The getconf message should be the only tag.");
             }
         } else if (hasTag("set") || hasTag("get")) {
             if (getText() == null) {
-                throw new Exception("The get/set message must contain a text.");
+                throw new ValidationException("The get/set message must contain a text.");
             }
             if (getTags().size() != 1) {
-                throw new Exception("The get/set message should be the only tag.");
+                throw new ValidationException("The get/set message should be the only tag.");
             }
         } else if (hasTag("auth")) {
             if (!"reload".equalsIgnoreCase(getText())) {
-                throw new Exception("The auth message can only accept a text \"reload\".");
+                throw new ValidationException("The auth message can only accept a text \"reload\".");
             }
             if (getTags().size() != 1) {
-                throw new Exception("The auth message should be the only tag.");
+                throw new ValidationException("The auth message should be the only tag.");
             }
         } else {
-            throw new Exception("The message tag must be either setconf, getconf, auth or set");
+            throw new ValidationException("The message tag must be either setconf, getconf, auth or set");
         }
 
         super.validate();

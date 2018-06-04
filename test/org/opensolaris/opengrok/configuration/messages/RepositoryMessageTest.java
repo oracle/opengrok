@@ -23,7 +23,6 @@
 package org.opensolaris.opengrok.configuration.messages;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.After;
@@ -42,6 +41,8 @@ import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
 
+import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.processMessage;
+
 /**
  * Test repository message handling.
  * 
@@ -56,17 +57,20 @@ public class RepositoryMessageTest {
 
     private TestRepository repository;
 
+    private MessageListener listener;
+
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
                 "repositories.zip"));
 
         env = RuntimeEnvironment.getInstance();
-        env.removeAllMessages();
+        listener = MessageTestUtils.initMessageListener(env);
+        listener.removeAllMessages();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
@@ -76,7 +80,8 @@ public class RepositoryMessageTest {
     @After
     public void tearDown() {
         if (env != null) {
-            env.removeAllMessages();
+            listener.removeAllMessages();
+            listener.stopListenerThread();
 
             // This should match Configuration constructor.
             env.setProjects(new ConcurrentHashMap<>());
@@ -89,24 +94,25 @@ public class RepositoryMessageTest {
     
     @Test
     public void testValidate() {
-        Message m = new RepositoryMessage();
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.addTag("foo");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setText("text");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setText(null);
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setText("get-repo-type");
-        Assert.assertTrue(MessageTest.assertValid(m));
+        Message.Builder<RepositoryMessage> builder = new Message.Builder<>(RepositoryMessage.class);
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.addTag("foo");
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.setText("text");
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.setText(null);
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.setText("get-repo-type");
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
     }
 
     @Test
     public void testGetRepositoryType() throws Exception {
-        Message m = new RepositoryMessage();
-        m.setText("get-repo-type");
-        m.addTag("/totally-nonexistent-repository");
-        String out = new String(m.apply(env));
+        Message m = new Message.Builder<>(RepositoryMessage.class)
+                .setText("get-repo-type")
+                .addTag("/totally-nonexistent-repository")
+                .build();
+        String out = processMessage(listener, m).getData().get(0);
         Assert.assertEquals("/totally-nonexistent-repository:N/A", out);
         
         // Create subrepository.
@@ -128,22 +134,27 @@ public class RepositoryMessageTest {
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
         
-        m = new RepositoryMessage();
-        m.setText("get-repo-type");
-        m.addTag("/mercurial");
-        out = new String(m.apply(env));
+        m = new Message.Builder<>(RepositoryMessage.class)
+                .setText("get-repo-type")
+                .addTag("/mercurial")
+                .build();
+
+        out = processMessage(listener, m).getData().get(0);
         Assert.assertEquals("/mercurial:Mercurial", out);
         
-        m = new RepositoryMessage();
-        m.setText("get-repo-type");
-        m.addTag("/mercurial/closed");
-        out = new String(m.apply(env));
+        m = new Message.Builder<>(RepositoryMessage.class)
+                .setText("get-repo-type")
+                .addTag("/mercurial/closed")
+                .build();
+
+        out = processMessage(listener, m).getData().get(0);
         Assert.assertEquals("/mercurial/closed:Mercurial", out);
         
-        m = new RepositoryMessage();
-        m.setText("get-repo-type");
-        m.addTag("/git");
-        out = new String(m.apply(env));
+        m = new Message.Builder<>(RepositoryMessage.class)
+                .setText("get-repo-type")
+                .addTag("/git")
+                .build();
+        out = processMessage(listener, m).getData().get(0);
         Assert.assertEquals("/git:git", out);
     }
 }

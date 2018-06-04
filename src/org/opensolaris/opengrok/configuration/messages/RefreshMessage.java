@@ -18,13 +18,9 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
-
-import java.io.IOException;
-import java.util.HashSet;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Message for refreshing SearcherManagers in the webapp after partial reindex.
@@ -33,15 +29,8 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author Vladimir Kotal
  */
 public class RefreshMessage extends Message {
-    @Override
-    public byte[] applyMessage(RuntimeEnvironment env) throws IOException {
-        env.maybeRefreshIndexSearchers(this.getTags());
 
-        return null;
+    RefreshMessage() {
     }
 
-    @Override
-    public void validate() throws Exception {
-        super.validate();
-    }
 }

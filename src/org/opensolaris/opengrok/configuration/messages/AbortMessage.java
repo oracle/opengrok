@@ -18,29 +18,23 @@
  */
 
  /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Kryštof Tulinger
  */
 public class AbortMessage extends Message {
 
-    @Override
-    protected byte[] applyMessage(RuntimeEnvironment env) {
-        env.removeAnyMessage(tags);
-        return null;
+    AbortMessage() {
     }
 
     @Override
-    public void validate() throws Exception {
-        if (getTags().isEmpty()) {
-            getTags().add(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG);
-        }
-        super.validate();
+    protected Set<String> getDefaultTags() {
+        return Collections.singleton(MessageListener.MESSAGES_MAIN_PAGE_TAG);
     }
-
 }

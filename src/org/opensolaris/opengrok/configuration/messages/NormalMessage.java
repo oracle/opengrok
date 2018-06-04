@@ -18,37 +18,38 @@
  */
 
  /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author Kryštof Tulinger
  */
 public class NormalMessage extends Message {
 
-    @Override
-    protected byte[] applyMessage(RuntimeEnvironment env) {
-        env.addMessage(this);
-        return null;
+    NormalMessage() {
     }
 
     @Override
-    public void validate() throws Exception {
+    public void validate() throws ValidationException {
         if (getText() == null) {
-            throw new Exception("The message must contain a text.");
+            throw new ValidationException("The message must contain a text.");
         }
-        if (getExpiration() == null) {
-            throw new Exception("The message must contain an expiration date.");
-        }
-        if (getTags().isEmpty()) {
-            getTags().add(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG);
-        }
-        if (getClassName() == null) {
-            setClassName("info");
-        }
+
         super.validate();
     }
+
+    @Override
+    protected Set<String> getDefaultTags() {
+        return Collections.singleton(MessageListener.MESSAGES_MAIN_PAGE_TAG);
+    }
+
+    @Override
+    protected String getDefaultCssClass() {
+        return "info";
+    }
+
 }

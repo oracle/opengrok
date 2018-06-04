@@ -53,6 +53,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.MessageListener;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
@@ -189,9 +190,7 @@ public final class Results {
             }
             JSONArray messages;
             if ((p = Project.getProject(parent)) != null
-                    && (messages = Util.messagesToJson(p,
-                            RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG
-                    )).size() > 0) {
+                    && !(messages = Util.messagesToJson(p, MessageListener.MESSAGES_MAIN_PAGE_TAG)).isEmpty()) {
                 out.write(" <a href=\"" + xrefPrefix + "/" + p.getName() + "\">");
                 out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
                 out.write("</a>");

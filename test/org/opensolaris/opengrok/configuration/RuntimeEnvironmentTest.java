@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration;
@@ -35,7 +35,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +52,6 @@ import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
 import org.opensolaris.opengrok.authorization.AuthorizationPlugin;
 import org.opensolaris.opengrok.authorization.AuthorizationStack;
-import org.opensolaris.opengrok.configuration.messages.Message;
-import org.opensolaris.opengrok.configuration.messages.NormalMessage;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.web.Statistics;
 
@@ -465,14 +462,14 @@ public class RuntimeEnvironmentTest {
     public void testConfigListenerThread() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         SocketAddress addr = new InetSocketAddress(0);
-        assertTrue(instance.startConfigurationListenerThread(addr));
+        assertTrue(instance.startMessageListenerThread(addr));
         try {
             Thread.sleep(1000);
         } catch (InterruptedException exp) {
             // do nothing
         }
         instance.writeConfiguration();
-        instance.stopConfigurationListenerThread();
+        instance.stopMessageListenerThread();
     }
 
     @Test
@@ -875,57 +872,6 @@ public class RuntimeEnvironmentTest {
 
         env.setChattyStatusPage(false);
         assertFalse(env.isChattyStatusPage());
-    }
-
-    @Test
-    public void testCanAcceptMessage() throws Exception {
-        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        instance.removeAllMessages();
-
-        Message m1 = new NormalMessage();
-        m1.addTag("main");
-
-        m1.setExpiration(new Date(System.currentTimeMillis() - 3000));
-        Assert.assertFalse(instance.canAcceptMessage(m1));
-        m1.setExpiration(new Date(System.currentTimeMillis() - 2000));
-        Assert.assertFalse(instance.canAcceptMessage(m1));
-        m1.setExpiration(new Date(System.currentTimeMillis() - 1000));
-        Assert.assertFalse(instance.canAcceptMessage(m1));
-        m1.setExpiration(new Date(System.currentTimeMillis() - 1));
-        Assert.assertFalse(instance.canAcceptMessage(m1));
-        m1.setExpiration(new Date(System.currentTimeMillis() + 50));
-        Assert.assertTrue(instance.canAcceptMessage(m1));
-        m1.setExpiration(new Date(System.currentTimeMillis() + 100));
-        Assert.assertTrue(instance.canAcceptMessage(m1));
-
-        m1.setExpiration(new Date(System.currentTimeMillis() + 5000));
-        Assert.assertEquals(0, instance.getMessagesInTheSystem());
-        for (int i = 0; i < instance.getMessageLimit(); i++) {
-            Message m2 = new NormalMessage();
-            m2.addTag("main");
-            m2.setText("text");
-            m2.setExpiration(new Date(System.currentTimeMillis() + 5000));
-            m2.setCreated(new Date(System.currentTimeMillis() + i));
-
-            Assert.assertTrue(instance.canAcceptMessage(m2));
-            m2.apply(instance);
-            Assert.assertEquals(i + 1, instance.getMessagesInTheSystem());
-        }
-        Assert.assertEquals(instance.getMessageLimit(), instance.getMessagesInTheSystem());
-
-        for (int i = 0; i < instance.getMessageLimit() * 2; i++) {
-            Message m2 = new NormalMessage();
-            m2.addTag("main");
-            m2.setText("text");
-            m2.setExpiration(new Date(System.currentTimeMillis() + 5000));
-            m2.setCreated(new Date(System.currentTimeMillis() + i + instance.getMessageLimit()));
-
-            Assert.assertFalse(instance.canAcceptMessage(m2));
-            m2.apply(instance);
-            Assert.assertEquals(instance.getMessageLimit(), instance.getMessagesInTheSystem());
-        }
-
-        instance.removeAllMessages();
     }
 
     /**

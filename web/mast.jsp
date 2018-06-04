@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
@@ -37,6 +37,7 @@ java.io.File,
 java.io.IOException,
 
 org.opensolaris.opengrok.configuration.Project,
+org.opensolaris.opengrok.configuration.messages.MessageListener,
 org.opensolaris.opengrok.history.HistoryGuru,
 org.opensolaris.opengrok.web.EftarFileReader,
 org.opensolaris.opengrok.web.PageConfig,
@@ -102,8 +103,7 @@ include file="pageheader.jspf"
 
     JSONArray messages = new JSONArray();
     if (cfg.getProject() != null) {
-        messages = Util.messagesToJson(cfg.getProject(),
-                    RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG);
+        messages = Util.messagesToJson(cfg.getProject(), MessageListener.MESSAGES_MAIN_PAGE_TAG);
     }
     %>
     <% if (!messages.isEmpty()) { %>

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -27,6 +27,8 @@ import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.security.Permission;
+import java.time.Duration;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,8 +46,8 @@ public class MessagesTest {
     private PrintStream stderr;
     private ByteArrayOutputStream newStdoutArray;
     private ByteArrayOutputStream newStderrArray;
-    private PrintStream newStdout;
-    private PrintStream newStderr;
+
+    private MessageListener listener;
 
     protected static class ExitException extends SecurityException {
 
@@ -90,7 +92,7 @@ public class MessagesTest {
                 "-t", "sample message",
                 "-s", address,
                 "-p", "" + port,
-                "-e", "" + System.currentTimeMillis() / 1000 + 100000});
+                "-d", Duration.ofMillis(100000).toString()});
         } catch (ExitException ex) {
             return ex.getStatus();
         }
@@ -98,20 +100,22 @@ public class MessagesTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         portNum = 50000;
         System.setSecurityManager(new ExitExceptionSecurityManager());
-        RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        while (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(
+        while (!RuntimeEnvironment.getInstance().startMessageListenerThread(
                 new InetSocketAddress("localhost", portNum))) {
             portNum++;
         }
 
+        listener = MessageTestUtils.getMessageListener(env);
+
         stdout = System.out;
         stderr = System.err;
-        newStdout = new PrintStream(newStdoutArray = new ByteArrayOutputStream());
-        newStderr = new PrintStream(newStderrArray = new ByteArrayOutputStream());
+        PrintStream newStdout = new PrintStream(newStdoutArray = new ByteArrayOutputStream());
+        PrintStream newStderr = new PrintStream(newStderrArray = new ByteArrayOutputStream());
         System.setOut(newStdout);
         System.setErr(newStderr);
     }
@@ -119,33 +123,33 @@ public class MessagesTest {
     @After
     public void tearDown() {
         System.setSecurityManager(null);
-        RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
+        RuntimeEnvironment.getInstance().stopMessageListenerThread();
         System.setOut(stdout);
         System.setErr(stderr);
     }
 
     @Test
     public void testMessageSendSuccess() {
-        RuntimeEnvironment.getInstance().setMessageLimit(100);
+        listener.setMessageLimit(100);
         Assert.assertEquals(0, invokeMain());
     }
 
     @Test
     public void testMessageSendWrongHost() {
-        RuntimeEnvironment.getInstance().setMessageLimit(100);
+        listener.setMessageLimit(100);
         Assert.assertEquals(1, invokeMain("localhost", portNum + 2));
     }
 
     @Test
     public void testMessageSendOverLimit() {
-        RuntimeEnvironment.getInstance().setMessageLimit(0);
-        String output, outerr;
+        listener.setMessageLimit(0);
 
         Assert.assertEquals(1, invokeMain());
-        output = new String(newStdoutArray.toByteArray(), Charset.defaultCharset());
-        outerr = new String(newStderrArray.toByteArray(), Charset.defaultCharset());
+        String output = new String(newStdoutArray.toByteArray(), Charset.defaultCharset());
+        String outerr = new String(newStderrArray.toByteArray(), Charset.defaultCharset());
+
         Assert.assertTrue(
-                output.contains(String.format("%#x", Message.MESSAGE_LIMIT))
-                || outerr.contains(String.format("%#x", Message.MESSAGE_LIMIT)));
+                output.contains(String.format("%#x", Message.DeliveryStatus.OVER_LIMIT.getStatusCode()))
+                || outerr.contains(String.format("%#x", Message.DeliveryStatus.OVER_LIMIT.getStatusCode())));
     }
 }

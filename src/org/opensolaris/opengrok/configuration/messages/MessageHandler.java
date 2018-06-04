@@ -17,37 +17,25 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import org.junit.Test;
+@FunctionalInterface
+public interface MessageHandler {
 
-import static org.junit.Assert.assertEquals;
+    class HandleException extends Exception {
 
-public class MessageTest {
-
-    /**
-     * Test that a {@code Message} instance can be encoded and decoded without errors.
-     */
-    @Test
-    public void testEncodeDecode() {
-        Message m1 = new Message.Builder<>(NormalMessage.class).build();
-
-        String encoded = m1.getEncoded();
-
-        Message m2 = Message.decode(encoded);
-
-        assertEquals(m1, m2);
-    }
-
-    public static boolean assertValid(Message m) {
-        try {
-            m.validate();
-        } catch (Exception ex) {
-            return false;
+        public HandleException(final String message) {
+            super(message);
         }
-        return true;
+
+        public HandleException(final Throwable cause) {
+            super(cause);
+        }
     }
+
+    Response handle(Message message) throws HandleException;
+
 }

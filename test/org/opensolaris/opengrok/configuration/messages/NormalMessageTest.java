@@ -22,129 +22,115 @@
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.util.Arrays;
-import java.util.Date;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import static org.opensolaris.opengrok.configuration.RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG;
+import org.opensolaris.opengrok.configuration.messages.MessageListener.AcceptedMessage;
+
+import static org.opensolaris.opengrok.configuration.messages.MessageListener.MESSAGES_MAIN_PAGE_TAG;
+import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.processMessage;
 
 public class NormalMessageTest {
 
-    RuntimeEnvironment env;
+    private RuntimeEnvironment env;
 
-    private Message[] makeArray(Message... messages) {
-        return messages;
-    }
+    private MessageListener listener;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         env = RuntimeEnvironment.getInstance();
-        env.removeAllMessages();
+        listener = MessageTestUtils.initMessageListener(env);
     }
 
     @After
     public void tearDown() {
-        env.removeAllMessages();
+        listener.removeAllMessages();
+        listener.stopListenerThread();
     }
 
     @Test
     public void testValidate() {
-        Message m = new NormalMessage();
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setText("text");
-        Assert.assertTrue(MessageTest.assertValid(m));
-        m.setCreated(null);
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setCreated(new Date());
-        m.setClassName(null);
-        Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertEquals("info", m.getClassName());
-        m.setTags(new TreeSet<>());
-        Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertTrue(m.hasTag(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG));
+        Message.Builder<NormalMessage> builder = new Message.Builder<>(NormalMessage.class);
+        Assert.assertFalse(MessageTest.assertValid(builder.build()));
+        builder.setText("text");
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.setCssClass(null);
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        Assert.assertEquals("info", builder.build().getCssClass());
+        builder.clearTags();
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        Assert.assertTrue(builder.build().hasTag(MESSAGES_MAIN_PAGE_TAG));
     }
 
     @Test
     public void testApplyNoTag() throws Exception {
-        Message m = new NormalMessage();
-        m.setText("text");
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        m.apply(env);
+        Message m = new Message.Builder<>(NormalMessage.class)
+                .setText("text")
+                .build();
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        processMessage(listener, m);
         // the main tag is added by default if no tag is present
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
+        Assert.assertEquals(1, listener.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplySingle() throws Exception {
-        Message m = new NormalMessage().addTag(MESSAGES_MAIN_PAGE_TAG);
-        m.setText("text");
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        m.apply(env);
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
+        Message m = new Message.Builder<>(NormalMessage.class)
+                .addTag(MESSAGES_MAIN_PAGE_TAG)
+                .setText("text")
+                .build();
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        processMessage(listener, m);
+        Assert.assertEquals(1, listener.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplyMultiple() throws Exception {
-        Message[] m = makeArray(new NormalMessage(), new NormalMessage(), new NormalMessage());
+        List<Message> msgs = new ArrayList<>();
 
-        for (int i = 0; i < m.length; i++) {
-            m[i].addTag(MESSAGES_MAIN_PAGE_TAG);
-            m[i].addTag("project");
-            m[i].addTag("pull");
-            m[i].setText("text");
-            m[i].setCreated(new Date(System.currentTimeMillis() + i * 1000));
-            m[i].setExpiration(m[0].getExpiration());
+        for (int i = 0; i < 3; i++) {
+            Message m = new Message.Builder<>(NormalMessage.class)
+                    .addTag(MESSAGES_MAIN_PAGE_TAG)
+                    .addTag("project")
+                    .addTag("pull")
+                    .setText("text")
+                    .setDuration(Duration.ofMillis(1000 + i))
+                    .build();
+
+            msgs.add(m);
         }
 
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
 
-        for (int i = 0; i < m.length; i++) {
-            m[i].apply(env);
+        for (Message m : msgs) {
+            processMessage(listener, m);
         }
 
         // 3 * 3 - each message for each tag
-        Assert.assertEquals(3 * 3, env.getMessagesInTheSystem());
+        Assert.assertEquals(3 * 3, listener.getMessagesInTheSystem());
         Assert.assertNotNull(env.getMessages());
         Assert.assertEquals(3, env.getMessages().size());
         Assert.assertNotNull(env.getMessages(MESSAGES_MAIN_PAGE_TAG));
         Assert.assertEquals(3, env.getMessages(MESSAGES_MAIN_PAGE_TAG).size());
-        Assert.assertEquals(new TreeSet<Message>(Arrays.asList(m)), env.getMessages(MESSAGES_MAIN_PAGE_TAG));
+        Assert.assertEquals(new TreeSet<>(msgs),
+                env.getMessages(MESSAGES_MAIN_PAGE_TAG).stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
 
         Assert.assertNotNull(env.getMessages("project"));
         Assert.assertEquals(3, env.getMessages("project").size());
-        Assert.assertEquals(new TreeSet<Message>(Arrays.asList(m)), env.getMessages("project"));
+        Assert.assertEquals(new TreeSet<>(msgs),
+                env.getMessages("project").stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
         Assert.assertNotNull(env.getMessages("pull"));
         Assert.assertEquals(3, env.getMessages("pull").size());
-        Assert.assertEquals(new TreeSet<Message>(Arrays.asList(m)), env.getMessages("pull"));
-    }
-
-    @Test
-    public void testApplyMultipleUnique() throws Exception {
-        Message[] m = makeArray(new NormalMessage(), new NormalMessage(), new NormalMessage());
-        Date d = new Date();
-
-        for (int i = 0; i < m.length; i++) {
-            m[i].addTag(MESSAGES_MAIN_PAGE_TAG);
-            m[i].setText("text");
-            m[i].setCreated(d);
-            m[i].setExpiration(m[0].getExpiration());
-        }
-
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-
-        for (int i = 0; i < m.length; i++) {
-            m[i].apply(env);
-        }
-
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
-        Assert.assertNotNull(env.getMessages());
-        Assert.assertEquals(1, env.getMessages().size());
-        Assert.assertNotNull(env.getMessages(MESSAGES_MAIN_PAGE_TAG));
-        Assert.assertEquals(1, env.getMessages(MESSAGES_MAIN_PAGE_TAG).size());
+        Assert.assertEquals(new TreeSet<>(msgs),
+                env.getMessages("pull").stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
     }
 
 }

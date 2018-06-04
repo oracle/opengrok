@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -61,7 +60,7 @@ import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.messages.Message;
+import org.opensolaris.opengrok.configuration.messages.MessageListener.AcceptedMessage;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.History;
 import org.opensolaris.opengrok.history.HistoryEntry;
@@ -1512,13 +1511,8 @@ public final class PageConfig {
         return this.authFramework.isAllowed(this.req, g);
     }
 
-    
-    public SortedSet<Message> getMessages() {
+    public SortedSet<AcceptedMessage> getMessages() {
         return env.getMessages();
-    }
-    
-    public SortedSet<Message> getMessages(String tag) {
-        return env.getMessages(tag);
     }
 
     /**

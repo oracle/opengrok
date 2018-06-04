@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -53,6 +53,7 @@ import org.opensolaris.opengrok.configuration.ConfigurationHelp;
 import org.opensolaris.opengrok.configuration.LuceneLockName;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.ConfigMessage;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -275,11 +276,12 @@ public final class Indexer {
             // using a message so that the 'project/indexed' messages
             // emitted during indexing do not cause validation error.
             if (addProjects && host != null && port > 0) {
-                Message m = Message.createMessage("config");
-                m.addTag("set");
-                m.setText("projectsEnabled = true");
+                Message m = new Message.Builder<>(ConfigMessage.class)
+                        .addTag("set")
+                        .setText("projectsEnabled = true")
+                        .build();
                 try {
-                m.write(host, port);
+                    m.write(host, port);
                 } catch (ConnectException ce) {
                     LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host or port", ce);
                     System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());

@@ -22,14 +22,8 @@
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.RepositoryInfo;
 
 /**
  * repository specific message
@@ -37,56 +31,31 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
  * @author Vladimir Kotal
  */
 public class RepositoryMessage extends Message {
-    
-    @Override
-    protected byte[] applyMessage(RuntimeEnvironment env) throws Exception {
-        String ret = null;
-        String msgtext = getText();
-        
-        switch (msgtext) {
-            case "get-repo-type":
-                List<String> types = new ArrayList<>(16);
-                
-                for (String tag: getTags()) {
-                    boolean found = false;
-                    for (RepositoryInfo ri : env.getRepositories()) {
-                        if (ri.getDirectoryNameRelative().equals(tag)) {
-                            types.add(tag + ":" + ri.getType());
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        types.add(tag + ":N/A");
-                    }
-                }
-                ret = types.stream().collect(Collectors.joining("\n"));
-                break;
-        }
-        
-        return ret.getBytes();
+
+    private static final Set<String> allowedTexts = Collections.singleton("get-repo-type");
+
+    RepositoryMessage() {
     }
 
     /**
      * Validate the message.
      * Tag is repository path, text is command.
-     * @throws Exception exception
+     * @throws ValidationException if message has invalid format
      */
     @Override
-    public void validate() throws Exception {
+    public void validate() throws ValidationException {
         String command = getText();
-        Set<String> allowedTexts = new TreeSet<>(Arrays.asList("get-repo-type"));
 
         // The text field carries the command.
         if (command == null) {
-            throw new Exception("The message text must contain one of '" + allowedTexts.toString() + "'");
+            throw new ValidationException("The message text must contain one of '" + allowedTexts.toString() + "'");
         }
         if (!allowedTexts.contains(command)) {
-            throw new Exception("The message text must contain one of '" + allowedTexts.toString() + "'");
+            throw new ValidationException("The message text must contain one of '" + allowedTexts.toString() + "'");
         }
 
-        if (getTags().size() == 0) {
-            throw new Exception("All repository messages must have at least one tag");
+        if (getTags().isEmpty()) {
+            throw new ValidationException("All repository messages must have at least one tag");
         }
         
         super.validate();

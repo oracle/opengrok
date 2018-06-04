@@ -17,48 +17,55 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import java.util.Date;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.MessageListener.AcceptedMessage;
+
+import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.processMessage;
+import static org.opensolaris.opengrok.configuration.messages.MessageTestUtils.expire;
 
 public class ExpirationNormalMessageTest {
 
-    RuntimeEnvironment env;
+    private RuntimeEnvironment env;
 
-    private Message[] makeArray(Message... messages) {
-        return messages;
-    }
+    private MessageListener listener;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         env = RuntimeEnvironment.getInstance();
-        env.removeAllMessages();
+        listener = MessageTestUtils.initMessageListener(env);
+        listener.removeAllMessages();
     }
 
     @After
     public void tearDown() {
-        env.removeAllMessages();
+        listener.removeAllMessages();
+        listener.stopListenerThread();
     }
 
     @Test
-    public void testExpirationSingle() {
+    public void testExpirationSingle() throws Exception {
         runSingle();
     }
 
     @Test
-    public void testExpirationMultiple() {
+    public void testExpirationMultiple() throws Exception {
         runMultiple();
     }
 
@@ -80,98 +87,94 @@ public class ExpirationNormalMessageTest {
         for (int i = 0; i < 10; i++) {
             runConcurrentModification();
         }
-        env.stopExpirationTimer();
+        listener.stopExpirationTimer();
     }
 
-    protected void runSingle() {
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        NormalMessage m1 = new NormalMessage();
-        m1.addTag("main")
-                .setExpiration(new Date(System.currentTimeMillis() + 2000000));
-        m1.setText("text");
-        env.addMessage(m1);
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
+    protected void runSingle() throws Exception {
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        Message m1 = new Message.Builder<>(NormalMessage.class)
+                .addTag("main")
+                .setDuration(Duration.ofMillis(2000000))
+                .setText("text")
+                .build();
+        listener.addMessage(m1);
+        Assert.assertEquals(1, listener.getMessagesInTheSystem());
 
         for (int i = 0; i < 50; i++) {
-            Assert.assertEquals(1, env.getMessagesInTheSystem());
+            Assert.assertEquals(1, listener.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
-            Assert.assertEquals(new TreeSet<Message>(Arrays.asList(makeArray(m1))), env.getMessages());
+            Assert.assertEquals(Collections.singleton(m1),
+                    env.getMessages().stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
         }
-        m1.setExpiration(new Date(System.currentTimeMillis() - 2000000));
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        expire(m1);
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
     }
 
-    protected void runMultiple() {
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
-        NormalMessage m1 = new NormalMessage();
-        m1.addTag("main")
-                .setExpiration(new Date(System.currentTimeMillis() + 2000000));
-        m1.setText("text");
-        env.addMessage(m1);
+    protected void runMultiple() throws Exception {
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
+        Message m1 = new Message.Builder<>(NormalMessage.class)
+                .addTag("main")
+                .setDuration(Duration.ofMillis(2000000))
+                .setText("text")
+                .build();
+        listener.addMessage(m1);
 
-        NormalMessage m2 = new NormalMessage();
-        m2.addTag("main")
-                .setExpiration(new Date(System.currentTimeMillis() + 2000000));
-        m2.setText("other text");
-        env.addMessage(m2);
+        Message m2 = new Message.Builder<>(NormalMessage.class)
+                .addTag("main")
+                .setDuration(Duration.ofMillis(2000000))
+                .setText("other text")
+                .build();
+        listener.addMessage(m2);
 
-        Assert.assertEquals(2, env.getMessagesInTheSystem());
+        Assert.assertEquals(2, listener.getMessagesInTheSystem());
         Assert.assertNotNull(env.getMessages());
-        Assert.assertEquals(new TreeSet<Message>(Arrays.asList(makeArray(m1, m2))), env.getMessages());
+        Assert.assertEquals(new TreeSet<>(Arrays.asList(m1, m2)),
+                env.getMessages().stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
 
         for (int i = 0; i < 30; i++) {
-            Assert.assertEquals(2, env.getMessagesInTheSystem());
+            Assert.assertEquals(2, listener.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
-            Assert.assertEquals(new TreeSet<Message>(Arrays.asList(makeArray(m1, m2))), env.getMessages());
+            Assert.assertEquals(new TreeSet<>(Arrays.asList(m1, m2)),
+                    env.getMessages().stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
         }
-        // expire first
-        m1.setExpiration(new Date(System.currentTimeMillis() - 2000000));
+        expire(m1);
         for (int i = 0; i < 30; i++) {
-            Assert.assertEquals(1, env.getMessagesInTheSystem());
+            Assert.assertEquals(1, listener.getMessagesInTheSystem());
             Assert.assertNotNull(env.getMessages());
-            Assert.assertEquals(new TreeSet<Message>(Arrays.asList(makeArray(m2))), env.getMessages());
+            Assert.assertEquals(Collections.singleton(m2),
+                    env.getMessages().stream().map(AcceptedMessage::getMessage).collect(Collectors.toSet()));
         }
-        // expire second
-        m2.setExpiration(new Date(System.currentTimeMillis() - 2000000));
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        expire(m2);
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
     }
 
     protected void runConcurrentModification() throws Exception {
-        long current = System.currentTimeMillis();
+        Message.Builder builder = new Message.Builder<>(NormalMessage.class);
+        builder.addTag("main");
+        builder.setText("text");
         for (int i = 0; i < 500; i++) {
-            NormalMessage m = new NormalMessage();
-            m.addTag("main");
-            m.setText("text");
-            m.setExpiration(new Date(current + 2000000));
-            m.setCreated(new Date(current - 2000 - i));
-            m.apply(env);
+            builder.setDuration(Duration.ofMillis(2000000 + i));
+            Message m = builder.build();
+            processMessage(listener, m);
         }
 
-        Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread th, Throwable ex) {
-                if (ex instanceof ConcurrentModificationException) {
-                    Assert.fail("The messages shouldn't throw an concurrent modification exception");
-                } else {
-                    Assert.fail("The messages shouldn't throw any other exception, too");
-                }
+        Assert.assertEquals(500, listener.getMessagesInTheSystem());
+        Assert.assertEquals(500, env.getMessages("main").size());
+
+        Thread.UncaughtExceptionHandler h = (th, ex) -> {
+            if (ex instanceof ConcurrentModificationException) {
+                Assert.fail("The messages shouldn't throw an concurrent modification exception");
+            } else {
+                Assert.fail("The messages shouldn't throw any other exception, too");
             }
         };
 
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                invokeExpireMessages();
-            }
-        });
+        Thread t = new Thread(this::invokeExpireMessages);
         t.setUncaughtExceptionHandler(h);
 
-        Assert.assertEquals(500, env.getMessagesInTheSystem());
-        Assert.assertEquals(500, env.getMessages("main").size());
-
         // expire all
-        for (Message m : env.getMessages("main")) {
-            m.setExpiration(new Date(current - 2000000));
+        for (AcceptedMessage m : env.getMessages("main")) {
+            expire(m);
         }
 
         for (int i = 0; i < 500; i++) {
@@ -179,9 +182,8 @@ public class ExpirationNormalMessageTest {
                 t.start();
             }
             try {
-                for (Message m : env.getMessages("main")) {
-                    m.setText("Hello message");
-                    Assert.assertNotNull(m.getText());
+                for (AcceptedMessage m : env.getMessages("main")) {
+                    // just iterate
                 }
             } catch (ConcurrentModificationException ex) {
                 Assert.fail("The messages shouldn't throw an concurrent modification exception");
@@ -193,17 +195,18 @@ public class ExpirationNormalMessageTest {
             t.join();
         } catch (InterruptedException ex) {
         }
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        Assert.assertEquals(0, listener.getMessagesInTheSystem());
         Assert.assertEquals(0, env.getMessages("main").size());
     }
 
     private void invokeExpireMessages() {
         try {
-            Method method = RuntimeEnvironment.class.getDeclaredMethod("expireMessages");
+            Method method = MessageListener.class.getDeclaredMethod("expireMessages");
             method.setAccessible(true);
-            method.invoke(env);
+            method.invoke(listener);
         } catch (Exception ex) {
             Assert.fail("invokeRemoveAll should not throw an exception");
         }
     }
+
 }

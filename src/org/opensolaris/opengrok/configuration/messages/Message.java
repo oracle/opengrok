@@ -18,36 +18,36 @@
  */
 
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.Locale;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.XmlEofOutputStream;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
+import org.opensolaris.opengrok.configuration.messages.util.MessageWriter;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * If you extend this file, don't forget to add an information into the root
@@ -57,95 +57,48 @@ import org.opensolaris.opengrok.util.XmlEofOutputStream;
  */
 public abstract class Message implements Comparable<Message> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Message.class);
+    public static final String DELIMITER = "\0";
 
-    public static final int MESSAGE_OK = 0x1;
-    public static final int MESSAGE_LIMIT = 0x2;
-    public static final int MESSAGE_ERROR = 0x4;
+    private static final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(Message.class, new MessageDeserializer())
+            .registerTypeAdapter(Duration.class, new DurationAdapter())
+            .create();
 
-    protected static final int SECOND = 1000;
-    protected static final int MINUTE = 60 * SECOND;
-    protected static final long DEFAULT_EXPIRATION = 10 * MINUTE;
+    private String text;
+    private String cssClass;
+    private Set<String> tags = new TreeSet<>();
 
-    protected String text;
-    protected String className;
-    protected Set<String> tags = new TreeSet<>();
-    protected Date created = new Date();
-    protected Date expiration = new Date(System.currentTimeMillis() + DEFAULT_EXPIRATION);
+    private Duration duration = Duration.of(10, ChronoUnit.MINUTES);
 
-    /**
-     * Validate and apply the message to the current runtime environment.
-     *
-     * @param env the runtime environment
-     * @return possible output for this application, null if no output
-     * @throws java.lang.Exception exception
-     */
-    final public byte[] apply(RuntimeEnvironment env) throws Exception {
-        validate();
-        return applyMessage(env);
+    private final String type;
+
+    protected Message() {
+        type = getClass().getName();
     }
-
-    /**
-     * Apply the message to the current runtime environment.
-     *
-     * @param env the runtime environment
-     * @return possible output for this application, null if no output
-     * @throws java.lang.Exception exception
-     */
-    protected abstract byte[] applyMessage(RuntimeEnvironment env) throws Exception;
 
     /**
      * Validate the current message and throw an exception if the message is not
      * valid. Further implementation can override this method to get the message
      * into a state they would expect.
      *
-     * @throws Exception exception
+     * @throws ValidationException if message has invalid format
      */
-    public void validate() throws Exception {
-        if (getCreated() == null) {
-            throw new Exception("The message must contain a creation date.");
+    public void validate() throws ValidationException {
+        if (duration == null || duration.isNegative()) {
+            throw new ValidationException("The message must contain a duration.");
         }
-    }
-
-    /**
-     * Factory method for particular message types.
-     *
-     * @param type the message type
-     * @return specific message instance for the given type or null
-     */
-    public static Message createMessage(String type) {
-        String classname = Message.class.getPackage().getName();
-        classname += "." + type.substring(0, 1).toUpperCase(Locale.getDefault());
-        classname += type.substring(1) + "Message";
-
-        try {
-            Class<?> concreteClass = Class.forName(classname);
-            return (Message) concreteClass.getDeclaredConstructor().newInstance();
-        } catch (Throwable ex) {
-            LOGGER.log(Level.WARNING, "Couldn't create message object of type \"{0}\".", type);
-        }
-        return null;
     }
 
     public String getText() {
         return text;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public String getCssClass() {
+        return cssClass;
     }
 
-    public void setTextFromFile(String filepath) throws IOException {
-        byte[] encoded = Files.readAllBytes(Paths.get(filepath));
-        this.text = new String(encoded);
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
+    public String getType() {
+        return type;
     }
 
     /**
@@ -177,74 +130,37 @@ public abstract class Message implements Comparable<Message> {
     }
 
     public Set<String> getTags() {
-        return tags;
+        return new TreeSet<>(tags);
     }
 
-    public void setTags(Set<String> tags) {
-        this.tags = tags;
+    public Duration getDuration() {
+        return duration;
     }
 
-    public Message addTag(String tag) {
-        this.tags.add(tag);
-        return this;
+    protected Set<String> getDefaultTags() {
+        return Collections.emptySet();
     }
 
-    public Date getExpiration() {
-        return expiration;
-    }
-
-    public void setExpiration(Date expiration) {
-        this.expiration = expiration;
-    }
-
-    public Date getCreated() {
-        return created;
-    }
-
-    public void setCreated(Date created) {
-        this.created = created;
-    }
-
-    /**
-     * @return true if the message is expired
-     */
-    public boolean isExpired() {
-        return expiration.before(new Date());
-    }
-
-    /**
-     * Time left to the expiration.
-     *
-     * @return the time in milliseconds
-     */
-    public long timeLeft() {
-        long ret = expiration.getTime() - new Date().getTime();
-        return ret < 0 ? 0 : ret;
+    protected String getDefaultCssClass() {
+        return null;
     }
 
     @Override
     public int compareTo(Message m) {
-        int i;
-        if (created != null && (i = getCreated().compareTo(m.getCreated())) != 0) {
-            return i;
+        int cmpRes;
+        if (text != null && (cmpRes = getText().compareTo(m.getText())) != 0) {
+            return cmpRes;
         }
-        if (text != null && (i = getText().compareTo(m.getText())) != 0) {
-            return i;
+        if ((cmpRes = duration.compareTo(m.duration)) != 0) {
+            return cmpRes;
         }
-        if (expiration != null && (i = getExpiration().compareTo(m.getExpiration())) != 0) {
-            return i;
-        }
+
         return getTags().size() - m.getTags().size();
     }
 
     @Override
     public int hashCode() {
-        int hash = 1;
-        hash = 41 * hash + (this.created == null ? 0 : this.created.hashCode());
-        hash = 29 * hash + (this.text == null ? 0 : this.text.hashCode());
-        hash = 17 * hash + (this.tags == null ? 0 : this.tags.hashCode());
-        hash = 13 * hash + (this.expiration == null ? 0 : this.expiration.hashCode());
-        return hash;
+        return Objects.hash(text, tags, duration);
     }
 
     @Override
@@ -260,126 +176,76 @@ public abstract class Message implements Comparable<Message> {
         }
         final Message other = (Message) obj;
 
-        if (!Objects.equals(this.created, other.created)) {
-            return false;
-        }
-        if (!Objects.equals(this.expiration, other.expiration)) {
-            return false;
-        }
-        if (!Objects.equals(this.text, other.text)) {
-            return false;
-        }
-        if (!Objects.equals(this.tags, other.tags)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(duration, other.duration)
+                && Objects.equals(this.tags, other.tags)
+                && Objects.equals(this.text, other.text);
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "text='" + text + '\'' +
+                ", tags=" + tags +
+                ", type='" + type + '\'' +
+                '}';
     }
 
     /**
-     * Serialize the message as XML and send it into the socket.
+     * Serialize the message and send it into the socket.
      *
      * @param host host
      * @param port port number
      * @throws IOException if I/O exception occurred
      *
-     * @see #throwIfError(int c, String message)
+     * @see #throwIfError(DeliveryStatus, String message)
      *
      * @return possible output for this application, null if no output
      */
-    public byte[] write(String host, int port) throws IOException {
+    public Response write(final String host, final int port) throws IOException {
         try (Socket sock = new Socket(host, port)) {
-            try (XMLEncoder e = new XMLEncoder(new XmlEofOutputStream(sock.getOutputStream()))) {
-                e.writeObject(this);
-            }
+            try (MessageWriter mos = new MessageWriter(sock.getOutputStream());
+                 InputStream input = sock.getInputStream()) {
 
-            try (InputStream input = sock.getInputStream();
-                    ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                int ret, r;
-                if ((ret = input.read()) < 0) {
-                    throwIfError(ret, "unexpected end of socket while waiting for ack");
+                mos.writeMessage(this);
+
+                DeliveryStatus deliveryStatus = DeliveryStatus.fromStatusCode(input.read());
+                if (deliveryStatus != DeliveryStatus.OK) {
+                    throwIfError(deliveryStatus, IOUtils.toString(input));
                 }
 
-                byte[] buffer = new byte[4096];
-                while ((r = input.read(buffer)) >= 0) {
-                    out.write(buffer, 0, r);
-                }
-
-                throwIfError(ret, out.toString());
-
-                if (out.size() > 0) {
-                    return out.toByteArray();
+                try (InputStreamReader reader = new InputStreamReader(input)) {
+                    return gson.fromJson(reader, Response.class);
                 }
             }
         }
-        return null;
     }
 
-    public void write(File file) throws IOException {
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            this.encodeObject(out);
-        }
+    public String getEncoded() {
+        return gson.toJson(this);
     }
 
-    public String getXMLRepresentationAsString() {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        this.encodeObject(bos);
-        return bos.toString();
-    }
-
-    private void encodeObject(OutputStream out) {
-        try (XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out))) {
-            e.writeObject(this);
-        }
-    }
-
-    public static Message read(File file) throws IOException {
-        try (FileInputStream in = new FileInputStream(file)) {
-            return decodeObject(in);
-        }
-    }
-
-    public static Message makeXMLStringAsMessage(String xmlconfig) throws IOException {
-        final Message ret;
-        final ByteArrayInputStream in = new ByteArrayInputStream(xmlconfig.getBytes());
-        ret = decodeObject(in);
-        return ret;
-    }
-
-    private static Message decodeObject(InputStream in) throws IOException {
-        final Object ret;
-        final LinkedList<Exception> exceptions = new LinkedList<>();
-
-        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in))) {
-            ret = d.readObject();
-        }
-
-        if (!(ret instanceof Message)) {
-            throw new IOException("Not a valid message file");
-        }
-
-        Message conf = ((Message) ret);
-
-        return conf;
+    public static Message decode(final String s) {
+        return gson.fromJson(s, Message.class);
     }
 
     /**
      * Decode the return code from the remote server.
      *
-     * @param c the code
+     * @param deliveryStatus status of the message delivery
      * @param message error message stored in string
      * @throws IOException if the return code meant an error
      */
-    protected void throwIfError(int c, String message) throws IOException {
-        switch (c) {
-            case MESSAGE_OK:
+    protected void throwIfError(final DeliveryStatus deliveryStatus, final String message) throws IOException {
+        switch (deliveryStatus) {
+            case OK:
                 break;
-            case MESSAGE_LIMIT:
+            case OVER_LIMIT:
                 throw new IOException(
                         String.format(
                                 "Message was not accepted by the remote server - "
                                 + "%s (error %#x).",
                                 message.length() > 0 ? message : "too many messages in the system",
-                                c));
+                                deliveryStatus.statusCode));
             default:
                 throw new IOException(
                         String.format(
@@ -387,8 +253,161 @@ public abstract class Message implements Comparable<Message> {
                                 message.length() > 0 ? "- " : "",
                                 message.length() > 0 ? message : "",
                                 message.length() > 0 ? " " : "",
-                                c));
-
+                                deliveryStatus.statusCode));
         }
+    }
+
+    public enum DeliveryStatus {
+
+        OK(0x1), OVER_LIMIT(0x2), ERROR(0x4);
+
+        private final int statusCode;
+
+        DeliveryStatus(final int statusCode) {
+            this.statusCode = statusCode;
+        }
+
+        public static DeliveryStatus fromStatusCode(final int statusCode) {
+            for (DeliveryStatus ds : values()) {
+                if (ds.statusCode == statusCode) {
+                    return ds;
+                }
+            }
+            throw new IllegalArgumentException("Unknown status code " + statusCode);
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+    }
+
+    private static class MessageDeserializer implements JsonDeserializer<Message> {
+
+        @Override
+        public Message deserialize(
+                final JsonElement jsonElement,
+                final Type type,
+                final JsonDeserializationContext context
+        ) {
+            String classStr = jsonElement.getAsJsonObject().get("type").getAsString();
+            Class<?> cl;
+            try {
+                cl = Class.forName(classStr);
+            } catch (ClassNotFoundException e) {
+                throw new JsonParseException(e);
+            }
+            return context.deserialize(jsonElement, cl);
+        }
+    }
+
+    private static class DurationAdapter extends TypeAdapter<Duration> {
+
+        @Override
+        public void write(final JsonWriter writer, final Duration duration) throws IOException {
+            if (duration == null) {
+                writer.nullValue();
+                return;
+            }
+            writer.value(duration.toString());
+        }
+
+        @Override
+        public Duration read(final JsonReader reader) throws IOException {
+            if (reader.peek() == JsonToken.NULL) {
+                reader.nextNull();
+                return null;
+            }
+            return Duration.parse(reader.nextString());
+        }
+    }
+
+    public static class Builder<T extends Message> {
+
+        private final Class<T> messageClass;
+
+        private final Set<String> tags = new TreeSet<>();
+
+        private String text;
+
+        private String cssClass;
+
+        private Duration duration;
+
+        public Builder(final Class<T> cl) {
+            messageClass = cl;
+        }
+
+        public T build() {
+            T result = createMessage(messageClass);
+            fillData(result);
+            return result;
+        }
+
+        private void fillData(final Message message) {
+            message.tags.addAll(tags);
+
+            if (message.tags.isEmpty()) {
+                Set<String> defaultTags = message.getDefaultTags();
+                if (defaultTags != null) {
+                    message.tags.addAll(defaultTags);
+                }
+            }
+
+            if (text != null) {
+                message.text = text;
+            }
+
+            if (cssClass != null) {
+                message.cssClass = cssClass;
+            } else {
+                message.cssClass = message.getDefaultCssClass();
+            }
+            if (duration != null) {
+                message.duration = duration;
+            }
+        }
+
+        private static <T> T createMessage(final Class<T> messageClass) {
+            try {
+                return messageClass.getDeclaredConstructor().newInstance();
+            } catch (Exception e) {
+                throw new IllegalStateException("Cannot create message", e);
+            }
+        }
+
+        public Builder<T> addTag(final String tag) {
+            if (tag == null) {
+                throw new IllegalArgumentException("Tag cannot be null");
+            }
+            tags.add(tag);
+            return this;
+        }
+
+        public Builder<T> clearTags() {
+            tags.clear();
+            return this;
+        }
+
+        public Builder<T> setText(final String text) {
+            this.text = text;
+            return this;
+        }
+
+        public Builder<T> setTextFromFile(final String filepath) throws IOException {
+            byte[] encoded = Files.readAllBytes(Paths.get(filepath));
+            this.text = new String(encoded);
+            return this;
+        }
+
+        public Builder<T> setCssClass(final String cssClass) {
+            this.cssClass = cssClass;
+            return this;
+        }
+
+        public Builder<T> setDuration(final Duration duration) {
+            this.duration = duration;
+            return this;
+        }
+
     }
 }

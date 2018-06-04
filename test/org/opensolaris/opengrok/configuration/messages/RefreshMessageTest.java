@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -34,30 +34,32 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author Vladimir Kotal
  */
 public class RefreshMessageTest {
-    RuntimeEnvironment env;
+
+    private MessageListener listener;
 
     @Before
-    public void setUp() {
-        env = RuntimeEnvironment.getInstance();
-        env.removeAllMessages();
+    public void setUp() throws Exception {
+        listener = MessageTestUtils.initMessageListener(RuntimeEnvironment.getInstance());
+        listener.removeAllMessages();
     }
 
     @After
     public void tearDown() {
-        env.removeAllMessages();
+        listener.removeAllMessages();
+        listener.stopListenerThread();
     }
 
     @Test
     public void testValidate() {
-        Message m = new RefreshMessage();
-        Assert.assertTrue(MessageTest.assertValid(m));
-        m.setText("text");
-        Assert.assertTrue(MessageTest.assertValid(m));
-        m.setClassName(null);
-        Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertNull(m.getClassName());
-        m.setTags(new TreeSet<>());
-        Assert.assertTrue(MessageTest.assertValid(m));
-        Assert.assertEquals(new TreeSet<>(), m.getTags());
+        Message.Builder<RefreshMessage> builder = new Message.Builder<>(RefreshMessage.class);
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.setText("text");
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        builder.setCssClass(null);
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        Assert.assertNull(builder.build().getCssClass());
+        builder.clearTags();
+        Assert.assertTrue(MessageTest.assertValid(builder.build()));
+        Assert.assertEquals(new TreeSet<>(), builder.build().getTags());
     }
 }
