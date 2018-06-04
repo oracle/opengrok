@@ -597,14 +597,15 @@ public class IndexDatabase {
         IndexWriter wrt = null;
         IOException writerException = null;
         try {
-            LOGGER.info("Optimizing the index ... ");
+            String projectDetail = this.project != null ? " for project " + project.getName() : "";
+            LOGGER.log(Level.INFO, "Optimizing the index{0}", projectDetail);
             Analyzer analyzer = new StandardAnalyzer();
             IndexWriterConfig conf = new IndexWriterConfig(analyzer);
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
             wrt = new IndexWriter(indexDirectory, conf);
             wrt.forceMerge(1); // this is deprecated and not needed anymore
-            LOGGER.info("done");
+            LOGGER.log(Level.INFO, "Done optimizing index{0}", projectDetail);
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
                     LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
