@@ -178,18 +178,7 @@ public final class RuntimeEnvironment {
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
         if (historyExecutor == null) {
-            int num = Runtime.getRuntime().availableProcessors();
-            String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheThreads");
-            if (total != null) {
-                try {
-                    num = Integer.valueOf(total);
-                } catch (Throwable t) {
-                    LOGGER.log(Level.WARNING, "Failed to parse the number of "
-                            + "cache threads to use for cache creation", t);
-                }
-            }
-
-            historyExecutor = Executors.newFixedThreadPool(num,
+            historyExecutor = Executors.newFixedThreadPool(getInstance().getHistoryParallelism(),
                     new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable runnable) {
@@ -206,18 +195,7 @@ public final class RuntimeEnvironment {
     /* Get thread pool used for history generation of renamed files. */
     public static synchronized ExecutorService getHistoryRenamedExecutor() {
         if (historyRenamedExecutor == null) {
-            int num = Runtime.getRuntime().availableProcessors();
-            String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheRenamedThreads");
-            if (total != null) {
-                try {
-                    num = Integer.valueOf(total);
-                } catch (Throwable t) {
-                    LOGGER.log(Level.WARNING, "Failed to parse the number of "
-                            + "cache threads to use for cache creation of renamed files", t);
-                }
-            }
-
-            historyRenamedExecutor = Executors.newFixedThreadPool(num,
+            historyRenamedExecutor = Executors.newFixedThreadPool(getInstance().getHistoryRenamedParallelism(),
                     new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable runnable) {
@@ -1133,6 +1111,28 @@ public final class RuntimeEnvironment {
             parallelism;
     }
 
+    /**
+     * Gets the value of {@link Configuration#getHistoryParallelism()} -- or
+     * if zero, then as a default gets the number of available processors.
+     * @return a natural number &gt;= 1
+     */
+    public int getHistoryParallelism() {
+        int parallelism = threadConfig.get().getHistoryParallelism();
+        return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
+            parallelism;
+    }
+    
+    /**
+     * Gets the value of {@link Configuration#getHistoryRenamedParallelism()} -- or
+     * if zero, then as a default gets the number of available processors.
+     * @return a natural number &gt;= 1
+     */
+    public int getHistoryRenamedParallelism() {
+        int parallelism = threadConfig.get().getHistoryRenamedParallelism();
+        return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
+            parallelism;
+    }
+    
     public boolean isTagsEnabled() {
         return threadConfig.get().isTagsEnabled();
     }
