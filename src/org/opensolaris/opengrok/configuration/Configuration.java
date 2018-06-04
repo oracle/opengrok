@@ -184,7 +184,7 @@ public final class Configuration {
     private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
     /**
-     * @deprecated This is kept around so not to break object deserialization.
+     * @deprecated This is kept around so not to break object de-serialization.
      * <p>Anyone who is using `--lock on` will now be setting
      * {@link #luceneLocking} and resetting this field back to its default
      * value. This should mean that the configuration is written leaving out
@@ -198,6 +198,8 @@ public final class Configuration {
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
     private int indexingParallelism;
+    private int historyParallelism;
+    private int historyRenamedParallelism;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
@@ -1061,6 +1063,22 @@ public final class Configuration {
         this.indexingParallelism = value > 0 ? value : 0;
     }
 
+    public int getHistoryParallelism() {
+        return historyParallelism;
+    }
+
+    public void setHistoryParallelism(int value) {
+        this.historyParallelism = value > 0 ? value : 0;
+    }
+    
+    public int getHistoryRenamedParallelism() {
+        return historyRenamedParallelism;
+    }
+
+    public void setHistoryRenamedParallelism(int value) {
+        this.historyRenamedParallelism = value > 0 ? value : 0;
+    }
+    
     public boolean isTagsEnabled() {
         return this.tagsEnabled;
     }
