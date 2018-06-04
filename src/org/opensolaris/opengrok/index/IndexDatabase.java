@@ -98,6 +98,7 @@ import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.ObjectPool;
+import org.opensolaris.opengrok.util.Statistics;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -597,6 +598,7 @@ public class IndexDatabase {
         IndexWriter wrt = null;
         IOException writerException = null;
         try {
+            Statistics elapsed = new Statistics();
             String projectDetail = this.project != null ? " for project " + project.getName() : "";
             LOGGER.log(Level.INFO, "Optimizing the index{0}", projectDetail);
             Analyzer analyzer = new StandardAnalyzer();
@@ -605,7 +607,7 @@ public class IndexDatabase {
 
             wrt = new IndexWriter(indexDirectory, conf);
             wrt.forceMerge(1); // this is deprecated and not needed anymore
-            LOGGER.log(Level.INFO, "Done optimizing index{0}", projectDetail);
+            elapsed.report(LOGGER, String.format("Done optimizing index%s", projectDetail));
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
                     LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
