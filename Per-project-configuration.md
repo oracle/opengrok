@@ -43,3 +43,4 @@ Tunable | Type | Since version | Meaning
 `navigateWindowEnabled` | boolean | 1.1 | display navigate window automatically when browsing xrefs
 `tabSize` | integer | pre 0.12 | size of tabulator in spaces
 `handleRenamedFiles` | boolean | 1.1 | disables or enables handling of renamed files
+`historyEnabled` | boolean | 1.1 | enables or disables history for particular project
