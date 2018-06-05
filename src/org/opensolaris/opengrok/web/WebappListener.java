@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -37,6 +37,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import org.json.simple.parser.ParseException;
+import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -64,6 +65,9 @@ public final class WebappListener
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+        LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
+                    new Object[]{ Info.getVersion(), Info.getRevision()});
+        
         String config = context.getInitParameter("CONFIGURATION");
         if (config == null) {
             LOGGER.severe("CONFIGURATION section missing in web.xml");
