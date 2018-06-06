@@ -17,6 +17,7 @@ Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
 9.  [Tuning OpenGrok for large code bases](#9-tuning-opengrok-for-large-code-bases)
 10. [Authors](#10-authors)
 11. [Contact us](#11-contact-us)
+12. [Demo](#12-demo)
 
 ## 1. Introduction
 
@@ -431,3 +432,6 @@ Feel free to participate in discussion on the mailing lists:
   `opengrok-dev@yahoogroups.com` (developers' discussion)
 
 To subscribe, send email to `<mailing_list_name>-subscribe@yahoogroups.com`
+
+## 12. Demo
+Visit <http://demo.opengrok.org>
