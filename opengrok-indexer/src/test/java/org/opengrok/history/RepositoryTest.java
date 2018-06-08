@@ -180,18 +180,23 @@ public class RepositoryTest {
         }
 
         @Override
-        public boolean isRepositoryFor(File file) {
+        public boolean isRepositoryFor(File file, boolean interactive) {
             return false;
         }
 
         @Override
-        public String determineParent() throws IOException {
+        public String determineParent(boolean interactive) throws IOException {
             return "";
         }
 
         @Override
-        public String determineBranch() throws IOException {
+        public String determineBranch(boolean interactive) throws IOException {
             return "";
+        }
+
+        @Override
+        String determineCurrentVersion(boolean interactive) throws IOException {
+            return null;
         }
     }
 }

@@ -30,13 +30,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.logger.LoggerFactory;
 import org.opengrok.util.Executor;
 
@@ -57,12 +56,6 @@ public class CVSRepository extends RCSRepository {
      * The command to use to access the repository if none was given explicitly
      */
     public static final String CMD_FALLBACK = "cvs";
-
-    /**
-     * Pattern used to extract author/revision from 'cvs annotate'.
-     */
-    private static final Pattern ANNOTATE_PATTERN
-            = Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
 
     public CVSRepository() {
         /**
@@ -141,7 +134,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    public boolean isRepositoryFor(File file) {
+    public boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File cvsDir = new File(file, "CVS");
             return cvsDir.isDirectory();
@@ -164,7 +157,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    String determineBranch() throws IOException {
+    String determineBranch(boolean interactive) throws IOException {
         String branch = null;
 
         File tagFile = new File(getDirectoryName(), "CVS/Tag");
@@ -232,11 +225,13 @@ public class CVSRepository extends RCSRepository {
         try {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {RepoCommand, "up", "-p", "-r", revision, basename};
-            process = Runtime.getRuntime().exec(argv, null, new File(parent));
+            Executor executor = new Executor(Arrays.asList(argv), new File(parent),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+            executor.exec();
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
-            try (InputStream in = process.getInputStream()) {
+            try (InputStream in = executor.getOutputStream()) {
                 int len;
 
                 while ((len = in.read(buffer)) != -1) {
@@ -248,18 +243,8 @@ public class CVSRepository extends RCSRepository {
 
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
-            LOGGER.log(Level.SEVERE,
+            LOGGER.log(Level.WARNING,
                     "Failed to get history: {0}", exp.getClass().toString());
-        } finally {
-            // Clean up zombie-processes...
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
         }
 
         return ret;
@@ -298,8 +283,10 @@ public class CVSRepository extends RCSRepository {
         }
         cmd.add(file.getName());
 
-        Executor exec = new Executor(cmd, file.getParentFile());
-        int status = exec.exec();
+        Executor exec = new Executor(cmd, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        CVSAnnotationParser parser = new CVSAnnotationParser(file.getName());
+        int status = exec.exec(true, parser);
 
         if (status != 0) {
             LOGGER.log(Level.WARNING,
@@ -307,43 +294,11 @@ public class CVSRepository extends RCSRepository {
                     new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
-        return parseAnnotation(exec.getOutputReader(), file.getName());
-    }
-
-    protected Annotation parseAnnotation(Reader input, String fileName)
-            throws IOException {
-        BufferedReader in = new BufferedReader(input);
-        Annotation ret = new Annotation(fileName);
-        String line = "";
-        int lineno = 0;
-        boolean hasStarted = false;
-        Matcher matcher = ANNOTATE_PATTERN.matcher(line);
-        while ((line = in.readLine()) != null) {
-            // Skip header
-            if (!hasStarted && (line.length() == 0
-                    || !Character.isDigit(line.charAt(0)))) {
-                continue;
-            }
-            hasStarted = true;
-
-            // Start parsing
-            ++lineno;
-            matcher.reset(line);
-            if (matcher.find()) {
-                String rev = matcher.group(1);
-                String author = matcher.group(2).trim();
-                ret.addLine(rev, author, true);
-            } else {
-                LOGGER.log(Level.SEVERE,
-                        "Error: did not find annotation in line {0}: [{1}]",
-                        new Object[]{String.valueOf(lineno), line});
-            }
-        }
-        return ret;
+        return parser.getAnnotation();
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         File rootFile = new File(getDirectoryName() + File.separator + "CVS"
                 + File.separator + "Root");
         String parent = null;

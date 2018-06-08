@@ -36,9 +36,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.logger.LoggerFactory;
 import org.opengrok.util.Executor;
-import org.opengrok.util.IOUtils;
 
 /**
  * Access to a ClearCase repository.
@@ -116,7 +116,6 @@ public class ClearCaseRepository extends Repository {
 
         File directory = new File(getDirectoryName());
 
-        Process process = null;
         try {
             String filename = (new File(parent, basename)).getCanonicalPath()
                     .substring(getDirectoryName().length() + 1);
@@ -132,11 +131,12 @@ public class ClearCaseRepository extends Repository {
             String decorated = filename + "@@" + rev;
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {RepoCommand, "get", "-to", tmpName, decorated};
-            process = Runtime.getRuntime().exec(argv, null, directory);
-
-            drainStream(process.getInputStream());
-
-            if (waitFor(process) != 0) {
+            Executor executor = new Executor(Arrays.asList(argv), directory,
+                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+            int status = executor.exec();
+            if (status != 0) {
+                LOGGER.log(Level.SEVERE, "Failed to get history: {0}",
+                        executor.getErrorString());
                 return null;
             }
 
@@ -154,46 +154,11 @@ public class ClearCaseRepository extends Repository {
                 }
             };
         } catch (Exception exp) {
-            LOGGER.log(Level.SEVERE,
+            LOGGER.log(Level.WARNING,
                     "Failed to get history: " + exp.getClass().toString(), exp);
-        } finally {
-            // Clean up zombie-processes...
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
         }
 
         return ret;
-    }
-
-    /**
-     * Drain all data from a stream and close it.
-     *
-     * @param in the stream to drain
-     * @throws IOException if an I/O error occurs
-     */
-    private static void drainStream(InputStream in) throws IOException {
-        while (true) {
-            long skipped = 0;
-            try {
-                skipped = in.skip(32768L);
-            } catch (IOException ioe) {
-                // ignored - stream isn't seekable, but skipped variable still
-                // has correct value.
-                LOGGER.log(Level.FINEST,
-                        "Stream not seekable", ioe);
-            }
-            if (skipped == 0 && in.read() == -1) {
-                // No bytes skipped, checked that we've reached EOF with read()
-                break;
-            }
-        }
-        IOUtils.close(in);
     }
 
     /**
@@ -222,34 +187,13 @@ public class ClearCaseRepository extends Repository {
             argv.add(revision);
         }
         argv.add(file.getName());
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        pb.directory(file.getParentFile());
-        Process process = null;
-        try {
-            process = pb.start();
-            Annotation a = new Annotation(file.getName());
-            String line;
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                while ((line = in.readLine()) != null) {
-                    String parts[] = line.split("\\|");
-                    String aAuthor = parts[0];
-                    String aRevision = parts[1];
-                    aRevision = aRevision.replace('\\', '/');
 
-                    a.addLine(aRevision, aAuthor, true);
-                }
-            }
-            return a;
-        } finally {
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException e) {
-                    process.destroy();
-                }
-            }
-        }
+        Executor executor = new Executor(argv, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        ClearCaseAnnotationParser parser = new ClearCaseAnnotationParser(file.getName());
+        executor.exec(true, parser);
+
+        return parser.getAnnotation();
     }
 
     @Override
@@ -257,60 +201,39 @@ public class ClearCaseRepository extends Repository {
         return true;
     }
 
-    private int waitFor(Process process) {
-
-        do {
-            try {
-                return process.waitFor();
-            } catch (InterruptedException exp) {
-            }
-        } while (true);
-    }
-
     @SuppressWarnings("PMD.EmptyWhileStmt")
     @Override
     public void update() throws IOException {
-        Process process = null;
-        try {
-            File directory = new File(getDirectoryName());
+        File directory = new File(getDirectoryName());
 
-            // Check if this is a snapshot view
+        // Check if this is a snapshot view
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        String[] argv = {RepoCommand, "catcs"};
+        Executor executor = new Executor(Arrays.asList(argv), directory);
+        int status = executor.exec();
+        if (status != 0) {
+            LOGGER.log(Level.WARNING, "Failed to determine if {0} is snapshot view",
+                    directory);
+            return;
+        }
+        boolean snapshot = false;
+        String line;
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(executor.getOutputStream()))) {
+            while (!snapshot && (line = in.readLine()) != null) {
+                snapshot = line.startsWith("load");
+            }
+        }
+
+        if (snapshot) {
+            // It is a snapshot view, we need to update it manually
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String[] argv = {RepoCommand, "catcs"};
-            process = Runtime.getRuntime().exec(argv, null, directory);
-            boolean snapshot = false;
-            String line;
+            argv = new String[]{RepoCommand, "update", "-overwrite", "-f"};
+            executor = new Executor(Arrays.asList(argv), directory);
             try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                while (!snapshot && (line = in.readLine()) != null) {
-                    snapshot = line.startsWith("load");
-                }
-                if (waitFor(process) != 0) {
-                    return;
-                }
-            }
-            if (snapshot) {
-                // It is a snapshot view, we need to update it manually
-                ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-                argv = new String[]{RepoCommand, "update", "-overwrite", "-f"};
-                process = Runtime.getRuntime().exec(argv, null, directory);
-                try (BufferedReader in = new BufferedReader(
-                        new InputStreamReader(process.getInputStream()))) {
-                    while ((line = in.readLine()) != null) {
-                        // do nothing
-                    }
-                }
-
-                if (waitFor(process) != 0) {
-                    return;
-                }
-            }
-        } finally {
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException e) {
-                    process.destroy();
+                    new InputStreamReader(executor.getOutputStream()))) {
+                while ((line = in.readLine()) != null) {
+                    // do nothing
                 }
             }
         }
@@ -335,7 +258,7 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         // if the parent contains a file named "view.dat" or
         // the parent is named "vobs" or the canonical path
         // is found in "cleartool lsvob -s"
@@ -358,6 +281,11 @@ public class ClearCaseRepository extends Repository {
             }
         }
         return false;
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
+        return null;
     }
 
     private static class VobsHolder {
@@ -408,12 +336,12 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         return null;
     }
 
     @Override
-    String determineBranch() {
+    String determineBranch(boolean interactive) {
         return null;
     }
 }

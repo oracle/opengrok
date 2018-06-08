@@ -48,7 +48,7 @@ from commands import Commands, CommandsBase
 from repository import Repository
 from mercurial import MercurialRepository
 from repofactory import get_repository
-from utils import is_exe, check_create_dir, get_int
+from utils import is_exe, check_create_dir, get_int, diff_list
 from hook import run_hook
 from readconfig import read_config
 from opengrok import get_repos, get_config_value, get_repo_type
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('project')
     parser.add_argument('-D', '--debug', action='store_true',
                         help='Enable debug prints')
-    parser.add_argument('-c', '--config', required=True,
+    parser.add_argument('-c', '--config',
                         help='config file in JSON/YAML format')
     parser.add_argument('-m', '--messages',
                         help='path to the Messages binary')
@@ -95,18 +95,25 @@ if __name__ == '__main__':
 
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
-    config = read_config(logger, args.config)
-    if config is None:
-        logger.error("Cannot read config file from {}".format(args.config))
+    if args.config:
+        config = read_config(logger, args.config)
+        if config is None:
+            logger.error("Cannot read config file from {}".format(args.config))
+            sys.exit(1)
+    else:
+        config = {}
+
+    GLOBAL_TUNABLES = ['hookdir', 'proxy', 'logdir', 'commands', 'projects',
+                       HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
+    diff = diff_list(config.keys(), GLOBAL_TUNABLES)
+    if diff:
+        logger.error("uknown global configuration option(s): '{}'"
+                     .format(diff))
         sys.exit(1)
 
     # Make sure the log directory exists.
-    try:
-        logdir = config["logdir"]
-    except:
-        logger.error("'logdir' does not exist in configuration")
-        sys.exit(1)
-    else:
+    logdir = config.get("logdir")
+    if logdir:
         check_create_dir(logdir)
 
     if args.messages:
@@ -129,28 +136,24 @@ if __name__ == '__main__':
     logger.debug("Source root = {}".format(source_root))
 
     project_config = None
-    try:
-        projects = config['projects']
-        if projects:
-            if projects.get(args.project):
-                project_config = projects.get(args.project)
-            else:
-                for proj in projects.keys():
-                    try:
-                        pattern = re.compile(proj)
-                    except re.error:
-                        logger.error("Not a valid regular expression: {}".
-                                     format(proj))
-                        continue
+    projects = config.get('projects')
+    if projects:
+        if projects.get(args.project):
+            project_config = projects.get(args.project)
+        else:
+            for proj in projects.keys():
+                try:
+                    pattern = re.compile(proj)
+                except re.error:
+                    logger.error("Not a valid regular expression: {}".
+                                 format(proj))
+                    continue
 
-                    if pattern.match(args.project):
-                        logger.debug("Project '{}' matched pattern '{}'".
-                                     format(args.project, proj))
-                        project_config = projects.get(proj)
-                        break
-    except KeyError:
-        # The project has no config, that's fine - defaults will be used.
-        pass
+                if pattern.match(args.project):
+                    logger.debug("Project '{}' matched pattern '{}'".
+                                 format(args.project, proj))
+                    project_config = projects.get(proj)
+                    break
 
     hookdir = config.get('hookdir')
     if hookdir:
@@ -168,11 +171,20 @@ if __name__ == '__main__':
 
     prehook = None
     posthook = None
-    ignored_repos = []
     use_proxy = False
     if project_config:
         logger.debug("Project '{}' has specific (non-default) config".
                      format(args.project))
+
+        # Quick sanity check.
+        KNOWN_PROJECT_TUNABLES = ['disabled', CMD_TIMEOUT_PROPERTY,
+                                  HOOK_TIMEOUT_PROPERTY, 'proxy',
+                                  'ignored_repos', 'hooks']
+        diff = diff_list(project_config.keys(), KNOWN_PROJECT_TUNABLES)
+        if diff:
+            logger.error("uknown project configuration option(s) '{}' "
+                         "for project {}".format(diff, args.project))
+            sys.exit(1)
 
         project_command_timeout = get_int(logger, "command timeout for "
                                           "project {}".format(args.project),
@@ -192,10 +204,16 @@ if __name__ == '__main__':
             logger.debug("Project hook timeout = {}".
                          format(hook_timeout))
 
-        if project_config.get('ignored_repos'):
-            ignored_repos = project_config.get('ignored_repos')
+        ignored_repos = project_config.get('ignored_repos')
+        if ignored_repos:
+            if type(ignored_repos) is not list:
+                logger.error("ignored_repos for project {} is not a list".
+                             format(args.project))
+                sys.exit(1)
             logger.debug("has ignored repositories: {}".
                          format(ignored_repos))
+        else:
+            ignored_repos = []
 
         hooks = project_config.get('hooks')
         if hooks:
@@ -236,6 +254,9 @@ if __name__ == '__main__':
 
     # Log messages to dedicated log file if running in batch mode.
     if args.batch:
+        if not logdir:
+            logger.error("The logdir property is required in batch mode")
+            sys.exit(1)
         logfile = os.path.join(logdir, args.project + ".log")
         logger.debug("Switching logging to the {} file".
                      format(logfile))
@@ -274,11 +295,11 @@ if __name__ == '__main__':
                              args.project + "-mirror.lock"))
     try:
         with lock.acquire(timeout=0):
+            proxy = config.get('proxy') if use_proxy else None
             if prehook:
                 logger.info("Running pre hook")
                 if run_hook(logger, prehook,
-                            os.path.join(source_root, args.project),
-                            config['proxy'] if use_proxy else None,
+                            os.path.join(source_root, args.project), proxy,
                             hook_timeout) != 0:
                     logger.error("pre hook failed")
                     logging.shutdown()
@@ -298,7 +319,7 @@ if __name__ == '__main__':
                 repo_type = get_repo_type(logger, repo_path, messages_file)
                 if not repo_type:
                     logger.error("cannot determine type of {}".
-                                 format(repopath))
+                                 format(repo_path))
                     continue
 
                 logger.debug("Repository type = {}".format(repo_type))
@@ -308,7 +329,7 @@ if __name__ == '__main__':
                                       repo_type,
                                       args.project,
                                       config.get('commands'),
-                                      config['proxy'] if use_proxy else None,
+                                      proxy,
                                       None,
                                       command_timeout)
                 if not repo:
@@ -326,8 +347,7 @@ if __name__ == '__main__':
             if posthook:
                 logger.info("Running post hook")
                 if run_hook(logger, posthook,
-                            os.path.join(source_root, args.project),
-                            config['proxy'] if use_proxy else None,
+                            os.path.join(source_root, args.project), proxy,
                             hook_timeout) != 0:
                     logger.error("post hook failed")
                     logging.shutdown()

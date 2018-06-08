@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -42,7 +42,6 @@ import java.util.regex.Pattern;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.logger.LoggerFactory;
 import org.opengrok.util.Executor;
-import org.opengrok.web.Util;
 
 /**
  * Access to a Mercurial repository.
@@ -94,7 +93,7 @@ public class MercurialRepository extends Repository {
             + END_OF_ENTRY + "\\n";
 
     /**
-     * Template for formatting hg log output for directories.
+     * Template for formatting {@code hg log} output for directories.
      */
     private static final String DIR_TEMPLATE_RENAMED
             = TEMPLATE_STUB + FILE_LIST
@@ -102,12 +101,6 @@ public class MercurialRepository extends Repository {
     private static final String DIR_TEMPLATE
             = TEMPLATE_STUB + FILE_LIST
             + END_OF_ENTRY + "\\n";
-
-    /**
-     * Pattern used to extract author/revision from hg annotate.
-     */
-    private static final Pattern ANNOTATION_PATTERN
-            = Pattern.compile("^\\s*(\\d+):");
 
     private static final Pattern LOG_COPIES_PATTERN
             = Pattern.compile("^(\\d+):(.*)");
@@ -127,13 +120,15 @@ public class MercurialRepository extends Repository {
      * Return name of the branch or "default"
      */
     @Override
-    String determineBranch() throws IOException {
+    String determineBranch(boolean interactive) throws IOException {
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("branch");
 
-        Executor executor = new Executor(cmd, new File(getDirectoryName()));
+        Executor executor = new Executor(cmd, new File(getDirectoryName()),
+                interactive ? RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                        RuntimeEnvironment.getInstance().getCommandTimeout());
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
@@ -193,7 +188,7 @@ public class MercurialRepository extends Repository {
 
         cmd.add("--template");
         if (file.isDirectory()) {
-            cmd.add(env.isHandleHistoryOfRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
+            cmd.add(this.isHandleRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
         } else {
             cmd.add(FILE_TEMPLATE);
         }
@@ -228,11 +223,13 @@ public class MercurialRepository extends Repository {
                     = fullpath.substring(getDirectoryName().length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {RepoCommand, "cat", "-r", revision, filename};
-            process = Runtime.getRuntime().exec(argv, null, directory);
+            Executor executor = new Executor(Arrays.asList(argv), directory,
+                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+            int status = executor.exec();
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
-            try (InputStream in = process.getInputStream()) {
+            try (InputStream in = executor.getOutputStream()) {
                 int len;
 
                 while ((len = in.read(buffer)) != -1) {
@@ -246,31 +243,20 @@ public class MercurialRepository extends Repository {
              * If exit value of the process was not 0 then the file did
              * not exist or internal hg error occured.
              */
-            if (process.waitFor() == 0) {
+            if (status == 0) {
                 ret = new ByteArrayInputStream(out.toByteArray());
-            } else {
-                ret = null;
             }
         } catch (Exception exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get history: {0}", exp.getClass().toString());
-        } finally {
-            // Clean up zombie-processes...
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
         }
 
         return ret;
     }
 
     /**
-     * Get the name of file in given revision.
+     * Get the name of file in given revision. This is used to get contents
+     * of a file in historical revision.
      *
      * @param fullpath file path
      * @param full_rev_to_find revision number (in the form of
@@ -282,6 +268,7 @@ public class MercurialRepository extends Repository {
         Matcher matcher = LOG_COPIES_PATTERN.matcher("");
         String file = fullpath.substring(getDirectoryName().length() + 1);
         ArrayList<String> argv = new ArrayList<>();
+        File directory = new File(getDirectoryName());
 
         // Extract {rev} from the full revision specification string.
         String[] rev_array = full_rev_to_find.split(":");
@@ -314,61 +301,57 @@ public class MercurialRepository extends Repository {
         argv.add("{rev}:{file_copies}\\n");
         argv.add(fullpath);
 
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        Process process = null;
+        Executor executor = new Executor(argv, directory,
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        int status = executor.exec();
 
-        try {
-            process = pb.start();
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = in.readLine()) != null) {
-                    matcher.reset(line);
-                    if (!matcher.find()) {
-                        LOGGER.log(Level.SEVERE,
-                                "Failed to match: {0}", line);
-                        return (null);
-                    }
-                    String rev = matcher.group(1);
-                    String content = matcher.group(2);
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(executor.getOutputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                matcher.reset(line);
+                if (!matcher.find()) {
+                    LOGGER.log(Level.SEVERE,
+                            "Failed to match: {0}", line);
+                    return (null);
+                }
+                String rev = matcher.group(1);
+                String content = matcher.group(2);
 
-                    if (rev.equals(rev_to_find)) {
-                        break;
-                    }
+                if (rev.equals(rev_to_find)) {
+                    break;
+                }
 
-                    if (!content.isEmpty()) {
+                if (!content.isEmpty()) {
+                    /*
+                     * Split string of 'newfile1 (oldfile1)newfile2
+                     * (oldfile2) ...' into pairs of renames.
+                     */
+                    String[] splitArray = content.split("\\)");
+                    for (String s : splitArray) {
                         /*
-                         * Split string of 'newfile1 (oldfile1)newfile2
-                         * (oldfile2) ...' into pairs of renames.
+                         * This will fail for file names containing ' ('.
                          */
-                        String[] splitArray = content.split("\\)");
-                        for (String s : splitArray) {
-                            /*
-                             * This will fail for file names containing ' ('.
-                             */
-                            String[] move = s.split(" \\(");
+                        String[] move = s.split(" \\(");
 
-                            if (file.equals(move[0])) {
-                                file = move[1];
-                                break;
-                            }
+                        if (file.equals(move[0])) {
+                            file = move[1];
+                            break;
                         }
                     }
+                }
 
-                    if (rev.equals(rev_to_find)) {
-                        break;
-                    }
+                if (rev.equals(rev_to_find)) {
+                    break;
                 }
             }
-        } finally {
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException e) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
+        }
+
+        if (status != 0) {
+            LOGGER.log(Level.WARNING,
+                    "Failed to get original name in revision {3} for: \"{0}\" Exit code: {1}",
+                    new Object[]{fullpath, String.valueOf(status), full_rev_to_find});
+            return null;
         }
 
         return (fullpath.substring(0, getDirectoryName().length() + 1) + file);
@@ -434,10 +417,9 @@ public class MercurialRepository extends Repository {
             }
         }
         argv.add(file.getName());
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        pb.directory(file.getParentFile());
-        Process process = null;
-        Annotation ret = null;
+        Executor executor = new Executor(argv, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        Annotation annotation = null;
         HashMap<String, HistoryEntry> revs = new HashMap<>();
 
         // Construct hash map for history entries from history cache. This is
@@ -457,43 +439,10 @@ public class MercurialRepository extends Repository {
             return null;
         }
 
-        try {
-            process = pb.start();
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                ret = new Annotation(file.getName());
-                String line;
-                int lineno = 0;
-                Matcher matcher = ANNOTATION_PATTERN.matcher("");
-                while ((line = in.readLine()) != null) {
-                    ++lineno;
-                    matcher.reset(line);
-                    if (matcher.find()) {
-                        String rev = matcher.group(1);
-                        String author = "N/A";
-                        // Use the history index hash map to get the author.
-                        if (revs.get(rev) != null) {
-                            author = revs.get(rev).getAuthor();
-                        }
-                        ret.addLine(rev, Util.getEmail(author.trim()), true);
-                    } else {
-                        LOGGER.log(Level.SEVERE,
-                                "Error: did not find annotation in line {0}: [{1}]",
-                                new Object[]{lineno, line});
-                    }
-                }
-            }
-        } finally {
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException e) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
-        }
-        return ret;
+        MercurialAnnotationParser annotator = new MercurialAnnotationParser(file, revs);
+        executor.exec(true, annotator);
+
+        return annotator.getAnnotation();
     }
 
     @Override
@@ -543,7 +492,7 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File f = new File(file, ".hg");
             return f.exists() && f.isDirectory();
@@ -613,75 +562,29 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    protected void buildTagList(File directory) {
+    protected void buildTagList(File directory, boolean interactive) {
         this.tagList = new TreeSet<>();
         ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("tags");
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        pb.directory(directory);
-        Process process = null;
 
-        try {
-            process = pb.start();
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = in.readLine()) != null) {
-                    String parts[] = line.split("  *");
-                    if (parts.length < 2) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to parse tag list: {0}",
-                                "Tag line contains more than 2 columns: " + line);
-                        this.tagList = null;
-                        break;
-                    }
-                    // Grrr, how to parse tags with spaces inside?
-                    // This solution will lose multiple spaces ;-/
-                    String tag = parts[0];
-                    for (int i = 1; i < parts.length - 1; ++i) {
-                        tag = tag.concat(" ");
-                        tag = tag.concat(parts[i]);
-                    }
-                    // The implicit 'tip' tag only causes confusion so ignore it. 
-                    if (tag.contentEquals("tip")) {
-                        continue;
-                    }
-                    String revParts[] = parts[parts.length - 1].split(":");
-                    if (revParts.length != 2) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to parse tag list: {0}",
-                                "Mercurial revision parsing error: "
-                                        + parts[parts.length - 1]);
-                        this.tagList = null;
-                        break;
-                    }
-                    TagEntry tagEntry
-                            = new MercurialTagEntry(Integer.parseInt(revParts[0]),
-                                    tag);
-                    // Reverse the order of the list
-                    this.tagList.add(tagEntry);
-                }
-            }
-        } catch (IOException e) {
+        Executor executor = new Executor(argv, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
+        MercurialTagParser parser = new MercurialTagParser();
+        int status = executor.exec(true, parser);
+        if (status != 0) {
             LOGGER.log(Level.WARNING,
-                    "Failed to read tag list: {0}", e.getMessage());
-            this.tagList = null;
-        }
-
-        if (process != null) {
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                // the process is still running??? just kill it..
-                process.destroy();
-            }
+                    "Failed to get tags for: \"{0}\" Exit code: {1}",
+                    new Object[]{directory.getAbsolutePath(), String.valueOf(status)});
+        } else {
+            this.tagList = parser.getEntries();
         }
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<>();
@@ -689,7 +592,9 @@ public class MercurialRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("paths");
         cmd.add("default");
-        Executor executor = new Executor(cmd, directory);
+        Executor executor = new Executor(cmd, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
@@ -698,7 +603,7 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    public String determineCurrentVersion() throws IOException {
+    public String determineCurrentVersion(boolean interactive) throws IOException {
         String line = null;
         File directory = new File(getDirectoryName());
 
@@ -711,7 +616,9 @@ public class MercurialRepository extends Repository {
         cmd.add("--template");
         cmd.add("{date|isodate} {node|short} {author} {desc|strip}");
 
-        Executor executor = new Executor(cmd, directory);
+        Executor executor = new Executor(cmd, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }

@@ -57,13 +57,13 @@ def get_first_line(logger, command):
 
     cmd = Command(command)
     cmd.execute()
-    if cmd.state is not "finished" or cmd.getretcode() != 0:
+    if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
         logger.error("execution of command '{}' failed with: {}"
                      .format(cmd, cmd.getoutputstr()))
         return None
 
     if len(cmd.getoutput()) != 1:
-        logger.error("output from {} has more than 1 line ({})".
+        logger.error("output from '{}' does not have exactly 1 line ({})".
                      format(cmd, len(cmd.getoutput())))
         return None
 
@@ -96,5 +96,7 @@ def get_repo_type(logger, path, messages_file):
 
     line = get_first_line(logger, [messages_file, '-n', 'repository', '-t',
                           path, 'get-repo-type'])
+    if not line:
+        return None
     idx = line.rfind(":")
     return line[idx + 1:]

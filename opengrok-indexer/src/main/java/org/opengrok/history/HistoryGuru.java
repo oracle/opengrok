@@ -250,7 +250,7 @@ public final class HistoryGuru {
                 || (rscm == RemoteSCM.ON)
                 || (ui || ((rscm == RemoteSCM.DIRBASED) && (repo != null) && repo.hasHistoryForDirectories()));
 
-        if (repo != null && repo.isWorking() && repo.fileHasHistory(file)
+        if (repo != null && repo.isHistoryEnabled() && repo.isWorking() && repo.fileHasHistory(file)
                 && (!repo.isRemote() || doRemote)) {
 
             if (useCache() && historyCache.supportsRepository(repo)) {
@@ -387,14 +387,6 @@ public final class HistoryGuru {
             String path;
             try {
                 path = file.getCanonicalPath();
-                File skipRepository = new File(path, ".opengrok_skip_history");
-                // Should potential repository be ignored?
-                if (skipRepository.exists()) {
-                    LOGGER.log(Level.INFO,
-                        "Skipping history cache creation for {0} and its subdirectories",
-                        file.getAbsolutePath());
-                    continue;
-                }
 
                 Repository repository = null;
                 try {
@@ -576,6 +568,12 @@ public final class HistoryGuru {
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
 
+        if (!repository.isHistoryEnabled()) {
+            LOGGER.log(Level.INFO,
+                    "Skipping history cache creation of {0} repository in {1} and its subdirectories",
+                    new Object[]{type, path});
+        }
+        
         if (repository.isWorking()) {
             boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
             Statistics elapsed = new Statistics();
@@ -895,7 +893,7 @@ public final class HistoryGuru {
      * @param repos list of repositories
      * @param dirs list of directories that might correspond to the repositories
      */
-    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs) {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs, boolean interactive) {
         if (repos != null && !repos.isEmpty() && dirs != null && !dirs.isEmpty()) {
             List<RepositoryInfo> newrepos = new ArrayList<>();
             for (RepositoryInfo i : repos) {
@@ -910,7 +908,7 @@ public final class HistoryGuru {
             repos = newrepos;
         }
 
-        invalidateRepositories(repos);
+        invalidateRepositories(repos, interactive);
     }
 
     /**
@@ -927,7 +925,7 @@ public final class HistoryGuru {
      * @param repos collection of repositories to invalidate.
      * If null or empty, the internal map of repositories will be cleared.
      */
-    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos) {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, boolean interactive) {
         if (repos == null || repos.isEmpty()) {
             repositoryRoots.clear();
             repositories.clear();
@@ -965,7 +963,7 @@ public final class HistoryGuru {
                 @Override
                 public void run() {
                     try {
-                        Repository r = RepositoryFactory.getRepository(rinfo);
+                        Repository r = RepositoryFactory.getRepository(rinfo, interactive);
                         if (r == null) {
                             LOGGER.log(Level.WARNING,
                                     "Failed to instantiate internal repository data for {0} in {1}",

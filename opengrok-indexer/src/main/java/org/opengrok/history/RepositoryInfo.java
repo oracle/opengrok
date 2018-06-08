@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opengrok.configuration.Project;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.logger.LoggerFactory;
 import org.opengrok.util.ClassUtil;
@@ -66,6 +67,9 @@ public class RepositoryInfo implements Serializable {
     protected String branch;
     protected String currentVersion;
 
+    private boolean handleRenamedFiles;
+    private boolean historyEnabled;
+
     /**
      * format used for printing the date in {@code currentVersion}
      */
@@ -87,6 +91,31 @@ public class RepositoryInfo implements Serializable {
         this.parent = orig.parent;
         this.branch = orig.branch;
         this.currentVersion = orig.currentVersion;
+    }
+
+    /**
+     * @return true if the repository handles renamed files, false otherwise.
+     */
+    public boolean isHandleRenamedFiles() {
+        return this.handleRenamedFiles;
+    }
+
+    /**
+     * @param flag true if the repository should handle renamed files, false otherwise.
+     */
+    public void setHandleRenamedFiles(boolean flag) {
+        this.handleRenamedFiles = flag;
+    }
+
+    /**
+     * @return true if the repository should have history cache.
+     */
+    public boolean isHistoryEnabled() {
+        return this.historyEnabled;
+    }
+
+    public void setHistoryEnabled(boolean flag) {
+        this.historyEnabled = flag;
     }
 
     /**
@@ -117,8 +146,7 @@ public class RepositoryInfo implements Serializable {
     /**
      * Specify the name of the root directory for this repository.
      *
-     * @param dir the new name of the root directory. Can be absolute
-     * path or relative to source root.
+     * @param dir the new root directory
      */
     public void setDirectoryName(File dir) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -141,9 +169,9 @@ public class RepositoryInfo implements Serializable {
         }
 
         if (path.startsWith(rootPath)) {
-            this.directoryNameRelative = path.substring(rootPath.length());
+            setDirectoryNameRelative(path.substring(rootPath.length()));
         } else {
-            this.directoryNameRelative = path;
+            setDirectoryNameRelative(path);
         }
     }
 
@@ -245,6 +273,22 @@ public class RepositoryInfo implements Serializable {
         this.currentVersion = currentVersion;
     }
     
+    /**
+     * Fill configurable properties from associated project (if any) or Configuration.
+     */
+    public void fillFromProject() {
+        Project proj = Project.getProject(getDirectoryNameRelative());
+        if (proj != null) {
+            setHistoryEnabled(proj.isHistoryEnabled());
+            setHandleRenamedFiles(proj.isHandleRenamedFiles());
+        } else {
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+            setHistoryEnabled(env.isHistoryEnabled());
+            setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof RepositoryInfo)) {

@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -67,8 +68,8 @@ class FileHistoryCache implements HistoryCache {
 
     private final Object lock = new Object();
 
-    private final static String historyCacheDirName = "historycache";
-    private final static String latestRevFileName = "OpenGroklatestRev";
+    private final static String HISTORY_CACHE_DIR_NAME = "historycache";
+    private final static String LATEST_REV_FILE_NAME = "OpenGroklatestRev";
     private final static String DIRECTORY_FILE_PREFIX = "OpenGrokDirHist";
 
     private boolean historyIndexDone = false;
@@ -199,7 +200,7 @@ class FileHistoryCache implements HistoryCache {
         StringBuilder sb = new StringBuilder();
         sb.append(env.getDataRootPath());
         sb.append(File.separatorChar);
-        sb.append(historyCacheDirName);
+        sb.append(HISTORY_CACHE_DIR_NAME);
 
         try {
             String add = env.getPathRelativeToSourceRoot(file);
@@ -381,12 +382,12 @@ class FileHistoryCache implements HistoryCache {
             // failure), do not create the CachedRevision file as this would
             // create confusion (once it starts working again).
             LOGGER.log(Level.WARNING,
-                "Could not store history for repo {0}",
+                "Could not store history for repository {0}",
                 repository.getDirectoryName());
         } else {
             storeLatestCachedRevision(repository, latestRev);
             LOGGER.log(Level.FINE,
-                "Done storing history for repo {0}",
+                "Done storing history for repository {0}",
                 repository.getDirectoryName());
         }
     }
@@ -405,6 +406,7 @@ class FileHistoryCache implements HistoryCache {
     public void store(History history, Repository repository)
             throws HistoryException {
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        final boolean handleRenamedFiles = repository.isHandleRenamedFiles();
 
         String latestRev = null;
 
@@ -415,7 +417,7 @@ class FileHistoryCache implements HistoryCache {
         }
 
         LOGGER.log(Level.FINE,
-            "Storing history for repo {0}",
+            "Storing history for repository {0}",
             new Object[] {repository.getDirectoryName()});
 
         // Firstly store the history for the top-level directory.
@@ -471,9 +473,10 @@ class FileHistoryCache implements HistoryCache {
          * which will be handled separately below.
          */
         final File root = RuntimeEnvironment.getInstance().getSourceRootFile();
+        int fileHistoryCount = 0;
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                if (env.isHandleHistoryOfRenamedFiles() &&
+                if (handleRenamedFiles &&
                     isRenamedFile(map_entry.getKey(), env, repository, history)) {
                         continue;
                 }
@@ -484,9 +487,12 @@ class FileHistoryCache implements HistoryCache {
 
             doFileHistory(map_entry.getKey(), map_entry.getValue(),
                 env, repository, null, root, false);
+            fileHistoryCount++;
         }
 
-        if (!env.isHandleHistoryOfRenamedFiles()) {
+        LOGGER.log(Level.FINE, "Stored history for {0} files", fileHistoryCount);
+
+        if (!handleRenamedFiles) {
             finishStore(repository, latestRev);
             return;
         }
@@ -527,6 +533,7 @@ class FileHistoryCache implements HistoryCache {
         }
         final Repository repositoryF = repository;
         final CountDownLatch latch = new CountDownLatch(renamed_map.size());
+        AtomicInteger renamedFileHistoryCount = new AtomicInteger();
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : renamed_map.entrySet()) {
             RuntimeEnvironment.getHistoryRenamedExecutor().submit(new Runnable() {
                 @Override
@@ -536,6 +543,7 @@ class FileHistoryCache implements HistoryCache {
                             env, repositoryF,
                             new File(env.getSourceRootPath() + map_entry.getKey()),
                             root, true);
+                        renamedFileHistoryCount.getAndIncrement();
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
                         LOGGER.log(Level.WARNING,
@@ -554,6 +562,8 @@ class FileHistoryCache implements HistoryCache {
         } catch (InterruptedException ex) {
             LOGGER.log(Level.SEVERE, "latch exception ",ex);
         }
+        LOGGER.log(Level.FINE, "Stored history for {0} renamed files",
+                renamedFileHistoryCount.intValue());
         finishStore(repository, latestRev);
     }
 
@@ -578,7 +588,8 @@ class FileHistoryCache implements HistoryCache {
          * fetched in the first phase of indexing.
          */
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (isHistoryIndexDone() && repository.hasHistoryForDirectories() &&
+        if (isHistoryIndexDone() && repository.isHistoryEnabled() &&
+            repository.hasHistoryForDirectories() &&
             !env.isFetchHistoryWhenNotInCache()) {
                 return null;
         }
@@ -640,7 +651,7 @@ class FileHistoryCache implements HistoryCache {
         }
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File dir = env.getDataRootFile();
-        dir = new File(dir, FileHistoryCache.historyCacheDirName);
+        dir = new File(dir, FileHistoryCache.HISTORY_CACHE_DIR_NAME);
         try {
             dir = new File(dir, env.getPathRelativeToSourceRoot(
                 new File(repos.getDirectoryName())));
@@ -681,14 +692,14 @@ class FileHistoryCache implements HistoryCache {
         }
 
         return env.getDataRootPath() + File.separatorChar
-            + FileHistoryCache.historyCacheDirName
+            + FileHistoryCache.HISTORY_CACHE_DIR_NAME
             + repoDirBasename;
     }
 
     private String getRepositoryCachedRevPath(Repository repository) {
         String histDir = getRepositoryHistDataDirname(repository);
         if (histDir == null) return null;
-        return histDir + File.separatorChar + latestRevFileName;
+        return histDir + File.separatorChar + LATEST_REV_FILE_NAME;
     }
 
     /**
@@ -740,7 +751,7 @@ class FileHistoryCache implements HistoryCache {
                 try {
                     input.close();
                 } catch (java.io.IOException e) {
-                    LOGGER.log(Level.FINEST, "failed to close", e);
+                    LOGGER.log(Level.WARNING, "failed to close", e);
                 }
             }
         } catch (java.io.FileNotFoundException e) {

@@ -142,12 +142,10 @@ public class ProjectTest {
         cfg.setTabSize(new Configuration().getTabSize() + 3731);
 
         Project p1 = new Project();
-        p1.setNavigateWindowEnabled(true);
 
         p1.completeWithDefaults(cfg);
 
         assertNotNull(p1);
-        assertTrue("Navigate window should be turned on", p1.isNavigateWindowEnabled());
         assertEquals(new Configuration().getTabSize() + 3731, p1.getTabSize());
     }
 
@@ -161,10 +159,14 @@ public class ProjectTest {
 
         Project p1 = new Project();
         p1.setTabSize(new Project().getTabSize() + 9737);
+        p1.setNavigateWindowEnabled(true);
+        p1.setHandleRenamedFiles(true);
 
         p1.completeWithDefaults(cfg);
 
         assertNotNull(p1);
+        assertTrue("Navigate window should be turned on", p1.isNavigateWindowEnabled());
+        assertTrue("Renamed file handling should be true", p1.isHandleRenamedFiles());
         assertEquals(new Project().getTabSize() + 9737, p1.getTabSize());
     }
 

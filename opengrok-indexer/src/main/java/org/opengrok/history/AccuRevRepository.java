@@ -79,14 +79,14 @@ public class AccuRevRepository extends Repository {
      * The command to use to access the repository if none was given explicitly
      */
     public static final String CMD_FALLBACK = "accurev";
-    private static final Pattern annotationPattern
-            = Pattern.compile("^\\s+(\\d+.\\d+)\\s+(\\w+)");   // version, user
-    private static final Pattern depotPattern
+    
+    private static final Pattern DEPOT_PATTERN
             = Pattern.compile("^Depot:\\s+(\\w+)");
-    private static final Pattern parentPattern
+    private static final Pattern PARENT_PATTERN
             = Pattern.compile("^Basis:\\s+(\\w+)");
-    private static final Pattern workspaceRootPattern
+    private static final Pattern WORKSPACE_ROOT_PATTERN
             = Pattern.compile("Top:\\s+(.+)$");
+    
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private String depotName = null;
@@ -111,8 +111,6 @@ public class AccuRevRepository extends Repository {
     @Override
     public Annotation annotate(File file, String rev) throws IOException {
 
-        Annotation a = new Annotation(file.getName());
-
         ArrayList<String> cmd = new ArrayList<>();
 
         // Do not use absolute paths because symbolic links will cause havoc.
@@ -129,38 +127,12 @@ public class AccuRevRepository extends Repository {
 
         cmd.add(path);
 
-        Executor executor = new Executor(cmd, file.getParentFile());
-        executor.exec();
-        try (BufferedReader reader
-                = new BufferedReader(executor.getOutputReader())) {
-            String line;
-            int lineno = 0;
-            try {
-                while ((line = reader.readLine()) != null) {
-                    ++lineno;
-                    Matcher matcher = annotationPattern.matcher(line);
-
-                    if (matcher.find()) {
-                        // On Windows machines version shows up as
-                        // <number>\<number>. To get search annotation
-                        // to work properly, need to flip '\' to '/'.
-                        // This is a noop on Unix boxes.
-                        String version = matcher.group(1).replace('\\', '/');
-                        String author  = matcher.group(2);
-                        a.addLine(version, author, true);
-                    } else {
-                        LOGGER.log(Level.SEVERE,
-                                "Did not find annotation in line {0}: [{1}]",
-                                new Object[]{lineno, line});
-                    }
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE,
-                        "Could not read annotations for " + file, e);
-            }
-        }
-
-        return a;
+        Executor executor = new Executor(cmd, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        AccuRevAnnotationParser parser = new AccuRevAnnotationParser(file.getName());
+        executor.exec(true, parser);
+        
+        return parser.getAnnotation();
     }
 
     /**
@@ -299,7 +271,7 @@ public class AccuRevRepository extends Repository {
      *   below 'Server time' will be missing when current working directory
      *   is not within a known AccuRev workspace/repository.
      */
-    private boolean getAccuRevInfo( File wsPath ) {
+    private boolean getAccuRevInfo(File wsPath, boolean interactive) {
     
         ArrayList<String> cmd = new ArrayList<>();
         boolean status  = false;
@@ -320,7 +292,8 @@ public class AccuRevRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("info");
 
-        Executor executor = new Executor(cmd, realWsPath.toFile());
+        Executor executor = new Executor(cmd, realWsPath.toFile(), interactive ?
+                env.getInteractiveCommandTimeout() : env.getCommandTimeout());
         executor.exec();
 
         try (BufferedReader info = new BufferedReader(executor.getOutputReader())) {
@@ -334,7 +307,7 @@ public class AccuRevRepository extends Repository {
                 }
 
                 if (line.startsWith("Depot")) {
-                    Matcher depotMatch  = depotPattern.matcher(line);
+                    Matcher depotMatch  = DEPOT_PATTERN.matcher(line);
                     if (depotMatch.find()) {
                         depotName = depotMatch.group(1);
                         status = true;
@@ -342,14 +315,14 @@ public class AccuRevRepository extends Repository {
                 }
 
                 else if (line.startsWith("Basis")) {
-                    Matcher parentMatch = parentPattern.matcher(line);
+                    Matcher parentMatch = PARENT_PATTERN.matcher(line);
                     if (parentMatch.find()) {
                         parent = parentMatch.group(1);
                     }
                 }
                 
                 else if (line.startsWith("Top")) {
-                    Matcher workspaceRoot = workspaceRootPattern.matcher(line);
+                    Matcher workspaceRoot = WORKSPACE_ROOT_PATTERN.matcher(line);
                     if (workspaceRoot.find()) {
                         wsRoot = workspaceRoot.group(1);
                         // Normally, the source root path and the workspace root
@@ -417,13 +390,13 @@ public class AccuRevRepository extends Repository {
      * @param wsPath The presumed path to an AccuRev workspace directory.
      * @return true if the given path is in the depot, false otherwise
      */
-    private boolean isInAccuRevDepot(File wsPath) {
+    private boolean isInAccuRevDepot(File wsPath, boolean interactive) {
 
         // Once depot name is determined, always assume inside depot.
         boolean status = (depotName != null);
 
         if (! status && isWorking()) {
-            status = getAccuRevInfo( wsPath );
+            status = getAccuRevInfo(wsPath, interactive);
         }
 
         return status;
@@ -474,10 +447,10 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File sourceHome) {
+    boolean isRepositoryFor(File sourceHome, boolean interactive) {
 
         if (sourceHome.isDirectory()) {
-            return isInAccuRevDepot(sourceHome);
+            return isInAccuRevDepot(sourceHome, interactive);
         }
 
         return false;
@@ -505,13 +478,18 @@ public class AccuRevRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
-        getAccuRevInfo(new File(getDirectoryName()));
+    String determineParent(boolean interactive) throws IOException {
+        getAccuRevInfo(new File(getDirectoryName()), interactive);
         return parent;
     }
 
     @Override
-    String determineBranch() {
+    String determineBranch(boolean interactive) {
+        return null;
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
         return null;
     }
 }

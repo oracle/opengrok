@@ -103,6 +103,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
 import org.opengrok.util.ForbiddenSymlinkException;
 import org.opengrok.util.PathUtils;
+import org.opengrok.web.Prefix;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -111,6 +112,9 @@ import org.opengrok.util.PathUtils;
 public final class RuntimeEnvironment {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RuntimeEnvironment.class);
+
+    /** {@code "/source"} + {@link Prefix#SEARCH_R} + {@code "?"} */
+    private static final String URL_PREFIX = "/source" + Prefix.SEARCH_R + "?";
 
     private Configuration configuration;
     private final ThreadLocal<Configuration> threadConfig;
@@ -174,18 +178,7 @@ public final class RuntimeEnvironment {
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
         if (historyExecutor == null) {
-            int num = Runtime.getRuntime().availableProcessors();
-            String total = System.getProperty("org.opengrok.history.NumCacheThreads");
-            if (total != null) {
-                try {
-                    num = Integer.valueOf(total);
-                } catch (Throwable t) {
-                    LOGGER.log(Level.WARNING, "Failed to parse the number of "
-                            + "cache threads to use for cache creation", t);
-                }
-            }
-
-            historyExecutor = Executors.newFixedThreadPool(num,
+            historyExecutor = Executors.newFixedThreadPool(getInstance().getHistoryParallelism(),
                     new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable runnable) {
@@ -202,18 +195,7 @@ public final class RuntimeEnvironment {
     /* Get thread pool used for history generation of renamed files. */
     public static synchronized ExecutorService getHistoryRenamedExecutor() {
         if (historyRenamedExecutor == null) {
-            int num = Runtime.getRuntime().availableProcessors();
-            String total = System.getProperty("org.opengrok.history.NumCacheRenamedThreads");
-            if (total != null) {
-                try {
-                    num = Integer.valueOf(total);
-                } catch (Throwable t) {
-                    LOGGER.log(Level.WARNING, "Failed to parse the number of "
-                            + "cache threads to use for cache creation of renamed files", t);
-                }
-            }
-
-            historyRenamedExecutor = Executors.newFixedThreadPool(num,
+            historyRenamedExecutor = Executors.newFixedThreadPool(getInstance().getHistoryRenamedParallelism(),
                     new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable runnable) {
@@ -309,6 +291,14 @@ public final class RuntimeEnvironment {
 
     public void setCommandTimeout(int timeout) {
         threadConfig.get().setCommandTimeout(timeout);
+    }
+
+    public int getInteractiveCommandTimeout() {
+        return threadConfig.get().getInteractiveCommandTimeout();
+    }
+
+    public void setInteractiveCommandTimeout(int timeout) {
+        threadConfig.get().setInteractiveCommandTimeout(timeout);
     }
 
     public Statistics getStatistics() {
@@ -548,21 +538,12 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the context name of the web application
-     *
-     * @return the web applications context name
+     * Gets a static placeholder for the web application context name that is
+     * translated to the true servlet {@code contextPath} on demand.
+     * @return {@code "/source"} + {@link Prefix#SEARCH_R} + {@code "?"}
      */
     public String getUrlPrefix() {
-        return threadConfig.get().getUrlPrefix();
-    }
-
-    /**
-     * Set the web context name
-     *
-     * @param urlPrefix the web applications context name
-     */
-    public void setUrlPrefix(String urlPrefix) {
-        threadConfig.get().setUrlPrefix(urlPrefix);
+        return URL_PREFIX;
     }
 
     /**
@@ -800,7 +781,7 @@ public final class RuntimeEnvironment {
     public void setRepositories(String dir) {
         List<RepositoryInfo> repos = new ArrayList<>(HistoryGuru.getInstance().
                 addRepositories(new File[]{new File(dir)},
-                RuntimeEnvironment.getInstance().getIgnoredNames()));
+                    RuntimeEnvironment.getInstance().getIgnoredNames()));
         RuntimeEnvironment.getInstance().setRepositories(repos);
     }
 
@@ -1130,6 +1111,28 @@ public final class RuntimeEnvironment {
             parallelism;
     }
 
+    /**
+     * Gets the value of {@link Configuration#getHistoryParallelism()} -- or
+     * if zero, then as a default gets the number of available processors.
+     * @return a natural number &gt;= 1
+     */
+    public int getHistoryParallelism() {
+        int parallelism = threadConfig.get().getHistoryParallelism();
+        return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
+            parallelism;
+    }
+
+    /**
+     * Gets the value of {@link Configuration#getHistoryRenamedParallelism()} -- or
+     * if zero, then as a default gets the number of available processors.
+     * @return a natural number &gt;= 1
+     */
+    public int getHistoryRenamedParallelism() {
+        int parallelism = threadConfig.get().getHistoryRenamedParallelism();
+        return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
+            parallelism;
+    }
+
     public boolean isTagsEnabled() {
         return threadConfig.get().isTagsEnabled();
     }
@@ -1373,6 +1376,16 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Read configuration from a file and put it into effect.
+     * @param file the file to read
+     * @param interactive true if run in interactive mode
+     * @throws IOException
+     */
+    public void readConfiguration(File file, boolean interactive) throws IOException {
+        setConfiguration(Configuration.read(file), null, interactive);
+    }
+
+    /**
      * Write the current configuration to a file
      *
      * @param file the file to write the configuration into
@@ -1493,10 +1506,10 @@ public final class RuntimeEnvironment {
      * @param configuration what configuration to use
      */
     public void setConfiguration(Configuration configuration) {
-        setConfiguration(configuration, null);
+        setConfiguration(configuration, null, false);
     }
 
-    public void setConfiguration(Configuration configuration, List<String> subFileList) {
+    public void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
         this.configuration = configuration;
         // HistoryGuru constructor uses environment properties so register()
         // needs to be called first.
@@ -1516,10 +1529,10 @@ public final class RuntimeEnvironment {
         // Set the working repositories in HistoryGuru.
         if (subFileList != null) {
             histGuru.invalidateRepositories(
-                configuration.getRepositories(), subFileList);
+                configuration.getRepositories(), subFileList, interactive);
         } else {
-            histGuru.invalidateRepositories(
-                configuration.getRepositories());
+            histGuru.invalidateRepositories(configuration.getRepositories(),
+                    interactive);
         }
         // The invalidation of repositories above might have excluded some
         // repositories in HistoryGuru so the configuration needs to reflect that.

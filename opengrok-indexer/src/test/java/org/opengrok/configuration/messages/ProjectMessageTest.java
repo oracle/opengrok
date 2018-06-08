@@ -86,6 +86,7 @@ public class ProjectMessageTest {
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
+        env.setHistoryEnabled(true);
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
@@ -304,7 +305,7 @@ public class ProjectMessageTest {
         // When 'indexpart' is run, this is called from setConfiguration() because
         // of the -R option is present.
         HistoryGuru.getInstance().invalidateRepositories(
-            env.getRepositories());
+            env.getRepositories(), null, false);
         env.setHistoryEnabled(true);
         Indexer.getInstance().prepareIndexer(
                 env,

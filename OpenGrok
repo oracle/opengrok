@@ -134,9 +134,7 @@ Supported Environment Variables for configuring the default setup:
   - OPENGROK_WEBAPP_CFGADDR     Web app address to send configuration to
                                   (use "none" to avoid sending it to web app)
   - OPENGROK_WEBAPP_CONTEXT     Context URL of the OpenGrok webapp
-                                  (by default /source). FULL reindex is needed
-                                  once this is used (old already indexed files
-                                  won't be refreshed)
+                                  (by default /source).
   - OPENGROK_WPREFIX            Disable wildcard prefix search query support (*)
   - OPENGROK_TAG                Enable parsing of revision tags into the History
                                   view
@@ -259,10 +257,10 @@ DefaultInstanceConfiguration()
     #           (the configuration used by Web/GUI interfaces)
     XML_CONFIGURATION="${OPENGROK_INSTANCE_BASE}/etc/configuration.xml"
 
-    # OPTIONAL: read only XML config, if it exists, it will be read
+    # OPTIONAL: read only XML configuration
     READ_XML_CONFIGURATION="${OPENGROK_READ_XML_CONFIGURATION:-}"
 
-    if [ -f "${READ_XML_CONFIGURATION}" ] ; then
+    if [ -n "${READ_XML_CONFIGURATION}" ] ; then
         READ_XML_CONF="-R ${READ_XML_CONFIGURATION}"
     fi
 
@@ -310,9 +308,6 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: Ignore these patterns as names of files or directories
     #OPENGROK_IGNORE_PATTERNS="-i dummy"
-    # To ignore skipping just the history cache creation for a particular
-    # directory and all of it's subdirectories, touch an empty
-    # .opengrok_skip_history file at the root of that directory
 
     # OPTIONAL: Enable Projects
     #           (Every directory in SRC_ROOT is considered a separate project)
@@ -386,13 +381,6 @@ DefaultInstanceConfiguration()
 
     if [ -n "${WEBAPP_CONFIG_ADDRESS}" ]; then
         WEBAPP_CONFIG="-U ${WEBAPP_CONFIG_ADDRESS}"
-    fi
-
-    # OPTIONAL: Context URL of the OpenGrok webapp
-    #           (default is /source)
-    WEBAPP_CONTEXT=""
-    if [ -n "${OPENGROK_WEBAPP_CONTEXT}" ]; then
-        WEBAPP_CONTEXT="-w ${OPENGROK_WEBAPP_CONTEXT}"
     fi
 
     # OPTIONAL: JVM Options
@@ -912,7 +900,6 @@ CommonInvocation()
         ${ASSIGNMENTS}							\
         ${READ_XML_CONF}                                        	\
         ${WEBAPP_CONFIG}						\
-        ${WEBAPP_CONTEXT}						\
         ${OPENGROK_PROFILER:+--profiler}				\
         "${@}"
 }
@@ -995,8 +982,30 @@ DeployWar()
         FatalError "Missing Deployment Directory ${warTarget}"
     fi
 
+    APP_CONTEXT="source"
+    FINAL_WAR_NAME="source"
+    if [ "$applicationServer" = "Tomcat" ]
+    then
+        if [ ! -z ${OPENGROK_WEBAPP_CONTEXT+x} ] # OPENGROK_WEBAPP_CONTEXT is set
+        then
+            APP_CONTEXT="${OPENGROK_WEBAPP_CONTEXT}"
+
+            # strip leading /
+            case ${APP_CONTEXT} in
+                /*) APP_CONTEXT=`echo ${APP_CONTEXT} | sed 's|^/||'`
+            esac
+
+            FINAL_WAR_NAME=`echo ${APP_CONTEXT} | sed 's|/|#|g'`
+
+            if [ -z "${FINAL_WAR_NAME}" ]
+            then
+                FINAL_WAR_NAME="ROOT"
+            fi
+        fi
+    fi
+
     Progress "Installing ${OPENGROK_DIST_WAR} to ${warTarget} ..."
-    ${DO} cp -p "${OPENGROK_DIST_WAR}" "${warTarget}/"
+    ${DO} cp -p "${OPENGROK_DIST_WAR}" "${warTarget}/${FINAL_WAR_NAME}.war"
     if [ $? != 0 ]
     then
         FatalError "Web Application Installation FAILED"
@@ -1023,7 +1032,7 @@ DeployWar()
         if [ -n "${EXTRACT_COMMAND}" ]
         then
             cd "${warTarget}"
-            eval "${EXTRACT_COMMAND} ${warTarget}/source.war WEB-INF/web.xml"
+            eval "${EXTRACT_COMMAND} ${warTarget}/${FINAL_WAR_NAME}.war WEB-INF/web.xml"
             if [ "${OPENGROK_INSTANCE_BASE}" != '/var/opengrok' ]
             then
                 sed -e 's:/var/opengrok/etc/configuration.xml:'"$XML_CONFIGURATION"':g' \
@@ -1040,7 +1049,7 @@ DeployWar()
 		mv "${warTarget}/WEB-INF/web.xml.tmp" \
 		    "${warTarget}/WEB-INF/web.xml"
             fi
-            eval "${COMPRESS_COMMAND} ${warTarget}/source.war WEB-INF/web.xml"
+            eval "${COMPRESS_COMMAND} ${warTarget}/${FINAL_WAR_NAME}.war WEB-INF/web.xml"
             rm -rf "${warTarget}/WEB-INF"
         fi
     fi
@@ -1051,7 +1060,7 @@ DeployWar()
     Progress "running, or wait until it loads the just installed web " \
         "application."
     Progress
-    Progress "OpenGrok should be available on <HOST>:<PORT>/source"
+    Progress "OpenGrok should be available on <HOST>:<PORT>/${APP_CONTEXT}"
     Progress "  where HOST and PORT are configured in ${applicationServer}."
     Progress
 }

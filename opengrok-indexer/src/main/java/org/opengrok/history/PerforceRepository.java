@@ -22,18 +22,14 @@
  */
 package org.opengrok.history;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 import org.opengrok.logger.LoggerFactory;
 import org.opengrok.util.Executor;
@@ -58,9 +54,6 @@ public class PerforceRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "p4";
 
-    private static final Pattern annotation_pattern
-            = Pattern.compile("^(\\d+): .*");
-
     public PerforceRepository() {
         type = "Perforce";
 
@@ -69,16 +62,6 @@ public class PerforceRepository extends Repository {
 
     @Override
     public Annotation annotate(File file, String rev) throws IOException {
-        Annotation a = new Annotation(file.getName());
-
-        List<HistoryEntry> revisions
-                = PerforceHistoryParser.getRevisions(file, rev).getHistoryEntries();
-        HashMap<String, String> revAuthor = new HashMap<>();
-        for (HistoryEntry entry : revisions) {
-            // a.addDesc(entry.getRevision(), entry.getMessage());
-            revAuthor.put(entry.getRevision(), entry.getAuthor());
-        }
-
         ArrayList<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
@@ -86,30 +69,12 @@ public class PerforceRepository extends Repository {
         cmd.add("-qci");
         cmd.add(file.getPath() + getRevisionCmd(rev));
 
-        Executor executor = new Executor(cmd, file.getParentFile());
-        executor.exec();
-
-        String line;
-        int lineno = 0;
-        try (BufferedReader reader = new BufferedReader(executor.getOutputReader())) {
-            while ((line = reader.readLine()) != null) {
-                ++lineno;
-                Matcher matcher = annotation_pattern.matcher(line);
-                if (matcher.find()) {
-                    String revision = matcher.group(1);
-                    String author = revAuthor.get(revision);
-                    a.addLine(revision, author, true);
-                } else {
-                    LOGGER.log(Level.SEVERE,
-                            "Error: did not find annotation in line {0}: [{1}]",
-                            new Object[]{lineno, line});
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE,
-                    "Error: Could not read annotations for " + file, e);
-        }
-        return a;
+        Executor executor = new Executor(cmd, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        PerforceAnnotationParser parser = new PerforceAnnotationParser(file, rev);
+        executor.exec(true, parser);
+        
+        return parser.getAnnotation();
     }
 
     @Override
@@ -158,7 +123,7 @@ public class PerforceRepository extends Repository {
      * @param file The file to test
      * @return true if the given file is in the depot, false otherwise
      */
-    public static boolean isInP4Depot(File file) {
+    public static boolean isInP4Depot(File file, boolean interactive) {
         boolean status = false;
         if (testRepo.isWorking()) {
             ArrayList<String> cmd = new ArrayList<>();
@@ -170,7 +135,9 @@ public class PerforceRepository extends Repository {
                 cmd.add(testRepo.RepoCommand);
                 cmd.add("dirs");
                 cmd.add(name);
-                Executor executor = new Executor(cmd, dir);
+                Executor executor = new Executor(cmd, dir, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
                 executor.exec();
                 /* OUTPUT:
                  stdout: //depot_path/name
@@ -183,7 +150,9 @@ public class PerforceRepository extends Repository {
                 cmd.add(testRepo.RepoCommand);
                 cmd.add("files");
                 cmd.add(name);
-                Executor executor = new Executor(cmd, dir);
+                Executor executor = new Executor(cmd, dir, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
                 executor.exec();
                 /* OUTPUT:
                  stdout: //depot_path/name
@@ -196,8 +165,8 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
-        return isInP4Depot(file);
+    boolean isRepositoryFor(File file, boolean interactive) {
+        return isInP4Depot(file, interactive);
     }
 
     @Override
@@ -220,12 +189,12 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         return null;
     }
 
     @Override
-    String determineBranch() {
+    String determineBranch(boolean interactive) {
         return null;
     }
     /**
@@ -238,5 +207,10 @@ public class PerforceRepository extends Repository {
             return "";
         }
         return "@" + rev;
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
+        return null;
     }
 }

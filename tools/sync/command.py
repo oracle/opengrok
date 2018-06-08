@@ -113,24 +113,27 @@ class Command:
             stdout/stderr buffers fill up.
             """
 
-            def __init__(self):
+            def __init__(self, event, logger):
                 super(OutputThread, self).__init__()
                 self.read_fd, self.write_fd = os.pipe()
                 self.pipe_fobj = os.fdopen(self.read_fd)
                 self.out = []
+                self.event = event
+                self.logger = logger
                 self.start()
 
             def run(self):
                 """
                 It might happen that after the process is gone, the thread
-                still has data to read from the pipe. Should probably introduce
-                a boolean and set it to True under the 'if not line' block
-                below and make the caller wait for it to become True.
+                still has data to read from the pipe. Hence, event is used
+                to synchronize with the caller.
                 """
                 while True:
                     line = self.pipe_fobj.readline()
                     if not line:
+                        self.logger.debug("end of output")
                         self.pipe_fobj.close()
+                        self.event.set()
                         return
 
                     self.out.append(line)
@@ -142,6 +145,7 @@ class Command:
                 return self.write_fd
 
             def close(self):
+                self.logger.debug("closed")
                 os.close(self.write_fd)
 
         orig_work_dir = None
@@ -163,10 +167,14 @@ class Command:
                 return
 
         timeout_thread = None
-        output_thread = OutputThread()
+        event = threading.Event()
+        output_thread = OutputThread(event, self.logger)
         try:
             start_time = time.time()
-            self.logger.debug("working directory = {}".format(os.getcwd()))
+            try:
+                self.logger.debug("working directory = {}".format(os.getcwd()))
+            except PermissionError:
+                pass
             self.logger.debug("command = {}".format(self.cmd))
             if self.env_vars:
                 my_env = os.environ.copy()
@@ -180,18 +188,20 @@ class Command:
             self.pid = p.pid
 
             if self.timeout:
-                condition = threading.Condition()
+                time_condition = threading.Condition()
                 self.logger.debug("Setting timeout to {}".format(self.timeout))
                 timeout_thread = TimeoutThread(self.logger, self.timeout,
-                                               condition, p)
+                                               time_condition, p)
 
             self.logger.debug("Waiting for process with PID {}".format(p.pid))
             p.wait()
+            self.logger.debug("done waiting")
 
             if self.timeout:
                 e = timeout_thread.get_exception()
                 if e:
                     raise e
+
         except KeyboardInterrupt as e:
             self.logger.info("Got KeyboardException while processing ",
                              exc_info=True)
@@ -208,9 +218,16 @@ class Command:
             self.logger.debug("{} -> {}".format(self.cmd, self.getretcode()))
         finally:
             if self.timeout != 0 and timeout_thread:
-                with condition:
-                    condition.notifyAll()
+                with time_condition:
+                    time_condition.notifyAll()
+
+            # The subprocess module does not close the write pipe descriptor
+            # it fetched via OutputThread's fileno() so in order to gracefully
+            # exit the read loop we have to close it here ourselves.
             output_thread.close()
+            self.logger.debug("Waiting on output thread to finish reading")
+            event.wait()
+
             self.out = output_thread.getoutput()
             elapsed_time = time.time() - start_time
             self.logger.debug("Command {} took {} seconds".
@@ -274,3 +291,13 @@ class Command:
 
     def getpid(self):
         return self.pid
+
+    def log_error(self, msg):
+        if self.state is Command.FINISHED:
+            self.logger.error("{}: command {} in directory {} exited with {}".
+                              format(msg, self.cmd, self.work_dir,
+                                     self.getretcode()))
+        else:
+            self.logger.error("{}: command {} in directory {} ended with "
+                              "invalid state".
+                              format(msg, self.cmd, self.work_dir, self.state))

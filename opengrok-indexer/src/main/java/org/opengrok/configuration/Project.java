@@ -69,6 +69,16 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     private boolean navigateWindowEnabled = false;
 
     /**
+     * This flag sets per-project handling of renamed files.
+     */
+    private Boolean handleRenamedFiles = null;
+
+    /**
+     * This flag enables/disables per-project history cache.
+     */
+    private Boolean historyEnabled = null;
+
+    /**
      * This marks the project as (not)ready before initial index is done. this
      * is to avoid all/multi-project searches referencing this project from
      * failing.
@@ -179,7 +189,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * that you should ALWAYS prefix the path with current file.separator ,
      * current environment should always have it set up
      *
-     * @param path the relative path from source sroot where this project is
+     * @param path the relative path from source root where this project is
      * located.
      */
     public void setPath(String path) {
@@ -230,6 +240,34 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
+     * @return true if this project handles renamed files.
+     */
+    public boolean isHandleRenamedFiles() {
+        return handleRenamedFiles != null && handleRenamedFiles;
+    }
+
+    /**
+     * @param flag true if project should handle renamed files, false otherwise.
+     */
+    public void setHandleRenamedFiles(boolean flag) {
+        this.handleRenamedFiles = flag;
+    }
+
+    /**
+     * @return true if this project should have history cache.
+     */
+    public boolean isHistoryEnabled() {
+        return historyEnabled != null && historyEnabled;
+    }
+
+    /**
+     * @param flag true if project should have history cache, false otherwise.
+     */
+    public void setHistoryEnabled(boolean flag) {
+        this.historyEnabled = flag;
+    }
+
+    /**
      * Return groups where this project belongs
      *
      * @return set of groups|empty if none
@@ -263,7 +301,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     final public void completeWithDefaults(Configuration cfg) {
         Configuration defaultCfg = new Configuration();
         /**
-         * Choosing strategy for properties (tabSize here):
+         * Choosing strategy for properties (tabSize used as example here):
          * <pre>
          * this       cfg        defaultCfg   chosen value
          * ===============================================
@@ -277,6 +315,16 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
          */
         if (getTabSize() == defaultCfg.getTabSize()) {
             setTabSize(cfg.getTabSize());
+        }
+
+        // Allow project to override global setting of renamed file handling.
+        if (handleRenamedFiles == null) {
+            setHandleRenamedFiles(cfg.isHandleHistoryOfRenamedFiles());
+        }
+
+        // Allow project to override global setting of history cache generation.
+        if (historyEnabled == null) {
+            setHistoryEnabled(cfg.isHistoryEnabled());
         }
     }
 

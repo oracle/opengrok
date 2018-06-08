@@ -35,6 +35,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.junit.After;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,7 +45,9 @@ import org.opengrok.condition.ConditionalRun;
 import org.opengrok.condition.ConditionalRunRule;
 import org.opengrok.condition.CtagsInstalled;
 import org.opengrok.condition.RepositoryInstalled;
+import org.opengrok.configuration.Project;
 import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.history.HistoryException;
 import org.opengrok.history.HistoryGuru;
 import org.opengrok.history.MercurialRepositoryTest;
 import org.opengrok.history.RepositoryInfo;
@@ -95,6 +99,79 @@ public class IndexerRepoTest {
     }
 
     /**
+     * Test it is possible to disable history per project.
+     * @throws IndexerException
+     * @throws IOException
+     * @throws org.opensolaris.opengrok.history.HistoryException
+     */
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+    @Test
+    public void testPerProjectHistoryGlobalOn() throws IndexerException, IOException, HistoryException {
+        testPerProjectHistory(true);
+    }
+
+    /**
+     * Test it is possible to enable history per project.
+     * @throws IndexerException
+     * @throws IOException
+     * @throws org.opensolaris.opengrok.history.HistoryException
+     */
+    @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+    @Test
+    public void testPerProjectHistoryGlobalOff() throws IndexerException, IOException, HistoryException {
+        testPerProjectHistory(false);
+    }
+
+    private void testPerProjectHistory(boolean globalOn) throws IndexerException, IOException, HistoryException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // Make sure we start from scratch.
+        File dataRoot = FileUtilities.createTemporaryDirectory("dataForPerProjectHistoryTest");
+        env.setDataRoot(dataRoot.getName());
+        env.setProjectsEnabled(true);
+        env.setHistoryEnabled(globalOn);
+
+        Project proj = new Project("mercurial", "/mercurial");
+        proj.setHistoryEnabled(!globalOn);
+        env.getProjects().clear();
+        env.getProjects().put("mercurial", proj);
+
+        Indexer.getInstance().prepareIndexer(
+                env,
+                true, // search for repositories
+                true, // scan and add projects
+                null, // no default project
+                false, // don't list files
+                false, // don't create dictionary
+                null, // subFiles - not needed since we don't list files
+                null, // repositories - not needed when not refreshing history
+                new ArrayList<>(), // don't zap cache
+                false); // don't list repos
+
+        File repoRoot = new File(env.getSourceRootFile(), "git");
+        File fileInRepo = new File(repoRoot, "main.c");
+        assertTrue(fileInRepo.exists());
+        if (globalOn) {
+            assertNotNull(HistoryGuru.getInstance().getHistory(fileInRepo));
+        } else {
+            assertNull(HistoryGuru.getInstance().getHistory(fileInRepo));
+        }
+
+        repoRoot = new File(env.getSourceRootFile(), "mercurial");
+        fileInRepo = new File(repoRoot, "main.c");
+        assertTrue(fileInRepo.exists());
+        if (globalOn) {
+            assertNull(HistoryGuru.getInstance().getHistory(fileInRepo));
+        } else {
+            assertNotNull(HistoryGuru.getInstance().getHistory(fileInRepo));
+        }
+
+        IOUtils.removeRecursive(dataRoot.toPath());
+    }
+
+    /**
      * Test that symlinked directories from source root get their relative
      * path set correctly in RepositoryInfo objects.
      */
@@ -118,8 +195,8 @@ public class IndexerRepoTest {
         String symlinkPath = sourceRoot.toString() + File.separator + SYMLINK;
         Files.createSymbolicLink(Paths.get(symlinkPath), Paths.get(realSource.getPath()));
 
+        // Use alternative source root.
         env.setSourceRoot(sourceRoot.toString());
-        env.setDataRoot(repository.getDataRoot());
         // Need to have history cache enabled in order to perform scan of repositories.
         env.setHistoryEnabled(true);
         // Normally the Indexer would add the symlink automatically.

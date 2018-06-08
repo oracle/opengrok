@@ -59,6 +59,12 @@ class GitHistoryParser implements Executor.StreamHandler {
     private GitRepository repository = new GitRepository();
     private List<HistoryEntry> entries = new ArrayList<>();
 
+    private final boolean handleRenamedFiles;
+    
+    GitHistoryParser(boolean flag) {
+        handleRenamedFiles = flag;
+    }
+    
     /**
      * Process the output from the log command and insert the HistoryEntries
      * into the history field.
@@ -177,7 +183,7 @@ class GitHistoryParser implements Executor.StreamHandler {
                                 status));
             }
 
-            if (RuntimeEnvironment.getInstance().isHandleHistoryOfRenamedFiles()) {
+            if (handleRenamedFiles) {
                 executor = repository.getRenamedFilesExecutor(file, sinceRevision);
                 status = executor.exec(true, parser);
 

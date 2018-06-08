@@ -39,6 +39,9 @@ def get_repository(logger, path, repo_type, project, commands, env, hooks,
 
     logger.debug("Constructing repo object for path {}".format(path))
 
+    if not commands:
+        commands = {}
+
     if repo_lower in ["mercurial", "hg"]:
         return MercurialRepository(logger, path, project,
                                    commands.get("hg"),

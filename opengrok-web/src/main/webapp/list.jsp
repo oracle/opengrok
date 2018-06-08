@@ -28,6 +28,7 @@ java.io.BufferedInputStream,
 java.io.BufferedReader,
 java.io.FileInputStream,
 java.io.FileReader,
+java.io.FileWriter,
 java.io.InputStream,
 java.io.InputStreamReader,
 java.io.Reader,
@@ -86,10 +87,10 @@ document.pageReady.push(function() { pageReadyList();});
 {
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
+    Project project = cfg.getProject();
 
-    String navigateWindowEnabled = cfg.getProject() != null
-                ? Boolean.toString(cfg.getProject().isNavigateWindowEnabled())
-                : "false";
+    String navigateWindowEnabled = project != null ? Boolean.toString(
+            project.isNavigateWindowEnabled()) : "false";
     File resourceFile = cfg.getResourceFile();
     String path = cfg.getPath();
     String basename = resourceFile.getName();
@@ -99,16 +100,15 @@ document.pageReady.push(function() { pageReadyList();});
         // valid resource is requested
         // mast.jsp assures, that resourceFile is valid and not /
         // see cfg.resourceNotAvailable()
-        Project activeProject = Project.getProject(resourceFile);
         String cookieValue = cfg.getRequestedProjectsAsString();
-        if (activeProject != null) {
+        if (project != null) {
             Set<String>  projects = cfg.getRequestedProjects();
-            if (!projects.contains(activeProject.getName())) {
-                projects.add(activeProject.getName());
+            if (!projects.contains(project.getName())) {
+                projects.add(project.getName());
                 // update cookie
                 cookieValue = cookieValue.length() == 0
-                    ? activeProject.getName()
-                    : activeProject.getName() + ',' + cookieValue;
+                    ? project.getName()
+                    : project.getName() + ',' + cookieValue;
                 Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, "utf-8"));
                 // TODO hmmm, projects.jspf doesn't set a path
                 cookie.setPath(request.getContextPath() + '/');
@@ -120,13 +120,13 @@ document.pageReady.push(function() { pageReadyList();});
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
             List<FileExtra> extras = null;
-            if (activeProject != null) {
+            if (project != null) {
                 SearchHelper searchHelper = cfg.prepareInternalSearch();
                 // N.b. searchHelper.destroy() is called via
                 // WebappListener.requestDestroyed() on presence of the
                 // following REQUEST_ATTR.
                 request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
-                searchHelper.prepareExec(activeProject);
+                searchHelper.prepareExec(project);
 
                 if (searchHelper.searcher != null) {
                     DirectoryExtraReader extraReader =
@@ -196,7 +196,8 @@ document.pageReady.push(function() { pageReadyList();});
                      * document using the system default charset.
                      */
                     r = new InputStreamReader(bin);
-                    Util.dump(out, r);
+                    // dumpXref() is also useful here for translating links.
+                    Util.dumpXref(out, r, request.getContextPath());
                 } else if (g == Genre.PLAIN) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
@@ -208,8 +209,8 @@ document.pageReady.push(function() { pageReadyList();});
                     // SRCROOT is read with UTF-8 as a default.
                     r = IOUtils.createBOMStrippedReader(bin,
                         StandardCharsets.UTF_8.name());
-                    AnalyzerGuru.writeXref(a, r, out, defs, annotation,
-                        Project.getProject(resourceFile));
+                    AnalyzerGuru.writeDumpedXref(request.getContextPath(), a,
+                            r, out, defs, annotation, project);
     %></pre>
 </div><%
                 } else {
@@ -234,7 +235,9 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
-                Util.dump(out, xrefFile, xrefFile.getName().endsWith(".gz"));
+                boolean compressed = xrefFile.getName().endsWith(".gz");
+                Util.dumpXref(out, xrefFile, compressed,
+                        request.getContextPath());
     %></pre>
 </div><%
             }
@@ -279,8 +282,9 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                 // SRCROOT is read with UTF-8 as a default.
                                 r = IOUtils.createBOMStrippedReader(in,
                                     StandardCharsets.UTF_8.name());
-                                AnalyzerGuru.writeXref(a, r, out, defs,
-                                    annotation, Project.getProject(resourceFile));
+                                AnalyzerGuru.writeDumpedXref(
+                                        request.getContextPath(), a, r, out,
+                                        defs, annotation, project);
                             } else if (g == Genre.IMAGE) {
         %></pre>
         <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
@@ -292,7 +296,11 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                  * default charset.
                                  */
                                 r = new InputStreamReader(in);
-                                Util.dump(out, r);
+                                /**
+                                 * dumpXref() is also useful here for
+                                 * translating links.
+                                 */
+                                Util.dumpXref(out, r, request.getContextPath());
                             } else {
         %> Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">download <%= basename %></a><%
                             }
@@ -349,7 +357,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
-            Util.dump(out, xrefFile, xrefFile.getName().endsWith(".gz"));
+            boolean compressed = xrefFile.getName().endsWith(".gz");
+            Util.dumpXref(out, xrefFile, compressed, request.getContextPath());
     %></pre>
 </div><%
         }

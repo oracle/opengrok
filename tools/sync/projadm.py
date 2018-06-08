@@ -237,7 +237,9 @@ if __name__ == '__main__':
             logger.debug("Using {} as instance base".
                          format(args.base))
         else:
-            logger.error("Not a directory: {}".format(args.base))
+            logger.error("Not a directory: {}\n"
+                         "Set the base directory with the --base option."
+                         .format(args.base))
             sys.exit(1)
 
     # read-only configuration file.
@@ -250,7 +252,15 @@ if __name__ == '__main__':
 
     # XXX replace Messages with REST request after issue #1801
     messages_file = get_command(logger, args.messages, "Messages")
+    if not messages_file:
+        logger.error("Use the --messages option to specify the path to"
+                     "the Messages script")
+        sys.exit(1)
     configmerge_file = get_command(logger, args.configmerge, "ConfigMerge")
+    if not configmerge_file:
+        logger.error("Use the --configmerge option to specify the path to"
+                     "the ConfigMerge script")
+        sys.exit(1)
 
     lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
                              os.path.basename(sys.argv[0]) + ".lock"))

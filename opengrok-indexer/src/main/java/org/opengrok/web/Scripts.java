@@ -122,11 +122,11 @@ public class Scripts implements Iterable<Scripts.Script> {
      */
     static {
         SCRIPTS.put("jquery", new FileScript("js/jquery-3.2.0.min.js", 10));
-        SCRIPTS.put("jquery-ui", new FileScript("js/jquery-ui-1.12.0-custom.min.js", 11));
+        SCRIPTS.put("jquery-ui", new FileScript("js/jquery-ui-1.12.1-custom.min.js", 11));
         SCRIPTS.put("jquery-tablesorter", new FileScript("js/jquery-tablesorter-2.26.6.min.js", 12));
         SCRIPTS.put("tablesorter-parsers", new FileScript("js/tablesorter-parsers-0.0.1.js", 13));
         SCRIPTS.put("searchable-option-list", new FileScript("js/searchable-option-list-2.0.5.min.js", 14));
-        SCRIPTS.put("utils", new FileScript("js/utils-0.0.21.js", 15));
+        SCRIPTS.put("utils", new FileScript("js/utils-0.0.22.js", 15));
         SCRIPTS.put("repos", new FileScript("js/repos-0.0.1.js", 20));
         SCRIPTS.put("diff", new FileScript("js/diff-0.0.3.js", 20));
     }

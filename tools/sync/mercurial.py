@@ -45,15 +45,18 @@ class MercurialRepository(Repository):
         cmd = self.getCommand(hg_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
-        if cmd.getstate() != Command.FINISHED:
-            self.logger.debug(cmd.getoutput())
-            self.logger.error("failed to get branch for {}".
-                              format(self.path))
+        self.logger.info(cmd.getoutputstr())
+        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+            cmd.log_error("failed to get branch")
             return None
         else:
             if not cmd.getoutput():
+                self.logger.error("no output from {}".
+                                  format(hg_command))
                 return None
             if len(cmd.getoutput()) == 0:
+                self.logger.error("empty output from {}".
+                                  format(hg_command))
                 return None
             return cmd.getoutput()[0].strip()
 
@@ -61,22 +64,6 @@ class MercurialRepository(Repository):
         branch = self.get_branch()
         if not branch:
             # Error logged allready in get_branch().
-            return 1
-
-        hg_command = [self.command, "incoming", "-v"]
-        if branch != "default":
-            hg_command.append("-b")
-            hg_command.append(branch)
-        cmd = self.getCommand(hg_command, work_dir=self.path,
-                              env_vars=self.env, logger=self.logger)
-        cmd.execute()
-        self.logger.info(cmd.getoutputstr())
-        #
-        # 'hg incoming' will return 1 if there are no incoming changesets,
-        # so do not check the return value.
-        #
-        if cmd.getstate() != Command.FINISHED:
-            self.logger.error("failed to run 'hg incoming'")
             return 1
 
         hg_command = [self.command, "pull"]
@@ -88,7 +75,7 @@ class MercurialRepository(Repository):
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            self.logger.error("failed to perform pull")
+            cmd.log_error("failed to perform pull")
             return 1
 
         hg_command = [self.command, "update"]
@@ -101,7 +88,7 @@ class MercurialRepository(Repository):
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            self.logger.error("failed to perform pull and update")
+            cmd.log_error("failed to perform pull and update")
             return 1
 
         return 0

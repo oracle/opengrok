@@ -144,6 +144,14 @@ public final class Configuration {
     private String sourceRoot;
     private String dataRoot;
     private List<RepositoryInfo> repositories;
+    /**
+     * @deprecated This is kept around so not to break object deserialization
+     * but it is ignored and cannot be truly set. This should mean that the
+     * configuration is written leaving out this deprecated property; so after
+     * some time it can be retired with the expectation that zero or a
+     * miniscule number of production configurations still have this deprecated
+     * property.
+     */
     private String urlPrefix;
     private boolean generateHtml;
     /**
@@ -176,7 +184,7 @@ public final class Configuration {
     private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
     /**
-     * @deprecated This is kept around so not to break object deserialization.
+     * @deprecated This is kept around so not to break object de-serialization.
      * <p>Anyone who is using `--lock on` will now be setting
      * {@link #luceneLocking} and resetting this field back to its default
      * value. This should mean that the configuration is written leaving out
@@ -190,6 +198,8 @@ public final class Configuration {
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
     private int indexingParallelism;
+    private int historyParallelism;
+    private int historyRenamedParallelism;
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
@@ -204,6 +214,7 @@ public final class Configuration {
     private final Map<String, String> cmds;  // repository type -> command
     private int tabSize;
     private int commandTimeout; // in seconds
+    private int interactiveCommandTimeout; // in seconds
     private boolean scopesEnabled;
     private boolean projectsEnabled;
     private boolean foldingEnabled;
@@ -348,6 +359,24 @@ public final class Configuration {
         this.commandTimeout = commandTimeout;
     }
 
+    public int getInteractiveCommandTimeout() {
+        return interactiveCommandTimeout;
+    }
+
+    /**
+     * Set the interactive command timeout to a new value.
+     *
+     * @param commandTimeout the new value
+     * @throws IllegalArgumentException when the timeout is negative
+     */
+    public void setInteractiveCommandTimeout(int commandTimeout) throws IllegalArgumentException {
+        if (commandTimeout < 0) {
+            throw new IllegalArgumentException(
+                    String.format(NEGATIVE_NUMBER_ERROR, "interactiveCommandTimeout", commandTimeout));
+        }
+        this.interactiveCommandTimeout = commandTimeout;
+    }
+
     public String getStatisticsFilePath() {
         return statisticsFilePath;
     }
@@ -397,6 +426,7 @@ public final class Configuration {
         setBugPattern("\\b([12456789][0-9]{6})\\b");
         setCachePages(5);
         setCommandTimeout(600); // 10 minutes
+        setInteractiveCommandTimeout(30);
         setCompressXref(true);
         setContextLimit((short)10);
         //contextSurround is default(short)
@@ -441,8 +471,7 @@ public final class Configuration {
         setStatisticsFilePath(null);
         //setTabSize(4);
         setTagsEnabled(false);
-        setUrlPrefix("/source/s?");
-        //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
+        //urlPrefix's constant value is moved to RuntimeEnvironment.
         //setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
         // Set to empty string so we can append it to the URL
         // unconditionally later.
@@ -792,15 +821,16 @@ public final class Configuration {
     }
 
     /**
-     * Set the URL prefix to be used by the {@link
-     * org.opengrok.analysis.executables.JavaClassAnalyzer} as well
-     * as lexers (see {@link org.opengrok.analysis.JFlexXref}) when
-     * they create output with html links.
-     *
-     * @param urlPrefix prefix to use.
+     * Formerly this allowed setting the URL prefix to be used for the Java
+     * class analyzer and for language cross-referencing (xref) when they
+     * created HTML links. Now, a static value is used and transformed as
+     * necessary to the servlet {@code contextPath} so that users can deploy
+     * OpenGrok as they like.
+     * @param urlPrefix ignored
      */
+    @Deprecated
     public void setUrlPrefix(String urlPrefix) {
-        this.urlPrefix = urlPrefix;
+        // ignore the value
     }
 
     public void setGenerateHtml(boolean generateHtml) {
@@ -1031,6 +1061,22 @@ public final class Configuration {
 
     public void setIndexingParallelism(int value) {
         this.indexingParallelism = value > 0 ? value : 0;
+    }
+
+    public int getHistoryParallelism() {
+        return historyParallelism;
+    }
+
+    public void setHistoryParallelism(int value) {
+        this.historyParallelism = value > 0 ? value : 0;
+    }
+
+    public int getHistoryRenamedParallelism() {
+        return historyRenamedParallelism;
+    }
+
+    public void setHistoryRenamedParallelism(int value) {
+        this.historyRenamedParallelism = value > 0 ? value : 0;
     }
 
     public boolean isTagsEnabled() {

@@ -69,9 +69,9 @@ public final class WebappListener
             LOGGER.severe("CONFIGURATION section missing in web.xml");
         } else {
             try {
-                env.readConfiguration(new File(config));
+                env.readConfiguration(new File(config), true);
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "OpenGrok Configuration error. Failed to read config file: ", ex);
+                LOGGER.log(Level.WARNING, "Configuration error. Failed to read config file: ", ex);
             }
         }
 

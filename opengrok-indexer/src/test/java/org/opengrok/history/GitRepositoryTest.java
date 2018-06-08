@@ -23,6 +23,7 @@
  */
 package org.opengrok.history;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,9 +104,12 @@ public class GitRepositoryTest {
         String output = revId1 + " file1.ext   (" + author1 + "     2005-06-06 16:38:26 -0400 272) \n" +
                 revId2 + " file2.h (" + author2 + "     2007-09-10 23:02:45 -0400 273)   if (some code)\n" +
                 revId3 + " file2.c  (" + author3 + "      2006-09-20 21:47:42 -0700 274)           call_function(i);\n";
-        Reader input = new StringReader(output);
         String fileName = "something.ext";
-        Annotation result = instance.parseAnnotation(input, fileName);
+        
+        GitAnnotationParser parser = new GitAnnotationParser(fileName);
+        parser.processStream(new ByteArrayInputStream(output.getBytes()));
+        Annotation result = parser.getAnnotation();
+        
         assertNotNull(result);
         assertEquals(3, result.size());
         for (int i = 1; i <= 3; i++) {

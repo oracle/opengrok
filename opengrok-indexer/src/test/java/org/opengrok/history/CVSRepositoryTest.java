@@ -23,6 +23,7 @@
  */
 package org.opengrok.history;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -211,9 +212,13 @@ public class CVSRepositoryTest {
         String output = "just jibberish in output\n\n" + revId1 + "     (" + author1 + " 01-Mar-07) \n" +
                 revId2 + "    (" + author2 + " 02-Mar-08)   if (some code)\n" +
                 revId3 + "       (" + author3 + " 30-Apr-07)           call_function(i);\n";
-        Reader input = new StringReader(output);
+
         String fileName = "something.ext";
-        Annotation result = instance.parseAnnotation(input, fileName);
+        
+        CVSAnnotationParser parser = new CVSAnnotationParser(fileName);
+        parser.processStream(new ByteArrayInputStream(output.getBytes()));
+        Annotation result = parser.getAnnotation();
+        
         assertNotNull(result);
         assertEquals(3, result.size());
         for (int i = 1; i <= 3; i++) {

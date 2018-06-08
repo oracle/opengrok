@@ -30,7 +30,8 @@ import org.opengrok.logger.LoggerFactory;
 import org.opengrok.util.Executor;
 
 /**
- * BitKeeperAnnotationParser handles parsing the output of `bk annotate` into an annotation object.
+ * handles parsing the output of the {@code bk annotate} command
+ * into an annotation object.
  *
  * @author James Service  {@literal <jas2701@googlemail.com>}
  */
@@ -44,8 +45,6 @@ public class BitKeeperAnnotationParser implements Executor.StreamHandler {
     private final Annotation annotation;
 
     /**
-     * Constructor to construct the thing to be constructed.
-     *
      * @param fileName the name of the file being annotated
      */
     public BitKeeperAnnotationParser(String fileName) {
@@ -62,7 +61,7 @@ public class BitKeeperAnnotationParser implements Executor.StreamHandler {
     }
 
     /**
-     * Process the output of a `bk annotate` command.
+     * Process the output of a {@code bk annotate} command.
      *
      * Each input line should be in the following format:
      *   USER\tREVISION\tTEXT

@@ -74,7 +74,7 @@ public class BitKeeperRepository extends Repository {
      * non-default dspecs on the box we are running on.
      */
     /**
-     * Pattern to parse a version number from output of bk --version.
+     * Pattern to parse a version number from output of {@code bk --version}.
      */
     private static final Pattern VERSION_PATTERN = Pattern.compile("BitKeeper version is .*-(\\d(\\.\\d)*)");
 
@@ -94,7 +94,7 @@ public class BitKeeperRepository extends Repository {
     }
 
     /**
-     * Updates working and version member variables by running bk --version.
+     * Updates working and version member variables by running {@code bk --version}.
      */
     private void ensureVersion() {
         if (working == null) {
@@ -126,7 +126,7 @@ public class BitKeeperRepository extends Repository {
      * @return ret a boolean denoting whether it is or not
      */
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             final File f = new File(file, ".bk");
             return f.exists() && f.isDirectory();
@@ -142,7 +142,7 @@ public class BitKeeperRepository extends Repository {
     @Override
     public boolean isWorking() {
         ensureVersion();
-        return working.booleanValue();
+        return working;
     }
 
     /**
@@ -161,7 +161,7 @@ public class BitKeeperRepository extends Repository {
      * @return null
      */
     @Override
-    String determineBranch() throws IOException {
+    String determineBranch(boolean interactive) throws IOException {
         return null;
     }
 
@@ -171,7 +171,7 @@ public class BitKeeperRepository extends Repository {
      * @return parent a string denoting the parent, or null.
      */
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         final File directory = new File(getDirectoryName());
 
         final ArrayList<String> argv = new ArrayList<String>();
@@ -180,7 +180,9 @@ public class BitKeeperRepository extends Repository {
         argv.add("parent");
         argv.add("-1il");
 
-        final Executor executor = new Executor(argv, directory);
+        final Executor executor = new Executor(argv, directory, interactive ?
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout() :
+                RuntimeEnvironment.getInstance().getCommandTimeout());
         final int rc = executor.exec(false);
         final String parent = executor.getOutputString().trim();
         if (rc == 0) {
@@ -314,7 +316,8 @@ public class BitKeeperRepository extends Repository {
         }
         argv.add(basename);
 
-        final Executor executor = new Executor(argv, directory);
+        final Executor executor = new Executor(argv, directory,
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         if (executor.exec(true) != 0) {
             LOGGER.log(Level.SEVERE, "Failed to get history: {0}", executor.getErrorString());
             return null;
@@ -336,7 +339,7 @@ public class BitKeeperRepository extends Repository {
     }
 
     /**
-     * Annotate the specified file/revision. The options `-aur` to `bk annotate` specify that bitkeeper will output the
+     * Annotate the specified file/revision. The options {@code -aur} to @{code bk annotate} specify that Bitkeeper will output the
      * last user to edit the line, the last revision the line was edited, and then the line itself, each separated by a
      * hard tab.
      *
@@ -350,7 +353,7 @@ public class BitKeeperRepository extends Repository {
         final File directory = absolute.getParentFile();
         final String basename = absolute.getName();
 
-        final ArrayList<String> argv = new ArrayList<String>();
+        final ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(RepoCommand);
         argv.add("annotate");
@@ -360,9 +363,14 @@ public class BitKeeperRepository extends Repository {
         }
         argv.add(basename);
 
-        final Executor executor = new Executor(argv, directory);
+        final Executor executor = new Executor(argv, directory,
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         final BitKeeperAnnotationParser parser = new BitKeeperAnnotationParser(basename);
-        if (executor.exec(true, parser) != 0) {
+        int status = executor.exec(true, parser);
+        if (status != 0) {
+            LOGGER.log(Level.WARNING,
+                    "Failed to get annotations for: \"{0}\" Exit code: {1}",
+                    new Object[]{file.getAbsolutePath(), String.valueOf(status)});
             throw new IOException(executor.getErrorString());
         } else {
             return parser.getAnnotation();
@@ -398,18 +406,28 @@ public class BitKeeperRepository extends Repository {
      * Constructs a set of tags up front.
      *
      * @param directory the repository directory
+     * @param interactive true if in interactive mode
      */
     @Override
-    public void buildTagList(File directory) {
-        final ArrayList<String> argv = new ArrayList<String>();
+    public void buildTagList(File directory, boolean interactive) {
+        final ArrayList<String> argv = new ArrayList<>();
         argv.add("bk");
         argv.add("tags");
         argv.add("-d" + getTagDspec());
 
-        final Executor executor = new Executor(argv, directory);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        final Executor executor = new Executor(argv, directory,
+                interactive ? env.getInteractiveCommandTimeout() :
+                        env.getCommandTimeout());
         final BitKeeperTagParser parser = new BitKeeperTagParser(datePatterns[0]);
-        executor.exec(true, parser);
-        tagList = parser.getEntries();
+        int status = executor.exec(true, parser);
+        if (status != 0) {
+            LOGGER.log(Level.WARNING,
+                    "Failed to get tags for: \"{0}\" Exit code: {1}",
+                    new Object[]{directory.getAbsolutePath(), String.valueOf(status)});
+        } else {
+            tagList = parser.getEntries();
+        }
     }
 
     /* Update Stuff */
@@ -417,5 +435,10 @@ public class BitKeeperRepository extends Repository {
     @Override
     public void update() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
+        return null;
     }
 }

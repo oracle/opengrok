@@ -35,9 +35,7 @@ import java.util.zip.GZIPInputStream;
 import org.opengrok.logger.LoggerFactory;
 
 /**
- * Adds access to to a Razor Repository
- *
- * http://www.visible.com/Products/Razor/index.htm
+ * Adds access to to a <a href="http://www.visible.com/Products/Razor/index.htm">Razor</a> Repository
  *
  * A brief and simplistic overview of Razor
  *
@@ -74,7 +72,7 @@ import org.opengrok.logger.LoggerFactory;
  *
  * Unfortunately, the Razor command line interface does not support features
  * that other SCMS support like 'log' and 'annotate'. Also, Razor check-outs
- * leave no indication that the files are from a centralised repository, so it
+ * leave no indication that the files are from a centralized repository, so it
  * will not be possible to implement this module from a copy or check-out of the
  * repository, we will have to access (in a read-only manner) the actual
  * repository itself, extracting the information directly or via SCCS/RCS
@@ -145,7 +143,7 @@ public class RazorRepository extends Repository {
     // The base directory of that Razor Group (.razor symlink destination)
     private String razorGroupBaseDirectoryPath;
 
-    private static String RAZOR_DIR = ".razor";
+    private static final String RAZOR_DIR = ".razor";
 
     public RazorRepository() {
         type = "Razor";
@@ -330,7 +328,7 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         File f = new File(file, ".razor");
         return f.exists() && f.isDirectory();
     }
@@ -346,12 +344,17 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
-        return "N/A";
+    String determineParent(boolean interactive) throws IOException {
+        return null;
     }
 
     @Override
-    String determineBranch() {
+    String determineBranch(boolean interactive) {
+        return null;
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
         return null;
     }
 }

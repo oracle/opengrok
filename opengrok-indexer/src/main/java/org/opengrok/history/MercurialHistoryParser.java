@@ -103,8 +103,8 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     }
 
     /**
-     * Process the output from the hg log command and insert the HistoryEntries
-     * into the history field.
+     * Process the output from the {@code hg log} command and collect
+     * {@link HistoryEntry} elements.
      *
      * @param input The output from the process
      * @throws java.io.IOException If an error occurs while reading the stream

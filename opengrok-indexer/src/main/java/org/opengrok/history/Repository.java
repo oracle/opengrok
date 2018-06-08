@@ -90,8 +90,8 @@ public abstract class Repository extends RepositoryInfo {
 
     public Repository() {
         super();
-        ignoredFiles = new ArrayList<String>();
-        ignoredDirs = new ArrayList<String>();
+        ignoredFiles = new ArrayList<>();
+        ignoredDirs = new ArrayList<>();
     }
 
     /**
@@ -268,16 +268,17 @@ public abstract class Repository extends RepositoryInfo {
      * Create internal list of all tags in this repository.
      *
      * @param directory directory of the repository
+     * @param interactive true if in interactive mode
      */
-    protected void buildTagList(File directory) {
+    protected void buildTagList(File directory, boolean interactive) {
         this.tagList = null;
     }
-
+    
     /**
      * Annotate the specified revision of a file.
      *
      * @param file the file to annotate
-     * @param revision revision of the file. Either {@code null} or a none-empty
+     * @param revision revision of the file. Either {@code null} or a non-empty
      * string.
      * @return an <code>Annotation</code> object
      * @throws java.io.IOException if an error occurs
@@ -338,7 +339,7 @@ public abstract class Repository extends RepositoryInfo {
             // by changes in the revision numbers since the last update
             // (bug #14724) so we'll try to regenerate the cache from
             // scratch instead.
-            LOGGER.log(Level.INFO,
+            LOGGER.log(Level.WARNING,
                     "Failed to get partial history. Attempting to "
                     + "recreate the history cache from scratch.", he);
             history = null;
@@ -355,7 +356,7 @@ public abstract class Repository extends RepositoryInfo {
         // We need to refresh list of tags for incremental reindex.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isTagsEnabled() && this.hasFileBasedTags()) {
-            this.buildTagList(new File(this.getDirectoryName()));
+            this.buildTagList(new File(this.getDirectoryName()), false);
         }
 
         if (history != null) {
@@ -377,18 +378,40 @@ public abstract class Repository extends RepositoryInfo {
      * @param file File to check if this is a repository for.
      * @return true if this is the correct repository for this file/directory.
      */
-    abstract boolean isRepositoryFor(File file);
+    abstract boolean isRepositoryFor(File file, boolean interactive);
+    
+    public final boolean isRepositoryFor(File file) {
+        return isRepositoryFor(file, false);
+    }
 
     /**
      * Determine parent of this repository.
      */
-    abstract String determineParent() throws IOException;
+    abstract String determineParent(boolean interactive) throws IOException;
+    
+    /**
+     * Determine parent of this repository.
+     * @return parent
+     * @throws java.io.IOException
+     */
+    public final String determineParent() throws IOException {
+        return determineParent(false);
+    }
 
     /**
      * Determine branch of this repository.
      */
-    abstract String determineBranch() throws IOException;
+    abstract String determineBranch(boolean interactive) throws IOException;
 
+    /**
+     * Determine branch of this repository.
+     * @return branch
+     * @throws java.io.IOException
+     */
+    public final String determineBranch() throws IOException {
+        return determineBranch(false);
+    }
+    
     /**
      * Get list of ignored files for this repository.
      * @return list of strings
@@ -411,11 +434,14 @@ public abstract class Repository extends RepositoryInfo {
      * This operation is consider "heavy" so this function should not be
      * called on every web request.
      *
+     * @param interactive true if interactive mode
      * @return the version
      * @throws IOException if I/O exception occurred
      */
-    public String determineCurrentVersion() throws IOException {
-        return null;
+    abstract String determineCurrentVersion(boolean interactive) throws IOException;
+    
+    public final String determineCurrentVersion() throws IOException {
+        return determineCurrentVersion(false);
     }
 
     /**

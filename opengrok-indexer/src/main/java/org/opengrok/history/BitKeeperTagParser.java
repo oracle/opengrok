@@ -33,7 +33,8 @@ import org.opengrok.logger.LoggerFactory;
 import org.opengrok.util.Executor;
 
 /**
- * BitKeeperTagParser handles parsing the output of `bk tags` into a set of tag entries.
+ * handles parsing the output of the {@code bk tags} command
+ * into a set of tag entries.
  *
  * @author James Service  {@literal <jas2701@googlemail.com>}
  */
@@ -46,9 +47,9 @@ public class BitKeeperTagParser implements Executor.StreamHandler {
      */
     private final SimpleDateFormat dateFormat;
     /**
-     * Store tag entries created by processStream.
+     * Store tag entries created by {@link processStream()}.
      */
-    private final TreeSet<TagEntry> entries = new TreeSet<TagEntry>();
+    private final TreeSet<TagEntry> entries = new TreeSet<>();
 
     /**
      * Constructor to construct the thing to be constructed.
@@ -69,13 +70,13 @@ public class BitKeeperTagParser implements Executor.StreamHandler {
     }
 
     /**
-     * Process the output of a `bk tags` command.
+     * Process the output of the {@code bk tags} command.
      *
      * Each input line should be in the following format:
      * either
-     *   D REVISION\tDATE
+     *   {@code D REVISION\tDATE}
      * or
-     *   T TAG
+     *   {@code T TAG}
      *
      * @param input the executor input stream
      * @throws IOException if the stream reader throws an IOException

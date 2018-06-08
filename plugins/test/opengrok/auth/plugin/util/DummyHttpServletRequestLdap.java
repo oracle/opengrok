@@ -24,31 +24,38 @@ package opengrok.auth.plugin.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
+import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.http.Part;
+
 import opengrok.auth.plugin.UserPlugin;
 import opengrok.auth.plugin.entity.User;
 import org.opengrok.util.RandomString;
 
 public class DummyHttpServletRequestLdap implements HttpServletRequest {
 
-    private final Map<String, String> headers = new HashMap<String, String>();
-    private final Map<String, Object> attrs = new HashMap<String, Object>();
+    private final Map<String, String> headers = new HashMap<>();
+    private final Map<String, Object> attrs = new HashMap<>();
     private HttpSession sessions = new HttpSession() {
 
-        private final Map<String, Object> attrs = new HashMap<String, Object>();
+        private final Map<String, Object> attrs = new HashMap<>();
 
         @Override
         public long getCreationTime() {
@@ -83,8 +90,9 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
             return 3600;
         }
 
+        @Override
         @SuppressWarnings("deprecation")
-        public HttpSessionContext getSessionContext() {
+        public javax.servlet.http.HttpSessionContext getSessionContext() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -153,10 +161,6 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     @Override
     public long getDateHeader(String string) {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setHeader(String string, String value) {
-        headers.put(string, value);
     }
 
     @Override
@@ -249,8 +253,9 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
         return sessions;
     }
 
-    public void setSession(HttpSession session) {
-        this.sessions = session;
+    @Override
+    public String changeSessionId() {
+        return null;
     }
 
     @Override
@@ -275,6 +280,36 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     }
 
     @Override
+    public boolean authenticate(HttpServletResponse httpServletResponse) {
+        return false;
+    }
+
+    @Override
+    public void login(String s, String s1) {
+
+    }
+
+    @Override
+    public void logout() {
+
+    }
+
+    @Override
+    public Collection<Part> getParts() {
+        return null;
+    }
+
+    @Override
+    public Part getPart(String s) {
+        return null;
+    }
+
+    @Override
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass) {
+        return null;
+    }
+
+    @Override
     public Object getAttribute(String string) {
         return attrs.get(string);
     }
@@ -290,13 +325,18 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     }
 
     @Override
-    public void setCharacterEncoding(String string) throws UnsupportedEncodingException {
+    public void setCharacterEncoding(String string) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public int getContentLength() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public long getContentLengthLong() {
+        return 0;
     }
 
     @Override
@@ -418,5 +458,40 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     @Override
     public int getLocalPort() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ServletContext getServletContext() {
+        return null;
+    }
+
+    @Override
+    public AsyncContext startAsync() throws IllegalStateException {
+        return null;
+    }
+
+    @Override
+    public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
+        return null;
+    }
+
+    @Override
+    public boolean isAsyncStarted() {
+        return false;
+    }
+
+    @Override
+    public boolean isAsyncSupported() {
+        return false;
+    }
+
+    @Override
+    public AsyncContext getAsyncContext() {
+        return null;
+    }
+
+    @Override
+    public DispatcherType getDispatcherType() {
+        return null;
     }
 }

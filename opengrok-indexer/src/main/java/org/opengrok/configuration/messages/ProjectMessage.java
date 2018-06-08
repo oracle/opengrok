@@ -226,7 +226,7 @@ public class ProjectMessage extends Message {
                         List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
                         if (riList != null) {
                             for (RepositoryInfo ri : riList) {
-                                Repository repo = getRepository(ri);
+                                Repository repo = getRepository(ri, false);
 
                                 if (repo != null && repo.getCurrentVersion() != null &&
                                     repo.getCurrentVersion().length() > 0) {

@@ -222,7 +222,7 @@ public final class Indexer {
             }
 
             // Set updated configuration in RuntimeEnvironment.
-            env.setConfiguration(cfg, subFilesList);
+            env.setConfiguration(cfg, subFilesList, false);
 
             // Let repository types to add items to ignoredNames.
             // This changes env so is called after the setConfiguration()
@@ -281,7 +281,7 @@ public final class Indexer {
                 try {
                 m.write(host, port);
                 } catch (ConnectException ce) {
-                    LOGGER.log(Level.SEVERE, "Misconfig of webapp host or port", ce);
+                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host or port", ce);
                     System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());
                 }
             }
@@ -771,22 +771,6 @@ public final class Indexer {
                 "(so that the web application can use the same configuration)").Do( configFile -> {
                 configFilename = (String)configFile;
             });
-
-            parser.on("-w", "--web", "=webapp-context",
-                "Context of webapp. Default is /source. If you specify a different",
-                "name, make sure to rename source.war to that name. Also FULL reindex",
-                "is needed if this is changed.").
-                Do( webContext -> {
-                    String webapp = (String)webContext;
-                    if (webapp.charAt(0) != '/' && !webapp.startsWith("http")) {
-                        webapp = "/" + webapp;
-                    }
-                    if (!webapp.endsWith("/")) {
-                        webapp += "/";
-                    }
-                    cfg.setUrlPrefix(webapp + "s?");
-                }
-            );
         });
 
         // Need to read the configuration file first
@@ -900,14 +884,49 @@ public final class Indexer {
             throw new IndexerException("Internal error, zapCache shouldn't be null");
         }
 
+        // Projects need to be created first since when adding repositories below,
+        // some of the project properties might be needed for that.
+        if (addProjects) {
+            File files[] = env.getSourceRootFile().listFiles();
+            Map<String,Project> projects = env.getProjects();
+
+            // Keep a copy of the old project list so that we can preserve
+            // the customization of existing projects.
+            Map<String, Project> oldProjects = new HashMap<>();
+            for (Project p : projects.values()) {
+                oldProjects.put(p.getName(), p);
+            }
+
+            projects.clear();
+
+            // Add a project for each top-level directory in source root.
+            for (File file : files) {
+                String name = file.getName();
+                String path = "/" + name;
+                if (oldProjects.containsKey(name)) {
+                    // This is an existing object. Reuse the old project,
+                    // possibly with customizations, instead of creating a
+                    // new with default values.
+                    Project p = oldProjects.get(name);
+                    p.setPath(path);
+                    p.setName(name);
+                    p.completeWithDefaults(env.getConfiguration());
+                    projects.put(name, p);
+                } else if (!name.startsWith(".") && file.isDirectory()) {
+                    // Found a new directory with no matching project, so
+                    // create a new project with default properties.
+                    projects.put(name, new Project(name, path, env.getConfiguration()));
+                }
+            }
+        }
+        
         if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
             long start = System.currentTimeMillis();
-            if (env.isHistoryEnabled()) {
-                env.setRepositories(env.getSourceRootPath());
-            }
+            env.setRepositories(env.getSourceRootPath());
             long time = (System.currentTimeMillis() - start) / 1000;
             LOGGER.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
+            
             if (listRepoPaths || !zapCache.isEmpty()) {
                 List<RepositoryInfo> repos = env.getRepositories();
                 String prefix = env.getSourceRootPath();
@@ -953,40 +972,6 @@ public final class Indexer {
             }
         }
 
-        if (addProjects) {
-            File files[] = env.getSourceRootFile().listFiles();
-            Map<String,Project> projects = env.getProjects();
-
-            // Keep a copy of the old project list so that we can preserve
-            // the customization of existing projects.
-            Map<String, Project> oldProjects = new HashMap<>();
-            for (Project p : projects.values()) {
-                oldProjects.put(p.getName(), p);
-            }
-
-            projects.clear();
-
-            // Add a project for each top-level directory in source root.
-            for (File file : files) {
-                String name = file.getName();
-                String path = "/" + name;
-                if (oldProjects.containsKey(name)) {
-                    // This is an existing object. Reuse the old project,
-                    // possibly with customizations, instead of creating a
-                    // new with default values.
-                    Project p = oldProjects.get(name);
-                    p.setPath(path);
-                    p.setName(name);
-                    p.completeWithDefaults(env.getConfiguration());
-                    projects.put(name, p);
-                } else if (!name.startsWith(".") && file.isDirectory()) {
-                    // Found a new directory with no matching project, so
-                    // create a new project with default properties.
-                    projects.put(name, new Project(name, path, env.getConfiguration()));
-                }
-            }
-        }
-
         if (defaultProjects != null && !defaultProjects.isEmpty()) {
             Set<Project> projects = new TreeSet<>();
             for (String projectPath : defaultProjects) {
@@ -1006,18 +991,17 @@ public final class Indexer {
             }
         }
 
-        if (env.isHistoryEnabled()) {
-            if (repositories != null && !repositories.isEmpty()) {
-                LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
-                    repositories.stream().collect(Collectors.joining(",")));
-                HistoryGuru.getInstance().createCache(repositories);
-                LOGGER.info("Done...");
-              } else {
-                  LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
-                  HistoryGuru.getInstance().createCache();
-                  LOGGER.info("Done...");
-              }
-        }
+        // Even if history is disabled globally, it can be enabled for some repositories.
+        if (repositories != null && !repositories.isEmpty()) {
+            LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
+                repositories.stream().collect(Collectors.joining(",")));
+            HistoryGuru.getInstance().createCache(repositories);
+            LOGGER.info("Done...");
+          } else {
+              LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
+              HistoryGuru.getInstance().createCache();
+              LOGGER.info("Done...");
+          }
 
         if (listFiles) {
             for (String file : IndexDatabase.getAllFiles(subFiles)) {

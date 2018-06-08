@@ -79,29 +79,36 @@ public final class RepositoryFactory {
         return list;
     }
 
+    public static Repository getRepository(File file)
+        throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException{
+        return getRepository(file, false);
+    }
+    
     /**
      * Returns a repository for the given file, or null if no repository was
      * found.
      *
      * Note that the operations performed by this method take quite a long time
      * thanks to external commands being executed. For that reason, when run
-     * on multiple files, it should be parallelized, e.g. like it is done in
-     * {@code invalidateRepositories()}.
+     * on multiple files, it should be parallelized (e.g. like it is done in
+     * {@code invalidateRepositories()}) and the commands run within should
+     * use interactive command timeout (as specified in {@code Configuration}).
      *
      * @param file File that might contain a repository
+     * @param interactive true if running in interactive mode
      * @return Correct repository for the given file
      * @throws InstantiationException in case we cannot create the repository object
      * @throws IllegalAccessException in case no permissions to repository file
      * @throws NoSuchMethodException in case we cannot create the repository object
      * @throws InvocationTargetException in case we cannot create the repository object
      */
-    public static Repository getRepository(File file) throws InstantiationException, IllegalAccessException, 
-            NoSuchMethodException, InvocationTargetException {
+    public static Repository getRepository(File file, boolean interactive)
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Repository repo = null;
 
         for (Repository rep : repositories) {
-            if (rep.isRepositoryFor(file)) {
+            if (rep.isRepositoryFor(file, interactive)) {
                 repo = rep.getClass().getDeclaredConstructor().newInstance();
                 repo.setDirectoryName(file);
 
@@ -120,7 +127,7 @@ public final class RepositoryFactory {
 
                 if (repo.getParent() == null || repo.getParent().length() == 0) {
                     try {
-                        repo.setParent(repo.determineParent());
+                        repo.setParent(repo.determineParent(interactive));
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to get parent for {0}: {1}",
@@ -130,7 +137,7 @@ public final class RepositoryFactory {
 
                 if (repo.getBranch() == null || repo.getBranch().length() == 0) {
                     try {
-                        repo.setBranch(repo.determineBranch());
+                        repo.setBranch(repo.determineBranch(interactive));
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to get branch for {0}: {1}",
@@ -140,7 +147,7 @@ public final class RepositoryFactory {
 
                 if (repo.getCurrentVersion() == null || repo.getCurrentVersion().length() == 0) {
                     try {
-                        repo.setCurrentVersion(repo.determineCurrentVersion());
+                        repo.setCurrentVersion(repo.determineCurrentVersion(interactive));
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING,
                                 "Failed to determineCurrentVersion for {0}: {1}",
@@ -151,9 +158,11 @@ public final class RepositoryFactory {
                 // If this repository displays tags only for files changed by tagged
                 // revision, we need to prepare list of all tags in advance.
                 if (env.isTagsEnabled() && repo.hasFileBasedTags()) {
-                    repo.buildTagList(file);
+                    repo.buildTagList(file, interactive);
                 }
 
+                repo.fillFromProject();
+                
                 break;
             }
         }
@@ -166,15 +175,16 @@ public final class RepositoryFactory {
      * found.
      *
      * @param info Information about the repository
+     * @param interactive true if used in interactive mode
      * @return Correct repository for the given file
      * @throws InstantiationException in case we cannot create the repository object
      * @throws IllegalAccessException in case no permissions to repository
      * @throws NoSuchMethodException in case we cannot create the repository object
      * @throws InvocationTargetException in case we cannot create the repository object
      */
-    public static Repository getRepository(RepositoryInfo info) throws InstantiationException, IllegalAccessException, 
-            NoSuchMethodException, InvocationTargetException {
-        return getRepository(new File(info.getDirectoryName()));
+    public static Repository getRepository(RepositoryInfo info, boolean interactive)
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        return getRepository(new File(info.getDirectoryName()), interactive);
     }
 
     /**

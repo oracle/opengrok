@@ -128,7 +128,7 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         File rcsDir = new File(file, "RCS");
         if (!rcsDir.isDirectory()) {
             return false;
@@ -175,12 +175,17 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         return null;
     }
 
     @Override
-    String determineBranch() throws IOException {
+    String determineBranch(boolean interactive) throws IOException {
+        return null;
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
         return null;
     }
 }

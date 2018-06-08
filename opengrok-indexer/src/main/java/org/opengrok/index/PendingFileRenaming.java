@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.index;
@@ -30,8 +30,8 @@ public final class PendingFileRenaming {
     private final String absolutePath;
     private final String transientPath;
 
-    public PendingFileRenaming(String path, String transientPath) {
-        this.absolutePath = path;
+    public PendingFileRenaming(String absolutePath, String transientPath) {
+        this.absolutePath = absolutePath;
         this.transientPath = transientPath;
     }
 

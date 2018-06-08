@@ -22,8 +22,7 @@
  */
 package org.opengrok.history;
 
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.ByteArrayInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +34,8 @@ import org.opengrok.condition.RepositoryInstalled;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Simple Bazaar repository test.
+ * 
  * @author austvik
  */
 @ConditionalRun(RepositoryInstalled.BazaarInstalled.class)
@@ -72,9 +72,12 @@ public class BazaarRepositoryTest {
                 revId2 + "  " + author2 + " 20050912 | and here.\n" +
                 revId3 + "           " + author3 + "          20030731 | \n";
        
-        Reader input = new StringReader(output);
         String fileName = "something.ext";
-        Annotation result = instance.parseAnnotation(input, fileName);
+        
+        BazaarAnnotationParser parser = new BazaarAnnotationParser(fileName);
+        parser.processStream(new ByteArrayInputStream(output.getBytes()));
+        Annotation result = parser.getAnnotation();
+        
         assertNotNull(result);
         assertEquals(3, result.size());
         for (int i = 1; i <= 3; i++) {
@@ -92,7 +95,7 @@ public class BazaarRepositoryTest {
     }
 
     /**
-     * Test of fileHasAnnotation method, of class GitRepository.
+     * Test of fileHasAnnotation method.
      */
     @Test
     public void fileHasAnnotation() {
@@ -101,7 +104,7 @@ public class BazaarRepositoryTest {
     }
 
     /**
-     * Test of fileHasHistory method, of class GitRepository.
+     * Test of fileHasHistory method.
      */
     @Test
     public void fileHasHistory() {

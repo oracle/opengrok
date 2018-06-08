@@ -146,7 +146,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * @return object representing the file's history
      */
     History parse(File file, SubversionRepository repos, String sinceRevision,
-            int numEntries)
+            int numEntries, boolean interactive)
             throws HistoryException {
 
         initSaxParser();
@@ -157,7 +157,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         Executor executor;
         try {
             executor = repos.getHistoryLogExecutor(file, sinceRevision,
-                    numEntries);
+                    numEntries, interactive);
         } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
                     file.getAbsolutePath() + "\"", e);

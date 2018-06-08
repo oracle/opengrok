@@ -17,6 +17,7 @@ Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
 9.  [Tuning OpenGrok for large code bases](#9-tuning-opengrok-for-large-code-bases)
 10. [Authors](#10-authors)
 11. [Contact us](#11-contact-us)
+12. [Demo](#12-demo)
 
 ## 1. Introduction
 
@@ -31,7 +32,7 @@ Official page of the project is on:
 ## 2. Requirements
 * Latest Java (at least 1.8)
   <http://www.oracle.com/technetwork/java/>
-* A servlet container like Tomcat (8.x or later) supporting Servlet 2.5 and JSP 2.1
+* A servlet container like Tomcat (8.x or later) supporting Servlet 3.1 and JSP 2.1
   <http://tomcat.apache.org/>
 * Exuberant Ctags or Universal Ctags
   <http://ctags.sourceforge.net/>
@@ -119,9 +120,9 @@ by OpenGrok.
 
 Note that OpenGrok ignores symbolic links.
 
-If you want to skip indexing the history of a particular directory
-(and all of it's subdirectories), you can touch `.opengrok_skip_history` file
-at the root of that directory.
+If you want to skip indexing the history of a particular directory,
+use per project settings as per
+https://github.com/oracle/opengrok/wiki/Per-project-configuration
 If you want to disable history generation for all repositories globally, then
 set `OPENGROK_GENERATE_HISTORY` environment variable to `off` during indexing.
 
@@ -420,14 +421,7 @@ See https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
 
-* Chandan B.N, (originally Sun Microsystems)
-* Trond Norbye, norbye.org
-* Knut Pape, eBriefkasten.de
-* Martin Englund, (originally Sun Microsystems)
-* Knut Anders Hatlen, Oracle.
-* Lubos Kosco, Oracle. <http://blogs.oracle.com/taz/>
-* Vladimir Kotal, Oracle. <http://blogs.oracle.com/vlad/>
-* Krystof Tulinger
+For full list of contributors see https://github.com/oracle/opengrok/graphs/contributors
 
 ## 11. Contact us
 
@@ -438,3 +432,6 @@ Feel free to participate in discussion on the mailing lists:
   `opengrok-dev@yahoogroups.com` (developers' discussion)
 
 To subscribe, send email to `<mailing_list_name>-subscribe@yahoogroups.com`
+
+## 12. Demo
+Visit <http://demo.opengrok.org>

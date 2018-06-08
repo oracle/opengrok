@@ -76,6 +76,8 @@ public class CtagsReader {
      */
     private static final int MAX_METHOD_LINE_LENGTH = 1030;
 
+    private static final int MAX_CUT_LENGTH = 2000;
+
     /**
      * E.g. krb5 src/kdc/kdc_authdata.c has a signature for handle_authdata()
      * split across twelve lines, so use double that number.
@@ -90,6 +92,8 @@ public class CtagsReader {
     private Supplier<SourceSplitter> splitterSupplier;
     private boolean triedSplitterSupplier;
     private SourceSplitter splitter;
+    private long cutCacheKey;
+    private String cutCacheValue;
 
     private int tabSize;
 
@@ -760,12 +764,23 @@ public class CtagsReader {
             }
         }
 
+        long newCutCacheKey = ((long)lineOffset << 32) | maxLines;
+        if (cutCacheKey == newCutCacheKey) {
+            return cutCacheValue;
+        }
+
         StringBuilder cutbld = new StringBuilder();
         for (int i = lineOffset; i < lineOffset + maxLines &&
-                i < splitter.count(); ++i) {
+                i < splitter.count() && cutbld.length() < MAX_CUT_LENGTH;
+                ++i) {
             cutbld.append(splitter.getLine(i));
         }
-        return cutbld.toString();
+        if (cutbld.length() > MAX_CUT_LENGTH) {
+            cutbld.setLength(MAX_CUT_LENGTH);
+        }
+        cutCacheValue = cutbld.toString();
+        cutCacheKey = newCutCacheKey;
+        return cutCacheValue;
     }
 
     /**

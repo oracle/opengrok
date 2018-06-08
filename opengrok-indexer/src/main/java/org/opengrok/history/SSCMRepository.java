@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.logger.LoggerFactory;
 import org.opengrok.util.Executor;
 
@@ -314,7 +315,8 @@ public class SSCMRepository extends Repository {
         if (revision != null) {
             argv.add("-aV:" + revision);
         }
-        Executor exec = new Executor(argv, file.getParentFile());
+        Executor exec = new Executor(argv, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         int status = exec.exec();
 
         if (status != 0) {
@@ -385,7 +387,7 @@ public class SSCMRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
             File f = new File(file, MYSCMSERVERINFO_FILE);
             return f.exists() && f.isFile();
@@ -394,12 +396,17 @@ public class SSCMRepository extends Repository {
     }
 
     @Override
-    String determineParent() throws IOException {
+    String determineParent(boolean interactive) throws IOException {
         return null;
     }
 
     @Override
-    String determineBranch() {
+    String determineBranch(boolean interactive) {
+        return null;
+    }
+
+    @Override
+    String determineCurrentVersion(boolean interactive) throws IOException {
         return null;
     }
 }

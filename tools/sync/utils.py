@@ -33,7 +33,8 @@ def is_exe(fpath):
 
 def check_create_dir(path):
     """
-    Make sure the directory specified by the path exists.
+    Make sure the directory specified by the path exists. If unsuccessful,
+    exit the program.
     """
     if not os.path.isdir(path):
         try:
@@ -58,7 +59,7 @@ def get_command(logger, path, name):
         if not is_exe(cmd_file):
             logger.error("file {} is not executable file".
                          format(path))
-            sys.exit(1)
+            return None
     else:
         cmd_file = which(name)
         if not cmd_file:
@@ -68,7 +69,7 @@ def get_command(logger, path, name):
             if not cmd_file:
                 logger.error("cannot determine path to the {} script".
                              format(name))
-                sys.exit(1)
+                return None
     logger.debug("{} = {}".format(name, cmd_file))
 
     return cmd_file
@@ -86,3 +87,11 @@ def get_int(logger, name, value):
     except ValueError:
         logger.error("'{}' is not a number: {}".format(name, value))
         return None
+
+
+def diff_list(first, second):
+    """
+    Get difference of lists.
+    """
+    second = set(second)
+    return [item for item in first if item not in second]

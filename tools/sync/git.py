@@ -47,8 +47,7 @@ class GitRepository(Repository):
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            self.logger.error("failed to perform pull for {}".
-                              format(self.path))
+            cmd.log_error("failed to perform pull")
             return 1
 
         return 0
