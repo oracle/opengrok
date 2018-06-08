@@ -584,7 +584,7 @@ table#revisions tbody tr td p {
 
 /* *** diff page *** */
 #diffbar { /* diff navbar: contains the tabs to select diff format */
-    margin-top: 1.5ex;
+    padding-top: 1.5ex;
     border-bottom: 1px solid #999;
     white-space: nowrap;
 }
