@@ -171,7 +171,6 @@ if __name__ == '__main__':
 
     prehook = None
     posthook = None
-    ignored_repos = []
     use_proxy = False
     if project_config:
         logger.debug("Project '{}' has specific (non-default) config".
@@ -213,6 +212,8 @@ if __name__ == '__main__':
                 sys.exit(1)
             logger.debug("has ignored repositories: {}".
                          format(ignored_repos))
+        else:
+            ignored_repos = []
 
         hooks = project_config.get('hooks')
         if hooks:
