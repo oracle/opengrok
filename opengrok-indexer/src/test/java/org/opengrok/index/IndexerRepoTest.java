@@ -102,7 +102,7 @@ public class IndexerRepoTest {
      * Test it is possible to disable history per project.
      * @throws IndexerException
      * @throws IOException
-     * @throws org.opensolaris.opengrok.history.HistoryException
+     * @throws org.opengrok.history.HistoryException
      */
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @ConditionalRun(RepositoryInstalled.GitInstalled.class)
@@ -115,7 +115,7 @@ public class IndexerRepoTest {
      * Test it is possible to enable history per project.
      * @throws IndexerException
      * @throws IOException
-     * @throws org.opensolaris.opengrok.history.HistoryException
+     * @throws org.opengrok.history.HistoryException
      */
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @ConditionalRun(RepositoryInstalled.GitInstalled.class)
