@@ -20,31 +20,25 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Date;
 import java.util.TreeSet;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.util.Executor;
 
 /**
- * handles parsing the output of the {@code git log} command
+ * handles parsing the output of the {@code bzr tags} command
  * into a set of tag entries.
  */
-public class GitTagParser implements Executor.StreamHandler {
+public class BazaarTagParser implements Executor.StreamHandler {
+    
     /**
-     * Store tag entries created by {@link processStream()}.
+     * Store tag entries created by processStream.
      */
     private final TreeSet<TagEntry> entries = new TreeSet<>();
-    
-    private final String tags;
-    
-    GitTagParser(String tags) {
-        this.tags = tags;
-    }
     
     /**
      * Returns the set of entries that has been created.
@@ -57,34 +51,29 @@ public class GitTagParser implements Executor.StreamHandler {
     
     @Override
     public void processStream(InputStream input) throws IOException {
-        String hash = null;
-        Date date = null;
-        
         try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
             String line;
             while ((line = in.readLine()) != null) {
-                if (line.startsWith("commit")) {
-                    String parts[] = line.split(":");
-                    if (parts.length < 2) {
-                        throw new IOException("Tag line contains more than 2 columns: " + line);
-                    }
-                    hash = parts[1];
+                String parts[] = line.split("  *");
+                if (parts.length < 2) {
+                    throw new IOException("Tag line contains more than 2 columns: " + line);
                 }
-                if (line.startsWith("Date")) {
-                    String parts[] = line.split(":");
-                    if (parts.length < 2) {
-                        throw new IOException("Tag line contains more than 2 columns: " + line);
-                    }
-                    date = new Date((long) (Integer.parseInt(parts[1])) * 1000);
+                // Grrr, how to parse tags with spaces inside?
+                // This solution will loose multiple spaces;-/
+                String tag = parts[0];
+                for (int i = 1; i < parts.length - 1; ++i) {
+                    tag += " " + parts[i];
                 }
+                TagEntry tagEntry = new BazaarTagEntry(Integer.parseInt(parts[parts.length - 1]), tag);
+                // Bazaar lists multiple tags on more lines. We need to merge those into single TagEntry
+                TagEntry higher = entries.ceiling(tagEntry);
+                if (higher != null && higher.equals(tagEntry)) {
+                    // Found in the tree, merge tags
+                    entries.remove(higher);
+                    tagEntry.setTags(higher.getTags() + ", " + tag);
+                }
+                entries.add(tagEntry);
             }
         }
-
-        // Git can have tags not pointing to any commit, but tree instead
-        // Lets use Unix timestamp of 0 for such commits
-        if (date == null) {
-            date = new Date(0);
-        }
-        entries.add(new GitTagEntry(hash, date, tags));
     }
 }

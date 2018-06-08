@@ -21,10 +21,10 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opensolaris.opengrok.web;
+package org.opengrok.web;
 
 import java.io.Writer;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.RuntimeEnvironment;
 %%
 %public
 %class XrefSourceTransformer

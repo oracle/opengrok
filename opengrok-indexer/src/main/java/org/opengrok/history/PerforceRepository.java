@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.configuration.RuntimeEnvironment;
 
 import org.opengrok.logger.LoggerFactory;
 import org.opengrok.util.Executor;

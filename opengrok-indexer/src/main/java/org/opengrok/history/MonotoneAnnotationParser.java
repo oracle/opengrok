@@ -20,47 +20,44 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.util.Executor;
+import org.opengrok.util.Executor;
 
 /**
- * BazaarAnnotationParser handles parsing the output of the {@code bzr blame}
- * command into an annotation object.
+ * Handles handles parsing the output of the {@code mnt annotate} command
+ * into an annotation object. 
  */
-public class BazaarAnnotationParser implements Executor.StreamHandler {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(BazaarAnnotationParser.class);
-    
+public class MonotoneAnnotationParser implements Executor.StreamHandler {
     /**
      * Store annotation created by processStream.
      */
     private final Annotation annotation;
+
+    private final File file;
     
     /**
-     * Pattern used to extract author/revision
+     * Pattern used to extract author/revision from the {@code mnt annotate} command.
      */
-    private static final Pattern BLAME_PATTERN
-            = Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
+    private static final Pattern ANNOTATION_PATTERN
+            = Pattern.compile("^(\\w+)\\p{Punct}\\p{Punct} by (\\S+)");
     
     /**
-     * @param fileName the name of the file being annotated
+     * @param file the file being annotated
      */
-    public BazaarAnnotationParser(String fileName) {
-        annotation = new Annotation(fileName);
+    public MonotoneAnnotationParser(File file) {
+        annotation = new Annotation(file.getName());
+        this.file = file;
     }
-    
-    /**
+
+   /**
      * Returns the annotation that has been created.
      *
      * @return annotation an annotation object
@@ -68,24 +65,22 @@ public class BazaarAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-
+    
     @Override
     public void processStream(InputStream input) throws IOException {
+        Annotation ret;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
-            String line = "";
-            int lineno = 0;
-            Matcher matcher = BLAME_PATTERN.matcher(line);
+            String line;
+            String author = null;
+            String rev = null;
             while ((line = in.readLine()) != null) {
-                ++lineno;
-                matcher.reset(line);
+                Matcher matcher = ANNOTATION_PATTERN.matcher(line);
                 if (matcher.find()) {
-                    String rev = matcher.group(1);
-                    String author = matcher.group(2).trim();
+                    rev = matcher.group(1);
+                    author = matcher.group(2);
                     annotation.addLine(rev, author, true);
                 } else {
-                    LOGGER.log(Level.SEVERE,
-                            "Error: did not find annotation in line {0}: [{1}]",
-                            new Object[]{String.valueOf(lineno), line});
+                    annotation.addLine(rev, author, true);
                 }
             }
         }

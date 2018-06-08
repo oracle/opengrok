@@ -20,19 +20,26 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.opensolaris.opengrok.util.Executor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.opengrok.logger.LoggerFactory;
+import org.opengrok.util.Executor;
 
 /**
- * handles parsing the output of the {@code cleartool annotate}
+ * BazaarAnnotationParser handles parsing the output of the {@code bzr blame}
  * command into an annotation object.
  */
-public class ClearCaseAnnotationParser implements Executor.StreamHandler {
+public class BazaarAnnotationParser implements Executor.StreamHandler {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(BazaarAnnotationParser.class);
     
     /**
      * Store annotation created by processStream.
@@ -40,9 +47,15 @@ public class ClearCaseAnnotationParser implements Executor.StreamHandler {
     private final Annotation annotation;
     
     /**
+     * Pattern used to extract author/revision
+     */
+    private static final Pattern BLAME_PATTERN
+            = Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
+    
+    /**
      * @param fileName the name of the file being annotated
      */
-    public ClearCaseAnnotationParser(String fileName) {
+    public BazaarAnnotationParser(String fileName) {
         annotation = new Annotation(fileName);
     }
     
@@ -54,19 +67,25 @@ public class ClearCaseAnnotationParser implements Executor.StreamHandler {
     public Annotation getAnnotation() {
         return annotation;
     }
-    
+
     @Override
     public void processStream(InputStream input) throws IOException {
-        String line;
-        try (BufferedReader in = new BufferedReader(
-                new InputStreamReader(input))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
+            String line = "";
+            int lineno = 0;
+            Matcher matcher = BLAME_PATTERN.matcher(line);
             while ((line = in.readLine()) != null) {
-                String parts[] = line.split("\\|");
-                String aAuthor = parts[0];
-                String aRevision = parts[1];
-                aRevision = aRevision.replace('\\', '/');
-
-                annotation.addLine(aRevision, aAuthor, true);
+                ++lineno;
+                matcher.reset(line);
+                if (matcher.find()) {
+                    String rev = matcher.group(1);
+                    String author = matcher.group(2).trim();
+                    annotation.addLine(rev, author, true);
+                } else {
+                    LOGGER.log(Level.SEVERE,
+                            "Error: did not find annotation in line {0}: [{1}]",
+                            new Object[]{String.valueOf(lineno), line});
+                }
             }
         }
     }
