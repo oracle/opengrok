@@ -321,6 +321,9 @@ public class ProjectMessage extends Message {
                     Project project;
                     if ((project = env.getProjects().get(projectName)) != null) {
                         return ClassUtil.invokeGetter(project, getText().substring(4)).getBytes();
+                    } else {
+                        LOGGER.log(Level.WARNING, "cannot find project " +
+                               projectName + " to get a property");
                     }
                 }
                 break;
