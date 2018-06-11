@@ -48,7 +48,9 @@ import org.opensolaris.opengrok.history.GitRepository;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.MercurialRepository;
 import org.opensolaris.opengrok.history.MercurialRepositoryTest;
+import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.history.RepositoryFactory;
+import static org.opensolaris.opengrok.history.RepositoryFactory.getRepository;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.history.SubversionRepository;
 import org.opensolaris.opengrok.index.IndexDatabase;
@@ -494,5 +496,41 @@ public class ProjectMessageTest {
         m.setText("get-repos-type");
         out = new String(m.apply(env));
         Assert.assertEquals("Mercurial", out);
+    }
+    
+    @Test
+    public void testSetGet() throws Exception {
+        Assert.assertTrue(env.isHandleHistoryOfRenamedFiles());
+        Message m;
+        
+        // Add a project
+        m = new ProjectMessage();
+        m.setText("add");
+        m.addTag("mercurial");
+        m.apply(env);
+        
+        // Change its property.
+        m = new ProjectMessage();
+        m.setText("set handleRenamedFiles = false");
+        m.addTag("mercurial");
+        m.apply(env);
+        
+        // Verify the property was set on the project and its repositories.
+        Project project = env.getProjects().get("mercurial");
+        Assert.assertNotNull(project);
+        Assert.assertFalse(project.isHandleRenamedFiles());
+        List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+        Assert.assertNotNull(riList);
+        for (RepositoryInfo ri : riList) {
+            Repository repo = getRepository(ri, false);
+            Assert.assertFalse(repo.isHandleRenamedFiles());
+        }
+
+        // Verify the property can be retrieved via message.
+        m = new ProjectMessage();
+        m.setText("get handleRenamedFiles");
+        m.addTag("mercurial");
+        String out = new String(m.apply(env));
+        Assert.assertEquals("false", out);
     }
 }
