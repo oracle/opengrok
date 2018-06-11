@@ -87,6 +87,7 @@ public class ProjectMessageTest {
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(true);
+        env.setHandleHistoryOfRenamedFiles(true);
         RepositoryFactory.initializeIgnoredNames(env);
     }
 
@@ -143,6 +144,34 @@ public class ProjectMessageTest {
         }
     }
 
+    /**
+     * Verify that project added via Message correctly inherits a property
+     * from configuration. Ideally, this should test all properties of Project.
+     * @throws Exception 
+     */
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+    @Test
+    public void testAddInherit() throws Exception {
+        Assert.assertTrue(env.getRepositories().isEmpty());
+        Assert.assertTrue(env.getProjects().isEmpty());
+        Assert.assertTrue(env.isHandleHistoryOfRenamedFiles());
+        
+        // Prepare project addition.
+        Message m = new ProjectMessage();
+        m.setText("add");
+        m.addTag("git");
+        
+        // Add the project.
+        m.apply(env);
+        
+        Assert.assertTrue(env.getProjects().containsKey("git"));
+        Assert.assertEquals(1, env.getProjects().size());
+        
+        Project proj = env.getProjects().get("git");
+        Assert.assertNotNull(proj);
+        Assert.assertTrue(proj.isHandleRenamedFiles());
+    }
+    
     @Test
     public void testAdd() throws Exception {
         Assert.assertTrue(env.getRepositories().isEmpty());

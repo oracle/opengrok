@@ -115,8 +115,7 @@ public class ProjectMessage extends Message {
                     File projDir = new File(srcRoot, projectName);
 
                     if (!env.getProjects().containsKey(projectName)) {
-                        Project project = new Project(projectName, "/" + projectName);
-                        project.setTabSize(env.getConfiguration().getTabSize());
+                        Project project = new Project(projectName, "/" + projectName, env.getConfiguration());
 
                         // Add repositories in this project.
                         List<RepositoryInfo> repos = getRepositoriesInDir(env, projDir);
