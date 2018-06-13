@@ -282,7 +282,10 @@ public class ProjectMessage extends Message {
                                     VARIABLE_PATTERN.toString(),
                                     getText()));
                 }
-                        
+                
+                // Perform a best effort on setting the project properties.
+                // If property cannot be set for one project, keep going on.
+                List<String> projectsDone = new ArrayList<>();
                 for (String projectName : getTags()) {
                     Project project;
                     if ((project = env.getProjects().get(projectName)) != null) {
@@ -290,7 +293,7 @@ public class ProjectMessage extends Message {
                         ClassUtil.invokeSetter(
                                 project,
                                 matcher.group(1), // field
-                                matcher.group(2) // value
+                                matcher.group(2)  // value
                         );
                         
                         // Refresh repositories for this project as well.
@@ -303,19 +306,21 @@ public class ProjectMessage extends Message {
                                 ClassUtil.invokeSetter(
                                         repo,
                                         matcher.group(1), // field
-                                        matcher.group(2) // value
+                                        matcher.group(2)  // value
                                 );
                             }
                         }
                         
-                        return String.format("Variable \"%s\" set to \"%s\".",
-                                matcher.group(1), matcher.group(2)).getBytes();
+                        projectsDone.add(projectName);
                     } else {
                         LOGGER.log(Level.WARNING, "cannot find project " +
                                projectName + " to set a property");
                     }
                 }
-                break;
+                
+                return String.format("Variable \"%s\" set to \"%s\" for projects: %s",
+                                matcher.group(1), matcher.group(2),
+                                String.join(",", projectsDone)).getBytes();
             case "get":
                 for (String projectName : getTags()) {
                     Project project = env.getProjects().get(projectName);
