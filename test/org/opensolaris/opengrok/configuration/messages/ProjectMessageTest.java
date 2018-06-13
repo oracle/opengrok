@@ -64,6 +64,8 @@ import org.opensolaris.opengrok.util.TestRepository;
  * @author Vladimir Kotal
  */
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+@ConditionalRun(RepositoryInstalled.GitInstalled.class)
+@ConditionalRun(RepositoryInstalled.SubvsersionInstalled.class)
 public class ProjectMessageTest {
     
     RuntimeEnvironment env;
@@ -75,10 +77,6 @@ public class ProjectMessageTest {
 
     @Before
     public void setUp() throws IOException {
-        Assume.assumeTrue(new MercurialRepository().isWorking());
-        Assume.assumeTrue(new SubversionRepository().isWorking());
-        Assume.assumeTrue(new GitRepository().isWorking());
-
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
                 "repositories.zip"));
@@ -151,7 +149,6 @@ public class ProjectMessageTest {
      * from configuration. Ideally, this should test all properties of Project.
      * @throws Exception 
      */
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     @Test
     public void testAddInherit() throws Exception {
         Assert.assertTrue(env.getRepositories().isEmpty());
