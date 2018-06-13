@@ -499,38 +499,51 @@ public class ProjectMessageTest {
     }
     
     @Test
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testSetGet() throws Exception {
         Assert.assertTrue(env.isHandleHistoryOfRenamedFiles());
+        List<String> projects = new ArrayList<>();
+        projects.add("mercurial");
+        projects.add("git");
         Message m;
         
-        // Add a project
+        // Add the projects.
         m = new ProjectMessage();
         m.setText("add");
-        m.addTag("mercurial");
+        for (String proj : projects) {
+            m.addTag(proj);
+        }
         m.apply(env);
+        Assert.assertEquals(2, env.getProjectList().size());
         
-        // Change its property.
+        // Change their property.
         m = new ProjectMessage();
         m.setText("set handleRenamedFiles = false");
-        m.addTag("mercurial");
+        for (String proj : projects) {
+            m.addTag(proj);
+        }
         m.apply(env);
         
-        // Verify the property was set on the project and its repositories.
-        Project project = env.getProjects().get("mercurial");
-        Assert.assertNotNull(project);
-        Assert.assertFalse(project.isHandleRenamedFiles());
-        List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
-        Assert.assertNotNull(riList);
-        for (RepositoryInfo ri : riList) {
-            Repository repo = getRepository(ri, false);
-            Assert.assertFalse(repo.isHandleRenamedFiles());
+        // Verify the property was set on each project and its repositories.
+        for (String proj : projects) {
+            Project project = env.getProjects().get(proj);
+            Assert.assertNotNull(project);
+            Assert.assertFalse(project.isHandleRenamedFiles());
+            List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+            Assert.assertNotNull(riList);
+            for (RepositoryInfo ri : riList) {
+                Repository repo = getRepository(ri, false);
+                Assert.assertFalse(repo.isHandleRenamedFiles());
+            }
         }
 
         // Verify the property can be retrieved via message.
-        m = new ProjectMessage();
-        m.setText("get handleRenamedFiles");
-        m.addTag("mercurial");
-        String out = new String(m.apply(env));
-        Assert.assertEquals("false", out);
+        for (String proj : projects) {
+            m = new ProjectMessage();
+            m.setText("get handleRenamedFiles");
+            m.addTag(proj);
+            String out = new String(m.apply(env));
+            Assert.assertEquals("false", out);
+        }
     }
 }

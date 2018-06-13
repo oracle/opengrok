@@ -133,7 +133,7 @@ public class ProjectMessage extends Message {
 
         validateMore(env);
         
-        switch (getCommand()) {
+        switch (command) {
             case "add":
                 for (String projectName : getTags()) {
                     File srcRoot = env.getSourceRootFile();
@@ -318,8 +318,8 @@ public class ProjectMessage extends Message {
                 break;
             case "get":
                 for (String projectName : getTags()) {
-                    Project project;
-                    if ((project = env.getProjects().get(projectName)) != null) {
+                    Project project = env.getProjects().get(projectName);
+                    if (project != null) {
                         return ClassUtil.invokeGetter(project, getText().substring(4)).getBytes();
                     } else {
                         LOGGER.log(Level.WARNING, "cannot find project " +
@@ -336,8 +336,8 @@ public class ProjectMessage extends Message {
                 List<String> repos = new ArrayList<>();
 
                 for (String projectName : getTags()) {
-                    Project project;
-                    if ((project = env.getProjects().get(projectName)) == null) {
+                    Project project = env.getProjects().get(projectName);
+                    if (project == null) {
                         continue;
                     }
                     List<RepositoryInfo> infos = env.getProjectRepositoriesMap().
@@ -398,7 +398,7 @@ public class ProjectMessage extends Message {
             throw new Exception("The message must contain a tag (project name(s))");        
         }
 
-        if (command.compareTo("get") == 0 && getTags().size() != 1) {
+        if (command.equals("get") && getTags().size() != 1) {
             throw new Exception("The \"get\" command can take only one project.");  
         }
         
