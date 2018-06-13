@@ -496,7 +496,6 @@ public class ProjectMessageTest {
     }
     
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testSetGet() throws Exception {
         Assert.assertTrue(env.isHandleHistoryOfRenamedFiles());
         List<String> projects = new ArrayList<>();
