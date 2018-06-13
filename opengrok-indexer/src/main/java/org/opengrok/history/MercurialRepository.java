@@ -182,8 +182,11 @@ public class MercurialRepository extends Repository {
             // Due to behavior of recent Mercurial versions, it is not possible
             // to filter the changesets of a file based on revision.
             // For files this does not matter since if getHistory() is called
-            // for a file, the file has to be renamed so we want its complete history.
-            cmd.add("--follow");
+            // for a file, the file has to be renamed so we want its complete history
+            // if renamed file handling is enabled for this repository.
+            if (this.isHandleRenamedFiles()) {
+                cmd.add("--follow");
+            }
         }
 
         cmd.add("--template");
@@ -408,6 +411,9 @@ public class MercurialRepository extends Repository {
         argv.add(RepoCommand);
         argv.add("annotate");
         argv.add("-n");
+        if (!this.isHandleRenamedFiles()) {
+            argv.add("--no-follow");
+        }
         if (revision != null) {
             argv.add("-r");
             if (revision.indexOf(':') == -1) {
