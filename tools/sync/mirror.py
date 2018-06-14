@@ -172,6 +172,7 @@ if __name__ == '__main__':
     prehook = None
     posthook = None
     use_proxy = False
+    ignored_repos = None
     if project_config:
         logger.debug("Project '{}' has specific (non-default) config".
                      format(args.project))
@@ -212,8 +213,6 @@ if __name__ == '__main__':
                 sys.exit(1)
             logger.debug("has ignored repositories: {}".
                          format(ignored_repos))
-        else:
-            ignored_repos = []
 
         hooks = project_config.get('hooks')
         if hooks:
@@ -251,6 +250,9 @@ if __name__ == '__main__':
 
             logger.debug("will use proxy")
             use_proxy = True
+
+    if not ignored_repos:
+        ignored_repos = []
 
     # Log messages to dedicated log file if running in batch mode.
     if args.batch:
