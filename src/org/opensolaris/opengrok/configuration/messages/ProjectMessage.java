@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
@@ -43,6 +45,7 @@ import static org.opensolaris.opengrok.history.RepositoryFactory.getRepository;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.ClassUtil;
 import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
 
@@ -56,6 +59,16 @@ public class ProjectMessage extends Message {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectMessage.class);
 
+    /**
+     * Pattern describes the java variable name and the assigned value.
+     * Examples:
+     * <ul>
+     * <li>variable = true</li>
+     * <li>stopOnClose = 10</li>
+     * </ul>
+     */
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("([a-z_]\\w*) = (.*)");
+    
     /**
      * Perform additional validation. This cannot be done in validate()
      * because it does not have access to the currently used RuntimeEnvironment.
@@ -102,12 +115,24 @@ public class ProjectMessage extends Message {
             env.getIgnoredNames()));
     }
 
+    private String getCommand() {
+        String command = getText();
+        
+        // get/set need special treatment since the text is overloaded with actual
+        // command and its contents.
+        if (command.startsWith("set ") || command.startsWith("get ")) {
+            command = getText().substring(0, 3);
+        }
+        
+        return command;
+    }
+    
     @Override
     protected byte[] applyMessage(RuntimeEnvironment env) throws Exception {
-        String command = getText();
+        String command = getCommand();
 
         validateMore(env);
-
+        
         switch (command) {
             case "add":
                 for (String projectName : getTags()) {
@@ -248,6 +273,65 @@ public class ProjectMessage extends Message {
 
                 env.refreshDateForLastIndexRun();
                 break;
+            case "set":
+                Matcher matcher = VARIABLE_PATTERN.matcher(getText().substring(4));
+                if (!matcher.find()) {
+                    // invalid pattern
+                    throw new IOException(
+                            String.format("The pattern \"%s\" does not match \"%s\".",
+                                    VARIABLE_PATTERN.toString(),
+                                    getText()));
+                }
+                
+                // Perform a best effort on setting the project properties.
+                // If property cannot be set for one project, keep going on.
+                List<String> projectsDone = new ArrayList<>();
+                for (String projectName : getTags()) {
+                    Project project;
+                    if ((project = env.getProjects().get(projectName)) != null) {
+                        // Set the property.
+                        ClassUtil.invokeSetter(
+                                project,
+                                matcher.group(1), // field
+                                matcher.group(2)  // value
+                        );
+                        
+                        // Refresh repositories for this project as well.
+                        List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+                        if (riList != null) {
+                            for (RepositoryInfo ri : riList) {
+                                Repository repo = getRepository(ri, false);
+                                
+                                // set the property
+                                ClassUtil.invokeSetter(
+                                        repo,
+                                        matcher.group(1), // field
+                                        matcher.group(2)  // value
+                                );
+                            }
+                        }
+                        
+                        projectsDone.add(projectName);
+                    } else {
+                        LOGGER.log(Level.WARNING, "cannot find project " +
+                               projectName + " to set a property");
+                    }
+                }
+                
+                return String.format("Variable \"%s\" set to \"%s\" for projects: %s",
+                                matcher.group(1), matcher.group(2),
+                                String.join(",", projectsDone)).getBytes();
+            case "get":
+                for (String projectName : getTags()) {
+                    Project project = env.getProjects().get(projectName);
+                    if (project != null) {
+                        return ClassUtil.invokeGetter(project, getText().substring(4)).getBytes();
+                    } else {
+                        LOGGER.log(Level.WARNING, "cannot find project " +
+                               projectName + " to get a property");
+                    }
+                }
+                break;
             case "list":
                 return (env.getProjectNames().stream().collect(Collectors.joining("\n")).getBytes());
             case "list-indexed":
@@ -257,8 +341,8 @@ public class ProjectMessage extends Message {
                 List<String> repos = new ArrayList<>();
 
                 for (String projectName : getTags()) {
-                    Project project;
-                    if ((project = env.getProjects().get(projectName)) == null) {
+                    Project project = env.getProjects().get(projectName);
+                    if (project == null) {
                         continue;
                     }
                     List<RepositoryInfo> infos = env.getProjectRepositoriesMap().
@@ -302,10 +386,10 @@ public class ProjectMessage extends Message {
      */
     @Override
     public void validate() throws Exception {
-        String command = getText();
+        String command = getCommand();
         Set<String> allowedText = new TreeSet<>(Arrays.asList("add", "delete",
                 "list", "list-indexed", "indexed", "get-repos",
-                "get-repos-type"));
+                "get-repos-type", "get", "set"));
 
         // Text field carries the command.
         if (command == null) {
@@ -319,6 +403,10 @@ public class ProjectMessage extends Message {
             throw new Exception("The message must contain a tag (project name(s))");        
         }
 
+        if (command.equals("get") && getTags().size() != 1) {
+            throw new Exception("The \"get\" command can take only one project.");  
+        }
+        
         super.validate();
     }
 }
