@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -45,6 +46,9 @@ import org.opensolaris.opengrok.web.Util;
  */
 public class JarAnalyzer extends FileAnalyzer {
 
+    private static final String[] FIELD_NAMES = new String[]
+            {QueryBuilder.FULL, QueryBuilder.REFS, QueryBuilder.DEFS};
+
     protected JarAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
@@ -53,16 +57,16 @@ public class JarAnalyzer extends FileAnalyzer {
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
-     * @return 20180112_00
+     * @return 20180612_00
      */
     @Override
     protected int getSpecializedVersionNo() {
-        return 20180112_00; // Edit comment above too!
+        return 20180612_00; // Edit comment above too!
     }
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
-        StringBuilder fout = new StringBuilder();
+        JFieldBuilder jfbuilder = new JFieldBuilder();
         try (ZipInputStream zis = new ZipInputStream(src.getStream())) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
@@ -74,23 +78,9 @@ public class JarAnalyzer extends FileAnalyzer {
                     xrefOut.append("</b>");
                 }
 
-                /**
-                 * If a FULL field exists already, then append to it.
-                 */
-                useExtantValue(fout, doc, QueryBuilder.FULL);
-                fout.append("// ");
-                fout.append(ename);
-                fout.append("\n");
-
-                /**
-                 * Unlike other analyzers, which rely on the full content
-                 * existing to be accessed at a file system location identified
-                 * by PATH, *.jar and *.class files have virtual content which
-                 * is stored here (Store.YES) for analyzer convenience.
-                 */
-                String fstr = fout.toString();
-                doc.add(new OGKTextField(QueryBuilder.FULL, fstr, Store.YES));
-                fout.setLength(0);
+                StringWriter fout = jfbuilder.write(QueryBuilder.FULL);
+                fout.write(ename);
+                fout.write("\n");
 
                 FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
                 if (fac instanceof JavaClassAnalyzerFactory) {
@@ -99,18 +89,17 @@ public class JarAnalyzer extends FileAnalyzer {
                     }
                     JavaClassAnalyzer jca =
                             (JavaClassAnalyzer) fac.getAnalyzer();
-                    jca.analyze(doc, new BufferedInputStream(zis), xrefOut);
+                    jca.analyze(doc, new BufferedInputStream(zis), xrefOut,
+                            jfbuilder);
                 }
             }
         }
-    }
 
-    private static void useExtantValue(StringBuilder accum, Document doc,
-        String field) {
-        String extantValue = doc.get(field);
-        if (extantValue != null) {
-            doc.removeFields(field);
-            accum.append(extantValue);
+        for (String name : FIELD_NAMES) {
+            if (jfbuilder.hasField(name)) {
+                String fstr = jfbuilder.write(name).toString();
+                doc.add(new OGKTextField(name, fstr, Store.NO));
+            }
         }
     }
 }
