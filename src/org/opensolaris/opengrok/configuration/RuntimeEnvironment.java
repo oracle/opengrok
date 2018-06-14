@@ -787,7 +787,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Add repositories to the list.
-     * @param repositories 
+     * @param repositories list of repositories
      */
     public void addRepositories(List<RepositoryInfo> repositories) {
         threadConfig.get().addRepositories(repositories);
@@ -1508,7 +1508,22 @@ public final class RuntimeEnvironment {
     public void setConfiguration(Configuration configuration) {
         setConfiguration(configuration, null, false);
     }
+    
+    /**
+     * Sets the configuration and performs necessary actions.
+     * @param configuration new configuration
+     * @param interactive true if in interactive mode
+     */
+    public void setConfiguration(Configuration configuration, boolean interactive) {
+        setConfiguration(configuration, null, interactive);
+    }
 
+    /**
+     * Sets the configuration and performs necessary actions.
+     * @param configuration new configuration
+     * @param subFileList list of repositories
+     * @param interactive true if in interactive mode
+     */
     public void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
         this.configuration = configuration;
         // HistoryGuru constructor uses environment properties so register()
@@ -1843,10 +1858,11 @@ public final class RuntimeEnvironment {
      *
      * @param m message containing the configuration
      * @param reindex is the message result of reindex
+     * @param interactive true if in interactive mode
      * @see #applyConfig(org.opensolaris.opengrok.configuration.Configuration,
-     * boolean) applyConfig(config, reindex)
+     * boolean, boolean) applyConfig(config, reindex, interactive)
      */
-    public void applyConfig(Message m, boolean reindex) {
+    public void applyConfig(Message m, boolean reindex, boolean interactive) {
         Configuration config;
         try {
             config = makeXMLStringAsConfiguration(m.getText());
@@ -1855,7 +1871,7 @@ public final class RuntimeEnvironment {
             return;
         }
 
-        applyConfig(config, reindex);
+        applyConfig(config, reindex, interactive);
     }
 
     /**
@@ -1865,11 +1881,12 @@ public final class RuntimeEnvironment {
      *
      * @param config the incoming configuration
      * @param reindex is the message result of reindex
+     * @param interactive true if in interactive mode
      *
      */
-    public void applyConfig(Configuration config, boolean reindex) {
+    public void applyConfig(Configuration config, boolean reindex, boolean interactive) {
 
-        setConfiguration(config);
+        setConfiguration(config, interactive);
         LOGGER.log(Level.INFO, "Configuration updated: {0}",
                 configuration.getSourceRoot());
 
