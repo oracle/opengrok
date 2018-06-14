@@ -41,9 +41,7 @@ import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.classfile.ConstantDouble;
 import org.apache.bcel.classfile.ConstantFloat;
 import org.apache.bcel.classfile.ConstantInteger;
-import org.apache.bcel.classfile.ConstantInvokeDynamic;
 import org.apache.bcel.classfile.ConstantLong;
-import org.apache.bcel.classfile.ConstantMethodHandle;
 import org.apache.bcel.classfile.ConstantMethodType;
 import org.apache.bcel.classfile.ConstantModule;
 import org.apache.bcel.classfile.ConstantNameAndType;
@@ -60,9 +58,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.IteratorReader;
 import org.opensolaris.opengrok.analysis.OGKTextField;
-import org.opensolaris.opengrok.analysis.OGKTextVecField;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -94,36 +90,36 @@ public class JavaClassAnalyzer extends FileAnalyzer {
      * Gets a version number to be used to tag processed documents so that
      * re-analysis can be re-done later if a stored version number is different
      * from the current implementation.
-     * @return 20180112_00
+     * @return 20180612_00
      */
     @Override
     protected int getSpecializedVersionNo() {
-        return 20180112_00; // Edit comment above too!
+        return 20180612_00; // Edit comment above too!
     }
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         try (InputStream in = src.getStream()) {
-            analyze(doc, in, xrefOut);
+            analyze(doc, in, xrefOut, null);
         }
     }
 
-    void analyze(Document doc, InputStream in, Writer xrefOut) throws IOException {
+    void analyze(Document doc, InputStream in, Writer xrefOut,
+            JFieldBuilder jfbuilder) throws IOException {
         List<String> defs = new ArrayList<>();
         List<String> refs = new ArrayList<>();
         List<String> full = new ArrayList<>();
 
-        StringWriter dout = new StringWriter();
-        StringWriter rout = new StringWriter();
-        StringWriter fout = new StringWriter();
-
-        /**
-         * The JarAnalyzer uses JavaClassAnalyzer, so if a DEFS, REFS, or FULL
-         * field exists already, then append to it.
-         */
-        useExtantValue(dout, doc, QueryBuilder.DEFS);
-        useExtantValue(rout, doc, QueryBuilder.REFS);
-        useExtantValue(fout, doc, QueryBuilder.FULL);
+        StringWriter dout, rout, fout;
+        if (jfbuilder == null) {
+            dout = new StringWriter();
+            rout = new StringWriter();
+            fout = new StringWriter();
+        } else {
+            dout = jfbuilder.write(QueryBuilder.DEFS);
+            rout = jfbuilder.write(QueryBuilder.REFS);
+            fout = jfbuilder.write(QueryBuilder.FULL);
+        }
 
         ClassParser classparser = new ClassParser(in,
             doc.get(QueryBuilder.PATH));
@@ -140,25 +136,20 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             }
         }        
 
-        appendValues(dout, defs, "");
-        appendValues(rout, refs, "");
-        appendValues(fout, full, "// ");
+        appendValues(dout, defs);
+        appendValues(rout, refs);
+        appendValues(fout, full);
 
-        /**
-         * Unlike other analyzers, which rely on the full content existing to be
-         * accessed at a file system location identified by PATH, *.class and
-         * *.jar files have virtual content which is stored here (Store.YES) for
-         * analyzer convenience.
-         */
+        if (jfbuilder == null) {
+            String dstr = dout.toString();
+            doc.add(new OGKTextField(QueryBuilder.DEFS, dstr, Store.NO));
 
-        String dstr = dout.toString();
-        doc.add(new OGKTextField(QueryBuilder.DEFS, dstr, Store.YES));
+            String rstr = rout.toString();
+            doc.add(new OGKTextField(QueryBuilder.REFS, rstr, Store.NO));
 
-        String rstr = rout.toString();
-        doc.add(new OGKTextField(QueryBuilder.REFS, rstr, Store.YES));
-
-        String fstr = fout.toString();
-        doc.add(new OGKTextField(QueryBuilder.FULL, fstr, Store.YES));
+            String fstr = fout.toString();
+            doc.add(new OGKTextField(QueryBuilder.FULL, fstr, Store.NO));
+        }
     }
 
     
@@ -565,19 +556,8 @@ private static final String RCBREOL="}\n";
         return str;
     }
 
-    private static void useExtantValue(StringWriter accum, Document doc,
-        String field) {
-        String extantValue = doc.get(field);
-        if (extantValue != null) {
-            doc.removeFields(field);
-            accum.append(extantValue);
-        }
-    }
-
-    private static void appendValues(StringWriter accum, List<String> full,
-        String lede) {
+    private static void appendValues(StringWriter accum, List<String> full) {
         for (String fl : full) {
-            accum.write(lede);
             accum.write(fl);
             accum.write(EOL);
         }
