@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -26,7 +26,6 @@ import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -34,9 +33,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +54,8 @@ import org.opensolaris.opengrok.util.TestRepository;
  * @author Trond Norbye
  */
 public class IgnoredNamesTest {
-    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
     private static TestRepository repository;
 
     @BeforeClass
@@ -155,27 +155,20 @@ public class IgnoredNamesTest {
 
     /**
      * Make sure that encoding and decoding IgnoredNames object is 1:1 operation.
-     * @throws FileNotFoundException
-     * @throws IOException 
      */
     @Test
-    public void testEncodeDecode() throws FileNotFoundException, IOException {
+    public void testEncodeDecode() throws IOException {
         IgnoredNames in = new IgnoredNames();
         // Add file and directory to list of ignored items.
         in.add("f:foo.txt");
         in.add("d:bar");
 
         // Create an exception listener to detect errors while encoding and decoding
-        final LinkedList<Exception> exceptions = new LinkedList<Exception>();
-        ExceptionListener listener = new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                exceptions.addLast(e);
-            }
-        };
+        final LinkedList<Exception> exceptions = new LinkedList<>();
+        ExceptionListener listener = exceptions::addLast;
 
         // Actually create the file and directory for much better test coverage.
-        File tmpdir = FileUtilities.createTemporaryDirectory("ignoredNames");
+        File tmpdir = Files.createTempDirectory("ignoredNames").toFile();
         File foo = new File(tmpdir, "foo.txt");
         foo.createNewFile();
         assertTrue(foo.isFile());

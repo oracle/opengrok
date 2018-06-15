@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.web;
@@ -27,19 +27,17 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.RepositoryFactory;
-import org.opensolaris.opengrok.util.FileUtilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -66,7 +64,7 @@ public class DirectoryListingTest {
     private FileEntry[] entries;
     private SimpleDateFormat dateFormatter;
 
-    class FileEntry implements Comparable {
+    class FileEntry implements Comparable<FileEntry> {
 
         String name;
         String href;
@@ -151,42 +149,26 @@ public class DirectoryListingTest {
         }
 
         @Override
-        public int compareTo(Object o) {
+        public int compareTo(FileEntry fe) {
             int ret = -1;
 
-            if (o instanceof FileEntry) {
-                FileEntry fe = (FileEntry) o;
-
-                // @todo verify all attributes!
-                if (name.compareTo(fe.name) == 0
-                        && href.compareTo(fe.href) == 0) {
-                    if ( // this is a file so the size must be exact
-                            (subdirs == null && size == fe.size)
-                            // this is a directory so the size must have been "-" char
-                            || (subdirs != null && size == DIRECTORY_INTERNAL_SIZE)) {
-                        ret = 0;
-                    }
+            // @todo verify all attributes!
+            if (name.compareTo(fe.name) == 0
+                    && href.compareTo(fe.href) == 0) {
+                if ( // this is a file so the size must be exact
+                        (subdirs == null && size == fe.size)
+                        // this is a directory so the size must have been "-" char
+                        || (subdirs != null && size == DIRECTORY_INTERNAL_SIZE)) {
+                    ret = 0;
                 }
             }
             return ret;
         }
-
-    }
-
-    public DirectoryListingTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
     }
 
     @Before
     public void setUp() throws Exception {
-        directory = FileUtilities.createTemporaryDirectory("directory");
+        directory = Files.createTempDirectory("directory").toFile();
 
         entries = new FileEntry[3];
         entries[0] = new FileEntry("foo.c", "foo.c", 0, 112);
@@ -195,13 +177,9 @@ public class DirectoryListingTest {
         // Use DIRECTORY_INTERNAL_SIZE value for length so it is checked as the directory
         // should contain "-" (DIRECTORY_SIZE_PLACEHOLDER) string.
         entries[2] = new FileEntry("subdir", "subdir/", 0, Arrays.asList(
-                new FileEntry[]{
-                    new FileEntry("SCCS", "SCCS/", 0, Arrays.asList(
-                            new FileEntry[]{
-                                new FileEntry("version", "version", 0, 312)
-                            })
-                    )}
-        ));
+                new FileEntry("SCCS", "SCCS/", 0, Arrays.asList(
+                        new FileEntry("version", "version", 0, 312))
+                )));
 
         for (FileEntry entry : entries) {
             entry.create();
@@ -217,7 +195,7 @@ public class DirectoryListingTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (directory != null && directory.exists()) {
             removeDirectory(directory);
             directory.delete();
@@ -239,12 +217,8 @@ public class DirectoryListingTest {
     /**
      * Get the href attribute from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a
      * href="foo" class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;
-     *
-     * @param item
-     * @return
-     * @throws java.lang.Exception
      */
-    private String getHref(Node item) throws Exception {
+    private String getHref(Node item) {
         Node a = item.getFirstChild(); // a
         assertNotNull(a);
         assertEquals(Node.ELEMENT_NODE, a.getNodeType());
@@ -259,12 +233,8 @@ public class DirectoryListingTest {
     /**
      * Get the filename from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a href="foo"
      * class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;
-     *
-     * @param item
-     * @return
-     * @throws java.lang.Exception
      */
-    private String getFilename(Node item) throws Exception {
+    private String getFilename(Node item) {
         Node a = item.getFirstChild(); // a
         assertNotNull(a);
         assertEquals(Node.ELEMENT_NODE, a.getNodeType());

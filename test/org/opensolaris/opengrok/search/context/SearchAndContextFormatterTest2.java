@@ -21,7 +21,6 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-
 package org.opensolaris.opengrok.search.context;
 
 import java.io.File;
@@ -38,11 +37,9 @@ import java.util.TreeSet;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
-import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +57,6 @@ import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.search.SearchEngine;
 import static org.opensolaris.opengrok.util.CustomAssertions.assertLinesEqual;
-import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
@@ -148,7 +144,7 @@ public class SearchAndContextFormatterTest2 {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
         env.setProjectsEnabled(originalProjectsEnabled);
         env.setAllowedSymlinks(new HashSet<>());
 
@@ -173,14 +169,6 @@ public class SearchAndContextFormatterTest2 {
         } finally {
             TEMP_DIRS.clear();
         }
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     @Test
@@ -218,7 +206,7 @@ public class SearchAndContextFormatterTest2 {
         ContextFormatter formatter = new ContextFormatter(args);
         OGKUnifiedHighlighter uhi = new OGKUnifiedHighlighter(env,
             instance.getSearcher(), anz);
-        uhi.setBreakIterator(() -> new StrictLineBreakIterator());
+        uhi.setBreakIterator(StrictLineBreakIterator::new);
         uhi.setFormatter(formatter);
         uhi.setTabSize(TABSIZE);
 
@@ -248,7 +236,7 @@ public class SearchAndContextFormatterTest2 {
 
     private static File createTemporaryDirectory(String name)
             throws IOException {
-        File f = FileUtilities.createTemporaryDirectory(name);
+        File f = Files.createTempDirectory(name).toFile();
         TEMP_DIRS.add(f);
         return f;
     }
