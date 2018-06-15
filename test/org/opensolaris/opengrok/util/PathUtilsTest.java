@@ -19,9 +19,8 @@
 
 /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.util;
 
 import java.io.File;
@@ -48,7 +47,7 @@ public class PathUtilsTest {
     private final List<File> tempDirs = new ArrayList<>();
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() {
         try {
             tempDirs.forEach((tempDir) -> {
                 try {
@@ -160,7 +159,7 @@ public class PathUtilsTest {
     }
 
     private File createTemporaryDirectory(String name) throws IOException {
-        File f = FileUtilities.createTemporaryDirectory(name);
+        File f = Files.createTempDirectory(name).toFile();
         tempDirs.add(f);
         return f;
     }

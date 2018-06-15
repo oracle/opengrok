@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.util;
 
@@ -100,27 +100,6 @@ public class FileUtilities {
                 }
             }
         }
-    }
-
-    /**
-     * Create an empty directory under {@code /tmp} or similar.
-     *
-     * @param prefix string to prefix the directory name with
-     * @return a {@code File} object pointing to the directory
-     * @throws IOException if the temporary directory cannot be created
-     */
-    public static File createTemporaryDirectory(String prefix)
-            throws IOException {
-        File file = File.createTempFile(prefix, "opengrok");
-        if (!file.delete()) {
-            throw new IOException(
-                    "Could not create delete temporary file " + file);
-        }
-        if (!file.mkdir()) {
-            throw new IOException(
-                    "Could not create temporary directory " + file);
-        }
-        return file;
     }
 
     private FileUtilities() {

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.util;
@@ -46,8 +46,8 @@ public class TestRepository {
 
     public void createEmpty() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        sourceRoot = FileUtilities.createTemporaryDirectory("source");
-        dataRoot = FileUtilities.createTemporaryDirectory("data");
+        sourceRoot = Files.createTempDirectory("source").toFile();
+        dataRoot = Files.createTempDirectory("data").toFile();
         env.setSourceRoot(sourceRoot.getAbsolutePath());
         env.setDataRoot(dataRoot.getAbsolutePath());
     }
@@ -55,8 +55,8 @@ public class TestRepository {
     public void create(InputStream inputBundle) throws IOException {
         File sourceBundle = null;
         try {
-            sourceRoot = FileUtilities.createTemporaryDirectory("source");
-            dataRoot = FileUtilities.createTemporaryDirectory("data");
+            sourceRoot = Files.createTempDirectory("source").toFile();
+            dataRoot = Files.createTempDirectory("data").toFile();
             sourceBundle = File.createTempFile("srcbundle", ".zip");
 
             if (sourceBundle.exists()) {
