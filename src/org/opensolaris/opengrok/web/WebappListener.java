@@ -95,10 +95,10 @@ public final class WebappListener
                 try {
                     SocketAddress addr = new InetSocketAddress(InetAddress.getByName(cfg[0]), Integer.parseInt(cfg[1]));
                     if (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(addr)) {
-                        LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread");
+                        LOGGER.log(Level.SEVERE, "Failed to start configuration listener thread");
                     }
                 } catch (NumberFormatException | UnknownHostException ex) {
-                    LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread:", ex);
+                    LOGGER.log(Level.SEVERE, "Failed to start configuration listener thread:", ex);
                 }
             } else {
                 LOGGER.log(Level.SEVERE, "Incorrect format for the configuration address: ");
