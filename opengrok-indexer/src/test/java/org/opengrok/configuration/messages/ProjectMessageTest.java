@@ -48,7 +48,9 @@ import org.opengrok.history.GitRepository;
 import org.opengrok.history.HistoryGuru;
 import org.opengrok.history.MercurialRepository;
 import org.opengrok.history.MercurialRepositoryTest;
+import org.opengrok.history.Repository;
 import org.opengrok.history.RepositoryFactory;
+import static org.opengrok.history.RepositoryFactory.getRepository;
 import org.opengrok.history.RepositoryInfo;
 import org.opengrok.history.SubversionRepository;
 import org.opengrok.index.IndexDatabase;
@@ -62,6 +64,8 @@ import org.opengrok.util.TestRepository;
  * @author Vladimir Kotal
  */
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
+@ConditionalRun(RepositoryInstalled.GitInstalled.class)
+@ConditionalRun(RepositoryInstalled.SubvsersionInstalled.class)
 public class ProjectMessageTest {
     
     RuntimeEnvironment env;
@@ -73,10 +77,6 @@ public class ProjectMessageTest {
 
     @Before
     public void setUp() throws IOException {
-        Assume.assumeTrue(new MercurialRepository().isWorking());
-        Assume.assumeTrue(new SubversionRepository().isWorking());
-        Assume.assumeTrue(new GitRepository().isWorking());
-
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
                 "repositories.zip"));
@@ -149,7 +149,6 @@ public class ProjectMessageTest {
      * from configuration. Ideally, this should test all properties of Project.
      * @throws Exception 
      */
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     @Test
     public void testAddInherit() throws Exception {
         Assert.assertTrue(env.getRepositories().isEmpty());
@@ -494,5 +493,53 @@ public class ProjectMessageTest {
         m.setText("get-repos-type");
         out = new String(m.apply(env));
         Assert.assertEquals("Mercurial", out);
+    }
+
+    @Test
+    public void testSetGet() throws Exception {
+        Assert.assertTrue(env.isHandleHistoryOfRenamedFiles());
+        List<String> projects = new ArrayList<>();
+        projects.add("mercurial");
+        projects.add("git");
+        Message m;
+
+        // Add the projects.
+        m = new ProjectMessage();
+        m.setText("add");
+        for (String proj : projects) {
+            m.addTag(proj);
+        }
+        m.apply(env);
+        Assert.assertEquals(2, env.getProjectList().size());
+
+        // Change their property.
+        m = new ProjectMessage();
+        m.setText("set handleRenamedFiles = false");
+        for (String proj : projects) {
+            m.addTag(proj);
+        }
+        m.apply(env);
+
+        // Verify the property was set on each project and its repositories.
+        for (String proj : projects) {
+            Project project = env.getProjects().get(proj);
+            Assert.assertNotNull(project);
+            Assert.assertFalse(project.isHandleRenamedFiles());
+            List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+            Assert.assertNotNull(riList);
+            for (RepositoryInfo ri : riList) {
+                Repository repo = getRepository(ri, false);
+                Assert.assertFalse(repo.isHandleRenamedFiles());
+            }
+        }
+
+        // Verify the property can be retrieved via message.
+        for (String proj : projects) {
+            m = new ProjectMessage();
+            m.setText("get handleRenamedFiles");
+            m.addTag(proj);
+            String out = new String(m.apply(env));
+            Assert.assertEquals("false", out);
+        }
     }
 }
