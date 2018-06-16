@@ -65,7 +65,7 @@ public class ConfigMessage extends Message {
                         matcher.group(2) // value
                 );
                 // apply the configuration - let the environment reload the configuration if necessary
-                env.applyConfig(env.getConfiguration(), false);
+                env.applyConfig(env.getConfiguration(), false, true);
                 return String.format("Variable \"%s\" set to \"%s\".", matcher.group(1), matcher.group(2)).getBytes();
             } else {
                 // invalid pattern
@@ -77,7 +77,7 @@ public class ConfigMessage extends Message {
         } else if (hasTag("get")) {
             return ClassUtil.invokeGetter(env.getConfiguration(), getText()).getBytes();
         } else if (hasTag("setconf")) {
-            env.applyConfig(this, hasTag("reindex"));
+            env.applyConfig(this, hasTag("reindex"), !hasTag("reindex"));
         }
 
         return null;

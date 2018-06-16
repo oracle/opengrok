@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +36,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.junit.After;
+
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -51,7 +54,6 @@ import org.opengrok.history.HistoryException;
 import org.opengrok.history.HistoryGuru;
 import org.opengrok.history.MercurialRepositoryTest;
 import org.opengrok.history.RepositoryInfo;
-import org.opengrok.util.FileUtilities;
 import org.opengrok.util.TestRepository;
 import org.opengrok.util.IOUtils;
 
@@ -66,7 +68,7 @@ public class IndexerRepoTest {
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
-    TestRepository repository;
+    private TestRepository repository;
 
     @Before
     public void setUp() throws IOException {
@@ -94,15 +96,12 @@ public class IndexerRepoTest {
             if (threads[i] == null || threads[i].getName() == null) {
                 continue;
             }
-            assertEquals(false, threads[i].getName().contains("renamed-handling"));
+            assertFalse(threads[i].getName().contains("renamed-handling"));
         }
     }
 
     /**
      * Test it is possible to disable history per project.
-     * @throws IndexerException
-     * @throws IOException
-     * @throws org.opengrok.history.HistoryException
      */
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @ConditionalRun(RepositoryInstalled.GitInstalled.class)
@@ -110,12 +109,9 @@ public class IndexerRepoTest {
     public void testPerProjectHistoryGlobalOn() throws IndexerException, IOException, HistoryException {
         testPerProjectHistory(true);
     }
-
+    
     /**
      * Test it is possible to enable history per project.
-     * @throws IndexerException
-     * @throws IOException
-     * @throws org.opengrok.history.HistoryException
      */
     @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
     @ConditionalRun(RepositoryInstalled.GitInstalled.class)
@@ -123,21 +119,21 @@ public class IndexerRepoTest {
     public void testPerProjectHistoryGlobalOff() throws IndexerException, IOException, HistoryException {
         testPerProjectHistory(false);
     }
-
+    
     private void testPerProjectHistory(boolean globalOn) throws IndexerException, IOException, HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
+        
         // Make sure we start from scratch.
-        File dataRoot = FileUtilities.createTemporaryDirectory("dataForPerProjectHistoryTest");
+        File dataRoot = Files.createTempDirectory("dataForPerProjectHistoryTest").toFile();
         env.setDataRoot(dataRoot.getName());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(globalOn);
-
+        
         Project proj = new Project("mercurial", "/mercurial");
         proj.setHistoryEnabled(!globalOn);
         env.getProjects().clear();
         env.getProjects().put("mercurial", proj);
-
+        
         Indexer.getInstance().prepareIndexer(
                 env,
                 true, // search for repositories
@@ -149,7 +145,7 @@ public class IndexerRepoTest {
                 null, // repositories - not needed when not refreshing history
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
-
+        
         File repoRoot = new File(env.getSourceRootFile(), "git");
         File fileInRepo = new File(repoRoot, "main.c");
         assertTrue(fileInRepo.exists());
@@ -158,7 +154,7 @@ public class IndexerRepoTest {
         } else {
             assertNull(HistoryGuru.getInstance().getHistory(fileInRepo));
         }
-
+        
         repoRoot = new File(env.getSourceRootFile(), "mercurial");
         fileInRepo = new File(repoRoot, "main.c");
         assertTrue(fileInRepo.exists());
@@ -167,10 +163,10 @@ public class IndexerRepoTest {
         } else {
             assertNotNull(HistoryGuru.getInstance().getHistory(fileInRepo));
         }
-
+        
         IOUtils.removeRecursive(dataRoot.toPath());
     }
-
+    
     /**
      * Test that symlinked directories from source root get their relative
      * path set correctly in RepositoryInfo objects.
@@ -185,22 +181,22 @@ public class IndexerRepoTest {
         // Set source root to pristine directory so that there is only one
         // repository to deal with (which makes this faster and easier to write)
         // and clone the mercurial repository outside of the source root.
-        File realSource = FileUtilities.createTemporaryDirectory("real");
-        File sourceRoot = FileUtilities.createTemporaryDirectory("src");
-        MercurialRepositoryTest.runHgCommand(sourceRoot,
+        Path realSource = Files.createTempDirectory("real");
+        Path sourceRoot = Files.createTempDirectory("src");
+        MercurialRepositoryTest.runHgCommand(sourceRoot.toFile(),
                 "clone", repository.getSourceRoot() + File.separator + "mercurial",
-                realSource.getPath());
+                realSource.toString());
 
         // Create symlink from source root to the real repository.
         String symlinkPath = sourceRoot.toString() + File.separator + SYMLINK;
-        Files.createSymbolicLink(Paths.get(symlinkPath), Paths.get(realSource.getPath()));
+        Files.createSymbolicLink(Paths.get(symlinkPath), realSource);
 
         // Use alternative source root.
         env.setSourceRoot(sourceRoot.toString());
         // Need to have history cache enabled in order to perform scan of repositories.
         env.setHistoryEnabled(true);
         // Normally the Indexer would add the symlink automatically.
-        env.setAllowedSymlinks(new HashSet<String>(Arrays.asList(symlinkPath)));
+        env.setAllowedSymlinks(new HashSet<>(Arrays.asList(symlinkPath)));
 
         // Do a rescan of the projects, and only that (we don't care about
         // the other aspects of indexing in this test case).
@@ -234,8 +230,8 @@ public class IndexerRepoTest {
         assertTrue(HistoryGuru.getInstance().hasCacheForFile(fileInRepo));
 
         // cleanup
-        IOUtils.removeRecursive(realSource.toPath());
-        IOUtils.removeRecursive(sourceRoot.toPath());
+        IOUtils.removeRecursive(realSource);
+        IOUtils.removeRecursive(sourceRoot);
     }
 
     /**

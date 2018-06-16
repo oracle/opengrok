@@ -37,6 +37,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import org.json.simple.parser.ParseException;
+import org.opengrok.Info;
 import org.opengrok.authorization.AuthorizationFramework;
 import org.opengrok.configuration.RuntimeEnvironment;
 import org.opengrok.logger.LoggerFactory;
@@ -63,6 +64,9 @@ public final class WebappListener
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
+                    new Object[]{ Info.getVersion(), Info.getRevision()});
 
         String config = context.getInitParameter("CONFIGURATION");
         if (config == null) {
@@ -91,10 +95,10 @@ public final class WebappListener
                 try {
                     SocketAddress addr = new InetSocketAddress(InetAddress.getByName(cfg[0]), Integer.parseInt(cfg[1]));
                     if (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(addr)) {
-                        LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread");
+                        LOGGER.log(Level.SEVERE, "Failed to start configuration listener thread");
                     }
                 } catch (NumberFormatException | UnknownHostException ex) {
-                    LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread:", ex);
+                    LOGGER.log(Level.SEVERE, "Failed to start configuration listener thread:", ex);
                 }
             } else {
                 LOGGER.log(Level.SEVERE, "Incorrect format for the configuration address: ");

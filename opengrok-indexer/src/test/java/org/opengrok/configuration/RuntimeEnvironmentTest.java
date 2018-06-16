@@ -32,7 +32,7 @@ import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -43,7 +43,6 @@ import java.util.TreeMap;
 import java.util.regex.PatternSyntaxException;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.json.simple.parser.ParseException;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,7 +64,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.opengrok.util.FileUtilities;
 import org.opengrok.util.ForbiddenSymlinkException;
 import org.opengrok.util.IOUtils;
 
@@ -97,14 +95,10 @@ public class RuntimeEnvironmentTest {
     }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         // Create a default configuration
         Configuration config = new Configuration();
         RuntimeEnvironment.getInstance().setConfiguration(config);
-    }
-
-    @After
-    public void tearDown() throws IOException {
     }
 
     @Test
@@ -160,7 +154,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testGroups() throws IOException {
+    public void testGroups() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertFalse(instance.hasGroups());
         assertNotNull(instance.getGroups());
@@ -178,18 +172,14 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testRegister() throws InterruptedException, IOException {
+    public void testRegister() throws InterruptedException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String path = "/tmp/dataroot";
         instance.setDataRoot(path);
         instance.register();
-        Thread t = new Thread(new Runnable() {
-
-            public void run() {
-                Configuration c = new Configuration();
-                RuntimeEnvironment.getInstance().setConfiguration(c);
-
-            }
+        Thread t = new Thread(() -> {
+            Configuration c = new Configuration();
+            RuntimeEnvironment.getInstance().setConfiguration(c);
         });
         t.start();
         t.join();
@@ -232,17 +222,17 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testFetchHistoryWhenNotInCache() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertEquals(true, instance.isFetchHistoryWhenNotInCache());
+        assertTrue(instance.isFetchHistoryWhenNotInCache());
         instance.setFetchHistoryWhenNotInCache(false);
-        assertEquals(false, instance.isFetchHistoryWhenNotInCache());
+        assertFalse(instance.isFetchHistoryWhenNotInCache());
     }
 
     @Test
     public void testUseHistoryCache() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertEquals(true, instance.useHistoryCache());
+        assertTrue(instance.useHistoryCache());
         instance.setUseHistoryCache(false);
-        assertEquals(false, instance.useHistoryCache());
+        assertFalse(instance.useHistoryCache());
     }
 
     @Test
@@ -1052,13 +1042,13 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test(expected = IOException.class)
-    public void testSaveNullStatistics() throws IOException, ParseException {
+    public void testSaveNullStatistics() throws IOException {
         RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
         RuntimeEnvironment.getInstance().saveStatistics();
     }
 
     @Test(expected = IOException.class)
-    public void testSaveNullStatisticsFile() throws IOException, ParseException {
+    public void testSaveNullStatisticsFile() throws IOException {
         RuntimeEnvironment.getInstance().saveStatistics((File) null);
     }
 
@@ -1085,7 +1075,7 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // Create and set source root.
-        File sourceRoot = FileUtilities.createTemporaryDirectory("src");
+        File sourceRoot = Files.createTempDirectory("src").toFile();
         assertTrue(sourceRoot.exists());
         assertTrue(sourceRoot.isDirectory());
         env.setSourceRoot(sourceRoot.getPath());
@@ -1100,11 +1090,9 @@ public class RuntimeEnvironmentTest {
 
         // Create symlink underneath source root.
         String symlinkName = "symlink";
-        File realDir = FileUtilities.createTemporaryDirectory("realdir");
+        Path realDir = Files.createTempDirectory("realdir");
         File symlink = new File(sourceRoot, symlinkName);
-        Files.createSymbolicLink(
-                Paths.get(symlink.getPath()),
-                Paths.get(realDir.getPath()));
+        Files.createSymbolicLink(symlink.toPath(), realDir);
         assertTrue(symlink.exists());
         env.setAllowedSymlinks(new HashSet<>());
         ForbiddenSymlinkException expex = null;
@@ -1113,8 +1101,8 @@ public class RuntimeEnvironmentTest {
         } catch (ForbiddenSymlinkException e) {
             expex = e;
         }
-        assertTrue("getPathRelativeToSourceRoot() should have thrown " +
-            "IOexception for symlink that is not allowed", expex != null);
+        assertNotNull("getPathRelativeToSourceRoot() should have thrown " +
+                "IOexception for symlink that is not allowed", expex);
 
         // Allow the symlink and retest.
         env.setAllowedSymlinks(new HashSet<>(Arrays.asList(symlink.getPath())));
@@ -1123,6 +1111,6 @@ public class RuntimeEnvironmentTest {
 
         // cleanup
         IOUtils.removeRecursive(sourceRoot.toPath());
-        IOUtils.removeRecursive(realDir.toPath());
+        IOUtils.removeRecursive(realDir);
     }
 }

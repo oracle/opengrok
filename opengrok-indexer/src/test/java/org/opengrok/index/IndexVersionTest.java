@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import org.junit.After;
 import static org.junit.Assert.assertNotNull;
@@ -55,9 +54,9 @@ public class IndexVersionTest {
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
-    TestRepository repository;
-    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-    private File oldIndexDataDir;
+    private TestRepository repository;
+    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private Path oldIndexDataDir;
     
     @BeforeClass
     public static void setUpClass() {
@@ -77,7 +76,7 @@ public class IndexVersionTest {
         repository.destroy();
         
         if (oldIndexDataDir != null) {
-            IOUtils.removeRecursive(Paths.get(oldIndexDataDir.getPath()));
+            IOUtils.removeRecursive(oldIndexDataDir);
         }
     }
     
@@ -116,8 +115,8 @@ public class IndexVersionTest {
     @Test(expected = IndexVersion.IndexVersionException.class)
     public void testIndexVersionOldIndex() throws Exception {
         Configuration cfg = new Configuration();
-        oldIndexDataDir = FileUtilities.createTemporaryDirectory("data");
-        Path indexPath = Paths.get(oldIndexDataDir.getPath(), "index");
+        oldIndexDataDir = Files.createTempDirectory("data");
+        Path indexPath = oldIndexDataDir.resolve("index");
         Files.createDirectory(indexPath);
         File indexDir = new File(indexPath.toString());
         assertTrue("index directory check", indexDir.isDirectory());
@@ -126,7 +125,7 @@ public class IndexVersionTest {
         File archive = new File(oldindex.getPath());
         assertTrue("archive exists", archive.isFile());
         FileUtilities.extractArchive(archive, indexDir);
-        cfg.setDataRoot(oldIndexDataDir.getPath());
+        cfg.setDataRoot(oldIndexDataDir.toString());
         cfg.setProjectsEnabled(false);
         IndexVersion.check(cfg);
     }
