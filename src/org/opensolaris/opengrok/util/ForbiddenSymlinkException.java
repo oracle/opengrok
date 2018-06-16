@@ -28,10 +28,5 @@ package org.opensolaris.opengrok.util;
  * encountered while evaluating a file system path.
  */
 public class ForbiddenSymlinkException extends Exception {
-      public ForbiddenSymlinkException() { super(); }
       public ForbiddenSymlinkException(String message) { super(message); }
-      public ForbiddenSymlinkException(String message, Throwable cause) {
-          super(message, cause);
-      }
-      public ForbiddenSymlinkException(Throwable cause) { super(cause); }
 }
