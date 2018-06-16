@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.document;
 
@@ -26,10 +26,5 @@ package org.opensolaris.opengrok.analysis.document;
  * Represents an exception that occurs when mandoc exits non-zero.
  */
 public class MandocException extends Exception {
-      public MandocException() { super(); }
       public MandocException(String message) { super(message); }
-      public MandocException(String message, Throwable cause) {
-          super(message, cause);
-      }
-      public MandocException(Throwable cause) { super(cause); }
 }
