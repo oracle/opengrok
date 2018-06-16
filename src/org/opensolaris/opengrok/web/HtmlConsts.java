@@ -51,4 +51,7 @@ public class HtmlConsts {
     public static final String BR = "<br/>";
 
     public static final String HELLIP = "&hellip;";
+
+    /** private to enforce static */
+    private HtmlConsts() {}
 }
