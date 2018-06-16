@@ -124,8 +124,8 @@ public class IndexerRepoTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         
         // Make sure we start from scratch.
-        File dataRoot = Files.createTempDirectory("dataForPerProjectHistoryTest").toFile();
-        env.setDataRoot(dataRoot.getName());
+        Path dataRoot = Files.createTempDirectory("dataForPerProjectHistoryTest");
+        env.setDataRoot(dataRoot.toString());
         env.setProjectsEnabled(true);
         env.setHistoryEnabled(globalOn);
         
@@ -164,7 +164,7 @@ public class IndexerRepoTest {
             assertNotNull(HistoryGuru.getInstance().getHistory(fileInRepo));
         }
         
-        IOUtils.removeRecursive(dataRoot.toPath());
+        IOUtils.removeRecursive(dataRoot);
     }
     
     /**
