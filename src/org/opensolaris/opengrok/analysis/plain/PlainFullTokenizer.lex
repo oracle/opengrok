@@ -131,7 +131,9 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     switch (mode) {
         case SYMBOLS_AND_NON_WHITESPACE:
         case NON_WHITESPACE_ONLY:
-            onNonSymbolMatched(capture, yychar);
+            if (onNonSymbolMatched(capture, yychar)) {
+                return yystate();
+            }
             break;
         default:
             onSymbolMatched(capture, yychar);
@@ -143,7 +145,9 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     switch (mode) {
         case SYMBOLS_AND_NON_WHITESPACE:
         case NON_WHITESPACE_ONLY:
-            onNonSymbolMatched(yytext(), yychar);
+            if (onNonSymbolMatched(yytext(), yychar)) {
+                return yystate();
+            }
             break;
         default:
             // noop

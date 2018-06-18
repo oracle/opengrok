@@ -392,7 +392,9 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
      */
     @Override
     public void nonSymbolMatched(TextMatchedEvent evt) {
-        onTextMatched(evt.getSource(), evt.getStr(), evt.getStart());
+        boolean isPublished = onTextMatched(evt.getSource(), evt.getStr(),
+                evt.getStart());
+        evt.setPublished(isPublished);
     }
 
     /**
@@ -470,8 +472,12 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
     /**
      * If {@link #getTokenizerMode()} is eligible, then does handling w.r.t.
      * {@link #addNonWhitespace()}.
+     * @return {@code true} if one or more complete tokens were published from
+     * the text
      */
-    private void onTextMatched(Object source, String str, int start) {
+    private boolean onTextMatched(Object source, String str, int start) {
+        boolean ret = false;
+
         switch (mode) {
             case NON_WHITESPACE_ONLY:
             case SYMBOLS_AND_NON_WHITESPACE:
@@ -489,7 +495,9 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                          * eventHopper is sorted and its contents published to
                          * events.
                          */
-                        emptyHopperToQueue();
+                        if (emptyHopperToQueue()) {
+                            ret = true;
+                        }
                     } else if (nonWhitespaceOff < 0) {
                         nonWhitespaceOff = start + i;
                         nonWhitespaceBuilder.append(c);
@@ -501,6 +509,8 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
             default:
                 break;
         }
+
+        return ret;
     }
 
     /**
@@ -525,8 +535,12 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
      * {@link #getTokenizerMode()}, then queue at least one
      * {@link PendingToken} and possibly more according to
      * {@link #getTokenizerMode()}.
+     * @return {@code true} if one or more complete tokens were published from
+     * the text
      */
-    private void addNonWhitespace() {
+    private boolean addNonWhitespace() {
+        boolean ret = false;
+
         if (nonWhitespaceBuilder.length() > 0) {
             String nonwhsp = nonWhitespaceBuilder.toString();
             nonWhitespaceBuilder.setLength(0);
@@ -545,10 +559,11 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
             if (!abortedNonWhitespaceSubstrings) {
                 PendingToken tok = new PendingToken(nonwhsp, nonWhitespaceOff,
                         nonWhitespaceOff + nonwhsp.length());
-                addEventToken(tok);
+                ret = addEventToken(tok);
             }
         }
         nonWhitespaceOff = -1;
+        return ret;
     }
 
     /**
@@ -741,9 +756,9 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
      * first ordering the former and determining position increment values for
      * the ordered elements relative to their predecessors in the hopper.
      */
-    private void emptyHopperToQueue() {
+    private boolean emptyHopperToQueue() {
         if (eventHopper.size() < 1) {
-            return;
+            return false;
         }
 
         if (eventHopper.size() == 1) {
@@ -753,7 +768,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
                 ++snapshotEventCount;
                 --snapshotEventHopperCount;
             }
-            return;
+            return true;
         }
 
         eventHopper.sort(PendingTokenOffsetsComparator.INSTANCE);
@@ -820,6 +835,7 @@ public class JFlexTokenizer extends Tokenizer implements SymbolMatchedListener,
             snapshotEventHopperCount -= eventHopper.size();
         }
         eventHopper.clear();
+        return true;
     }
 
     /**

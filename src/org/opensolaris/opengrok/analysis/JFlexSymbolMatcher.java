@@ -171,9 +171,11 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * {@link String#valueOf(char)} {@code c} and {@code start}.
      * @param c the text character
      * @param start the text start position
+     * @return {@code true} if one or more complete tokens were published from
+     * the text
      */
-    protected void onNonSymbolMatched(char c, int start) {
-        onNonSymbolMatched(String.valueOf(c), start);
+    protected boolean onNonSymbolMatched(char c, int start) {
+        return onNonSymbolMatched(String.valueOf(c), start);
     }
 
     /**
@@ -182,14 +184,18 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * for a subscribed listener.
      * @param str the text string
      * @param start the text start position
+     * @return {@code true} if one or more complete tokens were published from
+     * the text
      */
-    protected void onNonSymbolMatched(String str, int start) {
+    protected boolean onNonSymbolMatched(String str, int start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, start,
                 start + str.length());
             l.nonSymbolMatched(evt);
+            return evt.isPublished();
         }
+        return false;
     }
 
     /**
@@ -199,15 +205,19 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param hint the text hint
      * @param start the text start position
+     * @return {@code true} if one or more complete tokens were published from
+     * the text
      */
-    protected void onNonSymbolMatched(String str, EmphasisHint hint,
+    protected boolean onNonSymbolMatched(String str, EmphasisHint hint,
             int start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, hint, start,
                 start + str.length());
             l.nonSymbolMatched(evt);
+            return evt.isPublished();
         }
+        return false;
     }
 
     /**
