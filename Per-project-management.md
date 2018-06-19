@@ -22,7 +22,10 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 ```
    projadm -b /opengrok -a PROJECT
 ```
-- add any per-project settings - see [putting read-only configuration into effect](https://github.com/oracle/opengrok/wiki/Read-only-configuration#putting-read-only-configuration-into-effect)
+- change any per-project settings, e.g.:
+```
+   Messages -n project -t PROJECT "set handleRenamedFiles = true"
+```
 - reindex
   - Use `OpenGrok indexpart` or `reindex-project.ksh` (in the latter case the previous step is not necessary since the script downloads fresh configuration from the webapp)
 - save the configuration (this is necessary so that the indexed flag of the project is persistent). The -R option can be used to supply path to read-only configuration so that it is merged with current configuration.
