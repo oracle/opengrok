@@ -144,19 +144,6 @@ public final class Indexer {
                 System.exit(status);
             }
             
-            // Check version of index(es) versus current Lucene version and exit
-            // with return code indicating success or failure.
-            if (checkIndexVersion) {
-                int retval = 0;
-                try {
-                    IndexVersion.check(cfg);
-                } catch (IndexVersionException e) {
-                    System.err.printf("Index version check failed: %s", e);
-                    retval = 1;
-                }
-                System.exit(retval);
-            }
-            
             if (awaitProfiler) pauseToAwaitProfiler();
 
             env = RuntimeEnvironment.getInstance();
@@ -206,11 +193,24 @@ public final class Indexer {
             // Assemble the unprocessed command line arguments (possibly
             // a list of paths). This will be used to perform more fine
             // grained checking in invalidateRepositories().
-            for (int optind=0; optind< argv.length; optind++) {
+            for (int optind = 0; optind < argv.length; optind++) {
                 String path = Paths.get(cfg.getSourceRoot(), argv[optind]).toString();
                 subFilesList.add(path);
             }
 
+            // Check version of index(es) versus current Lucene version and exit
+            // with return code indicating success or failure.
+            if (checkIndexVersion) {
+                int retval = 0;
+                try {
+                    IndexVersion.check(cfg, subFilesList);
+                } catch (IndexVersionException e) {
+                    System.err.printf("Index version check failed: %s", e);
+                    retval = 1;
+                }
+                System.exit(retval);
+            }
+            
             // If an user used customizations for projects he perhaps just
             // used the key value for project without a name but the code
             // expects a name for the project. Therefore we fill the name
