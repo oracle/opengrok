@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package opengrok.auth.plugin;
 
@@ -80,7 +80,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
     /**
      * LDAP lookup facade.
      */
-    private AbstractLdapProvider ldap;
+    private AbstractLdapProvider ldapProvider;
 
     public AbstractLdapPlugin() {
         SESSION_USERNAME += "-" + nextId;
@@ -124,7 +124,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
 
         if ((fake = (Boolean) parameters.get(FAKE_PARAM)) != null
                 && fake) {
-            ldap = new FakeLdapFacade();
+            ldapProvider = new FakeLdapFacade();
             return;
         }
         
@@ -134,7 +134,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
 
         try {
             cfg = getConfiguration(configurationPath);
-            ldap = new LdapFacade(cfg);
+            ldapProvider = new LdapFacade(cfg);
         } catch (IOException ex) {
             throw new IllegalArgumentException("Unable to read the configuration", ex);
         }
@@ -162,9 +162,9 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      */
     @Override
     public void unload() {
-        if (ldap != null) {
-            ldap.close();
-            ldap = null;
+        if (ldapProvider != null) {
+            ldapProvider.close();
+            ldapProvider = null;
         }
         cfg = null;
     }
@@ -184,7 +184,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
      * @return the LDAP provider
      */
     public AbstractLdapProvider getLdapProvider() {
-        return ldap;
+        return ldapProvider;
     }
 
     /**
@@ -254,7 +254,7 @@ abstract public class AbstractLdapPlugin implements IAuthorizationPlugin {
 
         updateSession(req, user.getUsername(), false);
 
-        if (ldap == null) {
+        if (ldapProvider == null) {
             return;
         }
 
