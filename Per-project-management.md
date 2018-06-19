@@ -26,7 +26,7 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 ```
    Messages -n project -t PROJECT "set handleRenamedFiles = true"
 ```
-- get the changed configuration
+- if per-project configuration was changed in the previous step, get the changed configuration (so that the indexer can follow it):
 ```
    Messages -n config -t getconf > /opengrok/etc/configuration.xml
 ```
