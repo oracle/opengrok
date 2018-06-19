@@ -28,6 +28,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.After;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -86,7 +88,7 @@ public class IndexVersionTest {
      * Generate index(es) and check version.
      * @throws Exception 
      */
-    private void testIndexVersion(boolean projectsEnabled) throws Exception {
+    private void testIndexVersion(boolean projectsEnabled, List<String> subFiles) throws Exception {
         env.setVerbose(true);
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(projectsEnabled);
@@ -94,7 +96,7 @@ public class IndexVersionTest {
                 false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
-        IndexVersion.check(env.getConfiguration(), new ArrayList<>());
+        IndexVersion.check(env.getConfiguration(), subFiles);
     }
     
     @Test
@@ -104,14 +106,20 @@ public class IndexVersionTest {
     
     @Test
     @ConditionalRun(CtagsInstalled.class)
-    public void testIndexVersionNoProjects() throws Exception {
-        testIndexVersion(true);
+    public void testIndexVersionProjects() throws Exception {
+        testIndexVersion(true, new ArrayList<>());
     }
     
     @Test
     @ConditionalRun(CtagsInstalled.class)
-    public void testIndexVersionProjects() throws Exception {
-        testIndexVersion(false);
+    public void testIndexVersionSelectedProjects() throws Exception {
+        testIndexVersion(true, Arrays.asList(new String[]{ "mercurial", "git" }));
+    }
+    
+    @Test
+    @ConditionalRun(CtagsInstalled.class)
+    public void testIndexVersionNoProjects() throws Exception {
+        testIndexVersion(false, new ArrayList<>());
     }
     
     @Test(expected = IndexVersion.IndexVersionException.class)
