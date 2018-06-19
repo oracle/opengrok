@@ -47,6 +47,7 @@ import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  * Verify index version check.
+ * 
  * @author Vladimir Kotal
  */
 public class IndexVersionTest {
@@ -93,12 +94,12 @@ public class IndexVersionTest {
                 false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
-        IndexVersion.check(env.getConfiguration());
+        IndexVersion.check(env.getConfiguration(), new ArrayList<>());
     }
     
     @Test
     public void testIndexVersionNoIndex() throws Exception {
-        IndexVersion.check(env.getConfiguration());
+        IndexVersion.check(env.getConfiguration(), new ArrayList<>());
     }
     
     @Test
@@ -128,6 +129,6 @@ public class IndexVersionTest {
         FileUtilities.extractArchive(archive, indexDir);
         cfg.setDataRoot(oldIndexDataDir.toString());
         cfg.setProjectsEnabled(false);
-        IndexVersion.check(cfg);
+        IndexVersion.check(cfg, new ArrayList<>());
     }
 }
