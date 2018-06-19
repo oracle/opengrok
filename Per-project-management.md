@@ -28,7 +28,7 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 ```
 - if per-project configuration was changed in the previous step, get the changed configuration (so that the indexer can follow it):
 ```
-   Messages -n config -t getconf > /opengrok/etc/configuration.xml
+   projadm -b /opengrok -r
 ```
 - reindex
   - Use `OpenGrok indexpart` or `reindex-project.ksh` (in the latter case the previous step is not necessary since the script downloads fresh configuration from the webapp)
