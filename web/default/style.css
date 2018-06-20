@@ -24,6 +24,10 @@ div#src0 a.l.selected:after, div#src0 a.hl.selected:after{
 div[id^='src'] a.l.target, div[id^='src'] a.hl.target {
     background: orange;
     color:yellow;
+    -webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+    user-select: none;          /* Likely future */
 }
 
 a:link {
