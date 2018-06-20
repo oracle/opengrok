@@ -1198,7 +1198,7 @@ public final class Configuration {
      */
     public String getFooterIncludeFileContent(boolean force) {
         if (footer == null || force) {
-            footer = getFileContent(new File(getDataRoot(), FOOTER_INCLUDE_FILE));
+            footer = getFileContent(new File(getIncludeRoot(), FOOTER_INCLUDE_FILE));
         }
         return footer;
     }
@@ -1221,7 +1221,7 @@ public final class Configuration {
      */
     public String getHeaderIncludeFileContent(boolean force) {
         if (header == null || force) {
-            header = getFileContent(new File(includeRoot, HEADER_INCLUDE_FILE));
+            header = getFileContent(new File(getIncludeRoot(), HEADER_INCLUDE_FILE));
         }
         return header;
     }
@@ -1244,7 +1244,7 @@ public final class Configuration {
      */
     public String getBodyIncludeFileContent(boolean force) {
         if (body == null || force) {
-            body = getFileContent(new File(includeRoot, BODY_INCLUDE_FILE));
+            body = getFileContent(new File(getIncludeRoot(), BODY_INCLUDE_FILE));
         }
         return body;
     }
@@ -1269,7 +1269,7 @@ public final class Configuration {
      */
     public String getForbiddenIncludeFileContent(boolean force) {
         if (eforbidden_content == null || force) {
-            eforbidden_content = getFileContent(new File(includeRoot, E_FORBIDDEN_INCLUDE_FILE));
+            eforbidden_content = getFileContent(new File(getIncludeRoot(), E_FORBIDDEN_INCLUDE_FILE));
         }
         return eforbidden_content;
     }
