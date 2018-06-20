@@ -70,7 +70,7 @@ Supported Environment Variables for configuring the default setup:
   - OPENGROK_CTAGS              Full path to Exuberant or Universal CTags binary
   - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
                                   options for CTags program (for its --options
-                                  switch). Default is DATA_ROOT/etc/ctags.config
+                                  switch). Default is OPENGROK_INSTANCE_BASE/etc/ctags.config
   - OPENGROK_MANDOC             Full path to mandoc(1) binary
   - OPENGROK_LOCKING            Locking mode on|off|simple|native (default off)
                                   ("on" is an alias for "simple")
