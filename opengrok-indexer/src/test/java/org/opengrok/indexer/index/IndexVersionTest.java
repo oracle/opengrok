@@ -28,6 +28,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.After;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -47,6 +49,7 @@ import org.opengrok.indexer.util.TestRepository;
 
 /**
  * Verify index version check.
+ * 
  * @author Vladimir Kotal
  */
 public class IndexVersionTest {
@@ -84,7 +87,7 @@ public class IndexVersionTest {
      * Generate index(es) and check version.
      * @throws Exception 
      */
-    private void testIndexVersion(boolean projectsEnabled) throws Exception {
+    private void testIndexVersion(boolean projectsEnabled, List<String> subFiles) throws Exception {
         env.setVerbose(true);
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(projectsEnabled);
@@ -92,24 +95,30 @@ public class IndexVersionTest {
                 false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
-        IndexVersion.check(env.getConfiguration());
+        IndexVersion.check(env.getConfiguration(), subFiles);
     }
     
     @Test
     public void testIndexVersionNoIndex() throws Exception {
-        IndexVersion.check(env.getConfiguration());
-    }
-    
-    @Test
-    @ConditionalRun(CtagsInstalled.class)
-    public void testIndexVersionNoProjects() throws Exception {
-        testIndexVersion(true);
+        IndexVersion.check(env.getConfiguration(), new ArrayList<>());
     }
     
     @Test
     @ConditionalRun(CtagsInstalled.class)
     public void testIndexVersionProjects() throws Exception {
-        testIndexVersion(false);
+        testIndexVersion(true, new ArrayList<>());
+    }
+    
+    @Test
+    @ConditionalRun(CtagsInstalled.class)
+    public void testIndexVersionSelectedProjects() throws Exception {
+        testIndexVersion(true, Arrays.asList(new String[]{ "mercurial", "git" }));
+    }
+    
+    @Test
+    @ConditionalRun(CtagsInstalled.class)
+    public void testIndexVersionNoProjects() throws Exception {
+        testIndexVersion(false, new ArrayList<>());
     }
     
     @Test(expected = IndexVersion.IndexVersionException.class)
@@ -127,6 +136,6 @@ public class IndexVersionTest {
         FileUtilities.extractArchive(archive, indexDir);
         cfg.setDataRoot(oldIndexDataDir.toString());
         cfg.setProjectsEnabled(false);
-        IndexVersion.check(cfg);
+        IndexVersion.check(cfg, new ArrayList<>());
     }
 }

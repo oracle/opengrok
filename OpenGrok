@@ -864,7 +864,8 @@ CheckIndexVersion()
     then
         return
     fi
-    if ! MinimalInvocation --checkIndexVersion -R "${XML_CONFIGURATION}" -d "${DATA_ROOT}"
+    if ! MinimalInvocation --checkIndexVersion \
+        -R "${XML_CONFIGURATION}" -d "${DATA_ROOT}" "$@"
     then
         echo "\nIndex version check failed. You might want to remove all data" \
             "under the data root directory ${DATA_ROOT} and reindex.\n"
@@ -1143,7 +1144,7 @@ case "${1}" in
 	    FatalError "need configuration via OPENGROK_READ_XML_CONFIGURATION"
 	fi
         ValidateConfiguration
-        CheckIndexVersion
+        CheckIndexVersion $@
         CreateRuntimeRequirements
         UpdateDataPartial $@
         ;;

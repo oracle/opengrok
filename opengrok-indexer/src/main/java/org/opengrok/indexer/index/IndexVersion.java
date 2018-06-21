@@ -24,6 +24,7 @@ package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
@@ -52,16 +53,25 @@ public class IndexVersion {
     /**
      * Check if version of index(es) matches major Lucene version.
      * @param cfg configuration
+     * @param subFilesList list of paths. If non-empty, only projects matching these paths will be checked.
      * @throws Exception otherwise
      */
-    public static void check(Configuration cfg) throws Exception {
+    public static void check(Configuration cfg, List<String> subFilesList) throws Exception {
         File indexRoot = new File(cfg.getDataRoot(), IndexDatabase.INDEX_DIR);
-        if (cfg.isProjectsEnabled()) {
-            for (String projectName : cfg.getProjects().keySet()) {
+        
+        if (!subFilesList.isEmpty()) {
+            // Assumes projects are enabled.
+            for (String projectName : subFilesList) {
                 checkDir(getDirectory(new File(indexRoot, projectName)));
             }
         } else {
-            checkDir(getDirectory(indexRoot));
+            if (cfg.isProjectsEnabled()) {
+                for (String projectName : cfg.getProjects().keySet()) {
+                    checkDir(getDirectory(new File(indexRoot, projectName)));
+                }
+            } else {
+                checkDir(getDirectory(indexRoot));
+            }
         }
     }
     
