@@ -43,6 +43,7 @@ public class IncludeFilesTest {
     static final String CONTENT_1 = "foo";
     static final String CONTENT_2 = "bar";
     static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    static final String LINE_SEP = System.getProperty("line.separator");
     
     @BeforeClass
     public static void setUpClass() throws IOException {
@@ -60,10 +61,10 @@ public class IncludeFilesTest {
     public void testGetHeaderIncludeFileContent() throws IOException {
         File file = new File(includeRoot.toFile(), Configuration.HEADER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
-        assertEquals(CONTENT_1 + System.getProperty("line.separator"),
+        assertEquals(CONTENT_1 + LINE_SEP,
                 env.getConfiguration().getHeaderIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
-        assertEquals(CONTENT_2 + System.getProperty("line.separator"),
+        assertEquals(CONTENT_2 + LINE_SEP,
                 env.getConfiguration().getHeaderIncludeFileContent(true));
     }
     
@@ -71,10 +72,10 @@ public class IncludeFilesTest {
     public void testGetBodyIncludeFileContent() throws IOException {
         File file = new File(includeRoot.toFile(), Configuration.BODY_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
-        assertEquals(CONTENT_1 + System.getProperty("line.separator"),
+        assertEquals(CONTENT_1 + LINE_SEP,
                 env.getConfiguration().getBodyIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
-        assertEquals(CONTENT_2 + System.getProperty("line.separator"),
+        assertEquals(CONTENT_2 + LINE_SEP,
                 env.getConfiguration().getBodyIncludeFileContent(true));
     }
     
@@ -82,10 +83,10 @@ public class IncludeFilesTest {
     public void testGetFooterIncludeFileContent() throws IOException {
         File file = new File(includeRoot.toFile(), Configuration.FOOTER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
-        assertEquals(CONTENT_1 + System.getProperty("line.separator"),
+        assertEquals(CONTENT_1 + LINE_SEP,
                 env.getConfiguration().getFooterIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
-        assertEquals(CONTENT_2 + System.getProperty("line.separator"),
+        assertEquals(CONTENT_2 + LINE_SEP,
                 env.getConfiguration().getFooterIncludeFileContent(true));
     }
     
@@ -93,10 +94,10 @@ public class IncludeFilesTest {
     public void testGetForbiddenIncludeFileContent() throws IOException {
         File file = new File(includeRoot.toFile(), Configuration.E_FORBIDDEN_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
-        assertEquals(CONTENT_1 + System.getProperty("line.separator"),
+        assertEquals(CONTENT_1 + LINE_SEP,
                 env.getConfiguration().getForbiddenIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
-        assertEquals(CONTENT_2 + System.getProperty("line.separator"),
+        assertEquals(CONTENT_2 + LINE_SEP,
                 env.getConfiguration().getForbiddenIncludeFileContent(true));
     }
 }
