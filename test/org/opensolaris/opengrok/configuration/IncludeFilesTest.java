@@ -43,7 +43,7 @@ public class IncludeFilesTest {
     static final String CONTENT_1 = "foo";
     static final String CONTENT_2 = "bar";
     static RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-    static final String LINE_SEP = System.getProperty("line.separator");
+    static final String LINE_SEP = System.lineSeparator();
     
     @BeforeClass
     public static void setUpClass() throws IOException {
@@ -52,7 +52,7 @@ public class IncludeFilesTest {
     }
     
     private void writeStringToFile(File file, String str) throws IOException {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file.toString()))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
             bw.write(str);
         }
     }

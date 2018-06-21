@@ -127,7 +127,6 @@ public class RuntimeEnvironmentTest {
         // set data root
         File f = File.createTempFile("dataroot", null);
         String path = f.getCanonicalPath();
-        assertTrue(f.exists());
         instance.setDataRoot(path);
         
         // verify they are the same
@@ -136,7 +135,6 @@ public class RuntimeEnvironmentTest {
         // set include root
         f = File.createTempFile("includeroot", null);
         path = f.getCanonicalPath();
-        assertTrue(f.exists());
         instance.getConfiguration().setIncludeRoot(path);
         assertEquals(path, instance.getIncludeRootPath());
     }
