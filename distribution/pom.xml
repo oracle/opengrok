@@ -76,7 +76,7 @@
               <arguments>
                 <argument>-classpath</argument>
                 <argument>${project.build.directory}/dist/opengrok-${project.version}.jar</argument>
-                <argument>org.opengrok.index.Indexer</argument>
+                <argument>org.opengrok.indexer.index.Indexer</argument>
                 <argument>--man</argument>
               </arguments>
             </configuration>
