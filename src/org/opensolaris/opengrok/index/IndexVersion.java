@@ -59,7 +59,7 @@ public class IndexVersion {
     public static void check(Configuration cfg, List<String> subFilesList) throws Exception {
         File indexRoot = new File(cfg.getDataRoot(), IndexDatabase.INDEX_DIR);
         
-        if (subFilesList.size() > 0) {
+        if (!subFilesList.isEmpty()) {
             // Assumes projects are enabled.
             for (String projectName : subFilesList) {
                 checkDir(getDirectory(new File(indexRoot, projectName)));
