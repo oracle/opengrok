@@ -22,7 +22,7 @@
  */
 package org.opengrok.indexer.logger.formatter;
 
-import org.opengrok.Info;
+import org.opengrok.indexer.Info;
 
 public class ConsoleFormatter extends LogFormatter {
 

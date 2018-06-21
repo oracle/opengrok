@@ -22,7 +22,7 @@
  */
 package org.opengrok.indexer.logger.formatter;
 
-import org.opengrok.Info;
+import org.opengrok.indexer.Info;
 
 public class SimpleConsoleFormatter extends LogFormatter {
     private static final String FORMAT = "%1$tH:%1$tM:%1$tS %4$s: %5$s%6$s%n";

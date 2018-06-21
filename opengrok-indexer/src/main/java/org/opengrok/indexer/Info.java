@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok;
+package org.opengrok.indexer;
 
 import java.io.IOException;
 import java.io.InputStream;
