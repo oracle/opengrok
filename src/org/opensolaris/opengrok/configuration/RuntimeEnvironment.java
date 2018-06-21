@@ -1562,10 +1562,14 @@ public final class RuntimeEnvironment {
         // repositories in HistoryGuru so the configuration needs to reflect that.
         configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
         
-        configuration.getBodyIncludeFileContent(true);
-        configuration.getHeaderIncludeFileContent(true);
-        configuration.getFooterIncludeFileContent(true);
-        configuration.getForbiddenIncludeFileContent(true);
+        reloadIncludeFiles(configuration);
+    }
+
+    private void reloadIncludeFiles(Configuration configuration1) {
+        configuration1.getBodyIncludeFileContent(true);
+        configuration1.getHeaderIncludeFileContent(true);
+        configuration1.getFooterIncludeFileContent(true);
+        configuration1.getForbiddenIncludeFileContent(true);
     }
 
     public Configuration getConfiguration() {
