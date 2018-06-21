@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,15 +34,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.index.Indexer;
-import org.opengrok.index.IndexerTest;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.index.Indexer;
+import org.opengrok.indexer.index.IndexerTest;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.TestRepository;
 
 /**
  * Unit tests for the {@code SearchHelper} class.

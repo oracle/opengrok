@@ -20,13 +20,13 @@
 /*
  * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import org.opengrok.util.Executor;
+import org.opengrok.indexer.util.Executor;
 
 
 public final class SCCSget {

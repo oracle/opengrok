@@ -21,13 +21,13 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.fortran;
+package org.opengrok.indexer.analysis.fortran;
 
 import java.io.Reader;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.JFlexTokenizer;
-import org.opengrok.analysis.JFlexXref;
-import org.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.JFlexTokenizer;
+import org.opengrok.indexer.analysis.JFlexXref;
+import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 
 /**
  * An Analyzer for Fortran type of files

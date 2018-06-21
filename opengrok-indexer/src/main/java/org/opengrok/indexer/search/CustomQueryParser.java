@@ -20,13 +20,13 @@
 /*
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.search;
+package org.opengrok.indexer.search;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
-import org.opengrok.analysis.CompatibleAnalyser;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.analysis.CompatibleAnalyser;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
  * A custom query parser for OpenGrok.

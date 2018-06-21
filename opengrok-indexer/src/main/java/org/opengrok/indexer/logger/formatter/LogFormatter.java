@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.logger.formatter;
+package org.opengrok.indexer.logger.formatter;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

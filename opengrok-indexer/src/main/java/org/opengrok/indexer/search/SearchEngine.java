@@ -21,7 +21,7 @@
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.search;
+package org.opengrok.indexer.search;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,22 +55,22 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
-import org.opengrok.analysis.CompatibleAnalyser;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.Scopes;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.configuration.SuperIndexSearcher;
-import org.opengrok.history.HistoryException;
-import org.opengrok.index.IndexDatabase;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.search.Summary.Fragment;
-import org.opengrok.search.context.Context;
-import org.opengrok.search.context.HistoryContext;
-import org.opengrok.web.PageConfig;
-import org.opengrok.web.Prefix;
-import org.opengrok.web.ProjectHelper;
+import org.opengrok.indexer.analysis.CompatibleAnalyser;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.Scopes;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.SuperIndexSearcher;
+import org.opengrok.indexer.history.HistoryException;
+import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.Summary.Fragment;
+import org.opengrok.indexer.search.context.Context;
+import org.opengrok.indexer.search.context.HistoryContext;
+import org.opengrok.indexer.web.PageConfig;
+import org.opengrok.indexer.web.Prefix;
+import org.opengrok.indexer.web.ProjectHelper;
 
 /**
  * This is an encapsulation of the details on how to search in the index

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.io.EOFException;
 import java.io.FilterOutputStream;

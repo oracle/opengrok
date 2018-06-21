@@ -23,7 +23,7 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search;
+package org.opengrok.indexer.search;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,17 +48,17 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.json.simple.JSONArray;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.Scopes;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.HistoryException;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.IOUtils;
-import org.opengrok.web.Prefix;
-import org.opengrok.web.SearchHelper;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.Scopes;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryException;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.web.Prefix;
+import org.opengrok.indexer.web.SearchHelper;
+import org.opengrok.indexer.web.Util;
 
 /**
  * @author Chandan slightly rewritten by Lubos Kosco

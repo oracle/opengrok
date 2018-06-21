@@ -20,12 +20,12 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.authorization;
+package org.opengrok.indexer.authorization;
 
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
 
 public class TestPlugin implements IAuthorizationPlugin {
 

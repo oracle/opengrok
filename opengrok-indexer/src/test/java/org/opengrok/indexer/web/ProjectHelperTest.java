@@ -21,7 +21,7 @@
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -33,11 +33,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.junit.Assert;
 import org.junit.Test;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.RepoRepository;
-import org.opengrok.history.RepositoryInfo;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.RepoRepository;
+import org.opengrok.indexer.history.RepositoryInfo;
 
 public class ProjectHelperTest extends ProjectHelperTestBase {
 

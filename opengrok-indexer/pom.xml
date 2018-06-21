@@ -164,7 +164,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 </executions>
                 <configuration>
                     <filesToInclude>
-                        ${basedir}/target/generated-sources/jflex/org/opengrok/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/analysis/plain/PlainSymbolTokenizer.java
+                        ${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/java/JavaSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/javascript/JavaScriptSymbolTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainFullTokenizer.java,${basedir}/target/generated-sources/jflex/org/opengrok/indexer/analysis/plain/PlainSymbolTokenizer.java
                     </filesToInclude>
                     <replacements>
                         <replacement>

@@ -21,7 +21,7 @@
  * Copyright (c) 2007, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -37,8 +37,8 @@ import java.util.Set;
 
 import java.util.logging.Logger;
 
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Class representing file annotation, i.e., revision and author for the last

@@ -23,9 +23,9 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.uue;
+package org.opengrok.indexer.analysis.uue;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class UuencodeFullTokenizer

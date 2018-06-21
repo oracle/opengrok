@@ -24,7 +24,7 @@
 /**
  * for plain text tokenizers
  */
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
@@ -32,10 +32,10 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
 import java.util.TreeMap;
-import org.opengrok.search.Hit;
-import org.opengrok.web.Util;
-import org.opengrok.analysis.Scopes;
-import org.opengrok.analysis.Scopes.Scope;
+import org.opengrok.indexer.search.Hit;
+import org.opengrok.indexer.web.Util;
+import org.opengrok.indexer.analysis.Scopes;
+import org.opengrok.indexer.analysis.Scopes.Scope;
 
 %%
 

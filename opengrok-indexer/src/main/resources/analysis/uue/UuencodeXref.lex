@@ -23,11 +23,11 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.uue;
+package org.opengrok.indexer.analysis.uue;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.analysis.EmphasisHint;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.EmphasisHint;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class UuencodeXref

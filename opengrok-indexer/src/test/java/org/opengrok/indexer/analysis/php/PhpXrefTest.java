@@ -21,7 +21,7 @@
  * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.php;
+package org.opengrok.indexer.analysis.php;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -38,13 +38,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.opengrok.analysis.CtagsReader;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.WriteXrefArgs;
-import org.opengrok.analysis.Xrefer;
-import static org.opengrok.util.CustomAssertions.assertLinesEqual;
-import static org.opengrok.util.StreamUtils.copyStream;
+import org.opengrok.indexer.analysis.CtagsReader;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.WriteXrefArgs;
+import org.opengrok.indexer.analysis.Xrefer;
+import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
+import static org.opengrok.indexer.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link PhpXref} class.

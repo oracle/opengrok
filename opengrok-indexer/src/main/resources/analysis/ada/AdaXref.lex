@@ -26,11 +26,11 @@
  * Cross reference an Ada file
  */
 
-package org.opengrok.analysis.ada;
+package org.opengrok.indexer.analysis.ada;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class AdaXref

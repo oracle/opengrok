@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.util.Version;
-import org.opengrok.configuration.Configuration;
+import org.opengrok.indexer.configuration.Configuration;
 
 /**
  * Index version checker

@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;

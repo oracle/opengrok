@@ -22,9 +22,9 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.c;
+package org.opengrok.indexer.analysis.c;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class CxxSymbolTokenizer

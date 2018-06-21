@@ -29,9 +29,9 @@
 // comments can be nested in kotlin, so below logic doesn't allow that with yybegin we save only one nesting
 // same for strings
 
-package org.opengrok.analysis.kotlin;
+package org.opengrok.indexer.analysis.kotlin;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class KotlinSymbolTokenizer

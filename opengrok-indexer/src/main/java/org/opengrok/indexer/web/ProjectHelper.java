@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +29,11 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
-import org.opengrok.history.RepositoryInfo;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.history.RepositoryInfo;
 
-import static org.opengrok.web.PageConfig.OPEN_GROK_PROJECT;
+import static org.opengrok.indexer.web.PageConfig.OPEN_GROK_PROJECT;
 
 /**
  * Preprocessing of projects, repositories and groups for the UI

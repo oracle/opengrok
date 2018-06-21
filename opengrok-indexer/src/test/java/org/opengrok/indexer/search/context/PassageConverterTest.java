@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.util.SortedMap;
 import org.apache.lucene.search.uhighlight.Passage;
@@ -31,7 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengrok.util.SourceSplitter;
+import org.opengrok.indexer.util.SourceSplitter;
 
 /**
  * Represents a container for tests of {@link PassageConverter} etc.

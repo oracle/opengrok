@@ -26,9 +26,9 @@
  * Gets Erlang symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.erlang;
+package org.opengrok.indexer.analysis.erlang;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class ErlangSymbolTokenizer

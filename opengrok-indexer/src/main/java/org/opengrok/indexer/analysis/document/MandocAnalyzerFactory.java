@@ -22,14 +22,14 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.document;
+package org.opengrok.indexer.analysis.document;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.FileAnalyzerFactory;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 public class MandocAnalyzerFactory extends FileAnalyzerFactory {
 

@@ -21,13 +21,13 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  *

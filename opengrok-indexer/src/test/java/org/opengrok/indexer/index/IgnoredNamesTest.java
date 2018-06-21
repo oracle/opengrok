@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
@@ -43,11 +43,11 @@ import junit.framework.AssertionFailedError;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengrok.analysis.c.CAnalyzerFactoryTest;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.RepositoryFactory;
-import org.opengrok.util.FileUtilities;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.analysis.c.CAnalyzerFactoryTest;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.util.FileUtilities;
+import org.opengrok.indexer.util.TestRepository;
 
 /**
  *
@@ -62,7 +62,7 @@ public class IgnoredNamesTest {
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/index/source.zip"));
+                "/org/opengrok/indexer/index/source.zip"));
 
         // Populate ignored lists with repository specific entries.
         RepositoryFactory.initializeIgnoredNames(RuntimeEnvironment.getInstance());

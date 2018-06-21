@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.io.IOException;
 

@@ -21,7 +21,7 @@
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright 2009 - 2011 Jens Elkner. 
  */
-package org.opengrok.analysis.document;
+package org.opengrok.indexer.analysis.document;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -40,9 +40,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.opengrok.analysis.StreamSource;
-import org.opengrok.util.TestRepository;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.web.Util;
 
 /**
  * @author Jens Elkner
@@ -56,8 +56,8 @@ public class TroffAnalyzerTest {
     private static TestRepository repository;
 
     /**
-     * Test method for {@link org.opengrok.analysis.document
-     * .TroffAnalyzer#TroffAnalyzer(org.opengrok.analysis.FileAnalyzerFactory)}.
+     * Test method for {@link org.opengrok.indexer.analysis.document
+     * .TroffAnalyzer#TroffAnalyzer(org.opengrok.indexer.analysis.FileAnalyzerFactory)}.
      *
      * @throws java.lang.Exception exception
      */
@@ -69,7 +69,7 @@ public class TroffAnalyzerTest {
         assertNotNull(analyzer);
         repository = new TestRepository();
         repository.create(TroffAnalyzerTest.class.getResourceAsStream(
-                "/org/opengrok/index/source.zip"));
+                "/org/opengrok/indexer/index/source.zip"));
 
         String file = System.getProperty("opengrok.test.troff.doc",
                 repository.getSourceRoot() + "/document/foobar.1");
@@ -109,7 +109,7 @@ public class TroffAnalyzerTest {
     }
 
     /**
-     * Test method for {@link org.opengrok.analysis.document
+     * Test method for {@link org.opengrok.indexer.analysis.document
      *  .TroffAnalyzer#analyze(org.apache.lucene.document.Document,
      *      java.io.InputStream)}.
      *
@@ -128,7 +128,7 @@ public class TroffAnalyzerTest {
     }
 
     /**
-     * Test method for {@link org.opengrok.analysis.document
+     * Test method for {@link org.opengrok.indexer.analysis.document
      * .TroffAnalyzer#tokenStream(java.lang.String, java.io.Reader)}.
      */
     @Ignore
@@ -137,11 +137,11 @@ public class TroffAnalyzerTest {
     }
 
     /**
-     * Test method for {@link org.opengrok.analysis.document
+     * Test method for {@link org.opengrok.indexer.analysis.document
      * .TroffAnalyzer#writeXref(java.io.Reader, java.io.Writer,
-     *      org.opengrok.analysis.Definitions,
-     *      org.opengrok.history.Annotation,
-     *      org.opengrok.configuration.Project)}.
+     *      org.opengrok.indexer.analysis.Definitions,
+     *      org.opengrok.indexer.history.Annotation,
+     *      org.opengrok.indexer.configuration.Project)}.
      */
     @Ignore
     public void xtestWriteXrefReaderWriterDefinitionsAnnotationProject() {

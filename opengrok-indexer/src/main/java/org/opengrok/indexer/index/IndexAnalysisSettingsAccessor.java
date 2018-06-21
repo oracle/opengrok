@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.io.IOException;
 import org.apache.lucene.document.Document;
@@ -37,8 +37,8 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
-import org.opengrok.analysis.CompatibleAnalyser;
-import org.opengrok.search.QueryBuilder;
+import org.opengrok.indexer.analysis.CompatibleAnalyser;
+import org.opengrok.indexer.search.QueryBuilder;
 
 /**
  * Represents a data-access object for {@link IndexAnalysisSettings}.

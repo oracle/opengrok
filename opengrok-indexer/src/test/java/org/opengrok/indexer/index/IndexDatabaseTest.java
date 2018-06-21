@@ -21,7 +21,7 @@
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,15 +36,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.history.RepositoryFactory;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.util.TestRepository;
 
 /**
  * Unit tests for the {@code IndexDatabase} class.

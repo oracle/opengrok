@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,7 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.TreeSet;
-import org.opengrok.util.Executor;
+import org.opengrok.indexer.util.Executor;
 
 /**
  * handles parsing the output of the {@code git log} command

@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.condition;
+package org.opengrok.indexer.condition;
 
 /**
  * Represents an intentional exception thrown for testing purposes

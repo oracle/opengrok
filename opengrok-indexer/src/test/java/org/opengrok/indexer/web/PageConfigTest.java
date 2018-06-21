@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,18 +35,18 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.authorization.AuthControlFlag;
-import org.opengrok.authorization.AuthorizationFramework;
-import org.opengrok.authorization.AuthorizationPlugin;
-import org.opengrok.authorization.TestPlugin;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.RepositoryInstalled;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.Annotation;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.authorization.AuthControlFlag;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.authorization.AuthorizationPlugin;
+import org.opengrok.indexer.authorization.TestPlugin;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.Assert.*;
 

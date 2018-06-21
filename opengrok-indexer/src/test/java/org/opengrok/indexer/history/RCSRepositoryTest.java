@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,10 +28,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.RepositoryInstalled;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.Assert.*;
 

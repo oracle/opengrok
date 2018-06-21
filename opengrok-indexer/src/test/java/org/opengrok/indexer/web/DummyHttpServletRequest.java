@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,7 +46,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 
-import static org.opengrok.util.RandomString.generate;
+import static org.opengrok.indexer.util.RandomString.generate;
 
 /**
  * <p>

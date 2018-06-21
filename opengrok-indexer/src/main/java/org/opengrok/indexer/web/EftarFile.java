@@ -21,7 +21,7 @@
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -37,7 +37,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * An Extremely Fast Tagged Attribute Read-only File System

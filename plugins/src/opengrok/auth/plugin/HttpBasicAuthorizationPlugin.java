@@ -30,9 +30,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
-import org.opengrok.authorization.IAuthorizationPlugin;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
+import org.opengrok.indexer.authorization.IAuthorizationPlugin;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
 
 /**
  * This class is a full example of a working plugin from HTTP Basic tutorial on

@@ -21,12 +21,12 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import org.opengrok.analysis.StreamSource;
+import org.opengrok.indexer.analysis.StreamSource;
 
 /**
  * Represents a container for tests of {@link SourceSplitter}.

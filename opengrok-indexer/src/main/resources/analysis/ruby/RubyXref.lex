@@ -26,13 +26,13 @@
  * Cross reference a Ruby file
  */
 
-package org.opengrok.analysis.ruby;
+package org.opengrok.indexer.analysis.ruby;
 
 import java.io.IOException;
 import java.util.Stack;
 import java.util.regex.Pattern;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class RubyXref

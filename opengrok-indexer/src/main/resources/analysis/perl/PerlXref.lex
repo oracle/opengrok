@@ -26,12 +26,12 @@
  * Cross reference a Perl file
  */
 
-package org.opengrok.analysis.perl;
+package org.opengrok.indexer.analysis.perl;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class PerlXref

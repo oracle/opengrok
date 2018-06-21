@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -35,12 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import org.opengrok.authorization.AuthControlFlag;
-import org.opengrok.authorization.AuthorizationPlugin;
-import org.opengrok.authorization.AuthorizationStack;
-import org.opengrok.history.RepositoryInfo;
-import org.opengrok.index.Filter;
-import org.opengrok.index.IgnoredNames;
+import org.opengrok.indexer.authorization.AuthControlFlag;
+import org.opengrok.indexer.authorization.AuthorizationPlugin;
+import org.opengrok.indexer.authorization.AuthorizationStack;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.index.Filter;
+import org.opengrok.indexer.index.IgnoredNames;
 
 /**
  * Represents a utility class to present some user-readable help regarding

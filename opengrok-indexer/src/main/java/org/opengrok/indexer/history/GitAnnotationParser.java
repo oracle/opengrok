@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,8 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.Executor;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Executor;
 
 /**
  * handles parsing the output of the {@code git annotate} command

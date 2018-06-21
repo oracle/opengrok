@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.plain;
+package org.opengrok.indexer.analysis.plain;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,12 +30,12 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.PendingToken;
-import org.opengrok.analysis.PendingTokenOffsetsComparator;
-import org.opengrok.analysis.StreamSource;
-import org.opengrok.util.LineBreaker;
-import org.opengrok.util.ReaderWrapper;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.PendingToken;
+import org.opengrok.indexer.analysis.PendingTokenOffsetsComparator;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.util.LineBreaker;
+import org.opengrok.indexer.util.ReaderWrapper;
 
 /**
  * Represents a token stream from {@link Definitions}.
@@ -84,7 +84,7 @@ public class DefinitionsTokenStream extends TokenStream {
 
     /**
      * Publishes the next, pending token from
-     * {@link #initialize(org.opengrok.analysis.Definitions, org.opengrok.analysis.StreamSource, org.opengrok.util.ReaderWrapper)},
+     * {@link #initialize(org.opengrok.indexer.analysis.Definitions, org.opengrok.indexer.analysis.StreamSource, org.opengrok.indexer.util.ReaderWrapper)},
      * if one is available.
      * @return false if no more tokens; otherwise true
      * @throws IOException in case of I/O error

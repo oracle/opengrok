@@ -21,7 +21,7 @@
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -36,9 +36,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.Executor;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Executor;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;

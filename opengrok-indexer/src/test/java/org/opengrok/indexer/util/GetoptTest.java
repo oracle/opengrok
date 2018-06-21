@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2007, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.text.ParseException;
 import org.junit.After;
@@ -31,7 +31,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * JUnit test for org.opengrok.util.Getopt
+ * JUnit test for org.opengrok.indexer.util.Getopt
  */
 public class GetoptTest {
 

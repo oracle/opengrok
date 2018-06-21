@@ -21,10 +21,10 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.Writer;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 %%
 %public
 %class XrefSourceTransformer

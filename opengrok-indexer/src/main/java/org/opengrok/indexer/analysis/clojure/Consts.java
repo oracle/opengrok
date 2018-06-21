@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.analysis.clojure;
+package org.opengrok.indexer.analysis.clojure;
 
 import java.util.HashSet;
 import java.util.Set;

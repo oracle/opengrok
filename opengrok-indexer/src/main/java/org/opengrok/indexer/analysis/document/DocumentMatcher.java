@@ -20,16 +20,16 @@
  /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.document;
+package org.opengrok.indexer.analysis.document;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import org.opengrok.analysis.FileAnalyzerFactory;
-import org.opengrok.analysis.FileAnalyzerFactory.Matcher;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory.Matcher;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Represents an implementation of {@link Matcher} that detects a troff-

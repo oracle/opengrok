@@ -21,7 +21,7 @@
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.executables;
+package org.opengrok.indexer.analysis.executables;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -30,13 +30,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.opengrok.analysis.AnalyzerGuru;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzerFactory;
-import org.opengrok.analysis.StreamSource;
-import org.opengrok.analysis.OGKTextField;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.analysis.OGKTextField;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Analyzes JAR, WAR, EAR (Java Archive) files. Created on September 22, 2005

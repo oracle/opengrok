@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.io.Reader;
 

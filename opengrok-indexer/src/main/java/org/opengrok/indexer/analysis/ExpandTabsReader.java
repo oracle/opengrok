@@ -22,12 +22,12 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
-import org.opengrok.configuration.Project;
+import org.opengrok.indexer.configuration.Project;
 
 /**
  * Wrapper around Reader to expand tabs to spaces in the input.

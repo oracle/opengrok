@@ -20,15 +20,15 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.authorization;
+package org.opengrok.indexer.authorization;
 
 import java.io.File;
 import java.net.URL;
 import org.junit.Assert;
 import org.junit.Test;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
-import org.opengrok.web.DummyHttpServletRequest;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.web.DummyHttpServletRequest;
 
 public class AuthorizationPluginClassLoaderTest {
 
@@ -97,7 +97,7 @@ public class AuthorizationPluginClassLoaderTest {
         AuthorizationPluginClassLoader instance = new AuthorizationPluginClassLoader(null);
 
         try {
-            instance.loadClass("org.opengrok.configuration.Group");
+            instance.loadClass("org.opengrok.indexer.configuration.Group");
         } catch (ClassNotFoundException ex) {
             Assert.fail("Should not produce ClassNotFoundException");
         } catch (SecurityException ex) {
@@ -106,7 +106,7 @@ public class AuthorizationPluginClassLoaderTest {
         }
 
         try {
-            instance.loadClass("org.opengrok.configuration.Project");
+            instance.loadClass("org.opengrok.indexer.configuration.Project");
         } catch (ClassNotFoundException ex) {
             Assert.fail("Should not produce ClassNotFoundException");
         } catch (SecurityException ex) {
@@ -115,7 +115,7 @@ public class AuthorizationPluginClassLoaderTest {
         }
 
         try {
-            instance.loadClass("org.opengrok.authorization.IAuthorizationPlugin");
+            instance.loadClass("org.opengrok.indexer.authorization.IAuthorizationPlugin");
         } catch (ClassNotFoundException ex) {
             Assert.fail("Should not produce ClassNotFoundException");
         } catch (SecurityException ex) {
@@ -124,7 +124,7 @@ public class AuthorizationPluginClassLoaderTest {
         }
 
         try {
-            instance.loadClass("org.opengrok.configuration.RuntimeEnvironment");
+            instance.loadClass("org.opengrok.indexer.configuration.RuntimeEnvironment");
             Assert.fail("Should produce SecurityException");
         } catch (ClassNotFoundException ex) {
             Assert.fail("Should not produce ClassNotFoundException");

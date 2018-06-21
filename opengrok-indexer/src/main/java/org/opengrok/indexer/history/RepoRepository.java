@@ -23,14 +23,14 @@
 /*
  * Copyright (c) 2010, Trond Norbye <trond.norbye@gmail.com>. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.opengrok.util.Executor;
+import org.opengrok.indexer.util.Executor;
 
 /**
  * Access to a Git repository.
@@ -45,7 +45,7 @@ public class RepoRepository extends Repository {
      * The property name used to obtain the client command for this repository.
      */
     public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.history.repo";
+            = "org.opengrok.indexer.history.repo";
     /**
      * The command to use to access the repository if none was given explicitly
      */

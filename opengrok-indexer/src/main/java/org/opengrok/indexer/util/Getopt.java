@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.text.ParseException;
 import java.util.ArrayList;

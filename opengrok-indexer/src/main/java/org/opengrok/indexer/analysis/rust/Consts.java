@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2016 Nikolay Denev.
  */
 
-package org.opengrok.analysis.rust;
+package org.opengrok.indexer.analysis.rust;
 
 import java.util.HashSet;
 import java.util.Set;

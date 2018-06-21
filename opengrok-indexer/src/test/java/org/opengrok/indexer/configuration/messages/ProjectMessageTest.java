@@ -21,7 +21,7 @@
  * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.configuration.messages;
+package org.opengrok.indexer.configuration.messages;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,30 +33,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.condition.RepositoryInstalled;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.GitRepository;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.history.MercurialRepository;
-import org.opengrok.history.MercurialRepositoryTest;
-import org.opengrok.history.Repository;
-import org.opengrok.history.RepositoryFactory;
-import static org.opengrok.history.RepositoryFactory.getRepository;
-import org.opengrok.history.RepositoryInfo;
-import org.opengrok.history.SubversionRepository;
-import org.opengrok.index.IndexDatabase;
-import org.opengrok.index.Indexer;
-import static org.opengrok.util.IOUtils.removeRecursive;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.MercurialRepositoryTest;
+import org.opengrok.indexer.history.Repository;
+import org.opengrok.indexer.history.RepositoryFactory;
+import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.index.Indexer;
+import static org.opengrok.indexer.util.IOUtils.removeRecursive;
+import org.opengrok.indexer.util.TestRepository;
 
 /**
  * test ProjectMessage handling

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.search;
+package org.opengrok.indexer.search;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,8 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.util.Getopt;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.Getopt;
 
 /**
  * Search and list the matching files

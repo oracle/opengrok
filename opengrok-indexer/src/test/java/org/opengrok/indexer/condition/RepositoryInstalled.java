@@ -20,20 +20,20 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.condition;
+package org.opengrok.indexer.condition;
 
-import org.opengrok.history.BazaarRepository;
-import org.opengrok.history.BitKeeperRepository;
-import org.opengrok.history.CVSRepository;
-import org.opengrok.history.GitRepository;
-import org.opengrok.history.MercurialRepository;
-import org.opengrok.history.PerforceRepository;
-import org.opengrok.history.RCSRepository;
-import org.opengrok.history.Repository;
-import org.opengrok.history.SubversionRepository;
+import org.opengrok.indexer.history.BazaarRepository;
+import org.opengrok.indexer.history.BitKeeperRepository;
+import org.opengrok.indexer.history.CVSRepository;
+import org.opengrok.indexer.history.GitRepository;
+import org.opengrok.indexer.history.MercurialRepository;
+import org.opengrok.indexer.history.PerforceRepository;
+import org.opengrok.indexer.history.RCSRepository;
+import org.opengrok.indexer.history.Repository;
+import org.opengrok.indexer.history.SubversionRepository;
 
 /**
- * A template {@link org.opengrok.condition.RunCondition} that will disable certain tests
+ * A template {@link org.opengrok.indexer.condition.RunCondition} that will disable certain tests
  * if the repository is not working - generally means not available through the CLI.
  * 
  * Each run condition can be forced on with the system property <b>junit-force-{name}=true</b> or <b>junit-force-all=true</b>

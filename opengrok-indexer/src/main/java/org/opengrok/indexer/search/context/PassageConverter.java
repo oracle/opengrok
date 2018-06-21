@@ -21,12 +21,12 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.apache.lucene.search.uhighlight.Passage;
-import org.opengrok.util.SourceSplitter;
+import org.opengrok.indexer.util.SourceSplitter;
 
 /**
  * Represents an object that can translate {@link Passage} instances into

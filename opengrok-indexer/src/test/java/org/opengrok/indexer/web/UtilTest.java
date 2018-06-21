@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -42,7 +42,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Test of the methods in <code>org.opengrok.web.Util</code>.
+ * Test of the methods in <code>org.opengrok.indexer.web.Util</code>.
  */
 public class UtilTest {
 

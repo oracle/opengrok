@@ -22,7 +22,7 @@
  * Portions copyright (c) 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,23 +54,23 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.jrcs.diff.Diff;
 import org.apache.commons.jrcs.diff.DifferentiationFailedException;
-import org.opengrok.analysis.AnalyzerGuru;
-import org.opengrok.analysis.ExpandTabsReader;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.authorization.AuthorizationFramework;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.configuration.messages.Message;
-import org.opengrok.history.Annotation;
-import org.opengrok.history.History;
-import org.opengrok.history.HistoryEntry;
-import org.opengrok.history.HistoryException;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.index.IgnoredNames;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
+import org.opengrok.indexer.analysis.ExpandTabsReader;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.messages.Message;
+import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.history.History;
+import org.opengrok.indexer.history.HistoryEntry;
+import org.opengrok.indexer.history.HistoryException;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.index.IgnoredNames;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * A simple container to lazy initialize common vars wrt. a single request. It

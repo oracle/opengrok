@@ -35,12 +35,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.HistoryException;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.index.IgnoredNames;
-import org.opengrok.search.DirectoryEntry;
-import org.opengrok.search.FileExtra;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryException;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.index.IgnoredNames;
+import org.opengrok.indexer.search.DirectoryEntry;
+import org.opengrok.indexer.search.FileExtra;
+import org.opengrok.indexer.web.EftarFileReader;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Generates HTML listing of a Directory
@@ -150,7 +152,7 @@ public class DirectoryListing {
      *  Gets filtered by {@link IgnoredNames}.
      * @return a possible empty list of README files included in the written
      *  listing.
-     * @throws org.opengrok.history.HistoryException when we cannot
+     * @throws org.opengrok.indexer.history.HistoryException when we cannot
      * get result from SCM
      *
      * @throws java.io.IOException when any I/O problem

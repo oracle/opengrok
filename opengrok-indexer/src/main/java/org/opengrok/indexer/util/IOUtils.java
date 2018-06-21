@@ -22,7 +22,7 @@
  * Copyright (c) 2011 Trond Norbye 
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.io.BufferedInputStream;
 import java.io.Closeable;
@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * A small utility class to provide common functionality related to

@@ -22,7 +22,7 @@
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,25 +46,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opengrok.Info;
-import org.opengrok.analysis.AnalyzerGuru;
-import org.opengrok.analysis.AnalyzerGuruHelp;
-import org.opengrok.configuration.Configuration;
-import org.opengrok.configuration.ConfigurationHelp;
-import org.opengrok.configuration.LuceneLockName;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.configuration.messages.Message;
-import org.opengrok.history.HistoryException;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.history.Repository;
-import org.opengrok.history.RepositoryFactory;
-import org.opengrok.history.RepositoryInfo;
-import org.opengrok.index.IndexVersion.IndexVersionException;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.logger.LoggerUtil;
-import org.opengrok.util.Executor;
-import org.opengrok.util.OptionParser;
-import org.opengrok.util.Statistics;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
+import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
+import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.ConfigurationHelp;
+import org.opengrok.indexer.configuration.LuceneLockName;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.messages.Message;
+import org.opengrok.indexer.history.HistoryException;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.Repository;
+import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.index.IndexVersion.IndexVersionException;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.logger.LoggerUtil;
+import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.OptionParser;
+import org.opengrok.indexer.util.Statistics;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file

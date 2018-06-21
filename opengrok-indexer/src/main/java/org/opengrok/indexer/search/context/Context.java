@@ -27,7 +27,7 @@
  * This is supposed to get the matching lines from sourcefile.
  * since lucene does not easily give the match context.
  */
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -43,17 +43,17 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.Scopes;
-import org.opengrok.analysis.Scopes.Scope;
-import org.opengrok.analysis.plain.PlainAnalyzerFactory;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.search.Hit;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.util.IOUtils;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.Scopes;
+import org.opengrok.indexer.analysis.Scopes.Scope;
+import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.Hit;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.web.Util;
 
 public class Context {
 
@@ -126,7 +126,7 @@ public class Context {
      * @param morePrefix optional link to more... page
      * @param limit a value indicating if the number of matching lines should be
      * limited. N.b. unlike
-     * {@link #getContext(java.io.Reader, java.io.Writer, java.lang.String, java.lang.String, java.lang.String, org.opengrok.analysis.Definitions, boolean, boolean, java.util.List, org.opengrok.analysis.Scopes)},
+     * {@link #getContext(java.io.Reader, java.io.Writer, java.lang.String, java.lang.String, java.lang.String, org.opengrok.indexer.analysis.Definitions, boolean, boolean, java.util.List, org.opengrok.indexer.analysis.Scopes)},
      * the {@code limit} argument will not be interpreted w.r.t.
      * {@link RuntimeEnvironment#isQuickContextScan()}.
      * @param tabSize optional positive tab size that must accord with the value

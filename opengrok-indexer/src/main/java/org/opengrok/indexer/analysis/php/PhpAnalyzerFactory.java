@@ -22,11 +22,11 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.php;
+package org.opengrok.indexer.analysis.php;
 
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class PhpAnalyzerFactory extends FileAnalyzerFactory {
 

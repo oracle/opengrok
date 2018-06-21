@@ -22,16 +22,16 @@
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import org.opengrok.analysis.Scopes.Scope;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.Annotation;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.Scopes.Scope;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.web.Util;
 
 /**
  * @author Lubos Kosco
@@ -62,7 +62,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
 
     /**
      * The following field is set to {@code true} (via
-     * {@link #sourceCodeSeen(org.opengrok.analysis.SourceCodeSeenEvent)})
+     * {@link #sourceCodeSeen(org.opengrok.indexer.analysis.SourceCodeSeenEvent)})
      * when applicable during lexing before a call to {@link #startNewLine()}
      * so that the lines-of-code count is also incremented.
      */
@@ -392,7 +392,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
 
     /**
      * Calls
-     * {@link JFlexXrefUtils#appendLink(java.io.Writer, org.opengrok.analysis.JFlexLexer, java.lang.String, boolean, java.util.regex.Pattern)}
+     * {@link JFlexXrefUtils#appendLink(java.io.Writer, org.opengrok.indexer.analysis.JFlexLexer, java.lang.String, boolean, java.util.regex.Pattern)}
      * with the active {@link Writer}, the instance's
      * {@link ScanningSymbolMatcher}, {@code url}, {@code false}, and
      * {@code null}.

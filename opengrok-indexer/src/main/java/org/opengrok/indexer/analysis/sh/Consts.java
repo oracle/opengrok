@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.sh;
+package org.opengrok.indexer.analysis.sh;
 
 import java.util.HashSet;
 import java.util.Set;

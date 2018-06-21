@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration.messages;
+package org.opengrok.indexer.configuration.messages;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,18 +36,18 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.history.Repository;
-import static org.opengrok.history.RepositoryFactory.getRepository;
-import org.opengrok.history.RepositoryInfo;
-import org.opengrok.index.IndexDatabase;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.ClassUtil;
-import org.opengrok.util.ForbiddenSymlinkException;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.Repository;
+import static org.opengrok.indexer.history.RepositoryFactory.getRepository;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.ClassUtil;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.IOUtils;
 
 
 /**

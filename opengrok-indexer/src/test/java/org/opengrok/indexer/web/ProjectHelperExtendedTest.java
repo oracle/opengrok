@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +31,10 @@ import javax.servlet.http.Cookie;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.RepositoryInfo;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.RepositoryInfo;
 
 public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
 

@@ -26,13 +26,13 @@
  * Gets Perl symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.perl;
+package org.opengrok.indexer.analysis.perl;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class PerlSymbolTokenizer

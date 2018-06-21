@@ -41,8 +41,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
 
 public class LdapAttrPluginTest {
 

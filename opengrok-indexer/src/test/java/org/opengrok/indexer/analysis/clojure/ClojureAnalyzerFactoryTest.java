@@ -21,7 +21,7 @@
  * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.clojure;
+package org.opengrok.indexer.analysis.clojure;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -29,16 +29,16 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.analysis.Ctags;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.StreamSource;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.analysis.Ctags;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,7 +50,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static org.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
+import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 /**
  * @author Farid Zakaria
@@ -81,7 +81,7 @@ public class ClojureAnalyzerFactoryTest {
 
         repository = new TestRepository();
         repository.create(ClojureAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/index/source.zip"));
+                "/org/opengrok/indexer/index/source.zip"));
 
         ClojureAnalyzerFactory analFact = new ClojureAnalyzerFactory();
         analyzer = analFact.getAnalyzer();

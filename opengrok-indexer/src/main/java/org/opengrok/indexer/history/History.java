@@ -21,7 +21,7 @@
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.util.ArrayList;
 import java.util.List;

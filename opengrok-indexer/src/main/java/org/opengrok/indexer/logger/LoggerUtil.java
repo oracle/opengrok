@@ -20,10 +20,10 @@
  /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.logger;
+package org.opengrok.indexer.logger;
 
-import org.opengrok.logger.formatter.ConsoleFormatter;
-import org.opengrok.logger.formatter.FileLogFormatter;
+import org.opengrok.indexer.logger.formatter.ConsoleFormatter;
+import org.opengrok.indexer.logger.formatter.FileLogFormatter;
 
 import java.io.File;
 import java.io.IOException;

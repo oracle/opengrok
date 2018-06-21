@@ -21,13 +21,13 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import org.opengrok.search.QueryBuilder;
+import org.opengrok.indexer.search.QueryBuilder;
 
 /**
  * Represents a test class for {@link IndexAnalysisSettings}.

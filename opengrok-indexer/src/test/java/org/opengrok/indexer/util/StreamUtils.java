@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -31,9 +31,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import static org.junit.Assert.assertNotNull;
-import org.opengrok.analysis.CtagsReader;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.StreamSource;
+import org.opengrok.indexer.analysis.CtagsReader;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.StreamSource;
 
 /**
  * Represents a container for stream utility methods

@@ -23,14 +23,14 @@
 /*
  * Copyright 2006 Trond Norbye.  All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.util.Date;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * Collect all information of a given revision

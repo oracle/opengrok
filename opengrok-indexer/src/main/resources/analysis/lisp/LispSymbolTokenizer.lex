@@ -26,9 +26,9 @@
  * Gets Lisp symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.lisp;
+package org.opengrok.indexer.analysis.lisp;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class LispSymbolTokenizer

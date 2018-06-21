@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.authorization;
+package org.opengrok.indexer.authorization;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;

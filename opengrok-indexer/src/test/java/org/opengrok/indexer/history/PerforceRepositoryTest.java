@@ -21,15 +21,15 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.RepositoryInstalled;
-import org.opengrok.util.FileUtilities;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.util.FileUtilities;
 
 import java.io.File;
 import java.io.InputStream;
@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
  * Do basic testing of the Perforce support

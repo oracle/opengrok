@@ -38,9 +38,11 @@ import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import org.json.simple.parser.ParseException;
 import org.opengrok.Info;
-import org.opengrok.authorization.AuthorizationFramework;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.web.PageConfig;
+import org.opengrok.indexer.web.SearchHelper;
 
 /**
  * Initialize webapp context

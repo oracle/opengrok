@@ -23,7 +23,7 @@
  * Portions Apache software license, see below
  * 
  */
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 public class WildCardMatcher extends LineMatcher {
 

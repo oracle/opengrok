@@ -24,9 +24,9 @@ package opengrok.auth.plugin;
 
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-import org.opengrok.authorization.IAuthorizationPlugin;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
+import org.opengrok.indexer.authorization.IAuthorizationPlugin;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
 
 /**
  *

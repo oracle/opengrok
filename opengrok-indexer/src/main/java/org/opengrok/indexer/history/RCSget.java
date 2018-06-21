@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -32,7 +32,7 @@ import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
 import org.apache.commons.jrcs.rcs.NodeNotFoundException;
 import org.apache.commons.jrcs.rcs.ParseException;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Virtualize RCS log as an input stream

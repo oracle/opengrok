@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,8 +35,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Logger;
 
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Reads and filters out junk from a SCCS history file.

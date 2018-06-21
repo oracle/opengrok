@@ -22,13 +22,13 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.sh;
+package org.opengrok.indexer.analysis.sh;
 
 import java.io.IOException;
 import java.util.Stack;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class ShXref

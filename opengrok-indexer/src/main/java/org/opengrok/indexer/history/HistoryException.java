@@ -21,7 +21,7 @@
  * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 /**
  * Exception thrown when retrieval or manipulation of history information

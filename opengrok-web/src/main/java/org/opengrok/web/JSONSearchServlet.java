@@ -33,8 +33,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.tools.ant.util.Base64Converter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.opengrok.search.Hit;
-import org.opengrok.search.SearchEngine;
+import org.opengrok.indexer.search.Hit;
+import org.opengrok.indexer.search.SearchEngine;
 
 public class JSONSearchServlet extends HttpServlet {
 

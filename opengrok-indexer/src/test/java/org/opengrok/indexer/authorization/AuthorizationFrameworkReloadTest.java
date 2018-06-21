@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.authorization;
+package org.opengrok.indexer.authorization;
 
 import java.io.File;
 import java.net.URL;
@@ -31,10 +31,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.web.DummyHttpServletRequest;
-import org.opengrok.web.Statistics;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.web.DummyHttpServletRequest;
+import org.opengrok.indexer.web.Statistics;
 
 /**
  * Test behavior of AuthorizationFramework {@code reload()} w.r.t. HTTP sessions.

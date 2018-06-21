@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.executables;
+package org.opengrok.indexer.analysis.executables;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -33,17 +33,17 @@ import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.opengrok.authorization.AuthorizationFrameworkReloadTest;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.index.Indexer;
-import org.opengrok.util.TestRepository;
-import org.opengrok.history.RepositoryFactory;
-import org.opengrok.index.DefaultIndexChangedListener;
-import org.opengrok.index.IndexChangedListener;
-import org.opengrok.search.SearchEngine;
+import org.opengrok.indexer.authorization.AuthorizationFrameworkReloadTest;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.index.Indexer;
+import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.index.DefaultIndexChangedListener;
+import org.opengrok.indexer.index.IndexChangedListener;
+import org.opengrok.indexer.search.SearchEngine;
 
 /**
  * Represents a container for tests of {@link JarAnalyzer} and

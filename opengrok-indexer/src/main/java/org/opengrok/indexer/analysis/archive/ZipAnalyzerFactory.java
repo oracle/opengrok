@@ -22,11 +22,11 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.archive;
+package org.opengrok.indexer.analysis.archive;
 
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
     

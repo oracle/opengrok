@@ -26,9 +26,9 @@
  * Gets Tcl symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.tcl;
+package org.opengrok.indexer.analysis.tcl;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class TclSymbolTokenizer

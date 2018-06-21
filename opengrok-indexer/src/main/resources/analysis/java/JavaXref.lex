@@ -26,14 +26,14 @@
  * Cross reference a Java file
  */
 
-package org.opengrok.analysis.java;
+package org.opengrok.indexer.analysis.java;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.analysis.ScopeAction;
-import org.opengrok.analysis.EmphasisHint;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.ScopeAction;
+import org.opengrok.indexer.analysis.EmphasisHint;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class JavaXref

@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,14 +33,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.lucene.search.uhighlight.Passage;
 import org.apache.lucene.search.uhighlight.PassageFormatter;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.Definitions.Tag;
-import org.opengrok.analysis.Scopes;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.SourceSplitter;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.HtmlConsts;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.Definitions.Tag;
+import org.opengrok.indexer.analysis.Scopes;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.SourceSplitter;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Represents a subclass of {@link PassageFormatter} that uses

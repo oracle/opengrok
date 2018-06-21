@@ -20,12 +20,12 @@
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
-import org.opengrok.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
 interface HistoryCache {
     /**

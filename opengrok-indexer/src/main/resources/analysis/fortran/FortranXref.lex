@@ -25,11 +25,11 @@
 /*
  * Cross reference a Fortran file
  */
-package org.opengrok.analysis.fortran;
+package org.opengrok.indexer.analysis.fortran;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class FortranXref

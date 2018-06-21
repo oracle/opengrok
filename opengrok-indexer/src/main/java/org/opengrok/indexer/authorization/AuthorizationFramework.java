@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.authorization;
+package org.opengrok.indexer.authorization;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,14 +42,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import org.opengrok.configuration.Configuration;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Nameable;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.IOUtils;
-import org.opengrok.web.Statistics;
+import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Nameable;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.web.Statistics;
 
 /**
  * Placeholder for performing authorization checks.

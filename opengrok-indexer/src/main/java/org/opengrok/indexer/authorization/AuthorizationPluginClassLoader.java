@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.authorization;
+package org.opengrok.indexer.authorization;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,7 +34,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * Class loader for authorization plugins.
@@ -47,13 +47,13 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationPluginClassLoader.class);
     private final static String[] CLASS_WHITELIST = new String[]{
-        "org.opengrok.configuration.Group",
-        "org.opengrok.configuration.Project",
-        "org.opengrok.configuration.RuntimeEnvironment",
-        "org.opengrok.authorization.IAuthorizationPlugin",
-        "org.opengrok.authorization.plugins.*",
-        "org.opengrok.util.*",
-        "org.opengrok.logger.*"
+        "org.opengrok.indexer.configuration.Group",
+        "org.opengrok.indexer.configuration.Project",
+        "org.opengrok.indexer.configuration.RuntimeEnvironment",
+        "org.opengrok.indexer.authorization.IAuthorizationPlugin",
+        "org.opengrok.indexer.authorization.plugins.*",
+        "org.opengrok.indexer.util.*",
+        "org.opengrok.indexer.logger.*"
     };
 
     private final static String[] PACKAGE_BLACKLIST = new String[]{

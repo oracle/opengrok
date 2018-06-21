@@ -22,7 +22,7 @@
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  * (derived from Ctags.java).
  */
-package org.opengrok.analysis.document;
+package org.opengrok.indexer.analysis.document;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,9 +35,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Represents a wrapper to run mandoc binary to format manual page content

@@ -22,11 +22,11 @@
  * Copyright (c) 2012, 2013 Constantine A. Murenin &lt;C++@Cns.SU&gt;
  */
 
-package org.opengrok.analysis.uue;
+package org.opengrok.indexer.analysis.uue;
 
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
  * @author Constantine A. Murenin &lt;http://cnst.su/&gt;

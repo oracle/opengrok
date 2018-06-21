@@ -21,11 +21,11 @@
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.analysis.swift;
+package org.opengrok.indexer.analysis.swift;
 
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 public class SwiftAnalyzerFactory extends FileAnalyzerFactory {
     

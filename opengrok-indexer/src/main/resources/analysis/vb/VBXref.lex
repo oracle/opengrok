@@ -26,11 +26,11 @@
  * Cross reference a VB file
  */
 
-package org.opengrok.analysis.vb;
+package org.opengrok.indexer.analysis.vb;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class VBXref

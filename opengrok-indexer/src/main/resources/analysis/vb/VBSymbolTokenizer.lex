@@ -26,9 +26,9 @@
  * Gets VB symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.vb;
+package org.opengrok.indexer.analysis.vb;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class VBSymbolTokenizer

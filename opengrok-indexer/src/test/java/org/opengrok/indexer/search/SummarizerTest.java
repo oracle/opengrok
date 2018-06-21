@@ -21,11 +21,11 @@
  * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.search;
+package org.opengrok.indexer.search;
 
 import org.apache.lucene.search.Query;
 import org.junit.Test;
-import org.opengrok.analysis.CompatibleAnalyser;
+import org.opengrok.indexer.analysis.CompatibleAnalyser;
 import static org.junit.Assert.*;
 
 /**

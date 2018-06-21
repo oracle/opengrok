@@ -21,7 +21,7 @@
  * Copyright (c) 2013, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.StringReader;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;

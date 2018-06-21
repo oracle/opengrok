@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,15 +36,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.lucene.search.Query;
-import org.opengrok.history.History;
-import org.opengrok.history.HistoryEntry;
-import org.opengrok.history.HistoryException;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.search.Hit;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.web.Prefix;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.history.History;
+import org.opengrok.indexer.history.HistoryEntry;
+import org.opengrok.indexer.history.HistoryException;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.Hit;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.web.Prefix;
+import org.opengrok.indexer.web.Util;
 
 /**
  * it is supposed to get the matching lines from history log files.

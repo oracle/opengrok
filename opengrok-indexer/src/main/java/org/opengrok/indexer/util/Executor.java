@@ -21,7 +21,7 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -38,8 +38,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * Wrapper to Java Process API

@@ -21,14 +21,14 @@
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.File;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
  *

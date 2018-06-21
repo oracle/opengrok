@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.condition;
+package org.opengrok.indexer.condition;
 
 import org.junit.Assert;
 import org.junit.Rule;

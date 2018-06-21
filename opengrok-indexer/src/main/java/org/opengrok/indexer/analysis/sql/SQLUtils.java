@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.sql;
+package org.opengrok.indexer.analysis.sql;
 
 import java.util.regex.Pattern;
 

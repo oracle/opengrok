@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,15 +35,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.Configuration;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.RepositoryFactory;
-import org.opengrok.util.FileUtilities;
-import org.opengrok.util.IOUtils;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.util.FileUtilities;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.TestRepository;
 
 /**
  * Verify index version check.
@@ -67,7 +67,7 @@ public class IndexVersionTest {
     @Before
     public void setUp() throws IOException {
         repository = new TestRepository();
-        repository.create(IndexerTest.class.getResourceAsStream("/org/opengrok/history/repositories.zip"));
+        repository.create(IndexerTest.class.getResourceAsStream("/org/opengrok/indexer/history/repositories.zip"));
         oldIndexDataDir = null;
     }
 

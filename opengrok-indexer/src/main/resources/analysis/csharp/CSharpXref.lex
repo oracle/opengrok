@@ -27,13 +27,13 @@
  * @author Christoph Hofmann - ChristophHofmann AT gmx dot de
  */
 
-package org.opengrok.analysis.csharp;
+package org.opengrok.indexer.analysis.csharp;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.analysis.ScopeAction;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.ScopeAction;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class CSharpXref

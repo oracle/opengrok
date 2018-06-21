@@ -23,7 +23,7 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
@@ -31,12 +31,12 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.opengrok.analysis.Scopes.Scope;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.Annotation;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.Scopes.Scope;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.Annotation;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Represents a base class for non-traditional xref lexers whose
@@ -230,7 +230,7 @@ public abstract class JFlexNonXref extends JFlexStateStacker
 
     /**
      * Calls
-     * {@link JFlexXrefUtils#appendLink(java.io.Writer, org.opengrok.analysis.JFlexLexer, java.lang.String, boolean, java.util.regex.Pattern)}
+     * {@link JFlexXrefUtils#appendLink(java.io.Writer, org.opengrok.indexer.analysis.JFlexLexer, java.lang.String, boolean, java.util.regex.Pattern)}
      * with the active {@link Writer}, the field {@code matcher}, {@code url},
      * {@code doEndingPushback}, and {@code collateralCapture}.
      * @param url the URL to append

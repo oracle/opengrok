@@ -22,7 +22,7 @@
  * Use is subject to license terms.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -36,11 +36,11 @@ import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.StoredField;
-import org.opengrok.analysis.plain.PlainFullTokenizer;
-import org.opengrok.analysis.plain.PlainSymbolTokenizer;
-import org.opengrok.configuration.Project;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.search.QueryBuilder;
+import org.opengrok.indexer.analysis.plain.PlainFullTokenizer;
+import org.opengrok.indexer.analysis.plain.PlainSymbolTokenizer;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.QueryBuilder;
 
 /**
  * Base class for all different File Analyzers

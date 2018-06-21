@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.rust;
+package org.opengrok.indexer.analysis.rust;
 
 /**
  * Represents a container for Rust-related utility methods.

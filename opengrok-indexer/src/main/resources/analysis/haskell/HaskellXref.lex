@@ -26,11 +26,11 @@
  * Cross reference a Haskell file
  */
 
-package org.opengrok.analysis.haskell;
+package org.opengrok.indexer.analysis.haskell;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.web.HtmlConsts;
 
 /**
  * @author Harry Pan

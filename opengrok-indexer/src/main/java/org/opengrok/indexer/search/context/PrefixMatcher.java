@@ -21,7 +21,7 @@
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 /**
  * Matches a term against a prefix

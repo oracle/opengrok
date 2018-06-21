@@ -23,12 +23,12 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.document;
-import org.opengrok.analysis.JFlexNonXref;
+package org.opengrok.indexer.analysis.document;
+import org.opengrok.indexer.analysis.JFlexNonXref;
 import java.io.IOException;
 import java.io.Writer;
-import org.opengrok.analysis.JFlexXrefUtils;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.JFlexXrefUtils;
+import org.opengrok.indexer.web.Util;
 %%
 %public
 %class TroffXref

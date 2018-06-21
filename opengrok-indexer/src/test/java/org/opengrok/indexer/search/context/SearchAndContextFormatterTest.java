@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,19 +41,19 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.plain.PlainAnalyzerFactory;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.index.Indexer;
-import org.opengrok.util.TestRepository;
-import org.opengrok.history.RepositoryFactory;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.search.SearchEngine;
-import static org.opengrok.util.CustomAssertions.assertLinesEqual;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.index.Indexer;
+import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.search.SearchEngine;
+import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
 
 /**
  * Represents a container for tests of {@link SearchEngine} with
@@ -79,7 +79,7 @@ public class SearchAndContextFormatterTest {
 
         env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty(
-            "org.opengrok.analysis.Ctags", "ctags"));
+            "org.opengrok.indexer.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         RepositoryFactory.initializeIgnoredNames(env);

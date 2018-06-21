@@ -21,7 +21,7 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
@@ -83,23 +83,23 @@ import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
-import org.opengrok.analysis.AnalyzerGuru;
-import org.opengrok.analysis.Ctags;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.configuration.messages.Message;
-import org.opengrok.history.HistoryException;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.util.ForbiddenSymlinkException;
-import org.opengrok.util.IOUtils;
-import org.opengrok.util.ObjectPool;
-import org.opengrok.util.Statistics;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
+import org.opengrok.indexer.analysis.Ctags;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.messages.Message;
+import org.opengrok.indexer.history.HistoryException;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.ObjectPool;
+import org.opengrok.indexer.util.Statistics;
+import org.opengrok.indexer.web.Util;
 
 /**
  * This class is used to create / update the index databases. Currently we use

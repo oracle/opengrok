@@ -21,7 +21,7 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -38,13 +38,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.RepositoryInstalled;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.Assert.*;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
  *

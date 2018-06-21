@@ -21,7 +21,7 @@
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.util.ArrayList;
 import java.util.List;

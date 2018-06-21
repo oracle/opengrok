@@ -21,10 +21,10 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.python;
+package org.opengrok.indexer.analysis.python;
 
 import java.util.regex.Pattern;
-import org.opengrok.util.RegexUtils;
+import org.opengrok.indexer.util.RegexUtils;
 
 /**
  * Represents a container for Python-related utility methods

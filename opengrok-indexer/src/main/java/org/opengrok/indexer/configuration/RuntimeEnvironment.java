@@ -21,7 +21,7 @@
   * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
   * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
   */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
@@ -81,29 +81,29 @@ import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.opengrok.authorization.AuthorizationFramework;
-import org.opengrok.authorization.AuthorizationStack;
-import org.opengrok.configuration.messages.Message;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.history.RepositoryInfo;
-import org.opengrok.index.Filter;
-import org.opengrok.index.IgnoredNames;
-import org.opengrok.index.IndexDatabase;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.Executor;
-import org.opengrok.util.IOUtils;
-import org.opengrok.util.XmlEofInputStream;
-import org.opengrok.web.Statistics;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.authorization.AuthorizationStack;
+import org.opengrok.indexer.configuration.messages.Message;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.index.Filter;
+import org.opengrok.indexer.index.IgnoredNames;
+import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.XmlEofInputStream;
+import org.opengrok.indexer.web.Statistics;
+import org.opengrok.indexer.web.Util;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
-import static org.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
-import org.opengrok.util.ForbiddenSymlinkException;
-import org.opengrok.util.PathUtils;
-import org.opengrok.web.Prefix;
+import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.PathUtils;
+import org.opengrok.indexer.web.Prefix;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -550,7 +550,7 @@ public final class RuntimeEnvironment {
      * Gets the name of the ctags program to use: either the last value passed
      * successfully to {@link #setCtags(java.lang.String)}, or
      * {@link Configuration#getCtags()}, or the system property for
-     * {@code "org.opengrok.analysis.Ctags"}, or "ctags" as a
+     * {@code "org.opengrok.indexer.analysis.Ctags"}, or "ctags" as a
      * default.
      * @return a defined value
      */
@@ -558,7 +558,7 @@ public final class RuntimeEnvironment {
         String value;
         return ctags != null ? ctags : (value =
             threadConfig.get().getCtags()) != null ? value :
-            System.getProperty("org.opengrok.analysis.Ctags",
+            System.getProperty("org.opengrok.indexer.analysis.Ctags",
             "ctags");
     }
 
@@ -580,7 +580,7 @@ public final class RuntimeEnvironment {
      * Gets the name of the mandoc program to use: either the last value passed
      * successfully to {@link #setMandoc(java.lang.String)}, or
      * {@link Configuration#getMandoc()}, or the system property for
-     * {@code "org.opengrok.analysis.Mandoc"}, or {@code null} as a
+     * {@code "org.opengrok.indexer.analysis.Mandoc"}, or {@code null} as a
      * default.
      * @return a defined instance or {@code null}
      */
@@ -588,7 +588,7 @@ public final class RuntimeEnvironment {
         String value;
         return mandoc != null ? mandoc : (value =
             threadConfig.get().getMandoc()) != null ? value :
-            System.getProperty("org.opengrok.analysis.Mandoc");
+            System.getProperty("org.opengrok.indexer.analysis.Mandoc");
     }
 
     /**
@@ -642,7 +642,7 @@ public final class RuntimeEnvironment {
                         + "Please use option -c to specify path to a good "
                         + "Exuberant Ctags program.\n"
                         + "Or set it in java property "
-                        + "org.opengrok.analysis.Ctags", getCtags());
+                        + "org.opengrok.indexer.analysis.Ctags", getCtags());
                 exCtagsFound = false;
             } else {
                 if (isUnivCtags) {
@@ -1859,7 +1859,7 @@ public final class RuntimeEnvironment {
      * @param m message containing the configuration
      * @param reindex is the message result of reindex
      * @param interactive true if in interactive mode
-     * @see #applyConfig(org.opengrok.configuration.Configuration,
+     * @see #applyConfig(org.opengrok.indexer.configuration.Configuration,
      * boolean, boolean) applyConfig(config, reindex, interactive)
      */
     public void applyConfig(Message m, boolean reindex, boolean interactive) {

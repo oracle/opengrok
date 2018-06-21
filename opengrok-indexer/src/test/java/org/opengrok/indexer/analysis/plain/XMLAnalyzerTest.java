@@ -22,15 +22,15 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.plain;
+package org.opengrok.indexer.analysis.plain;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.WriteXrefArgs;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.WriteXrefArgs;
 
 public class XMLAnalyzerTest {
     @Test

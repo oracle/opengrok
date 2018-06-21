@@ -26,11 +26,11 @@
  * Cross reference a Tcl file
  */
 
-package org.opengrok.analysis.tcl;
+package org.opengrok.indexer.analysis.tcl;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class TclXref

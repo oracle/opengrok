@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2006, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,9 +31,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.ClassUtil;
-import org.opengrok.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.ClassUtil;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
 
 /**
  * Placeholder for the information that builds up a project

@@ -21,7 +21,7 @@
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.vb;
+package org.opengrok.indexer.analysis.vb;
 
 import java.util.Collections;
 import java.util.HashSet;

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2011 Jens Elkner.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 /**
  * A simple container for search suggestions.

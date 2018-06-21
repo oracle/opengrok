@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,9 +33,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.Executor;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Executor;
 
 /**
  * This class gives access to repositories built on top of SCCS (including
@@ -50,7 +50,7 @@ public class SCCSRepository extends Repository {
      * The property name used to obtain the client command for this repository.
      */
     public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.history.SCCS";
+            = "org.opengrok.indexer.history.SCCS";
     /**
      * The command to use to access the repository if none was given explicitly
      */

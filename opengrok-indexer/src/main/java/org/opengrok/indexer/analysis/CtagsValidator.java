@@ -21,13 +21,13 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.ObjectValidator;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.ObjectValidator;
 
 public final class CtagsValidator implements ObjectValidator<Ctags> {
 

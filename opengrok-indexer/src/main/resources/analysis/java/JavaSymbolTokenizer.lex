@@ -26,9 +26,9 @@
  * Gets Java symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.java;
+package org.opengrok.indexer.analysis.java;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class JavaSymbolTokenizer

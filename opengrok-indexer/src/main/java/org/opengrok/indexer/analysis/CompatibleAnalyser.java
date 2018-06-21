@@ -21,14 +21,14 @@
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.opengrok.analysis.plain.PlainFullTokenizer;
-import org.opengrok.analysis.plain.PlainSymbolTokenizer;
-import org.opengrok.search.QueryBuilder;
+import org.opengrok.indexer.analysis.plain.PlainFullTokenizer;
+import org.opengrok.indexer.analysis.plain.PlainSymbolTokenizer;
+import org.opengrok.indexer.search.QueryBuilder;
 
 public class CompatibleAnalyser extends Analyzer {
 

@@ -26,12 +26,12 @@
  * Cross reference a Golang file
  */
 
-package org.opengrok.analysis.golang;
+package org.opengrok.indexer.analysis.golang;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
 
 /**
  * @author Patrick Lundquist

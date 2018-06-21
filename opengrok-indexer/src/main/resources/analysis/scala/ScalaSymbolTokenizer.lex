@@ -26,9 +26,9 @@
  * Gets Scala symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.scala;
+package org.opengrok.indexer.analysis.scala;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class ScalaSymbolTokenizer

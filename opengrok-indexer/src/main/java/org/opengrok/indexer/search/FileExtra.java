@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search;
+package org.opengrok.indexer.search;
 
 /**
  * Represents supplemental, per-file data stored after OpenGrok analysis.

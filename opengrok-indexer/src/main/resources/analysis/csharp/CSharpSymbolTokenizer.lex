@@ -26,9 +26,9 @@
  * Gets C# symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.csharp;
+package org.opengrok.indexer.analysis.csharp;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class CSharpSymbolTokenizer

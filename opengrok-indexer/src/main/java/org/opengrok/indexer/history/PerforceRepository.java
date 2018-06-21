@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -29,10 +29,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.Executor;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Executor;
 
 /**
  * Access to a Perforce repository
@@ -48,7 +48,7 @@ public class PerforceRepository extends Repository {
      * The property name used to obtain the client command for this repository.
      */
     public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.history.Perforce";
+            = "org.opengrok.indexer.history.Perforce";
     /**
      * The command to use to access the repository if none was given explicitly
      */

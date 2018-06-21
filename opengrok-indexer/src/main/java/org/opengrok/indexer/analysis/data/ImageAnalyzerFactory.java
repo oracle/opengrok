@@ -21,11 +21,11 @@
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.analysis.data;
+package org.opengrok.indexer.analysis.data;
 
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
  * Factory for analyzer that tells that image files can be displayed.

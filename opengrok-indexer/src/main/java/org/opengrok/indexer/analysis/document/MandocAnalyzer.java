@@ -21,21 +21,21 @@
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.document;
+package org.opengrok.indexer.analysis.document;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.apache.lucene.document.Document;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzerFactory;
-import org.opengrok.analysis.JFlexTokenizer;
-import org.opengrok.analysis.StreamSource;
-import org.opengrok.analysis.TextAnalyzer;
-import org.opengrok.analysis.OGKTextField;
-import org.opengrok.analysis.WriteXrefArgs;
-import org.opengrok.analysis.Xrefer;
-import org.opengrok.search.QueryBuilder;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.JFlexTokenizer;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.analysis.TextAnalyzer;
+import org.opengrok.indexer.analysis.OGKTextField;
+import org.opengrok.indexer.analysis.WriteXrefArgs;
+import org.opengrok.indexer.analysis.Xrefer;
+import org.opengrok.indexer.search.QueryBuilder;
 
 /**
  * Analyzes mandoc files

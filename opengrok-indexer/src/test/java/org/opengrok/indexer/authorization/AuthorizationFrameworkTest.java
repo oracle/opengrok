@@ -21,7 +21,7 @@
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.authorization;
+package org.opengrok.indexer.authorization;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,11 +33,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.opengrok.condition.DeliberateRuntimeException;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Nameable;
-import org.opengrok.configuration.Project;
-import org.opengrok.web.DummyHttpServletRequest;
+import org.opengrok.indexer.condition.DeliberateRuntimeException;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Nameable;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.web.DummyHttpServletRequest;
 
 @RunWith(Parameterized.class)
 public class AuthorizationFrameworkTest {

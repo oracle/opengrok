@@ -23,14 +23,14 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.rust;
+package org.opengrok.indexer.analysis.rust;
 
 import java.io.Reader;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzerFactory;
-import org.opengrok.analysis.JFlexTokenizer;
-import org.opengrok.analysis.JFlexXref;
-import org.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.JFlexTokenizer;
+import org.opengrok.indexer.analysis.JFlexXref;
+import org.opengrok.indexer.analysis.plain.AbstractSourceCodeAnalyzer;
 
 /**
  *

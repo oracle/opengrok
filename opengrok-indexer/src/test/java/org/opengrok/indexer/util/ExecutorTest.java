@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -63,10 +63,10 @@ public class ExecutorTest {
     public void testString() throws IOException {
         List<String> cmdList = new ArrayList<String>();
         cmdList.add("echo");
-        cmdList.add("testing org.opengrok.util.Executor");
+        cmdList.add("testing org.opengrok.indexer.util.Executor");
         Executor instance = new Executor(cmdList);
         assertEquals(0, instance.exec());
-        assertTrue(instance.getOutputString().startsWith("testing org.opengrok.util.Executor"));
+        assertTrue(instance.getOutputString().startsWith("testing org.opengrok.indexer.util.Executor"));
         String err = instance.getErrorString();
         assertEquals(0, err.length());
     }
@@ -75,11 +75,11 @@ public class ExecutorTest {
     public void testReader() throws IOException {
         List<String> cmdList = new ArrayList<String>();
         cmdList.add("echo");
-        cmdList.add("testing org.opengrok.util.Executor");
+        cmdList.add("testing org.opengrok.indexer.util.Executor");
         Executor instance = new Executor(cmdList);
         assertEquals(0, instance.exec());
         BufferedReader in = new BufferedReader(instance.getOutputReader());
-        assertEquals("testing org.opengrok.util.Executor", in.readLine());
+        assertEquals("testing org.opengrok.indexer.util.Executor", in.readLine());
         in.close();
         in = new BufferedReader(instance.getErrorReader());
         assertNull(in.readLine());
@@ -90,13 +90,13 @@ public class ExecutorTest {
     public void testStream() throws IOException {
         List<String> cmdList = new ArrayList<String>();
         cmdList.add("echo");
-        cmdList.add("testing org.opengrok.util.Executor");
+        cmdList.add("testing org.opengrok.indexer.util.Executor");
         Executor instance = new Executor(cmdList, new File("."));
         assertEquals(0, instance.exec());
         assertNotNull(instance.getOutputStream());
         assertNotNull(instance.getErrorStream());
         BufferedReader in = new BufferedReader(instance.getOutputReader());
-        assertEquals("testing org.opengrok.util.Executor", in.readLine());
+        assertEquals("testing org.opengrok.indexer.util.Executor", in.readLine());
         in.close();
         in = new BufferedReader(instance.getErrorReader());
         assertNull(in.readLine());

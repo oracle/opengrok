@@ -21,11 +21,11 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.python;
+package org.opengrok.indexer.analysis.python;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import org.opengrok.util.StringUtils;
+import org.opengrok.indexer.util.StringUtils;
 
 /**
  * Represents a test class for {@link PythonUtils}.

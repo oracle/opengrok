@@ -22,12 +22,12 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.powershell;
+package org.opengrok.indexer.analysis.powershell;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.analysis.ScopeAction;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.ScopeAction;
+import org.opengrok.indexer.web.HtmlConsts;
 import java.util.Stack;
 import java.util.regex.Matcher;
 %%

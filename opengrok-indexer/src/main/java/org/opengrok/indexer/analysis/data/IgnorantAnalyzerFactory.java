@@ -21,10 +21,10 @@
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.analysis.data;
+package org.opengrok.indexer.analysis.data;
 
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
  * Factory for analyzer that claims to analyze files which are mostly plain

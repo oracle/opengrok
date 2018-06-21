@@ -20,7 +20,7 @@
 /*
  * Portions Copyright (c) 2017, Steven Haehn.
  */
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -30,7 +30,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.text.ParseException;
-import org.opengrok.index.Indexer;
+import org.opengrok.indexer.index.Indexer;
 
 /**
  *

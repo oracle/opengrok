@@ -21,13 +21,13 @@
  * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.c;
+package org.opengrok.indexer.analysis.c;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
+import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,17 +42,17 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.analysis.Ctags;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.Scopes;
-import org.opengrok.analysis.Scopes.Scope;
-import org.opengrok.analysis.StreamSource;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.analysis.Ctags;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.Scopes;
+import org.opengrok.indexer.analysis.Scopes.Scope;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.TestRepository;
 
 /**
  *
@@ -84,7 +84,7 @@ public class CAnalyzerFactoryTest {
 
         repository = new TestRepository();
         repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/index/source.zip"));
+                "/org/opengrok/indexer/index/source.zip"));
 
         CAnalyzerFactory analFact = new CAnalyzerFactory();
         analyzer = analFact.getAnalyzer();

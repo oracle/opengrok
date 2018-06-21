@@ -21,19 +21,19 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.logging.Logger;
-import org.opengrok.analysis.Ctags;
-import org.opengrok.analysis.CtagsValidator;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.BoundedBlockingObjectPool;
-import org.opengrok.util.ObjectFactory;
-import org.opengrok.util.ObjectPool;
+import org.opengrok.indexer.analysis.Ctags;
+import org.opengrok.indexer.analysis.CtagsValidator;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.BoundedBlockingObjectPool;
+import org.opengrok.indexer.util.ObjectFactory;
+import org.opengrok.indexer.util.ObjectPool;
 
 /**
  * Represents a container for executors that enable parallelism for indexing

@@ -22,11 +22,11 @@
  * Portions Copyright (c) 2016 Nikolay Denev.
  */
 
-package org.opengrok.analysis.rust;
+package org.opengrok.indexer.analysis.rust;
 
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
  *

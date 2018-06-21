@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -36,7 +36,7 @@ import javax.xml.parsers.SAXParserFactory;
 import junit.framework.AssertionFailedError;
 import org.junit.Assert;
 import org.junit.Test;
-import org.opengrok.util.ClassUtil;
+import org.opengrok.indexer.util.ClassUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration.messages;
+package org.opengrok.indexer.configuration.messages;
 
 import java.io.IOException;
 import java.util.TreeSet;
@@ -28,8 +28,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengrok.configuration.Configuration;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
  * Test config message verification and handling.

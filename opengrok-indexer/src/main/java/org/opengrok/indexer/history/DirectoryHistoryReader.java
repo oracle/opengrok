@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,11 +47,11 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldDocs;
-import org.opengrok.analysis.CompatibleAnalyser;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.index.IndexDatabase;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.search.QueryBuilder;
+import org.opengrok.indexer.analysis.CompatibleAnalyser;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.QueryBuilder;
 
 /**
  * Generate SCM history for directory by using the Index database. (Please note

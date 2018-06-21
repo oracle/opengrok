@@ -21,18 +21,18 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.perl;
+package org.opengrok.indexer.analysis.perl;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opengrok.analysis.Resettable;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.HtmlConsts;
-import org.opengrok.analysis.JFlexJointLexer;
-import org.opengrok.util.RegexUtils;
+import org.opengrok.indexer.analysis.Resettable;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexJointLexer;
+import org.opengrok.indexer.util.RegexUtils;
 
 /**
  * Represents an API for object's using {@link PerlLexHelper}

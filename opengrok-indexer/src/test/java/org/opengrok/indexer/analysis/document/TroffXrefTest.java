@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.document;
+package org.opengrok.indexer.analysis.document;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,15 +32,15 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.WriteXrefArgs;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.opengrok.analysis.Xrefer;
-import static org.opengrok.util.CustomAssertions.assertLinesEqual;
-import static org.opengrok.util.StreamUtils.copyStream;
+import org.opengrok.indexer.analysis.Xrefer;
+import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
+import static org.opengrok.indexer.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link TroffXref} class.

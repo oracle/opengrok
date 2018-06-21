@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration.messages;
+package org.opengrok.indexer.configuration.messages;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -31,7 +31,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 public class ExpirationNormalMessageTest {
 

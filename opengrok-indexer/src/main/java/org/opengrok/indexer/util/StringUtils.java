@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -21,10 +21,10 @@
  * Copyright 2009 - 2011 Jens Elkner.
  * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import org.apache.commons.jrcs.diff.Revision;
-import org.opengrok.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 
 /**
  * A simple container to store the data required to generated a view of diffs

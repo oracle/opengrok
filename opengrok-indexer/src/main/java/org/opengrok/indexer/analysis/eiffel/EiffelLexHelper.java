@@ -21,12 +21,12 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.eiffel;
+package org.opengrok.indexer.analysis.eiffel;
 
 import java.io.IOException;
-import org.opengrok.analysis.Resettable;
-import org.opengrok.analysis.JFlexJointLexer;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.Resettable;
+import org.opengrok.indexer.analysis.JFlexJointLexer;
+import org.opengrok.indexer.web.HtmlConsts;
 
 /**
  * Represents an API for object's using {@link EiffelLexHelper}.

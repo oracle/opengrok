@@ -31,9 +31,9 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import opengrok.auth.entity.LdapUser;
 import opengrok.auth.plugin.entity.User;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
-import org.opengrok.util.StringUtils;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.util.StringUtils;
 
 /**
  * Authorization plug-in to extract user's LDAP attributes.

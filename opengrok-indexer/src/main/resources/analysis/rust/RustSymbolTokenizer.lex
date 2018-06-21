@@ -27,9 +27,9 @@
  * Gets Rust symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.rust;
+package org.opengrok.indexer.analysis.rust;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class RustSymbolTokenizer

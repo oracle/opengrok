@@ -22,16 +22,16 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.document;
+package org.opengrok.indexer.analysis.document;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import org.opengrok.analysis.JFlexNonXref;
-import org.opengrok.analysis.JFlexXref;
-import org.opengrok.analysis.plain.PlainXref;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.analysis.JFlexNonXref;
+import org.opengrok.indexer.analysis.JFlexXref;
+import org.opengrok.indexer.analysis.plain.PlainXref;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 %%
 %public
 %class MandocXref

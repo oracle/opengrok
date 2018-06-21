@@ -21,7 +21,7 @@
  * Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.plain;
+package org.opengrok.indexer.analysis.plain;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,11 +36,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.ExpandTabsReader;
-import org.opengrok.analysis.StreamSource;
-import org.opengrok.util.IOUtils;
-import org.opengrok.util.StreamUtils;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.ExpandTabsReader;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.StreamUtils;
 
 /**
  * Represents a container for tests of {@link DefinitionsTokenStream}.

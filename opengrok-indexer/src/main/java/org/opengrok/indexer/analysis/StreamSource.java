@@ -21,7 +21,7 @@
  * Copyright (c) 2013, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;

@@ -21,7 +21,7 @@
  * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.csharp;
+package org.opengrok.indexer.analysis.csharp;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,18 +36,18 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
-import org.opengrok.analysis.Ctags;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.Scopes;
-import org.opengrok.analysis.Scopes.Scope;
-import org.opengrok.analysis.StreamSource;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.util.TestRepository;
+import static org.opengrok.indexer.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
+import org.opengrok.indexer.analysis.Ctags;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.Scopes;
+import org.opengrok.indexer.analysis.Scopes.Scope;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.TestRepository;
 
 /**
  *
@@ -79,7 +79,7 @@ public class CSharpAnalyzerFactoryTest {
 
         repository = new TestRepository();
         repository.create(CSharpAnalyzerFactoryTest.class.getResourceAsStream(
-                "/org/opengrok/index/source.zip"));
+                "/org/opengrok/indexer/index/source.zip"));
 
         CSharpAnalyzerFactory analFact = new CSharpAnalyzerFactory();
         analyzer = analFact.getAnalyzer();

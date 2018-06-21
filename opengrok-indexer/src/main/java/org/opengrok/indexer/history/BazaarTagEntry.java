@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 /**
  * Bazaar specific tag class with ability to compare itself with generic

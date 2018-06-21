@@ -21,7 +21,7 @@
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.analysis.powershell;
+package org.opengrok.indexer.analysis.powershell;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration.messages;
+package org.opengrok.indexer.configuration.messages;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -45,9 +45,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.XmlEofOutputStream;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.XmlEofOutputStream;
 
 /**
  * If you extend this file, don't forget to add an information into the root

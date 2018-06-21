@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.c;
+package org.opengrok.indexer.analysis.c;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -35,13 +35,13 @@ import java.io.Writer;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.opengrok.analysis.CtagsReader;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.WriteXrefArgs;
-import org.opengrok.analysis.Xrefer;
-import static org.opengrok.util.CustomAssertions.assertLinesEqual;
-import static org.opengrok.util.StreamUtils.copyStream;
+import org.opengrok.indexer.analysis.CtagsReader;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.WriteXrefArgs;
+import org.opengrok.indexer.analysis.Xrefer;
+import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
+import static org.opengrok.indexer.util.StreamUtils.copyStream;
 
 /**
  * Tests the {@link CxxXref} class.

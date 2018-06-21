@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;

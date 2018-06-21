@@ -32,9 +32,9 @@ import opengrok.auth.plugin.entity.User;
 import opengrok.auth.plugin.ldap.AbstractLdapProvider;
 import opengrok.auth.plugin.ldap.FakeLdapFacade;
 import opengrok.auth.plugin.ldap.LdapFacade;
-import org.opengrok.authorization.IAuthorizationPlugin;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
+import org.opengrok.indexer.authorization.IAuthorizationPlugin;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
 
 /**
  * Abstract class for all plug-ins working with LDAP. Takes care of

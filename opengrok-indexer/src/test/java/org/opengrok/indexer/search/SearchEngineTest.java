@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search;
+package org.opengrok.indexer.search;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,16 +35,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.index.Indexer;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.index.Indexer;
+import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.Assert.*;
-import org.opengrok.history.RepositoryFactory;
+import org.opengrok.indexer.history.RepositoryFactory;
 
 /**
  * Do basic testing of the SearchEngine

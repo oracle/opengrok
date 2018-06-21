@@ -23,7 +23,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -35,13 +35,13 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import org.opengrok.analysis.Definitions.Tag;
-import org.opengrok.analysis.Scopes.Scope;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.HtmlConsts;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.Definitions.Tag;
+import org.opengrok.indexer.analysis.Scopes.Scope;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Represents a container for extracted, shared logic between {@link JFlexXref}

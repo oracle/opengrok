@@ -21,7 +21,7 @@
  * Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.perl;
+package org.opengrok.indexer.analysis.perl;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -35,9 +35,9 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.analysis.JFlexTokenizer;
-import static org.opengrok.util.CustomAssertions.assertSymbolStream;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexTokenizer;
+import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 
 /**
  * Unit tests for {@link PerlSymbolTokenizer}.

@@ -21,7 +21,7 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -35,9 +35,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.Executor;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.Executor;
 
 /**
  * Access to a CVS repository.
@@ -51,7 +51,7 @@ public class CVSRepository extends RCSRepository {
      * The property name used to obtain the client command for repository.
      */
     public static final String CMD_PROPERTY_KEY
-            = "org.opengrok.history.cvs";
+            = "org.opengrok.indexer.history.cvs";
     /**
      * The command to use to access the repository if none was given explicitly
      */

@@ -22,14 +22,14 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.plain;
+package org.opengrok.indexer.analysis.plain;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.FileAnalyzerFactory;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.util.IOUtils;
 
 public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
 

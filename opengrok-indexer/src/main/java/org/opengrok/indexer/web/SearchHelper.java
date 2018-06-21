@@ -22,7 +22,7 @@
  * Portions copyright (c) 2011 Jens Elkner. 
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -56,22 +56,22 @@ import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.store.FSDirectory;
-import org.opengrok.analysis.AnalyzerGuru;
-import org.opengrok.analysis.CompatibleAnalyser;
-import org.opengrok.analysis.Definitions;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.configuration.SuperIndexSearcher;
-import org.opengrok.index.IndexAnalysisSettings2;
-import org.opengrok.index.IndexAnalysisSettingsAccessor;
-import org.opengrok.index.IndexDatabase;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.search.Summarizer;
-import org.opengrok.search.context.Context;
-import org.opengrok.search.context.HistoryContext;
-import org.opengrok.util.ForbiddenSymlinkException;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
+import org.opengrok.indexer.analysis.CompatibleAnalyser;
+import org.opengrok.indexer.analysis.Definitions;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.configuration.SuperIndexSearcher;
+import org.opengrok.indexer.index.IndexAnalysisSettings2;
+import org.opengrok.indexer.index.IndexAnalysisSettingsAccessor;
+import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.search.Summarizer;
+import org.opengrok.indexer.search.context.Context;
+import org.opengrok.indexer.search.context.HistoryContext;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Working set for a search basically to factor out/separate search related

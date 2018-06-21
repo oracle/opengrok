@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.util.function.Function;
 import org.json.simple.JSONObject;

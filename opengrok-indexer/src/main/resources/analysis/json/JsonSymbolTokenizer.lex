@@ -26,9 +26,9 @@
  * Gets Json symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.json;
+package org.opengrok.indexer.analysis.json;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class JsonSymbolTokenizer

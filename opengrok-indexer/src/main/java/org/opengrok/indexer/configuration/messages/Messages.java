@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration.messages;
+package org.opengrok.indexer.configuration.messages;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.opengrok.util.Getopt;
+import org.opengrok.indexer.util.Getopt;
 
 public final class Messages {
 

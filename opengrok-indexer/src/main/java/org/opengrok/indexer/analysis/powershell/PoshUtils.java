@@ -21,7 +21,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.powershell;
+package org.opengrok.indexer.analysis.powershell;
 
 import java.util.regex.Pattern;
 

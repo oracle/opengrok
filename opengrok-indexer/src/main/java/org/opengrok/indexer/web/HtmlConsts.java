@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 /**
  * Represents a container class for string constants related to production of

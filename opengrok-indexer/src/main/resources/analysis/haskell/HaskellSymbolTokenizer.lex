@@ -26,10 +26,10 @@
  * Get Haskell symbols
  */
 
-package org.opengrok.analysis.haskell;
+package org.opengrok.indexer.analysis.haskell;
 
 import java.io.IOException;
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 
 /**
  * @author Harry Pan

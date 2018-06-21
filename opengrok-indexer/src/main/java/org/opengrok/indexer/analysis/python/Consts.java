@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.analysis.python;
+package org.opengrok.indexer.analysis.python;
 
 import java.util.HashSet;
 import java.util.Set;

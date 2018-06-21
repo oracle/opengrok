@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,29 +41,29 @@ import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.analysis.c.CXref;
-import org.opengrok.analysis.c.CxxXref;
-import org.opengrok.analysis.csharp.CSharpXref;
-import org.opengrok.analysis.document.TroffXref;
-import org.opengrok.analysis.executables.JavaClassAnalyzerFactory;
-import org.opengrok.analysis.fortran.FortranXref;
-import org.opengrok.analysis.haskell.HaskellXref;
-import org.opengrok.analysis.java.JavaXref;
-import org.opengrok.analysis.lisp.LispXref;
-import org.opengrok.analysis.perl.PerlXref;
-import org.opengrok.analysis.plain.PlainXref;
-import org.opengrok.analysis.plain.XMLXref;
-import org.opengrok.analysis.scala.ScalaXref;
-import org.opengrok.analysis.sh.ShXref;
-import org.opengrok.analysis.sql.SQLXref;
-import org.opengrok.analysis.tcl.TclXref;
-import org.opengrok.analysis.uue.UuencodeXref;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.configuration.RuntimeEnvironment;
-import static org.opengrok.util.CustomAssertions.assertLinesEqual;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.analysis.c.CXref;
+import org.opengrok.indexer.analysis.c.CxxXref;
+import org.opengrok.indexer.analysis.csharp.CSharpXref;
+import org.opengrok.indexer.analysis.document.TroffXref;
+import org.opengrok.indexer.analysis.executables.JavaClassAnalyzerFactory;
+import org.opengrok.indexer.analysis.fortran.FortranXref;
+import org.opengrok.indexer.analysis.haskell.HaskellXref;
+import org.opengrok.indexer.analysis.java.JavaXref;
+import org.opengrok.indexer.analysis.lisp.LispXref;
+import org.opengrok.indexer.analysis.perl.PerlXref;
+import org.opengrok.indexer.analysis.plain.PlainXref;
+import org.opengrok.indexer.analysis.plain.XMLXref;
+import org.opengrok.indexer.analysis.scala.ScalaXref;
+import org.opengrok.indexer.analysis.sh.ShXref;
+import org.opengrok.indexer.analysis.sql.SQLXref;
+import org.opengrok.indexer.analysis.tcl.TclXref;
+import org.opengrok.indexer.analysis.uue.UuencodeXref;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import static org.opengrok.indexer.util.CustomAssertions.assertLinesEqual;
+import org.opengrok.indexer.util.TestRepository;
 import org.xml.sax.InputSource;
 
 /**
@@ -90,7 +90,7 @@ public class JFlexXrefTest {
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
         repository = new TestRepository();
         repository.create(JFlexXrefTest.class.getResourceAsStream(
-                "/org/opengrok/index/source.zip"));
+                "/org/opengrok/indexer/index/source.zip"));
     }
 
     @AfterClass

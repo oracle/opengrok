@@ -21,11 +21,11 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.ada;
+package org.opengrok.indexer.analysis.ada;
 
 import java.io.IOException;
-import org.opengrok.analysis.Resettable;
-import org.opengrok.analysis.JFlexJointLexer;
+import org.opengrok.indexer.analysis.Resettable;
+import org.opengrok.indexer.analysis.JFlexJointLexer;
 
 /**
  * Represents an API for object's using {@link AdaLexHelper}

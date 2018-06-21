@@ -20,17 +20,17 @@
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.authorization;
+package org.opengrok.indexer.authorization;
 
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Nameable;
-import org.opengrok.configuration.Project;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Nameable;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * This is a subclass of {@link AuthorizationEntity} and is a wrapper to a

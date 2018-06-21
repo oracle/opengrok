@@ -21,7 +21,7 @@
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,10 +36,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.IOUtils;
-import org.opengrok.util.SourceSplitter;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.util.SourceSplitter;
 
 /**
  * Provides Ctags by having a running subprocess of ctags.
@@ -56,7 +56,7 @@ public class Ctags implements Resettable {
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
-    //default: setCtags(System.getProperty("org.opengrok.analysis.Ctags", "ctags"));
+    //default: setCtags(System.getProperty("org.opengrok.indexer.analysis.Ctags", "ctags"));
     private String binary;
     private String CTagsExtraOptionsFile = null;
     private int tabSize;

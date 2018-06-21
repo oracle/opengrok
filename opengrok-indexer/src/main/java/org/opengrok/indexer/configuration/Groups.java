@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.opengrok.util.Getopt;
+import org.opengrok.indexer.util.Getopt;
 
 /**
  *

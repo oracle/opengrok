@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.opengrok.search;
+package org.opengrok.indexer.search;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.web.Util;
 
 /** A document summary dynamically generated to match a query. */
 public class Summary {

@@ -20,14 +20,14 @@
  /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 public class IndexTimestamp {
     private transient Date lastModified;

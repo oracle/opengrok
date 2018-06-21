@@ -22,7 +22,7 @@
  * portions copyright 2005 Trond Norbye.  All rights reserved.
  * Use is subject to license terms.
  */
-package org.opengrok.search;
+package org.opengrok.indexer.search;
 
 import java.io.File;
 

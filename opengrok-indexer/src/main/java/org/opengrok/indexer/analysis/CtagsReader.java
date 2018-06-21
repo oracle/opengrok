@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.util.EnumMap;
 import java.util.function.Supplier;
@@ -30,8 +30,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.SourceSplitter;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.SourceSplitter;
 
 /**
  * Represents a reader of output from runs of ctags.

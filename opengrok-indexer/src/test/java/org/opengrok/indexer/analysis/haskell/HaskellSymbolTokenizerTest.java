@@ -21,7 +21,7 @@
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.haskell;
+package org.opengrok.indexer.analysis.haskell;
 
 import java.io.BufferedReader;
 import static org.junit.Assert.assertArrayEquals;
@@ -37,9 +37,9 @@ import java.util.List;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.JFlexTokenizer;
-import static org.opengrok.util.CustomAssertions.assertSymbolStream;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.JFlexTokenizer;
+import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 
 /**
  * Tests the {@link HaskellSymbolTokenizer} class.

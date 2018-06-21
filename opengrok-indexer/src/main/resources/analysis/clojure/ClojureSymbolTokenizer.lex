@@ -26,9 +26,9 @@
  * Gets Clojure symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.clojure;
+package org.opengrok.indexer.analysis.clojure;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class ClojureSymbolTokenizer

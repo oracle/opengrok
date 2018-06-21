@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-package org.opengrok.analysis.php;
+package org.opengrok.indexer.analysis.php;
 
 import java.util.HashSet;
 import java.util.Set;

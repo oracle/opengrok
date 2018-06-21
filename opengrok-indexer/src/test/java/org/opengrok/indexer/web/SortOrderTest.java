@@ -21,7 +21,7 @@
  * Copyright 2011 Trond Norbye.  All rights reserved.
  * Use is subject to license terms.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import org.junit.After;
 import org.junit.AfterClass;

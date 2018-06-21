@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.util.Date;
 

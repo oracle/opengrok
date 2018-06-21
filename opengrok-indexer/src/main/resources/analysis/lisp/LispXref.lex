@@ -26,10 +26,10 @@
  * Cross reference a Lisp file
  */
 
-package org.opengrok.analysis.lisp;
+package org.opengrok.indexer.analysis.lisp;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class LispXref

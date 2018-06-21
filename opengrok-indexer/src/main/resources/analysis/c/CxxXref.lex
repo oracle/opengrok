@@ -26,15 +26,15 @@
  * Cross reference a C++ file
  */
 
-package org.opengrok.analysis.c;
+package org.opengrok.indexer.analysis.c;
 
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.analysis.ScopeAction;
-import org.opengrok.util.StringUtils;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.ScopeAction;
+import org.opengrok.indexer.util.StringUtils;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class CxxXref

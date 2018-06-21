@@ -20,11 +20,11 @@
  /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.opengrok.configuration.ConfigMerge.merge;
+import static org.opengrok.indexer.configuration.ConfigMerge.merge;
 
 /**
  *

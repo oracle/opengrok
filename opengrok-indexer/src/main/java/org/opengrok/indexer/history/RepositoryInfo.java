@@ -21,7 +21,7 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,11 +30,11 @@ import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.ClassUtil;
-import org.opengrok.util.PathUtils;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.ClassUtil;
+import org.opengrok.indexer.util.PathUtils;
 
 /**
  * Class to contain the common info for a repository. This object will live on

@@ -7,7 +7,7 @@
  * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 /**
  * Represents an abstract implementation of {@link ObjectPool} that defines the

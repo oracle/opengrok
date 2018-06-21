@@ -20,7 +20,7 @@
  /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

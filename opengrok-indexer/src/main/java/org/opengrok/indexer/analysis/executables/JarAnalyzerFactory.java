@@ -22,12 +22,12 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.executables;
+package org.opengrok.indexer.analysis.executables;
 
-import org.opengrok.analysis.FileAnalyzer;
-import org.opengrok.analysis.FileAnalyzer.Genre;
-import org.opengrok.analysis.FileAnalyzerFactory;
-import org.opengrok.analysis.archive.ZipMatcherBase;
+import org.opengrok.indexer.analysis.FileAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.archive.ZipMatcherBase;
 
 public final class JarAnalyzerFactory extends FileAnalyzerFactory {
     

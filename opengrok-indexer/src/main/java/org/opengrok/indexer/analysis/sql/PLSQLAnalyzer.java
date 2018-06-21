@@ -21,12 +21,12 @@
  * Copyright (c) 2012, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.sql;
+package org.opengrok.indexer.analysis.sql;
 
 import java.io.Reader;
-import org.opengrok.analysis.FileAnalyzerFactory;
-import org.opengrok.analysis.JFlexXref;
-import org.opengrok.analysis.plain.PlainAnalyzer;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.JFlexXref;
+import org.opengrok.indexer.analysis.plain.PlainAnalyzer;
 
 public class PLSQLAnalyzer extends PlainAnalyzer {
 

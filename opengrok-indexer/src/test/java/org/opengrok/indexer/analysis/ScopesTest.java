@@ -20,12 +20,12 @@
 /*
  * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.opengrok.analysis.Scopes.Scope;
+import org.opengrok.indexer.analysis.Scopes.Scope;
 
 /**
  *

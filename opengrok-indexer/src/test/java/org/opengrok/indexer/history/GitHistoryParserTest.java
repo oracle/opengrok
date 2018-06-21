@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -31,7 +31,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.Assert.*;
 

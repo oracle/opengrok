@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 /**
  * boolean utility functions

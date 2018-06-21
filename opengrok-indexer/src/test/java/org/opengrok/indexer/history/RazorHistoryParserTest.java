@@ -21,7 +21,7 @@
  * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.BufferedReader;
 import java.io.StringReader;

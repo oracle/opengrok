@@ -26,10 +26,10 @@
  * Gets Pascal symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.pascal;
+package org.opengrok.indexer.analysis.pascal;
 
 import java.util.Locale;
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class PascalSymbolTokenizer

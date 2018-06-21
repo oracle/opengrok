@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2008, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 /**
  *

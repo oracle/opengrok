@@ -21,7 +21,7 @@
  * Copyright (c) 2011 Jens Elkner.
  * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.util.Map;
 import java.util.TreeMap;

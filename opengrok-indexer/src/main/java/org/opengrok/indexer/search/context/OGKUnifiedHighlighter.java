@@ -17,7 +17,7 @@
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,14 +41,14 @@ import org.apache.lucene.search.uhighlight.PhraseHelper;
 import org.apache.lucene.search.uhighlight.UnifiedHighlighter;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.CharacterRunAutomaton;
-import org.opengrok.analysis.AnalyzerGuru;
-import org.opengrok.analysis.ExpandTabsReader;
-import org.opengrok.analysis.StreamSource;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.search.QueryBuilder;
-import org.opengrok.util.IOUtils;
-import org.opengrok.web.Util;
+import org.opengrok.indexer.analysis.AnalyzerGuru;
+import org.opengrok.indexer.analysis.ExpandTabsReader;
+import org.opengrok.indexer.analysis.StreamSource;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Represents a subclass of {@link UnifiedHighlighter} with customizations for

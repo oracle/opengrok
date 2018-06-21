@@ -21,7 +21,7 @@
  * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
@@ -53,12 +53,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.opengrok.authorization.AuthControlFlag;
-import org.opengrok.authorization.AuthorizationStack;
-import org.opengrok.history.RepositoryInfo;
-import org.opengrok.index.Filter;
-import org.opengrok.index.IgnoredNames;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.authorization.AuthControlFlag;
+import org.opengrok.indexer.authorization.AuthorizationStack;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.index.Filter;
+import org.opengrok.indexer.index.IgnoredNames;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * Placeholder class for all configuration variables. Due to the multithreaded
@@ -305,7 +305,7 @@ public final class Configuration {
      *
      * @return current tab size set.
      * @see Project#getTabSize()
-     * @see org.opengrok.analysis.ExpandTabsReader
+     * @see org.opengrok.indexer.analysis.ExpandTabsReader
      */
     public int getTabSize() {
         return tabSize;
@@ -317,7 +317,7 @@ public final class Configuration {
      *
      * @param tabSize tabsize to set.
      * @see Project#setTabSize(int)
-     * @see org.opengrok.analysis.ExpandTabsReader
+     * @see org.opengrok.indexer.analysis.ExpandTabsReader
      */
     public void setTabSize(int tabSize) {
         this.tabSize = tabSize;

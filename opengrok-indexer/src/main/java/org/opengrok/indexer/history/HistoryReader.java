@@ -20,13 +20,13 @@
 /*
  * Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Class for reading history entries in a way suitable for indexing by Lucene.

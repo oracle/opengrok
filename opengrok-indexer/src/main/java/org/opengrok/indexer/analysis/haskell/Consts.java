@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.haskell;
+package org.opengrok.indexer.analysis.haskell;
 
 import java.util.HashSet;
 import java.util.Set;

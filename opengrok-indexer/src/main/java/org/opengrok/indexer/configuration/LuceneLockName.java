@@ -21,7 +21,7 @@
  * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 /**
  * Represents a container for OpenGrok's names of Lucene lock modes.

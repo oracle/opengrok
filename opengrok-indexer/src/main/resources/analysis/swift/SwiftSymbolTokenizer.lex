@@ -26,9 +26,9 @@
  * Gets Swift symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.swift;
+package org.opengrok.indexer.analysis.swift;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class SwiftSymbolTokenizer

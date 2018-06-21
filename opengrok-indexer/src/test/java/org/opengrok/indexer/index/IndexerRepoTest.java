@@ -21,7 +21,7 @@
  * Copyright (c) 2014, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.index;
+package org.opengrok.indexer.index;
 
 import java.io.File;
 import static org.junit.Assert.assertEquals;
@@ -44,18 +44,18 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.CtagsInstalled;
-import org.opengrok.condition.RepositoryInstalled;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.HistoryException;
-import org.opengrok.history.HistoryGuru;
-import org.opengrok.history.MercurialRepositoryTest;
-import org.opengrok.history.RepositoryInfo;
-import org.opengrok.util.TestRepository;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
+import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryException;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.MercurialRepositoryTest;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Test indexer w.r.t. repositories.

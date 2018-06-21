@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.python;
+package org.opengrok.indexer.analysis.python;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
-import static org.opengrok.util.CustomAssertions.assertSymbolStream;
+import static org.opengrok.indexer.util.CustomAssertions.assertSymbolStream;
 
 /**
  * Tests the {@link PythonSymbolTokenizer} class.

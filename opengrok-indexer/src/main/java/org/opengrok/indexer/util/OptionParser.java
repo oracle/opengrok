@@ -20,7 +20,7 @@
 /*
  * Portions Copyright (c) 2017, Steven Haehn.
  */
-package org.opengrok.util;
+package org.opengrok.indexer.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

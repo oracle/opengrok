@@ -32,7 +32,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.web.PageConfig;
+import org.opengrok.indexer.web.Prefix;
+import org.opengrok.indexer.web.SearchHelper;
+import org.opengrok.indexer.web.Statistics;
 
 public class StatisticsFilter implements Filter {
 

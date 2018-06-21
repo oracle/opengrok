@@ -21,7 +21,7 @@
  * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.analysis.pascal;
+package org.opengrok.indexer.analysis.pascal;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.search.context;
+package org.opengrok.indexer.search.context;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,16 +38,16 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.opengrok.search.Hit;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.search.Hit;
+import org.opengrok.indexer.util.TestRepository;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import org.opengrok.condition.ConditionalRun;
-import org.opengrok.condition.ConditionalRunRule;
-import org.opengrok.condition.RepositoryInstalled;
-import org.opengrok.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.RepositoryInstalled;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 
 /**
  * Unit tests for the {@code HistoryContext} class.
@@ -63,7 +63,7 @@ public class HistoryContextTest {
     public static void setUpClass() throws Exception {
         repositories = new TestRepository();
         repositories.create(HistoryContextTest.class.getResourceAsStream(
-                "/org/opengrok/history/repositories.zip"));
+                "/org/opengrok/indexer/history/repositories.zip"));
         RuntimeEnvironment.getInstance().setRepositories(repositories.getSourceRoot());
     }
 

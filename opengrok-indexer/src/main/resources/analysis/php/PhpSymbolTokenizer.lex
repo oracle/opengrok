@@ -26,13 +26,13 @@
  * Gets Php symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.php;
+package org.opengrok.indexer.analysis.php;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class PhpSymbolTokenizer

@@ -22,11 +22,11 @@
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis.archive;
+package org.opengrok.indexer.analysis.archive;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.opengrok.analysis.FileAnalyzerFactory;
+import org.opengrok.indexer.analysis.FileAnalyzerFactory;
 
 /**
  * Represents an abstract base class for a ZIP archive

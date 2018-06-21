@@ -21,7 +21,7 @@
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -48,14 +48,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opengrok.analysis.JFlexXref;
-import org.opengrok.analysis.plain.PlainXref;
-import org.opengrok.authorization.AuthorizationPlugin;
-import org.opengrok.authorization.AuthorizationStack;
-import org.opengrok.configuration.messages.Message;
-import org.opengrok.configuration.messages.NormalMessage;
-import org.opengrok.history.RepositoryInfo;
-import org.opengrok.web.Statistics;
+import org.opengrok.indexer.analysis.JFlexXref;
+import org.opengrok.indexer.analysis.plain.PlainXref;
+import org.opengrok.indexer.authorization.AuthorizationPlugin;
+import org.opengrok.indexer.authorization.AuthorizationStack;
+import org.opengrok.indexer.configuration.messages.Message;
+import org.opengrok.indexer.configuration.messages.NormalMessage;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.web.Statistics;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -64,8 +64,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.opengrok.util.ForbiddenSymlinkException;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.IOUtils;
 
 /**
  * Test the RuntimeEnvironment class
@@ -199,7 +199,7 @@ public class RuntimeEnvironmentTest {
         assertNotNull(instanceCtags);
         assertTrue("instance ctags should equals 'ctags' or the sys property",
             instanceCtags.equals("ctags") || instanceCtags.equals(
-            System.getProperty("org.opengrok.analysis.Ctags")));
+            System.getProperty("org.opengrok.indexer.analysis.Ctags")));
         String path = "/usr/bin/ctags";
         instance.setCtags(path);
         assertEquals(path, instance.getCtags());
@@ -208,7 +208,7 @@ public class RuntimeEnvironmentTest {
         instanceCtags = instance.getCtags();
         assertTrue("instance ctags should equals 'ctags' or the sys property",
             instanceCtags.equals("ctags") || instanceCtags.equals(
-            System.getProperty("org.opengrok.analysis.Ctags")));
+            System.getProperty("org.opengrok.indexer.analysis.Ctags")));
     }
 
     @Test
@@ -483,10 +483,10 @@ public class RuntimeEnvironmentTest {
     public void testAuthorizationFlagDecode() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
-                + " <object class=\"org.opengrok.configuration.Configuration\">\n"
+                + " <object class=\"org.opengrok.indexer.configuration.Configuration\">\n"
                 + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "			<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"flag\">\n"
                 + "					<string>sufficient</string>\n"
                 + "				</void>\n"
@@ -496,7 +496,7 @@ public class RuntimeEnvironmentTest {
                 + "			</object>\n"
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "			<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"flag\">\n"
                 + "					<string>required</string>\n"
                 + "				</void>\n"
@@ -506,7 +506,7 @@ public class RuntimeEnvironmentTest {
                 + "			</object>\n"
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "			<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"flag\">\n"
                 + "					<string>REQUISITE</string>\n"
                 + "				</void>\n"
@@ -516,7 +516,7 @@ public class RuntimeEnvironmentTest {
                 + "			</object>\n"
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "			<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"flag\">\n"
                 + "					<string>reQuIrEd</string>\n"
                 + "				</void>\n"
@@ -546,10 +546,10 @@ public class RuntimeEnvironmentTest {
     public void testAuthorizationStackDecode() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
-                + " <object class=\"org.opengrok.configuration.Configuration\">\n"
+                + " <object class=\"org.opengrok.indexer.configuration.Configuration\">\n"
                 + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
-                + "			<object id=\"first_plugin\" class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "			<object id=\"first_plugin\" class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"flag\">\n"
                 + "					<string>sufficient</string>\n"
                 + "				</void>\n"
@@ -559,7 +559,7 @@ public class RuntimeEnvironmentTest {
                 + "			</object>\n"
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
-                + "			<object id=\"first_stack\" class=\"org.opengrok.authorization.AuthorizationStack\">\n"
+                + "			<object id=\"first_stack\" class=\"org.opengrok.indexer.authorization.AuthorizationStack\">\n"
                 + "				<void property=\"flag\">\n"
                 + "					<string>required</string>\n"
                 + "				</void>\n"
@@ -568,7 +568,7 @@ public class RuntimeEnvironmentTest {
                 + "				</void>\n"
                 + "                             <void property=\"stack\">"
                 + "                                 <void method=\"add\">"
-                + "	                 		<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "	                 		<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "	                 			<void property=\"flag\">\n"
                 + "	                 				<string>required</string>\n"
                 + "	                 			</void>\n"
@@ -578,7 +578,7 @@ public class RuntimeEnvironmentTest {
                 + "		                 	</object>\n"
                 + "                                 </void>"
                 + "                                 <void method=\"add\">"
-                + "	                 		<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "	                 		<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "	                 			<void property=\"flag\">\n"
                 + "	                 				<string>requisite</string>\n"
                 + "	                 			</void>\n"
@@ -601,7 +601,7 @@ public class RuntimeEnvironmentTest {
                 + "			</object>\n"
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "			<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"flag\">\n"
                 + "					<string>requisite</string>\n"
                 + "				</void>\n"
@@ -611,7 +611,7 @@ public class RuntimeEnvironmentTest {
                 + "			</object>\n"
                 + "		</void>\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opengrok.authorization.AuthorizationStack\">\n"
+                + "			<object class=\"org.opengrok.indexer.authorization.AuthorizationStack\">\n"
                 + "				<void property=\"flag\">\n"
                 + "					<string>required</string>\n"
                 + "				</void>\n"
@@ -620,7 +620,7 @@ public class RuntimeEnvironmentTest {
                 + "				</void>\n"
                 + "                             <void property=\"stack\">"
                 + "                                 <void method=\"add\">"
-                + "	                 		<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "	                 		<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "	                 			<void property=\"flag\">\n"
                 + "	                 				<string>required</string>\n"
                 + "	                 			</void>\n"
@@ -630,7 +630,7 @@ public class RuntimeEnvironmentTest {
                 + "		                 	</object>\n"
                 + "                                 </void>"
                 + "                                 <void method=\"add\">"
-                + "	                 		<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "	                 		<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "	                 			<void property=\"flag\">\n"
                 + "	                 				<string>requisite</string>\n"
                 + "	                 			</void>\n"
@@ -747,10 +747,10 @@ public class RuntimeEnvironmentTest {
     public void testAuthorizationFlagDecodeInvalid() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
-                + " <object class=\"org.opengrok.configuration.Configuration\">\n"
+                + " <object class=\"org.opengrok.indexer.configuration.Configuration\">\n"
                 + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
-                + "			<object class=\"org.opengrok.authorization.AuthorizationPlugin\">\n"
+                + "			<object class=\"org.opengrok.indexer.authorization.AuthorizationPlugin\">\n"
                 + "				<void property=\"flag\">\n"
                 + "					<string>noflag</string>\n"
                 + "				</void>\n"
@@ -774,7 +774,7 @@ public class RuntimeEnvironmentTest {
     public void testAuthorizationDecodeInvalid() throws IOException {
         String confString = "<?xml version='1.0' encoding='UTF-8'?>\n"
                 + "<java class=\"java.beans.XMLDecoder\" version=\"1.8.0_121\">\n"
-                + " <object class=\"org.opengrok.configuration.Configuration\">\n"
+                + " <object class=\"org.opengrok.indexer.configuration.Configuration\">\n"
                 + "	<void property=\"pluginStack\">\n"
                 + "		<void method=\"add\">\n"
                 + "			<object class=\"org.bad.package.authorization.NoCheck\">\n"

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -36,14 +36,14 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.opengrok.authorization.AuthorizationFramework;
-import org.opengrok.authorization.IAuthorizationPlugin;
-import org.opengrok.authorization.TestPlugin;
-import org.opengrok.configuration.Group;
-import org.opengrok.configuration.Project;
-import org.opengrok.configuration.RuntimeEnvironment;
-import org.opengrok.history.RepoRepository;
-import org.opengrok.history.RepositoryInfo;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.authorization.IAuthorizationPlugin;
+import org.opengrok.indexer.authorization.TestPlugin;
+import org.opengrok.indexer.configuration.Group;
+import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.RepoRepository;
+import org.opengrok.indexer.history.RepositoryInfo;
 
 public class ProjectHelperTestBase {
 

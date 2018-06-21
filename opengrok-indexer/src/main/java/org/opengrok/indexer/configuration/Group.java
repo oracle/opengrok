@@ -20,14 +20,14 @@
  /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.opengrok.util.ClassUtil;
+import org.opengrok.indexer.util.ClassUtil;
 
 /**
  * Placeholder for the information about subgroups of projects and repositories.

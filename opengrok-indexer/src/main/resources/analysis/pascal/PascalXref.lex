@@ -26,11 +26,11 @@
  * Cross reference a Pascal file
  */
 
-package org.opengrok.analysis.pascal;
+package org.opengrok.indexer.analysis.pascal;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.analysis.ScopeAction;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.ScopeAction;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class PascalXref

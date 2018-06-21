@@ -26,16 +26,16 @@
  * Cross reference a PHP file
  */
 
-package org.opengrok.analysis.php;
+package org.opengrok.indexer.analysis.php;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
-import org.opengrok.analysis.JFlexSymbolMatcher;
-import org.opengrok.analysis.EmphasisHint;
-import org.opengrok.web.HtmlConsts;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.EmphasisHint;
+import org.opengrok.indexer.web.HtmlConsts;
 %%
 %public
 %class PhpXref

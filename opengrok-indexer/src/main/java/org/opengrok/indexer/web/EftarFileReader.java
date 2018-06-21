@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web;
+package org.opengrok.indexer.web;
 
 import java.io.EOFException;
 import java.io.File;
@@ -31,8 +31,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.opengrok.logger.LoggerFactory;
-import org.opengrok.util.IOUtils;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.IOUtils;
 
 
 /**
@@ -48,7 +48,7 @@ public class EftarFileReader {
     private final RandomAccessFile f;
     private boolean isOpen;
 
-    protected class FNode {
+    public class FNode {
 
         public long offset;
         public long hash;
@@ -162,7 +162,7 @@ public class EftarFileReader {
         return null;
     }
     
-    protected String getChildTag(FNode fn, String name) throws IOException {
+    public String getChildTag(FNode fn, String name) throws IOException {
         if (fn != null && fn.childOffset != 0 && fn.numChildren != 0) {
             FNode ch = fn.binarySearch(fn.offset + fn.childOffset, fn.numChildren, EftarFile.myHash(name));
             if (ch != null) {

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.configuration;
+package org.opengrok.indexer.configuration;
 
 import java.util.concurrent.ExecutorService;
 import org.apache.lucene.index.IndexReader;

@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-package org.opengrok.analysis.csharp;
+package org.opengrok.indexer.analysis.csharp;
 
 import java.util.HashSet;
 import java.util.Set;

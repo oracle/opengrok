@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 /* Portions Copyright 2008 Peter Bray */
-package org.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -32,7 +32,7 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-import org.opengrok.logger.LoggerFactory;
+import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
  * Adds access to to a <a href="http://www.visible.com/Products/Razor/index.htm">Razor</a> Repository

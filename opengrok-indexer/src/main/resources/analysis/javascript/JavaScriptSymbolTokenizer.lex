@@ -26,9 +26,9 @@
  * Gets JavaScript symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.javascript;
+package org.opengrok.indexer.analysis.javascript;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
 %class JavaScriptSymbolTokenizer

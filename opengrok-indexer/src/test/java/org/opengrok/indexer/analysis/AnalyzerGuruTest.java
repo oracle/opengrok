@@ -22,7 +22,7 @@
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
-package org.opengrok.analysis;
+package org.opengrok.indexer.analysis;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,18 +36,18 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.junit.Assert;
 import org.junit.Test;
-import org.opengrok.analysis.archive.ZipAnalyzer;
-import org.opengrok.analysis.c.CxxAnalyzerFactory;
-import org.opengrok.analysis.document.MandocAnalyzer;
-import org.opengrok.analysis.document.TroffAnalyzer;
-import org.opengrok.analysis.executables.ELFAnalyzer;
-import org.opengrok.analysis.executables.JarAnalyzer;
-import org.opengrok.analysis.executables.JavaClassAnalyzer;
-import org.opengrok.analysis.perl.PerlAnalyzer;
-import org.opengrok.analysis.plain.PlainAnalyzer;
-import org.opengrok.analysis.plain.XMLAnalyzer;
-import org.opengrok.analysis.sh.ShAnalyzer;
-import org.opengrok.analysis.sh.ShAnalyzerFactory;
+import org.opengrok.indexer.analysis.archive.ZipAnalyzer;
+import org.opengrok.indexer.analysis.c.CxxAnalyzerFactory;
+import org.opengrok.indexer.analysis.document.MandocAnalyzer;
+import org.opengrok.indexer.analysis.document.TroffAnalyzer;
+import org.opengrok.indexer.analysis.executables.ELFAnalyzer;
+import org.opengrok.indexer.analysis.executables.JarAnalyzer;
+import org.opengrok.indexer.analysis.executables.JavaClassAnalyzer;
+import org.opengrok.indexer.analysis.perl.PerlAnalyzer;
+import org.opengrok.indexer.analysis.plain.PlainAnalyzer;
+import org.opengrok.indexer.analysis.plain.XMLAnalyzer;
+import org.opengrok.indexer.analysis.sh.ShAnalyzer;
+import org.opengrok.indexer.analysis.sh.ShAnalyzerFactory;
 import static org.junit.Assert.*;
 
 /**

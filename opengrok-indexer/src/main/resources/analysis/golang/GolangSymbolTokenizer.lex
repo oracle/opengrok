@@ -26,9 +26,9 @@
  * Get Golang symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.golang;
+package org.opengrok.indexer.analysis.golang;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 
 /**
  * @author Patrick Lundquist

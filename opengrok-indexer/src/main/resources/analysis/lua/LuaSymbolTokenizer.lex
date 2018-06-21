@@ -26,9 +26,9 @@
  * Get Lua symbols - ignores comments, strings, keywords
  */
 
-package org.opengrok.analysis.lua;
+package org.opengrok.indexer.analysis.lua;
 
-import org.opengrok.analysis.JFlexSymbolMatcher;
+import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 
 /**
  * @author Evan Kinney
