@@ -35,7 +35,7 @@ public class AuthorizationPluginClassLoaderTest {
     private final File pluginDirectory;
 
     public AuthorizationPluginClassLoaderTest() {
-        URL resource = AuthorizationPluginClassLoaderTest.class.getResource("testplugins.jar");
+        URL resource = AuthorizationPluginClassLoaderTest.class.getResource("/authorization/plugins/testplugins.jar");
         pluginDirectory = new File(resource.getFile()).getParentFile();
     }
 

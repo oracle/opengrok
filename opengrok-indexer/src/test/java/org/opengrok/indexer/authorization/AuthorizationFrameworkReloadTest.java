@@ -48,7 +48,7 @@ public class AuthorizationFrameworkReloadTest {
     volatile boolean runThread;
     
     public AuthorizationFrameworkReloadTest() {
-        URL resource = AuthorizationFrameworkReloadTest.class.getResource("testplugins.jar");
+        URL resource = AuthorizationFrameworkReloadTest.class.getResource("/authorization/plugins/testplugins.jar");
         pluginDirectory = new File(resource.getFile()).getParentFile();
     }
     

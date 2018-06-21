@@ -74,7 +74,7 @@ public class JarAnalyzerTest {
         repository = new TestRepository();
         repository.createEmpty();
         repository.addAdhocFile(TESTPLUGINS_JAR,
-            AuthorizationFrameworkReloadTest.class.getResourceAsStream(
+            AuthorizationFrameworkReloadTest.class.getResourceAsStream("/authorization/plugins/" +
             TESTPLUGINS_JAR), null);
 
         env.setSourceRoot(repository.getSourceRoot());
