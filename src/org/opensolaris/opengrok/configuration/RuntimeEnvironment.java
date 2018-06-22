@@ -318,6 +318,15 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Get the path to the where the web application includes are stored
+     *
+     * @return the path to the web application include files
+     */
+    public String getIncludeRootPath() {
+        return threadConfig.get().getIncludeRoot();
+    }
+    
+    /**
      * Get the path to the where the index database is stored
      *
      * @return the path to the index database
@@ -1552,6 +1561,15 @@ public final class RuntimeEnvironment {
         // The invalidation of repositories above might have excluded some
         // repositories in HistoryGuru so the configuration needs to reflect that.
         configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
+        
+        reloadIncludeFiles(configuration);
+    }
+
+    private void reloadIncludeFiles(Configuration configuration1) {
+        configuration1.getBodyIncludeFileContent(true);
+        configuration1.getHeaderIncludeFileContent(true);
+        configuration1.getFooterIncludeFileContent(true);
+        configuration1.getForbiddenIncludeFileContent(true);
     }
 
     public Configuration getConfiguration() {

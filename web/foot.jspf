@@ -45,7 +45,7 @@ org.opensolaris.opengrok.web.Prefix"
 <% if(dateForLastIndexRun != null) { %>
 <p>Last Index update <%= dateForLastIndexRun %></p>
 <%}%>
-    <%= cfg.getEnv().getConfiguration().getFooterIncludeFileContent() %>
+    <%= cfg.getEnv().getConfiguration().getFooterIncludeFileContent(false) %>
     <%
     if (needAddDiv.contains(cfg.getPrefix())) {
         %></div><% // #content

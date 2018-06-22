@@ -75,7 +75,7 @@ public class AuthorizationFilter implements Filter {
             config.getEnv().getStatistics().addRequestTime("requests_forbidden",
                     System.currentTimeMillis() - processTime);
             
-            if (!config.getEnv().getConfiguration().getForbiddenIncludeFileContent().isEmpty()) {
+            if (!config.getEnv().getConfiguration().getForbiddenIncludeFileContent(false).isEmpty()) {
                 sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);
                 return;
             }

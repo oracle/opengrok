@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -119,6 +119,26 @@ public class RuntimeEnvironmentTest {
         assertEquals(path, instance.getDataRootFile().getCanonicalPath());
     }
 
+    @Test
+    public void testIncludeRoot() throws IOException {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        assertNull(instance.getIncludeRootPath());
+        
+        // set data root
+        File f = File.createTempFile("dataroot", null);
+        String path = f.getCanonicalPath();
+        instance.setDataRoot(path);
+        
+        // verify they are the same
+        assertEquals(instance.getDataRootPath(), instance.getIncludeRootPath());
+        
+        // set include root
+        f = File.createTempFile("includeroot", null);
+        path = f.getCanonicalPath();
+        instance.getConfiguration().setIncludeRoot(path);
+        assertEquals(path, instance.getIncludeRootPath());
+    }
+    
     @Test
     public void testSourceRoot() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
