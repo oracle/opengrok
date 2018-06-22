@@ -93,6 +93,8 @@ Supported Environment Variables for configuring the default setup:
   - OPENGROK_PROGRESS           Shows progress in %(percentage) of working
                                   through project. It's good to have Verbose
                                   Mode enabled too. (*)
+  - OPENGROK_ALL_NONWHITESPACE  Index all non-whitespace for FULL queries.
+                                  on|off (default off) (^)
   - OPENGROK_RENAMED_FILES_HISTORY Get full history of renamed files for SCMs
                                   that support it (Git, Mercurial). When set to
                                   on, the indexing is slower, especially in the
@@ -450,6 +452,12 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
         ASSIGNMENTS="`echo $OPENGROK_ASSIGNMENTS | sed 's/[:space:]+/_/g'`"
         ASSIGNMENTS="-A `echo $ASSIGNMENTS | sed 's/,/ -A /g'`"
     fi
+
+    OPENGROK_ALL_NONWHITESPACE="${OPENGROK_ALL_NONWHITESPACE:-off}"
+    case "$OPENGROK_ALL_NONWHITESPACE" in
+        on|true|1) ALL_NONWHITESPACE="--allNonWhitespace on" ;;
+        *) ALL_NONWHITESPACE="" ;;
+    esac
 }
 
 #
@@ -899,6 +907,7 @@ CommonInvocation()
         ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
         ${OPENGROK_PARALLELISM:+--threads} ${OPENGROK_PARALLELISM}	\
         ${ASSIGNMENTS}							\
+        ${ALL_NONWHITESPACE}						\
         ${READ_XML_CONF}                                        	\
         ${WEBAPP_CONFIG}						\
         ${OPENGROK_PROFILER:+--profiler}				\

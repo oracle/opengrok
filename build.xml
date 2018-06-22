@@ -367,7 +367,12 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <run-jflex dir="${gen.analysis.dir}/uue" name="UuencodeFullTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/pascal" name="PascalSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/pascal" name="PascalXref"/>
-        
+
+        <property name="gen.search.dir" value="/org/opensolaris/opengrok/search"/>
+        <run-jflex dir="${gen.search.dir}" name="DefaultQueryEscaper"/>
+        <run-jflex dir="${gen.search.dir}" name="FullQueryEscaper"/>
+        <run-jflex dir="${gen.search.dir}" name="PathQueryEscaper"/>
+
         <property name="gen.context.dir" value="/org/opensolaris/opengrok/search/context"/>
         <run-jflex dir="${gen.context.dir}" name="HistoryLineTokenizer"/>
         <run-jflex dir="${gen.context.dir}" name="PlainLineTokenizer"/>

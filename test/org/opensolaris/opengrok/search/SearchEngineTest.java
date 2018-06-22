@@ -161,8 +161,8 @@ public class SearchEngineTest {
         instance.setSymbol("toString");
         instance.setFreetext("OpenGrok");
         assertTrue(instance.isValidQuery());
-        assertEquals("+defs:\"std string\" +full:opengrok +hist:once +hist:upon +hist:time +path:makefile +refs:toString",
-                instance.getQuery());
+        assertEquals("+defs:std::string +full:opengrok +hist:once +hist:upon" +
+            " +hist:time +path:makefile +refs:toString", instance.getQuery());
     }
 
     @Test

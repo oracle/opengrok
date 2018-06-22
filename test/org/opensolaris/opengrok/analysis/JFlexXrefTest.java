@@ -434,7 +434,7 @@ public class JFlexXrefTest {
         assertLinesEqual("UuencodeXref truncated",
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
                 + "<strong>begin</strong> <em>644</em> "
-                + "<a href=\"/source/s?q=%22test.txt%22\">test.txt</a>"
+                + "<a href=\"/source/s?q=test.txt\">test.txt</a>"
                 + "<span class=\"c\">\n"
                 + "<a class=\"l\" name=\"2\" href=\"#2\">2</a></span>",
                 out.toString());

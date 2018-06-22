@@ -155,6 +155,13 @@ public final class RuntimeEnvironment {
      */
     private Short contextSurround;
 
+    /**
+     * Stores a transient value when
+     * {@link #setAllNonWhitespace(java.lang.Boolean)} is called -- i.e. the
+     * value is not mediated to {@link Configuration}.
+     */
+    private Boolean allNonWhitespace;
+
     private static final IndexTimestamp indexTime = new IndexTimestamp();
 
     /**
@@ -1142,6 +1149,29 @@ public final class RuntimeEnvironment {
             parallelism;
     }
     
+    /**
+     * Gets a value indicating if all non-whitespace should be indexed for
+     * FULL search: either the last value passed to
+     * {@link #setAllNonWhitespace(java.lang.Boolean)} or
+     * {@link Configuration#isAllNonWhitespace()} as a default.
+     */
+    public boolean isAllNonWhitespace() {
+        return allNonWhitespace != null ? allNonWhitespace :
+            threadConfig.get().isAllNonWhitespace();
+    }
+
+    /**
+     * Sets a value indicating if all non-whitespace should be indexed for
+     * FULL search, or resets to use {@link Configuration#isAllNonWhitespace()}.
+     * <p>
+     * N.b. the value is not mediated to {@link Configuration}.
+     * @param value a defined value or {@code null} to reset to use the
+     * {@link Configuration#isAllNonWhitespace()}
+     */
+    public void setAllNonWhitespace(Boolean value) {
+        allNonWhitespace = value;
+    }
+
     public boolean isTagsEnabled() {
         return threadConfig.get().isTagsEnabled();
     }

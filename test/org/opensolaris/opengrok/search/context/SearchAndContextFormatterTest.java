@@ -73,11 +73,13 @@ public class SearchAndContextFormatterTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        env = RuntimeEnvironment.getInstance();
+        env.setAllNonWhitespace(true);
+
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
             "repositories.zip"));
 
-        env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty(
             "org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
@@ -103,6 +105,7 @@ public class SearchAndContextFormatterTest {
     public static void tearDownClass() throws Exception {
         repository.destroy();
         configFile.delete();
+        env.setAllNonWhitespace(null);
     }
 
     @Before
@@ -128,6 +131,29 @@ public class SearchAndContextFormatterTest {
             "<a class=\"s\" href=\"/source/svn/c/main.c#9\"><span class=\"l\">9</span>    /*</a><br/>" +
             "<a class=\"s\" href=\"/source/svn/c/main.c#10\"><span class=\"l\">10</span>    Multi line comment, with <b>embedded</b> strange characters: &lt; &gt; &amp;,</a><br/>" +
             "<a class=\"s\" href=\"/source/svn/c/main.c#11\"><span class=\"l\">11</span>    email address: testuser@example.com and even an URL:</a><br/>";
+        assertLinesEqual("ContextFormatter output", CTX, frags[0]);
+        instance.destroy();
+    }
+
+    @Test
+    public void testSearch2() throws IOException, InvalidTokenOffsetsException {
+        env.setAllNonWhitespace(true);
+
+        SearchEngine instance;
+        int noHits;
+
+        instance = new SearchEngine();
+        instance.setFreetext("<example.cpp>");
+        instance.setFile("main.c");
+        noHits = instance.search();
+        assertTrue("noHits should be positive", noHits > 0);
+        String[] frags = getFirstFragments(instance);
+        assertNotNull("getFirstFragments() should return something", frags);
+        assertTrue("frags should have one element", frags.length == 1);
+
+        final String CTX = "<a class=\"s\" href=\"/source/svn/c/main.c#12\"><span class=\"l\">12</span>    http://www.example.com/index.html and a file name and a path:</a><br/>" +
+            "<a class=\"s\" href=\"/source/svn/c/main.c#13\"><span class=\"l\">13</span>    <b>&lt;example.cpp&gt;</b> and &lt;/usr/local/example.h&gt;.</a><br/>" +
+            "<a class=\"s\" href=\"/source/svn/c/main.c#14\"><span class=\"l\">14</span>    Ending with an email address: username@example.com</a><br/>";
         assertLinesEqual("ContextFormatter output", CTX, frags[0]);
         instance.destroy();
     }

@@ -419,6 +419,10 @@ public final class Indexer {
                 helpDetailed = true;
             });
 
+            parser.on("--allNonWhitespace", "=on|off", ON_OFF, Boolean.class,
+                "Index all non-whitespace for FULL queries. Default is off.").
+                Do(v -> cfg.setAllNonWhitespace((Boolean)v));
+
             parser.on(
                 "-A (.ext|prefix.):(-|analyzer)", "--analyzer", "/(\\.\\w+|\\w+\\.):(-|[a-zA-Z_0-9.]+)/",
                     "Files with the named prefix/extension should be analyzed",

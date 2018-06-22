@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -34,9 +34,11 @@ public class TextMatchedEvent {
     private final EmphasisHint hint;
     private final int start;
     private final int end;
+    private boolean published;
 
     /**
-     * Initializes an immutable instance of {@link TextMatchedEvent}.
+     * Initializes an almost wholly immutable instance of
+     * {@link TextMatchedEvent} with {@link #isPublished} set to {@code false}.
      * @param source the event source
      * @param str the text string
      * @param start the text start position
@@ -101,5 +103,21 @@ public class TextMatchedEvent {
      */
     public EmphasisHint getHint() {
         return hint;
+    }
+
+    /**
+     * Gets a value indicating if one or more tokens were published from the
+     * text.
+     */
+    public boolean isPublished() {
+        return published;
+    }
+
+    /**
+     * Sets a value indicating if one or more tokens were published from the
+     * text.
+     */
+    public void setPublished(boolean value) {
+        published = value;
     }
 }

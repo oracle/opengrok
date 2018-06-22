@@ -201,6 +201,13 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 </excludes>
             </testResource>
             <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/plain/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/plain/</directory>
+                <excludes>
+                    <exclude>*.java</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
                 <targetPath>org/opensolaris/opengrok/analysis/powershell/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/analysis/powershell/</directory>
                 <excludes>

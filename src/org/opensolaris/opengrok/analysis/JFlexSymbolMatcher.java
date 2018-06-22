@@ -39,6 +39,16 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     private String disjointSpanClassName;
 
     /**
+     * Gets a value indicating if the matcher is by-default case-insensitive --
+     * i.e. whether tokens should be lower-cased when published in a stream.
+     * @return {@code false} but subclasses should override where necessary
+     */
+    @Override
+    public boolean isDefaultCaseInsensitive() {
+        return false;
+    }
+
+    /**
      * Associates the specified listener, replacing the former one.
      * @param l defined instance
      */
@@ -79,6 +89,27 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
     }
 
     /**
+     * Does nothing. Subclasses can override if necessary to alter their
+     * behavior for different modes.
+     */
+    @Override
+    public void setTokenizerMode(TokenizerMode value) {
+    }
+
+    /**
+     * Does nothing. Subclasses can override to determines if {@code str}
+     * starts with a contraction (i.e., a word containing letters and non-word
+     * characters such as "ain't") according to the specific language.
+     * @param str a defined instance
+     * @return 0 if {@code str} does not start with a contraction; or else the
+     * length of the longest initial contraction
+     */
+    @Override
+    public int getLongestContractionPrefix(String str) {
+        return 0;
+    }
+
+    /**
      * Gets the class name value from the last call to
      * {@link #onDisjointSpanChanged(java.lang.String, int)}.
      * @return a defined value or null
@@ -105,6 +136,24 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
     /**
      * Raises
+     * {@link SymbolMatchedListener#symbolMatched(org.opensolaris.opengrok.analysis.SymbolMatchedEvent)}
+     * for a subscribed listener.
+     * @param literal the literal representation of the symbol
+     * @param str the symbol string
+     * @param start the symbol literal start position
+     */
+    protected void onSymbolMatched(String literal, String str, int start) {
+        SymbolMatchedListener l = symbolListener;
+        if (l != null) {
+            // TODO: publish literal through SymbolMatchedEvent.
+            SymbolMatchedEvent evt = new SymbolMatchedEvent(this, str, start,
+                    start + literal.length());
+            l.symbolMatched(evt);
+        }
+    }
+
+    /**
+     * Raises
      * {@link SymbolMatchedListener#sourceCodeSeen(org.opensolaris.opengrok.analysis.SourceCodeSeenEvent)}
      * for all subscribed listeners in turn.
      * @param start the source code start position
@@ -122,9 +171,11 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * {@link String#valueOf(char)} {@code c} and {@code start}.
      * @param c the text character
      * @param start the text start position
+     * @return {@code true} if one or more complete tokens were published from
+     * the text
      */
-    protected void onNonSymbolMatched(char c, int start) {
-        onNonSymbolMatched(String.valueOf(c), start);
+    protected boolean onNonSymbolMatched(char c, int start) {
+        return onNonSymbolMatched(String.valueOf(c), start);
     }
 
     /**
@@ -133,14 +184,18 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * for a subscribed listener.
      * @param str the text string
      * @param start the text start position
+     * @return {@code true} if one or more complete tokens were published from
+     * the text
      */
-    protected void onNonSymbolMatched(String str, int start) {
+    protected boolean onNonSymbolMatched(String str, int start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, start,
                 start + str.length());
             l.nonSymbolMatched(evt);
+            return evt.isPublished();
         }
+        return false;
     }
 
     /**
@@ -150,15 +205,19 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
      * @param str the text string
      * @param hint the text hint
      * @param start the text start position
+     * @return {@code true} if one or more complete tokens were published from
+     * the text
      */
-    protected void onNonSymbolMatched(String str, EmphasisHint hint,
-        int start) {
+    protected boolean onNonSymbolMatched(String str, EmphasisHint hint,
+            int start) {
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
             TextMatchedEvent evt = new TextMatchedEvent(this, str, hint, start,
                 start + str.length());
             l.nonSymbolMatched(evt);
+            return evt.isPublished();
         }
+        return false;
     }
 
     /**
