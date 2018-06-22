@@ -64,7 +64,10 @@ public class PageConfigTest {
         repository = new TestRepository();
         repository.create(
                 HistoryGuru.class.getResourceAsStream("repositories.zip"));
-        RuntimeEnvironment.getInstance().setRepositories(repository.getSourceRoot());
+        
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setRepositories(repository.getSourceRoot());
+        env.setHistoryEnabled(true);
     }
 
     @AfterClass
