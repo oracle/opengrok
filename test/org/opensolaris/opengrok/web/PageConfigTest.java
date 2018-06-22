@@ -243,6 +243,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetLatestRevisionValid() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
