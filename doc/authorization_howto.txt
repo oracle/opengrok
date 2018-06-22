@@ -104,11 +104,11 @@ Restrictions
 Custom classloader restricts the plugin to load only this classes from org.opengrok package:
 
     private final static String[] classWhitelist = new String[]{
-        "org.opengrok.configuration.Group",
-        "org.opengrok.configuration.Project",
-        "org.opengrok.authorization.IAuthorizationPlugin",
-        "org.opengrok.util.*",
-        "org.opengrok.logger.*",
+        "org.opengrok.indexer.configuration.Group",
+        "org.opengrok.indexer.configuration.Project",
+        "org.opengrok.indexer.authorization.IAuthorizationPlugin",
+        "org.opengrok.indexer.util.*",
+        "org.opengrok.indexer.logger.*",
     };
 
 And explicitly forbids these packages to be extended.

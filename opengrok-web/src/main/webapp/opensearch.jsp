@@ -25,7 +25,7 @@ Portions Copyright 2011 Jens Elkner.
 --%><%@page  session="false" errorPage="error.jsp" import="
 java.util.Set,
 
-org.opengrok.web.Util"
+org.opengrok.indexer.web.Util"
 %>
 <%
 {

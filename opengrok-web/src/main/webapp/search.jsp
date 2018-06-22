@@ -26,10 +26,10 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="javax.servlet.http.HttpServletResponse"%>
 <%@page session="false" errorPage="error.jsp" import="
-org.opengrok.search.Results,
-org.opengrok.web.SearchHelper,
-org.opengrok.web.SortOrder,
-org.opengrok.web.Suggestion"
+org.opengrok.indexer.search.Results,
+org.opengrok.indexer.web.SearchHelper,
+org.opengrok.indexer.web.SortOrder,
+org.opengrok.indexer.web.Suggestion"
 %><%
 {
     PageConfig cfg = PageConfig.get(request);

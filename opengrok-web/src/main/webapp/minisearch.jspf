@@ -23,12 +23,12 @@ Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
 java.io.File,
 java.io.IOException,
 
-org.opengrok.configuration.Project,
-org.opengrok.history.HistoryGuru,
-org.opengrok.web.EftarFileReader,
-org.opengrok.web.PageConfig,
-org.opengrok.web.Prefix,
-org.opengrok.web.Util"%><%
+org.opengrok.indexer.configuration.Project,
+org.opengrok.indexer.history.HistoryGuru,
+org.opengrok.indexer.web.EftarFileReader,
+org.opengrok.indexer.web.PageConfig,
+org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.web.Util"%><%
     /* ---------------------- minisearch.jspf start --------------------- */
 {
         PageConfig cfg = PageConfig.get(request);

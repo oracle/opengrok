@@ -36,10 +36,10 @@ org.apache.commons.jrcs.diff.Chunk,
 org.apache.commons.jrcs.diff.Delta,
 org.apache.commons.jrcs.diff.Diff,
 org.apache.commons.jrcs.diff.Revision,
-org.opengrok.analysis.AnalyzerGuru,
-org.opengrok.analysis.FileAnalyzer.Genre,
-org.opengrok.web.DiffData,
-org.opengrok.web.DiffType"
+org.opengrok.indexer.analysis.AnalyzerGuru,
+org.opengrok.indexer.analysis.FileAnalyzer.Genre,
+org.opengrok.indexer.web.DiffData,
+org.opengrok.indexer.web.DiffType"
 %><%!
 private String getAnnotateRevision(DiffData data) {
     if (data.type == DiffType.OLD || data.type == DiffType.NEW) {

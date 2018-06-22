@@ -27,13 +27,13 @@ java.io.File,
 java.text.SimpleDateFormat,
 java.util.Set,
 
-org.opengrok.history.DirectoryHistoryReader,
-org.opengrok.history.History,
-org.opengrok.history.HistoryEntry,
-org.opengrok.history.HistoryGuru,
-org.opengrok.web.Util,
-org.opengrok.web.Prefix,
-org.opengrok.web.PageConfig"
+org.opengrok.indexer.history.DirectoryHistoryReader,
+org.opengrok.indexer.history.History,
+org.opengrok.indexer.history.HistoryEntry,
+org.opengrok.indexer.history.HistoryGuru,
+org.opengrok.indexer.web.Util,
+org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.web.PageConfig"
 %><%@ page session="false" errorPage="error.jsp"%><%
 /* ---------------------- rss.jsp start --------------------- */
 {

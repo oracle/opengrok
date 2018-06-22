@@ -23,8 +23,8 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page session="false" errorPage="error.jsp" isErrorPage="true" import="
-org.opengrok.web.Prefix,
-org.opengrok.configuration.RuntimeEnvironment"
+org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.configuration.RuntimeEnvironment"
  %><%
 /* ---------------------- enoent.jsp start --------------------- */
 {

@@ -18,7 +18,7 @@ CDDL HEADER END
 
 Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
 --%>
-<%@page  session="false" import="org.opengrok.web.PageConfig" %>
+<%@page  session="false" import="org.opengrok.indexer.web.PageConfig" %>
 <%
 /* ---------------------- eforbidden.jspf start --------------------- */
 {

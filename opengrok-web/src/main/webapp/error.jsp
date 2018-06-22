@@ -27,7 +27,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 java.io.PrintWriter,
 java.io.StringWriter,
 
-org.opengrok.web.Util"
+org.opengrok.indexer.web.Util"
 %><%
 /* ---------------------- error.jsp start --------------------- */
 {

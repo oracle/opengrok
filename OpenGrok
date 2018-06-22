@@ -401,16 +401,16 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Override Built-in Properties
     # Assumption: We should not set properties to the empty string
     PROPERTIES="\
-${BK:+-Dorg.opengrok.history.BitKeeper=$BK} \
-${HG:+-Dorg.opengrok.history.Mercurial=$HG} \
-${CVS:+-Dorg.opengrok.history.cvs=$CVS} \
-${SVN:+-Dorg.opengrok.history.Subversion=$SVN} \
-${SCCS:+-Dorg.opengrok.history.SCCS=$SCCS} \
-${CLEARCASE:+-Dorg.opengrok.history.ClearCase=$CLEARCASE} \
-${GIT:+-Dorg.opengrok.history.git=$GIT} \
-${P4:+-Dorg.opengrok.history.Perforce=$P4} \
-${MTN:+-Dorg.opengrok.history.Monotone=$MTN} \
-${BZR:+-Dorg.opengrok.history.Bazaar=$BZR} \
+${BK:+-Dorg.opengrok.indexer.history.BitKeeper=$BK} \
+${HG:+-Dorg.opengrok.indexer.history.Mercurial=$HG} \
+${CVS:+-Dorg.opengrok.indexer.history.cvs=$CVS} \
+${SVN:+-Dorg.opengrok.indexer.history.Subversion=$SVN} \
+${SCCS:+-Dorg.opengrok.indexer.history.SCCS=$SCCS} \
+${CLEARCASE:+-Dorg.opengrok.indexer.history.ClearCase=$CLEARCASE} \
+${GIT:+-Dorg.opengrok.indexer.history.git=$GIT} \
+${P4:+-Dorg.opengrok.indexer.history.Perforce=$P4} \
+${MTN:+-Dorg.opengrok.indexer.history.Monotone=$MTN} \
+${BZR:+-Dorg.opengrok.indexer.history.Bazaar=$BZR} \
 "
 
     # OPTIONAL: Show revision tags in History view.
@@ -424,7 +424,7 @@ ${BZR:+-Dorg.opengrok.history.Bazaar=$BZR} \
     # DELIVERED: An update program for EftarFile
     # Usage: <class> inputFile [inputFile ...] outputFile
     # EftarFile == An Extremely Fast Tagged Attribute Read-only File System
-    EFTAR_UPDATE="org.opengrok.web.EftarFile"
+    EFTAR_UPDATE="org.opengrok.indexer.web.EftarFile"
 
     # HARDCODED: Generated EftarFile (See web/*.jsp)
     EFTAR_OUTPUT_FILE="${DATA_ROOT}/index/dtags.eftar"

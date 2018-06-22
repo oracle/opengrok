@@ -23,7 +23,7 @@
 
 /*
  * From RFC-3986. See
- * org.opengrok.util.StringUtils URI_CHARS_PAT where a regex
+ * org.opengrok.indexer.util.StringUtils URI_CHARS_PAT where a regex
  * in accordance with the following definition is maintained.
  *
  * URI         = scheme ":" hier-part [ "?" query ] [ "#" fragment ]

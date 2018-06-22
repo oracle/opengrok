@@ -115,7 +115,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.opengrok.index.Indexer</mainClass>
+                            <mainClass>org.opengrok.indexer.index.Indexer</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                         </manifest>

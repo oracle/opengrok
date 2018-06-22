@@ -40,8 +40,8 @@
   <Match>
     <And>
       <Or>
-	<Class name="org.opengrok.search.context.PlainLineTokenizer"/>
-	<Class name="org.opengrok.analysis.tcl.TclSymbolTokenizer"/>
+        <Class name="org.opengrok.indexer.search.context.PlainLineTokenizer"/>
+        <Class name="org.opengrok.indexer.analysis.tcl.TclSymbolTokenizer"/>
       </Or>
       <Method name="yylex"/>
     </And>

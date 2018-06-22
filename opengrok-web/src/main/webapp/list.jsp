@@ -42,19 +42,19 @@ java.util.logging.Level,
 java.util.zip.GZIPInputStream,
 javax.servlet.http.HttpServletResponse,
 
-org.opengrok.analysis.AnalyzerGuru,
-org.opengrok.analysis.Definitions,
-org.opengrok.analysis.FileAnalyzer.Genre,
-org.opengrok.analysis.FileAnalyzerFactory,
-org.opengrok.history.Annotation,
-org.opengrok.index.IndexDatabase,
-org.opengrok.search.DirectoryEntry,
-org.opengrok.search.DirectoryExtraReader,
-org.opengrok.search.FileExtra,
-org.opengrok.util.FileExtraZipper,
-org.opengrok.util.IOUtils,
+org.opengrok.indexer.analysis.AnalyzerGuru,
+org.opengrok.indexer.analysis.Definitions,
+org.opengrok.indexer.analysis.FileAnalyzer.Genre,
+org.opengrok.indexer.analysis.FileAnalyzerFactory,
+org.opengrok.indexer.history.Annotation,
+org.opengrok.indexer.index.IndexDatabase,
+org.opengrok.indexer.search.DirectoryEntry,
+org.opengrok.indexer.search.DirectoryExtraReader,
+org.opengrok.indexer.search.FileExtra,
+org.opengrok.indexer.util.FileExtraZipper,
+org.opengrok.indexer.util.IOUtils,
 org.opengrok.web.DirectoryListing,
-org.opengrok.web.SearchHelper"
+org.opengrok.indexer.web.SearchHelper"
 %><%
 {
     // need to set it here since requesting parameters

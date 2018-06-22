@@ -31,12 +31,12 @@ java.util.logging.Logger,
 
 org.apache.lucene.search.IndexSearcher,
 org.apache.lucene.search.Query,
-org.opengrok.configuration.RuntimeEnvironment,
-org.opengrok.search.QueryBuilder,
-org.opengrok.search.context.Context,
-org.opengrok.logger.LoggerFactory,
-org.opengrok.util.IOUtils,
-org.opengrok.web.SearchHelper"
+org.opengrok.indexer.configuration.RuntimeEnvironment,
+org.opengrok.indexer.search.QueryBuilder,
+org.opengrok.indexer.search.context.Context,
+org.opengrok.indexer.logger.LoggerFactory,
+org.opengrok.indexer.util.IOUtils,
+org.opengrok.indexer.web.SearchHelper"
 %>
 <%
 {

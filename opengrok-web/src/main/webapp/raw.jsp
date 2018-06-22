@@ -29,10 +29,10 @@ java.io.FileNotFoundException,
 java.io.InputStream,
 java.io.OutputStream,
 
-org.opengrok.configuration.RuntimeEnvironment,
-org.opengrok.history.HistoryGuru,
-org.opengrok.web.PageConfig,
-org.opengrok.web.Prefix"
+org.opengrok.indexer.configuration.RuntimeEnvironment,
+org.opengrok.indexer.history.HistoryGuru,
+org.opengrok.indexer.web.PageConfig,
+org.opengrok.indexer.web.Prefix"
 %><%
 /* ---------------------- raw.jsp start --------------------- */
 {

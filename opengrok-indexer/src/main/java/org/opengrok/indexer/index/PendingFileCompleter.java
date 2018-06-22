@@ -49,7 +49,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
  * be executed.
  * <p>
  * {@link PendingFileCompleter} is not generally thread-safe, as only
- * {@link #add(org.opengrok.index.PendingFileRenaming)} is expected
+ * {@link #add(org.opengrok.indexer.index.PendingFileRenaming)} is expected
  * to be run in parallel; that method is thread-safe -- but only among other
  * callers of the same method.
  * <p>
@@ -58,13 +58,13 @@ import org.opengrok.indexer.logger.LoggerFactory;
  * additions of {@link PendingFileDeletion}s and {@link PendingFileRenaming}s
  * are indicated.
  * <p>
- * {@link #add(org.opengrok.index.PendingSymlinkage)} should only
+ * {@link #add(org.opengrok.indexer.index.PendingSymlinkage)} should only
  * be called in serial from a single thread in an isolated stage.
  * <p>
- * {@link #add(org.opengrok.index.PendingFileDeletion)} should only
+ * {@link #add(org.opengrok.indexer.index.PendingFileDeletion)} should only
  * be called in serial from a single thread in an isolated stage.
  * <p>
- * {@link #add(org.opengrok.index.PendingFileRenaming)}, as noted,
+ * {@link #add(org.opengrok.indexer.index.PendingFileRenaming)}, as noted,
  * can be called in parallel in an isolated stage.
  */
 class PendingFileCompleter {

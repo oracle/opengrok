@@ -366,7 +366,7 @@ Usually to `StdInvocation()` function after line `-jar ${OPENGROK_JAR}`.
 It would look like this:
 
 ```
--A cs:org.opengrok.analysis.PlainAnalyzer
+-A cs:org.opengrok.indexer.analysis.PlainAnalyzer
 ```
 
 (this will map extension `.cs` to `PlainAnalyzer`)
@@ -395,13 +395,13 @@ for fulltext search for project with above generated `configuration.xml` you'd
 do:
 
 ```bash
-java -cp ./opengrok.jar org.opengrok.search.Search -R \
+java -cp ./opengrok.jar org.opengrok.indexer.search.Search -R \
     /var/opengrok/etc/configuration.xml -f fulltext_search_string
 ```
  For quick help run:
 
 ```bash
-java -cp ./opengrok.jar org.opengrok.search.Search
+java -cp ./opengrok.jar org.opengrok.indexer.search.Search
 ```
 
 ## 7. Change web application properties or name

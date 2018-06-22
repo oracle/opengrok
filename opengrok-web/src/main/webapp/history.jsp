@@ -24,8 +24,8 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page import="org.opengrok.web.Util"%>
-<%@page import="org.opengrok.history.HistoryGuru"%>
+<%@page import="org.opengrok.indexer.web.Util"%>
+<%@page import="org.opengrok.indexer.history.HistoryGuru"%>
 <%@page import="java.io.File"%>
 <%@page errorPage="error.jsp" import="
 java.text.Format,
@@ -34,10 +34,10 @@ java.util.Date,
 java.util.Set,
 java.util.regex.Pattern,
 
-org.opengrok.history.History,
-org.opengrok.history.HistoryEntry,
-org.opengrok.history.HistoryException,
-org.opengrok.configuration.RuntimeEnvironment"
+org.opengrok.indexer.history.History,
+org.opengrok.indexer.history.HistoryEntry,
+org.opengrok.indexer.history.HistoryException,
+org.opengrok.indexer.configuration.RuntimeEnvironment"
 %>
 <%/* ---------------------- history.jsp start --------------------- */
 {

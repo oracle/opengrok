@@ -29,19 +29,19 @@ After include you are here: /body/div#page/div#content/
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="org.json.simple.JSONArray"%>
-<%@page import="org.opengrok.configuration.messages.Message"%>
+<%@page import="org.opengrok.indexer.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
-<%@page import="org.opengrok.configuration.RuntimeEnvironment"%>
+<%@page import="org.opengrok.indexer.configuration.RuntimeEnvironment"%>
 <%@ page session="false" errorPage="error.jsp" import="
 java.io.File,
 java.io.IOException,
 
-org.opengrok.configuration.Project,
-org.opengrok.history.HistoryGuru,
-org.opengrok.web.EftarFileReader,
-org.opengrok.web.PageConfig,
-org.opengrok.web.Prefix,
-org.opengrok.web.Util"%><%
+org.opengrok.indexer.configuration.Project,
+org.opengrok.indexer.history.HistoryGuru,
+org.opengrok.indexer.web.EftarFileReader,
+org.opengrok.indexer.web.PageConfig,
+org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.web.Util"%><%
 /* ---------------------- mast.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);

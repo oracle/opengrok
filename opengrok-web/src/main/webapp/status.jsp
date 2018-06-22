@@ -25,8 +25,8 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page session="false" errorPage="error.jsp" import="
-org.opengrok.configuration.RuntimeEnvironment,
-org.opengrok.web.Util"
+org.opengrok.indexer.configuration.RuntimeEnvironment,
+org.opengrok.indexer.web.Util"
 %><%
 {
     PageConfig cfg = PageConfig.get(request);

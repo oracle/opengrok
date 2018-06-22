@@ -23,14 +23,14 @@ Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page import="org.json.simple.JSONArray"%>
-<%@page import="org.opengrok.configuration.RuntimeEnvironment"%>
-<%@page import="org.opengrok.configuration.messages.Message"%>
+<%@page import="org.opengrok.indexer.configuration.RuntimeEnvironment"%>
+<%@page import="org.opengrok.indexer.configuration.messages.Message"%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.LinkedList"%>
-<%@page import="org.opengrok.configuration.Group"%>
-<%@page import="org.opengrok.web.ProjectHelper"%>
-<%@page import="org.opengrok.web.SearchHelper"%>
+<%@page import="org.opengrok.indexer.configuration.Group"%>
+<%@page import="org.opengrok.indexer.web.ProjectHelper"%>
+<%@page import="org.opengrok.indexer.web.SearchHelper"%>
 <%@page import="java.util.Map"%>
 <%@page import="
 java.util.SortedSet,
@@ -40,11 +40,11 @@ java.util.List,
 java.util.HashMap,
 java.util.ArrayList,
 
-org.opengrok.configuration.Project,
-org.opengrok.search.QueryBuilder,
-org.opengrok.web.PageConfig,
-org.opengrok.web.Prefix,
-org.opengrok.web.Util"
+org.opengrok.indexer.configuration.Project,
+org.opengrok.indexer.search.QueryBuilder,
+org.opengrok.indexer.web.PageConfig,
+org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.web.Util"
 %><%
 /* ---------------------- menu.jspf start --------------------- */
 {
