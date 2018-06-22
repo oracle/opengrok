@@ -143,6 +143,10 @@ public final class Configuration {
     private Set<Group> groups;
     private String sourceRoot;
     private String dataRoot;
+    /**
+     * directory with include files for web application (header, footer, etc.)
+     */
+    private String includeRoot;
     private List<RepositoryInfo> repositories;
     /**
      * @deprecated This is kept around so not to break object deserialization
@@ -804,6 +808,18 @@ public final class Configuration {
         this.dataRoot = dataRoot;
     }
 
+    /**
+     * If {@link includeRoot} is not set, {@link dataRoot} will be returned.
+     * @return web include root directory
+     */
+    public String getIncludeRoot() {
+        return includeRoot != null ? includeRoot : dataRoot;
+    }
+    
+    public void setIncludeRoot(String newRoot) {
+        this.includeRoot = newRoot;
+    }
+    
     public List<RepositoryInfo> getRepositories() {
         return repositories;
     }
@@ -1175,13 +1191,14 @@ public final class Configuration {
     /**
      * Get the contents of the footer include file.
      *
+     * @param force if true, reload even if already set
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
      * @see #FOOTER_INCLUDE_FILE
      */
-    public String getFooterIncludeFileContent() {
-        if (footer == null) {
-            footer = getFileContent(new File(getDataRoot(), FOOTER_INCLUDE_FILE));
+    public String getFooterIncludeFileContent(boolean force) {
+        if (footer == null || force) {
+            footer = getFileContent(new File(getIncludeRoot(), FOOTER_INCLUDE_FILE));
         }
         return footer;
     }
@@ -1197,17 +1214,18 @@ public final class Configuration {
     /**
      * Get the contents of the header include file.
      *
+     * @param force if true, reload even if already set
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
      * @see #HEADER_INCLUDE_FILE
      */
-    public String getHeaderIncludeFileContent() {
-        if (header == null) {
-            header = getFileContent(new File(getDataRoot(), HEADER_INCLUDE_FILE));
+    public String getHeaderIncludeFileContent(boolean force) {
+        if (header == null || force) {
+            header = getFileContent(new File(getIncludeRoot(), HEADER_INCLUDE_FILE));
         }
         return header;
     }
-
+    
     /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the body of web app's "Home" page.
@@ -1219,13 +1237,14 @@ public final class Configuration {
     /**
      * Get the contents of the body include file.
      *
+     * @param force if true, reload even if already set
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
      * @see Configuration#BODY_INCLUDE_FILE
      */
-    public String getBodyIncludeFileContent() {
-        if (body == null) {
-            body = getFileContent(new File(getDataRoot(), BODY_INCLUDE_FILE));
+    public String getBodyIncludeFileContent(boolean force) {
+        if (body == null || force) {
+            body = getFileContent(new File(getIncludeRoot(), BODY_INCLUDE_FILE));
         }
         return body;
     }
@@ -1243,13 +1262,14 @@ public final class Configuration {
      * Get the contents of the page for forbidden error page (403 Forbidden)
      * include file.
      *
+     * @param force if true, reload even if already set
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
      * @see Configuration#E_FORBIDDEN_INCLUDE_FILE
      */
-    public String getForbiddenIncludeFileContent() {
-        if (eforbidden_content == null) {
-            eforbidden_content = getFileContent(new File(getDataRoot(), E_FORBIDDEN_INCLUDE_FILE));
+    public String getForbiddenIncludeFileContent(boolean force) {
+        if (eforbidden_content == null || force) {
+            eforbidden_content = getFileContent(new File(getIncludeRoot(), E_FORBIDDEN_INCLUDE_FILE));
         }
         return eforbidden_content;
     }

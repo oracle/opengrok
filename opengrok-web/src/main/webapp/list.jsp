@@ -174,72 +174,75 @@ document.pageReady.push(function() { pageReadyList();});
 
             }
         }
-    } else if (cfg.annotate()) {
-            // annotate
-            BufferedInputStream bin =
-                new BufferedInputStream(new FileInputStream(resourceFile));
-            try {
-                FileAnalyzerFactory a = AnalyzerGuru.find(basename);
-                Genre g = AnalyzerGuru.getGenre(a);
-                if (g == null) {
-                    a = AnalyzerGuru.find(bin);
-                    g = AnalyzerGuru.getGenre(a);
-                }
-                if (g == Genre.IMAGE) {
+    } else if (rev.length() != 0) {
+        // requesting a revision
+        if (cfg.isLatestRevision(rev)) {
+            if (cfg.annotate()) {
+                // annotate
+                BufferedInputStream bin =
+                    new BufferedInputStream(new FileInputStream(resourceFile));
+                try {
+                    FileAnalyzerFactory a = AnalyzerGuru.find(basename);
+                    Genre g = AnalyzerGuru.getGenre(a);
+                    if (g == null) {
+                        a = AnalyzerGuru.find(bin);
+                        g = AnalyzerGuru.getGenre(a);
+                    }
+                    if (g == Genre.IMAGE) {
 %>
 <div id="src">
     <img src="<%= rawPath %>"/>
 </div><%
-                } else if ( g == Genre.HTML) {
-                    /**
-                     * For backward compatibility, read the OpenGrok-produced
-                     * document using the system default charset.
-                     */
-                    r = new InputStreamReader(bin);
-                    // dumpXref() is also useful here for translating links.
-                    Util.dumpXref(out, r, request.getContextPath());
-                } else if (g == Genre.PLAIN) {
+                    } else if ( g == Genre.HTML) {
+                        /**
+                         * For backward compatibility, read the OpenGrok-produced
+                         * document using the system default charset.
+                         */
+                        r = new InputStreamReader(bin);
+                        // dumpXref() is also useful here for translating links.
+                        Util.dumpXref(out, r, request.getContextPath());
+                    } else if (g == Genre.PLAIN) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
-                    // We're generating xref for the latest revision, so we can
-                    // find the definitions in the index.
-                    Definitions defs = IndexDatabase.getDefinitions(resourceFile);
-                    Annotation annotation = cfg.getAnnotation();
-                    // SRCROOT is read with UTF-8 as a default.
-                    r = IOUtils.createBOMStrippedReader(bin,
-                        StandardCharsets.UTF_8.name());
-                    AnalyzerGuru.writeDumpedXref(request.getContextPath(), a,
-                            r, out, defs, annotation, project);
+                        // We're generating xref for the latest revision, so we can
+                        // find the definitions in the index.
+                        Definitions defs = IndexDatabase.getDefinitions(resourceFile);
+                        Annotation annotation = cfg.getAnnotation();
+                        // SRCROOT is read with UTF-8 as a default.
+                        r = IOUtils.createBOMStrippedReader(bin,
+                            StandardCharsets.UTF_8.name());
+                        AnalyzerGuru.writeDumpedXref(request.getContextPath(), a,
+                                r, out, defs, annotation, project);
     %></pre>
 </div><%
-                } else {
+                    } else {
 %>
 Click <a href="<%= rawPath %>">download <%= basename %></a><%
+                    }
+                } finally {
+                    if (r != null) {
+                        try { r.close(); bin = null; }
+                        catch (Exception e) { /* ignore */ }
+                    }
+                    if (bin != null) {
+                        try { bin.close(); }
+                        catch (Exception e) { /* ignore */ }
+                    }
                 }
-            } finally {
-                if (r != null) {
-                    try { r.close(); bin = null; }
-                    catch (Exception e) { /* ignore */ }
-                }
-                if (bin != null) {
-                    try { bin.close(); }
-                    catch (Exception e) { /* ignore */ }
-                }
-            }
-    } else if (rev.length() != 0) {
-        // requesting a revision
-        if (cfg.isLatestRevision(rev)) {
-            File xrefFile = cfg.findDataFile();
-            if (xrefFile != null) {
+
+            } else {
+                File xrefFile = cfg.findDataFile();
+                if (xrefFile != null) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
-                boolean compressed = xrefFile.getName().endsWith(".gz");
-                Util.dumpXref(out, xrefFile, compressed,
-                        request.getContextPath());
+                    boolean compressed = xrefFile.getName().endsWith(".gz");
+                    Util.dumpXref(out, xrefFile, compressed,
+                            request.getContextPath());
     %></pre>
 </div><%
+                }
             }
         } else {
             // requesting a previous revision
@@ -283,7 +286,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                 r = IOUtils.createBOMStrippedReader(in,
                                     StandardCharsets.UTF_8.name());
                                 AnalyzerGuru.writeDumpedXref(
-                                        request.getContextPath(), a, r, out,
+                                        request.getContextPath(),
+                                        a, r, out,
                                         defs, annotation, project);
                             } else if (g == Genre.IMAGE) {
         %></pre>
