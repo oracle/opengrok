@@ -1,0 +1,19 @@
+# This references an OpenJDK container from the
+# Docker Hub https://hub.docker.com/_/openjdk/
+# Read more about containers on our dev center
+# http://devcenter.wercker.com/docs/containers/index.html
+box: openjdk:8-jdk
+
+# This is the build pipeline. Pipelines are the core of wercker
+# Read more about pipelines on our dev center
+# http://devcenter.wercker.com/docs/pipelines/index.html
+build:
+    # Steps make up the actions in your pipeline
+    # Read more about steps on our dev center:
+    # http://devcenter.wercker.com/docs/steps/index.html
+  steps:
+    # https://github.com/wercker/step-maven
+    - java/maven:
+      goals: install
+      cache_repo: true
+      version: 3.5.2
