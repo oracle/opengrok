@@ -285,7 +285,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                                 // SRCROOT is read with UTF-8 as a default.
                                 r = IOUtils.createBOMStrippedReader(in,
                                     StandardCharsets.UTF_8.name());
-                                AnalyzerGuru.writeXref(
+                                AnalyzerGuru.writeDumpedXref(
+                                        request.getContextPath(),
                                         a, r, out,
                                         defs, annotation, project);
                             } else if (g == Genre.IMAGE) {
