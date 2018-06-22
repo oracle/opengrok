@@ -13,7 +13,7 @@ build:
     # http://devcenter.wercker.com/docs/steps/index.html
   steps:
     # https://github.com/wercker/step-maven
-    - java/maven:
+    - wercker/maven:
       goals: install
       cache_repo: true
       version: 3.5.2
