@@ -450,6 +450,10 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
         ASSIGNMENTS="`echo $OPENGROK_ASSIGNMENTS | sed 's/[:space:]+/_/g'`"
         ASSIGNMENTS="-A `echo $ASSIGNMENTS | sed 's/,/ -A /g'`"
     fi
+
+    if [ -f "${XML_CONFIGURATION}" ]; then
+        CHK_INDEX_CONF="${XML_CONFIGURATION}"
+    fi
 }
 
 #
@@ -858,21 +862,6 @@ CreateRuntimeRequirements()
     fi
 }
 
-CheckIndexVersion()
-{
-    if [ ! -f "${XML_CONFIGURATION}" ]
-    then
-        return
-    fi
-    if ! MinimalInvocation --checkIndexVersion \
-        -R "${XML_CONFIGURATION}" -d "${DATA_ROOT}" "$@"
-    then
-        echo "\nIndex version check failed. You might want to remove all data" \
-            "under the data root directory ${DATA_ROOT} and reindex.\n"
-        exit 1
-    fi
-}
-
 MinimalInvocation()
 {
     ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    	\
@@ -901,6 +890,7 @@ CommonInvocation()
         ${ASSIGNMENTS}							\
         ${READ_XML_CONF}                                        	\
         ${WEBAPP_CONFIG}						\
+        ${CHK_INDEX_CONF:+--checkIndexVersion} ${CHK_INDEX_CONF}	\
         ${OPENGROK_PROFILER:+--profiler}				\
         "${@}"
 }
@@ -1095,14 +1085,12 @@ case "${1}" in
 
     update)
         ValidateConfiguration
-        CheckIndexVersion
         CreateRuntimeRequirements
         UpdateGeneratedData && UpdateDescriptionCache
         ;;
 
     updateQuietly)
         ValidateConfiguration
-        CheckIndexVersion
         CreateRuntimeRequirements
         QUIET="-q"
         VERBOSE=""
@@ -1129,7 +1117,6 @@ case "${1}" in
             SRC_ROOT="${2}"
         fi
         ValidateConfiguration
-        CheckIndexVersion
         CreateRuntimeRequirements
         UpdateGeneratedData && UpdateDescriptionCache
         ;;
@@ -1144,7 +1131,6 @@ case "${1}" in
 	    FatalError "need configuration via OPENGROK_READ_XML_CONFIGURATION"
 	fi
         ValidateConfiguration
-        CheckIndexVersion $@
         CreateRuntimeRequirements
         UpdateDataPartial $@
         ;;

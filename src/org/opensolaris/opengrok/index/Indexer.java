@@ -83,6 +83,7 @@ public final class Indexer {
 
     private static final Indexer index = new Indexer();
     private static Configuration cfg = null;
+    private static Configuration checkIndexVersionCfg;
     private static boolean listRepos = false;
     private static boolean runIndex = true;
     private static boolean optimizedChanged = false;
@@ -90,7 +91,6 @@ public final class Indexer {
     private static boolean searchRepositories = false;
     private static boolean noindex = false;
     private static boolean awaitProfiler;
-    private static boolean checkIndexVersion = false;
 
     private static boolean help;
     private static String helpUsage;
@@ -131,7 +131,6 @@ public final class Indexer {
         boolean createDict = false;
 
         try {
-
             argv = parseOptions(argv);
             if (help) {
                 status = 1;
@@ -199,16 +198,17 @@ public final class Indexer {
             }
 
             // Check version of index(es) versus current Lucene version and exit
-            // with return code indicating success or failure.
-            if (checkIndexVersion) {
-                int retval = 0;
+            // with return code upon failure.
+            if (checkIndexVersionCfg != null) {
                 try {
-                    IndexVersion.check(cfg, subFilesList);
+                    IndexVersion.check(checkIndexVersionCfg, subFilesList);
                 } catch (IndexVersionException e) {
-                    System.err.printf("Index version check failed: %s", e);
-                    retval = 1;
+                    System.err.printf("Index version check failed: %s\n", e);
+                    System.err.printf("You might want to remove all data " +
+                            "under the DATA_ROOT and to reindex\n");
+                    status = 1;
+                    System.exit(status);
                 }
-                System.exit(retval);
             }
             
             // If an user used customizations for projects he perhaps just
@@ -394,7 +394,7 @@ public final class Indexer {
         OptionParser configure = OptionParser.scan(parser -> {
             parser.on("-R configPath").Do( cfgFile -> {
                 try {
-                cfg = Configuration.read(new File((String)cfgFile));
+                    cfg = Configuration.read(new File((String)cfgFile));
                 } catch(IOException e) {
                     die(e.getMessage());
                 }
@@ -405,7 +405,6 @@ public final class Indexer {
         OptionParser.accept(WebAddress.class, s -> { return parseWebAddress(s); });
 
         openGrok = OptionParser.Do(parser -> {
-
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
@@ -448,9 +447,14 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--checkIndexVersion",
+            parser.on("--checkIndexVersion", "=/path/to/conf",
                     "Check if current Lucene version matches index version").Do( v -> {
-                checkIndexVersion = true;
+                try {
+                    File cfgFile = new File((String)v);
+                    checkIndexVersionCfg = Configuration.read(cfgFile);
+                } catch(IOException|NullPointerException e) {
+                    die(e.getMessage());
+                }
             });
             
             parser.on("-d", "--dataRoot", "=/path/to/data/root",

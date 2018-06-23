@@ -19,12 +19,15 @@
 
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
@@ -33,6 +36,7 @@ import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.configuration.Configuration;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Index version checker
@@ -40,6 +44,9 @@ import org.opensolaris.opengrok.configuration.Configuration;
  * @author Vladimir Kotal
  */
 public class IndexVersion {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(IndexVersion.class);
+
     /**
      * exception thrown when index version does not match Lucene version
      */
@@ -58,18 +65,28 @@ public class IndexVersion {
      */
     public static void check(Configuration cfg, List<String> subFilesList) throws Exception {
         File indexRoot = new File(cfg.getDataRoot(), IndexDatabase.INDEX_DIR);
+        LOGGER.log(Level.FINE, "Checking for Lucene index version mismatch in {0}",
+                indexRoot);
         
         if (!subFilesList.isEmpty()) {
             // Assumes projects are enabled.
             for (String projectName : subFilesList) {
+                LOGGER.log(Level.FINER,
+                        "Checking Lucene index version in project {0}",
+                        projectName);
                 checkDir(getDirectory(new File(indexRoot, projectName)));
             }
         } else {
             if (cfg.isProjectsEnabled()) {
                 for (String projectName : cfg.getProjects().keySet()) {
+                    LOGGER.log(Level.FINER,
+                            "Checking Lucene index version in project {0}",
+                            projectName);
                     checkDir(getDirectory(new File(indexRoot, projectName)));
                 }
             } else {
+                LOGGER.log(Level.FINER, "Checking Lucene index version in {0}",
+                        indexRoot);
                 checkDir(getDirectory(indexRoot));
             }
         }
