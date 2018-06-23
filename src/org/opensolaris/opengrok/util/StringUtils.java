@@ -116,7 +116,7 @@ public final class StringUtils {
     private static final Pattern URI_CHARS_STARTSMATCH =
         Pattern.compile("^" + URI_CHARS_PAT);
 
-    /** Private to enforce singleton */
+    /** Private to enforce static */
     private StringUtils() {
     }
 
@@ -249,12 +249,19 @@ public final class StringUtils {
      */
     public static int countURIEndingPushback(String value) {
         int n = 0;
+        OUTER:
         for (int i = value.length() - 1; i >= 0; --i) {
             char c = value.charAt(i);
-            if (c == '.') {
-                ++n;
-            } else {
-                break;
+            switch (c) {
+                case '.':
+                case ',':
+                    ++n;
+                    break;
+                case ')':
+                    n += countURIUnmatchedRightParen(value, i);
+                    break;
+                default:
+                    break OUTER;
             }
         }
         return n;
@@ -322,5 +329,21 @@ public final class StringUtils {
             }
         }
         return 0;
+    }
+
+    private static int countURIUnmatchedRightParen(String value, int ridx) {
+        int n = 1;
+        for (int i = ridx - 1; i >= 0; --i) {
+            char c = value.charAt(i);
+            if (c == '(') {
+                --n;
+            } else if (c == ')') {
+                ++n;
+            }
+            if (n < 1) {
+                break;
+            }
+        }
+        return n > 0 ? 1 : 0;
     }
 }
