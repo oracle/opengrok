@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.index;
@@ -33,12 +33,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -90,7 +90,6 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -100,6 +99,10 @@ import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.ObjectPool;
 import org.opensolaris.opengrok.util.Statistics;
 import org.opensolaris.opengrok.web.Util;
+
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 
 /**
  * This class is used to create / update the index databases. Currently we use
@@ -360,22 +363,22 @@ public class IndexDatabase {
         return file_cnt;
     }
 
-    private void markProjectIndexed(Project project) throws IOException {
+    private void markProjectIndexed(Project project) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // Successfully indexed the project. The message is sent even if
         // the project's isIndexed() is true because it triggers RepositoryInfo
         // refresh.
         if (project != null) {
-            if (env.getConfigHost() != null && env.getConfigPort() > 0) {
-                Message m = Message.createMessage("project");
-                m.addTag(project.getName());
-                m.setText("indexed");
-                try {
-                    m.write(env.getConfigHost(), env.getConfigPort());
-                } catch (ConnectException ce) {
-                    LOGGER.log(Level.SEVERE, "Misconfig of webapp host or port", ce);
-                    System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());
+            if (env.getConfigHost() != null) {
+                Response r = ClientBuilder.newClient()
+                        .target(env.getConfigHost() + "/api/projects")
+                        .path("markIndexed")
+                        .request()
+                        .post(Entity.json(Collections.singleton(project.getName())));
+
+                if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+                    System.err.println("Couldn't notify the webapp: " + r.toString());
                 }
             }
 

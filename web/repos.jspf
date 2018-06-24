@@ -25,7 +25,6 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 <%@page import="java.util.Iterator"%>
 <%@page import="org.opensolaris.opengrok.web.Scripts"%>
 <%@page import="org.json.simple.JSONArray"%>
-<%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.text.ParseException"%>

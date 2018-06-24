@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.ConnectException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -53,7 +52,6 @@ import org.opensolaris.opengrok.configuration.ConfigurationHelp;
 import org.opensolaris.opengrok.configuration.LuceneLockName;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.Repository;
@@ -65,6 +63,10 @@ import org.opensolaris.opengrok.logger.LoggerUtil;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.OptionParser;
 import org.opensolaris.opengrok.util.Statistics;
+
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
@@ -105,7 +107,6 @@ public final class Indexer {
     private static final ArrayList<String> zapCache = new ArrayList<>();
     private static RuntimeEnvironment env = null;
     private static String host = null;
-    private static int port = 0;
 
     public static OptionParser openGrok = null;
     
@@ -230,7 +231,7 @@ public final class Indexer {
             RepositoryFactory.initializeIgnoredNames(env);
 
             if (noindex) {
-                getInstance().sendToConfigHost(env, host, port);
+                getInstance().sendToConfigHost(env, host);
                 writeConfigToFile(env, configFilename);
                 System.exit(0);
             }
@@ -274,15 +275,16 @@ public final class Indexer {
             // from project-less config to one with projects), set the property
             // using a message so that the 'project/indexed' messages
             // emitted during indexing do not cause validation error.
-            if (addProjects && host != null && port > 0) {
-                Message m = Message.createMessage("config");
-                m.addTag("set");
-                m.setText("projectsEnabled = true");
+            if (addProjects && host != null) {
                 try {
-                m.write(host, port);
-                } catch (ConnectException ce) {
-                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host or port", ce);
-                    System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());
+                    ClientBuilder.newClient()
+                            .target(host + "/api/configuration")
+                            .path("projectsEnabled")
+                            .request()
+                            .put(Entity.text(Boolean.TRUE.toString()));
+                } catch (ProcessingException e) {
+                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host or port", e);
+                    System.err.println("Couldn't notify the webapp (and host or port set): " + e.getLocalizedMessage());
                 }
             }
 
@@ -310,9 +312,9 @@ public final class Indexer {
             // or send new configuration to the web application in the case of full reindex.
             if (host != null) {
                 if (!subFiles.isEmpty()) {
-                    getInstance().refreshSearcherManagers(env, subFiles, host, port);
+                    getInstance().refreshSearcherManagers(env, subFiles, host);
                 } else {
-                    getInstance().sendToConfigHost(env, host, port);
+                    getInstance().sendToConfigHost(env, host);
                 }
             }
 
@@ -722,18 +724,12 @@ public final class Indexer {
                 cfg.setTabSize((Integer)tabSize);
             });
 
-            parser.on("-U", "--host", "=host:port", WebAddress.class,
-                "Send the current configuration to the specified address",
-                "(This is most likely the web-app configured with ConfigAddress)").
-                Do( webAddr -> {
-                    WebAddress web = (WebAddress)webAddr;
-
+            parser.on("-U", "--host", "=protocol://host:port/contextPath",
+                "Send the current configuration to the specified address").Do(webAddr -> {
                     env = RuntimeEnvironment.getInstance();
 
-                    host = web.getHost();
-                    port = web.getPort();
+                    host = (String) webAddr;
                     env.setConfigHost(host);
-                    env.setConfigPort(port);
                 }
             );
 
@@ -1118,23 +1114,23 @@ public final class Indexer {
         elapsed.report(LOGGER, "Done indexing data of all repositories");
     }
 
-    public void refreshSearcherManagers(RuntimeEnvironment env, List<String> projects, String host, int port) {
+    public void refreshSearcherManagers(RuntimeEnvironment env, List<String> projects, String host) {
         LOGGER.log(Level.INFO, "Refreshing searcher managers to: {0}", host);
         try {
-            env.signalTorefreshSearcherManagers(projects, host, port);
+            env.signalTorefreshSearcherManagers(projects, host);
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Failed to refresh searcher managers on " + host, ex);
         }
     }
 
-    public void sendToConfigHost(RuntimeEnvironment env, String host, int port) {
-        LOGGER.log(Level.INFO, "Sending configuration to: {0}:{1}", new Object[]{host, Integer.toString(port)});
+    public void sendToConfigHost(RuntimeEnvironment env, String host) {
+        LOGGER.log(Level.INFO, "Sending configuration to: {0}", host);
         try {
-            env.writeConfiguration(host, port);
+            env.writeConfiguration(host);
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, String.format(
-                    "Failed to send configuration to %s:%d "
-                    + "(is web application server running with opengrok deployed?)", host, port), ex);
+                    "Failed to send configuration to %s "
+                    + "(is web application server running with opengrok deployed?)", host), ex);
         }
         LOGGER.info("Configuration update routine done, check log output for errors.");
     }

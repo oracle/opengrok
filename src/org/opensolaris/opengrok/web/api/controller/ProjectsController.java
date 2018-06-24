@@ -1,0 +1,333 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ */
+package org.opensolaris.opengrok.web.api.controller;
+
+import org.opensolaris.opengrok.configuration.Group;
+import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryException;
+import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.history.Repository;
+import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opensolaris.opengrok.index.IndexDatabase;
+import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.ClassUtil;
+import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
+import org.opensolaris.opengrok.util.IOUtils;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import static org.opensolaris.opengrok.history.RepositoryFactory.getRepository;
+
+@Path("/projects")
+public class ProjectsController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProjectsController.class);
+
+    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void addProject(final List<String> projects) {
+        for (String projectName : projects) {
+            File srcRoot = env.getSourceRootFile();
+            File projDir = new File(srcRoot, projectName);
+
+            if (!env.getProjects().containsKey(projectName)) {
+                Project project = new Project(projectName, "/" + projectName, env.getConfiguration());
+
+                // Add repositories in this project.
+                List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
+
+                env.addRepositories(repos);
+                env.getProjectRepositoriesMap().put(project, repos);
+
+                // Finally introduce the project to the configuration.
+                // Note that the project is inactive in the UI until it is indexed.
+                // See {@code isIndexed()}
+                env.getProjects().put(projectName, project);
+
+                Set<Project> projectSet = new TreeSet<>();
+                projectSet.add(project);
+                env.populateGroups(env.getGroups(), projectSet);
+            } else {
+                Project project = env.getProjects().get(projectName);
+                Map<Project, List<RepositoryInfo>> map = env.getProjectRepositoriesMap();
+
+                // Refresh the list of repositories of this project.
+                // This is the goal of this action: if an existing project
+                // is re-added, this means its list of repositories has changed.
+                List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
+                List<RepositoryInfo> allrepos = env.getRepositories();
+                synchronized (allrepos) {
+                    // newly added repository
+                    for (RepositoryInfo repo : repos) {
+                        if (!allrepos.contains(repo)) {
+                            allrepos.add(repo);
+                        }
+                    }
+                    // deleted repository
+                    for (RepositoryInfo repo : map.get(project)) {
+                        if (!repos.contains(repo)) {
+                            allrepos.remove(repo);
+                        }
+                    }
+                }
+
+                map.put(project, repos);
+            }
+        }
+    }
+
+    private List<RepositoryInfo> getRepositoriesInDir(final File projDir) {
+
+        HistoryGuru histGuru = HistoryGuru.getInstance();
+
+        // There is no need to perform the work of invalidateRepositories(),
+        // since addRepositories() calls getRepository() for each of
+        // the repos.
+        return new ArrayList<>(histGuru.addRepositories(new File[]{projDir}, env.getIgnoredNames()));
+    }
+
+    @DELETE
+    public void deleteProjects(@QueryParam("projects") final List<String> projects)
+            throws IOException, HistoryException {
+
+        for (String projectName : projects) {
+            Project proj = env.getProjects().get(projectName);
+            if (proj == null) {
+                throw new IllegalStateException("cannot get project \"" + projectName + "\"");
+            }
+
+            logger.log(Level.INFO, "deleting configuration for project {0}", projectName);
+
+            // Remove the project from its groups.
+            for (Group group : proj.getGroups()) {
+                group.getRepositories().remove(proj);
+                group.getProjects().remove(proj);
+            }
+
+            // Now remove the repositories associated with this project.
+            List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(proj);
+            env.getRepositories().removeAll(repos);
+            env.getProjectRepositoriesMap().remove(proj);
+
+            env.getProjects().remove(projectName, proj);
+
+            // Prevent the project to be included in new searches.
+            env.refreshSearcherManagerMap();
+
+            // Lastly, remove data associated with the project.
+            logger.log(Level.INFO, "deleting data for project {0}", projectName);
+            for (String dirName: new String[]{
+                    IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
+
+                IOUtils.removeRecursive(Paths.get(env.getDataRootPath() +
+                        File.separator + dirName +
+                        File.separator + projectName));
+            }
+            HistoryGuru guru = HistoryGuru.getInstance();
+            guru.removeCache(repos.stream().
+                    map((x) -> {
+                        try {
+                            return env.getPathRelativeToSourceRoot(new File((x).getDirectoryName()));
+                        } catch (ForbiddenSymlinkException e) {
+                            logger.log(Level.FINER, e.getMessage());
+                            return "";
+                        } catch (IOException e) {
+                            logger.log(Level.INFO, "cannot remove files for repository {0}", x.getDirectoryName());
+                            // Empty output should not cause any harm
+                            // since {@code getReposFromString()} inside
+                            // {@code removeCache()} will return nothing.
+                            return "";
+                        }
+                    }).collect(Collectors.toSet()));
+        }
+    }
+
+    @POST
+    @Path("markIndexed")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void markIndexed(final List<String> projects) throws Exception {
+        for (String projectName : projects) {
+            Project project;
+            if ((project = env.getProjects().get(projectName)) != null) {
+                project.setIndexed(true);
+
+                // Refresh current version of the project's repositories.
+                List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+                if (riList != null) {
+                    for (RepositoryInfo ri : riList) {
+                        Repository repo = getRepository(ri, false);
+
+                        if (repo != null && repo.getCurrentVersion() != null &&
+                                repo.getCurrentVersion().length() > 0) {
+                            // getRepository() always creates fresh instance
+                            // of the Repository object so there is no need
+                            // to call setCurrentVersion() on it.
+                            ri.setCurrentVersion(repo.determineCurrentVersion());
+                        }
+                    }
+                }
+            } else {
+                logger.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
+            }
+        }
+
+        // In case this project has just been incrementally indexed,
+        // its IndexSearcher needs a poke.
+        env.maybeRefreshIndexSearchers(projects);
+
+        env.refreshDateForLastIndexRun();
+    }
+
+    @PUT
+    @Path("property/{field}")
+    public void set(
+            @PathParam("field") final String field,
+            @QueryParam("projects") final List<String> projects,
+            final String value
+    ) throws Exception {
+        // Perform a best effort on setting the project properties.
+        // If property cannot be set for one project, keep going on.
+        for (String projectName : projects) {
+            Project project;
+            if ((project = env.getProjects().get(projectName)) != null) {
+                // Set the property.
+                ClassUtil.invokeSetter(project, field, value);
+
+                // Refresh repositories for this project as well.
+                List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
+                if (riList != null) {
+                    for (RepositoryInfo ri : riList) {
+                        Repository repo = getRepository(ri, false);
+
+                        // set the property
+                        ClassUtil.invokeSetter(repo, field, value);
+                    }
+                }
+            } else {
+                logger.log(Level.WARNING, "cannot find project {0} to set a property", projectName);
+            }
+        }
+    }
+
+    @GET
+    @Path("property/{field}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object get(@PathParam("field") final String field, @QueryParam("project") final String projectName)
+            throws IOException {
+
+        Project project = env.getProjects().get(projectName);
+        if (project == null) {
+            throw new WebApplicationException(
+                    "cannot find project " + projectName + " to get a property", Response.Status.BAD_REQUEST);
+        }
+        return ClassUtil.invokeGetter(project, field);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> listProjects() {
+        return env.getProjectNames();
+    }
+
+    @GET
+    @Path("indexed")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> listIndexed() {
+        return env.getProjectList().stream()
+                .filter(Project::isIndexed)
+                .map(Project::getName)
+                .collect(Collectors.toList());
+    }
+
+    @GET
+    @Path("repositories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> getRepositories(@QueryParam("projects") final List<String> projects) {
+        List<String> repos = new ArrayList<>();
+
+        for (String projectName : projects) {
+            Project project = env.getProjects().get(projectName);
+            if (project == null) {
+                continue;
+            }
+            List<RepositoryInfo> infos = env.getProjectRepositoriesMap().
+                    get(project);
+            if (infos != null) {
+                repos.addAll(infos.stream()
+                        .map(RepositoryInfo::getDirectoryNameRelative)
+                        .collect(Collectors.toList()));
+            }
+        }
+
+        return repos;
+    }
+
+    @GET
+    @Path("repositoriesType")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Set<String> getRepositoriesType(@QueryParam("projects") final List<String> projects) {
+        Set<String> types = new TreeSet<>();
+
+        for (String projectName : projects) {
+            Project project;
+            if ((project = env.getProjects().get(projectName)) == null) {
+                continue;
+            }
+            List<RepositoryInfo> infos = env.getProjectRepositoriesMap().
+                    get(project);
+            if (infos != null) {
+                types.addAll(infos.stream()
+                        .map(RepositoryInfo::getType)
+                        .collect(Collectors.toList()));
+            }
+        }
+
+        return types;
+    }
+
+}

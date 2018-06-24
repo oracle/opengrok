@@ -29,7 +29,6 @@ After include you are here: /body/div#page/div#content/
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="org.json.simple.JSONArray"%>
-<%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
 <%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
 <%@ page session="false" errorPage="error.jsp" import="

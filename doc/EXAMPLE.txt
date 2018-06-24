@@ -149,18 +149,6 @@ edit WEB-INF/web.xml and add the following section (next to all the other
    <param-value>/opengrok/configuration.xml</param-value>
  </context-param>
 
- <context-param>
-   <param-name>ConfigAddress</param-name>
-   <param-value>localhost:2424</param-value>
- </context-param>
-
-The last entry will let the web application listen on port 2424 for
-configuration updates. There is currently _no_ authentication implemented here,
-so you should not add an ip address reachable from an untrusted source.
-If you run the index generation on another server than the web server, you must
-add one of the external interfaces of the web server (but it should _NOT_ be
-reachable from external hosts).
-
 You may also want to modify the file index_body.html before you re-create
 the jar-file with the following commands:
 

@@ -22,81 +22,108 @@
 #
 
 import logging
-from command import Command
+import requests
 
 
-def get_repos(logger, project, messages_file):
+def get_repos(logger, project, host):
     """
     Get list of repositories for given project name.
-    For the time being this is done by executing the messages_file command.
 
     Return  string with the result on success, None on failure.
-
-    XXX replace this with REST request after issue #1801
-
     """
+    payload = {'projects': [project]}
 
-    cmd = Command([messages_file, '-n', 'project', '-t', project, 'get-repos'])
-    cmd.execute()
-    if cmd.state is not "finished" or cmd.getretcode() != 0:
-        logger.error("execution of command '{}' failed".format(cmd))
+    r = requests.get(host + '/api/projects/repositories', params=payload)
+
+    if not r:
+        logger.error('could not get repositories for ' + project)
         return None
 
     ret = []
-    for line in cmd.getoutput():
+    for line in r.json():
         ret.append(line.strip())
 
     return ret
 
 
-def get_first_line(logger, command):
-    """
-    Execute given command and return the first line of its output
-    or None if the execution failed.
-    """
-
-    cmd = Command(command)
-    cmd.execute()
-    if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
-        logger.error("execution of command '{}' failed with: {}"
-                     .format(cmd, cmd.getoutputstr()))
-        return None
-
-    if len(cmd.getoutput()) != 1:
-        logger.error("output from '{}' does not have exactly 1 line ({})".
-                     format(cmd, len(cmd.getoutput())))
-        return None
-
-    return cmd.getoutput()[0].strip()
-
-
-def get_config_value(logger, name, messages_file):
+def get_config_value(logger, name, host):
     """
     Get list of repositories for given project name.
-    For the time being this is done by executing the messages_file command.
 
     Return string with the result on success, None on failure.
-
-    XXX replace this with REST request after issue #1801
-
     """
+    r = requests.get(host + '/api/configuration/' + name)
+    if not r:
+        logger.error('could not get config value ' + name)
+        return None
 
-    return get_first_line(logger, [messages_file, '-n', 'config', '-t',
-                          'get', name])
+    return r.text
 
 
-def get_repo_type(logger, path, messages_file):
+def get_repo_type(logger, repository, host):
     """
     Get repository type for given path relative to sourceRoot.
 
     Return string with the result on success, None on failure.
-
-    XXX replace this with REST request after issue #1801
     """
+    payload = {'repositories': [repository]}
 
-    line = get_first_line(logger, [messages_file, '-n', 'repository', '-t',
-                          path, 'get-repo-type'])
-    if not line:
+    r = requests.get(host + '/api/repositories/types', params=payload)
+    if not r:
+        logger.error('could not get repo type for ' + repository)
         return None
+
+    line = r.json()[0]
+
     idx = line.rfind(":")
     return line[idx + 1:]
+
+
+def get_configuration(logger, host):
+    r = requests.get(host + '/api/configuration')
+    if not r:
+        logger.error('could not get configuration')
+        return None
+
+    return r.text
+
+
+def set_configuration(logger, configuration, host):
+    r = requests.put(host + '/api/configuration', data=configuration)
+
+    if not r:
+        logger.error('could not set configuration')
+        return False
+
+    return True
+
+
+def list_indexed_projects(logger, host):
+    r = requests.get(host + '/api/projects/indexed')
+    if not r:
+        logger.error('could not list indexed projects')
+        return None
+
+    return r.json()
+
+
+def add_project(logger, project, host):
+    r = requests.put(host + '/api/projects', json=[project])
+
+    if not r:
+        logger.error('could not add project ' + project)
+        return False
+
+    return True
+
+
+def delete_project(logger, project, host):
+    payload = {'projects': [project]}
+
+    r = requests.delete(host + '/api/projects', params=payload)
+
+    if not r:
+        logger.error('could not delete project ' + project)
+        return False
+
+    return True

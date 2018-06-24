@@ -17,30 +17,20 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opensolaris.opengrok.web.api;
 
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.glassfish.jersey.server.ResourceConfig;
 
-/**
- * @author Kryštof Tulinger
- */
-public class AbortMessage extends Message {
+import javax.ws.rs.ApplicationPath;
 
-    @Override
-    protected byte[] applyMessage(RuntimeEnvironment env) {
-        env.removeAnyMessage(tags);
-        return null;
-    }
+@ApplicationPath("/api")
+public class RestApp extends ResourceConfig {
 
-    @Override
-    public void validate() throws Exception {
-        if (getTags().isEmpty()) {
-            getTags().add(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG);
-        }
-        super.validate();
+    public RestApp() {
+        packages("org.opensolaris.opengrok.web.api.controller", "org.opensolaris.opengrok.web.api.filter");
     }
 
 }

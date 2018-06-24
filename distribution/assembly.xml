@@ -62,7 +62,6 @@
           <outputDirectory>bin</outputDirectory>
           <includes>
             <include>ConfigMerge</include>
-            <include>Messages</include>
             <include>Groups</include>
           </includes>
         </fileSet>

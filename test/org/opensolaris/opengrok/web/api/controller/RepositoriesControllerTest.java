@@ -18,14 +18,12 @@
  */
 
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opensolaris.opengrok.web.api.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,79 +40,65 @@ import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
 
-/**
- * Test repository message handling.
- * 
- * @author Vladimir Kotal
- */
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.GenericType;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
 @ConditionalRun(RepositoryInstalled.GitInstalled.class)
 @ConditionalRun(CtagsInstalled.class)
-public class RepositoryMessageTest {
-    
-    private RuntimeEnvironment env;
+public class RepositoriesControllerTest extends JerseyTest {
+
+    private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private TestRepository repository;
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
-    @Before
-    public void setUp() throws IOException {
-        repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream(
-                "repositories.zip"));
+    @Override
+    protected Application configure() {
+        return new ResourceConfig(RepositoriesController.class);
+    }
 
-        env = RuntimeEnvironment.getInstance();
-        env.removeAllMessages();
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        repository = new TestRepository();
+        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         env.setProjectsEnabled(true);
         RepositoryFactory.initializeIgnoredNames(env);
     }
-    
-    @After
-    public void tearDown() {
-        if (env != null) {
-            env.removeAllMessages();
 
-            // This should match Configuration constructor.
-            env.setProjects(new ConcurrentHashMap<>());
-            env.setRepositories(new ArrayList<>());
-            env.getProjectRepositoriesMap().clear();
-        }
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        // This should match Configuration constructor.
+        env.setProjects(new ConcurrentHashMap<>());
+        env.setRepositories(new ArrayList<>());
+        env.getProjectRepositoriesMap().clear();
 
         repository.destroy();
-    }
-    
-    @Test
-    public void testValidate() {
-        Message m = new RepositoryMessage();
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.addTag("foo");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setText("text");
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setText(null);
-        Assert.assertFalse(MessageTest.assertValid(m));
-        m.setText("get-repo-type");
-        Assert.assertTrue(MessageTest.assertValid(m));
     }
 
     @Test
     public void testGetRepositoryType() throws Exception {
-        Message m = new RepositoryMessage();
-        m.setText("get-repo-type");
-        m.addTag("/totally-nonexistent-repository");
-        String out = new String(m.apply(env));
-        Assert.assertEquals("/totally-nonexistent-repository:N/A", out);
-        
+        Assert.assertEquals("/totally-nonexistent-repository:N/A",
+                getRepoType("/totally-nonexistent-repository"));
+
         // Create subrepository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
         MercurialRepositoryTest.runHgCommand(mercurialRoot,
-            "clone", mercurialRoot.getAbsolutePath(),
-            mercurialRoot.getAbsolutePath() + File.separator + "closed");
-        
+                "clone", mercurialRoot.getAbsolutePath(),
+                mercurialRoot.getAbsolutePath() + File.separator + "closed");
+
         env.setHistoryEnabled(true);
         Indexer.getInstance().prepareIndexer(
                 env,
@@ -127,23 +111,26 @@ public class RepositoryMessageTest {
                 null, // repositories - needed when refreshing history partially
                 new ArrayList<>(), // don't zap cache
                 false); // don't list repos
-        
-        m = new RepositoryMessage();
-        m.setText("get-repo-type");
-        m.addTag("/mercurial");
-        out = new String(m.apply(env));
-        Assert.assertEquals("/mercurial:Mercurial", out);
-        
-        m = new RepositoryMessage();
-        m.setText("get-repo-type");
-        m.addTag("/mercurial/closed");
-        out = new String(m.apply(env));
-        Assert.assertEquals("/mercurial/closed:Mercurial", out);
-        
-        m = new RepositoryMessage();
-        m.setText("get-repo-type");
-        m.addTag("/git");
-        out = new String(m.apply(env));
-        Assert.assertEquals("/git:git", out);
+
+        Assert.assertEquals("/mercurial:Mercurial", getRepoType("/mercurial"));
+
+        Assert.assertEquals("/mercurial/closed:Mercurial", getRepoType("/mercurial/closed"));
+
+        Assert.assertEquals("/git:git", getRepoType("/git"));
     }
+
+    private String getRepoType(String repository) {
+        GenericType<List<String>> type = new GenericType<List<String>>() {};
+
+        List<String> types = target("repositories")
+                .path("types")
+                .queryParam("repositories", repository)
+                .request()
+                .get(type);
+
+        return types.get(0);
+    }
+
+
+
 }
