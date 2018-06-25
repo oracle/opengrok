@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -431,9 +432,8 @@ public class PageConfigTest {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-        File temp = File.createTempFile("opengrok", "-test-file.tmp");
-        Files.delete(temp.toPath());
-        Files.createDirectories(temp.toPath());
+        File temp = Files.createTempDirectory("opengrok-src-root4").toFile();
+        temp.deleteOnExit();
         temp.setReadable(false);
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         try {
@@ -444,7 +444,6 @@ public class PageConfigTest {
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
 
         PageConfig.cleanup(req);
-        temp.deleteOnExit();
     }
 
     /**
