@@ -435,6 +435,7 @@ public class PageConfigTest {
         File temp = Files.createTempDirectory("opengrok-src-root4").toFile();
         temp.deleteOnExit();
         temp.setReadable(false);
+        assertTrue(temp.canRead());
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();
@@ -442,7 +443,6 @@ public class PageConfigTest {
         } catch (IOException ex) {
         }
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
-
         PageConfig.cleanup(req);
     }
 
@@ -456,13 +456,11 @@ public class PageConfigTest {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-        File temp = File.createTempFile("opengrok", "-test-file.tmp");
-        temp.delete();
-        temp.mkdirs();
+        File temp = Files.createTempDirectory("opengrok-src-root5").toFile();
+        temp.deleteOnExit();
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         cfg.checkSourceRootExistence();
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
-        temp.deleteOnExit();
         PageConfig.cleanup(req);
     }
 
