@@ -437,11 +437,13 @@ public class PageConfigTest {
         String origSourceRoot = RuntimeEnvironment.getInstance().getSourceRootPath();
         File temp = Files.createTempDirectory("opengrok-src-root4").toFile();
         temp.deleteOnExit();
+        Set<PosixFilePermission> set = Files.getPosixFilePermissions(temp.toPath());
+        System.out.println("XXX: before " + temp.toString() + " " + PosixFilePermissions.toString(set));
         temp.setReadable(false);
         assertTrue(temp.isDirectory());
         assertTrue(temp.exists());
-        Set<PosixFilePermission> set = Files.getPosixFilePermissions(temp.toPath());
-        System.out.println("XXX: " + temp.toString() + " " + PosixFilePermissions.toString(set));
+        set = Files.getPosixFilePermissions(temp.toPath());
+        System.out.println("XXX: after " + temp.toString() + " " + PosixFilePermissions.toString(set));
         assertFalse(temp.canRead());
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         try {
