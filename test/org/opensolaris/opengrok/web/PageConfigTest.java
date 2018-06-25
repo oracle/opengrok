@@ -435,6 +435,8 @@ public class PageConfigTest {
         File temp = Files.createTempDirectory("opengrok-src-root4").toFile();
         temp.deleteOnExit();
         temp.setReadable(false);
+        assertTrue(temp.isDirectory());
+        assertTrue(temp.exists());
         assertFalse(temp.canRead());
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         try {
