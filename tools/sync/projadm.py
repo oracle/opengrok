@@ -55,14 +55,15 @@ def exec_command(doit, logger, cmd, msg):
     Execute given command and return its output.
     Exit the program on failure.
     """
-    cmd = Command(cmd, logger=logger)
+    cmd = Command(cmd, logger=logger, redirect_stderr=False)
     if not doit:
         logger.info(cmd)
         return
     cmd.execute()
     if cmd.getstate() is not Command.FINISHED or cmd.getretcode() != 0:
         logger.error(msg)
-        logger.error(cmd.getoutput())
+        logger.error("Standard output: {}".format(cmd.getoutput()))
+        logger.error("Error output: {}".format(cmd.geterroutput()))
         sys.exit(1)
 
     return cmd.getoutput()

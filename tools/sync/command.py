@@ -49,7 +49,8 @@ class Command:
     TIMEDOUT = "timed out"
 
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
-                 excl_subst=False, work_dir=None, env_vars=None, timeout=None):
+                 excl_subst=False, work_dir=None, env_vars=None, timeout=None,
+                 redirect_stderr=True):
         self.cmd = cmd
         self.state = "notrun"
         self.excl_subst = excl_subst
@@ -57,6 +58,7 @@ class Command:
         self.env_vars = env_vars
         self.timeout = timeout
         self.pid = None
+        self.redirect_stderr = redirect_stderr
 
         self.logger = logger or logging.getLogger(__name__)
         logging.basicConfig()
@@ -167,8 +169,18 @@ class Command:
                 return
 
         timeout_thread = None
-        event = threading.Event()
-        output_thread = OutputThread(event, self.logger)
+        output_event = threading.Event()
+        output_thread = OutputThread(output_event, self.logger)
+
+        # If stderr redirection is off, setup a thread that will capture
+        # stderr data.
+        if self.redirect_stderr:
+            stderr_dest = subprocess.STDOUT
+        else:
+            stderr_event = threading.Event()
+            stderr_thread = OutputThread(stderr_event, self.logger)
+            stderr_dest = stderr_thread
+
         try:
             start_time = time.time()
             try:
@@ -179,10 +191,10 @@ class Command:
             if self.env_vars:
                 my_env = os.environ.copy()
                 my_env.update(self.env_vars)
-                p = subprocess.Popen(self.cmd, stderr=subprocess.STDOUT,
+                p = subprocess.Popen(self.cmd, stderr=stderr_dest,
                                      stdout=output_thread, env=my_env)
             else:
-                p = subprocess.Popen(self.cmd, stderr=subprocess.STDOUT,
+                p = subprocess.Popen(self.cmd, stderr=stderr_dest,
                                      stdout=output_thread)
 
             self.pid = p.pid
@@ -226,9 +238,15 @@ class Command:
             # exit the read loop we have to close it here ourselves.
             output_thread.close()
             self.logger.debug("Waiting on output thread to finish reading")
-            event.wait()
-
+            output_event.wait()
             self.out = output_thread.getoutput()
+
+            if not self.redirect_stderr:
+                stderr_thread.close()
+                self.logger.debug("Waiting on stderr thread to finish reading")
+                stderr_event.wait()
+                self.err = stderr_thread.getoutput()
+
             elapsed_time = time.time() - start_time
             self.logger.debug("Command {} took {} seconds".
                               format(self.cmd, int(elapsed_time)))
@@ -285,6 +303,9 @@ class Command:
             return self.out
         else:
             return None
+
+    def geterroutput(self):
+        return self.err
 
     def getstate(self):
         return self.state
