@@ -441,7 +441,7 @@ public class PageConfigTest {
         assertTrue(temp.isDirectory());
         assertTrue(temp.exists());
         Set<PosixFilePermission> set = Files.getPosixFilePermissions(temp.toPath());
-        System.out.println("XXX:" + PosixFilePermissions.toString(set));
+        System.out.println("XXX: " + temp.toString() + " " + PosixFilePermissions.toString(set));
         assertFalse(temp.canRead());
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         try {
