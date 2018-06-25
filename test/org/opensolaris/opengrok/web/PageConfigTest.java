@@ -27,10 +27,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -431,12 +434,14 @@ public class PageConfigTest {
     public void testCheckSourceRootExistence4() throws IOException {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
-        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
+        String origSourceRoot = RuntimeEnvironment.getInstance().getSourceRootPath();
         File temp = Files.createTempDirectory("opengrok-src-root4").toFile();
         temp.deleteOnExit();
         temp.setReadable(false);
         assertTrue(temp.isDirectory());
         assertTrue(temp.exists());
+        Set<PosixFilePermission> set = Files.getPosixFilePermissions(temp.toPath());
+        System.out.println("XXX:" + PosixFilePermissions.toString(set));
         assertFalse(temp.canRead());
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         try {
@@ -444,7 +449,7 @@ public class PageConfigTest {
             fail("This should throw an exception when the file is not readable");
         } catch (IOException ex) {
         }
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(origSourceRoot);
         PageConfig.cleanup(req);
     }
 
