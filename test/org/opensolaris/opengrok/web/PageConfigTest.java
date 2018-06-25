@@ -444,7 +444,8 @@ public class PageConfigTest {
         assertTrue(temp.exists());
         set = Files.getPosixFilePermissions(temp.toPath());
         System.out.println("XXX: after " + temp.toString() + " " + PosixFilePermissions.toString(set));
-        assertFalse(temp.canRead());
+        File newtemp = new File(temp.toString());
+        assertFalse(newtemp.canRead());
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();
