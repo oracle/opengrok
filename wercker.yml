@@ -20,7 +20,7 @@ build:
     # http://devcenter.wercker.com/docs/steps/index.html
   steps:
     - install-packages:
-      packages: git subversion sudo
+      packages: git subversion mercurial sudo
     - script:
       name: Maven install
       code: |
