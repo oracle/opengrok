@@ -10,12 +10,9 @@ box: openjdk:8-jdk
 #  tag: 8
 
 build:
-    # Steps make up the actions in your pipeline
-    # Read more about steps on our dev center:
-    # http://devcenter.wercker.com/docs/steps/index.html
   steps:
     - install-packages:
-      packages: git subversion mercurial sudo maven pep8
+      packages: sudo maven exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs pep8
     - script:
       name: Maven install
       code: |
