@@ -1383,7 +1383,7 @@ public final class RuntimeEnvironment {
      */
     public void writeConfiguration(String host) throws IOException {
         Response r = ClientBuilder.newClient()
-                .target(host + "/api")
+                .target(host + "/api/v1")
                 .path("configuration")
                 .queryParam("reindex", true)
                 .request()
@@ -1409,7 +1409,7 @@ public final class RuntimeEnvironment {
         List<String> projects = subFiles.stream().map(proj -> new File(proj).getName()).collect(Collectors.toList());
 
         Response r = ClientBuilder.newClient()
-                .target(host + "/api/system")
+                .target(host + "/api/v1/system")
                 .path("refresh")
                 .request()
                 .post(Entity.json(projects));

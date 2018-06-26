@@ -372,7 +372,7 @@ public class IndexDatabase {
         if (project != null) {
             if (env.getConfigHost() != null) {
                 Response r = ClientBuilder.newClient()
-                        .target(env.getConfigHost() + "/api/projects")
+                        .target(env.getConfigHost() + "/api/v1/projects")
                         .path("markIndexed")
                         .request()
                         .post(Entity.json(Collections.singleton(project.getName())));

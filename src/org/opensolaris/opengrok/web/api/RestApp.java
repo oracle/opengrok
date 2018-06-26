@@ -26,7 +26,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.ApplicationPath;
 
-@ApplicationPath("/api")
+@ApplicationPath("/api/v1")
 public class RestApp extends ResourceConfig {
 
     public RestApp() {

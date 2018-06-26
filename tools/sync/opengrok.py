@@ -33,7 +33,7 @@ def get_repos(logger, project, host):
     """
     payload = {'projects': [project]}
 
-    r = requests.get(host + '/api/projects/repositories', params=payload)
+    r = requests.get(host + '/api/v1/projects/repositories', params=payload)
 
     if not r:
         logger.error('could not get repositories for ' + project)
@@ -52,7 +52,7 @@ def get_config_value(logger, name, host):
 
     Return string with the result on success, None on failure.
     """
-    r = requests.get(host + '/api/configuration/' + name)
+    r = requests.get(host + '/api/v1/configuration/' + name)
     if not r:
         logger.error('could not get config value ' + name)
         return None
@@ -68,7 +68,7 @@ def get_repo_type(logger, repository, host):
     """
     payload = {'repositories': [repository]}
 
-    r = requests.get(host + '/api/repositories/types', params=payload)
+    r = requests.get(host + '/api/v1/repositories/types', params=payload)
     if not r:
         logger.error('could not get repo type for ' + repository)
         return None
@@ -80,7 +80,7 @@ def get_repo_type(logger, repository, host):
 
 
 def get_configuration(logger, host):
-    r = requests.get(host + '/api/configuration')
+    r = requests.get(host + '/api/v1/configuration')
     if not r:
         logger.error('could not get configuration')
         return None
@@ -89,7 +89,7 @@ def get_configuration(logger, host):
 
 
 def set_configuration(logger, configuration, host):
-    r = requests.put(host + '/api/configuration', data=configuration)
+    r = requests.put(host + '/api/v1/configuration', data=configuration)
 
     if not r:
         logger.error('could not set configuration')
@@ -99,7 +99,7 @@ def set_configuration(logger, configuration, host):
 
 
 def list_indexed_projects(logger, host):
-    r = requests.get(host + '/api/projects/indexed')
+    r = requests.get(host + '/api/v1/projects/indexed')
     if not r:
         logger.error('could not list indexed projects')
         return None
@@ -108,7 +108,7 @@ def list_indexed_projects(logger, host):
 
 
 def add_project(logger, project, host):
-    r = requests.put(host + '/api/projects', json=[project])
+    r = requests.put(host + '/api/v1/projects', json=[project])
 
     if not r:
         logger.error('could not add project ' + project)
@@ -120,7 +120,7 @@ def add_project(logger, project, host):
 def delete_project(logger, project, host):
     payload = {'projects': [project]}
 
-    r = requests.delete(host + '/api/projects', params=payload)
+    r = requests.delete(host + '/api/v1/projects', params=payload)
 
     if not r:
         logger.error('could not delete project ' + project)
