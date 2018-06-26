@@ -2,7 +2,12 @@
 # Docker Hub https://hub.docker.com/_/openjdk/
 # Read more about containers on our dev center
 # http://devcenter.wercker.com/docs/containers/index.html
-box: openjdk:8-jdk
+# box: openjdk:8-jdk
+box:
+  id: store/oracle/serverjre
+  username: $DOCKER_USERNAME
+  password: $DOCKER_PASSWORD
+  tag: 8
 
 # This is the build pipeline. Pipelines are the core of wercker
 # Read more about pipelines on our dev center
