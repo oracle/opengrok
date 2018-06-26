@@ -23,7 +23,7 @@ build:
       name: Maven install
       code: |
         cat /etc/passwd
-        sudo -u root mvn install
+        sudo -u root /usr/bin/mvn install
 
 #    # https://github.com/wercker/step-maven
 #    - wercker/maven:
