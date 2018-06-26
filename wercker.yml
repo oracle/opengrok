@@ -18,10 +18,11 @@ build:
     # Steps make up the actions in your pipeline
     # Read more about steps on our dev center:
     # http://devcenter.wercker.com/docs/steps/index.html
-  - script:
-    name: maven install
-    code: maven install
-#  steps:
+  steps:
+    - script:
+      name: maven install
+      code: maven install
+
 #    # https://github.com/wercker/step-maven
 #    - wercker/maven:
 #      goals: install
