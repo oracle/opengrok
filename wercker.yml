@@ -26,6 +26,7 @@ build:
       code: |
         /usr/sbin/groupadd -g 1000 foobar
         /usr/sbin/useradd -u 1000 -g 1000 -s /bin/bash -m foobar
+	cd $WERCKER_ROOT
         /usr/bin/sudo -i -u foobar /usr/bin/mvn install
 
 #    # https://github.com/wercker/step-maven
