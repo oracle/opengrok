@@ -34,7 +34,6 @@ import java.util.SortedSet;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Predicate;
 
 public class MessagesContainer {
@@ -73,7 +72,11 @@ public class MessagesContainer {
      * @param tag the message tag
      * @return set of messages
      */
-    public SortedSet<AcceptedMessage> getMessages(String tag) {
+    public SortedSet<AcceptedMessage> getMessages(final String tag) {
+        if (tag == null) {
+            throw new IllegalArgumentException("Cannot get messages for null tag");
+        }
+
         synchronized (lock) {
             if (expirationTimer == null) {
                 expireMessages();
@@ -111,7 +114,7 @@ public class MessagesContainer {
         boolean added = false;
         for (String tag : acceptedMessage.getMessage().getTags()) {
             if (!tagMessages.containsKey(tag)) {
-                tagMessages.put(tag, new ConcurrentSkipListSet<>());
+                tagMessages.put(tag, new TreeSet<>());
             }
             if (tagMessages.get(tag).add(acceptedMessage)) {
                 messagesInTheSystem++;

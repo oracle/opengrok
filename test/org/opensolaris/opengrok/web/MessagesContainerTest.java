@@ -170,4 +170,9 @@ public class MessagesContainerTest {
         assertTrue(container.getMessages("test").isEmpty());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void getMessagesNullTest() {
+        container.getMessages(null);
+    }
+
 }

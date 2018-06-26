@@ -51,10 +51,10 @@ public class MessagesController {
     @PUT
     @Consumes(MediaType.TEXT_PLAIN)
     public void addMessage(
-            @QueryParam("duration") @DefaultValue(DEFAULT_DURATION) String durationStr,
-            @QueryParam("tags") @DefaultValue(DEFAULT_TAGS) Set<String> tags,
-            @QueryParam("cssClass") @DefaultValue(DEFAULT_CSS_CLASS) String cssClass,
-            String text
+            @QueryParam("duration") @DefaultValue(DEFAULT_DURATION) final String durationStr,
+            @QueryParam("tags") @DefaultValue(DEFAULT_TAGS) final Set<String> tags,
+            @QueryParam("cssClass") @DefaultValue(DEFAULT_CSS_CLASS) final String cssClass,
+            final String text
     ) {
         Duration duration = parseDuration(durationStr);
 
@@ -77,7 +77,7 @@ public class MessagesController {
     }
 
     @DELETE
-    public void removeMessagesWithTag(@QueryParam("tags") Set<String> tags) {
+    public void removeMessagesWithTag(@QueryParam("tags") final Set<String> tags) {
         env.removeAnyMessage(tags);
     }
 
