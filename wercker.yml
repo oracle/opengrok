@@ -20,7 +20,7 @@ build:
     # http://devcenter.wercker.com/docs/steps/index.html
   steps:
     - install-packages:
-      packages: git subversion mercurial sudo maven
+      packages: git subversion mercurial sudo maven pep8
     - script:
       name: Maven install
       code: |
