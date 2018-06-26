@@ -22,14 +22,19 @@
  */
 package org.opensolaris.opengrok.web;
 
+import com.sun.security.auth.module.UnixSystem;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -64,7 +69,10 @@ public class PageConfigTest {
         repository = new TestRepository();
         repository.create(
                 HistoryGuru.class.getResourceAsStream("repositories.zip"));
-        RuntimeEnvironment.getInstance().setRepositories(repository.getSourceRoot());
+        
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setRepositories(repository.getSourceRoot());
+        env.setHistoryEnabled(true);
     }
 
     @AfterClass
@@ -243,6 +251,7 @@ public class PageConfigTest {
     }
 
     @Test
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testGetLatestRevisionValid() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
@@ -424,23 +433,25 @@ public class PageConfigTest {
      */
     @Test
     public void testCheckSourceRootExistence4() throws IOException {
+        UnixSystem unix = new UnixSystem();
+        System.out.println("XXX UID: " + unix.getUid());
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
-        String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-        File temp = File.createTempFile("opengrok", "-test-file.tmp");
-        Files.delete(temp.toPath());
-        Files.createDirectories(temp.toPath());
+        String origSourceRoot = RuntimeEnvironment.getInstance().getSourceRootPath();
+        File temp = Files.createTempDirectory("opengrok-src-root4").toFile();
+        temp.deleteOnExit();
         temp.setReadable(false);
+        assertTrue(temp.isDirectory());
+        assertTrue(temp.exists());
+        assertFalse(temp.canRead());
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();
             fail("This should throw an exception when the file is not readable");
         } catch (IOException ex) {
         }
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
-
+        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(origSourceRoot);
         PageConfig.cleanup(req);
-        temp.deleteOnExit();
     }
 
     /**
@@ -453,13 +464,11 @@ public class PageConfigTest {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-        File temp = File.createTempFile("opengrok", "-test-file.tmp");
-        temp.delete();
-        temp.mkdirs();
+        File temp = Files.createTempDirectory("opengrok-src-root5").toFile();
+        temp.deleteOnExit();
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         cfg.checkSourceRootExistence();
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
-        temp.deleteOnExit();
         PageConfig.cleanup(req);
     }
 
