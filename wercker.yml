@@ -29,7 +29,7 @@ build:
         echo $WERCKER_ROOT > /tmp/wroot
         chown -R foobar $WERCKER_ROOT
         # Execute just the 'package' phase as javadoc fails for jrcs during the 'verify' phase.
-        /usr/bin/sudo -i -u foobar -- bash -c 'cd `cat /tmp/wroot`; /usr/bin/mvn package'
+        /usr/bin/sudo -i -u foobar -- bash -c 'cd `cat /tmp/wroot`; /usr/bin/mvn verify'
 
 # Ideally this should support running under non-root user:
 #    # https://github.com/wercker/step-maven
