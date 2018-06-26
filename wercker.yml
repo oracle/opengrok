@@ -27,7 +27,8 @@ build:
         /usr/sbin/groupadd -g 1000 foobar
         /usr/sbin/useradd -u 1000 -g 1000 -s /bin/bash -m foobar
         echo $WERCKER_ROOT
-        /usr/bin/sudo -i -u foobar -- bash -c 'cd /pipeline/source; /usr/bin/mvn install'
+	chown -R foobar $WERCKER_ROOT
+        /usr/bin/sudo -i -u foobar -- bash -c 'cd /pipeline/source; /usr/bin/mvn -X install'
 
 #    # https://github.com/wercker/step-maven
 #    - wercker/maven:
