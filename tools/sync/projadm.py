@@ -38,7 +38,8 @@ import logging
 import tempfile
 import shutil
 from utils import get_command
-from opengrok import get_configuration, set_configuration, add_project, delete_project, get_config_value
+from opengrok import get_configuration, set_configuration, add_project, \
+    delete_project, get_config_value
 
 
 MAJOR_VERSION = sys.version_info[0]
