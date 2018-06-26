@@ -64,10 +64,6 @@ import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.OptionParser;
 import org.opensolaris.opengrok.util.Statistics;
 
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
  * stats etc., if specified in the options
@@ -273,18 +269,14 @@ public final class Indexer {
             // If the webapp is running with a config that does not contain
             // 'projectsEnabled' property (case of upgrade or transition
             // from project-less config to one with projects), set the property
-            // using a message so that the 'project/indexed' messages
+            // so that the 'project/indexed' messages
             // emitted during indexing do not cause validation error.
             if (addProjects && host != null) {
                 try {
-                    ClientBuilder.newClient()
-                            .target(host + "/api/configuration")
-                            .path("projectsEnabled")
-                            .request()
-                            .put(Entity.text(Boolean.TRUE.toString()));
-                } catch (ProcessingException e) {
-                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host or port", e);
-                    System.err.println("Couldn't notify the webapp (and host or port set): " + e.getLocalizedMessage());
+                    IndexerUtil.enableProjects(host);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host", e);
+                    System.err.println("Couldn't notify the webapp: " + e.getLocalizedMessage());
                 }
             }
 
