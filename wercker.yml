@@ -22,8 +22,8 @@ build:
     - script:
       name: Maven install
       code: |
-        cat /etc/passwd
-        sudo -u root /usr/bin/mvn install
+        /usr/sbin/groupadd -g 1000 foobar
+        /usr/bin/sudo -u root /usr/bin/mvn install
 
 #    # https://github.com/wercker/step-maven
 #    - wercker/maven:
