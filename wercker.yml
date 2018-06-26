@@ -20,8 +20,8 @@ build:
     # http://devcenter.wercker.com/docs/steps/index.html
   steps:
     - script:
-      name: maven install
-      code: maven install
+      name: Maven install
+      code: mvn install
 
 #    # https://github.com/wercker/step-maven
 #    - wercker/maven:
