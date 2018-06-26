@@ -22,6 +22,7 @@
  */
 package org.opensolaris.opengrok.web;
 
+import com.sun.security.auth.module.UnixSystem;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -432,20 +433,17 @@ public class PageConfigTest {
      */
     @Test
     public void testCheckSourceRootExistence4() throws IOException {
+        UnixSystem unix = new UnixSystem();
+        System.out.println("XXX UID: " + unix.getUid());
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String origSourceRoot = RuntimeEnvironment.getInstance().getSourceRootPath();
         File temp = Files.createTempDirectory("opengrok-src-root4").toFile();
         temp.deleteOnExit();
-        Set<PosixFilePermission> set = Files.getPosixFilePermissions(temp.toPath());
-        System.out.println("XXX: before " + temp.toString() + " " + PosixFilePermissions.toString(set));
         temp.setReadable(false);
         assertTrue(temp.isDirectory());
         assertTrue(temp.exists());
-        set = Files.getPosixFilePermissions(temp.toPath());
-        System.out.println("XXX: after " + temp.toString() + " " + PosixFilePermissions.toString(set));
-        File newtemp = new File(temp.toString());
-        assertFalse(newtemp.canRead());
+        assertFalse(temp.canRead());
         RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();
