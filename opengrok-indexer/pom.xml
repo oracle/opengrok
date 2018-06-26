@@ -37,6 +37,10 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <version>1.1-rc30</version>
     </parent>
 
+    <properties>
+        <jersey.version>2.27</jersey.version>
+    </properties>
+
     <build>
         <sourceDirectory>../src</sourceDirectory>
         <testSourceDirectory>../test</testSourceDirectory>
@@ -533,17 +537,17 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>
-            <version>2.27</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
-            <version>2.27</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
-            <version>2.27</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -559,7 +563,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>2.27</version>
+            <version>${jersey.version}</version>
             <scope>test</scope>
         </dependency>
 
