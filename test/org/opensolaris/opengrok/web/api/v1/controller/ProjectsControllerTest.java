@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.controller;
+package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -111,7 +111,7 @@ public class ProjectsControllerTest extends JerseyTest {
         assertTrue(env.getProjects().isEmpty());
         assertTrue(env.isHandleHistoryOfRenamedFiles());
 
-        addProjects("git");
+        addProject("git");
 
         assertTrue(env.getProjects().containsKey("git"));
         assertEquals(1, env.getProjects().size());
@@ -121,10 +121,10 @@ public class ProjectsControllerTest extends JerseyTest {
         assertTrue(proj.isHandleRenamedFiles());
     }
 
-    private void addProjects(String... projects) {
+    private void addProject(final String project) {
         target("projects")
                 .request()
-                .put(Entity.json(projects));
+                .put(Entity.text(project));
     }
 
     /**
@@ -160,7 +160,7 @@ public class ProjectsControllerTest extends JerseyTest {
         // Add the project.
         env.setScanningDepth(3);
 
-        addProjects("mercurial");
+        addProject("mercurial");
 
         // Check that the project was added properly.
         assertTrue(env.getProjects().containsKey("mercurial"));
@@ -187,7 +187,8 @@ public class ProjectsControllerTest extends JerseyTest {
         // At the same time, it checks that multiple projects can be added
         // with single message.
 
-        addProjects("git", "svn");
+        addProject("git");
+        addProject("svn");
 
         assertEquals(3, env.getProjects().size());
         assertEquals(4, env.getRepositories().size());
@@ -208,14 +209,14 @@ public class ProjectsControllerTest extends JerseyTest {
      */
     @Test
     public void testRepositoryRefresh() throws Exception {
-        addProjects("mercurial");
+        addProject("mercurial");
 
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
         MercurialRepositoryTest.runHgCommand(mercurialRoot,
                 "clone", mercurialRoot.getAbsolutePath(),
                 mercurialRoot.getAbsolutePath() + File.separator + "closed");
 
-        addProjects("mercurial");
+        addProject("mercurial");
 
         assertEquals(2, env.getRepositories().size());
         assertEquals(2, env.getProjectRepositoriesMap().get(Project.getProject(mercurialRoot)).size());
@@ -225,7 +226,7 @@ public class ProjectsControllerTest extends JerseyTest {
         // for proper per-test cleanup.
         removeRecursive(new File(mercurialRoot.getAbsolutePath() + File.separator + "closed").toPath());
 
-        addProjects("mercurial");
+        addProject("mercurial");
 
         assertEquals(1, env.getRepositories().size());
         assertEquals(1, env.getProjectRepositoriesMap().get(Project.getProject(mercurialRoot)).size());
@@ -255,7 +256,9 @@ public class ProjectsControllerTest extends JerseyTest {
         assertEquals(0, env.getRepositories().size());
         assertEquals(0, env.getProjectRepositoriesMap().size());
 
-        addProjects("mercurial", "git", "svn");
+        addProject("mercurial");
+        addProject("git");
+        addProject("svn");
 
         assertEquals(3, env.getProjects().size());
         assertEquals(3, env.getRepositories().size());
@@ -296,10 +299,9 @@ public class ProjectsControllerTest extends JerseyTest {
                 false); // don't list repos
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
-        target("projects")
-                .queryParam("projects", (Object[]) projectsToDelete)
-                .request()
-                .delete();
+        for (String proj : projectsToDelete) {
+            delete(proj);
+        }
 
         assertEquals(1, env.getProjects().size());
         assertEquals(1, env.getRepositories().size());
@@ -327,12 +329,19 @@ public class ProjectsControllerTest extends JerseyTest {
         assertEquals(0, group.getProjects().size());
     }
 
+    private void delete(final String project) {
+        target("projects")
+                .queryParam("project", project)
+                .request()
+                .delete();
+    }
+
     @Test
     public void testIndexed() {
         String projectName = "mercurial";
 
         // When a project is added, it should be marked as not indexed.
-        addProjects(projectName);
+        addProject(projectName);
 
         assertFalse(env.getProjects().get(projectName).isIndexed());
 
@@ -370,20 +379,20 @@ public class ProjectsControllerTest extends JerseyTest {
                 ri.getCurrentVersion().contains("c78fa757c524"));
     }
 
-    private void markIndexed(String... projects) {
+    private void markIndexed(final String project) {
         target("projects")
-                .path("markIndexed")
+                .path("/indexed")
                 .request()
-                .post(Entity.json(projects));
+                .put(Entity.text(project));
     }
 
     @Test
     public void testList() {
-        addProjects("mercurial");
+        addProject("mercurial");
         markIndexed("mercurial");
 
         // Add another project.
-        addProjects("git");
+        addProject("git");
 
         GenericType<List<String>> type = new GenericType<List<String>>() {};
 
@@ -410,7 +419,7 @@ public class ProjectsControllerTest extends JerseyTest {
         // Try to get repos for non-existent project first.
         List<String> repos = target("projects")
                 .path("repositories")
-                .queryParam("projects", "totally-nonexistent-project")
+                .queryParam("project", "totally-nonexistent-project")
                 .request()
                 .get(type);
 
@@ -422,12 +431,12 @@ public class ProjectsControllerTest extends JerseyTest {
                 "clone", mercurialRoot.getAbsolutePath(),
                 mercurialRoot.getAbsolutePath() + File.separator + "closed");
 
-        addProjects("mercurial");
+        addProject("mercurial");
 
         // Get repositories of the project.
         repos = target("projects")
                 .path("repositories")
-                .queryParam("projects", "mercurial")
+                .queryParam("project", "mercurial")
                 .request()
                 .get(type);
 
@@ -443,8 +452,8 @@ public class ProjectsControllerTest extends JerseyTest {
         // multiple nested Mercurial repositories.
 
         List<String> types = target("projects")
-                .path("repositoriesType")
-                .queryParam("projects", "mercurial")
+                .path("repositories/type")
+                .queryParam("project", "mercurial")
                 .request()
                 .get(type);
 
@@ -456,17 +465,16 @@ public class ProjectsControllerTest extends JerseyTest {
         assertTrue(env.isHandleHistoryOfRenamedFiles());
         String[] projects = new String[] {"mercurial", "git"};
 
-        addProjects(projects);
+        for (String proj : projects) {
+            addProject(proj);
+        }
 
         assertEquals(2, env.getProjectList().size());
 
         // Change their property.
-
-        target("projects")
-                .path("property/handleRenamedFiles")
-                .queryParam("projects", (Object[]) projects)
-                .request()
-                .put(Entity.text("false"));
+        for (String proj : projects) {
+            setHandleRenamedFilesToFalse(proj);
+        }
 
         // Verify the property was set on each project and its repositories.
         for (String proj : projects) {
@@ -490,6 +498,14 @@ public class ProjectsControllerTest extends JerseyTest {
                     .get(boolean.class);
             assertFalse(value);
         }
+    }
+
+    private void setHandleRenamedFilesToFalse(final String project) {
+        target("projects")
+                .path("property/handleRenamedFiles")
+                .queryParam("project", project)
+                .request()
+                .put(Entity.text(Boolean.FALSE.toString()));
     }
 
 }

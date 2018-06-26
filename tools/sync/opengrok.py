@@ -31,7 +31,7 @@ def get_repos(logger, project, host):
 
     Return  string with the result on success, None on failure.
     """
-    payload = {'projects': [project]}
+    payload = {'project': project}
 
     r = requests.get(host + '/api/v1/projects/repositories', params=payload)
 
@@ -66,9 +66,9 @@ def get_repo_type(logger, repository, host):
 
     Return string with the result on success, None on failure.
     """
-    payload = {'repositories': [repository]}
+    payload = {'repository': repository}
 
-    r = requests.get(host + '/api/v1/repositories/types', params=payload)
+    r = requests.get(host + '/api/v1/repositories/type', params=payload)
     if not r:
         logger.error('could not get repo type for ' + repository)
         return None
@@ -108,7 +108,7 @@ def list_indexed_projects(logger, host):
 
 
 def add_project(logger, project, host):
-    r = requests.put(host + '/api/v1/projects', json=[project])
+    r = requests.put(host + '/api/v1/projects', data=project)
 
     if not r:
         logger.error('could not add project ' + project)
@@ -118,7 +118,7 @@ def add_project(logger, project, host):
 
 
 def delete_project(logger, project, host):
-    payload = {'projects': [project]}
+    payload = {'project': project}
 
     r = requests.delete(host + '/api/v1/projects', params=payload)
 

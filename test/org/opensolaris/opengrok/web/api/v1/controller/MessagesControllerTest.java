@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.controller;
+package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -28,14 +28,18 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.web.MessagesContainer;
+import org.opensolaris.opengrok.web.messages.Message;
+import org.opensolaris.opengrok.web.messages.MessagesContainer;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
+import java.lang.reflect.Field;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -76,15 +80,20 @@ public class MessagesControllerTest extends JerseyTest {
     }
 
     private void addMessage(String text, String... tags) {
+        if (tags == null || tags.length == 0) {
+            tags = new String[] {MessagesContainer.MESSAGES_MAIN_PAGE_TAG};
+        }
+
+        Message m = new Message(text, new HashSet<>(Arrays.asList(tags)), "cssClass", Duration.ofMinutes(10));
+
         target("messages")
-                .queryParam("tags", (Object[]) tags)
                 .request()
-                .put(Entity.text(text));
+                .put(Entity.json(m));
     }
 
     @Test
     public void removeMessageTest() {
-        env.addMessage(new MessagesContainer.Message(
+        env.addMessage(new Message(
                 "test",
                 Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG),
                 "test",
@@ -100,7 +109,7 @@ public class MessagesControllerTest extends JerseyTest {
 
     private void removeMessages(String... tags) {
         target("messages")
-                .queryParam("tags", (Object[]) tags)
+                .queryParam("tag", (Object[]) tags)
                 .request()
                 .delete();
     }
@@ -138,26 +147,43 @@ public class MessagesControllerTest extends JerseyTest {
     }
 
     @Test
-    public void addMessageNegativeDurationTest() {
+    public void addMessageNegativeDurationTest() throws Exception {
+        Message m = new Message("text", Collections.singleton("test"), "cssClass", Duration.ofMinutes(1));
+        setDuration(m, Duration.ofMinutes(-10));
+
         Response r = target("messages")
-                .queryParam("duration", "-PT10M")
                 .request()
-                .put(Entity.text("test"));
+                .put(Entity.json(m));
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
 
         assertTrue(env.getMessages().isEmpty());
     }
 
+    private void setDuration(final Message m, final Duration duration) throws Exception {
+        Field f = Message.class.getDeclaredField("duration");
+        f.setAccessible(true);
+        f.set(m, duration);
+    }
+
     @Test
-    public void addEmptyMessageTest() {
+    public void addEmptyMessageTest() throws Exception {
+        Message m = new Message("text", Collections.singleton("test"), "cssClass", Duration.ofMinutes(1));
+        setText(m, "");
+
         Response r = target("messages")
                 .request()
-                .put(Entity.text(""));
+                .put(Entity.json(m));
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
 
         assertTrue(env.getMessages().isEmpty());
+    }
+
+    private void setText(final Message m, final String text) throws Exception {
+        Field f = Message.class.getDeclaredField("text");
+        f.setAccessible(true);
+        f.set(m, text);
     }
 
 }

@@ -373,9 +373,9 @@ public class IndexDatabase {
             if (env.getConfigHost() != null) {
                 Response r = ClientBuilder.newClient()
                         .target(env.getConfigHost() + "/api/v1/projects")
-                        .path("markIndexed")
+                        .path("indexed")
                         .request()
-                        .post(Entity.json(Collections.singleton(project.getName())));
+                        .put(Entity.text(project.getName()));
 
                 if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
                     System.err.println("Couldn't notify the webapp: " + r.toString());

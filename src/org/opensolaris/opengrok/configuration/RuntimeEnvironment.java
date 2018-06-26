@@ -75,9 +75,9 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.web.MessagesContainer;
-import org.opensolaris.opengrok.web.MessagesContainer.AcceptedMessage;
-import org.opensolaris.opengrok.web.MessagesContainer.Message;
+import org.opensolaris.opengrok.web.messages.Message;
+import org.opensolaris.opengrok.web.messages.MessagesContainer;
+import org.opensolaris.opengrok.web.messages.MessagesContainer.AcceptedMessage;
 import org.opensolaris.opengrok.web.Statistics;
 import org.opensolaris.opengrok.web.Util;
 
@@ -1400,23 +1400,22 @@ public final class RuntimeEnvironment {
      *
      * @param subFiles list of directories to refresh corresponding SearcherManagers
      * @param host the host address to receive the configuration
-     * @throws IOException if an error occurs
      */
-    public void signalTorefreshSearcherManagers(List<String> subFiles, String host) throws IOException {
+    public void signalTorefreshSearcherManagers(List<String> subFiles, String host) {
         // subFile entries start with path separator so get basename
         // to convert them to project names.
 
-        List<String> projects = subFiles.stream().map(proj -> new File(proj).getName()).collect(Collectors.toList());
+        subFiles.stream().map(proj -> new File(proj).getName()).forEach(project -> {
+            Response r = ClientBuilder.newClient()
+                    .target(host + "/api/v1/system")
+                    .path("refresh")
+                    .request()
+                    .put(Entity.text(project));
 
-        Response r = ClientBuilder.newClient()
-                .target(host + "/api/v1/system")
-                .path("refresh")
-                .request()
-                .post(Entity.json(projects));
-
-        if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            throw new IOException(r.toString());
-        }
+            if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+                LOGGER.log(Level.WARNING, "Could not refresh search manager for {0}", project);
+            }
+        });
     }
 
     /**
@@ -1968,18 +1967,40 @@ public final class RuntimeEnvironment {
         messagesContainer.stopExpirationTimer();
     }
 
+    /**
+     * Get the default set of messages for the main tag.
+     *
+     * @return set of messages
+     */
     public SortedSet<AcceptedMessage> getMessages() {
         return messagesContainer.getMessages();
     }
 
+    /**
+     * Get the set of messages for the arbitrary tag
+     *
+     * @param tag the message tag
+     * @return set of messages
+     */
     public SortedSet<AcceptedMessage> getMessages(final String tag) {
         return messagesContainer.getMessages(tag);
     }
 
+    /**
+     * Add a message to the application.
+     * Also schedules a expiration timer to remove this message after its expiration.
+     *
+     * @param message the message
+     */
     public void addMessage(final Message message) {
         messagesContainer.addMessage(message);
     }
 
+    /**
+     * Remove all messages containing at least one of the tags.
+     *
+     * @param tags set of tags
+     */
     public void removeAnyMessage(final Set<String> tags) {
         messagesContainer.removeAnyMessage(tags);
     }

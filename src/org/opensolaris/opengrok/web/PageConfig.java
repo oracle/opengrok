@@ -69,7 +69,7 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.web.MessagesContainer.AcceptedMessage;
+import org.opensolaris.opengrok.web.messages.MessagesContainer.AcceptedMessage;
 
 /**
  * A simple container to lazy initialize common vars wrt. a single request. It

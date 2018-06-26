@@ -20,26 +20,23 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.controller;
+package org.opensolaris.opengrok.web.constraints;
 
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import javax.validation.ValidationException;
 import javax.ws.rs.core.MediaType;
-import java.util.Set;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-@Path("/system")
-public class SystemController {
+@Provider
+public class ValidationExceptionMapper implements ExceptionMapper<ValidationException> {
 
-    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-    @POST
-    @Path("/refresh")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void refresh(final Set<String> projects) {
-        env.maybeRefreshIndexSearchers(projects);
+    @Override
+    public Response toResponse(final ValidationException e) {
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(e.getMessage())
+                .type(MediaType.TEXT_PLAIN)
+                .build();
     }
 
 }

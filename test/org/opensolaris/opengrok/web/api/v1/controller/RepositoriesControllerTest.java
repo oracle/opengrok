@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.controller;
+package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -41,10 +41,8 @@ import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
 
 import javax.ws.rs.core.Application;
-import javax.ws.rs.core.GenericType;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ConditionalRun(RepositoryInstalled.MercurialInstalled.class)
@@ -119,18 +117,12 @@ public class RepositoriesControllerTest extends JerseyTest {
         Assert.assertEquals("/git:git", getRepoType("/git"));
     }
 
-    private String getRepoType(String repository) {
-        GenericType<List<String>> type = new GenericType<List<String>>() {};
-
-        List<String> types = target("repositories")
-                .path("types")
-                .queryParam("repositories", repository)
+    private String getRepoType(final String repository) {
+        return target("repositories")
+                .path("type")
+                .queryParam("repository", repository)
                 .request()
-                .get(type);
-
-        return types.get(0);
+                .get(String.class);
     }
-
-
 
 }

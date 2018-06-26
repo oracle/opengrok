@@ -20,12 +20,11 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opensolaris.opengrok.web.messages;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opensolaris.opengrok.web.MessagesContainer.Message;
 
 import java.lang.reflect.Field;
 import java.time.Duration;
@@ -71,36 +70,6 @@ public class MessagesContainerTest {
     public void removeNullTest() {
         // the call should not throw an exception
         container.removeAnyMessage(null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createBadMessageTest() {
-        new Message(null, null, null, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createBadMessageTest2() {
-        new Message("", null, null, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createBadMessageTest3() {
-        new Message("test", null, null, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createBadMessageTest4() {
-        new Message("test", Collections.emptySet(), null, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createBadMessageTest5() {
-        new Message("test", Collections.singleton("test"), null, Duration.ofMinutes(-1));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createBadMessageTest6() {
-        new Message("test", Collections.emptySet(), null, Duration.ofMinutes(1));
     }
 
     @Test

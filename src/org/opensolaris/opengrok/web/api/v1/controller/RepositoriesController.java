@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.controller;
+package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.RepositoryInfo;
@@ -30,8 +30,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.List;
 
 @Path("/repositories")
 public class RepositoriesController {
@@ -39,25 +37,15 @@ public class RepositoriesController {
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @GET
-    @Path("/types")
+    @Path("/type")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getType(@QueryParam("repositories") List<String> repositories) {
-        List<String> types = new ArrayList<>();
-
-        for (String tag: repositories) {
-            boolean found = false;
-            for (RepositoryInfo ri : env.getRepositories()) {
-                if (ri.getDirectoryNameRelative().equals(tag)) {
-                    types.add(tag + ":" + ri.getType());
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                types.add(tag + ":N/A");
+    public String getType(@QueryParam("repository") final String repository) {
+        for (RepositoryInfo ri : env.getRepositories()) {
+            if (ri.getDirectoryNameRelative().equals(repository)) {
+                return repository + ":" + ri.getType();
             }
         }
-        return types;
+        return repository + ":N/A";
     }
 
 }

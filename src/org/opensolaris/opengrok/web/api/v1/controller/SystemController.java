@@ -20,41 +20,26 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.controller;
+package org.opensolaris.opengrok.web.api.v1.controller;
 
-import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.web.Statistics;
-import org.opensolaris.opengrok.web.Util;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
+import java.util.Collections;
 
-@Path("/stats")
-public class StatsController {
+@Path("/system")
+public class SystemController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String get() {
-        return Util.statisticToJson(env.getStatistics()).toJSONString();
-    }
-
-    @DELETE
-    public void clean() {
-        env.setStatistics(new Statistics());
-    }
-
-    @POST
-    @Path("reload")
-    public void reload() throws IOException, ParseException {
-        env.loadStatistics();
+    @PUT
+    @Path("/refresh")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public void refresh(final String project) {
+        env.maybeRefreshIndexSearchers(Collections.singleton(project));
     }
 
 }

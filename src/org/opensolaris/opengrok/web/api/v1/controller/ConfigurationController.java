@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.controller;
+package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.ClassUtil;
@@ -80,7 +80,7 @@ public class ConfigurationController {
     }
 
     @POST
-    @Path("/reloadAuth")
+    @Path("/authorization/reload")
     public void reloadAuthorization() {
         env.getAuthorizationFramework().reload();
     }

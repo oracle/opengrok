@@ -20,17 +20,27 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api;
+package org.opensolaris.opengrok.web.constraints;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import javax.ws.rs.ApplicationPath;
+/**
+ * Validate that the annotated {@link java.time.Duration} is not null and positive.
+ */
+@Constraint(validatedBy = PositiveDurationValidator.class)
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PositiveDuration {
 
-@ApplicationPath("/api/v1")
-public class RestApp extends ResourceConfig {
+    String message() default "{org.opensolaris.opengrok.web.constraints.PositiveDuration.message}";
 
-    public RestApp() {
-        packages("org.opensolaris.opengrok.web.api.v1.controller", "org.opensolaris.opengrok.web.api.filter");
-    }
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 
 }

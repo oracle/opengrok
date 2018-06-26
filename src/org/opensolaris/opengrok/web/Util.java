@@ -71,7 +71,7 @@ import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.web.MessagesContainer.AcceptedMessage;
+import org.opensolaris.opengrok.web.messages.MessagesContainer.AcceptedMessage;
 
 /**
  * Class for useful functions.

@@ -1108,11 +1108,8 @@ public final class Indexer {
 
     public void refreshSearcherManagers(RuntimeEnvironment env, List<String> projects, String host) {
         LOGGER.log(Level.INFO, "Refreshing searcher managers to: {0}", host);
-        try {
-            env.signalTorefreshSearcherManagers(projects, host);
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Failed to refresh searcher managers on " + host, ex);
-        }
+
+        env.signalTorefreshSearcherManagers(projects, host);
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String host) {

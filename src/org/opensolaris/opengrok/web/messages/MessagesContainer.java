@@ -20,13 +20,17 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web;
+package org.opensolaris.opengrok.web.messages;
 
-import java.time.Duration;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -205,108 +209,6 @@ public class MessagesContainer {
         return toRet == null ? new TreeSet<>() : toRet;
     }
 
-    public static class Message implements Comparable<Message> {
-
-        private Set<String> tags;
-
-        private String cssClass;
-
-        private String text;
-
-        private Duration duration;
-
-        public Message(
-                final String text,
-                final Set<String> tags,
-                final String cssClass,
-                final Duration duration
-        ) {
-            if (text == null || text.isEmpty()) {
-                throw new IllegalArgumentException("text cannot be null or empty");
-            }
-            if (tags == null || tags.isEmpty()) {
-                throw new IllegalArgumentException("tags cannot be null or empty");
-            }
-            if (duration == null || duration.isNegative()) {
-                throw new IllegalArgumentException("duration cannot be null or negative");
-            }
-
-            Set<String> finalTags = new HashSet<>();
-            for (String tag : tags) {
-                if (!tag.trim().isEmpty()) {
-                    finalTags.add(tag);
-                }
-            }
-
-            if (finalTags.isEmpty()) {
-                throw new IllegalArgumentException("tags contain only blank values");
-            }
-
-            this.text = text;
-            this.tags = finalTags;
-            this.cssClass = cssClass;
-            this.duration = duration;
-        }
-
-        public Set<String> getTags() {
-            return tags;
-        }
-
-        public String getCssClass() {
-            return cssClass;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public Duration getDuration() {
-            return duration;
-        }
-
-        /**
-         * @param t set of tags
-         * @return true if message has at least one of the tags
-         */
-        public boolean hasAny(Set<String> t) {
-            Set<String> tmp = new TreeSet<>(t);
-            tmp.retainAll(tags);
-            return !tmp.isEmpty();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            Message message = (Message) o;
-            return Objects.equals(tags, message.tags) &&
-                    Objects.equals(cssClass, message.cssClass) &&
-                    Objects.equals(text, message.text) &&
-                    Objects.equals(duration, message.duration);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(tags, cssClass, text, duration);
-        }
-
-        @Override
-        public int compareTo(final Message o) {
-            int i;
-            if (text != null && (i = text.compareTo(o.text)) != 0) {
-                return i;
-            }
-            if (duration != null && (i = duration.compareTo(o.duration)) != 0) {
-                return i;
-            }
-            return tags.size() - o.tags.size();
-        }
-    }
-
     public static class AcceptedMessage implements Comparable<AcceptedMessage> {
 
         private final Instant acceptedTime = Instant.now();
@@ -317,6 +219,7 @@ public class MessagesContainer {
             this.message = message;
         }
 
+        @JsonSerialize(using = InstantSerializer.class)
         public Instant getAcceptedTime() {
             return acceptedTime;
         }
@@ -329,6 +232,7 @@ public class MessagesContainer {
             return getExpirationTime().isBefore(Instant.now());
         }
 
+        @JsonSerialize(using = InstantSerializer.class)
         public Instant getExpirationTime() {
             return acceptedTime.plus(message.getDuration());
         }
@@ -358,6 +262,30 @@ public class MessagesContainer {
         @Override
         public int hashCode() {
             return Objects.hash(acceptedTime, message);
+        }
+
+        private static class InstantSerializer extends StdSerializer<Instant> {
+
+            InstantSerializer() {
+                this(null);
+            }
+
+            InstantSerializer(final Class<Instant> cl) {
+                super(cl);
+            }
+
+            @Override
+            public void serialize(
+                    final Instant instant,
+                    final JsonGenerator jsonGenerator,
+                    final SerializerProvider serializerProvider
+            ) throws IOException {
+                if (instant != null) {
+                    jsonGenerator.writeString(instant.toString());
+                } else {
+                    jsonGenerator.writeNull();
+                }
+            }
         }
     }
 

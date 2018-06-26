@@ -20,17 +20,24 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api;
+package org.opensolaris.opengrok.web.constraints;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import javax.validation.constraintvalidation.SupportedValidationTarget;
+import javax.validation.constraintvalidation.ValidationTarget;
+import java.time.Duration;
 
-import javax.ws.rs.ApplicationPath;
+@SupportedValidationTarget(ValidationTarget.ANNOTATED_ELEMENT)
+public class PositiveDurationValidator implements ConstraintValidator<PositiveDuration, Duration> {
 
-@ApplicationPath("/api/v1")
-public class RestApp extends ResourceConfig {
+    @Override
+    public void initialize(final PositiveDuration positiveDuration) {
 
-    public RestApp() {
-        packages("org.opensolaris.opengrok.web.api.v1.controller", "org.opensolaris.opengrok.web.api.filter");
     }
 
+    @Override
+    public boolean isValid(final Duration duration, final ConstraintValidatorContext context) {
+        return duration != null && !duration.isNegative() && !duration.isZero();
+    }
 }
