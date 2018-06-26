@@ -21,7 +21,9 @@ build:
   steps:
     - script:
       name: Maven install
-      code: mvn install
+      code: |
+        cat /etc/passwd
+        sudo -u root mvn install
 
 #    # https://github.com/wercker/step-maven
 #    - wercker/maven:
