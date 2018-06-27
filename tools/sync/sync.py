@@ -71,6 +71,7 @@ def worker(base):
 
     return base
 
+
 if __name__ == '__main__':
     output = []
     dirs_to_process = []

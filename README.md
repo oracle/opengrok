@@ -3,7 +3,8 @@ Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
 
 
 # OpenGrok - a wicked fast source browser
-[![Build Status](https://travis-ci.org/oracle/opengrok.svg?branch=master)](https://travis-ci.org/oracle/opengrok)
+[![Travis Status](https://travis-ci.org/oracle/opengrok.svg?branch=master)](https://travis-ci.org/oracle/opengrok)
+[![wercker status](https://app.wercker.com/status/e2a879f4677e679c0bbf8fa82bcc0dba/s/master "wercker status")](https://app.wercker.com/project/byKey/e2a879f4677e679c0bbf8fa82bcc0dba)
 [![Coverage Status](https://coveralls.io/repos/oracle/opengrok/badge.svg?branch=master)](https://coveralls.io/r/oracle/opengrok?branch=master)
 
 1.  [Introduction](#1-introduction)
