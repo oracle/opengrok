@@ -145,9 +145,11 @@ public class SearchTest {
         assertTrue(instance.search());
         assertEquals(1, instance.results.size());
 
+        /* see https://github.com/oracle/opengrok/issues/2030
         assertTrue(instance.parseCmdLine(new String[]{"-p", "main~"}));
         assertTrue(instance.search());
         assertEquals("Search for main~ in testdata sources", 9, instance.results.size()); // only in SearchEngine ... why?
+        */
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main troff\"~5"}));
         assertTrue(instance.search());
