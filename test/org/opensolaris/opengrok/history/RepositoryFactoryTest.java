@@ -61,9 +61,10 @@ public class RepositoryFactoryTest {
             NoSuchMethodException, InvocationTargetException {
         
         String propName = MercurialRepository.CMD_PROPERTY_KEY;
-        System.setProperty(propName, "/foo/bar/nonexistent");
+        String origPropValue = System.setProperty(propName, "/foo/bar/nonexistent");
         File root = new File(repository.getSourceRoot(), "mercurial");
         Repository repo = RepositoryFactory.getRepository(root);
+        System.setProperty(propName, origPropValue);
         assertFalse(repo.isWorking());
     }
 }
