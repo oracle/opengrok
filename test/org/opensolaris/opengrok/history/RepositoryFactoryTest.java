@@ -62,7 +62,9 @@ public class RepositoryFactoryTest {
         String origPropValue = System.setProperty(propName, "/foo/bar/nonexistent");
         File root = new File(repository.getSourceRoot(), repoPath);
         Repository repo = RepositoryFactory.getRepository(root);
-        System.setProperty(propName, origPropValue);
+        if (origPropValue != null) {
+            System.setProperty(propName, origPropValue);
+        }
         assertFalse(repo.isWorking());
     }
     
