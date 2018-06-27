@@ -540,16 +540,18 @@ public abstract class Repository extends RepositoryInfo {
      * @see #RepoCommand
      */
     protected String ensureCommand(String propertyKey, String fallbackCommand) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        
         if (RepoCommand != null) {
             return RepoCommand;
         }
-        RepoCommand = RuntimeEnvironment.getInstance()
-                .getRepoCmd(this.getClass().getCanonicalName());
+        
+        RepoCommand = env.getRepoCmd(this.getClass().getCanonicalName());
         if (RepoCommand == null) {
             RepoCommand = System.getProperty(propertyKey, fallbackCommand);
-            RuntimeEnvironment.getInstance()
-                    .setRepoCmd(this.getClass().getCanonicalName(), RepoCommand);
+            env.setRepoCmd(this.getClass().getCanonicalName(), RepoCommand);
         }
+        
         return RepoCommand;
     }
 
