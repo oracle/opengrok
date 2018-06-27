@@ -62,23 +62,37 @@ public class SCCSRepositoryTest {
     /**
      * Test of isRepositoryFor method, of class SCCSRepository.
      */
-    private void testIsRepositoryFor(final String fileName) throws IOException {
+    private void testIsRepositoryFor(final String fileName, boolean shouldPass) throws IOException {
         File tdir = Files.createTempDirectory("SCCSrepotest" + fileName).toFile();
         File test = new File(tdir, fileName);
         test.mkdirs();
         tdir.deleteOnExit();
         test.deleteOnExit();
-        SCCSRepository instance = new SCCSRepository();        
-        assertTrue(instance.isRepositoryFor(tdir));
+        SCCSRepository instance = new SCCSRepository();
+        if (shouldPass) {
+            assertTrue(instance.isRepositoryFor(tdir));
+        } else {
+            assertFalse(instance.isRepositoryFor(tdir));
+        }
     }
     
     @Test
     public void testIsRepositoryForCodemgr1() throws IOException {
-        testIsRepositoryFor("Codemgr_wsdata");
+        testIsRepositoryFor("Codemgr_wsdata", true);
     }
     
     @Test
     public void testIsRepositoryForCodemgr2() throws IOException {
-        testIsRepositoryFor("codemgr_wsdata");
+        testIsRepositoryFor("codemgr_wsdata", true);
+    }
+    
+    @Test
+    public void testIsRepositoryForCodemgr3() throws IOException {
+        testIsRepositoryFor("SCCS", true);
+    }
+    
+    @Test
+    public void testIsRepositoryForCodemgrNot() throws IOException {
+        testIsRepositoryFor("NOT", false);
     }
 }
