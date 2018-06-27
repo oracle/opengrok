@@ -53,18 +53,28 @@ public class RepositoryFactoryTest {
     }
     
     /*
-     * There is no conditonal run based on whether Mercurial is installed because
+     * There is no conditonal run based on whether given repository is installed because
      * this test is not supposed to have working Mercurial anyway.
      */
-    @Test
-    public void testNotWorkingRepository() throws InstantiationException, IllegalAccessException, 
-            NoSuchMethodException, InvocationTargetException {
+    private void testNotWorkingRepository(String repoPath, String propName) 
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         
-        String propName = MercurialRepository.CMD_PROPERTY_KEY;
         String origPropValue = System.setProperty(propName, "/foo/bar/nonexistent");
-        File root = new File(repository.getSourceRoot(), "mercurial");
+        File root = new File(repository.getSourceRoot(), repoPath);
         Repository repo = RepositoryFactory.getRepository(root);
         System.setProperty(propName, origPropValue);
         assertFalse(repo.isWorking());
+    }
+    
+    @Test
+    public void testNotWorkingMercurialRepository() 
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        testNotWorkingRepository("mercurial", MercurialRepository.CMD_PROPERTY_KEY);
+    }
+    
+    @Test
+    public void testNotWorkingBitkeeperRepository() 
+            throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        testNotWorkingRepository("bitkeeper", BitKeeperRepository.CMD_PROPERTY_KEY);
     }
 }
