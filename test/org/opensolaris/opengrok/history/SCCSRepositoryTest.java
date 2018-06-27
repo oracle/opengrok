@@ -25,6 +25,8 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -60,16 +62,23 @@ public class SCCSRepositoryTest {
     /**
      * Test of isRepositoryFor method, of class SCCSRepository.
      */
-    @Test
-    public void testIsRepositoryFor() {
-        //test bug 15954
-        File tdir = new File(System.getProperty("java.io.tmpdir")+File.separator+"testogrepo");
-        File test = new File(tdir,"Codemgr_wsdata");
-        test.mkdirs();//TODO fix FileUtilities to not leave over dummy directories in tmp and then use them here ;)
+    private void testIsRepositoryFor(final String fileName) throws IOException {
+        File tdir = Files.createTempDirectory("SCCSrepotest" + fileName).toFile();
+        File test = new File(tdir, fileName);
+        test.mkdirs();
+        tdir.deleteOnExit();
+        test.deleteOnExit();
         SCCSRepository instance = new SCCSRepository();        
         assertTrue(instance.isRepositoryFor(tdir));
-        test.delete();
-        tdir.delete();
     }
-
+    
+    @Test
+    public void testIsRepositoryForCodemgr1() throws IOException {
+        testIsRepositoryFor("Codemgr_wsdata");
+    }
+    
+    @Test
+    public void testIsRepositoryForCodemgr2() throws IOException {
+        testIsRepositoryFor("codemgr_wsdata");
+    }
 }
