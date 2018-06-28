@@ -1,75 +1,126 @@
-### Requirement
+# REST API
 
-Starting from OpenGrok 1.0, the webservice is included in the provided build.
+Since 1.1-rc31 OpenGrok web application provides a REST API under path `/api/v1/`. Since many of these requests are meant for administrators, only requests from `localhost` are allowed (except `search` endpoint).
 
-### Syntax
-```bash
-{host}/{webapp_name}/json?freetext={keyword}&maxresults=80...
-```
-{webapp_name} is the name of war archive, for example "source" in the default build configuration.
+For Indexer and Python scripts to work correctly. URI of the webapp needs to be specified by `-U` option. (For instance: `-U http://localhost:8080/source`).
 
-The overall query parameters (**maxresults**, **freetext**, **def**, **symbol**, **path** and **hist**) and result attributes (**directory**, **filename**, **lineno**, **line**, **path**, **results**, **duration**, **resultcount**) are defined as:
+## Endpoints
+There are a few endpoints which provide different functionality.
 
-```java
-private static final String PARAM_FREETEXT = "freetext"; // query params start
-private static final String PARAM_DEF = "def";
-private static final String PARAM_SYMBOL = "symbol";
-private static final String PARAM_PATH = "path";
-private static final String PARAM_HIST = "hist";
-private static final String PARAM_MAXRESULTS = "maxresults"; // query params end
-private static final String ATTRIBUTE_DIRECTORY = "directory"; // attributes in response JSON start
-private static final String ATTRIBUTE_FILENAME = "filename";
-private static final String ATTRIBUTE_LINENO = "lineno";
-private static final String ATTRIBUTE_LINE = "line";
-private static final String ATTRIBUTE_PATH = "path";
-private static final String ATTRIBUTE_RESULTS = "results";
-private static final String ATTRIBUTE_DURATION = "duration";
-private static final String ATTRIBUTE_RESULT_COUNT = "resultcount"; // attributes in response JSON end
-```
+### `/configuration`
 
-### Response example
-You can take this response for example:
-```javascript
-{
-  duration: 14618,
-  path: "",
-  resultcount: 4,
-  hist: "",
-  freetext: "Thread",
-  results: [
+* **GET** – returns XML representation of configuration
+
+* **PUT** – sets configuration from XML representation
+  * `?reindex=true/false` – specifies if the underlying data were also reindexed (refreshes some searchers and additional data structures)
+  * **body** – XML configuration string
+
+* `/{field}`
+  * **GET** – returns specific configuration field in JSON format
+  * **PUT** – sets specific configuration field `{field}`
+    * **body** – string value of the field to set
+
+* `/authorization/reload`
+  * **POST** – reloads authorization framework
+
+### `/messages`
+
+* **POST** – adds message to a system
+  * **body** – JSON representation of message, example:
+    ```json
     {
-      path: "/my_project/my_path_section1/commonservice/biz/src/com/alipay/mobile/framework/service/common/threadpool/CommonThreadFactory.java",
-      filename: "CommonThreadFactory.java",
-      lineno: "18",
-      line: "ICAgIHB1YmxpYyA8Yj5UaHJlYWQ8L2I+IG5ld1RocmVhZChSdW5uYWJsZSByKSB7",
-      directory: "\/my_project\/my_path_section1\/commonservice\/biz\/src\/com\/alipay\/mobile\/framework\/service\/common\/threadpool"
-    },
-    {
-      path: "/my_project/my_path_section1/commonservice/biz/src/com/alipay/mobile/framework/service/common/threadpool/CommonThreadFactory.java",
-      filename: "CommonThreadFactory.java",
-      lineno: "19",
-      line: "ICAgICAgICA8Yj5UaHJlYWQ8L2I+IDxiPnRocmVhZDwvYj4gPSBuZXcgPGI+VGhyZWFkPC9iPihyLCB0aHJlYWROYW1lUHJlZml4",
-      directory: "\/my_project\/my_path_section1\/commonservice\/biz\/src\/com\/alipay\/mobile\/framework\/service\/common\/threadpool"
-    },
-    {
-      path: "/my_project/my_path_section1/commonservice/biz/src/com/alipay/mobile/framework/service/common/threadpool/CommonThreadFactory.java",
-      filename: "CommonThreadFactory.java",
-      lineno: "21",
-      line: "ICAgICAgICA8Yj50aHJlYWQ8L2I+LnNldFByaW9yaXR5KHRoaXMucHJpb3JpdHkpOw==",
-      directory: "\/my_project\/my_path_section1\/commonservice\/biz\/src\/com\/alipay\/mobile\/framework\/service\/common\/threadpool"
-    },
-    {
-      path: "/my_project/my_path_section1/commonservice/biz/src/com/alipay/mobile/framework/service/common/threadpool/CommonThreadFactory.java",
-      filename: "CommonThreadFactory.java",
-      lineno: "22",
-      line: "ICAgICAgICByZXR1cm4gPGI+dGhyZWFkPC9iPjs=",
-      directory: "\/my_project\/my_path_section1\/commonservice\/biz\/src\/com\/alipay\/mobile\/framework\/service\/common\/threadpool"
+      "tags": ["main"],
+      "cssClass": "cssClass",
+      "text":"test message",
+      "duration":"PT10M"
     }
-  ]
-}
-```
+    ```
 
-The attribute **line** is base 64 encoded source line with HTML attributes showing the hit position.
+* **DELETE**
+  * `?tag={t}` – deletes messages with specified tag `{t}`
 
-### Additional note
-You have to add "Access-Control-Allow-Origin" header in the [JSONSearchServlet.java](https://github.com/OpenGrok/OpenGrok/blob/8319a89aaa06ff36af7fb04086caf078421086cf/src/org/opensolaris/opengrok/web/JSONSearchServlet.java) when cross-origin request is required.
+* **GET**
+  * `?tag={t}` – returns all messages with specified tag `{t}`
+  * example:
+    ```json
+    [
+      {
+        "acceptedTime": "2018-06-28T17:49:01.793Z",
+        "message": {
+          "tags": ["main"],
+          "cssClass": "cssClass",
+          "text": "test message",
+          "duration": "PT10M"
+        },
+        "expirationTime": "2018-06-28T17:59:01.793Z",
+        "expired":false
+      }
+    ]
+    ```
+
+### `/projects`
+
+* **GET** – returns a list of projects
+
+* **POST** – add project
+  * **body** – text/plain name of the project
+
+* `/{project}`
+  * `**DELETE** – delete project
+  * `/indexed`
+    * **PUT** – marks project as indexed
+  * `/property/{field}`
+    * **PUT** – sets field `{field}` for the `{project}`
+      * **body** – string representation of the value to set
+    * **GET** – returns the `{field}` value in JSON format
+  * `/repositories`
+    * **GET** – returns a list of repositories for the specified `{project}` as JSON list
+    * `/type`
+      * **GET** – returns types of `{project}` repositories as JSON list
+
+* `/indexed`
+  * **GET** – returns a list of indexed projects as JSON list
+
+### `/repositories`
+* `/type`
+  * **GET** – return type of the repository
+    * `?repository={repo_name}` – repository for which to return type
+
+### `/search`
+* **GET** – return search results
+  * `?full={full}` – full search field value to search for
+  * `?def={def}` – definition field value to search for
+  * `?sybol={symbol}` – symbol field value to search for
+  * `?path={path}` – file path field value to search for
+  * `?hist={hist}` – history field value to search for
+  * `?type={type}` – type of the files to search for
+  * `?projects={project1}&projects={project2}` – projects to search in
+  * `?maxresults={max_results}` – maximum number of documents whose hits will be returned
+  * `?start={start}` – start index from which to return results
+  * example:
+    ```json
+    {
+      "time": 387,
+      "resultCount": 100,
+      "startIndex": 0,
+      "endIndex": 3,
+      "results": [{
+        "line": "java\npackage cz.cuni.mff.fruiton.",
+        "path": "/fruitonserver/build/classes/java/test/cz/cuni/mff/fruiton/test/integration/MatchmakingTest.class"
+      }]
+    }
+    ```
+
+### `/stats`
+* **GET** – returns statistics in JSON format
+  
+* **DELETE** – deletes statistics
+
+* `/reload`
+  * **PUT** – reloads statistics (useful when configuration path to statistics changed)
+
+### `/system`
+
+* `/refresh`
+  * **PUT** – refreshes index searchers for specified project
+    * **body** – text/plain project name to refresh
