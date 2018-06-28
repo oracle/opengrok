@@ -38,6 +38,8 @@ import logging
 import tempfile
 import shutil
 from utils import get_command
+from opengrok import get_configuration, set_configuration, add_project, \
+    delete_project, get_config_value
 
 
 MAJOR_VERSION = sys.version_info[0]
@@ -45,7 +47,7 @@ if (MAJOR_VERSION < 3):
     print("Need Python 3, you are running {}".format(MAJOR_VERSION))
     sys.exit(1)
 
-__version__ = "0.1"
+__version__ = "0.2"
 
 
 def exec_command(doit, logger, cmd, msg):
@@ -99,7 +101,7 @@ def install_config(doit, src, dst):
         sys.exit(1)
 
 
-def config_refresh(doit, logger, basedir, messages, configmerge, roconfig):
+def config_refresh(doit, logger, basedir, uri, configmerge, roconfig):
     """
     Refresh current configuration file with configuration retrieved
     from webapp. If roconfig is not None, the current config is merged with
@@ -114,9 +116,13 @@ def config_refresh(doit, logger, basedir, messages, configmerge, roconfig):
         logger.error("file {} does not exist".format(main_config))
         sys.exit(1)
 
-    current_config = exec_command(doit, logger,
-                                  [messages, '-n', 'config', '-t', 'getconf'],
-                                  "getting configuration failed")
+    if doit:
+        current_config = get_configuration(logger, uri)
+        if not current_config:
+            sys.exit(1)
+    else:
+        current_config = None
+
     with tempfile.NamedTemporaryFile() as fcur:
         logger.debug("Temporary file for current config: {}".format(fcur.name))
         if doit:
@@ -139,7 +145,7 @@ def config_refresh(doit, logger, basedir, messages, configmerge, roconfig):
                     install_config(doit, fmerged.name, main_config)
 
 
-def project_add(doit, logger, project, messages):
+def project_add(doit, logger, project, uri):
     """
     Adds a project to configuration. Works in multiple steps:
 
@@ -148,12 +154,12 @@ def project_add(doit, logger, project, messages):
     """
 
     logger.info("Adding project {}".format(project))
-    exec_command(doit, logger,
-                 [messages, '-n', 'project', '-t', project, 'add'],
-                 "adding of the project failed")
+
+    if doit:
+        add_project(logger, project, uri)
 
 
-def project_delete(doit, logger, project, messages):
+def project_delete(doit, logger, project, uri):
     """
     Delete the project for configuration and all its data.
     Works in multiple steps:
@@ -168,13 +174,14 @@ def project_delete(doit, logger, project, messages):
         raise Exception("invalid call to project_delete(): missing project")
 
     logger.info("Deleting project {} and its index data".format(project))
-    exec_command(doit, logger,
-                 [messages, '-n', 'project', '-t', project, 'delete'],
-                 "deletion of the project failed")
 
-    src_root = exec_command(True, logger,
-                            [messages, '-n', 'config', '-t', 'get',
-                             'sourceRoot'], "cannot get config")
+    if doit:
+        delete_project(logger, project, uri)
+
+    src_root = get_config_value(logger, 'sourceRoot', uri)
+    if not src_root:
+        raise Exception("Could not get source root")
+
     src_root = src_root[0].rstrip()
     logger.debug("Source root = {}".format(src_root))
     if not src_root or len(src_root) == 0:
@@ -197,8 +204,8 @@ if __name__ == '__main__':
                         help='OpenGrok instance base directory')
     parser.add_argument('-R', '--roconfig',
                         help='OpenGrok read-only configuration file')
-    parser.add_argument('-m', '--messages',
-                        help='path to the Messages binary')
+    parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
+                        help='uri of the webapp with context path')
     parser.add_argument('-c', '--configmerge',
                         help='path to the ConfigMerge binary')
     parser.add_argument('-u', '--upload', action='store_true',
@@ -250,12 +257,11 @@ if __name__ == '__main__':
             logger.error("File {} does not exist".format(args.roconfig))
             sys.exit(1)
 
-    # XXX replace Messages with REST request after issue #1801
-    messages_file = get_command(logger, args.messages, "Messages")
-    if not messages_file:
-        logger.error("Use the --messages option to specify the path to"
-                     "the Messages script")
+    uri = args.uri
+    if not uri:
+        logger.error("uri of the webapp not specified")
         sys.exit(1)
+
     configmerge_file = get_command(logger, args.configmerge, "ConfigMerge")
     if not configmerge_file:
         logger.error("Use the --configmerge option to specify the path to"
@@ -270,28 +276,28 @@ if __name__ == '__main__':
                 for proj in args.add:
                     project_add(doit=args.noop, logger=logger,
                                 project=proj,
-                                messages=messages_file)
+                                uri=uri)
 
                 config_refresh(doit=args.noop, logger=logger,
                                basedir=args.base,
-                               messages=messages_file,
+                               uri=uri,
                                configmerge=configmerge_file,
                                roconfig=args.roconfig)
             elif args.delete:
                 for proj in args.delete:
                     project_delete(doit=args.noop, logger=logger,
                                    project=proj,
-                                   messages=messages_file)
+                                   uri=uri)
 
                 config_refresh(doit=args.noop, logger=logger,
                                basedir=args.base,
-                               messages=messages_file,
+                               uri=uri,
                                configmerge=configmerge_file,
                                roconfig=args.roconfig)
             elif args.refresh:
                 config_refresh(doit=args.noop, logger=logger,
                                basedir=args.base,
-                               messages=messages_file,
+                               uri=uri,
                                configmerge=configmerge_file,
                                roconfig=args.roconfig)
             else:
@@ -301,10 +307,9 @@ if __name__ == '__main__':
             if args.upload:
                 main_config = get_config_file(basedir=args.base)
                 if path.isfile(main_config):
-                    exec_command(doit=args.noop, logger=logger,
-                                 cmd=[messages_file, '-n', 'config', '-t',
-                                      'setconf', main_config],
-                                 msg="cannot upload configuration to webapp")
+                    if args.noop:
+                        set_configuration(logger, main_config, uri)
+
                 else:
                     logger.error("file {} does not exist".format(main_config))
                     sys.exit(1)

@@ -61,7 +61,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.1"
+__version__ = "0.2"
 
 
 if __name__ == '__main__':
@@ -80,8 +80,8 @@ if __name__ == '__main__':
                         help='Enable debug prints')
     parser.add_argument('-c', '--config',
                         help='config file in JSON/YAML format')
-    parser.add_argument('-m', '--messages',
-                        help='path to the Messages binary')
+    parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
+                        help='uri of the webapp with context path')
     parser.add_argument('-b', '--batch', action='store_true',
                         help='batch mode - will log into a file')
     parser.add_argument('-B', '--backupcount', default=8,
@@ -116,19 +116,14 @@ if __name__ == '__main__':
     if logdir:
         check_create_dir(logdir)
 
-    if args.messages:
-        messages_file = which(args.messages)
-        if not messages_file:
-            logger.error("file {} does not exist".format(args.messages))
-            sys.exit(1)
-    else:
-        messages_file = which("Messages")
-        if not messages_file:
-            logger.error("cannot determine path to Messages")
-            sys.exit(1)
-    logger.debug("Messages = {}".format(messages_file))
+    uri = args.uri
+    if not uri:
+        logger.error("uri of the webapp not specified")
+        sys.exit(1)
 
-    source_root = get_config_value(logger, 'sourceRoot', messages_file)
+    logger.debug("Uri = {}".format(uri))
+
+    source_root = get_config_value(logger, 'sourceRoot', uri)
     if not source_root:
         logger.error("Cannot get the sourceRoot config value")
         sys.exit(1)
@@ -311,14 +306,14 @@ if __name__ == '__main__':
             # If one of the repositories fails to sync, the whole project sync
             # is treated as failed, i.e. the program will return 1.
             #
-            for repo_path in get_repos(logger, args.project, messages_file):
+            for repo_path in get_repos(logger, args.project, uri):
                 logger.debug("Repository path = {}".format(repo_path))
 
                 if repo_path in ignored_repos:
                     logger.info("repository {} ignored".format(repo_path))
                     continue
 
-                repo_type = get_repo_type(logger, repo_path, messages_file)
+                repo_type = get_repo_type(logger, repo_path, uri)
                 if not repo_type:
                     logger.error("cannot determine type of {}".
                                  format(repo_path))

@@ -24,11 +24,6 @@ package org.opensolaris.opengrok.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
-import java.nio.file.WatchService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
@@ -51,11 +46,6 @@ public final class WebappListener
         implements ServletContextListener, ServletRequestListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
-    private static final String ENABLE_AUTHORIZATION_WATCH_DOG = "enableAuthorizationWatchDog";
-    private static final String AUTHORIZATION_PLUGIN_DIRECTORY = "authorizationPluginDirectory";
-
-    private Thread thread;
-    private WatchService watcher;
 
     /**
      * {@inheritDoc}
@@ -87,27 +77,6 @@ public final class WebappListener
         env.setAuthorizationFramework(new AuthorizationFramework(env.getPluginDirectory(), env.getPluginStack()));
         env.getAuthorizationFramework().reload();
 
-        String address = context.getInitParameter("ConfigAddress");
-        if (address != null && address.length() > 0) {
-            LOGGER.log(Level.CONFIG, "Will listen for configuration on [{0}]", address);
-            String[] cfg = address.split(":");
-            if (cfg.length == 2) {
-                try {
-                    SocketAddress addr = new InetSocketAddress(InetAddress.getByName(cfg[0]), Integer.parseInt(cfg[1]));
-                    if (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(addr)) {
-                        LOGGER.log(Level.SEVERE, "Failed to start configuration listener thread");
-                    }
-                } catch (NumberFormatException | UnknownHostException ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to start configuration listener thread:", ex);
-                }
-            } else {
-                LOGGER.log(Level.SEVERE, "Incorrect format for the configuration address: ");
-                for (int i = 0; i < cfg.length; ++i) {
-                    LOGGER.log(Level.SEVERE, "[{0}]", cfg[i]);
-                }
-            }
-        }
-
         try {
             RuntimeEnvironment.getInstance().loadStatistics();
         } catch (IOException ex) {
@@ -120,7 +89,7 @@ public final class WebappListener
             RuntimeEnvironment.getInstance().startWatchDogService(new File(env.getConfiguration().getPluginDirectory()));
         }
 
-        RuntimeEnvironment.getInstance().startExpirationTimer();
+        env.startExpirationTimer();
 
         try {
             RuntimeEnvironment.getInstance().loadStatistics();
@@ -136,7 +105,6 @@ public final class WebappListener
      */
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
-        RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
         RuntimeEnvironment.getInstance().stopWatchDogService();
         RuntimeEnvironment.getInstance().stopExpirationTimer();
         try {

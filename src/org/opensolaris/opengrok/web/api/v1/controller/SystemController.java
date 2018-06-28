@@ -18,30 +18,28 @@
  */
 
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opensolaris.opengrok.web.api.v1.controller;
 
-import java.io.IOException;
-import java.util.HashSet;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
-/**
- * Message for refreshing SearcherManagers in the webapp after partial reindex.
- * The list of projects is carried in tags.
- *
- * @author Vladimir Kotal
- */
-public class RefreshMessage extends Message {
-    @Override
-    public byte[] applyMessage(RuntimeEnvironment env) throws IOException {
-        env.maybeRefreshIndexSearchers(this.getTags());
+import javax.ws.rs.Consumes;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.MediaType;
+import java.util.Collections;
 
-        return null;
+@Path("/system")
+public class SystemController {
+
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    @PUT
+    @Path("/refresh")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public void refresh(final String project) {
+        env.maybeRefreshIndexSearchers(Collections.singleton(project));
     }
 
-    @Override
-    public void validate() throws Exception {
-        super.validate();
-    }
 }

@@ -60,6 +60,8 @@ import org.opensolaris.opengrok.web.Prefix;
 import org.opensolaris.opengrok.web.SearchHelper;
 import org.opensolaris.opengrok.web.Util;
 
+import static org.opensolaris.opengrok.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
+
 /**
  * @author Chandan slightly rewritten by Lubos Kosco
  */
@@ -189,9 +191,7 @@ public final class Results {
             }
             JSONArray messages;
             if ((p = Project.getProject(parent)) != null
-                    && (messages = Util.messagesToJson(p,
-                            RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG
-                    )).size() > 0) {
+                    && (messages = Util.messagesToJson(p, MESSAGES_MAIN_PAGE_TAG)).size() > 0) {
                 out.write(" <a href=\"" + xrefPrefix + "/" + p.getName() + "\">");
                 out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
                 out.write("</a>");

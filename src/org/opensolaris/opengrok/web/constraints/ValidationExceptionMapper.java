@@ -17,30 +17,26 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.configuration.messages;
+package org.opensolaris.opengrok.web.constraints;
 
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import javax.validation.ValidationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-/**
- * @author Kryštof Tulinger
- */
-public class AbortMessage extends Message {
+@Provider
+public class ValidationExceptionMapper implements ExceptionMapper<ValidationException> {
 
     @Override
-    protected byte[] applyMessage(RuntimeEnvironment env) {
-        env.removeAnyMessage(tags);
-        return null;
-    }
-
-    @Override
-    public void validate() throws Exception {
-        if (getTags().isEmpty()) {
-            getTags().add(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG);
-        }
-        super.validate();
+    public Response toResponse(final ValidationException e) {
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(e.getMessage())
+                .type(MediaType.TEXT_PLAIN)
+                .build();
     }
 
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -61,7 +60,6 @@ import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.History;
 import org.opensolaris.opengrok.history.HistoryEntry;
@@ -71,6 +69,7 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.web.messages.MessagesContainer.AcceptedMessage;
 
 /**
  * A simple container to lazy initialize common vars wrt. a single request. It
@@ -1513,11 +1512,11 @@ public final class PageConfig {
     }
 
     
-    public SortedSet<Message> getMessages() {
+    public SortedSet<AcceptedMessage> getMessages() {
         return env.getMessages();
     }
     
-    public SortedSet<Message> getMessages(String tag) {
+    public SortedSet<AcceptedMessage> getMessages(String tag) {
         return env.getMessages(tag);
     }
 

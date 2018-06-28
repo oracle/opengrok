@@ -206,8 +206,7 @@ public class ClassUtil {
      * @return string representation of the field value
      * @throws java.io.IOException exception
      */
-    public static String invokeGetter(Object obj, String field) throws IOException {
-        String val = null;
+    public static Object invokeGetter(Object obj, String field) throws IOException {
 
         try {
             PropertyDescriptor desc = new PropertyDescriptor(field, obj.getClass());
@@ -228,7 +227,7 @@ public class ClassUtil {
                                 getter.getName(), field));
             }
             
-            val = getter.invoke(obj).toString();
+            return getter.invoke(obj);
         } catch (IntrospectionException
                 | IllegalAccessException
                 | InvocationTargetException
@@ -242,7 +241,5 @@ public class ClassUtil {
                             : ex.getCause().getLocalizedMessage()),
                     ex);
         }
-
-        return val;
     }
 }

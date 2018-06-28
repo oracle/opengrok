@@ -49,14 +49,14 @@ from commands import Commands, CommandsBase
 from readconfig import read_config
 from shutil import which
 import multiprocessing
-
+from opengrok import list_indexed_projects
 
 major_version = sys.version_info[0]
 if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.3"
+__version__ = "0.4"
 
 
 def worker(base):
@@ -99,8 +99,8 @@ if __name__ == '__main__':
                         help='config file in JSON format')
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
-    parser.add_argument('-m', '--messages',
-                        help='path to the Messages binary')
+    parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
+                        help='uri of the webapp with context path')
     args = parser.parse_args()
 
     if args.debug:
@@ -113,17 +113,12 @@ if __name__ == '__main__':
 
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
-    if args.messages:
-        messages_file = which(args.messages)
-        if not messages_file:
-            logger.error("file {} does not exist".format(args.messages))
-            sys.exit(1)
-    else:
-        messages_file = which("Messages")
-        if not messages_file:
-            logger.error("cannot determine path to Messages")
-            sys.exit(1)
-    logger.debug("Messages = {}".format(messages_file))
+    uri = args.uri
+    if not uri:
+        logger.error("uri of the webapp not specified")
+        sys.exit(1)
+
+    logger.debug("Uri = {}".format(uri))
 
     config = read_config(logger, args.config)
     if config is None:
@@ -162,12 +157,10 @@ if __name__ == '__main__':
             if args.projects:
                 dirs_to_process = args.projects
             elif args.indexed:
-                # XXX replace this with REST request after issue #1801
-                cmd = Command([messages_file, '-n', 'project',
-                               'list-indexed'])
-                cmd.execute()
-                if cmd.state is "finished":
-                    for line in cmd.getoutput():
+                indexed_projects = list_indexed_projects(logger, uri)
+
+                if indexed_projects:
+                    for line in indexed_projects:
                         dirs_to_process.append(line.strip())
                 else:
                     logger.error("cannot get list of projects")

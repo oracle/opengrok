@@ -505,7 +505,7 @@ public final class Configuration {
     }
 
     /**
-     * @see RuntimeEnvironment#getMessagesInTheSystem()
+     * @see org.opensolaris.opengrok.web.messages.MessagesContainer
      *
      * @return int the current message limit
      */
@@ -514,7 +514,7 @@ public final class Configuration {
     }
 
     /**
-     * @see RuntimeEnvironment#getMessagesInTheSystem()
+     * @see org.opensolaris.opengrok.web.messages.MessagesContainer
      *
      * @param messageLimit the limit
      * @throws IllegalArgumentException when the limit is negative

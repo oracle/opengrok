@@ -12,11 +12,6 @@
         <param-name>CONFIGURATION</param-name>
         <param-value>/var/opengrok/etc/configuration.xml</param-value>
     </context-param>
-    <context-param>
-        <description>An address where OpenGrok can receive new configuration</description>
-        <param-name>ConfigAddress</param-name>
-        <param-value>localhost:2424</param-value>
-    </context-param>
     <listener>
         <listener-class>org.opensolaris.opengrok.web.WebappListener</listener-class>
     </listener>
@@ -72,10 +67,6 @@
             <param-name>keepgenerated</param-name>
             <param-value>true</param-value>
         </init-param>
-    </servlet>
-    <servlet>
-        <servlet-name>json</servlet-name>
-        <servlet-class>org.opensolaris.opengrok.web.JSONSearchServlet</servlet-class>
     </servlet>
     <servlet>
         <display-name>Source History</display-name>
@@ -176,10 +167,6 @@
         <servlet-name>search</servlet-name>
         <url-pattern>/search</url-pattern>
         <!-- SEARCH_P -->
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>json</servlet-name>
-        <url-pattern>/json</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>opensearch</servlet-name>
