@@ -66,8 +66,8 @@ def get_repos(logger, project, uri):
     Return  string with the result on success, None on failure.
     """
 
-    r = get(logger, uri + '/api/v1/projects/'
-            + urllib.parse.quote_plus(project) + '/repositories')
+    r = get(logger, uri + '/api/v1/projects/' +
+            urllib.parse.quote_plus(project) + '/repositories')
 
     if not r:
         logger.error('could not get repositories for ' + project)
@@ -86,8 +86,8 @@ def get_config_value(logger, name, uri):
 
     Return string with the result on success, None on failure.
     """
-    r = get(logger, uri + '/api/v1/configuration/'
-            + urllib.parse.quote_plus(name))
+    r = get(logger, uri + '/api/v1/configuration/' +
+            urllib.parse.quote_plus(name))
     if not r:
         logger.error('could not get config value ' + name)
         return None
@@ -153,8 +153,8 @@ def add_project(logger, project, uri):
 
 
 def delete_project(logger, project, uri):
-    r = delete(logger, uri + '/api/v1/projects/'
-               + urllib.parse.quote_plus(project))
+    r = delete(logger, uri + '/api/v1/projects/' +
+               urllib.parse.quote_plus(project))
 
     if not r:
         logger.error('could not delete project ' + project)
