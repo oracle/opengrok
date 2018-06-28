@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -44,6 +45,8 @@ import java.util.logging.Logger;
 public class LocalhostFilter implements ContainerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalhostFilter.class);
+
+    private static final Set<String> allowedPaths = Collections.singleton("search");
 
     @Context
     private HttpServletRequest request;
@@ -64,6 +67,11 @@ public class LocalhostFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext context) {
+        String path = context.getUriInfo().getPath();
+        if (allowedPaths.contains(path)) {
+            return;
+        }
+
         if (!localAddresses.contains(request.getRemoteAddr())) {
             context.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         }
