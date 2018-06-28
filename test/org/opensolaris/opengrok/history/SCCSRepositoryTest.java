@@ -32,7 +32,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -69,11 +69,7 @@ public class SCCSRepositoryTest {
         tdir.deleteOnExit();
         test.deleteOnExit();
         SCCSRepository instance = new SCCSRepository();
-        if (shouldPass) {
-            assertTrue(instance.isRepositoryFor(tdir));
-        } else {
-            assertFalse(instance.isRepositoryFor(tdir));
-        }
+        assertEquals(shouldPass, instance.isRepositoryFor(tdir));
     }
     
     @Test
