@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.filter;
+package org.opensolaris.opengrok.web.api.v1.filter;
 
 import org.opensolaris.opengrok.logger.LoggerFactory;
 

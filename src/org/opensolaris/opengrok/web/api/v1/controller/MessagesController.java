@@ -31,11 +31,12 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -46,10 +47,12 @@ public class MessagesController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    @PUT
+    @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void addMessage(@Valid final Message message) {
+    public Response addMessage(@Valid final Message message) {
         env.addMessage(message);
+
+        return Response.status(Response.Status.CREATED).build();
     }
 
     @DELETE

@@ -56,7 +56,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.3"
+__version__ = "0.4"
 
 
 def worker(base):
@@ -99,8 +99,8 @@ if __name__ == '__main__':
                         help='config file in JSON format')
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
-    parser.add_argument('-u', '--url',
-                        help='url of the webapp with context path')
+    parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
+                        help='uri of the webapp with context path')
     args = parser.parse_args()
 
     if args.debug:
@@ -113,12 +113,12 @@ if __name__ == '__main__':
 
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
-    host = args.url
-    if not host:
-        logger.error("url of the webapp not specified")
+    uri = args.uri
+    if not uri:
+        logger.error("uri of the webapp not specified")
         sys.exit(1)
 
-    logger.debug("Host = {}".format(host))
+    logger.debug("Uri = {}".format(uri))
 
     config = read_config(logger, args.config)
     if config is None:
@@ -157,7 +157,7 @@ if __name__ == '__main__':
             if args.projects:
                 dirs_to_process = args.projects
             elif args.indexed:
-                indexed_projects = list_indexed_projects(logger, host)
+                indexed_projects = list_indexed_projects(logger, uri)
 
                 if indexed_projects:
                     for line in indexed_projects:

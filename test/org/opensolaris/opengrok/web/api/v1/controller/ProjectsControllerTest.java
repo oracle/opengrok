@@ -124,7 +124,7 @@ public class ProjectsControllerTest extends JerseyTest {
     private void addProject(final String project) {
         target("projects")
                 .request()
-                .put(Entity.text(project));
+                .post(Entity.text(project));
     }
 
     /**
@@ -331,7 +331,7 @@ public class ProjectsControllerTest extends JerseyTest {
 
     private void delete(final String project) {
         target("projects")
-                .queryParam("project", project)
+                .path(project)
                 .request()
                 .delete();
     }
@@ -381,9 +381,10 @@ public class ProjectsControllerTest extends JerseyTest {
 
     private void markIndexed(final String project) {
         target("projects")
-                .path("/indexed")
+                .path(project)
+                .path("indexed")
                 .request()
-                .put(Entity.text(project));
+                .put(Entity.text(""));
     }
 
     @Test
@@ -418,8 +419,8 @@ public class ProjectsControllerTest extends JerseyTest {
 
         // Try to get repos for non-existent project first.
         List<String> repos = target("projects")
+                .path("totally-nonexistent-project")
                 .path("repositories")
-                .queryParam("project", "totally-nonexistent-project")
                 .request()
                 .get(type);
 
@@ -435,8 +436,8 @@ public class ProjectsControllerTest extends JerseyTest {
 
         // Get repositories of the project.
         repos = target("projects")
+                .path("mercurial")
                 .path("repositories")
-                .queryParam("project", "mercurial")
                 .request()
                 .get(type);
 
@@ -452,8 +453,8 @@ public class ProjectsControllerTest extends JerseyTest {
         // multiple nested Mercurial repositories.
 
         List<String> types = target("projects")
+                .path("mercurial")
                 .path("repositories/type")
-                .queryParam("project", "mercurial")
                 .request()
                 .get(type);
 
@@ -492,8 +493,8 @@ public class ProjectsControllerTest extends JerseyTest {
         // Verify the property can be retrieved via message.
         for (String proj : projects) {
             boolean value = target("projects")
+                    .path(proj)
                     .path("property/handleRenamedFiles")
-                    .queryParam("project", proj)
                     .request()
                     .get(boolean.class);
             assertFalse(value);
@@ -502,8 +503,8 @@ public class ProjectsControllerTest extends JerseyTest {
 
     private void setHandleRenamedFilesToFalse(final String project) {
         target("projects")
+                .path(project)
                 .path("property/handleRenamedFiles")
-                .queryParam("project", project)
                 .request()
                 .put(Entity.text(Boolean.FALSE.toString()));
     }

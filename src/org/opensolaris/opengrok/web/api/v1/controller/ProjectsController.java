@@ -38,11 +38,11 @@ import org.opensolaris.opengrok.util.IOUtils;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -68,9 +68,9 @@ public class ProjectsController {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    @PUT
+    @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    public void addProject(final String projectName) {
+    public Response addProject(final String projectName) {
         File srcRoot = env.getSourceRootFile();
         File projDir = new File(srcRoot, projectName);
 
@@ -117,6 +117,8 @@ public class ProjectsController {
 
             map.put(project, repos);
         }
+
+        return Response.status(Response.Status.CREATED).build();
     }
 
     private List<RepositoryInfo> getRepositoriesInDir(final File projDir) {
@@ -130,7 +132,8 @@ public class ProjectsController {
     }
 
     @DELETE
-    public void deleteProject(@QueryParam("project") final String projectName)
+    @Path("/{project}")
+    public void deleteProject(@PathParam("project") final String projectName)
             throws IOException, HistoryException {
 
         Project proj = env.getProjects().get(projectName);
@@ -182,9 +185,9 @@ public class ProjectsController {
     }
 
     @PUT
-    @Path("indexed")
+    @Path("/{project}/indexed")
     @Consumes(MediaType.TEXT_PLAIN)
-    public void markIndexed(final String projectName) throws Exception {
+    public void markIndexed(@PathParam("project") final String projectName) throws Exception {
 
         Project project = env.getProjects().get(projectName);
         if (project != null) {
@@ -216,10 +219,10 @@ public class ProjectsController {
     }
 
     @PUT
-    @Path("property/{field}")
+    @Path("/{project}/property/{field}")
     public void set(
+            @PathParam("project") final String projectName,
             @PathParam("field") final String field,
-            @QueryParam("project") final String projectName,
             final String value
     ) throws Exception {
         Project project = env.getProjects().get(projectName);
@@ -243,9 +246,9 @@ public class ProjectsController {
     }
 
     @GET
-    @Path("property/{field}")
+    @Path("/{project}/property/{field}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object get(@PathParam("field") final String field, @QueryParam("project") final String projectName)
+    public Object get(@PathParam("project") final String projectName, @PathParam("field") final String field)
             throws IOException {
 
         Project project = env.getProjects().get(projectName);
@@ -273,9 +276,9 @@ public class ProjectsController {
     }
 
     @GET
-    @Path("repositories")
+    @Path("/{project}/repositories")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getRepositories(@QueryParam("project") final String projectName) {
+    public List<String> getRepositories(@PathParam("project") final String projectName) {
         Project project = env.getProjects().get(projectName);
         if (project != null) {
             List<RepositoryInfo> infos = env.getProjectRepositoriesMap().get(project);
@@ -290,9 +293,9 @@ public class ProjectsController {
     }
 
     @GET
-    @Path("repositories/type")
+    @Path("/{project}/repositories/type")
     @Produces(MediaType.APPLICATION_JSON)
-    public Set<String> getRepositoriesType(@QueryParam("project") final String projectName) {
+    public Set<String> getRepositoriesType(@PathParam("project") final String projectName) {
         Project project = env.getProjects().get(projectName);
         if (project != null) {
             List<RepositoryInfo> infos = env.getProjectRepositoriesMap().get(project);

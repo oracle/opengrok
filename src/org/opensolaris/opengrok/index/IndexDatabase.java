@@ -38,7 +38,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -373,9 +372,10 @@ public class IndexDatabase {
             if (env.getConfigHost() != null) {
                 Response r = ClientBuilder.newClient()
                         .target(env.getConfigHost() + "/api/v1/projects")
+                        .path(Util.URIEncode(project.getName()))
                         .path("indexed")
                         .request()
-                        .put(Entity.text(project.getName()));
+                        .put(Entity.text(""));
 
                 if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
                     System.err.println("Couldn't notify the webapp: " + r.toString());

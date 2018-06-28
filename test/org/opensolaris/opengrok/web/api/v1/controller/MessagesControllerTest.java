@@ -88,7 +88,7 @@ public class MessagesControllerTest extends JerseyTest {
 
         target("messages")
                 .request()
-                .put(Entity.json(m));
+                .post(Entity.json(m));
     }
 
     @Test
@@ -153,7 +153,7 @@ public class MessagesControllerTest extends JerseyTest {
 
         Response r = target("messages")
                 .request()
-                .put(Entity.json(m));
+                .post(Entity.json(m));
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
 
@@ -173,7 +173,7 @@ public class MessagesControllerTest extends JerseyTest {
 
         Response r = target("messages")
                 .request()
-                .put(Entity.json(m));
+                .post(Entity.json(m));
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
 

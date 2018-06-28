@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api;
+package org.opensolaris.opengrok.web.api.v1;
 
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -30,7 +30,7 @@ import javax.ws.rs.ApplicationPath;
 public class RestApp extends ResourceConfig {
 
     public RestApp() {
-        packages("org.opensolaris.opengrok.web.api.v1.controller", "org.opensolaris.opengrok.web.api.filter");
+        packages("org.opensolaris.opengrok.web.api.v1.controller", "org.opensolaris.opengrok.web.api.v1.filter");
     }
 
 }

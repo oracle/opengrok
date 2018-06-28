@@ -23,17 +23,51 @@
 
 import logging
 import requests
+import urllib.parse
+import traceback
 
 
-def get_repos(logger, project, host):
+def get(logger, uri, params=None):
+    try:
+        return requests.get(uri, params=params)
+    except Exception as e:
+        logger.debug(traceback.format_exc())
+        return None
+
+
+def delete(logger, uri, params=None):
+    try:
+        return requests.delete(uri, params=params)
+    except Exception as e:
+        logger.debug(traceback.format_exc())
+        return None
+
+
+def post(logger, uri, data=None):
+    try:
+        return requests.post(uri, data=data)
+    except Exception as e:
+        logger.debug(traceback.format_exc())
+        return None
+
+
+def put(logger, uri, data=None):
+    try:
+        return requests.put(uri, data=data)
+    except Exception as e:
+        logger.debug(traceback.format_exc())
+        return None
+
+
+def get_repos(logger, project, uri):
     """
     Get list of repositories for given project name.
 
     Return  string with the result on success, None on failure.
     """
-    payload = {'project': project}
 
-    r = requests.get(host + '/api/v1/projects/repositories', params=payload)
+    r = get(logger, uri + '/api/v1/projects/'
+            + urllib.parse.quote_plus(project) + '/repositories')
 
     if not r:
         logger.error('could not get repositories for ' + project)
@@ -46,13 +80,14 @@ def get_repos(logger, project, host):
     return ret
 
 
-def get_config_value(logger, name, host):
+def get_config_value(logger, name, uri):
     """
     Get list of repositories for given project name.
 
     Return string with the result on success, None on failure.
     """
-    r = requests.get(host + '/api/v1/configuration/' + name)
+    r = get(logger, uri + '/api/v1/configuration/'
+            + urllib.parse.quote_plus(name))
     if not r:
         logger.error('could not get config value ' + name)
         return None
@@ -60,7 +95,7 @@ def get_config_value(logger, name, host):
     return r.text
 
 
-def get_repo_type(logger, repository, host):
+def get_repo_type(logger, repository, uri):
     """
     Get repository type for given path relative to sourceRoot.
 
@@ -68,19 +103,19 @@ def get_repo_type(logger, repository, host):
     """
     payload = {'repository': repository}
 
-    r = requests.get(host + '/api/v1/repositories/type', params=payload)
+    r = get(logger, uri + '/api/v1/repositories/type', params=payload)
     if not r:
         logger.error('could not get repo type for ' + repository)
         return None
 
-    line = r.json()[0]
+    line = r.text
 
     idx = line.rfind(":")
     return line[idx + 1:]
 
 
-def get_configuration(logger, host):
-    r = requests.get(host + '/api/v1/configuration')
+def get_configuration(logger, uri):
+    r = get(logger, uri + '/api/v1/configuration')
     if not r:
         logger.error('could not get configuration')
         return None
@@ -88,8 +123,8 @@ def get_configuration(logger, host):
     return r.text
 
 
-def set_configuration(logger, configuration, host):
-    r = requests.put(host + '/api/v1/configuration', data=configuration)
+def set_configuration(logger, configuration, uri):
+    r = put(logger, uri + '/api/v1/configuration', data=configuration)
 
     if not r:
         logger.error('could not set configuration')
@@ -98,8 +133,8 @@ def set_configuration(logger, configuration, host):
     return True
 
 
-def list_indexed_projects(logger, host):
-    r = requests.get(host + '/api/v1/projects/indexed')
+def list_indexed_projects(logger, uri):
+    r = get(logger, uri + '/api/v1/projects/indexed')
     if not r:
         logger.error('could not list indexed projects')
         return None
@@ -107,8 +142,8 @@ def list_indexed_projects(logger, host):
     return r.json()
 
 
-def add_project(logger, project, host):
-    r = requests.put(host + '/api/v1/projects', data=project)
+def add_project(logger, project, uri):
+    r = post(logger, uri + '/api/v1/projects', data=project)
 
     if not r:
         logger.error('could not add project ' + project)
@@ -117,10 +152,9 @@ def add_project(logger, project, host):
     return True
 
 
-def delete_project(logger, project, host):
-    payload = {'project': project}
-
-    r = requests.delete(host + '/api/v1/projects', params=payload)
+def delete_project(logger, project, uri):
+    r = delete(logger, uri + '/api/v1/projects/'
+               + urllib.parse.quote_plus(project))
 
     if not r:
         logger.error('could not delete project ' + project)

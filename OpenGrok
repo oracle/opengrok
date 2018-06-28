@@ -376,7 +376,7 @@ DefaultInstanceConfiguration()
 	    WEBAPP_CONFIG_ADDRESS=""
 	fi
     else
-        WEBAPP_CONFIG_ADDRESS="localhost:2424"
+        WEBAPP_CONFIG_ADDRESS="http://localhost:8080/source"
     fi
 
     if [ -n "${WEBAPP_CONFIG_ADDRESS}" ]; then
