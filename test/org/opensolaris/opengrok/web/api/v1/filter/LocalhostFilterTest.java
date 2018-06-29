@@ -86,7 +86,11 @@ public class LocalhostFilterTest {
 
     @Test
     public void localhostTest() throws Exception {
-        LocalhostFilter filter = mockWithRemoteAddress("127.0.0.1");
+        assertFilterDoesNotBlockAddress("127.0.0.1");
+    }
+
+    private void assertFilterDoesNotBlockAddress(final String remoteAddr) throws Exception {
+        LocalhostFilter filter = mockWithRemoteAddress(remoteAddr);
 
         ContainerRequestContext context = mockContainerRequestContext("test");
 
@@ -95,6 +99,11 @@ public class LocalhostFilterTest {
         filter.filter(context);
 
         verify(context, never()).abortWith(captor.capture());
+    }
+
+    @Test
+    public void localhostIPv6Test() throws Exception {
+        assertFilterDoesNotBlockAddress("0:0:0:0:0:0:0:1");
     }
 
     @Test

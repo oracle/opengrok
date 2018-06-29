@@ -237,4 +237,17 @@ public class MessagesControllerTest extends JerseyTest {
         assertEquals(1, allMessages.size());
     }
 
+    @Test
+    public void multipleMessageAndTagsTest() {
+        addMessage("test1", "tag1", "tag2");
+        addMessage("test2", "tag3", "tag4");
+
+        List<AcceptedMessageModel> allMessages = target("messages")
+                .queryParam("tag", "tag3")
+                .request()
+                .get(messagesType);
+
+        assertEquals(1, allMessages.size());
+    }
+
 }
