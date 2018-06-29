@@ -150,6 +150,7 @@ public class IndexDatabase {
     // Directory where we store indexes
     public static final String INDEX_DIR = "index";
     public static final String XREF_DIR = "xref";
+    public static final String SUGGESTER_DIR = "suggester";
 
     /**
      * Create a new instance of the Index Database. Use this constructor if you

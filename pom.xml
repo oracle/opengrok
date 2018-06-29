@@ -57,6 +57,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
         <module>opengrok-indexer</module>
         <module>opengrok-web</module>
         <module>distribution</module>
+        <module>suggester</module>
     </modules>
 
     <properties>

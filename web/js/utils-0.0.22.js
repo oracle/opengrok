@@ -1716,32 +1716,156 @@ function pageReadyMast() {
 }
 
 function domReadyMenu() {
-    var sbox = document.getElementById('sbox');
-/*
-    $("#project").autocomplete(projects, {
-        minChars: 0,
-        multiple: true,
-        multipleSeparator: ",",
-        //mustMatch: true,
-        matchContains: "word",
-        max: 200,
-        cacheLength:20,
-        //autoFill: false,
-        formatItem: function(row, i, max) {
-                return (row != null) ? i + "/" + max + ": " + row[0] : "";
-            },
-        formatMatch: function(row, i, max) {
-                return (row != null) ? row[0] : "";
-            },
-        formatResult: function(row) {
-                return (row != null) ? row[0] : "";
-            },
-        width: "300px"
+    initAutocomplete();
+}
+
+function initAutocomplete() {
+    initAutocompleteForField("q", "full");
+    initAutocompleteForField("defs", "defs");
+    initAutocompleteForField("refs", "refs");
+    initAutocompleteForField("path", "path");
+    initAutocompleteForField("hist", "hist");
+}
+
+function initAutocompleteForField(inputId, field) {
+    var text;
+    var identifier;
+    var time;
+
+    var input = $("#" + inputId);
+
+    input.autocomplete({
+        source: function(request, response) {
+
+            var caretPos = $('#' + inputId).caret();
+            if (!Number.isInteger(caretPos)) {
+                console.error("Suggest: could not get caret position");
+                return;
+            }
+
+            $.ajax({
+                url: window.contextPath + "/suggest",
+                dataType: "json",
+                data: {
+                    projects: getSelectedProjectNames(),
+                    field: field,
+                    full: $('#q').val(),
+                    defs: $('#defs').val(),
+                    refs: $('#refs').val(),
+                    path: $('#path').val(),
+                    hist: $('#hist').val(),
+                    type: $('#type').val(),
+                    caret: caretPos
+                },
+                success: function(data) {
+                    input.removeClass('autocomplete-error');
+                    //input.addClass('autocomplete-success');
+
+                    text = data.queryText;
+                    identifier = data.identifier;
+                    time = data.time;
+
+                    response(data.suggestions);
+                },
+                error: function(jqXHR, text, error) {
+                    input.autocomplete("close");
+                    response(undefined); // to remove loading indicator
+
+                    //input.removeClass('autocomplete-success');
+                    input.addClass('autocomplete-error');
+                }
+            });
+        },
+        create: function () {
+            $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
+                var listItem = getSuggestionListItem(item);
+
+                return listItem.appendTo(ul);
+            };
+
+            $(this).data('ui-autocomplete')._renderMenu = function (ul, items) {
+                var _this = this;
+                $.each(items, function(index, item) {
+                    _this._renderItemData(ul, item);
+                });
+
+                $("<li>", {
+                    class: "ui-state-disabled",
+                    text: time + 'ms'
+                }).appendTo(ul);
+            };
+        },
+        focus: function (event, ui) {
+            var pos = text.indexOf(identifier);
+            input.val(text.replace(identifier, ui.item.phrase));
+            input.caret(pos + ui.item.phrase.length);
+
+            event.preventDefault(); // to prevent the movement of the caret to the end
+        },
+        select: function (event, ui) {
+            var pos = text.indexOf(identifier);
+            input.val(text.replace(identifier, ui.item.phrase));
+            input.caret(pos + ui.item.phrase.length);
+
+            event.preventDefault(); // to prevent the movement of the caret to the end
+        },
+        response: function (event, ui) {
+            if (!ui.content) {
+                // error occurred
+                return;
+            }
+            if (ui.content.length === 0) {
+                var noMatchesFoundResult = {phrase: 'No matches found', selectable: false};
+                ui.content.push(noMatchesFoundResult);
+            }
+        }
+    }).click(function() {
+        $(this).autocomplete('search', $(this).val());
+    }).keyup(function(e) {
+        if (e.keyCode === 37 || e.keyCode === 39) { // left or right arrow key
+            $(this).autocomplete('search', $(this).val());
+        }
     });
-*/
-    // TODO  Bug 11749
-    // var p = document.getElementById('project');
-    // p.setAttribute("autocomplete", "off");
+}
+
+function getSuggestionListItem(itemData) {
+    if (itemData.selectable === false) {
+        return $("<li>", {
+            class: "ui-state-disabled",
+            text: itemData.phrase
+        });
+    }
+
+    var listItem = $("<li>", {
+        class: "ui-menu-item",
+        style: "display: block;"
+    });
+    var listItemChild = $("<div>", {
+        class: "ui-menu-item-wrapper",
+        style: "height: 20px; padding: 0;",
+        tabindex: "-1"
+    });
+
+    listItemChild.appendTo(listItem);
+
+    $("<span>", {
+        text: itemData.phrase,
+        style: "float: left; padding-left: 5px;"
+    }).appendTo(listItemChild);
+
+    var projectInfoText = "";
+    if (itemData.suggesters.length > 1) {
+        projectInfoText = 'Found in ' + itemData.suggesters.length + ' projects';
+    } else {
+        projectInfoText = itemData.suggesters[0];
+    }
+
+    $("<span>", {
+        text: projectInfoText + ' ' + itemData.weight,
+        style: "float: right; color: #999999; font-style: italic; padding-right: 5px;"
+    }).appendTo(listItemChild);
+
+    return listItem;
 }
 
 function domReadyHistory() {
@@ -1931,6 +2055,12 @@ function clearSearchFrom() {
         $(this).val("");
     });
     $("#type :selected").prop("selected", false);
+}
+
+function getSelectedProjectNames() {
+    return $.map($("#project").searchableOptionList().getSelection(), function (item) {
+        return $(item).attr("value");
+    });
 }
 
 /**
