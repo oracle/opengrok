@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,7 +52,9 @@ public class LocalhostFilter implements ContainerRequestFilter {
     @Context
     private HttpServletRequest request;
 
-    private final Set<String> localAddresses = new HashSet<>();
+    private final Set<String> localAddresses = new HashSet<>(Arrays.asList(
+            "127.0.0.1", "0:0:0:0:0:0:0:1", "localhost"
+    ));
 
     @PostConstruct
     public void init() {
