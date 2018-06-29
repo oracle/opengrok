@@ -132,7 +132,7 @@ The `history` project is marked as disabled. This means that the `mirror.py` scr
 
 ## Batch mode
 
-In batch mode, messages will be logged to a log file under the `logdir` directory specified in the configuration and rotated for each run, up to default count (8) or count specified using the `--backupcount` option.
+In batch mode, log messages will be written to a log file under the `logdir` directory specified in the configuration and rotated for each run, up to default count (8) or count specified using the `--backupcount` option.
 
 ## Hooks
 
