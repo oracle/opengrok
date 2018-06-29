@@ -193,10 +193,8 @@ otherwise (if `SRC_ROOT` is in different directory) run:
 
 The above command attempts to upload the latest index status reflected into
 `configuration.xml` to a running source web application.
-Once above command finishes without errors
-(e.g. `SEVERE: Failed to send configuration to localhost:2424`),
-you should be able to enjoy your OpenGrok and search your sources using
-latest indexes and setup.
+Once above command finishes without errors you should be able to enjoy your
+OpenGrok and search your sources using latest indexes and setup.
 
 It is assumed that any SCM commands are reachable in one of the components
 of the PATH environment variable (e.g. `git` command for Git repositories).
