@@ -131,7 +131,7 @@ Supported Environment Variables for configuring the default setup:
   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
   - OPENGROK_SCAN_DEPTH         How deep should scanning for repos go
                                   (by default 3 directories from SRC_ROOT)
-  - OPENGROK_WEBAPP_CFGADDR     Web app address to send configuration to
+  - OPENGROK_WEBAPP_CFGADDR     Web application URI to send configuration to
                                   (use "none" to avoid sending it to web app)
   - OPENGROK_WEBAPP_CONTEXT     Context URL of the OpenGrok webapp
                                   (by default /source).
@@ -368,7 +368,6 @@ DefaultInstanceConfiguration()
     #SKIN='--style default'
 
     # OPTIONAL: Configuration Address (host:port)
-    #           (conf/web.xml default is localhost:2424)
     WEBAPP_CONFIG=""
     if [ -n "${OPENGROK_WEBAPP_CFGADDR}" ]; then
         WEBAPP_CONFIG_ADDRESS=${OPENGROK_WEBAPP_CFGADDR}
@@ -1012,11 +1011,11 @@ DeployWar()
         FatalError "Web Application Installation FAILED"
     fi
 
-    # If user does not use default OPENGROK_INSTANCE_BASE or default
-    # WEBAPP_CONFIG_ADDRESS, then attempt to extract WEB-INF/web.xml from
-    # source.war using jar or zip utility, update the hardcoded values and
-    # then update source.war with the new WEB-INF/web.xml
-    if [ "${OPENGROK_INSTANCE_BASE}" != '/var/opengrok' ] || [ "${WEBAPP_CONFIG_ADDRESS}" != 'localhost:2424' ]
+    # If user does not use default OPENGROK_INSTANCE_BASE then attempt to
+    # extract WEB-INF/web.xml from source.war using jar or zip utility, update
+    # the hardcoded values and then update source.war with the new
+    # WEB-INF/web.xml.
+    if [ "${OPENGROK_INSTANCE_BASE}" != '/var/opengrok' ]
     then
         EXTRACT_COMMAND=""
         COMPRESS_COMMAND=""
@@ -1037,14 +1036,6 @@ DeployWar()
             if [ "${OPENGROK_INSTANCE_BASE}" != '/var/opengrok' ]
             then
                 sed -e 's:/var/opengrok/etc/configuration.xml:'"$XML_CONFIGURATION"':g' \
-		    "${warTarget}/WEB-INF/web.xml" \
-		    > "${warTarget}/WEB-INF/web.xml.tmp"
-		mv "${warTarget}/WEB-INF/web.xml.tmp" \
-		    "${warTarget}/WEB-INF/web.xml"
-            fi
-            if [ "${WEBAPP_CONFIG_ADDRESS}" != 'localhost:2424' ]
-            then
-                sed -e 's/localhost:2424/'"$WEBAPP_CONFIG_ADDRESS"'/g' \
 		    "${warTarget}/WEB-INF/web.xml" \
 		    > "${warTarget}/WEB-INF/web.xml.tmp"
 		mv "${warTarget}/WEB-INF/web.xml.tmp" \
