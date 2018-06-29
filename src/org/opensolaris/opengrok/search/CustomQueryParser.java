@@ -31,14 +31,14 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 /**
  * A custom query parser for OpenGrok.
  */
-class CustomQueryParser extends QueryParser {
+public class CustomQueryParser extends QueryParser {
 
     /**
      * Create a query parser customized for OpenGrok.
      *
      * @param field default field for unqualified query terms
      */
-    CustomQueryParser(String field) {
+    public CustomQueryParser(String field) {
         super(field, new CompatibleAnalyser());
         setDefaultOperator(AND_OPERATOR);
         setAllowLeadingWildcard(

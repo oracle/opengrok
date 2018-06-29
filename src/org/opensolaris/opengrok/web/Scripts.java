@@ -129,6 +129,7 @@ public class Scripts implements Iterable<Scripts.Script> {
         SCRIPTS.put("utils", new FileScript("js/utils-0.0.22.js", 15));
         SCRIPTS.put("repos", new FileScript("js/repos-0.0.1.js", 20));
         SCRIPTS.put("diff", new FileScript("js/diff-0.0.3.js", 20));
+        SCRIPTS.put("jquery-caret", new FileScript("js/jquery.caret-1.5.2.min.js", 25));
     }
 
     /**

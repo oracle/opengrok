@@ -291,6 +291,8 @@ public final class Configuration {
      */
     private boolean listDirsFirst = true;
 
+    private SuggesterConfig suggester = SuggesterConfig.getDefault();
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -1351,6 +1353,14 @@ public final class Configuration {
 
     public void setProjectsEnabled(boolean flag) {
         this.projectsEnabled = flag;
+    }
+
+    public SuggesterConfig getSuggester() {
+        return suggester;
+    }
+
+    public void setSuggester(SuggesterConfig suggester) {
+        this.suggester = suggester;
     }
 
     /**
