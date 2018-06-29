@@ -50,3 +50,4 @@ pmd.bat
 *.iml
 .idea
 *.pyc
+.wercker
