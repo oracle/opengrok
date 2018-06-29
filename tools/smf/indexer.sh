@@ -2,7 +2,7 @@
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
-# Common Development and Distribution License (the "License").  
+# Common Development and Distribution License (the "License").
 # You may not use this file except in compliance with the License.
 #
 # See LICENSE.txt included in this distribution for the specific
@@ -34,7 +34,7 @@ send_report()
    if [ -n "${ADMINISTRATOR}" ]
    then
       mailx -s "{OpenGrok update failed" ${ADMINISTRATOR} < ${output}
-   fi   
+   fi
 }
 
 PROGDIR=${ROOT}/bin
@@ -47,7 +47,7 @@ do
 
    # update source code
    rm -f ${output}
-   ./smf/update_source.sh > ${output} 2>&1
+   ${PROGDIR}/sync.py -c ${SYNC_CONF} -d ${SRC_ROOT} > ${output} 2>&1
    if [ $? -ne 0 ]
    then
       send_report
@@ -92,7 +92,7 @@ do
 
             done
          fi
-  
+
          # update running configuration
          if [ "${stage}" = 1 ]
          then
