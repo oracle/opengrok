@@ -13,15 +13,12 @@ import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Matches;
-import org.apache.lucene.search.MatchesIterator;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.SuggesterQuery;
-import org.opengrok.suggest.query.customized.MyPhraseQuery;
+import org.opengrok.suggest.query.customized.CustomPhraseQuery;
 
 import java.io.IOException;
 import java.util.BitSet;
@@ -227,7 +224,7 @@ class SuggesterSearcher extends IndexSearcher {
                     MatchesIterator it = m.getMatches("full");
                     if (it != null) {
                         while (it.next()) {
-                            set.set(it.startPosition() + ((MyPhraseQuery) query).offset);
+                            set.set(it.startPosition() + ((CustomPhraseQuery) query).offset);
                         }
                     }
                     map.put(docBase + docId, set);
@@ -268,7 +265,7 @@ class SuggesterSearcher extends IndexSearcher {
     }
 
     private boolean needPositionsAndFrequencies(Query query) {
-        if (query instanceof MyPhraseQuery) {
+        if (query instanceof CustomPhraseQuery) {
             return true;
         }
 

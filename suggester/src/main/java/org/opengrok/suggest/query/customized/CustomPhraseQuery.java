@@ -30,23 +30,23 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 
-public class MyPhraseQuery extends PhraseQuery {
+public class CustomPhraseQuery extends PhraseQuery {
 
     public int offset;
 
-    public MyPhraseQuery(int slop, String field, String... terms) {
+    public CustomPhraseQuery(int slop, String field, String... terms) {
         super(slop, field, terms);
     }
 
-    public MyPhraseQuery(String field, String... terms) {
+    public CustomPhraseQuery(String field, String... terms) {
         super(field, terms);
     }
 
-    public MyPhraseQuery(int slop, String field, BytesRef... terms) {
+    public CustomPhraseQuery(int slop, String field, BytesRef... terms) {
         super(slop, field, terms);
     }
 
-    public MyPhraseQuery(String field, BytesRef... terms) {
+    public CustomPhraseQuery(String field, BytesRef... terms) {
         super(field, terms);
     }
 
@@ -69,7 +69,7 @@ public class MyPhraseQuery extends PhraseQuery {
         if (!super.equals(o)) {
             return false;
         }
-        MyPhraseQuery that = (MyPhraseQuery) o;
+        CustomPhraseQuery that = (CustomPhraseQuery) o;
         return offset == that.offset;
     }
 
@@ -85,11 +85,11 @@ public class MyPhraseQuery extends PhraseQuery {
 
     private static class MyPhraseWeight extends Weight {
 
-        private MyPhraseQuery query;
+        private CustomPhraseQuery query;
 
         private TermContext[] states;
 
-        MyPhraseWeight(IndexSearcher searcher, MyPhraseQuery query) throws IOException {
+        MyPhraseWeight(IndexSearcher searcher, CustomPhraseQuery query) throws IOException {
             super(query);
             this.query = query;
 
@@ -116,7 +116,7 @@ public class MyPhraseQuery extends PhraseQuery {
         public Scorer scorer(LeafReaderContext context) throws IOException {
             LeafReader reader = context.reader();
 
-            MyPhraseQuery.PostingsAndFreq[] postingsFreqs = new MyPhraseQuery.PostingsAndFreq[query.getTerms().length];
+            CustomPhraseQuery.PostingsAndFreq[] postingsFreqs = new CustomPhraseQuery.PostingsAndFreq[query.getTerms().length];
 
             String field = query.getTerms()[0].field();
             Terms fieldTerms = reader.terms(field);
@@ -125,7 +125,7 @@ public class MyPhraseQuery extends PhraseQuery {
                 return null;
             } else if (!fieldTerms.hasPositions()) {
                 throw new IllegalStateException("field \"" +field +
-                        "\" was indexed without position data; cannot run MyPhraseQuery (phrase=" + this.getQuery() + ")");
+                        "\" was indexed without position data; cannot run CustomPhraseQuery (phrase=" + this.getQuery() + ")");
             } else {
                 TermsEnum te = fieldTerms.iterator();
 
@@ -138,15 +138,15 @@ public class MyPhraseQuery extends PhraseQuery {
 
                     te.seekExact(t.bytes(), state);
                     PostingsEnum postingsEnum = te.postings(null, 24);
-                    postingsFreqs[i] = new MyPhraseQuery.PostingsAndFreq(postingsEnum, query.getPositions()[i], t);
+                    postingsFreqs[i] = new CustomPhraseQuery.PostingsAndFreq(postingsEnum, query.getPositions()[i], t);
                 }
 
                 if (query.getSlop() == 0) {
                     ArrayUtil.timSort(postingsFreqs);
 
-                    return new MyExactPhraseScorer(this, postingsFreqs, query.offset);
+                    return new CustomExactPhraseScorer(this, postingsFreqs, query.offset);
                 } else {
-                    return new MySloppyPhraseScorer(this, postingsFreqs, query.getSlop(), query.offset);
+                    return new CustomSloppyPhraseScorer(this, postingsFreqs, query.getSlop(), query.offset);
                 }
             }
         }

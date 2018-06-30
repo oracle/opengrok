@@ -3,7 +3,7 @@ package org.opengrok.suggest.query;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.opengrok.suggest.query.customized.MyPhraseQuery;
+import org.opengrok.suggest.query.customized.CustomPhraseQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ public class SuggesterPhraseQuery extends Query {
         START, MIDDLE, END
     }
 
-    private MyPhraseQuery phraseQuery;
+    private CustomPhraseQuery phraseQuery;
 
     private SuggesterQuery suggesterQuery;
 
@@ -49,14 +49,14 @@ public class SuggesterPhraseQuery extends Query {
         SuggestPosition p = getPosition(pos, tokens.size());
 
         if (p == SuggestPosition.START) {
-            phraseQuery = new MyPhraseQuery(slop, field, tokens.stream().filter(t -> !t.contains(identifier)).toArray(String[]::new));
+            phraseQuery = new CustomPhraseQuery(slop, field, tokens.stream().filter(t -> !t.contains(identifier)).toArray(String[]::new));
             phraseQuery.offset = -1;
         } else if (p == SuggestPosition.MIDDLE) {
             // TODO: repair!
-            //phraseQuery = new MyPhraseQuery(slop, terms.toArray(new Term[0]), positions.stream().mapToInt(in -> in).toArray());
+            //phraseQuery = new CustomPhraseQuery(slop, terms.toArray(new Term[0]), positions.stream().mapToInt(in -> in).toArray());
             phraseQuery.offset = pos;
         } else {
-            phraseQuery = new MyPhraseQuery(slop, field, tokens.stream().filter(t -> !t.contains(identifier)).toArray(String[]::new));
+            phraseQuery = new CustomPhraseQuery(slop, field, tokens.stream().filter(t -> !t.contains(identifier)).toArray(String[]::new));
             phraseQuery.offset = tokens.size() - 1;
         }
 
@@ -67,7 +67,7 @@ public class SuggesterPhraseQuery extends Query {
          return suggesterQuery;
     }
 
-    public MyPhraseQuery getPhraseQuery() {
+    public CustomPhraseQuery getPhraseQuery() {
         return phraseQuery;
     }
 
