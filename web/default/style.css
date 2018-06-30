@@ -1299,3 +1299,9 @@ td#typeLabelTd {
 [data-markdown] .markdown-content {
     display: none;
 }
+
+/** --------------- autocomplete ---------------- */
+
+.ui-autocomplete-loading {
+    background:url('img/indicator.gif') no-repeat right center;
+}

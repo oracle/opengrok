@@ -59,35 +59,31 @@ public final class SuggesterController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Result getSuggestions(@Valid @BeanParam final SuggesterQueryData data) throws ParseException {
-        try {
-            Instant start = Instant.now();
+        Instant start = Instant.now();
 
-            SuggesterData suggesterData = SuggesterQueryDataParser.parse(data);
+        SuggesterData suggesterData = SuggesterQueryDataParser.parse(data);
 
-            Configuration mainConfig = env.getConfiguration();
-            if (mainConfig == null) {
-                throw new IllegalStateException("No configuration specified");
-            }
-
-            SuggesterConfig config = mainConfig.getSuggester();
-
-            modifyDataBasedOnConfiguration(suggesterData, config);
-
-            if (!satisfiesConfiguration(suggesterData, config)) {
-                logger.log(Level.FINER, "Suggester request with data {0} does not satisfy configuration settings", data);
-            }
-
-            List<LookupResultItem> suggestedItems = suggester.getSuggestions(
-                    suggesterData.getProjects(), suggesterData.getSuggesterQuery(), suggesterData.getQuery());
-
-            Instant end = Instant.now();
-
-            long timeInMs = Duration.between(start, end).toMillis();
-
-            return new Result(suggestedItems, suggesterData.getIdentifier(), suggesterData.getSuggesterQueryFieldText(), timeInMs);
-        } catch (Exception e) {
-            throw new ParseException();
+        Configuration mainConfig = env.getConfiguration();
+        if (mainConfig == null) {
+            throw new IllegalStateException("No configuration specified");
         }
+
+        SuggesterConfig config = mainConfig.getSuggester();
+
+        modifyDataBasedOnConfiguration(suggesterData, config);
+
+        if (!satisfiesConfiguration(suggesterData, config)) {
+            logger.log(Level.FINER, "Suggester request with data {0} does not satisfy configuration settings", data);
+        }
+
+        List<LookupResultItem> suggestedItems = suggester.getSuggestions(
+                suggesterData.getProjects(), suggesterData.getSuggesterQuery(), suggesterData.getQuery());
+
+        Instant end = Instant.now();
+
+        long timeInMs = Duration.between(start, end).toMillis();
+
+        return new Result(suggestedItems, suggesterData.getIdentifier(), suggesterData.getSuggesterQueryFieldText(), timeInMs);
     }
 
     private void modifyDataBasedOnConfiguration(final SuggesterData data, final SuggesterConfig config) {

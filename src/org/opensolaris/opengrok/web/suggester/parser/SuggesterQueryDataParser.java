@@ -40,7 +40,14 @@ public class SuggesterQueryDataParser {
                 .setHist(fieldQueries.get(QueryBuilder.HIST))
                 .setType(fieldQueries.get(QueryBuilder.TYPE));
 
-        Query query = builder.build();
+        Query query;
+        try {
+            query = builder.build();
+        } catch (ParseException e) {
+            // remove identifier from the message
+            // the position might be still wrong if the parse error was at the end of the identifier
+            throw new ParseException(e.getMessage().replaceAll(queryData.identifier, ""));
+        }
 
         SuggesterQuery suggesterQuery = builder.getSuggesterQuery();
 
