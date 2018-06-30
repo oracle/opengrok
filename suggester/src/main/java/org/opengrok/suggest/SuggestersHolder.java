@@ -23,21 +23,12 @@
 package org.opengrok.suggest;
 
 import net.openhft.chronicle.map.ChronicleMap;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.LeafCollector;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
 import org.opengrok.suggest.query.SuggesterQuery;
 
@@ -231,17 +222,15 @@ public final class SuggestersHolder {
         return SuggesterUtils.combineResults(results, DEFAULT_RESULT_SIZE);
     }
 
-    public void onSearch(Set<String> projects, Query query) {
-
-        SuggesterUtils.SimpleQueriesHolder simpleQueries = SuggesterUtils.intoSimpleQueries(query);
+    public void onSearch(Iterable<String> projects, Query query) {
+        List<Term> terms = SuggesterUtils.intoTerms(query);
 
         for (String project : projects) {
 
-            for (TermQuery tq : simpleQueries.termQueries) {
+            for (Term t : terms) {
+                ChronicleMap<String, Integer> m = map.get(project).map2.get(t.field());
 
-                ChronicleMap<String, Integer> m = map.get(project).map2.get(tq.getTerm().field());
-
-                m.merge(tq.getTerm().text(), 1, (a, b) -> a + b);
+                m.merge(t.text(), 1, (a, b) -> a + b);
             }
         }
     }

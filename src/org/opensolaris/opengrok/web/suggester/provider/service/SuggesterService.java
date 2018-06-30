@@ -25,4 +25,6 @@ public interface SuggesterService {
 
     void delete();
 
+    void onSearch(Iterable<String> projects, Query q);
+
 }

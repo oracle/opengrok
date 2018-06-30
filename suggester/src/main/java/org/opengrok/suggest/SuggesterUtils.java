@@ -10,6 +10,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,10 +70,8 @@ public class SuggesterUtils {
     }
 
 
-    public static SimpleQueriesHolder intoSimpleQueries(Query query) {
-        List<TermQuery> termQueries = new LinkedList<>();
-        List<PhraseQuery> phraseQueries = new LinkedList<>();
-
+    public static List<Term> intoTerms(Query query) {
+        List<Term> terms = new LinkedList<>();
 
         LinkedList<Query> queue = new LinkedList<>();
         queue.add(query);
@@ -85,25 +84,13 @@ public class SuggesterUtils {
                     queue.add(bc.getQuery());
                 }
             } else if (q instanceof TermQuery) {
-                termQueries.add((TermQuery) q);
+                terms.add(((TermQuery) q).getTerm());
             } else if (q instanceof PhraseQuery) {
-                phraseQueries.add((PhraseQuery) q);
+                terms.addAll(Arrays.asList(((PhraseQuery) q).getTerms()));
             }
         }
 
-        return new SimpleQueriesHolder(termQueries, phraseQueries);
-    }
-
-    public static class SimpleQueriesHolder {
-
-        public List<TermQuery> termQueries = new LinkedList<>();
-        public List<PhraseQuery> phraseQueries = new LinkedList<>();
-
-
-        public SimpleQueriesHolder(List<TermQuery> termQueries, List<PhraseQuery> phraseQueries) {
-            this.termQueries = termQueries;
-            this.phraseQueries = phraseQueries;
-        }
+        return terms;
     }
 
 }

@@ -22,8 +22,10 @@
  */
 package org.opensolaris.opengrok.web.api.v1.controller;
 
+import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.SearchEngine;
+import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
@@ -67,6 +69,8 @@ public class SearchController {
             if (!engine.isValid()) {
                 throw new WebApplicationException("Invalid request", Response.Status.BAD_REQUEST);
             }
+
+            SuggesterServiceImpl.getInstance().onSearch(projects, engine.getQuery());
 
             Instant startTime = Instant.now();
 
@@ -134,6 +138,10 @@ public class SearchController {
 
         private boolean isValid() {
             return engine.isValidQuery();
+        }
+
+        private Query getQuery() {
+            return engine.getQueryObject();
         }
 
         @Override
