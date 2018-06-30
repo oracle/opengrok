@@ -1,8 +1,19 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by Fernflower decompiler)
-//
-
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.opengrok.suggest.query.customized;
 
 import org.apache.lucene.index.IndexReader;
@@ -30,32 +41,108 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 
-public class CustomPhraseQuery extends PhraseQuery {
+public class CustomPhraseQuery extends Query {
 
     public int offset;
 
-    public CustomPhraseQuery(int slop, String field, String... terms) {
-        super(slop, field, terms);
-    }
+    private final int slop;
+    private final String field;
+    private final Term[] terms;
+    private final int[] positions;
 
-    public CustomPhraseQuery(String field, String... terms) {
-        super(field, terms);
-    }
-
-    public CustomPhraseQuery(int slop, String field, BytesRef... terms) {
-        super(slop, field, terms);
-    }
-
-    public CustomPhraseQuery(String field, BytesRef... terms) {
-        super(field, terms);
-    }
-
-    public Query rewrite(IndexReader reader) {
-        if (getTerms().length == 0) {
-            return new MatchAllDocsQuery();
+    public CustomPhraseQuery(int slop, Term[] terms, int[] positions) {
+        if (terms.length != positions.length) {
+            throw new IllegalArgumentException("Must have as many terms as positions");
         }
+        if (slop < 0) {
+            throw new IllegalArgumentException("Slop must be >= 0, got " + slop);
+        }
+        for (int i = 1; i < terms.length; ++i) {
+            if (terms[i-1].field().equals(terms[i].field()) == false) {
+                throw new IllegalArgumentException("All terms should have the same field");
+            }
+        }
+        for (int position : positions) {
+            if (position < 0) {
+                throw new IllegalArgumentException("Positions must be >= 0, got " + position);
+            }
+        }
+        for (int i = 1; i < positions.length; ++i) {
+            if (positions[i] < positions[i - 1]) {
+                throw new IllegalArgumentException("Positions should not go backwards, got "
+                        + positions[i-1] + " before " + positions[i]);
+            }
+        }
+        this.slop = slop;
+        this.terms = terms;
+        this.positions = positions;
+        this.field = terms.length == 0 ? null : terms[0].field();
+    }
 
-        return this;
+    private static int[] incrementalPositions(int length) {
+        int[] positions = new int[length];
+        for (int i = 0; i < length; ++i) {
+            positions[i] = i;
+        }
+        return positions;
+    }
+
+    private static Term[] toTerms(String field, String... termStrings) {
+        Term[] terms = new Term[termStrings.length];
+        for (int i = 0; i < terms.length; ++i) {
+            terms[i] = new Term(field, termStrings[i]);
+        }
+        return terms;
+    }
+
+    private static Term[] toTerms(String field, BytesRef... termBytes) {
+        Term[] terms = new Term[termBytes.length];
+        for (int i = 0; i < terms.length; ++i) {
+            terms[i] = new Term(field, termBytes[i]);
+        }
+        return terms;
+    }
+
+    /**
+     * Create a phrase query which will match documents that contain the given
+     * list of terms at consecutive positions in {@code field}, and at a
+     * maximum edit distance of {@code slop}. For more complicated use-cases,
+     * use {@link PhraseQuery.Builder}.
+     * @see #getSlop()
+     */
+    public CustomPhraseQuery(int slop, String field, String... terms) {
+        this(slop, toTerms(field, terms), incrementalPositions(terms.length));
+    }
+
+    /**
+     * Create a phrase query which will match documents that contain the given
+     * list of terms at consecutive positions in {@code field}.
+     */
+    public CustomPhraseQuery(String field, String... terms) {
+        this(0, field, terms);
+    }
+
+    /**
+     * Create a phrase query which will match documents that contain the given
+     * list of terms at consecutive positions in {@code field}, and at a
+     * maximum edit distance of {@code slop}. For more complicated use-cases,
+     * use {@link PhraseQuery.Builder}.
+     * @see #getSlop()
+     */
+    public CustomPhraseQuery(int slop, String field, BytesRef... terms) {
+        this(slop, toTerms(field, terms), incrementalPositions(terms.length));
+    }
+
+    /**
+     * Create a phrase query which will match documents that contain the given
+     * list of terms at consecutive positions in {@code field}.
+     */
+    public CustomPhraseQuery(String field, BytesRef... terms) {
+        this(0, field, terms);
+    }
+
+    public int getSlop() {
+        return slop;
     }
 
     @Override
@@ -66,16 +153,77 @@ public class CustomPhraseQuery extends PhraseQuery {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
         CustomPhraseQuery that = (CustomPhraseQuery) o;
-        return offset == that.offset;
+        return offset == that.offset &&
+                slop == that.slop &&
+                Objects.equals(field, that.field) &&
+                Arrays.equals(terms, that.terms) &&
+                Arrays.equals(positions, that.positions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), offset);
+        int result = Objects.hash(offset, slop, field);
+        result = 31 * result + Arrays.hashCode(terms);
+        result = 31 * result + Arrays.hashCode(positions);
+        return result;
+    }
+
+    /** Prints a user-readable version of this query. */
+    @Override
+    public String toString(String f) {
+        StringBuilder buffer = new StringBuilder();
+        if (field != null && !field.equals(f)) {
+            buffer.append(field);
+            buffer.append(":");
+        }
+
+        buffer.append("\"");
+        final int maxPosition;
+        if (positions.length == 0) {
+            maxPosition = -1;
+        } else {
+            maxPosition = positions[positions.length - 1];
+        }
+        String[] pieces = new String[maxPosition + 1];
+        for (int i = 0; i < terms.length; i++) {
+            int pos = positions[i];
+            String s = pieces[pos];
+            if (s == null) {
+                s = (terms[i]).text();
+            } else {
+                s = s + "|" + (terms[i]).text();
+            }
+            pieces[pos] = s;
+        }
+        for (int i = 0; i < pieces.length; i++) {
+            if (i > 0) {
+                buffer.append(' ');
+            }
+            String s = pieces[i];
+            if (s == null) {
+                buffer.append('?');
+            } else {
+                buffer.append(s);
+            }
+        }
+        buffer.append("\"");
+
+        if (slop != 0) {
+            buffer.append("~");
+            buffer.append(slop);
+        }
+
+        return buffer.toString();
+    }
+
+    @Override
+    public Query rewrite(IndexReader reader) {
+        if (terms.length == 0) {
+            return new MatchAllDocsQuery();
+        }
+
+        return this;
     }
 
     @Override
@@ -95,9 +243,9 @@ public class CustomPhraseQuery extends PhraseQuery {
 
             IndexReaderContext context = searcher.getTopReaderContext();
 
-            this.states = new TermContext[query.getTerms().length];
-            for(int i = 0; i < query.getTerms().length; ++i) {
-                Term term = query.getTerms()[i];
+            this.states = new TermContext[query.terms.length];
+            for(int i = 0; i < query.terms.length; ++i) {
+                Term term = query.terms[i];
                 this.states[i] = TermContext.build(context, term);
             }
         }
@@ -116,9 +264,9 @@ public class CustomPhraseQuery extends PhraseQuery {
         public Scorer scorer(LeafReaderContext context) throws IOException {
             LeafReader reader = context.reader();
 
-            CustomPhraseQuery.PostingsAndFreq[] postingsFreqs = new CustomPhraseQuery.PostingsAndFreq[query.getTerms().length];
+            CustomPhraseQuery.PostingsAndFreq[] postingsFreqs = new CustomPhraseQuery.PostingsAndFreq[query.terms.length];
 
-            String field = query.getTerms()[0].field();
+            String field = query.terms[0].field();
             Terms fieldTerms = reader.terms(field);
 
             if (fieldTerms == null) {
@@ -129,8 +277,8 @@ public class CustomPhraseQuery extends PhraseQuery {
             } else {
                 TermsEnum te = fieldTerms.iterator();
 
-                for(int i = 0; i < query.getTerms().length; ++i) {
-                    Term t = query.getTerms()[i];
+                for(int i = 0; i < query.terms.length; ++i) {
+                    Term t = query.terms[i];
                     TermState state = this.states[i].get(context.ord);
                     if (state == null) {
                         return null;
@@ -138,15 +286,15 @@ public class CustomPhraseQuery extends PhraseQuery {
 
                     te.seekExact(t.bytes(), state);
                     PostingsEnum postingsEnum = te.postings(null, 24);
-                    postingsFreqs[i] = new CustomPhraseQuery.PostingsAndFreq(postingsEnum, query.getPositions()[i], t);
+                    postingsFreqs[i] = new CustomPhraseQuery.PostingsAndFreq(postingsEnum, query.positions[i], t);
                 }
 
-                if (query.getSlop() == 0) {
+                if (query.slop == 0) {
                     ArrayUtil.timSort(postingsFreqs);
 
                     return new CustomExactPhraseScorer(this, postingsFreqs, query.offset);
                 } else {
-                    return new CustomSloppyPhraseScorer(this, postingsFreqs, query.getSlop(), query.offset);
+                    return new CustomSloppyPhraseScorer(this, postingsFreqs, query.slop, query.offset);
                 }
             }
         }
