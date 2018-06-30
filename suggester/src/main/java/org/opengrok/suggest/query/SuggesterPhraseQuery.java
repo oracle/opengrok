@@ -52,7 +52,8 @@ public class SuggesterPhraseQuery extends Query {
             phraseQuery = new MyPhraseQuery(slop, field, tokens.stream().filter(t -> !t.contains(identifier)).toArray(String[]::new));
             phraseQuery.offset = -1;
         } else if (p == SuggestPosition.MIDDLE) {
-            phraseQuery = new MyPhraseQuery(slop, terms.toArray(new Term[0]), positions.stream().mapToInt(in -> in).toArray());
+            // TODO: repair!
+            //phraseQuery = new MyPhraseQuery(slop, terms.toArray(new Term[0]), positions.stream().mapToInt(in -> in).toArray());
             phraseQuery.offset = pos;
         } else {
             phraseQuery = new MyPhraseQuery(slop, field, tokens.stream().filter(t -> !t.contains(identifier)).toArray(String[]::new));

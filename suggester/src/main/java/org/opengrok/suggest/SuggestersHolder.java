@@ -227,64 +227,6 @@ public final class SuggestersHolder {
             }
         }).collect(Collectors.toList());
 
-        try {
-            if (query != null) {
-                SuggesterUtils.SimpleQueriesHolder simpleQueries = SuggesterUtils.intoSimpleQueries(query);
-
-                for (NamedIndexReader nir : suggesters) {
-                    try (IndexReader ir = DirectoryReader.open(FSDirectory.open(Paths.get("/Users/adamhornacek/OpenGrokData/suggester", nir.name)))) {
-
-                        IndexSearcher searcher = new IndexSearcher(ir);
-
-                        BooleanQuery.Builder b = new BooleanQuery.Builder();
-                        for (TermQuery tq : simpleQueries.termQueries) {
-                            b.add(tq, BooleanClause.Occur.MUST);
-                        }
-
-                        searcher.search(b.build(), new Collector() {
-                            @Override
-                            public LeafCollector getLeafCollector(LeafReaderContext leafReaderContext) {
-                                final int docBase = leafReaderContext.docBase;
-
-                                return new LeafCollector() {
-
-                                    @Override
-                                    public void setScorer(Scorer scorer) {
-
-                                    }
-
-                                    @Override
-                                    public void collect(int i) {
-                                        try {
-                                            Document doc = ir.document(docBase + i);
-
-                                            for (BytesRef val : doc.getBinaryValues(suggesterQuery.getField())) {
-                                                for (TermQuery tq: simpleQueries.termQueries) {
-                                                    if (!tq.getTerm().bytes().equals(val)) {
-
-                                                        results.add(new LookupResultItem(val.utf8ToString(), nir.name, 2000));
-                                                    }
-                                                }
-                                            }
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                };
-                            }
-
-                            @Override
-                            public boolean needsScores() {
-                                return false;
-                            }
-                        });
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
 
         return SuggesterUtils.combineResults(results, DEFAULT_RESULT_SIZE);
     }

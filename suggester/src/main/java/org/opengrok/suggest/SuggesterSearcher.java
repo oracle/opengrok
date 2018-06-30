@@ -13,8 +13,11 @@ import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.Matches;
+import org.apache.lucene.search.MatchesIterator;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.SuggesterQuery;
@@ -22,8 +25,10 @@ import org.opengrok.suggest.query.customized.MyPhraseQuery;
 
 import java.io.IOException;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,6 +103,8 @@ class SuggesterSearcher extends IndexSearcher {
 
         boolean needPositionsAndFrequencies = needPositionsAndFrequencies(query);
 
+        Map<Integer, BitSet> map2 = new HashMap<>();
+
         PostingsEnum postingsEnum = null;
         while (term != null) {
             if (needPositionsAndFrequencies) {
@@ -110,7 +117,7 @@ class SuggesterSearcher extends IndexSearcher {
             if (!needsDocumentIds) {
                 weight = termsEnum.docFreq();
             } else if (needPositionsAndFrequencies) {
-                weight = getPhraseScore(documentIds, leafReaderContext.docBase, postingsEnum);
+                weight = getPhraseScore(documentIds, leafReaderContext.docBase, postingsEnum, query, map2);
             } else {
                 weight = getDocumentFrequency(documentIds, leafReaderContext.docBase, postingsEnum);
             }
@@ -150,6 +157,7 @@ class SuggesterSearcher extends IndexSearcher {
 
                         @Override
                         public void setScorer(Scorer scorer) {
+                            //SuggesterSearcher.this.scorer = scorer;
                             if (leafReaderContext == context) {
                                 if (scorer instanceof PhraseScorer) {
                                     SuggesterSearcher.this.scorer = (PhraseScorer) scorer;
@@ -167,6 +175,8 @@ class SuggesterSearcher extends IndexSearcher {
                                     }
                                 }
                             }
+
+                            //System.out.println();
                         }
 
                         @Override
@@ -190,31 +200,52 @@ class SuggesterSearcher extends IndexSearcher {
         return documentIds;
     }
 
-    private int getPhraseScore(final BitSet documentIds, final int docBase, final PostingsEnum postingsEnum)
+    private int getPhraseScore(final BitSet documentIds, final int docBase, final PostingsEnum postingsEnum, final Query query, Map<Integer, BitSet> map)
             throws IOException {
 
-        if (scorer == null) {
+        //if (scorer == null) {
             // no documents found
-            return 0;
-        }
+        //    return 0;
+        //}
 
         int weight = 0;
         while (postingsEnum.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
             int docId = postingsEnum.docID();
             if (documentIds.get(docBase + docId)) {
+                //Set<Integer> positions = scorer.getMap().get(docId);
+                //if (positions == null) {
+                //    logger.log(Level.WARNING, "No positions entry: " + docId);
+                //    continue;
+                //}
+                /*if (!map.containsKey(docBase + docId)) {
 
-                Set<Integer> positions = scorer.getMap().get(docId);
-                if (positions == null) {
-                    logger.log(Level.WARNING, "No positions entry: " + docId);
+                    Matches m = scorer.getWeight().matches(leafContexts.get(0), docBase + docId);
+                    //Matches m = query.createWeight(this, false, 1)
+                    //        .matches(leafContexts.get(0), docBase + docId);
+                    BitSet set = new BitSet();
+
+                    MatchesIterator it = m.getMatches("full");
+                    if (it != null) {
+                        while (it.next()) {
+                            set.set(it.startPosition() + ((MyPhraseQuery) query).offset);
+                        }
+                    }
+                    map.put(docBase + docId, set);
+                }*/
+
+                Set<Integer> set2 = scorer.getMap().get(docBase + docId);
+
+                BitSet set = map.get(docBase + docId);
+
+                if (set2 == null) {
                     continue;
                 }
-
 
                 int freq = postingsEnum.freq();
                 for (int i = 0; i < freq; i++) {
                     int pos = postingsEnum.nextPosition();
 
-                    if (positions.contains(pos)) {
+                    if (set2.contains(pos)) { //if (set.get(pos)) {
                         weight++;
                     }
                 }

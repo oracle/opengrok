@@ -535,7 +535,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <artifactId>ant</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opengrok</groupId>
+            <groupId>org.opensolaris.opengrok</groupId>
             <artifactId>suggester</artifactId>
             <version>${project.version}</version>
         </dependency>
