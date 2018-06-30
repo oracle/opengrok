@@ -125,6 +125,69 @@ public class StringUtilsTest {
     }
 
     @Test
+    public void uriAtCommaSeparatorShouldCountPushback() {
+        String uri = "http://www.example.com,";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 1, n);
+    }
+
+    @Test
+    public void uriAtDanglingRightParenShouldCountPushback() {
+        String uri = "http://www.example.com)";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 1, n);
+    }
+
+    @Test
+    public void uriWithPairedUpRightParenShouldNotCountPushback() {
+        String uri = "http://www.example.com/article(v=vs.110)";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 0, n);
+    }
+
+    @Test
+    public void uriWithPairedUpRightParenBeforeDotShouldCountPushback() {
+        String uri = "http://www.example.com/article(v=vs.110).";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 1, n);
+    }
+
+    @Test
+    public void uriWithOddRightParen1ShouldCountPushback() {
+        String uri = "http://www.example.com/article(v=vs.110))";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 1, n);
+    }
+
+    @Test
+    public void uriWithOddRightParen2ShouldCountPushback() {
+        String uri = "http://www.example.com/article(v=vs.110)?arg=1)";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 1, n);
+    }
+
+    @Test
+    public void uriWithOddRightParenAndDot1ShouldCountWiderPushback() {
+        String uri = "http://www.example.com/article(v=vs.110).)";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 2, n);
+    }
+
+    @Test
+    public void uriWithOddRightParenAndDot2ShouldCountWiderPushback() {
+        String uri = "http://www.example.com/article(v=vs.110)).";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 2, n);
+    }
+
+    @Test
+    public void uriWithOddRightParenAndDot3ShouldCountWiderPushback() {
+        String uri = "http://www.example.com/article(v=vs.110))).";
+        int n = StringUtils.countURIEndingPushback(uri);
+        assertEquals(uri + " pushback", 3, n);
+    }
+
+    @Test
     public void uriEmptyShouldNotCountAnyPushback() {
         String uri = "";
         int n = StringUtils.countURIEndingPushback(uri);
