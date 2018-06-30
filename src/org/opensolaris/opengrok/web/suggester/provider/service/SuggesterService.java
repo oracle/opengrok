@@ -19,11 +19,9 @@ public interface SuggesterService {
      */
     List<LookupResultItem> getSuggestions(List<String> projects, SuggesterQuery suggesterQuery, Query query);
 
-    void add();
+    void refresh(String project);
 
-    void refresh();
-
-    void delete();
+    void delete(String project);
 
     void onSearch(Iterable<String> projects, Query q);
 

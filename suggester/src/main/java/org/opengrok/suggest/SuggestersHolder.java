@@ -40,7 +40,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -174,7 +173,7 @@ public final class SuggestersHolder {
         };
     }
 
-    public void remove(final Set<String> suggesterNames) {
+    public void remove(final Iterable<String> suggesterNames) {
         if (suggesterNames == null) {
             return;
         }
@@ -183,8 +182,12 @@ public final class SuggestersHolder {
             logger.log(Level.INFO, "Removing following suggesters: {0}", suggesterNames);
 
             for (String suggesterName : suggesterNames) {
-                map.get(suggesterName).remove();
-
+                FieldWFSTCollection collection = map.get(suggesterName);
+                if (collection == null) {
+                    logger.log(Level.WARNING, "Unknown suggester {0}", suggesterName);
+                    continue;
+                }
+                collection.remove();
                 map.remove(suggesterName);
             }
         }

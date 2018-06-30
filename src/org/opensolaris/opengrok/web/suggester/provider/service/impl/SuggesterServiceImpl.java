@@ -55,22 +55,17 @@ public class SuggesterServiceImpl implements SuggesterService {
     }
 
     @Override
-    public void add() {
-
-    }
-
-    @Override
-    public void refresh() {
-        if (suggester == null) {
-            initSuggester();
-        } else {
-            // check if source root changed!
+    public void refresh(String project) {
+        Configuration config = RuntimeEnvironment.getInstance().getConfiguration();
+        if (config != null) {
+            Project p = config.getProjects().get(project);
+            suggester.rebuild(Collections.singletonList(Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR, p.getPath())));
         }
     }
 
     @Override
-    public void delete() {
-
+    public void delete(final String project) {
+        suggester.remove(Collections.singleton(project));
     }
 
     @Override
@@ -98,57 +93,5 @@ public class SuggesterServiceImpl implements SuggesterService {
                 .map(project -> Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR, project.getPath()))
                 .collect(Collectors.toList());
     }
-
-    /*private void onReindex() {
-        if (suggester == null) {
-            logger.log(Level.WARNING, "Cannot refresh suggester because it was not initialized yet");
-            return;
-        }
-
-        new Thread(() -> suggester.rebuild(getAllProjectIndexDirs())).start();
-    }
-
-    private void onReindex(final Set<String> projects) {
-        if (projects == null) {
-            return;
-        }
-
-        if (suggester == null) {
-            logger.log(Level.WARNING, "Cannot refresh suggester because it was not initialized yet");
-            return;
-        }
-
-        Configuration config = RuntimeEnvironment.getInstance().getConfiguration();
-
-        List<Path> indexDirs = projects.stream()
-                .map(project -> Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR, project))
-                .collect(Collectors.toList());
-
-        new Thread(() -> suggester.rebuild(indexDirs)).start();
-    }
-
-    private void handleProjectMessage(final ProjectMessage message) {
-        String command = message.getText();
-
-        switch (command) {
-            case "indexed":
-                // rebuild will detect that no suggester index for project exists and will create a new one
-                onReindex(message.getTags());
-                break;
-            case "delete":
-                if (suggester != null) {
-                    suggester.remove(message.getTags());
-                } else {
-                    logger.log(Level.WARNING, "Cannot remove project because suggester was not initialized yet");
-                }
-                break;
-            default:
-                // ignore
-        }
-    }
-
-    public void onSearch(Set<String> projects, Query query) {
-        suggester.onSearch(projects, query);
-    }*/
 
 }
