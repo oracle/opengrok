@@ -70,7 +70,11 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
             iterators[i] = postings[i].postings;
             phrasePositions[i] = new PhrasePositions(postings[i].postings, postings[i].position, i, postings[i].terms);
         }
-        conjunction = ConjunctionDISI.intersectIterators(Arrays.asList(iterators));
+        if (iterators.length == 1) {
+            conjunction = iterators[0];
+        } else {
+            conjunction = ConjunctionDISI.intersectIterators(Arrays.asList(iterators));
+        }
         assert TwoPhaseIterator.unwrap(conjunction) == null;
     }
 
@@ -96,7 +100,25 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
         Set<Integer> allPositions = new HashSet<>();
 
         Set<Integer> positions = new HashSet<>();
-        map.put(docID(), positions);
+
+        if (phrasePositions.length == 1) { // special handling for one term
+            end = Integer.MIN_VALUE;
+            PhrasePositions pp = phrasePositions[0];
+            pp.firstPosition();
+            if (pp.position > end) {
+                end = pp.position;
+            }
+            int matchCount = 0;
+            while (advancePP(pp)) {
+                allPositions.add(pp.position + pp.offset);
+                addPositions(positions, allPositions, pp.position + pp.offset,0);
+                matchCount++;
+            }
+            if (!positions.isEmpty()) {
+                map.put(docID(), positions);
+            }
+            return matchCount;
+        }
 
         if (!initPhrasePositions()) {
             return 0.0f;
@@ -145,6 +167,9 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
         if (matchLength <= slop) {
             numMatches++;
             addPositions(positions, allPositions, lastEnd, matchLength);
+        }
+        if (!positions.isEmpty()) {
+            map.put(docID(), positions);
         }
         return numMatches;
     }
