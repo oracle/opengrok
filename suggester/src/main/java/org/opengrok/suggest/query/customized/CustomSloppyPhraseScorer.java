@@ -35,7 +35,7 @@ import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.FixedBitSet;
 import org.opengrok.suggest.query.PhraseScorer;
 
-final class MySloppyPhraseScorer extends Scorer implements PhraseScorer {
+final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
 
     private final DocIdSetIterator conjunction;
     private final PhrasePositions[] phrasePositions;
@@ -58,7 +58,7 @@ final class MySloppyPhraseScorer extends Scorer implements PhraseScorer {
 
     public Map<Integer, Set<Integer>> map = new HashMap<>();
 
-    MySloppyPhraseScorer(Weight weight, MyPhraseQuery.PostingsAndFreq[] postings, int slop, int offset) {
+    CustomSloppyPhraseScorer(Weight weight, CustomPhraseQuery.PostingsAndFreq[] postings, int slop, int offset) {
         super(weight);
         this.slop = slop;
         this.offset = offset;
@@ -554,7 +554,7 @@ final class MySloppyPhraseScorer extends Scorer implements PhraseScorer {
     }
 
     @Override
-    public String toString() { return "MySloppyPhraseScorer(" + weight + ")"; }
+    public String toString() { return "CustomSloppyPhraseScorer(" + weight + ")"; }
 
     @Override
     public TwoPhaseIterator twoPhaseIterator() {
@@ -572,7 +572,7 @@ final class MySloppyPhraseScorer extends Scorer implements PhraseScorer {
 
             @Override
             public String toString() {
-                return "MySloppyPhraseScorer@asTwoPhaseIterator(" + MySloppyPhraseScorer.this + ")";
+                return "CustomSloppyPhraseScorer@asTwoPhaseIterator(" + CustomSloppyPhraseScorer.this + ")";
             }
         };
     }

@@ -32,7 +32,7 @@ import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
 import org.opengrok.suggest.query.PhraseScorer;
 
-final class MyExactPhraseScorer extends Scorer implements PhraseScorer {
+final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
 
     @Override
     public Map<Integer, Set<Integer>> getMap() {
@@ -57,14 +57,14 @@ final class MyExactPhraseScorer extends Scorer implements PhraseScorer {
     private final DocIdSetIterator conjunction;
     private final PostingsAndPosition[] postings;
 
-    public MyExactPhraseScorer(Weight weight, MyPhraseQuery.PostingsAndFreq[] postings, int offset) {
+    public CustomExactPhraseScorer(Weight weight, CustomPhraseQuery.PostingsAndFreq[] postings, int offset) {
         super(weight);
 
         this.offset = offset;
 
         List<DocIdSetIterator> iterators = new ArrayList<>();
         List<PostingsAndPosition> postingsAndPositions = new ArrayList<>();
-        for(MyPhraseQuery.PostingsAndFreq posting : postings) {
+        for (CustomPhraseQuery.PostingsAndFreq posting : postings) {
             iterators.add(posting.postings);
             postingsAndPositions.add(new PostingsAndPosition(posting.postings, posting.position));
         }
@@ -95,7 +95,7 @@ final class MyExactPhraseScorer extends Scorer implements PhraseScorer {
 
     @Override
     public String toString() {
-        return "MyExactPhraseScorer(" + weight + ")";
+        return "CustomExactPhraseScorer(" + weight + ")";
     }
 
     @Override
