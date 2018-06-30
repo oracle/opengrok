@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 
 class SuggesterSearcher extends IndexSearcher {
 
+    public static final int TERM_ALREADY_SEARCHED_MULTIPLIER = 1000;
+
     private static final Logger logger = Logger.getLogger(SuggesterSearcher.class.getName());
 
     private String project;
@@ -115,7 +117,7 @@ class SuggesterSearcher extends IndexSearcher {
 
             if (weight > 0) {
                 int add = map.getOrDefault(term.utf8ToString(), 0);
-                weight += add * 1000;
+                weight += add * TERM_ALREADY_SEARCHED_MULTIPLIER;
 
                 queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), suggester, weight));
             }
