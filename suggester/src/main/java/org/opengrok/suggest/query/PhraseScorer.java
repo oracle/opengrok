@@ -1,9 +1,9 @@
 package org.opengrok.suggest.query;
 
-import org.opengrok.suggest.query.data.PositionSet;
+import org.opengrok.suggest.query.data.IntsHolder;
 
 public interface PhraseScorer {
 
-    PositionSet getPositions(int docId);
+    IntsHolder getPositions(int docId);
 
 }

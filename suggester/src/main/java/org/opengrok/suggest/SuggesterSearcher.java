@@ -16,8 +16,8 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.BytesRef;
-import org.opengrok.suggest.query.data.PositionBitSet;
-import org.opengrok.suggest.query.data.PositionSet;
+import org.opengrok.suggest.query.data.BitIntsHolder;
+import org.opengrok.suggest.query.data.IntsHolder;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opengrok.suggest.query.customized.CustomPhraseQuery;
@@ -86,7 +86,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         boolean needsDocumentIds = query != null && !(query instanceof MatchAllDocsQuery);
 
-        PositionSet documentIds = null;
+        IntsHolder documentIds = null;
         if (needsDocumentIds) {
             documentIds = getDocumentIds(query, leafReaderContext);
         }
@@ -133,12 +133,12 @@ class SuggesterSearcher extends IndexSearcher {
         return queue.getResult();
     }
 
-    private PositionSet getDocumentIds(Query query, LeafReaderContext leafReaderContext) {
+    private IntsHolder getDocumentIds(Query query, LeafReaderContext leafReaderContext) {
         if (query == null || query instanceof SuggesterQuery) {
-            return new PositionBitSet();
+            return new BitIntsHolder();
         }
 
-        PositionBitSet documentIds = new PositionBitSet();
+        BitIntsHolder documentIds = new BitIntsHolder();
 
         try {
             search(query, new Collector() {
@@ -190,7 +190,7 @@ class SuggesterSearcher extends IndexSearcher {
         return documentIds;
     }
 
-    private int getPhraseScore(final PositionSet documentIds, final int docBase, final PostingsEnum postingsEnum, final Query query, Map<Integer, BitSet> map)
+    private int getPhraseScore(final IntsHolder documentIds, final int docBase, final PostingsEnum postingsEnum, final Query query, Map<Integer, BitSet> map)
             throws IOException {
 
         //if (scorer == null) {
@@ -201,7 +201,7 @@ class SuggesterSearcher extends IndexSearcher {
         int weight = 0;
         while (postingsEnum.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
             int docId = postingsEnum.docID();
-            if (documentIds.isSet(docBase + docId)) {
+            if (documentIds.has(docBase + docId)) {
                 //Set<Integer> positions = scorer.getMap().get(docId);
                 //if (positions == null) {
                 //    logger.log(Level.WARNING, "No positions entry: " + docId);
@@ -223,7 +223,7 @@ class SuggesterSearcher extends IndexSearcher {
                     map.put(docBase + docId, set);
                 }*/
 
-                PositionSet positions = scorer.getPositions(docBase + docId);
+                IntsHolder positions = scorer.getPositions(docBase + docId);
                 if (positions == null) {
                     continue;
                 }
@@ -232,7 +232,7 @@ class SuggesterSearcher extends IndexSearcher {
                 for (int i = 0; i < freq; i++) {
                     int pos = postingsEnum.nextPosition();
 
-                    if (positions.isSet(pos)) {
+                    if (positions.has(pos)) {
                         weight++;
                     }
                 }
@@ -242,12 +242,12 @@ class SuggesterSearcher extends IndexSearcher {
         return weight;
     }
 
-    private int getDocumentFrequency(final PositionSet documentIds, final int docBase, final PostingsEnum postingsEnum)
+    private int getDocumentFrequency(final IntsHolder documentIds, final int docBase, final PostingsEnum postingsEnum)
             throws IOException {
 
         int weight = 0;
         while (postingsEnum.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
-            if (documentIds.isSet(docBase + postingsEnum.docID())) {
+            if (documentIds.has(docBase + postingsEnum.docID())) {
                 weight++;
             }
         }
