@@ -1716,7 +1716,18 @@ function pageReadyMast() {
 }
 
 function domReadyMenu() {
-    initAutocomplete();
+    $.ajax({
+        url: window.contextPath + "/api/v1/configuration/suggester",
+        dataType: "json",
+        success: function(data) {
+            if (data.enabled) {
+                initAutocomplete();
+            }
+        },
+        error: function(xhr, ajaxOptions, error) {
+            console.error('Could not determine if autocomplete is enabled', xhr);
+        }
+    });
 }
 
 function initAutocomplete() {
