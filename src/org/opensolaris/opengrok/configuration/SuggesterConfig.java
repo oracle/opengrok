@@ -13,6 +13,7 @@ public class SuggesterConfig {
     public static final boolean SHOW_SCORES_DEFAULT = false;
     public static final boolean SHOW_INDEXES_DEFAULT = true;
     public static final boolean SHOW_SPEED_DEFAULT = false;
+    public static final String REBUILD_CRON_CONFIG_DEFAULT = "0 0 * * *"; // every day at midnight
 
     public static final Set<String> allowedProjectsDefault = null;
     public static final Set<String> allowedFieldsDefault = null;
@@ -39,6 +40,8 @@ public class SuggesterConfig {
 
     private boolean showSpeed;
 
+    private String rebuildCronConfig;
+
     private SuggesterConfig() {
     }
 
@@ -55,6 +58,7 @@ public class SuggesterConfig {
         config.setShowScores(SHOW_SCORES_DEFAULT);
         config.setShowProjects(SHOW_INDEXES_DEFAULT);
         config.setShowSpeed(SHOW_SPEED_DEFAULT);
+        config.setRebuildCronConfig(REBUILD_CRON_CONFIG_DEFAULT);
         return config;
     }
 
@@ -144,5 +148,13 @@ public class SuggesterConfig {
 
     public void setShowSpeed(boolean showSpeed) {
         this.showSpeed = showSpeed;
+    }
+
+    public String getRebuildCronConfig() {
+        return rebuildCronConfig;
+    }
+
+    public void setRebuildCronConfig(String rebuildCronConfig) {
+        this.rebuildCronConfig = rebuildCronConfig;
     }
 }

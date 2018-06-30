@@ -36,6 +36,7 @@ import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
 
 /**
  * Initialize webapp context
@@ -112,6 +113,8 @@ public final class WebappListener
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
         }
+
+        SuggesterServiceImpl.getInstance().close();
     }
 
     /**

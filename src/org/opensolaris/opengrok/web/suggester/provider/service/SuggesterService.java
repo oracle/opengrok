@@ -25,4 +25,6 @@ public interface SuggesterService {
 
     void onSearch(Iterable<String> projects, Query q);
 
+    void close();
+
 }
