@@ -1,10 +1,9 @@
 package org.opengrok.suggest.query;
 
-import java.util.Map;
-import java.util.Set;
+import org.opengrok.suggest.query.data.PositionSet;
 
 public interface PhraseScorer {
 
-    Map<Integer, Set<Integer>> getMap();
+    PositionSet getPositions(int docId);
 
 }

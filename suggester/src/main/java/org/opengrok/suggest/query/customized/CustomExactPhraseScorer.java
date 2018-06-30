@@ -19,10 +19,8 @@ package org.opengrok.suggest.query.customized;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.search.ConjunctionDISI;
@@ -31,13 +29,10 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
 import org.opengrok.suggest.query.PhraseScorer;
+import org.opengrok.suggest.query.data.PositionSet;
+import org.opengrok.suggest.query.data.PositionHashSet;
 
 final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
-
-    @Override
-    public Map<Integer, Set<Integer>> getMap() {
-        return map;
-    }
 
     private static class PostingsAndPosition {
         private final PostingsEnum postings;
@@ -50,7 +45,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         }
     }
 
-    public Map<Integer, Set<Integer>> map = new HashMap<>();
+    public Map<Integer, PositionSet> map = new HashMap<>();
 
     private int offset;
 
@@ -139,7 +134,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         int freq = 0;
         final PostingsAndPosition lead = postings[0];
 
-        Set<Integer> positions = new HashSet<>();
+        PositionHashSet positions = new PositionHashSet();
 
         advanceHead:
         while (true) {
@@ -177,6 +172,11 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         }
 
         return freq;
+    }
+
+    @Override
+    public PositionSet getPositions(int docId) {
+        return map.get(docId);
     }
 
 }
