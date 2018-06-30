@@ -16,6 +16,7 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.suggest.query.data.PositionSet;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opengrok.suggest.query.customized.CustomPhraseQuery;
@@ -26,7 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -230,11 +230,8 @@ class SuggesterSearcher extends IndexSearcher {
                     map.put(docBase + docId, set);
                 }*/
 
-                Set<Integer> set2 = scorer.getMap().get(docBase + docId);
-
-                BitSet set = map.get(docBase + docId);
-
-                if (set2 == null) {
+                PositionSet positions = scorer.getPositions(docBase + docId);
+                if (positions == null) {
                     continue;
                 }
 
@@ -242,7 +239,7 @@ class SuggesterSearcher extends IndexSearcher {
                 for (int i = 0; i < freq; i++) {
                     int pos = postingsEnum.nextPosition();
 
-                    if (set2.contains(pos)) { //if (set.get(pos)) {
+                    if (positions.isSet(pos)) {
                         weight++;
                     }
                 }

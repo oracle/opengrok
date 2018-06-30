@@ -34,6 +34,8 @@ import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.FixedBitSet;
 import org.opengrok.suggest.query.PhraseScorer;
+import org.opengrok.suggest.query.data.PositionSet;
+import org.opengrok.suggest.query.data.PositionHashSet;
 
 final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
 
@@ -56,7 +58,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
 
     private int offset;
 
-    public Map<Integer, Set<Integer>> map = new HashMap<>();
+    public Map<Integer, PositionSet> map = new HashMap<>();
 
     CustomSloppyPhraseScorer(Weight weight, CustomPhraseQuery.PostingsAndFreq[] postings, int slop, int offset) {
         super(weight);
@@ -99,7 +101,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
     private float phraseFreq() throws IOException {
         Set<Integer> allPositions = new HashSet<>();
 
-        Set<Integer> positions = new HashSet<>();
+        PositionHashSet positions = new PositionHashSet();
 
         if (phrasePositions.length == 1) { // special handling for one term
             end = Integer.MIN_VALUE;
@@ -608,7 +610,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
     }
 
     @Override
-    public Map<Integer, Set<Integer>> getMap() {
-        return map;
+    public PositionSet getPositions(int docId) {
+        return map.get(docId);
     }
 }
