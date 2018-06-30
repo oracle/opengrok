@@ -68,7 +68,11 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
             iterators.add(posting.postings);
             postingsAndPositions.add(new PostingsAndPosition(posting.postings, posting.position));
         }
-        conjunction = ConjunctionDISI.intersectIterators(iterators);
+        if (iterators.size() == 1) {
+            conjunction = iterators.get(0);
+        } else {
+            conjunction = ConjunctionDISI.intersectIterators(iterators);
+        }
         assert TwoPhaseIterator.unwrap(conjunction) == null;
         this.postings = postingsAndPositions.toArray(new PostingsAndPosition[postingsAndPositions.size()]);
     }
