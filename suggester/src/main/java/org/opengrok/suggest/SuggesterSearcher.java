@@ -23,19 +23,14 @@ import org.opengrok.suggest.query.SuggesterQuery;
 import org.opengrok.suggest.query.customized.CustomPhraseQuery;
 
 import java.io.IOException;
-import java.util.BitSet;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 class SuggesterSearcher extends IndexSearcher {
 
     private static final Logger logger = Logger.getLogger(SuggesterSearcher.class.getName());
-
-    private PhraseScorer scorer;
 
     private String project;
 
@@ -86,9 +81,9 @@ class SuggesterSearcher extends IndexSearcher {
 
         boolean needsDocumentIds = query != null && !(query instanceof MatchAllDocsQuery);
 
-        IntsHolder documentIds = null;
+        ComplexQueryData complexQueryData = null;
         if (needsDocumentIds) {
-            documentIds = getDocumentIds(query, leafReaderContext);
+            complexQueryData = getComplexQueryData(query, leafReaderContext);
         }
 
         Terms terms = leafReaderContext.reader().terms(suggesterQuery.getField());
@@ -100,8 +95,6 @@ class SuggesterSearcher extends IndexSearcher {
         BytesRef term = termsEnum.next();
 
         boolean needPositionsAndFrequencies = needPositionsAndFrequencies(query);
-
-        Map<Integer, BitSet> map2 = new HashMap<>();
 
         PostingsEnum postingsEnum = null;
         while (term != null) {
@@ -115,9 +108,9 @@ class SuggesterSearcher extends IndexSearcher {
             if (!needsDocumentIds) {
                 weight = termsEnum.docFreq();
             } else if (needPositionsAndFrequencies) {
-                weight = getPhraseScore(documentIds, leafReaderContext.docBase, postingsEnum, query, map2);
+                weight = getPhraseScore(complexQueryData, leafReaderContext.docBase, postingsEnum);
             } else {
-                weight = getDocumentFrequency(documentIds, leafReaderContext.docBase, postingsEnum);
+                weight = getDocumentFrequency(complexQueryData.documentIds, leafReaderContext.docBase, postingsEnum);
             }
 
             if (weight > 0) {
@@ -133,33 +126,34 @@ class SuggesterSearcher extends IndexSearcher {
         return queue.getResult();
     }
 
-    private IntsHolder getDocumentIds(Query query, LeafReaderContext leafReaderContext) {
+    private ComplexQueryData getComplexQueryData(Query query, LeafReaderContext leafReaderContext) {
+        ComplexQueryData data = new ComplexQueryData();
         if (query == null || query instanceof SuggesterQuery) {
-            return new BitIntsHolder();
+            data.documentIds = new BitIntsHolder(0);
+            return data;
         }
 
         BitIntsHolder documentIds = new BitIntsHolder();
-
         try {
             search(query, new Collector() {
                 @Override
-                public LeafCollector getLeafCollector(LeafReaderContext context) {
+                public LeafCollector getLeafCollector(final LeafReaderContext context) {
                     return new LeafCollector() {
 
                         final int docBase = context.docBase;
 
                         @Override
-                        public void setScorer(Scorer scorer) {
+                        public void setScorer(final Scorer scorer) {
                             if (leafReaderContext == context) {
                                 if (scorer instanceof PhraseScorer) {
-                                    SuggesterSearcher.this.scorer = (PhraseScorer) scorer;
+                                    data.scorer = (PhraseScorer) scorer;
                                 } else {
                                     try {
                                         // it is mentioned in the documentation that #getChildren should not be called
                                         // in #setScorer but no better way was found
                                         for (Scorer.ChildScorer childScorer : scorer.getChildren()) {
                                             if (childScorer.child instanceof PhraseScorer) {
-                                                SuggesterSearcher.this.scorer = (PhraseScorer) childScorer.child;
+                                                data.scorer = (PhraseScorer) childScorer.child;
                                             }
                                         }
                                     } catch (Exception e) {
@@ -187,43 +181,18 @@ class SuggesterSearcher extends IndexSearcher {
             logger.log(Level.WARNING, project, e);
         }
 
-        return documentIds;
+        data.documentIds = documentIds;
+        return data;
     }
 
-    private int getPhraseScore(final IntsHolder documentIds, final int docBase, final PostingsEnum postingsEnum, final Query query, Map<Integer, BitSet> map)
+    private int getPhraseScore(final ComplexQueryData data, final int docBase, final PostingsEnum postingsEnum)
             throws IOException {
-
-        //if (scorer == null) {
-            // no documents found
-        //    return 0;
-        //}
 
         int weight = 0;
         while (postingsEnum.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
             int docId = postingsEnum.docID();
-            if (documentIds.has(docBase + docId)) {
-                //Set<Integer> positions = scorer.getMap().get(docId);
-                //if (positions == null) {
-                //    logger.log(Level.WARNING, "No positions entry: " + docId);
-                //    continue;
-                //}
-                /*if (!map.containsKey(docBase + docId)) {
-
-                    Matches m = scorer.getWeight().matches(leafContexts.get(0), docBase + docId);
-                    //Matches m = query.createWeight(this, false, 1)
-                    //        .matches(leafContexts.get(0), docBase + docId);
-                    BitSet set = new BitSet();
-
-                    MatchesIterator it = m.getMatches("full");
-                    if (it != null) {
-                        while (it.next()) {
-                            set.set(it.startPosition() + ((CustomPhraseQuery) query).offset);
-                        }
-                    }
-                    map.put(docBase + docId, set);
-                }*/
-
-                IntsHolder positions = scorer.getPositions(docBase + docId);
+            if (data.documentIds.has(docBase + docId)) {
+                IntsHolder positions = data.scorer.getPositions(docBase + docId);
                 if (positions == null) {
                     continue;
                 }
@@ -268,6 +237,14 @@ class SuggesterSearcher extends IndexSearcher {
         }
 
         return false;
+    }
+
+    private static class ComplexQueryData {
+
+        private IntsHolder documentIds;
+
+        private PhraseScorer scorer;
+
     }
 
 }
