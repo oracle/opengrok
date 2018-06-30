@@ -75,36 +75,7 @@ class FieldWFSTCollection implements Closeable {
             rebuild();
         }
 
-        File f = suggesterDir.resolve(SEARCH_COUNT_MAP_NAME).toFile();
-
-        try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
-            for (String field : MultiFields.getIndexedFields(indexReader)) {
-
-                try (ChronicleMap<String, Integer> configMap = ChronicleMap.of(String.class, Integer.class)
-                        .name(field + "_config")
-                        .averageKeySize((double) (AVG_KEY_KEY + SIZE_KEY).length() / 2)
-                        .entries(2)
-                        .createOrRecoverPersistedTo(f)) {
-
-                    int avgKey = configMap.getOrDefault(AVG_KEY_KEY, averageLengths.get(field).intValue() + 1);
-                    int size = configMap.getOrDefault(SIZE_KEY, (int) map.get(field).getCount() * 2);
-
-                    ChronicleMap<String, Integer> m = ChronicleMap.of(String.class, Integer.class)
-                            .name(field)
-                            .averageKeySize(avgKey)
-                            .entries(size)
-                            .createOrRecoverPersistedTo(f);
-
-                    if (size < map.get(field).getCount()) {
-                        // TODO: resize map
-
-                        map2.put(field, m);
-                    } else {
-                        map2.put(field, m);
-                    }
-                }
-            }
-        }
+        initSearchCountMap();
     }
 
     private boolean hasStoredData() {
@@ -165,7 +136,7 @@ class FieldWFSTCollection implements Closeable {
 
     private WFSTCompletionLookup build(final IndexReader indexReader, final String field) throws IOException {
         WFSTInputIterator iterator = new WFSTInputIterator(
-                new LuceneDictionary(indexReader, field).getEntryIterator(), indexReader, field);
+                new LuceneDictionary(indexReader, field).getEntryIterator(), indexReader, field, map2.get(field));
 
         WFSTCompletionLookup lookup = createWFST();
         lookup.build(iterator);
@@ -180,6 +151,43 @@ class FieldWFSTCollection implements Closeable {
         FileOutputStream fos = new FileOutputStream(getWFSTFile(field));
 
         WFST.store(fos);
+    }
+
+    private void initSearchCountMap() throws IOException {
+        File f = suggesterDir.resolve(SEARCH_COUNT_MAP_NAME).toFile();
+        try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
+            for (String field : MultiFields.getIndexedFields(indexReader)) {
+
+                try (ChronicleMap<String, Integer> configMap = ChronicleMap.of(String.class, Integer.class)
+                        .name(field + "_config")
+                        .averageKeySize((double) (AVG_KEY_KEY + SIZE_KEY).length() / 2)
+                        .entries(2)
+                        .createOrRecoverPersistedTo(f)) {
+
+                    int avgKeyLength = 20;
+                    if (averageLengths.containsKey(field)) {
+                        avgKeyLength = averageLengths.get(field).intValue() + 1;
+                    }
+
+                    int avgKey = configMap.getOrDefault(AVG_KEY_KEY, avgKeyLength);
+                    int size = configMap.getOrDefault(SIZE_KEY, (int) map.get(field).getCount() * 2);
+
+                    ChronicleMap<String, Integer> m = ChronicleMap.of(String.class, Integer.class)
+                            .name(field)
+                            .averageKeySize(avgKey)
+                            .entries(size)
+                            .createOrRecoverPersistedTo(f);
+
+                    if (size < map.get(field).getCount()) {
+                        // TODO: resize map
+
+                        map2.put(field, m);
+                    } else {
+                        map2.put(field, m);
+                    }
+                }
+            }
+        }
     }
 
     public List<Lookup.LookupResult> lookup(final String field, final String prefix, final int resultSize) {
@@ -215,10 +223,14 @@ class FieldWFSTCollection implements Closeable {
 
         private long termLengthAccumulator = 0;
 
-        WFSTInputIterator(final InputIterator wrapped, final IndexReader indexReader, final String field) {
+        ChronicleMap<String, Integer> popularMap;
+
+        WFSTInputIterator(final InputIterator wrapped, final IndexReader indexReader, final String field,
+                          ChronicleMap<String, Integer> popularMap) {
             this.wrapped = wrapped;
             this.indexReader = indexReader;
             this.field = field;
+            this.popularMap = popularMap;
         }
 
         private BytesRef last;
@@ -226,7 +238,14 @@ class FieldWFSTCollection implements Closeable {
         @Override
         public long weight() {
             if (last != null) {
-                return SuggesterUtils.computeWeight(indexReader, field, last);
+                String str = last.utf8ToString();
+
+                int add = 0;
+                if (popularMap != null) {
+                    add = popularMap.getOrDefault(str, 0);
+                }
+
+                return SuggesterUtils.computeWeight(indexReader, field, last) + add * 1000;
             }
 
             return DEFAULT_WEIGHT;
