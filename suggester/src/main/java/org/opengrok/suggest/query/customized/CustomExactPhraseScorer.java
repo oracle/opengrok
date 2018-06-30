@@ -29,8 +29,8 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
 import org.opengrok.suggest.query.PhraseScorer;
-import org.opengrok.suggest.query.data.PositionSet;
-import org.opengrok.suggest.query.data.PositionHashSet;
+import org.opengrok.suggest.query.data.IntsHolder;
+import org.opengrok.suggest.query.data.HashIntsHolder;
 
 final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
 
@@ -45,7 +45,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         }
     }
 
-    public Map<Integer, PositionSet> map = new HashMap<>();
+    public Map<Integer, IntsHolder> map = new HashMap<>();
 
     private int offset;
 
@@ -134,7 +134,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         int freq = 0;
         final PostingsAndPosition lead = postings[0];
 
-        PositionHashSet positions = new PositionHashSet();
+        HashIntsHolder positions = new HashIntsHolder();
 
         advanceHead:
         while (true) {
@@ -175,7 +175,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
     }
 
     @Override
-    public PositionSet getPositions(int docId) {
+    public IntsHolder getPositions(int docId) {
         return map.get(docId);
     }
 
