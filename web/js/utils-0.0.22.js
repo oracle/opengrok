@@ -1758,8 +1758,7 @@ function initAutocompleteForField(inputId, field) {
                     caret: caretPos
                 },
                 success: function(data) {
-                    input.removeClass('autocomplete-error');
-                    //input.addClass('autocomplete-success');
+                    hideError();
 
                     text = data.queryText;
                     identifier = data.identifier;
@@ -1767,12 +1766,11 @@ function initAutocompleteForField(inputId, field) {
 
                     response(data.suggestions);
                 },
-                error: function(jqXHR, text, error) {
+                error: function(xhr, ajaxOptions, error) {
                     input.autocomplete("close");
                     response(undefined); // to remove loading indicator
 
-                    //input.removeClass('autocomplete-success');
-                    input.addClass('autocomplete-error');
+                    showError(xhr.responseText)
                 }
             });
         },
@@ -1825,7 +1823,47 @@ function initAutocompleteForField(inputId, field) {
         if (e.keyCode === 37 || e.keyCode === 39) { // left or right arrow key
             $(this).autocomplete('search', $(this).val());
         }
+        if (input.val() === "") { // try to refresh on empty input (error might go away)
+            $(this).autocomplete('search', ' ');
+        }
     });
+}
+
+function showError(errorText) {
+    var topInputParent = $('#q').parent();
+
+    topInputParent.css('position', 'relative');
+
+    var span = topInput.find('#autocomplete-error')[0];
+    if (!span) {
+        span = $("<span>", {
+            class: "important-note important-note-rounded",
+            style: "right: -10px; position: absolute; top: 0px;",
+            text: "!",
+            id: 'autocomplete-error'
+        });
+
+        span.appendTo(topInputParent);
+    } else {
+        span = $(span);
+        span.off("mouseenter mouseleave");
+    }
+
+    span.hover(function() { // mouse in
+        $.messagesWindow.empty();
+        $.messagesWindow.append(escapeHtml(errorText));
+        $.messagesWindow.show();
+    }, function() { // mouse out
+        $.messagesWindow.hide();
+    });
+}
+
+function hideError() {
+    var topInputParent = $('#q').parent();
+    var span = topInputParent.find('#autocomplete-error')[0];
+    if (span) {
+        span.remove();
+    }
 }
 
 function getSuggestionListItem(itemData) {
@@ -2167,4 +2205,21 @@ function textInputHasFocus() {
     return !!document.activeElement &&
         document.activeElement.nodeName === 'INPUT' &&
         document.activeElement.type === 'text';
+}
+
+var htmlEscapeMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;'
+};
+
+function escapeHtml(string) { // taken from https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery
+    return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+        return htmlEscapeMap[s];
+    });
 }
