@@ -245,7 +245,8 @@ class FieldWFSTCollection implements Closeable {
                     add = popularMap.getOrDefault(str, 0);
                 }
 
-                return SuggesterUtils.computeWeight(indexReader, field, last) + add * 1000;
+                return SuggesterUtils.computeWeight(indexReader, field, last)
+                        + add * SuggesterSearcher.TERM_ALREADY_SEARCHED_MULTIPLIER;
             }
 
             return DEFAULT_WEIGHT;
