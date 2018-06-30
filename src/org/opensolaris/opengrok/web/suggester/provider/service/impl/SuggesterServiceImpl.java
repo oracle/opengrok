@@ -73,6 +73,11 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     }
 
+    @Override
+    public void onSearch(Iterable<String> projects, Query q) {
+        suggester.onSearch(projects, q);
+    }
+
     private void initSuggester() {
         Configuration config = RuntimeEnvironment.getInstance().getConfiguration();
         if (config != null) {

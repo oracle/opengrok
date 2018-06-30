@@ -37,6 +37,12 @@ class FieldWFSTCollection {
 
     private static final String WFST_FILE_SUFFIX = ".wfst";
 
+    private static final String SEARCH_COUNT_MAP_NAME = "search_count.db";
+
+    private static final String AVG_KEY_KEY = "avgKey";
+
+    private static final String SIZE_KEY = "size";
+
     private static final int DEFAULT_WEIGHT = 0;
 
     private Directory indexDir;
@@ -46,6 +52,8 @@ class FieldWFSTCollection {
     public final Map<String, WFSTCompletionLookup> map = new HashMap<>();
 
     public final Map<String, ChronicleMap<String, Integer>> map2 = new HashMap<>();
+
+    private final Map<String, Double> averageLengths = new HashMap<>();
 
     FieldWFSTCollection(Directory indexDir, Path suggesterDir) {
         this.indexDir = indexDir;
@@ -65,18 +73,34 @@ class FieldWFSTCollection {
             rebuild();
         }
 
-        File f = Paths.get(suggesterDir.toString(), "searchbased_chronicle.db").toFile();
+        File f = suggesterDir.resolve(SEARCH_COUNT_MAP_NAME).toFile();
 
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
             for (String field : MultiFields.getIndexedFields(indexReader)) {
-                ChronicleMap<String, Integer> m = ChronicleMap.of(String.class, Integer.class)
-                        .name(field)
-                        .averageKey("my_phrase")
-                        .entries(map.get(field).getCount())
-                        .createOrRecoverPersistedTo(f);
 
+                try (ChronicleMap<String, Integer> configMap = ChronicleMap.of(String.class, Integer.class)
+                        .name(field + "_config")
+                        .averageKeySize((double) (AVG_KEY_KEY + SIZE_KEY).length() / 2)
+                        .entries(2)
+                        .createOrRecoverPersistedTo(f)) {
 
-                map2.put(field, m);
+                    int avgKey = configMap.getOrDefault(AVG_KEY_KEY, averageLengths.get(field).intValue() + 1);
+                    int size = configMap.getOrDefault(SIZE_KEY, (int) map.get(field).getCount() * 2);
+
+                    ChronicleMap<String, Integer> m = ChronicleMap.of(String.class, Integer.class)
+                            .name(field)
+                            .averageKeySize(avgKey)
+                            .entries(size)
+                            .createOrRecoverPersistedTo(f);
+
+                    if (size < map.get(field).getCount()) {
+                        // TODO: resize map
+
+                        map2.put(field, m);
+                    } else {
+                        map2.put(field, m);
+                    }
+                }
             }
         }
     }
@@ -107,11 +131,11 @@ class FieldWFSTCollection {
     }
 
     private WFSTCompletionLookup loadStoredWFST(final File file) throws IOException {
-        FileInputStream fis = new FileInputStream(file);
-
-        WFSTCompletionLookup lookup = createWFST();
-        lookup.load(fis);
-        return lookup;
+        try (FileInputStream fis = new FileInputStream(file)) {
+            WFSTCompletionLookup lookup = createWFST();
+            lookup.load(fis);
+            return lookup;
+        }
     }
 
     private WFSTCompletionLookup createWFST() throws IOException {
@@ -138,11 +162,14 @@ class FieldWFSTCollection {
     }
 
     private WFSTCompletionLookup build(final IndexReader indexReader, final String field) throws IOException {
-        InputIterator iterator = new MyInputIterator(
+        WFSTInputIterator iterator = new WFSTInputIterator(
                 new LuceneDictionary(indexReader, field).getEntryIterator(), indexReader, field);
 
         WFSTCompletionLookup lookup = createWFST();
         lookup.build(iterator);
+
+        double averageLength = (double) iterator.termLengthAccumulator / lookup.getCount();
+        averageLengths.put(field, averageLength);
 
         return lookup;
     }
@@ -170,7 +197,7 @@ class FieldWFSTCollection {
         }
     }
 
-    private static class MyInputIterator implements InputIterator {
+    private static class WFSTInputIterator implements InputIterator {
 
         private final InputIterator wrapped;
 
@@ -178,7 +205,9 @@ class FieldWFSTCollection {
 
         private final String field;
 
-        MyInputIterator(final InputIterator wrapped, final IndexReader indexReader, final String field) {
+        private long termLengthAccumulator = 0;
+
+        WFSTInputIterator(final InputIterator wrapped, final IndexReader indexReader, final String field) {
             this.wrapped = wrapped;
             this.indexReader = indexReader;
             this.field = field;
@@ -223,6 +252,13 @@ class FieldWFSTCollection {
             while (last != null && last.length > MAXIMUM_TERM_SIZE) {
                 last = wrapped.next();
             }
+
+            if (last != null) {
+                // it might be a little bigger because of UTF8 but overestimating is fine
+                // source code is almost always in English so there should not be much overhead
+                termLengthAccumulator += last.length;
+            }
+
             return last;
         }
     }
