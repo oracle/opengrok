@@ -23,6 +23,7 @@
 package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
@@ -40,6 +41,7 @@ public class SystemController {
     @Consumes(MediaType.TEXT_PLAIN)
     public void refresh(final String project) {
         env.maybeRefreshIndexSearchers(Collections.singleton(project));
+        SuggesterServiceImpl.getInstance().refresh(project);
     }
 
 }

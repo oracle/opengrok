@@ -1,5 +1,6 @@
 package org.opengrok.suggest;
 
+import net.openhft.chronicle.hash.ChronicleHash;
 import net.openhft.chronicle.map.ChronicleMap;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -12,6 +13,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,7 +29,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class FieldWFSTCollection {
+class FieldWFSTCollection implements Closeable {
 
     private static final Logger logger = Logger.getLogger(FieldWFSTCollection.class.getName());
 
@@ -191,10 +193,16 @@ class FieldWFSTCollection {
     }
 
     public void remove() {
+        close();
         boolean deleteSuccessful = suggesterDir.toFile().delete();
         if (!deleteSuccessful) {
             logger.log(Level.WARNING, "Cannot remove suggester data: {0}", suggesterDir);
         }
+    }
+
+    @Override
+    public void close() {
+        map2.values().forEach(ChronicleHash::close);
     }
 
     private static class WFSTInputIterator implements InputIterator {
