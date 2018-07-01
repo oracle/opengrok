@@ -66,8 +66,8 @@ def get_repos(logger, project, uri):
     Return  string with the result on success, None on failure.
     """
 
-    r = get(logger, uri + '/api/v1/projects/' +
-            urllib.parse.quote_plus(project) + '/repositories')
+    r = get(logger, get_uri(uri, 'api', 'v1', 'projects',
+                            urllib.parse.quote_plus(project), 'repositories'))
 
     if not r:
         logger.error('could not get repositories for ' + project)
@@ -86,8 +86,9 @@ def get_config_value(logger, name, uri):
 
     Return string with the result on success, None on failure.
     """
-    r = get(logger, uri + '/api/v1/configuration/' +
-            urllib.parse.quote_plus(name))
+    r = get(logger, get_uri(uri, 'api', 'v1', 'configuration',
+                            urllib.parse.quote_plus(name)))
+
     if not r:
         logger.error('could not get config value ' + name)
         return None
@@ -103,7 +104,8 @@ def get_repo_type(logger, repository, uri):
     """
     payload = {'repository': repository}
 
-    r = get(logger, uri + '/api/v1/repositories/type', params=payload)
+    r = get(logger, get_uri(uri, 'api', 'v1', 'repositories', 'type'),
+            params=payload)
     if not r:
         logger.error('could not get repo type for ' + repository)
         return None
@@ -115,7 +117,7 @@ def get_repo_type(logger, repository, uri):
 
 
 def get_configuration(logger, uri):
-    r = get(logger, uri + '/api/v1/configuration')
+    r = get(logger, get_uri(uri, 'api', 'v1', 'configuration'))
     if not r:
         logger.error('could not get configuration')
         return None
@@ -124,7 +126,8 @@ def get_configuration(logger, uri):
 
 
 def set_configuration(logger, configuration, uri):
-    r = put(logger, uri + '/api/v1/configuration', data=configuration)
+    r = put(logger, get_uri(uri, 'api', 'v1', 'configuration'),
+            data=configuration)
 
     if not r:
         logger.error('could not set configuration')
@@ -134,7 +137,7 @@ def set_configuration(logger, configuration, uri):
 
 
 def list_indexed_projects(logger, uri):
-    r = get(logger, uri + '/api/v1/projects/indexed')
+    r = get(logger, get_uri(uri, 'api', 'v1', 'projects', 'indexed'))
     if not r:
         logger.error('could not list indexed projects')
         return None
@@ -143,7 +146,7 @@ def list_indexed_projects(logger, uri):
 
 
 def add_project(logger, project, uri):
-    r = post(logger, uri + '/api/v1/projects', data=project)
+    r = post(logger, get_uri(uri, 'api', 'v1', 'projects'), data=project)
 
     if not r:
         logger.error('could not add project ' + project)
@@ -153,11 +156,15 @@ def add_project(logger, project, uri):
 
 
 def delete_project(logger, project, uri):
-    r = delete(logger, uri + '/api/v1/projects/' +
-               urllib.parse.quote_plus(project))
+    r = delete(logger, get_uri(uri, 'api', 'v1', 'projects',
+                               urllib.parse.quote_plus(project)))
 
     if not r:
         logger.error('could not delete project ' + project)
         return False
 
     return True
+
+
+def get_uri(*uri_parts):
+    return '/'.join(s.strip('/') for s in uri_parts)
