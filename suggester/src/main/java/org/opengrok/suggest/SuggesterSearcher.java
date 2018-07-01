@@ -102,7 +102,7 @@ class SuggesterSearcher extends IndexSearcher {
             final LeafReaderContext leafReaderContext,
             final String suggester,
             final SuggesterQuery suggesterQuery,
-            final ChronicleMap<String, Integer> map
+            final ChronicleMap<String, Integer> searchCounts
     ) throws IOException {
 
         boolean needsDocumentIds = query != null && !(query instanceof MatchAllDocsQuery);
@@ -140,7 +140,7 @@ class SuggesterSearcher extends IndexSearcher {
             }
 
             if (score > 0) {
-                int add = map.getOrDefault(term.utf8ToString(), 0);
+                int add = searchCounts.getOrDefault(term.utf8ToString(), 0);
                 score += add * TERM_ALREADY_SEARCHED_MULTIPLIER;
 
                 queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), suggester, score));
