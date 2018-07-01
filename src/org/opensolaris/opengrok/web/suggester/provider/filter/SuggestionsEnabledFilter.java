@@ -10,7 +10,7 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 @PreMatching
-public class SuggesterFilter implements ContainerRequestFilter {
+public class SuggestionsEnabledFilter implements ContainerRequestFilter {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

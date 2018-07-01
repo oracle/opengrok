@@ -9,7 +9,9 @@ import java.util.List;
 
 public final class SuggesterQueryData {
 
-    @QueryParam("projects[]")
+    public static final String PROJECTS_PARAM = "projects[]";
+
+    @QueryParam(PROJECTS_PARAM)
     private List<String> projects;
 
     @NotBlank
