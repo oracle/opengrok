@@ -1383,7 +1383,9 @@ public final class RuntimeEnvironment {
      */
     public void writeConfiguration(String host) throws IOException {
         Response r = ClientBuilder.newClient()
-                .target(host + "/api/v1")
+                .target(host)
+                .path("api")
+                .path("v1")
                 .path("configuration")
                 .queryParam("reindex", true)
                 .request()
@@ -1407,7 +1409,10 @@ public final class RuntimeEnvironment {
 
         subFiles.stream().map(proj -> new File(proj).getName()).forEach(project -> {
             Response r = ClientBuilder.newClient()
-                    .target(host + "/api/v1/system")
+                    .target(host)
+                    .path("api")
+                    .path("v1")
+                    .path("system")
                     .path("refresh")
                     .request()
                     .put(Entity.text(project));

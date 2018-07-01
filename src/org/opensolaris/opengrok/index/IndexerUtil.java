@@ -32,7 +32,10 @@ class IndexerUtil {
 
     static void enableProjects(final String host) {
         ClientBuilder.newClient()
-                .target(host + "/api/v1/configuration")
+                .target(host)
+                .path("api")
+                .path("v1")
+                .path("configuration")
                 .path("projectsEnabled")
                 .request()
                 .put(Entity.text(Boolean.TRUE.toString()));
