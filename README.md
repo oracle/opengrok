@@ -83,9 +83,9 @@ Each of these directories was created with `cvs checkout` command (with
 appropriate arguments to get given branch) and will be treated by OpenGrok
 as a project.
 
-### 3.2 Messages
+### 3.2 Web services
 
-See https://github.com/oracle/opengrok/wiki/Messages
+See https://github.com/oracle/opengrok/wiki/Web-services
 
 ## 4. OpenGrok install
 
@@ -259,8 +259,8 @@ It basically works like this:
   * this will create `/var/opengrok/etc/configuration.xml` with basic set of
     properties. If more is needed use:
 
-     ```
-     Messages -n config -t set "set propertyXY = valueFOO"
+     ```bash
+     curl -d "${value}" -H "Content-Type: text/plain" -X PUT "${webapp_uri}/api/v1/configuration/${property}"
      ```
 
 2. add a new project **foo**:
@@ -273,8 +273,8 @@ It basically works like this:
        searchable. Store the config in a file so that indexer can see the project
        and its repositories:
 
-     ```
-     Messages -n config -t getconf > /var/opengrok/etc/configuration.xml
+     ```bash
+     curl "${webapp_uri}/api/v1/configuration" > /var/opengrok/etc/configuration.xml
      ```
 
 3. index the project. It will become searchable after that.
@@ -287,11 +287,11 @@ It basically works like this:
 4. make the project `indexed` status of the project persistent so that if
      webapp is redeployed the project will be still visible:
 
-  ```
-  Messages -n config -t getconf > /var/opengrok/etc/configuration.xml
+  ```bash
+  curl "${webapp_uri}/api/v1/configuration" > /var/opengrok/etc/configuration.xml
   ```
 
-If an *add* message is sent that matches existing project, the list of
+If an *add project* REST API call is invoked that matches existing project, the list of
 repositories for that project will be refreshed. This is handy when repositories
 are added/deleted.
 
