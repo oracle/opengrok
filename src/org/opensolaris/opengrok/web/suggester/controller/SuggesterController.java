@@ -31,6 +31,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.web.suggester.model.SuggesterData;
 import org.opensolaris.opengrok.web.suggester.model.SuggesterQueryData;
 import org.opensolaris.opengrok.web.suggester.parser.SuggesterQueryDataParser;
+import org.opensolaris.opengrok.web.suggester.provider.filter.Authorized;
 import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
 
 import javax.inject.Inject;
@@ -57,6 +58,7 @@ public final class SuggesterController {
     private SuggesterService suggester;
 
     @GET
+    @Authorized
     @Produces(MediaType.APPLICATION_JSON)
     public Result getSuggestions(@Valid @BeanParam final SuggesterQueryData data) throws ParseException {
         Instant start = Instant.now();
