@@ -1717,7 +1717,8 @@ function pageReadyMast() {
 
 function domReadyMenu() {
     $.ajax({
-        url: window.contextPath + "/api/v1/configuration/suggester",
+        // cannot use "/api/v1/configuration/suggester" because of security
+        url: window.contextPath + "/suggest/config",
         dataType: "json",
         success: function(config) {
             if (config.enabled) {
