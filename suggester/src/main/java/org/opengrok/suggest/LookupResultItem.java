@@ -30,34 +30,34 @@ public final class LookupResultItem implements Comparable<LookupResultItem> {
 
     private final String phrase;
 
-    private final Set<String> suggesters = new HashSet<>();
+    private final Set<String> projects = new HashSet<>();
 
-    private long weight;
+    private long score;
 
-    LookupResultItem(final String phrase, final String suggester, final long weight) {
+    LookupResultItem(final String phrase, final String suggester, final long score) {
         this.phrase = phrase;
-        this.suggesters.add(suggester);
-        this.weight = weight;
+        this.projects.add(suggester);
+        this.score = score;
     }
 
     public String getPhrase() {
         return phrase;
     }
 
-    public Set<String> getSuggesters() {
-        return Collections.unmodifiableSet(suggesters);
+    public Set<String> getProjects() {
+        return Collections.unmodifiableSet(projects);
     }
 
-    public long getWeight() {
-        return weight;
+    public long getScore() {
+        return score;
     }
 
     void combine(final LookupResultItem other) {
         if (!canBeCombinedWith(other)) {
             throw new IllegalArgumentException("Cannot combine with " + other);
         }
-        suggesters.addAll(other.suggesters);
-        weight += other.weight;
+        projects.addAll(other.projects);
+        score += other.score;
     }
 
     private boolean canBeCombinedWith(final LookupResultItem other) {
@@ -66,11 +66,11 @@ public final class LookupResultItem implements Comparable<LookupResultItem> {
 
     @Override
     public int compareTo(final LookupResultItem other) {
-        return Long.compare(weight, other.weight);
+        return Long.compare(score, other.score);
     }
 
     @Override
     public String toString() {
-        return "LookupResultItem{phrase='" + phrase + "', suggesters=" + suggesters + ", weight=" + weight + '}';
+        return "LookupResultItem{phrase='" + phrase + "', projects=" + projects + ", score=" + score + '}';
     }
 }

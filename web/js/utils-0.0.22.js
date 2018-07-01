@@ -1719,9 +1719,9 @@ function domReadyMenu() {
     $.ajax({
         url: window.contextPath + "/api/v1/configuration/suggester",
         dataType: "json",
-        success: function(data) {
-            if (data.enabled) {
-                initAutocomplete();
+        success: function(config) {
+            if (config.enabled) {
+                initAutocomplete(config);
             }
         },
         error: function(xhr, ajaxOptions, error) {
@@ -1730,15 +1730,15 @@ function domReadyMenu() {
     });
 }
 
-function initAutocomplete() {
-    initAutocompleteForField("q", "full");
-    initAutocompleteForField("defs", "defs");
-    initAutocompleteForField("refs", "refs");
-    initAutocompleteForField("path", "path");
-    initAutocompleteForField("hist", "hist");
+function initAutocomplete(config) {
+    initAutocompleteForField("q", "full", config);
+    initAutocompleteForField("defs", "defs", config);
+    initAutocompleteForField("refs", "refs", config);
+    initAutocompleteForField("path", "path", config);
+    initAutocompleteForField("hist", "hist", config);
 }
 
-function initAutocompleteForField(inputId, field) {
+function initAutocompleteForField(inputId, field, config) {
     var text;
     var identifier;
     var time;
@@ -1787,7 +1787,7 @@ function initAutocompleteForField(inputId, field) {
         },
         create: function () {
             $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
-                var listItem = getSuggestionListItem(item);
+                var listItem = getSuggestionListItem(item, config);
 
                 return listItem.appendTo(ul);
             };
@@ -1797,11 +1797,12 @@ function initAutocompleteForField(inputId, field) {
                 $.each(items, function(index, item) {
                     _this._renderItemData(ul, item);
                 });
-
-                $("<li>", {
-                    class: "ui-state-disabled",
-                    text: time + 'ms'
-                }).appendTo(ul);
+                if (config.showSpeed) {
+                    $("<li>", {
+                        class: "ui-state-disabled",
+                        text: time + 'ms'
+                    }).appendTo(ul);
+                }
             };
         },
         focus: function (event, ui) {
@@ -1877,7 +1878,7 @@ function hideError() {
     }
 }
 
-function getSuggestionListItem(itemData) {
+function getSuggestionListItem(itemData, config) {
     if (itemData.selectable === false) {
         return $("<li>", {
             class: "ui-state-disabled",
@@ -1903,14 +1904,20 @@ function getSuggestionListItem(itemData) {
     }).appendTo(listItemChild);
 
     var projectInfoText = "";
-    if (itemData.suggesters.length > 1) {
-        projectInfoText = 'Found in ' + itemData.suggesters.length + ' projects';
-    } else {
-        projectInfoText = itemData.suggesters[0];
+    if (config.showProjects) {
+        if (itemData.projects.length > 1) {
+            projectInfoText = 'Found in ' + itemData.projects.length + ' projects';
+        } else {
+            projectInfoText = itemData.projects[0];
+        }
     }
 
+    var score = "";
+    if (config.showScores) {
+        score = ' (' + itemData.score + ')';
+    }
     $("<span>", {
-        text: projectInfoText + ' ' + itemData.weight,
+        text: projectInfoText + score,
         style: "float: right; color: #999999; font-style: italic; padding-right: 5px;"
     }).appendTo(listItemChild);
 
