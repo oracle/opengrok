@@ -112,6 +112,13 @@ public final class SuggesterController {
         return true;
     }
 
+    @GET
+    @Path("/config")
+    @Produces(MediaType.APPLICATION_JSON)
+    public SuggesterConfig getConfig() {
+        return RuntimeEnvironment.getInstance().getConfiguration().getSuggester();
+    }
+
     private static class Result {
 
         private long time;
