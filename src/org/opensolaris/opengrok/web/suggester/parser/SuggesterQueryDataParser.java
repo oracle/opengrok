@@ -1,3 +1,25 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.web.suggester.parser;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -21,7 +43,6 @@ public class SuggesterQueryDataParser {
     private static final Logger logger = Logger.getLogger(SuggesterQueryDataParser.class.getName());
 
     private SuggesterQueryDataParser() {
-
     }
 
     public static SuggesterData parse(final SuggesterQueryData data) throws ParseException {
@@ -51,7 +72,7 @@ public class SuggesterQueryDataParser {
 
         SuggesterQuery suggesterQuery = builder.getSuggesterQuery();
 
-        // builder can return the suggester query if it was simple query, we ignore the query in that case
+        // builder can return the suggester query if it was simple query, we ignore it in that case
         if (query.equals(suggesterQuery)) {
             query = null;
         }
@@ -60,7 +81,7 @@ public class SuggesterQueryDataParser {
     }
 
     private static ProcessedQueryData processQuery(final String text, final int caretPosition) {
-        logger.log(Level.FINER, "Processing: {0} at {1}", new Object[] {text, caretPosition});
+        logger.log(Level.FINEST, "Processing suggester query: {0} at {1}", new Object[] {text, caretPosition});
 
         String randomIdentifier = RandomStringUtils.randomAlphabetic(IDENTIFIER_LENGTH).toLowerCase();
         while (text.contains(randomIdentifier)) {

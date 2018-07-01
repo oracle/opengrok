@@ -1,3 +1,25 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opengrok.suggest;
 
 import net.openhft.chronicle.map.ChronicleMap;
@@ -34,8 +56,6 @@ class SuggesterSearcher extends IndexSearcher {
 
     private static final Logger logger = Logger.getLogger(SuggesterSearcher.class.getName());
 
-    private String project;
-
     private final int resultSize;
 
     SuggesterSearcher(final IndexReader reader, final int resultSize) {
@@ -43,8 +63,12 @@ class SuggesterSearcher extends IndexSearcher {
         this.resultSize = resultSize;
     }
 
-    public List<LookupResultItem> search(final Query query, final String suggester, final SuggesterQuery suggesterQuery, ChronicleMap<String, Integer> map) {
-        this.project = suggester;
+    public List<LookupResultItem> search(
+            final Query query,
+            final String suggester,
+            final SuggesterQuery suggesterQuery,
+            final ChronicleMap<String, Integer> searchCountMap
+    ) {
         List<LookupResultItem> results = new LinkedList<>();
 
         Query rewrittenQuery = null;
@@ -60,7 +84,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         for (LeafReaderContext context : this.leafContexts) {
             try {
-                results.addAll(search(rewrittenQuery, context, suggester, suggesterQuery, map));
+                results.addAll(search(rewrittenQuery, context, suggester, suggesterQuery, searchCountMap));
             } catch (IOException e) {
                 logger.log(Level.WARNING, "Cannot perform suggester search", e);
             }
@@ -106,20 +130,20 @@ class SuggesterSearcher extends IndexSearcher {
                 postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.NONE);
             }
 
-            int weight;
+            int score;
             if (!needsDocumentIds) {
-                weight = termsEnum.docFreq();
+                score = termsEnum.docFreq();
             } else if (needPositionsAndFrequencies) {
-                weight = getPhraseScore(complexQueryData, leafReaderContext.docBase, postingsEnum);
+                score = getPhraseScore(complexQueryData, leafReaderContext.docBase, postingsEnum);
             } else {
-                weight = getDocumentFrequency(complexQueryData.documentIds, leafReaderContext.docBase, postingsEnum);
+                score = getDocumentFrequency(complexQueryData.documentIds, leafReaderContext.docBase, postingsEnum);
             }
 
-            if (weight > 0) {
+            if (score > 0) {
                 int add = map.getOrDefault(term.utf8ToString(), 0);
-                weight += add * TERM_ALREADY_SEARCHED_MULTIPLIER;
+                score += add * TERM_ALREADY_SEARCHED_MULTIPLIER;
 
-                queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), suggester, weight));
+                queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), suggester, score));
             }
 
             term = termsEnum.next();
@@ -128,7 +152,7 @@ class SuggesterSearcher extends IndexSearcher {
         return queue.getResult();
     }
 
-    private ComplexQueryData getComplexQueryData(Query query, LeafReaderContext leafReaderContext) {
+    private ComplexQueryData getComplexQueryData(final Query query, final LeafReaderContext leafReaderContext) {
         ComplexQueryData data = new ComplexQueryData();
         if (query == null || query instanceof SuggesterQuery) {
             data.documentIds = new BitIntsHolder(0);
@@ -180,7 +204,7 @@ class SuggesterSearcher extends IndexSearcher {
                 }
             });
         } catch (Exception e) {
-            logger.log(Level.WARNING, project, e);
+            logger.log(Level.WARNING, "Could not get document ids for " + query, e);
         }
 
         data.documentIds = documentIds;
@@ -225,7 +249,7 @@ class SuggesterSearcher extends IndexSearcher {
         return weight;
     }
 
-    private boolean needPositionsAndFrequencies(Query query) {
+    private boolean needPositionsAndFrequencies(final Query query) {
         if (query instanceof CustomPhraseQuery) {
             return true;
         }

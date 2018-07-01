@@ -1,3 +1,25 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opengrok.suggest.query;
 
 import org.apache.lucene.index.IndexReader;
@@ -7,11 +29,22 @@ import org.opengrok.suggest.query.customized.CustomPhraseQuery;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SuggesterPhraseQuery extends Query {
 
     private enum SuggestPosition {
-        START, MIDDLE, END
+        START, MIDDLE, END;
+
+        private static SuggestPosition from(final int pos, final int size) {
+            if (pos == 0) {
+                return SuggestPosition.START;
+            } else if (pos == size - 1) {
+                return SuggestPosition.END;
+            } else {
+                return SuggestPosition.MIDDLE;
+            }
+        }
     }
 
     private CustomPhraseQuery phraseQuery;
@@ -46,7 +79,7 @@ public class SuggesterPhraseQuery extends Query {
             throw new IllegalStateException();
         }
 
-        SuggestPosition p = getPosition(pos, tokens.size());
+        SuggestPosition p = SuggestPosition.from(pos, tokens.size());
 
         if (p == SuggestPosition.START) {
             phraseQuery = new CustomPhraseQuery(slop, field, tokens.stream().filter(t -> !t.contains(identifier)).toArray(String[]::new));
@@ -71,33 +104,34 @@ public class SuggesterPhraseQuery extends Query {
     }
 
     @Override
-    public String toString(String s) {
-        return null;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return false;
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        SuggesterPhraseQuery that = (SuggesterPhraseQuery) o;
+        return Objects.equals(phraseQuery, that.phraseQuery) &&
+                Objects.equals(suggesterQuery, that.suggesterQuery);
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        return Objects.hash(phraseQuery, suggesterQuery);
     }
 
     @Override
-    public Query rewrite(IndexReader reader) {
-        return phraseQuery.rewrite(reader);
+    public String toString(final String field) {
+        return "SuggesterPhraseQuery{" +
+                "phraseQuery=" + phraseQuery +
+                ", suggesterQuery=" + suggesterQuery +
+                '}';
     }
 
-    private static SuggestPosition getPosition(int pos, int size) {
-        if (pos == 0) {
-            return SuggestPosition.START;
-        } else if (pos == size - 1) {
-            return SuggestPosition.END;
-        } else {
-            return SuggestPosition.MIDDLE;
-        }
+    @Override
+    public Query rewrite(final IndexReader reader) {
+        return phraseQuery.rewrite(reader);
     }
 
 }

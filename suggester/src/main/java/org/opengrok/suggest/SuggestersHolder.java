@@ -52,7 +52,7 @@ public final class SuggestersHolder {
 
     private static final Logger logger = Logger.getLogger(SuggestersHolder.class.getName());
 
-    private static final int AWAIT_TERMINATION_TIME_SECONDS = 180;
+    private static final int AWAIT_TERMINATION_TIME_SECONDS = 300;
 
     private static final int DEFAULT_RESULT_SIZE = 10;
 
@@ -225,7 +225,7 @@ public final class SuggestersHolder {
         return SuggesterUtils.combineResults(results, DEFAULT_RESULT_SIZE);
     }
 
-    public void onSearch(Iterable<String> projects, Query query) {
+    public void onSearch(final Iterable<String> projects, final Query query) {
         List<Term> terms = SuggesterUtils.intoTerms(query);
 
         for (String project : projects) {
@@ -244,7 +244,7 @@ public final class SuggestersHolder {
 
         private final IndexReader reader;
 
-        public NamedIndexReader(String name, IndexReader reader) {
+        public NamedIndexReader(final String name, final IndexReader reader) {
             this.name = name;
             this.reader = reader;
         }
