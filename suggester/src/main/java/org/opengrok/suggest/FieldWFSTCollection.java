@@ -77,7 +77,7 @@ class FieldWFSTCollection implements Closeable {
 
     private Path suggesterDir;
 
-    public final Map<String, WFSTCompletionLookup> map = new HashMap<>();
+    private final Map<String, WFSTCompletionLookup> lookups = new HashMap<>();
 
     private final Map<String, ChronicleMap<String, Integer>> searchCountMaps = new HashMap<>();
 
@@ -120,7 +120,7 @@ class FieldWFSTCollection implements Closeable {
                 File WFSTfile = getWFSTFile(field);
                 if (WFSTfile.exists()) {
                     WFSTCompletionLookup WFST = loadStoredWFST(WFSTfile);
-                    map.put(field, WFST);
+                    lookups.put(field, WFST);
                 } else {
                     logger.log(Level.INFO, "Missing FieldWFSTCollection file for {0} field in {1}, creating a new one",
                             new Object[] {field, suggesterDir});
@@ -128,7 +128,7 @@ class FieldWFSTCollection implements Closeable {
                     WFSTCompletionLookup lookup = build(indexReader, field);
                     store(lookup, field);
 
-                    map.put(field, lookup);
+                    lookups.put(field, lookup);
                 }
             }
         }
@@ -160,7 +160,7 @@ class FieldWFSTCollection implements Closeable {
                 WFSTCompletionLookup lookup = build(indexReader, field);
                 store(lookup, field);
 
-                map.put(field, lookup);
+                lookups.put(field, lookup);
             }
         }
     }
@@ -201,7 +201,7 @@ class FieldWFSTCollection implements Closeable {
                     }
 
                     int avgKey = configMap.getOrDefault(AVG_KEY_KEY, avgKeyLength);
-                    int size = configMap.getOrDefault(SIZE_KEY, (int) map.get(field).getCount() * 2);
+                    int size = configMap.getOrDefault(SIZE_KEY, (int) lookups.get(field).getCount() * 2);
 
                     ChronicleMap<String, Integer> m = ChronicleMap.of(String.class, Integer.class)
                             .name(field)
@@ -209,8 +209,8 @@ class FieldWFSTCollection implements Closeable {
                             .entries(size)
                             .createOrRecoverPersistedTo(f);
 
-                    if (size < map.get(field).getCount()) {
-                        // TODO: resize map
+                    if (size < lookups.get(field).getCount()) {
+                        // TODO: resize lookups
 
                         searchCountMaps.put(field, m);
                     } else {
@@ -223,7 +223,7 @@ class FieldWFSTCollection implements Closeable {
 
     public List<Lookup.LookupResult> lookup(final String field, final String prefix, final int resultSize) {
         try {
-            return map.get(field).lookup(prefix, false, resultSize);
+            return lookups.get(field).lookup(prefix, false, resultSize);
         } catch (IOException e) {
             logger.log(Level.WARNING, "Could not perform lookup in {0} for {1}:{2}",
                     new Object[] {suggesterDir, field, prefix});
