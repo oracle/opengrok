@@ -13,7 +13,7 @@ class LookupPriorityQueue extends PriorityQueue<LookupResultItem> {
 
     @Override
     protected boolean lessThan(final LookupResultItem item1, final LookupResultItem item2) {
-        return item1.getWeight() < item2.getWeight();
+        return item1.getScore() < item2.getScore();
     }
 
     List<LookupResultItem> getResult() {
