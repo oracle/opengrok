@@ -24,7 +24,6 @@ package org.opensolaris.opengrok.web.suggester.controller;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.opengrok.suggest.LookupResultItem;
-import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.SuggesterConfig;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -50,7 +49,7 @@ import java.util.logging.Logger;
 @Path("/")
 public final class SuggesterController {
 
-    private final Logger logger = LoggerFactory.getLogger(SuggesterController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SuggesterController.class);
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -65,12 +64,7 @@ public final class SuggesterController {
 
         SuggesterData suggesterData = SuggesterQueryDataParser.parse(data);
 
-        Configuration mainConfig = env.getConfiguration();
-        if (mainConfig == null) {
-            throw new IllegalStateException("No configuration specified");
-        }
-
-        SuggesterConfig config = mainConfig.getSuggester();
+        SuggesterConfig config = env.getConfiguration().getSuggester();
 
         modifyDataBasedOnConfiguration(suggesterData, config);
 
@@ -131,7 +125,12 @@ public final class SuggesterController {
 
         private String queryText;
 
-        Result(List<LookupResultItem> suggestions, String identifier, String queryText, long time) {
+        Result(
+                final List<LookupResultItem> suggestions,
+                final String identifier,
+                final String queryText,
+                final long time
+        ) {
             this.suggestions = suggestions;
             this.identifier = identifier;
             this.queryText = queryText;
