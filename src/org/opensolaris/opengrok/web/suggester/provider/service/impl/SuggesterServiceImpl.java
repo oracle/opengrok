@@ -29,12 +29,13 @@ import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import org.apache.lucene.search.Query;
 import org.opengrok.suggest.LookupResultItem;
-import org.opengrok.suggest.SuggestersHolder;
-import org.opengrok.suggest.SuggestersHolder.NamedIndexReader;
+import org.opengrok.suggest.Suggester;
+import org.opengrok.suggest.Suggester.NamedIndexReader;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.SuggesterConfig;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
@@ -61,7 +62,7 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     private static final Logger logger = LoggerFactory.getLogger(SuggesterServiceImpl.class);
 
-    private SuggestersHolder suggester;
+    private Suggester suggester;
 
     private static SuggesterServiceImpl instance;
 
@@ -131,14 +132,19 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     private void initSuggester() {
         Configuration config = env.getConfiguration();
-        if (config != null) {
-            suggester = new SuggestersHolder(new File(config.getDataRoot(), IndexDatabase.SUGGESTER_DIR));
 
-            new Thread(() -> {
-                suggester.init(getAllProjectIndexDirs());
-                scheduleRebuild();
-            }).start();
-        }
+        SuggesterConfig suggesterConfig = config.getSuggester();
+
+        File suggesterDir = new File(config.getDataRoot(), IndexDatabase.SUGGESTER_DIR);
+        suggester = new Suggester(suggesterDir,
+                suggesterConfig.getMaxResults(),
+                Duration.ofSeconds(suggesterConfig.getSuggesterBuildTerminationTimeSec()),
+                suggesterConfig.isAllowMostPopular());
+
+        new Thread(() -> {
+            suggester.init(getAllProjectIndexDirs());
+            scheduleRebuild();
+        }).start();
     }
 
     private static List<Path> getAllProjectIndexDirs() {

@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -48,29 +49,41 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public final class SuggestersHolder {
+public final class Suggester {
 
-    private static final Logger logger = Logger.getLogger(SuggestersHolder.class.getName());
+    private static final Logger logger = Logger.getLogger(Suggester.class.getName());
 
-    private static final int AWAIT_TERMINATION_TIME_SECONDS = 300;
-
-    private static final int DEFAULT_RESULT_SIZE = 10;
-
-    private final Map<String, FieldWFSTCollection> map = new ConcurrentHashMap<>();
+    private final Map<String, FieldWFSTCollection> projectData = new ConcurrentHashMap<>();
 
     private final Object lock = new Object();
 
     private final File suggesterDir;
 
-    public SuggestersHolder(final File suggesterDir) {
+    private int resultSize;
+
+    private Duration awaitTerminationTime;
+
+    private boolean allowMostPopular;
+
+    public Suggester(
+            final File suggesterDir,
+            final int resultSize,
+            final Duration awaitTerminationTime,
+            final boolean allowMostPopular
+    ) {
         if (suggesterDir == null) {
             throw new IllegalArgumentException("Suggester needs to have directory specified");
         }
         if (suggesterDir.exists() && !suggesterDir.isDirectory()) {
-            throw new IllegalArgumentException("Provided directory is not a directory");
+            throw new IllegalArgumentException(suggesterDir + " is not a directory");
         }
 
         this.suggesterDir = suggesterDir;
+
+        setResultSize(resultSize);
+        setAwaitTerminationTime(awaitTerminationTime);
+
+        this.allowMostPopular = allowMostPopular;
     }
 
     public void init(final Collection<Path> luceneIndexes) {
@@ -98,9 +111,10 @@ public final class SuggestersHolder {
                 logger.log(Level.FINE, "Initializing {0}", indexDir);
 
                 FieldWFSTCollection wfst = new FieldWFSTCollection(FSDirectory.open(indexDir), Paths.get(
-                        SuggestersHolder.this.suggesterDir.getAbsolutePath(), indexDir.getFileName().toString()));
+                        Suggester.this.suggesterDir.getAbsolutePath(), indexDir.getFileName().toString()),
+                        allowMostPopular);
                 wfst.init();
-                map.put(indexDir.getFileName().toString(), wfst);
+                projectData.put(indexDir.getFileName().toString(), wfst);
 
                 logger.log(Level.FINE, "Finished initialization for {0}", indexDir);
             } catch (Exception e) {
@@ -130,7 +144,7 @@ public final class SuggestersHolder {
     private void shutdownAndAwaitTermination(final ExecutorService executorService, final String logMessageOnSuccess) {
         executorService.shutdown();
         try {
-            executorService.awaitTermination(AWAIT_TERMINATION_TIME_SECONDS, TimeUnit.SECONDS);
+            executorService.awaitTermination(awaitTerminationTime.toMillis(), TimeUnit.MILLISECONDS);
             logger.log(Level.INFO, logMessageOnSuccess);
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "Interrupted while building suggesters", e);
@@ -149,7 +163,7 @@ public final class SuggestersHolder {
             ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
             for (Path indexDir : indexDirs) {
-                FieldWFSTCollection fieldsWFST = map.get(indexDir.getFileName().toString());
+                FieldWFSTCollection fieldsWFST = projectData.get(indexDir.getFileName().toString());
                 if (fieldsWFST != null) {
                     executorService.submit(getRebuildRunnable(fieldsWFST));
                 } else {
@@ -173,22 +187,22 @@ public final class SuggestersHolder {
         };
     }
 
-    public void remove(final Iterable<String> suggesterNames) {
-        if (suggesterNames == null) {
+    public void remove(final Iterable<String> projectNames) {
+        if (projectNames == null) {
             return;
         }
 
         synchronized (lock) {
-            logger.log(Level.INFO, "Removing following suggesters: {0}", suggesterNames);
+            logger.log(Level.INFO, "Removing following suggesters: {0}", projectNames);
 
-            for (String suggesterName : suggesterNames) {
-                FieldWFSTCollection collection = map.get(suggesterName);
+            for (String suggesterName : projectNames) {
+                FieldWFSTCollection collection = projectData.get(suggesterName);
                 if (collection == null) {
                     logger.log(Level.WARNING, "Unknown suggester {0}", suggesterName);
                     continue;
                 }
                 collection.remove();
-                map.remove(suggesterName);
+                projectData.remove(suggesterName);
             }
         }
     }
@@ -208,34 +222,57 @@ public final class SuggestersHolder {
 
             if (isOnlySuggestQuery && suggesterQuery instanceof SuggesterPrefixQuery) {
                 String prefix = ((SuggesterPrefixQuery) suggesterQuery).getPrefix().text();
-                return map.get(namedIndexReader.name)
-                        .lookup(suggesterQuery.getField(), prefix, DEFAULT_RESULT_SIZE)
+                return projectData.get(namedIndexReader.name)
+                        .lookup(suggesterQuery.getField(), prefix, resultSize)
                         .stream()
                         .map(item -> new LookupResultItem(item.key.toString(), namedIndexReader.name, item.value));
             } else {
-                SuggesterSearcher searcher = new SuggesterSearcher(namedIndexReader.reader, DEFAULT_RESULT_SIZE);
+                SuggesterSearcher searcher = new SuggesterSearcher(namedIndexReader.reader, resultSize);
 
-                List<LookupResultItem> resultItems = searcher.search(query, namedIndexReader.name, suggesterQuery, map.get(namedIndexReader.name).map2.get(suggesterQuery.getField()));
+                List<LookupResultItem> resultItems = searcher.search(query, namedIndexReader.name, suggesterQuery,
+                        projectData.get(namedIndexReader.name).getSearchCountMap(suggesterQuery.getField()));
 
                 return resultItems.stream();
             }
         }).collect(Collectors.toList());
 
 
-        return SuggesterUtils.combineResults(results, DEFAULT_RESULT_SIZE);
+        return SuggesterUtils.combineResults(results, resultSize);
     }
 
     public void onSearch(final Iterable<String> projects, final Query query) {
-        List<Term> terms = SuggesterUtils.intoTerms(query);
-
-        for (String project : projects) {
-
-            for (Term t : terms) {
-                ChronicleMap<String, Integer> m = map.get(project).map2.get(t.field());
-
-                m.merge(t.text(), 1, (a, b) -> a + b);
-            }
+        if (!allowMostPopular) {
+            return;
         }
+        try {
+            List<Term> terms = SuggesterUtils.intoTerms(query);
+
+            for (String project : projects) {
+
+                for (Term t : terms) {
+                    ChronicleMap<String, Integer> m = projectData.get(project).getSearchCountMap(t.field());
+
+                    m.merge(t.text(), 1, (a, b) -> a + b);
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.FINE, "Could not update search count map", e);
+        }
+    }
+
+    public final void setResultSize(final int resultSize) {
+        if (resultSize < 0) {
+            throw new IllegalArgumentException("Result size cannot be negative");
+        }
+        this.resultSize = resultSize;
+    }
+
+    public final void setAwaitTerminationTime(final Duration awaitTerminationTime) {
+        if (awaitTerminationTime.isNegative() || awaitTerminationTime.isZero()) {
+            throw new IllegalArgumentException(
+                    "Time to await termination of building the suggester data cannot be 0 or negative");
+        }
+        this.awaitTerminationTime = awaitTerminationTime;
     }
 
     public static class NamedIndexReader {

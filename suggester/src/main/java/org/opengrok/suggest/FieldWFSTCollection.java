@@ -34,6 +34,7 @@ import org.apache.lucene.search.suggest.fst.WFSTCompletionLookup;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.suggest.util.ChronicleMapUtils;
 
 import java.io.Closeable;
 import java.io.File;
@@ -75,13 +76,16 @@ class FieldWFSTCollection implements Closeable {
 
     public final Map<String, WFSTCompletionLookup> map = new HashMap<>();
 
-    public final Map<String, ChronicleMap<String, Integer>> map2 = new HashMap<>();
+    private final Map<String, ChronicleMap<String, Integer>> searchCountMaps = new HashMap<>();
 
     private final Map<String, Double> averageLengths = new HashMap<>();
 
-    FieldWFSTCollection(Directory indexDir, Path suggesterDir) {
+    private boolean allowMostPopular;
+
+    FieldWFSTCollection(final Directory indexDir, final Path suggesterDir, final boolean allowMostPopular) {
         this.indexDir = indexDir;
         this.suggesterDir = suggesterDir;
+        this.allowMostPopular = allowMostPopular;
     }
 
     public void init() throws IOException {
@@ -97,7 +101,9 @@ class FieldWFSTCollection implements Closeable {
             rebuild();
         }
 
-        initSearchCountMap();
+        if (allowMostPopular) {
+            initSearchCountMap();
+        }
     }
 
     private boolean hasStoredData() {
@@ -158,7 +164,7 @@ class FieldWFSTCollection implements Closeable {
 
     private WFSTCompletionLookup build(final IndexReader indexReader, final String field) throws IOException {
         WFSTInputIterator iterator = new WFSTInputIterator(
-                new LuceneDictionary(indexReader, field).getEntryIterator(), indexReader, field, map2.get(field));
+                new LuceneDictionary(indexReader, field).getEntryIterator(), indexReader, field, getSearchCountMap(field));
 
         WFSTCompletionLookup lookup = createWFST();
         lookup.build(iterator);
@@ -203,9 +209,9 @@ class FieldWFSTCollection implements Closeable {
                     if (size < map.get(field).getCount()) {
                         // TODO: resize map
 
-                        map2.put(field, m);
+                        searchCountMaps.put(field, m);
                     } else {
-                        map2.put(field, m);
+                        searchCountMaps.put(field, m);
                     }
                 }
             }
@@ -230,9 +236,17 @@ class FieldWFSTCollection implements Closeable {
         }
     }
 
+    public ChronicleMap<String, Integer> getSearchCountMap(final String field) {
+        if (!searchCountMaps.containsKey(field)) {
+            return ChronicleMapUtils.empty(String.class, Integer.class);
+        }
+
+        return searchCountMaps.get(field);
+    }
+
     @Override
     public void close() {
-        map2.values().forEach(ChronicleHash::close);
+        searchCountMaps.values().forEach(ChronicleHash::close);
     }
 
     private static class WFSTInputIterator implements InputIterator {
@@ -245,14 +259,18 @@ class FieldWFSTCollection implements Closeable {
 
         private long termLengthAccumulator = 0;
 
-        ChronicleMap<String, Integer> popularMap;
+        ChronicleMap<String, Integer> searchCounts;
 
-        WFSTInputIterator(final InputIterator wrapped, final IndexReader indexReader, final String field,
-                          ChronicleMap<String, Integer> popularMap) {
+        WFSTInputIterator(
+                final InputIterator wrapped,
+                final IndexReader indexReader,
+                final String field,
+                final ChronicleMap<String, Integer> searchCounts
+        ) {
             this.wrapped = wrapped;
             this.indexReader = indexReader;
             this.field = field;
-            this.popularMap = popularMap;
+            this.searchCounts = searchCounts;
         }
 
         private BytesRef last;
@@ -262,10 +280,7 @@ class FieldWFSTCollection implements Closeable {
             if (last != null) {
                 String str = last.utf8ToString();
 
-                int add = 0;
-                if (popularMap != null) {
-                    add = popularMap.getOrDefault(str, 0);
-                }
+                int add = searchCounts.getOrDefault(str, 0);
 
                 return SuggesterUtils.computeWeight(indexReader, field, last)
                         + add * SuggesterSearcher.TERM_ALREADY_SEARCHED_MULTIPLIER;

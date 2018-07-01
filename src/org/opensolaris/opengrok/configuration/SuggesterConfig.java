@@ -1,3 +1,25 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.configuration;
 
 import java.util.Set;
@@ -11,9 +33,10 @@ public class SuggesterConfig {
     public static final boolean ALLOW_COMPLEX_QUERIES_DEFAULT = true;
     public static final boolean ALLOW_MOST_POPULAR_DEFAULT = true;
     public static final boolean SHOW_SCORES_DEFAULT = false;
-    public static final boolean SHOW_INDEXES_DEFAULT = true;
+    public static final boolean SHOW_PROJECTS_DEFAULT = true;
     public static final boolean SHOW_SPEED_DEFAULT = false;
     public static final String REBUILD_CRON_CONFIG_DEFAULT = "0 0 * * *"; // every day at midnight
+    public static final int SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT = 1800; // half an hour should be enough
 
     public static final Set<String> allowedProjectsDefault = null;
     public static final Set<String> allowedFieldsDefault = null;
@@ -42,6 +65,8 @@ public class SuggesterConfig {
 
     private String rebuildCronConfig;
 
+    private int suggesterBuildTerminationTimeSec;
+
     private SuggesterConfig() {
     }
 
@@ -56,9 +81,10 @@ public class SuggesterConfig {
         config.setAllowComplexQueries(ALLOW_COMPLEX_QUERIES_DEFAULT);
         config.setAllowMostPopular(ALLOW_MOST_POPULAR_DEFAULT);
         config.setShowScores(true); // TODO: change after implementation complete
-        config.setShowProjects(SHOW_INDEXES_DEFAULT);
+        config.setShowProjects(SHOW_PROJECTS_DEFAULT);
         config.setShowSpeed(true); // TODO: change after implementation complete
         config.setRebuildCronConfig(REBUILD_CRON_CONFIG_DEFAULT);
+        config.setSuggesterBuildTerminationTimeSec(SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT);
         return config;
     }
 
@@ -66,7 +92,7 @@ public class SuggesterConfig {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
+    public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
     }
 
@@ -74,7 +100,7 @@ public class SuggesterConfig {
         return maxResults;
     }
 
-    public void setMaxResults(int maxResults) {
+    public void setMaxResults(final int maxResults) {
         this.maxResults = maxResults;
     }
 
@@ -82,7 +108,7 @@ public class SuggesterConfig {
         return minChars;
     }
 
-    public void setMinChars(int minChars) {
+    public void setMinChars(final int minChars) {
         this.minChars = minChars;
     }
 
@@ -90,7 +116,7 @@ public class SuggesterConfig {
         return allowedProjects;
     }
 
-    public void setAllowedProjects(Set<String> allowedProjects) {
+    public void setAllowedProjects(final Set<String> allowedProjects) {
         this.allowedProjects = allowedProjects;
     }
 
@@ -98,7 +124,7 @@ public class SuggesterConfig {
         return maxProjects;
     }
 
-    public void setMaxProjects(int maxProjects) {
+    public void setMaxProjects(final int maxProjects) {
         this.maxProjects = maxProjects;
     }
 
@@ -106,7 +132,7 @@ public class SuggesterConfig {
         return allowedFields;
     }
 
-    public void setAllowedFields(Set<String> allowedFields) {
+    public void setAllowedFields(final Set<String> allowedFields) {
         this.allowedFields = allowedFields;
     }
 
@@ -114,7 +140,7 @@ public class SuggesterConfig {
         return allowComplexQueries;
     }
 
-    public void setAllowComplexQueries(boolean allowComplexQueries) {
+    public void setAllowComplexQueries(final boolean allowComplexQueries) {
         this.allowComplexQueries = allowComplexQueries;
     }
 
@@ -122,7 +148,7 @@ public class SuggesterConfig {
         return allowMostPopular;
     }
 
-    public void setAllowMostPopular(boolean allowMostPopular) {
+    public void setAllowMostPopular(final boolean allowMostPopular) {
         this.allowMostPopular = allowMostPopular;
     }
 
@@ -130,7 +156,7 @@ public class SuggesterConfig {
         return showScores;
     }
 
-    public void setShowScores(boolean showScores) {
+    public void setShowScores(final boolean showScores) {
         this.showScores = showScores;
     }
 
@@ -138,7 +164,7 @@ public class SuggesterConfig {
         return showProjects;
     }
 
-    public void setShowProjects(boolean showProjects) {
+    public void setShowProjects(final boolean showProjects) {
         this.showProjects = showProjects;
     }
 
@@ -146,7 +172,7 @@ public class SuggesterConfig {
         return showSpeed;
     }
 
-    public void setShowSpeed(boolean showSpeed) {
+    public void setShowSpeed(final boolean showSpeed) {
         this.showSpeed = showSpeed;
     }
 
@@ -154,7 +180,15 @@ public class SuggesterConfig {
         return rebuildCronConfig;
     }
 
-    public void setRebuildCronConfig(String rebuildCronConfig) {
+    public void setRebuildCronConfig(final String rebuildCronConfig) {
         this.rebuildCronConfig = rebuildCronConfig;
+    }
+
+    public int getSuggesterBuildTerminationTimeSec() {
+        return suggesterBuildTerminationTimeSec;
+    }
+
+    public void setSuggesterBuildTerminationTimeSec(final int suggesterBuildTerminationTimeSec) {
+        this.suggesterBuildTerminationTimeSec = suggesterBuildTerminationTimeSec;
     }
 }
