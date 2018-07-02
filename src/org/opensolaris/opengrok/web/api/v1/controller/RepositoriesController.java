@@ -38,7 +38,7 @@ public class RepositoriesController {
 
     @GET
     @Path("/type")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public String getType(@QueryParam("repository") final String repository) {
         for (RepositoryInfo ri : env.getRepositories()) {
             if (ri.getDirectoryNameRelative().equals(repository)) {

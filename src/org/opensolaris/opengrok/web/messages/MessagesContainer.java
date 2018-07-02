@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class MessagesContainer {
 
@@ -55,6 +57,18 @@ public class MessagesContainer {
     private Timer expirationTimer;
 
     private final Object lock = new Object();
+
+    /**
+     * @return all messages regardless their tag
+     */
+    public Set<AcceptedMessage> getAllMessages() {
+        synchronized (lock) {
+            if (expirationTimer == null) {
+                expireMessages();
+            }
+            return tagMessages.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
+        }
+    }
 
     /**
      * Get the default set of messages for the main tag.

@@ -29,18 +29,16 @@ import org.opensolaris.opengrok.web.messages.MessagesContainer.AcceptedMessage;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.Set;
-import java.util.SortedSet;
-
-import static org.opensolaris.opengrok.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
 
 @Path("/messages")
 public class MessagesController {
@@ -56,16 +54,21 @@ public class MessagesController {
     }
 
     @DELETE
-    public void removeMessagesWithTag(@QueryParam("tag") final Set<String> tags) {
-        env.removeAnyMessage(tags);
+    public void removeMessagesWithTag(@QueryParam("tag") final String tag) {
+        if (tag == null) {
+            throw new WebApplicationException("Message tag has to be specified", Response.Status.BAD_REQUEST);
+        }
+        env.removeAnyMessage(Collections.singleton(tag));
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public SortedSet<AcceptedMessage> getMessages(
-            @QueryParam("tag") @DefaultValue(MESSAGES_MAIN_PAGE_TAG) final String tag
-    ) {
-        return env.getMessages(tag);
+    public Set<AcceptedMessage> getMessages(@QueryParam("tag") final String tag) {
+        if (tag != null) {
+            return env.getMessages(tag);
+        } else {
+            return env.getAllMessages();
+        }
     }
 
 }

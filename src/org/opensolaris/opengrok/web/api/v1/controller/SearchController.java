@@ -40,6 +40,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Path("/search")
@@ -51,7 +52,7 @@ public class SearchController {
     @Produces(MediaType.APPLICATION_JSON)
     public SearchResult search(
             @Context final HttpServletRequest req,
-            @QueryParam("freetext") final String freetext,
+            @QueryParam("full") final String full,
             @QueryParam("def") final String def,
             @QueryParam("symbol") final String symbol,
             @QueryParam("path") final String path,
@@ -59,9 +60,9 @@ public class SearchController {
             @QueryParam("type") final String type,
             @QueryParam("projects") final List<String> projects,
             @QueryParam("maxresults") @DefaultValue(MAX_RESULTS + "") final int maxResults,
-            @QueryParam("start") @DefaultValue(0 + "") final int startIndex
+            @QueryParam("start") @DefaultValue(0 + "") final int startDocIndex
     ) {
-        try (SearchEngineWrapper engine = new SearchEngineWrapper(freetext, def, symbol, path, hist, type)) {
+        try (SearchEngineWrapper engine = new SearchEngineWrapper(full, def, symbol, path, hist, type)) {
 
             if (!engine.isValid()) {
                 throw new WebApplicationException("Invalid request", Response.Status.BAD_REQUEST);
@@ -69,14 +70,16 @@ public class SearchController {
 
             Instant startTime = Instant.now();
 
-            List<SearchHit> hits = engine.search(req, projects, startIndex, maxResults)
+            Map<String, List<SearchHit>> hits = engine.search(req, projects, startDocIndex, maxResults)
                     .stream()
-                    .map(hit -> new SearchHit(hit.getLine(), hit.getPath()))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.groupingBy(Hit::getPath,
+                            Collectors.mapping(h -> new SearchHit(h.getLine(), h.getLineno()), Collectors.toList())));
 
             long duration = Duration.between(startTime, Instant.now()).toMillis();
 
-            return new SearchResult(duration, engine.numResults, hits, startIndex, startIndex + hits.size());
+            int endDocument = startDocIndex + hits.size() - 1;
+
+            return new SearchResult(duration, engine.numResults, hits, startDocIndex, endDocument);
         }
     }
 
@@ -87,14 +90,14 @@ public class SearchController {
         private int numResults;
 
         private SearchEngineWrapper(
-                final String freetext,
+                final String full,
                 final String def,
                 final String symbol,
                 final String path,
                 final String hist,
                 final String type
         ) {
-            engine.setFreetext(freetext);
+            engine.setFreetext(full);
             engine.setDefinition(def);
             engine.setSymbol(symbol);
             engine.setFile(path);
@@ -105,7 +108,7 @@ public class SearchController {
         public List<Hit> search(
                 final HttpServletRequest req,
                 final List<String> projects,
-                final int startIndex,
+                final int startDocIndex,
                 final int maxResults
         ) {
             if (projects == null || projects.isEmpty()) {
@@ -114,17 +117,17 @@ public class SearchController {
                 numResults = engine.search(req, projects.toArray(new String[0]));
             }
 
-            if (startIndex > numResults) {
+            if (startDocIndex > numResults) {
                 return Collections.emptyList();
             }
 
-            int resultSize = numResults - startIndex;
+            int resultSize = numResults - startDocIndex;
             if (resultSize > maxResults) {
                 resultSize = maxResults;
             }
 
-            List<Hit> results = new ArrayList<>(resultSize);
-            engine.results(startIndex, startIndex + resultSize, results);
+            List<Hit> results = new ArrayList<>();
+            engine.results(startDocIndex, startDocIndex + resultSize, results);
 
             return results;
         }
@@ -141,48 +144,48 @@ public class SearchController {
 
     private static class SearchResult {
 
-        private final long duration;
+        private final long time;
 
         private final int resultCount;
 
-        private final int startIndex;
+        private final int startDocument;
 
-        private final int endIndex;
+        private final int endDocument;
 
-        private final List<SearchHit> results;
+        private final Map<String, List<SearchHit>> results;
 
         private SearchResult(
-                final long duration,
+                final long time,
                 final int resultCount,
-                final List<SearchHit> results,
-                final int startIndex,
-                final int endIndex
+                final Map<String, List<SearchHit>> results,
+                final int startDocument,
+                final int endDocument
         ) {
-            this.duration = duration;
+            this.time = time;
             this.resultCount = resultCount;
             this.results = results;
-            this.startIndex = startIndex;
-            this.endIndex = endIndex;
+            this.startDocument = startDocument;
+            this.endDocument = endDocument;
         }
 
-        public long getDuration() {
-            return duration;
+        public long getTime() {
+            return time;
         }
 
         public int getResultCount() {
             return resultCount;
         }
 
-        public List<SearchHit> getResults() {
+        public Map<String, List<SearchHit>> getResults() {
             return results;
         }
 
-        public int getStartIndex() {
-            return startIndex;
+        public int getStartDocument() {
+            return startDocument;
         }
 
-        public int getEndIndex() {
-            return endIndex;
+        public int getEndDocument() {
+            return endDocument;
         }
     }
 
@@ -190,19 +193,19 @@ public class SearchController {
 
         private final String line;
 
-        private final String path;
+        private final String lineNumber;
 
-        private SearchHit(final String line, final String path) {
+        private SearchHit(final String line, final String lineNumber) {
             this.line = line;
-            this.path = path;
+            this.lineNumber = lineNumber;
         }
 
         public String getLine() {
             return line;
         }
 
-        public String getPath() {
-            return path;
+        public String getLineNumber() {
+            return lineNumber;
         }
     }
 

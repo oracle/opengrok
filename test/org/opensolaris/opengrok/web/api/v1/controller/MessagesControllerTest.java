@@ -24,15 +24,17 @@ package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.web.messages.Message;
 import org.opensolaris.opengrok.web.messages.MessagesContainer;
+import org.opensolaris.opengrok.web.messages.MessagesContainer.AcceptedMessage;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
 import java.lang.reflect.Field;
@@ -40,28 +42,48 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class MessagesControllerTest extends JerseyTest {
 
-    private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+    private static final GenericType<List<AcceptedMessageModel>> messagesType =
+            new GenericType<List<AcceptedMessageModel>>() {};
+
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    private static class AcceptedMessageModel {
+        public String acceptedTime;
+        public String expirationTime;
+        public boolean expired;
+        public Message message;
+    }
 
     @Override
     protected Application configure() {
         return new ResourceConfig(MessagesController.class);
     }
 
-    @BeforeClass
-    public static void setupMessageListener() {
+    @Before
+    public void setupMessageListener() throws Exception {
+        setMessageContainer(env, new MessagesContainer());
         env.startExpirationTimer();
     }
 
-    @AfterClass
-    public static void tearDownMessageListener() {
+    @After
+    public void tearDownMessageListener() {
         env.stopExpirationTimer();
+    }
+
+    private void setMessageContainer(RuntimeEnvironment env, MessagesContainer container) throws Exception {
+        Field f = RuntimeEnvironment.class.getDeclaredField("messagesContainer");
+        f.setAccessible(true);
+        f.set(env, container);
     }
 
     @Test
@@ -70,13 +92,9 @@ public class MessagesControllerTest extends JerseyTest {
 
         assertFalse(env.getMessages().isEmpty());
 
-        MessagesContainer.AcceptedMessage msg = env.getMessages().first();
+        AcceptedMessage msg = env.getMessages().first();
 
         assertEquals("test message", msg.getMessage().getText());
-
-        env.removeAnyMessage(Collections.singleton(MessagesContainer.MESSAGES_MAIN_PAGE_TAG));
-
-        assertTrue(env.getMessages().isEmpty());
     }
 
     private void addMessage(String text, String... tags) {
@@ -107,9 +125,9 @@ public class MessagesControllerTest extends JerseyTest {
         assertTrue(env.getMessages().isEmpty());
     }
 
-    private void removeMessages(String... tags) {
+    private void removeMessages(final String tag) {
         target("messages")
-                .queryParam("tag", (Object[]) tags)
+                .queryParam("tag", tag)
                 .request()
                 .delete();
     }
@@ -137,7 +155,6 @@ public class MessagesControllerTest extends JerseyTest {
 
         removeMessages("tag1");
 
-
         assertEquals(0, env.getMessages("tag1").size());
         assertEquals(1, env.getMessages("tag2").size());
 
@@ -156,8 +173,6 @@ public class MessagesControllerTest extends JerseyTest {
                 .post(Entity.json(m));
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
-
-        assertTrue(env.getMessages().isEmpty());
     }
 
     private void setDuration(final Message m, final Duration duration) throws Exception {
@@ -176,14 +191,63 @@ public class MessagesControllerTest extends JerseyTest {
                 .post(Entity.json(m));
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
-
-        assertTrue(env.getMessages().isEmpty());
     }
 
     private void setText(final Message m, final String text) throws Exception {
         Field f = Message.class.getDeclaredField("text");
         f.setAccessible(true);
         f.set(m, text);
+    }
+
+    @Test
+    public void getAllMessagesTest() {
+        addMessage("text1", "info");
+        addMessage("text2", "main");
+
+        List<AcceptedMessageModel> allMessages = target("messages")
+                .request()
+                .get(messagesType);
+
+        assertEquals(2, allMessages.size());
+    }
+
+    @Test
+    public void getSpecificMessageTest() {
+        addMessage("text", "info");
+
+        List<AcceptedMessageModel> messages = target("messages")
+                .queryParam("tag", "info")
+                .request()
+                .get(messagesType);
+
+        assertEquals(1, messages.size());
+        assertEquals("text", messages.get(0).message.getText());
+
+        assertThat(messages.get(0).message.getTags(), contains("info"));
+    }
+
+    @Test
+    public void multipleTagsTest() {
+        addMessage("test", "info", "main");
+
+        List<AcceptedMessageModel> allMessages = target("messages")
+                .request()
+                .get(messagesType);
+
+        assertEquals(1, allMessages.size());
+    }
+
+    @Test
+    public void multipleMessageAndTagsTest() {
+        addMessage("test1", "tag1", "tag2");
+        addMessage("test2", "tag3", "tag4");
+
+        List<AcceptedMessageModel> allMessages = target("messages")
+                .queryParam("tag", "tag3")
+                .request()
+                .get(messagesType);
+
+        assertEquals(1, allMessages.size());
     }
 
 }

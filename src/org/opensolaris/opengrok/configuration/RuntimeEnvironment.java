@@ -2010,4 +2010,11 @@ public final class RuntimeEnvironment {
         messagesContainer.removeAnyMessage(tags);
     }
 
+    /**
+     * @return all messages regardless their tag
+     */
+    public Set<AcceptedMessage> getAllMessages() {
+        return messagesContainer.getAllMessages();
+    }
+
 }
