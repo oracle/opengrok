@@ -34,6 +34,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -247,6 +250,51 @@ public class ChronicleMapUtils {
                 return true;
             }
         };
+    }
+
+    public static <K, V> ChronicleMap<K, V> resize(
+            final File oldMapFile,
+            final ChronicleMap<K, V> oldMap,
+            final int newMapSize,
+            final double newMapAvgKey
+    ) throws IOException {
+        if (oldMapFile == null || !oldMapFile.exists()) {
+            throw new IllegalArgumentException("Cannot resize chronicle map because of invalid old map file");
+        }
+        if (oldMap == null) {
+            throw new IllegalArgumentException("Cannot resize null chronicle map");
+        }
+        if (newMapSize < 0) {
+            throw new IllegalArgumentException("Cannot resize chronicle map to negative size");
+        }
+        if (newMapAvgKey < 0) {
+            throw new IllegalArgumentException("Cannot resize chronicle map to map with negative key size");
+        }
+
+        Path tempFile = Files.createTempFile("opengrok", "chronicle");
+
+        oldMap.getAll(tempFile.toFile());
+
+        String field = oldMap.name();
+
+        Class<K> keyClass = oldMap.keyClass();
+        Class<V> valueClass = oldMap.valueClass();
+
+        oldMap.close();
+
+        Files.delete(oldMapFile.toPath());
+
+        ChronicleMap<K, V> m = ChronicleMap.of(keyClass, valueClass)
+                .name(field)
+                .averageKeySize(newMapAvgKey)
+                .entries(newMapSize)
+                .createOrRecoverPersistedTo(oldMapFile);
+
+        m.putAll(tempFile.toFile());
+
+        Files.delete(tempFile);
+
+        return m;
     }
 
 }

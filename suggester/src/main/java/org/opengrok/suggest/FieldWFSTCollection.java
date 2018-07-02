@@ -34,6 +34,7 @@ import org.apache.lucene.search.suggest.fst.WFSTCompletionLookup;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.suggest.util.ChronicleMapConfiguration;
 import org.opengrok.suggest.util.ChronicleMapUtils;
 
 import java.io.Closeable;
@@ -59,7 +60,7 @@ class FieldWFSTCollection implements Closeable {
 
     private static final Logger logger = Logger.getLogger(FieldWFSTCollection.class.getName());
 
-    private static final int MAXIMUM_TERM_SIZE = Short.MAX_VALUE - 3;
+    private static final int MAX_TERM_SIZE = Short.MAX_VALUE - 3;
 
     private static final String TEMP_DIR_PREFIX = "opengrok";
 
@@ -67,11 +68,9 @@ class FieldWFSTCollection implements Closeable {
 
     private static final String SEARCH_COUNT_MAP_NAME = "search_count.db";
 
-    private static final String AVG_KEY_KEY = "avgKey";
-
-    private static final String SIZE_KEY = "size";
-
     private static final int DEFAULT_WEIGHT = 0;
+
+    private static final double AVERAGE_LENGTH_DEFAULT = 22;
 
     private Directory indexDir;
 
@@ -185,39 +184,56 @@ class FieldWFSTCollection implements Closeable {
     }
 
     private void initSearchCountMap() throws IOException {
-        File f = suggesterDir.resolve(SEARCH_COUNT_MAP_NAME).toFile();
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
             for (String field : MultiFields.getIndexedFields(indexReader)) {
+                ChronicleMapConfiguration conf = ChronicleMapConfiguration.load(suggesterDir, field);
+                if (conf == null) { // it was not yet initialized
+                    conf = new ChronicleMapConfiguration((int) lookups.get(field).getCount(), getAverageLength(field));
+                    conf.save(suggesterDir, field);
+                }
 
-                try (ChronicleMap<String, Integer> configMap = ChronicleMap.of(String.class, Integer.class)
-                        .name(field + "_config")
-                        .averageKeySize((double) (AVG_KEY_KEY + SIZE_KEY).length() / 2)
-                        .entries(2)
-                        .createOrRecoverPersistedTo(f)) {
+                File f = getChronicleMapFile(field);
 
-                    int avgKeyLength = 20;
-                    if (averageLengths.containsKey(field)) {
-                        avgKeyLength = averageLengths.get(field).intValue() + 1;
-                    }
+                ChronicleMap<String, Integer> m = ChronicleMap.of(String.class, Integer.class)
+                        .name(field)
+                        .averageKeySize(conf.getAverageKeySize())
+                        .entries(conf.getEntries())
+                        .createOrRecoverPersistedTo(f);
 
-                    int avgKey = configMap.getOrDefault(AVG_KEY_KEY, avgKeyLength);
-                    int size = configMap.getOrDefault(SIZE_KEY, (int) lookups.get(field).getCount() * 2);
+                removeOldTerms(m, lookups.get(field));
 
-                    ChronicleMap<String, Integer> m = ChronicleMap.of(String.class, Integer.class)
-                            .name(field)
-                            .averageKeySize(avgKey)
-                            .entries(size)
-                            .createOrRecoverPersistedTo(f);
+                if (conf.getEntries() < lookups.get(field).getCount()) {
+                    int newEntriesCount = (int) lookups.get(field).getCount();
+                    double newKeyAvgLength = getAverageLength(field);
 
-                    if (size < lookups.get(field).getCount()) {
-                        // TODO: resize lookups
+                    conf.setEntries(newEntriesCount);
+                    conf.setAverageKeySize(newKeyAvgLength);
+                    conf.save(suggesterDir, field);
 
-                        searchCountMaps.put(field, m);
-                    } else {
-                        searchCountMaps.put(field, m);
-                    }
+                    m = ChronicleMapUtils.resize(f, m, newEntriesCount, newKeyAvgLength);
+
+                    searchCountMaps.put(field, m);
+                } else {
+                    searchCountMaps.put(field, m);
                 }
             }
+        }
+    }
+
+    private File getChronicleMapFile(final String field) {
+        return suggesterDir.resolve(field + "_" + SEARCH_COUNT_MAP_NAME).toFile();
+    }
+
+    private double getAverageLength(final String field) {
+        if (averageLengths.containsKey(field)) {
+            return averageLengths.get(field);
+        }
+        return AVERAGE_LENGTH_DEFAULT;
+    }
+
+    private void removeOldTerms(final ChronicleMap<String, Integer> map, final WFSTCompletionLookup lookup) {
+        if (!map.isEmpty()) {
+            map.entrySet().removeIf(e -> lookup.get(e.getKey()) == null);
         }
     }
 
@@ -345,7 +361,7 @@ class FieldWFSTCollection implements Closeable {
             last = wrapped.next();
 
             // skip very large terms because of the buffer exception
-            while (last != null && last.length > MAXIMUM_TERM_SIZE) {
+            while (last != null && last.length > MAX_TERM_SIZE) {
                 last = wrapped.next();
             }
 
