@@ -46,12 +46,7 @@ def delete(logger, uri, params=None):
 def post(logger, uri, headers=None, data=None):
     rv = None
     try:
-        if headers:
-            s = requests.Session()
-            s.headers.update(headers)
-            rv = s.post(uri, data=data)
-        else:
-            rv = requests.post(uri, data=data)
+        rv = requests.post(uri, data=data, headers=headers)
     except Exception as e:
         logger.debug(traceback.format_exc())
         return None
@@ -62,12 +57,7 @@ def post(logger, uri, headers=None, data=None):
 def put(logger, uri, headers=None, data=None):
     rv = None
     try:
-        if headers:
-            s = requests.Session()
-            s.headers.update(headers)
-            rv = s.put(uri, data=data)
-        else:
-            rv = requests.put(uri, data=data)
+        rv = requests.put(uri, data=data, headers=headers)
     except Exception as e:
         logger.debug(traceback.format_exc())
         return None
