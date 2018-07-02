@@ -95,13 +95,7 @@ class Commands(CommandsBase):
                 uri = command[0].replace(PROJECT_SUBST, self.name)
                 verb = command[1]
                 data = command[2]
-                if len(data) == 0:
-                    # PUT/POST need the data.
-                    if verb in ['PUT', 'POST']:
-                        self.logger.error('Empty data for PUT/POST')
-                        continue
-                    data = None
-                else:
+                if len(data) > 0:
                     headers = {'Content-Type': 'application/json'}
                     json_data = json.dumps(data).replace(PROJECT_SUBST,
                                                          self.name)
