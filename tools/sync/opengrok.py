@@ -27,7 +27,7 @@ import urllib.parse
 import traceback
 
 
-def get(logger, uri, params=None):
+def get(logger, uri, params=None, headers=None):
     try:
         return requests.get(uri, params=params)
     except Exception as e:
@@ -35,7 +35,7 @@ def get(logger, uri, params=None):
         return None
 
 
-def delete(logger, uri, params=None):
+def delete(logger, uri, params=None, headers=None):
     try:
         return requests.delete(uri, params=params)
     except Exception as e:
