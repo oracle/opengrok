@@ -97,6 +97,7 @@ def diff_list(first, second):
     second = set(second)
     return [item for item in first if item not in second]
 
+
 def is_web_uri(string):
     """
     Check if given string is web URI.

@@ -89,16 +89,14 @@ class Commands(CommandsBase):
         request. Return codes for these requests are not checked.
         """
 
-        PROJECT_SUBST = '%PROJECT%'
         for command in self.commands:
             if is_web_uri(command[0]):
-                uri = command[0].replace(PROJECT_SUBST, self.name)
+                uri = command[0].format(project=self.name)
                 verb = command[1]
                 data = command[2]
                 if len(data) > 0:
                     headers = {'Content-Type': 'application/json'}
-                    json_data = json.dumps(data).replace(PROJECT_SUBST,
-                                                         self.name)
+                    json_data = json.dumps(data).format(project=self.name)
                     self.logger.debug("JSON data: {}".format(json_data))
 
                 if verb == 'PUT':
