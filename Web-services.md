@@ -39,7 +39,7 @@ There are a few endpoints which provide different functionality.
 * **DELETE**
   * `?tag={t}` – deletes messages with specified tag `{t}`
 
-* **GET**
+* **GET** – retrieves all messages in the system
   * `?tag={t}` – returns all messages with specified tag `{t}`
   * example:
     ```json
@@ -100,14 +100,19 @@ There are a few endpoints which provide different functionality.
   * example:
     ```json
     {
-      "time": 387,
-      "resultCount": 100,
-      "startIndex": 0,
-      "endIndex": 3,
-      "results": [{
-        "line": "java\npackage cz.cuni.mff.fruiton.",
-        "path": "/fruitonserver/build/classes/java/test/cz/cuni/mff/fruiton/test/integration/MatchmakingTest.class"
-      }]
+      "time": 13,
+      "resultCount": 35,
+      "startDocument": 0,
+      "endDocument": 0,
+      "results": {
+        "/opengrok/test/org/opensolaris/opengrok/history/hg-export-renamed.txt": [{
+          "line": "# User Vladimir <b>Kotal</b> &lt;Vladimir.<b>Kotal</b>@oracle.com&gt;",
+          "lineNumber": "19"
+        },{
+          "line": "# User Vladimir <b>Kotal</b> &lt;Vladimir.<b>Kotal</b>@oracle.com&gt;",
+          "lineNumber":"29"
+        }]
+      }
     }
     ```
 
