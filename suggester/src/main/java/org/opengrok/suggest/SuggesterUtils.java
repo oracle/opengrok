@@ -33,6 +33,7 @@ import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -90,8 +91,11 @@ public class SuggesterUtils {
         return ((double) documentFrequency) / indexReader.numDocs();
     }
 
+    public static List<Term> intoTerms(final Query query) {
+        if (query == null) {
+            return Collections.emptyList();
+        }
 
-    public static List<Term> intoTerms(Query query) {
         List<Term> terms = new LinkedList<>();
 
         LinkedList<Query> queue = new LinkedList<>();
@@ -108,6 +112,31 @@ public class SuggesterUtils {
                 terms.add(((TermQuery) q).getTerm());
             } else if (q instanceof PhraseQuery) {
                 terms.addAll(Arrays.asList(((PhraseQuery) q).getTerms()));
+            }
+        }
+
+        return terms;
+    }
+
+    public static List<Term> intoTermsExceptPhraseQuery(final Query query) {
+        if (query == null) {
+            return Collections.emptyList();
+        }
+
+        List<Term> terms = new LinkedList<>();
+
+        LinkedList<Query> queue = new LinkedList<>();
+        queue.add(query);
+
+        while (!queue.isEmpty()) {
+            Query q = queue.poll();
+
+            if (q instanceof BooleanQuery) {
+                for (BooleanClause bc : ((BooleanQuery) q).clauses()) {
+                    queue.add(bc.getQuery());
+                }
+            } else if (q instanceof TermQuery) {
+                terms.add(((TermQuery) q).getTerm());
             }
         }
 
