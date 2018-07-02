@@ -1816,7 +1816,7 @@ function initAutocompleteForField(inputId, field, config) {
                 $.each(items, function(index, item) {
                     _this._renderItemData(ul, item);
                 });
-                if (config.showSpeed) {
+                if (config.showTime) {
                     $("<li>", {
                         class: "ui-state-disabled",
                         text: time + 'ms'
