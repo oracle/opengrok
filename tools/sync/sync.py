@@ -173,7 +173,7 @@ if __name__ == '__main__':
 
             logger.debug("to process: {}".format(dirs_to_process))
 
-            projects = []
+            cmds_base = []
             for d in dirs_to_process:
                 cmd_base = CommandsBase(d, config.get("commands"),
                                         config.get("cleanup"))

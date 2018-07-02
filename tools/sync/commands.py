@@ -25,6 +25,10 @@ import logging
 import os
 import command
 from command import Command
+# from opengrok import put, post, delete
+from utils import is_web_uri
+import json
+import requests
 
 
 class CommandsBase:
@@ -67,35 +71,69 @@ class Commands(CommandsBase):
         self.logger = logging.getLogger(__name__)
         logging.basicConfig()
 
+    def run_command(command):
+        cmd = Command(command,
+                      args_subst={"PROJECT": self.name},
+                      args_append=[self.name], excl_subst=True)
+        cmd.execute()
+        self.retcodes[str(cmd)] = cmd.getretcode()
+        self.outputs[str(cmd)] = cmd.getoutput()
+
     def run(self):
         """
         Run the sequence of commands and capture their output and return code.
         First command that returns code other than 0 terminates the sequence.
         If the command has return code 2, the sequence will be terminated
         however it will not be treated as error.
+
+        Any command entry that is a URI, will be used to submit RESTful API
+        request. Return codes for these requests are not checked.
         """
 
         for command in self.commands:
-            cmd = Command(command,
-                          args_subst={"ARG": self.name},
-                          args_append=[self.name], excl_subst=True)
-            cmd.execute()
-            self.retcodes[str(cmd)] = cmd.getretcode()
-            self.outputs[str(cmd)] = cmd.getoutput()
-
-            # If a command fails, terminate the sequence of commands.
-            retcode = cmd.getretcode()
-            if retcode != 0:
-                if retcode == 2:
-                    self.logger.info("command '{}' requested break".
-                                     format(cmd))
-                    self.run_cleanup()
+            if is_web_uri(command[0]):
+                uri = command[0].replace('<PROJECT>', self.name)
+                verb = command[1]
+                data = command[2]
+                if len(data) == 0:
+                    # PUT/POST need the data.
+                    if verb in ['PUT', 'POST']:
+                        self.logger.error('Empty data for PUT/POST')
+                        continue
+                    data = None
                 else:
-                    self.logger.info("command '{}' failed with code {}, "
-                                     "breaking".format(cmd, retcode))
-                    self.failed = True
-                    self.run_cleanup()
-                break
+                    headers = {'Content-Type': 'application/json'}
+                    json_data = json.dumps(data)
+
+                if verb == 'PUT':
+                    s = requests.Session()
+                    s.headers.update(headers)
+                    put(self.logger, uri, data=json_data)
+                elif verb == 'POST':
+                    s = requests.Session()
+                    s.headers.update(headers)
+                    s.post(uri, data=json_data)
+                elif verb == 'DELETE':
+                    delete(self.logger, uri, data)
+                else:
+                    self.logger.error('Unknown verb in command {}'.
+                                      format(command))
+            else:
+                run_command(command)
+
+                # If a command fails, terminate the sequence of commands.
+                retcode = cmd.getretcode()
+                if retcode != 0:
+                    if retcode == 2:
+                        self.logger.info("command '{}' requested break".
+                                         format(cmd))
+                        self.run_cleanup()
+                    else:
+                        self.logger.info("command '{}' failed with code {}, "
+                                         "breaking".format(cmd, retcode))
+                        self.failed = True
+                        self.run_cleanup()
+                    break
 
     def run_cleanup(self):
         """
