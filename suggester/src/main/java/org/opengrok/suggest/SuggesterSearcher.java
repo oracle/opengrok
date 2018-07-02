@@ -22,7 +22,6 @@
  */
 package org.opengrok.suggest;
 
-import net.openhft.chronicle.map.ChronicleMap;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.PostingsEnum;
@@ -38,6 +37,7 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.suggest.data.SearchCountMap;
 import org.opengrok.suggest.query.data.BitIntsHolder;
 import org.opengrok.suggest.query.data.IntsHolder;
 import org.opengrok.suggest.query.PhraseScorer;
@@ -67,7 +67,7 @@ class SuggesterSearcher extends IndexSearcher {
             final Query query,
             final String suggester,
             final SuggesterQuery suggesterQuery,
-            final ChronicleMap<String, Integer> searchCountMap
+            final SearchCountMap searchCountMap
     ) {
         List<LookupResultItem> results = new LinkedList<>();
 
@@ -102,7 +102,7 @@ class SuggesterSearcher extends IndexSearcher {
             final LeafReaderContext leafReaderContext,
             final String suggester,
             final SuggesterQuery suggesterQuery,
-            final ChronicleMap<String, Integer> searchCounts
+            final SearchCountMap searchCounts
     ) throws IOException {
 
         boolean needsDocumentIds = query != null && !(query instanceof MatchAllDocsQuery);
@@ -140,7 +140,7 @@ class SuggesterSearcher extends IndexSearcher {
             }
 
             if (score > 0) {
-                int add = searchCounts.getOrDefault(term.utf8ToString(), 0);
+                int add = searchCounts.get(term.utf8ToString());
                 score += add * TERM_ALREADY_SEARCHED_MULTIPLIER;
 
                 queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), suggester, score));

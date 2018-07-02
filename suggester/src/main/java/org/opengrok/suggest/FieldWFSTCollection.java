@@ -36,6 +36,7 @@ import org.apache.lucene.search.suggest.fst.WFSTCompletionLookup;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.suggest.data.SearchCountMap;
 import org.opengrok.suggest.util.ChronicleMapConfiguration;
 import org.opengrok.suggest.util.ChronicleMapUtils;
 
@@ -273,12 +274,12 @@ class FieldWFSTCollection implements Closeable {
         }
     }
 
-    public ChronicleMap<String, Integer> getSearchCountMap(final String field) {
+    public SearchCountMap getSearchCountMap(final String field) {
         if (!searchCountMaps.containsKey(field)) {
-            return ChronicleMapUtils.empty(String.class, Integer.class);
+            return (key) -> 0;
         }
 
-        return searchCountMaps.get(field);
+        return (key) -> searchCountMaps.get(field).getOrDefault(key, 0);
     }
 
     @Override
@@ -297,13 +298,13 @@ class FieldWFSTCollection implements Closeable {
 
         private long termLengthAccumulator = 0;
 
-        ChronicleMap<String, Integer> searchCounts;
+        private final SearchCountMap searchCounts;
 
         WFSTInputIterator(
                 final InputIterator wrapped,
                 final IndexReader indexReader,
                 final String field,
-                final ChronicleMap<String, Integer> searchCounts
+                final SearchCountMap searchCounts
         ) {
             this.wrapped = wrapped;
             this.indexReader = indexReader;
@@ -318,7 +319,7 @@ class FieldWFSTCollection implements Closeable {
             if (last != null) {
                 String str = last.utf8ToString();
 
-                int add = searchCounts.getOrDefault(str, 0);
+                int add = searchCounts.get(str);
 
                 return SuggesterUtils.computeWeight(indexReader, field, last)
                         + add * SuggesterSearcher.TERM_ALREADY_SEARCHED_MULTIPLIER;
