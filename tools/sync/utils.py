@@ -98,9 +98,9 @@ def diff_list(first, second):
     return [item for item in first if item not in second]
 
 
-def is_web_uri(string):
+def is_web_uri(url):
     """
-    Check if given string is web URI.
+    Check if given string is web URL.
     """
-    o = urlparse(string)
+    o = urlparse(url)
     return o.scheme in ['http', 'https']
