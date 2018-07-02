@@ -70,13 +70,38 @@ class Commands(CommandsBase):
         self.logger = logging.getLogger(__name__)
         logging.basicConfig()
 
-    def run_command(command):
+    def run_command(self, command):
         cmd = Command(command,
                       args_subst={"PROJECT": self.name},
                       args_append=[self.name], excl_subst=True)
         cmd.execute()
         self.retcodes[str(cmd)] = cmd.getretcode()
         self.outputs[str(cmd)] = cmd.getoutput()
+
+    def call_rest_api(self, command):
+        """
+        Make RESTful API call.
+        """
+        PROJECT_SUBST = '%PROJECT%'
+
+        uri = command[0].replace(PROJECT_SUBST, self.name)
+        verb = command[1]
+        data = command[2]
+
+        if len(data) > 0:
+            headers = {'Content-Type': 'application/json'}
+            json_data = json.dumps(data).replace(PROJECT_SUBST, self.name)
+            self.logger.debug("JSON data: {}".format(json_data))
+
+        if verb == 'PUT':
+            put(self.logger, uri, headers=headers, data=json_data)
+        elif verb == 'POST':
+            post(self.logger, uri, headers=headers, data=json_data)
+        elif verb == 'DELETE':
+            delete(self.logger, uri, data)
+        else:
+            self.logger.error('Unknown verb in command {}'.
+                              format(command))
 
     def run(self):
         """
@@ -89,29 +114,11 @@ class Commands(CommandsBase):
         request. Return codes for these requests are not checked.
         """
 
-        PROJECT_SUBST = '%PROJECT%'
         for command in self.commands:
             if is_web_uri(command[0]):
-                uri = command[0].replace(PROJECT_SUBST, self.name)
-                verb = command[1]
-                data = command[2]
-                if len(data) > 0:
-                    headers = {'Content-Type': 'application/json'}
-                    json_data = json.dumps(data).replace(PROJECT_SUBST,
-                                                         self.name)
-                    self.logger.debug("JSON data: {}".format(json_data))
-
-                if verb == 'PUT':
-                    put(self.logger, uri, headers=headers, data=json_data)
-                elif verb == 'POST':
-                    post(self.logger, uri, headers=headers, data=json_data)
-                elif verb == 'DELETE':
-                    delete(self.logger, uri, data)
-                else:
-                    self.logger.error('Unknown verb in command {}'.
-                                      format(command))
+                self.call_rest_api(command)
             else:
-                run_command(command)
+                self.run_command(command)
 
                 # If a command fails, terminate the sequence of commands.
                 retcode = cmd.getretcode()
@@ -132,15 +139,19 @@ class Commands(CommandsBase):
         Call cleanup in case the sequence failed or termination was requested.
         """
         if self.cleanup:
-            self.logger.debug("Running cleanup command '{}'".
-                              format(self.cleanup))
-            cmd = Command(self.cleanup,
-                          args_subst={"ARG": self.name},
-                          args_append=[self.name], excl_subst=True)
-            cmd.execute()
-            if cmd.getretcode() != 0:
-                self.logger.info("cleanup command '{}' failed with code {}".
-                                 format(self.cleanup, cmd.getretcode()))
+            if is_web_uri(self.cleanup[0]):
+                self.call_rest_api(self.cleanup)
+            else:
+                self.logger.debug("Running cleanup command '{}'".
+                                  format(self.cleanup))
+                cmd = Command(self.cleanup,
+                              args_subst={"ARG": self.name},
+                              args_append=[self.name], excl_subst=True)
+                cmd.execute()
+                if cmd.getretcode() != 0:
+                    self.logger.info("cleanup command '{}' failed with "
+                                     "code {}".
+                                     format(self.cleanup, cmd.getretcode()))
 
     def check(self, ignore_errors):
         """
