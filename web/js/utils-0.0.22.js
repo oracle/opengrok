@@ -1865,7 +1865,7 @@ function showError(errorText) {
 
     topInputParent.css('position', 'relative');
 
-    var span = topInput.find('#autocomplete-error')[0];
+    var span = topInputParent.find('#autocomplete-error')[0];
     if (!span) {
         span = $("<span>", {
             class: "important-note important-note-rounded",
