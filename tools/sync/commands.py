@@ -25,10 +25,12 @@ import logging
 import os
 import command
 from command import Command
-# from opengrok import put, post, delete
+from opengrok import put, post, delete
 from utils import is_web_uri
 import json
-import requests
+
+
+# XXX localhost no proxy
 
 
 class CommandsBase:
@@ -90,9 +92,10 @@ class Commands(CommandsBase):
         request. Return codes for these requests are not checked.
         """
 
+        PROJECT_SUBST = '%PROJECT%'
         for command in self.commands:
             if is_web_uri(command[0]):
-                uri = command[0].replace('<PROJECT>', self.name)
+                uri = command[0].replace(PROJECT_SUBST, self.name)
                 verb = command[1]
                 data = command[2]
                 if len(data) == 0:
@@ -103,16 +106,14 @@ class Commands(CommandsBase):
                     data = None
                 else:
                     headers = {'Content-Type': 'application/json'}
-                    json_data = json.dumps(data)
+                    json_data = json.dumps(data).replace(PROJECT_SUBST,
+                                                         self.name)
+                    self.logger.debug("JSON data: {}".format(json_data))
 
                 if verb == 'PUT':
-                    s = requests.Session()
-                    s.headers.update(headers)
-                    put(self.logger, uri, data=json_data)
+                    put(self.logger, uri, headers=headers, data=json_data)
                 elif verb == 'POST':
-                    s = requests.Session()
-                    s.headers.update(headers)
-                    s.post(uri, data=json_data)
+                    post(self.logger, uri, headers=headers, data=json_data)
                 elif verb == 'DELETE':
                     delete(self.logger, uri, data)
                 else:
