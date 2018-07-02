@@ -63,7 +63,7 @@ class SuggesterSearcher extends IndexSearcher {
         this.resultSize = resultSize;
     }
 
-    public List<LookupResultItem> search(
+    public List<LookupResultItem> suggest(
             final Query query,
             final String suggester,
             final SuggesterQuery suggesterQuery,
@@ -84,7 +84,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         for (LeafReaderContext context : this.leafContexts) {
             try {
-                results.addAll(search(rewrittenQuery, context, suggester, suggesterQuery, searchCountMap));
+                results.addAll(suggest(rewrittenQuery, context, suggester, suggesterQuery, searchCountMap));
             } catch (IOException e) {
                 logger.log(Level.WARNING, "Cannot perform suggester search", e);
             }
@@ -97,7 +97,7 @@ class SuggesterSearcher extends IndexSearcher {
         return results;
     }
 
-    public List<LookupResultItem> search(
+    private List<LookupResultItem> suggest(
             final Query query,
             final LeafReaderContext leafReaderContext,
             final String suggester,

@@ -228,7 +228,7 @@ public final class Suggester {
             } else {
                 SuggesterSearcher searcher = new SuggesterSearcher(namedIndexReader.reader, resultSize);
 
-                List<LookupResultItem> resultItems = searcher.search(query, namedIndexReader.name, suggesterQuery,
+                List<LookupResultItem> resultItems = searcher.suggest(query, namedIndexReader.name, suggesterQuery,
                         projectData.get(namedIndexReader.name).getSearchCountMap(suggesterQuery.getField()));
 
                 return resultItems.stream();
