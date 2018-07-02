@@ -22,17 +22,17 @@ where the `sync.conf` file contents might look like this:
 
 ```json
   {
-     "commands": [["/usr/opengrok/bin/Messages", "-c", "info", "-e", "+1 hour",
-                   "-n", "normal", "-t", "ARG", "resync + reindex in progress"],
+     "commands": [["http://localhost:8080/source/api/v1/messages", "POST",
+                   { "cssClass" : "info", "duration" : "PT1H",
+                     "tags" : ["%PROJECT%"], "text" : "resync + reindex in progress"}],
                   ["sudo", "-u", "wsmirror", "/usr/opengrok/bin/mirror.py",
-                    "-c", "/opengrok/etc/mirror-config.yml", "-b",
-                    "--messages", "/usr/opengrok/bin/Messages"],
+                    "-c", "/opengrok/etc/mirror-config.yml", "-b"],
                   ["sudo", "-u", "webservd", "/usr/opengrok/bin/reindex-project.ksh",
                    "/opengrok/etc/opengrok.conf", "/usr/opengrok/bin"],
-                  ["/usr/opengrok/bin/Messages", "-n", "abort", "-t"],
+                  ["http://localhost:8080/source/api/v1/messages?tag=%PROJECT%", "DELETE", ""],
                   ["/scripts/check-indexer-logs.ksh"]],
      "ignore_errors": ["NetBSD-current", "linux-mainline-next"],
-     "cleanup": ["/usr/opengrok/bin/Messages", "-n", "abort", "-t"]
+     "cleanup": ["http://localhost:8080/source/api/v1/messages?tag=%PROJECT%", "DELETE", ""]
   }
 ```
 
@@ -41,15 +41,17 @@ The above `sync.py` command will basically take all directories under `/ws-local
 Another variant of how to specify the list of projects to be synchronized is to use the `--indexed` option of `sync.py` that will query the webapp configuration for list of indexed projects and will use that list. Otherwise, the `--projects` option can be specified to process just specified projects.
 
 The commands above will basically:
-  - mark the project with alert (to let the users know it is being synchronized/indexed) using the first `Messages` command
+  - mark the project with alert (to let the users know it is being synchronized/indexed) using the [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call (the `%PROJECT%` string is replaced with current project name)
   - pull the changes from all the upstream repositories that belong to the project using the `mirror.py` command
   - reindex the project using `reindex-project.ksh`
-  - clear the alert using the second `Messages` command
+  - clear the alert using the second [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call
   - execute the `/scripts/check-indexer-logs.ksh` script to perform some pattern matching in the indexer logs to see if there were any serious failures there
 
 The `sync.py` script will print any errors to the console and uses file level locking to provide exclusivity of run so it is handy to run from `crontab` periodically.
 
-If any of the commands in `"commands"` fail, the `"cleanup"` command will be run. This is handy in this case since the first `Messages` command will mark the project with alert in the WEB UI so if any of the commands that follow fails, the cleanup `Messages` command will be run to clear the alert.
+If any of the commands in `"commands"` fail, the `"cleanup"` command will be executed. This is handy in this case since the first [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call will mark the project with alert in the WEB UI so if any of the commands that follow fails, the cleanup call will be made to clear the alert.
+
+Normal command execution can be also performed in the `cleanup` section.
 
 Some project can be notorious for producing spurious errors so their errors are ignored via the `"ignore_errors"` section.
 
