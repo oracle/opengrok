@@ -22,7 +22,6 @@
  */
 package org.opengrok.suggest;
 
-import net.openhft.chronicle.map.ChronicleMap;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -250,9 +249,7 @@ public final class Suggester {
             for (String project : projects) {
 
                 for (Term t : terms) {
-                    ChronicleMap<String, Integer> m = projectData.get(project).getSearchCountMap(t.field());
-
-                    m.merge(t.text(), 1, (a, b) -> a + b);
+                    projectData.get(project).incrementSearchCount(t);
                 }
             }
         } catch (Exception e) {
