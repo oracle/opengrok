@@ -187,7 +187,7 @@ def is_localhost_url(url):
     """
 
     o = urlparse(url)
-    return o.hostname == 'localhost'
+    return o.hostname in ['localhost', '127.0.0.1', '::1']
 
 
 def get_proxies(url):
