@@ -113,7 +113,7 @@ class SuggesterSearcher extends IndexSearcher {
         Set<String> tokensAlreadyIncluded = null;
         if (shouldLeaveOutSameTerms) {
             tokensAlreadyIncluded = SuggesterUtils.intoTermsExceptPhraseQuery(query).stream()
-                    .filter(t -> !t.field().equals(suggesterQuery.getField()))
+                    .filter(t -> t.field().equals(suggesterQuery.getField()))
                     .map(Term::text)
                     .collect(Collectors.toSet());
         }
