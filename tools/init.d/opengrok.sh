@@ -1,4 +1,4 @@
-#! /bin/ksh
+#!/bin/ksh
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -15,10 +15,6 @@
 # information: Portions Copyright [yyyy] [name of copyright owner]
 #
 # CDDL HEADER END
-
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
-
 
 # The root direction of this opengrok installation
 ROOT=/opengrok; export ROOT
@@ -39,8 +35,8 @@ PATH=/usr/bin; export PATH
 # The name of the web servers that should be notified with the information
 # of the active configuration to use. Specify them with hostname:port and
 # separate multiple hosts by space.
-# WEBSERVERS="server1:2424 server2:2424"
-# WEBSERVERS="localhost:2424"
+# WEBSERVERS="http://server1:8080/source http://server2:8080/source"
+# WEBSERVERS="http://localhost:8080/source"
 
 # The email address to send an email if the source update fails, or a fatal
 # error occurs while the index database is being updated.
