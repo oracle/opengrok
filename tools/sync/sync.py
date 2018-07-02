@@ -173,23 +173,25 @@ if __name__ == '__main__':
 
             logger.debug("to process: {}".format(dirs_to_process))
 
-            projects = []
+            cmds_base = []
             for d in dirs_to_process:
-                proj = CommandsBase(d, config.get("commands"),
-                                    config.get("cleanup"))
-                projects.append(proj)
+                cmd_base = CommandsBase(d, config.get("commands"),
+                                        config.get("cleanup"))
+                cmds_base.append(cmd_base)
 
+            # Map the commands into pool of workers so they can be processed.
             try:
-                projects = pool.map(worker, projects, 1)
+                cmds_base_results = pool.map(worker, cmds_base, 1)
             except KeyboardInterrupt:
                 # XXX lock.release() or return 1 ?
                 sys.exit(1)
             else:
-                for proj in projects:
+                for cmds_base in cmds_base_results:
                     logger.debug("Checking results of project {}".
-                                 format(proj))
-                    cmds = Commands(proj)
-                    cmds.fill(proj.retcodes, proj.outputs, proj.failed)
+                                 format(cmds_base))
+                    cmds = Commands(cmds_base)
+                    cmds.fill(cmds_base.retcodes, cmds_base.outputs,
+                              cmds_base.failed)
                     cmds.check(ignore_errors)
     except Timeout:
         logger.warning("Already running, exiting.")
