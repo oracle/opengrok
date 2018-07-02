@@ -30,9 +30,6 @@ from utils import is_web_uri
 import json
 
 
-# XXX localhost no proxy
-
-
 class CommandsBase:
     """
     Wrap the run of a set of Command instances.
