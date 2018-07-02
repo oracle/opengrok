@@ -178,12 +178,14 @@ class SuggesterQueryParser extends CustomQueryParser {
         if (t.text().contains(identifier)) {
             String term = t.text().replace(identifier, "");
             if (term.endsWith("*")) {
+                identifier = t.text();
                 term = term.substring(0, term.length() - 1);
                 SuggesterPrefixQuery suggesterQuery = new SuggesterPrefixQuery(new Term(t.field(), term));
                 this.suggesterQuery = suggesterQuery;
                 return suggesterQuery;
             } else {
                 SuggesterWildcardQuery suggesterQuery = new SuggesterWildcardQuery(replaceIdentifier(t, identifier));
+                identifier = t.text();
                 this.suggesterQuery = suggesterQuery;
                 return suggesterQuery;
             }
@@ -210,6 +212,8 @@ class SuggesterQueryParser extends CustomQueryParser {
     protected Query newRegexpQuery(final Term regexp) {
         if (regexp.text().contains(identifier)) {
             Term newTerm = replaceIdentifier(regexp, identifier);
+
+            identifier = "/" + regexp.text() + "/";
 
             SuggesterRegexpQuery suggesterQuery = new SuggesterRegexpQuery(newTerm);
             this.suggesterQuery = suggesterQuery;
