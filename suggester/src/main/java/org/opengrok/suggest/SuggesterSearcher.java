@@ -25,6 +25,7 @@ package org.opengrok.suggest;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.PostingsEnum;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.BooleanClause;
@@ -38,6 +39,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.data.SearchCountMap;
+import org.opengrok.suggest.query.SuggesterRangeQuery;
 import org.opengrok.suggest.query.data.BitIntsHolder;
 import org.opengrok.suggest.query.data.IntsHolder;
 import org.opengrok.suggest.query.PhraseScorer;
@@ -47,8 +49,10 @@ import org.opengrok.suggest.query.customized.CustomPhraseQuery;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 class SuggesterSearcher extends IndexSearcher {
 
@@ -105,6 +109,15 @@ class SuggesterSearcher extends IndexSearcher {
             final SearchCountMap searchCounts
     ) throws IOException {
 
+        boolean shouldLeaveOutSameTerms = shouldLeaveOutSameTerms(query, suggesterQuery);
+        Set<String> tokensAlreadyIncluded = null;
+        if (shouldLeaveOutSameTerms) {
+            tokensAlreadyIncluded = SuggesterUtils.intoTermsExceptPhraseQuery(query).stream()
+                    .filter(t -> !t.field().equals(suggesterQuery.getField()))
+                    .map(Term::text)
+                    .collect(Collectors.toSet());
+        }
+
         boolean needsDocumentIds = query != null && !(query instanceof MatchAllDocsQuery);
 
         ComplexQueryData complexQueryData = null;
@@ -140,16 +153,30 @@ class SuggesterSearcher extends IndexSearcher {
             }
 
             if (score > 0) {
-                int add = searchCounts.get(term.utf8ToString());
-                score += add * TERM_ALREADY_SEARCHED_MULTIPLIER;
+                String termStr = term.utf8ToString();
 
-                queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), suggester, score));
+                if (!shouldLeaveOutSameTerms || !tokensAlreadyIncluded.contains(termStr)) {
+                    int add = searchCounts.get(termStr);
+                    score += add * TERM_ALREADY_SEARCHED_MULTIPLIER;
+
+                    queue.insertWithOverflow(new LookupResultItem(termStr, suggester, score));
+                }
             }
 
             term = termsEnum.next();
         }
 
         return queue.getResult();
+    }
+
+    private boolean shouldLeaveOutSameTerms(final Query query, final SuggesterQuery suggesterQuery) {
+        if (query instanceof CustomPhraseQuery) {
+            return false;
+        }
+        if (suggesterQuery instanceof SuggesterRangeQuery) {
+            return false;
+        }
+        return true;
     }
 
     private ComplexQueryData getComplexQueryData(final Query query, final LeafReaderContext leafReaderContext) {
