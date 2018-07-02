@@ -1732,11 +1732,29 @@ function domReadyMenu() {
 }
 
 function initAutocomplete(config) {
-    initAutocompleteForField("q", "full", config);
-    initAutocompleteForField("defs", "defs", config);
-    initAutocompleteForField("refs", "refs", config);
-    initAutocompleteForField("path", "path", config);
-    initAutocompleteForField("hist", "hist", config);
+    if (config.allowedFields) {
+        if (config.allowedFields.includes('full')) {
+            initAutocompleteForField("q", "full", config);
+        }
+        if (config.allowedFields.includes('defs')) {
+            initAutocompleteForField("defs", "defs", config);
+        }
+        if (config.allowedFields.includes('refs')) {
+            initAutocompleteForField("refs", "refs", config);
+        }
+        if (config.allowedFields.includes('path')) {
+            initAutocompleteForField("path", "path", config);
+        }
+        if (config.allowedFields.includes('hist')) {
+            initAutocompleteForField("hist", "hist", config);
+        }
+    } else {
+        initAutocompleteForField("q", "full", config);
+        initAutocompleteForField("defs", "defs", config);
+        initAutocompleteForField("refs", "refs", config);
+        initAutocompleteForField("path", "path", config);
+        initAutocompleteForField("hist", "hist", config);
+    }
 }
 
 function initAutocompleteForField(inputId, field, config) {
