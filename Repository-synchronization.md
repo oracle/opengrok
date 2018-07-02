@@ -49,6 +49,8 @@ The commands above will basically:
 
 The `sync.py` script will print any errors to the console and uses file level locking to provide exclusivity of run so it is handy to run from `crontab` periodically.
 
+Each "command" can be either normal command execution (supplying the list of program arguments) or RESTful API call (supplying the HTTP verb and optional payload).
+
 If any of the commands in `"commands"` fail, the `"cleanup"` command will be executed. This is handy in this case since the first [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call will mark the project with alert in the WEB UI so if any of the commands that follow fails, the cleanup call will be made to clear the alert.
 
 Normal command execution can be also performed in the `cleanup` section.
