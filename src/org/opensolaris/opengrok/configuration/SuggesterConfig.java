@@ -34,7 +34,7 @@ public class SuggesterConfig {
     public static final boolean ALLOW_MOST_POPULAR_DEFAULT = true;
     public static final boolean SHOW_SCORES_DEFAULT = false;
     public static final boolean SHOW_PROJECTS_DEFAULT = true;
-    public static final boolean SHOW_SPEED_DEFAULT = false;
+    public static final boolean SHOW_TIME_DEFAULT = false;
     public static final String REBUILD_CRON_CONFIG_DEFAULT = "0 0 * * *"; // every day at midnight
     public static final int SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT = 1800; // half an hour should be enough
 
@@ -61,7 +61,7 @@ public class SuggesterConfig {
 
     private boolean showProjects;
 
-    private boolean showSpeed;
+    private boolean showTime;
 
     private String rebuildCronConfig;
 
@@ -82,7 +82,7 @@ public class SuggesterConfig {
         config.setAllowMostPopular(ALLOW_MOST_POPULAR_DEFAULT);
         config.setShowScores(true); // TODO: change after implementation complete
         config.setShowProjects(SHOW_PROJECTS_DEFAULT);
-        config.setShowSpeed(true); // TODO: change after implementation complete
+        config.setShowTime(true); // TODO: change after implementation complete
         config.setRebuildCronConfig(REBUILD_CRON_CONFIG_DEFAULT);
         config.setSuggesterBuildTerminationTimeSec(SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT);
         return config;
@@ -168,12 +168,12 @@ public class SuggesterConfig {
         this.showProjects = showProjects;
     }
 
-    public boolean isShowSpeed() {
-        return showSpeed;
+    public boolean isShowTime() {
+        return showTime;
     }
 
-    public void setShowSpeed(final boolean showSpeed) {
-        this.showSpeed = showSpeed;
+    public void setShowTime(final boolean showTime) {
+        this.showTime = showTime;
     }
 
     public String getRebuildCronConfig() {
