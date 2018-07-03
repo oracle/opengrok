@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.web.api.v1.RestApp;
 
 public class AuthorizationFilter implements Filter {
 
@@ -49,9 +50,19 @@ public class AuthorizationFilter implements Filter {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
         HttpServletResponse httpRes = (HttpServletResponse) sr1;
 
-        PageConfig config = PageConfig.get(httpReq);
-        long processTime = System.currentTimeMillis();
+        // All RESTful API requests are allowed for now (also see LocalhostFilter).
+        // The /search endpoint will go through authorization via SearchEngine.search()
+        // so does not have to be exempted here.
+        if (httpReq.getServletPath().startsWith(RestApp.API_PATH)) {
+            LOGGER.log(Level.FINER, "Allowing request to {0} in {1}",
+                    new Object[]{ httpReq.getServletPath(), AuthorizationFilter.class.getName() });
+            fc.doFilter(sr, sr1);
+            return;
+        }
 
+        PageConfig config = PageConfig.get(httpReq);        
+        long processTime = System.currentTimeMillis();
+        
         Project p = config.getProject();
         if (p != null && !config.isAllowed(p)) {
             if (httpReq.getRemoteUser() != null) {
