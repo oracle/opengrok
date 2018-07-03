@@ -4,6 +4,9 @@ Since 1.1-rc31 OpenGrok web application provides a REST API under path `/api/v1/
 
 For Indexer and Python scripts to work correctly. URI of the webapp needs to be specified by `-U` option. (For instance: `-U http://localhost:8080/source`).
 
+## Authentication / Authorization
+All requests to `/api` are only allowed within `localhost`. There are no authentication or authorization done for these requests.
+
 ## Endpoints
 There are a few endpoints which provide different functionality.
 
