@@ -38,6 +38,9 @@ public class SuggesterFuzzyQuery extends FuzzyQuery implements SuggesterQuery {
 
     @Override
     public TermsEnum getTermsEnumForSuggestions(final Terms terms) throws IOException {
+        if (terms == null) {
+            return TermsEnum.EMPTY;
+        }
         return getTermsEnum(terms, new AttributeSource());
     }
 
