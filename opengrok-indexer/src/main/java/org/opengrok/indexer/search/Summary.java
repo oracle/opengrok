@@ -75,7 +75,7 @@ public class Summary {
 
     private static final Fragment[] FRAGMENT_PROTO = new Fragment[0];
 
-    /** Adds a fragment to a summary.*/
+    /* Adds a fragment to a summary.*/
     public void add(Fragment fragment) { fragments.add(fragment); }
 
     /** Returns an array of all of this summary's fragments.*/

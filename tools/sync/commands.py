@@ -25,6 +25,9 @@ import logging
 import os
 import command
 from command import Command
+from opengrok import put, post, delete
+from utils import is_web_uri
+import json
 
 
 class CommandsBase:
@@ -67,50 +70,88 @@ class Commands(CommandsBase):
         self.logger = logging.getLogger(__name__)
         logging.basicConfig()
 
+    def run_command(self, command):
+        cmd = Command(command,
+                      args_subst={"PROJECT": self.name},
+                      args_append=[self.name], excl_subst=True)
+        cmd.execute()
+        self.retcodes[str(cmd)] = cmd.getretcode()
+        self.outputs[str(cmd)] = cmd.getoutput()
+
+    def call_rest_api(self, command):
+        """
+        Make RESTful API call.
+        """
+        PROJECT_SUBST = '%PROJECT%'
+
+        uri = command[0].replace(PROJECT_SUBST, self.name)
+        verb = command[1]
+        data = command[2]
+
+        if len(data) > 0:
+            headers = {'Content-Type': 'application/json'}
+            json_data = json.dumps(data).replace(PROJECT_SUBST, self.name)
+            self.logger.debug("JSON data: {}".format(json_data))
+
+        if verb == 'PUT':
+            put(self.logger, uri, headers=headers, data=json_data)
+        elif verb == 'POST':
+            post(self.logger, uri, headers=headers, data=json_data)
+        elif verb == 'DELETE':
+            delete(self.logger, uri, data)
+        else:
+            self.logger.error('Unknown verb in command {}'.
+                              format(command))
+
     def run(self):
         """
         Run the sequence of commands and capture their output and return code.
         First command that returns code other than 0 terminates the sequence.
         If the command has return code 2, the sequence will be terminated
         however it will not be treated as error.
+
+        Any command entry that is a URI, will be used to submit RESTful API
+        request. Return codes for these requests are not checked.
         """
 
         for command in self.commands:
-            cmd = Command(command,
-                          args_subst={"ARG": self.name},
-                          args_append=[self.name], excl_subst=True)
-            cmd.execute()
-            self.retcodes[str(cmd)] = cmd.getretcode()
-            self.outputs[str(cmd)] = cmd.getoutput()
+            if is_web_uri(command[0]):
+                self.call_rest_api(command)
+            else:
+                self.run_command(command)
 
-            # If a command fails, terminate the sequence of commands.
-            retcode = cmd.getretcode()
-            if retcode != 0:
-                if retcode == 2:
-                    self.logger.info("command '{}' requested break".
-                                     format(cmd))
-                    self.run_cleanup()
-                else:
-                    self.logger.info("command '{}' failed with code {}, "
-                                     "breaking".format(cmd, retcode))
-                    self.failed = True
-                    self.run_cleanup()
-                break
+                # If a command fails, terminate the sequence of commands.
+                retcode = cmd.getretcode()
+                if retcode != 0:
+                    if retcode == 2:
+                        self.logger.info("command '{}' requested break".
+                                         format(cmd))
+                        self.run_cleanup()
+                    else:
+                        self.logger.info("command '{}' failed with code {}, "
+                                         "breaking".format(cmd, retcode))
+                        self.failed = True
+                        self.run_cleanup()
+                    break
 
     def run_cleanup(self):
         """
         Call cleanup in case the sequence failed or termination was requested.
         """
         if self.cleanup:
-            self.logger.debug("Running cleanup command '{}'".
-                              format(self.cleanup))
-            cmd = Command(self.cleanup,
-                          args_subst={"ARG": self.name},
-                          args_append=[self.name], excl_subst=True)
-            cmd.execute()
-            if cmd.getretcode() != 0:
-                self.logger.info("cleanup command '{}' failed with code {}".
-                                 format(self.cleanup, cmd.getretcode()))
+            if is_web_uri(self.cleanup[0]):
+                self.call_rest_api(self.cleanup)
+            else:
+                self.logger.debug("Running cleanup command '{}'".
+                                  format(self.cleanup))
+                cmd = Command(self.cleanup,
+                              args_subst={"ARG": self.name},
+                              args_append=[self.name], excl_subst=True)
+                cmd.execute()
+                if cmd.getretcode() != 0:
+                    self.logger.info("cleanup command '{}' failed with "
+                                     "code {}".
+                                     format(self.cleanup, cmd.getretcode()))
 
     def check(self, ignore_errors):
         """

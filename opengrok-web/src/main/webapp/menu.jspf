@@ -24,7 +24,6 @@ Portions Copyright 2011 Jens Elkner.
 
 --%><%@page import="org.json.simple.JSONArray"%>
 <%@page import="org.opengrok.indexer.configuration.RuntimeEnvironment"%>
-<%@page import="org.opengrok.indexer.configuration.messages.Message"%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.LinkedList"%>

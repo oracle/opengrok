@@ -29,9 +29,8 @@ After include you are here: /body/div#page/div#content/
 --%>
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page import="org.json.simple.JSONArray"%>
-<%@page import="org.opengrok.indexer.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
-<%@page import="org.opengrok.indexer.configuration.RuntimeEnvironment"%>
+<%@page import="org.opengrok.indexer.web.messages.MessagesContainer"%>
 <%@ page session="false" errorPage="error.jsp" import="
 java.io.File,
 java.io.IOException,
@@ -103,7 +102,7 @@ include file="pageheader.jspf"
     JSONArray messages = new JSONArray();
     if (cfg.getProject() != null) {
         messages = Util.messagesToJson(cfg.getProject(),
-                    RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG);
+                    MessagesContainer.MESSAGES_MAIN_PAGE_TAG);
     }
     %>
     <% if (!messages.isEmpty()) { %>

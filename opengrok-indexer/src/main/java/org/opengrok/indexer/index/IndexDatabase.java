@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -90,7 +89,6 @@ import org.opengrok.indexer.analysis.FileAnalyzer;
 import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.configuration.messages.Message;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -100,6 +98,10 @@ import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.ObjectPool;
 import org.opengrok.indexer.util.Statistics;
 import org.opengrok.indexer.web.Util;
+
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 
 /**
  * This class is used to create / update the index databases. Currently we use
@@ -360,22 +362,26 @@ public class IndexDatabase {
         return file_cnt;
     }
 
-    private void markProjectIndexed(Project project) throws IOException {
+    private void markProjectIndexed(Project project) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // Successfully indexed the project. The message is sent even if
         // the project's isIndexed() is true because it triggers RepositoryInfo
         // refresh.
         if (project != null) {
-            if (env.getConfigHost() != null && env.getConfigPort() > 0) {
-                Message m = Message.createMessage("project");
-                m.addTag(project.getName());
-                m.setText("indexed");
-                try {
-                    m.write(env.getConfigHost(), env.getConfigPort());
-                } catch (ConnectException ce) {
-                    LOGGER.log(Level.SEVERE, "Misconfig of webapp host or port", ce);
-                    System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());
+            if (env.getConfigHost() != null) {
+                Response r = ClientBuilder.newClient()
+                        .target(env.getConfigHost())
+                        .path("api")
+                        .path("v1")
+                        .path("projects")
+                        .path(Util.URIEncode(project.getName()))
+                        .path("indexed")
+                        .request()
+                        .put(Entity.text(""));
+
+                if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+                    System.err.println("Couldn't notify the webapp: " + r.toString());
                 }
             }
 

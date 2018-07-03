@@ -22,81 +22,179 @@
 #
 
 import logging
-from command import Command
+import requests
+import urllib.parse
+import traceback
+from urllib.parse import urlparse
 
 
-def get_repos(logger, project, messages_file):
+def get(logger, uri, params=None, headers=None):
+    try:
+        proxies = get_proxies(uri)
+        return requests.get(uri, params=params, proxies=proxies)
+    except Exception as e:
+        logger.debug(traceback.format_exc())
+        return None
+
+
+def delete(logger, uri, params=None, headers=None):
+    try:
+        proxies = get_proxies(uri)
+        return requests.delete(uri, params=params, proxies=proxies)
+    except Exception as e:
+        logger.debug(traceback.format_exc())
+        return None
+
+
+def post(logger, uri, headers=None, data=None):
+    rv = None
+    try:
+        proxies = get_proxies(uri)
+        rv = requests.post(uri, data=data, headers=headers, proxies=proxies)
+    except Exception as e:
+        logger.debug(traceback.format_exc())
+        return None
+
+    return rv
+
+
+def put(logger, uri, headers=None, data=None):
+    rv = None
+    try:
+        proxies = get_proxies(uri)
+        rv = requests.put(uri, data=data, headers=headers, proxies=proxies)
+    except Exception as e:
+        logger.debug(traceback.format_exc())
+        return None
+
+    return rv
+
+
+def get_repos(logger, project, uri):
     """
     Get list of repositories for given project name.
-    For the time being this is done by executing the messages_file command.
 
     Return  string with the result on success, None on failure.
-
-    XXX replace this with REST request after issue #1801
-
     """
 
-    cmd = Command([messages_file, '-n', 'project', '-t', project, 'get-repos'])
-    cmd.execute()
-    if cmd.state is not "finished" or cmd.getretcode() != 0:
-        logger.error("execution of command '{}' failed".format(cmd))
+    r = get(logger, get_uri(uri, 'api', 'v1', 'projects',
+                            urllib.parse.quote_plus(project), 'repositories'))
+
+    if not r:
+        logger.error('could not get repositories for ' + project)
         return None
 
     ret = []
-    for line in cmd.getoutput():
+    for line in r.json():
         ret.append(line.strip())
 
     return ret
 
 
-def get_first_line(logger, command):
-    """
-    Execute given command and return the first line of its output
-    or None if the execution failed.
-    """
-
-    cmd = Command(command)
-    cmd.execute()
-    if cmd.getstate() != Command.FINISHED or cmd.getretcode() != 0:
-        logger.error("execution of command '{}' failed with: {}"
-                     .format(cmd, cmd.getoutputstr()))
-        return None
-
-    if len(cmd.getoutput()) != 1:
-        logger.error("output from '{}' does not have exactly 1 line ({})".
-                     format(cmd, len(cmd.getoutput())))
-        return None
-
-    return cmd.getoutput()[0].strip()
-
-
-def get_config_value(logger, name, messages_file):
+def get_config_value(logger, name, uri):
     """
     Get list of repositories for given project name.
-    For the time being this is done by executing the messages_file command.
 
     Return string with the result on success, None on failure.
-
-    XXX replace this with REST request after issue #1801
-
     """
+    r = get(logger, get_uri(uri, 'api', 'v1', 'configuration',
+                            urllib.parse.quote_plus(name)))
 
-    return get_first_line(logger, [messages_file, '-n', 'config', '-t',
-                          'get', name])
+    if not r:
+        logger.error('could not get config value ' + name)
+        return None
+
+    return r.text
 
 
-def get_repo_type(logger, path, messages_file):
+def get_repo_type(logger, repository, uri):
     """
     Get repository type for given path relative to sourceRoot.
 
     Return string with the result on success, None on failure.
-
-    XXX replace this with REST request after issue #1801
     """
+    payload = {'repository': repository}
 
-    line = get_first_line(logger, [messages_file, '-n', 'repository', '-t',
-                          path, 'get-repo-type'])
-    if not line:
+    r = get(logger, get_uri(uri, 'api', 'v1', 'repositories', 'type'),
+            params=payload)
+    if not r:
+        logger.error('could not get repo type for ' + repository)
         return None
+
+    line = r.text
+
     idx = line.rfind(":")
     return line[idx + 1:]
+
+
+def get_configuration(logger, uri):
+    r = get(logger, get_uri(uri, 'api', 'v1', 'configuration'))
+    if not r:
+        logger.error('could not get configuration')
+        return None
+
+    return r.text
+
+
+def set_configuration(logger, configuration, uri):
+    r = put(logger, get_uri(uri, 'api', 'v1', 'configuration'),
+            data=configuration)
+
+    if not r:
+        logger.error('could not set configuration')
+        return False
+
+    return True
+
+
+def list_indexed_projects(logger, uri):
+    r = get(logger, get_uri(uri, 'api', 'v1', 'projects', 'indexed'))
+    if not r:
+        logger.error('could not list indexed projects')
+        return None
+
+    return r.json()
+
+
+def add_project(logger, project, uri):
+    r = post(logger, get_uri(uri, 'api', 'v1', 'projects'), data=project)
+
+    if not r:
+        logger.error('could not add project ' + project)
+        return False
+
+    return True
+
+
+def delete_project(logger, project, uri):
+    r = delete(logger, get_uri(uri, 'api', 'v1', 'projects',
+                               urllib.parse.quote_plus(project)))
+
+    if not r:
+        logger.error('could not delete project ' + project)
+        return False
+
+    return True
+
+
+def get_uri(*uri_parts):
+    return '/'.join(s.strip('/') for s in uri_parts)
+
+
+def is_localhost_url(url):
+    """
+    Check if given URL is based on localhost.
+    """
+
+    o = urlparse(url)
+    return o.hostname in ['localhost', '127.0.0.1', '::1']
+
+
+def get_proxies(url):
+    """
+    For localhost based requests it is undesirable to use proxies.
+    """
+    if is_localhost_url(url):
+        return {'http': None, 'https': None}
+    else:
+        return None

@@ -25,6 +25,7 @@ import os
 from shutil import which
 import logging
 import sys
+from urllib.parse import urlparse
 
 
 def is_exe(fpath):
@@ -95,3 +96,11 @@ def diff_list(first, second):
     """
     second = set(second)
     return [item for item in first if item not in second]
+
+
+def is_web_uri(url):
+    """
+    Check if given string is web URL.
+    """
+    o = urlparse(url)
+    return o.scheme in ['http', 'https']

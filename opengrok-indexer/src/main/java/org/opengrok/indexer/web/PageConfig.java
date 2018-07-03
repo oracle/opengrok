@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -61,7 +60,6 @@ import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.configuration.messages.Message;
 import org.opengrok.indexer.history.Annotation;
 import org.opengrok.indexer.history.History;
 import org.opengrok.indexer.history.HistoryEntry;
@@ -71,6 +69,7 @@ import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 
 /**
  * A simple container to lazy initialize common vars wrt. a single request. It
@@ -1513,11 +1512,11 @@ public final class PageConfig {
     }
 
     
-    public SortedSet<Message> getMessages() {
+    public SortedSet<AcceptedMessage> getMessages() {
         return env.getMessages();
     }
     
-    public SortedSet<Message> getMessages(String tag) {
+    public SortedSet<AcceptedMessage> getMessages(String tag) {
         return env.getMessages(tag);
     }
 

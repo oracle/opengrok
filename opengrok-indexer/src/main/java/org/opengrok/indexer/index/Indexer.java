@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.net.ConnectException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -53,7 +52,6 @@ import org.opengrok.indexer.configuration.ConfigurationHelp;
 import org.opengrok.indexer.configuration.LuceneLockName;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
-import org.opengrok.indexer.configuration.messages.Message;
 import org.opengrok.indexer.history.HistoryException;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.Repository;
@@ -83,6 +81,7 @@ public final class Indexer {
 
     private static final Indexer index = new Indexer();
     private static Configuration cfg = null;
+    private static Configuration checkIndexVersionCfg;
     private static boolean listRepos = false;
     private static boolean runIndex = true;
     private static boolean optimizedChanged = false;
@@ -90,7 +89,6 @@ public final class Indexer {
     private static boolean searchRepositories = false;
     private static boolean noindex = false;
     private static boolean awaitProfiler;
-    private static boolean checkIndexVersion = false;
 
     private static boolean help;
     private static String helpUsage;
@@ -105,7 +103,6 @@ public final class Indexer {
     private static final ArrayList<String> zapCache = new ArrayList<>();
     private static RuntimeEnvironment env = null;
     private static String host = null;
-    private static int port = 0;
 
     public static OptionParser openGrok = null;
 
@@ -131,7 +128,6 @@ public final class Indexer {
         boolean createDict = false;
 
         try {
-
             argv = parseOptions(argv);
             if (help) {
                 status = 1;
@@ -199,16 +195,17 @@ public final class Indexer {
             }
 
             // Check version of index(es) versus current Lucene version and exit
-            // with return code indicating success or failure.
-            if (checkIndexVersion) {
-                int retval = 0;
+            // with return code upon failure.
+            if (checkIndexVersionCfg != null) {
                 try {
-                    IndexVersion.check(cfg, subFilesList);
+                    IndexVersion.check(checkIndexVersionCfg, subFilesList);
                 } catch (IndexVersionException e) {
-                    System.err.printf("Index version check failed: %s", e);
-                    retval = 1;
+                    System.err.printf("Index version check failed: %s\n", e);
+                    System.err.printf("You might want to remove all data " +
+                            "under the DATA_ROOT and to reindex\n");
+                    status = 1;
+                    System.exit(status);
                 }
-                System.exit(retval);
             }
 
             // If an user used customizations for projects he perhaps just
@@ -230,7 +227,7 @@ public final class Indexer {
             RepositoryFactory.initializeIgnoredNames(env);
 
             if (noindex) {
-                getInstance().sendToConfigHost(env, host, port);
+                getInstance().sendToConfigHost(env, host);
                 writeConfigToFile(env, configFilename);
                 System.exit(0);
             }
@@ -272,17 +269,14 @@ public final class Indexer {
             // If the webapp is running with a config that does not contain
             // 'projectsEnabled' property (case of upgrade or transition
             // from project-less config to one with projects), set the property
-            // using a message so that the 'project/indexed' messages
+            // so that the 'project/indexed' messages
             // emitted during indexing do not cause validation error.
-            if (addProjects && host != null && port > 0) {
-                Message m = Message.createMessage("config");
-                m.addTag("set");
-                m.setText("projectsEnabled = true");
+            if (addProjects && host != null) {
                 try {
-                m.write(host, port);
-                } catch (ConnectException ce) {
-                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host or port", ce);
-                    System.err.println("Couldn't notify the webapp (and host or port set): " + ce.getLocalizedMessage());
+                    IndexerUtil.enableProjects(host);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host", e);
+                    System.err.println("Couldn't notify the webapp: " + e.getLocalizedMessage());
                 }
             }
 
@@ -310,9 +304,9 @@ public final class Indexer {
             // or send new configuration to the web application in the case of full reindex.
             if (host != null) {
                 if (!subFiles.isEmpty()) {
-                    getInstance().refreshSearcherManagers(env, subFiles, host, port);
+                    getInstance().refreshSearcherManagers(env, subFiles, host);
                 } else {
-                    getInstance().sendToConfigHost(env, host, port);
+                    getInstance().sendToConfigHost(env, host);
                 }
             }
 
@@ -394,7 +388,7 @@ public final class Indexer {
         OptionParser configure = OptionParser.scan(parser -> {
             parser.on("-R configPath").Do( cfgFile -> {
                 try {
-                cfg = Configuration.read(new File((String)cfgFile));
+                    cfg = Configuration.read(new File((String)cfgFile));
                 } catch(IOException e) {
                     die(e.getMessage());
                 }
@@ -405,7 +399,6 @@ public final class Indexer {
         OptionParser.accept(WebAddress.class, s -> { return parseWebAddress(s); });
 
         openGrok = OptionParser.Do(parser -> {
-
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
@@ -448,9 +441,14 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--checkIndexVersion",
+            parser.on("--checkIndexVersion", "=/path/to/conf",
                     "Check if current Lucene version matches index version").Do( v -> {
-                checkIndexVersion = true;
+                try {
+                    File cfgFile = new File((String)v);
+                    checkIndexVersionCfg = Configuration.read(cfgFile);
+                } catch(IOException|NullPointerException e) {
+                    die(e.getMessage());
+                }
             });
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root",
@@ -722,18 +720,12 @@ public final class Indexer {
                 cfg.setTabSize((Integer)tabSize);
             });
 
-            parser.on("-U", "--host", "=host:port", WebAddress.class,
-                "Send the current configuration to the specified address",
-                "(This is most likely the web-app configured with ConfigAddress)").
-                Do( webAddr -> {
-                    WebAddress web = (WebAddress)webAddr;
-
+            parser.on("-U", "--host", "=protocol://host:port/contextPath",
+                "Send the current configuration to the specified address").Do(webAddr -> {
                     env = RuntimeEnvironment.getInstance();
 
-                    host = web.getHost();
-                    port = web.getPort();
+                    host = (String) webAddr;
                     env.setConfigHost(host);
-                    env.setConfigPort(port);
                 }
             );
 
@@ -1118,23 +1110,20 @@ public final class Indexer {
         elapsed.report(LOGGER, "Done indexing data of all repositories");
     }
 
-    public void refreshSearcherManagers(RuntimeEnvironment env, List<String> projects, String host, int port) {
+    public void refreshSearcherManagers(RuntimeEnvironment env, List<String> projects, String host) {
         LOGGER.log(Level.INFO, "Refreshing searcher managers to: {0}", host);
-        try {
-            env.signalTorefreshSearcherManagers(projects, host, port);
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Failed to refresh searcher managers on " + host, ex);
-        }
+
+        env.signalTorefreshSearcherManagers(projects, host);
     }
 
-    public void sendToConfigHost(RuntimeEnvironment env, String host, int port) {
-        LOGGER.log(Level.INFO, "Sending configuration to: {0}:{1}", new Object[]{host, Integer.toString(port)});
+    public void sendToConfigHost(RuntimeEnvironment env, String host) {
+        LOGGER.log(Level.INFO, "Sending configuration to: {0}", host);
         try {
-            env.writeConfiguration(host, port);
+            env.writeConfiguration(host);
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, String.format(
-                    "Failed to send configuration to %s:%d "
-                    + "(is web application server running with opengrok deployed?)", host, port), ex);
+                    "Failed to send configuration to %s "
+                    + "(is web application server running with opengrok deployed?)", host), ex);
         }
         LOGGER.info("Configuration update routine done, check log output for errors.");
     }

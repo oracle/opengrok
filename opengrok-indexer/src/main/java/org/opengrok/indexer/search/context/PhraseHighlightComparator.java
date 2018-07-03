@@ -33,21 +33,36 @@ public class PhraseHighlightComparator implements Comparator<PhraseHighlight> {
     public static final PhraseHighlightComparator INSTANCE =
         new PhraseHighlightComparator();
 
+    /**
+     * Compares two {@link PhraseHighlight} instances for order by first
+     * comparing using {@link Integer#compare(int, int)} the
+     * {@link PhraseHighlight#lineStart} values of {@code o1} and {@code o2} and
+     * subsequently, if identical, comparing the {@link PhraseHighlight#lineEnd}
+     * values of {@code o2} and {@code o1} (i.e. inverted).
+     * <p>The ordering allows to iterate through a collection afterward and
+     * easily subsume where necessary a {@link PhraseHighlight} instance into
+     * its immediate predecessor.
+     * @param o1 a required instance
+     * @param o2 a required instance
+     * @return a negative integer, zero, or a positive integer as the first
+     * argument is less than, equal to, or greater than the second
+     */
     @Override
     public int compare(PhraseHighlight o1, PhraseHighlight o2) {
-        // ASC by lineStart, with -1 == -Inf.
+        int cmp;
         if (o1.getLineStart() < 0) {
             if (o2.getLineStart() >= 0) {
                 return -1;
             }
+            cmp = 0;
         } else if (o2.getLineStart() < 0) {
             return 1;
+        } else {
+            cmp = Integer.compare(o1.getLineStart(), o2.getLineStart());
         }
-        int cmp = Integer.compare(o1.getLineStart(), o2.getLineStart());
         if (cmp != 0) {
             return cmp;
         }
-        // DESC by lineEnd, with -1 == Inf.
         cmp = Integer.compare(o2.getLineEnd(), o1.getLineEnd());
         return cmp;
     }

@@ -97,7 +97,7 @@ public class PLSQLXrefTest {
         oss.print(getHtmlBegin());
 
         Writer sw = new StringWriter();
-        SQLAnalyzerFactory fac = new SQLAnalyzerFactory();
+        PLSQLAnalyzerFactory fac = new PLSQLAnalyzerFactory();
         FileAnalyzer analyzer = fac.getAnalyzer();
         analyzer.setScopesEnabled(true);
         analyzer.setFoldingEnabled(true);

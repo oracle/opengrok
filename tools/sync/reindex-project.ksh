@@ -67,7 +67,10 @@ function reindex_one
 		exit 1
 	fi
 
-	$binary_base/Messages -n config -t getconf > "$config_xml"
+	CFG_URI_PATH="${OPENGROK_WEBAPP_CONTEXT}/api/v1/configuration"
+	CFG_URI_PATH=$(echo ${CFG_URI_PATH} | sed 's://:/:g')
+
+	curl "${OPENGROK_WEBAPP_CFGADDR%/}/${CFG_URI_PATH#/}" > "$config_xml"
 	if (( $? != 0 )); then
 		print -u2 "failed to get configuration from webapp"
 		rm -f "$config_xml"
