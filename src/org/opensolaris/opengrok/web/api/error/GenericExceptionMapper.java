@@ -20,18 +20,22 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.v1;
+package org.opensolaris.opengrok.web.api.error;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-import javax.ws.rs.ApplicationPath;
+@Provider
+public class GenericExceptionMapper implements ExceptionMapper<Exception> {
 
-@ApplicationPath("/api/v1")
-public class RestApp extends ResourceConfig {
-
-    public RestApp() {
-        packages("org.opensolaris.opengrok.web.api.constraints", "org.opensolaris.opengrok.web.api.error");
-        packages(true, "org.opensolaris.opengrok.web.api.v1");
+    @Override
+    public Response toResponse(final Exception e) {
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(e.getMessage())
+                .type(MediaType.TEXT_PLAIN)
+                .build();
     }
 
 }
