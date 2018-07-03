@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.opensolaris.opengrok.web.constraints.PositiveDuration;
+import org.opensolaris.opengrok.web.api.constraints.PositiveDuration;
 
 import java.io.IOException;
 import java.time.Duration;
