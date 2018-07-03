@@ -30,6 +30,12 @@ public class ExceptionMapperUtils {
     private ExceptionMapperUtils() {
     }
 
+    /**
+     * Turns the exception into JSON format and embeds it into the response with the provided status.
+     * @param status status of the created response
+     * @param e exception to embed into the response
+     * @return response with the {@code status} and JSON media type with encoded {@code e} in the body
+     */
     public static Response toResponse(final Response.Status status, final Exception e) {
         return Response.status(status)
                 .entity(new ExceptionModel(e.getMessage()))
@@ -41,7 +47,7 @@ public class ExceptionMapperUtils {
 
         private String message;
 
-        public ExceptionModel(final String message) {
+        ExceptionModel(final String message) {
             this.message = message;
         }
 
