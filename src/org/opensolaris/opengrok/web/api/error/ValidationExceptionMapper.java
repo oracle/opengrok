@@ -23,7 +23,6 @@
 package org.opensolaris.opengrok.web.api.error;
 
 import javax.validation.ValidationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -33,10 +32,7 @@ public class ValidationExceptionMapper implements ExceptionMapper<ValidationExce
 
     @Override
     public Response toResponse(final ValidationException e) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity(e.getMessage())
-                .type(MediaType.TEXT_PLAIN)
-                .build();
+        return ExceptionMapperUtils.toResponse(Response.Status.BAD_REQUEST, e);
     }
 
 }

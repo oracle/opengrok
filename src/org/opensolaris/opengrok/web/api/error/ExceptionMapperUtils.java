@@ -22,24 +22,36 @@
  */
 package org.opensolaris.opengrok.web.api.error;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
-
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-@Provider
-public class GenericExceptionMapper implements ExceptionMapper<Exception> {
+public class ExceptionMapperUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(GenericExceptionMapper.class);
+    private ExceptionMapperUtils() {
+    }
 
-    @Override
-    public Response toResponse(final Exception e) {
-        logger.log(Level.FINE, "Exception while processing request", e);
+    public static Response toResponse(final Response.Status status, final Exception e) {
+        return Response.status(status)
+                .entity(new ExceptionModel(e.getMessage()))
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+    }
 
-        return ExceptionMapperUtils.toResponse(Response.Status.INTERNAL_SERVER_ERROR, e);
+    private static class ExceptionModel {
+
+        private String message;
+
+        public ExceptionModel(final String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(final String message) {
+            this.message = message;
+        }
     }
 
 }
