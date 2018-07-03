@@ -24,6 +24,8 @@ package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.SearchEngine;
+import org.opensolaris.opengrok.web.api.v1.filter.AuthorizationFilter;
+import org.opensolaris.opengrok.web.api.v1.filter.Authorized;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
@@ -49,6 +51,7 @@ public class SearchController {
     private static final int MAX_RESULTS = 1000;
 
     @GET
+    @Authorized
     @Produces(MediaType.APPLICATION_JSON)
     public SearchResult search(
             @Context final HttpServletRequest req,
@@ -58,7 +61,7 @@ public class SearchController {
             @QueryParam("path") final String path,
             @QueryParam("hist") final String hist,
             @QueryParam("type") final String type,
-            @QueryParam("projects") final List<String> projects,
+            @QueryParam(AuthorizationFilter.PROJECTS_PARAM) final List<String> projects,
             @QueryParam("maxresults") @DefaultValue(MAX_RESULTS + "") final int maxResults,
             @QueryParam("start") @DefaultValue(0 + "") final int startDocIndex
     ) {
