@@ -198,6 +198,13 @@ class SuggesterQueryParser extends CustomQueryParser {
     protected Query newFuzzyQuery(final Term term, final float minimumSimilarity, final int prefixLength) {
         if (term.text().contains(identifier)) {
             Term newTerm = replaceIdentifier(term, identifier);
+
+            if (minimumSimilarity < 1) {
+                identifier = term.text() + "~" + minimumSimilarity;
+            } else { // similarity greater than 1 must be an integer
+                identifier = term.text() + "~" + ((int) minimumSimilarity);
+            }
+
             int numEdits = FuzzyQuery.floatToEdits(minimumSimilarity, newTerm.text().codePointCount(0, newTerm.text().length()));
 
             SuggesterFuzzyQuery suggesterQuery = new SuggesterFuzzyQuery(newTerm, numEdits, prefixLength);
