@@ -1,6 +1,6 @@
 # REST API
 
-Since 1.1-rc31 OpenGrok web application provides a REST API under path `/api/v1/`. Since many of these requests are meant for administrators, only requests from `localhost` are allowed (except `search` endpoint).
+Since 1.1-rc31 OpenGrok web application provides a REST API under path `/api/v1/`.
 
 For Indexer and Python scripts to work correctly. URI of the webapp needs to be specified by `-U` option. (For instance: `-U http://localhost:8080/source`).
 
