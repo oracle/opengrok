@@ -37,7 +37,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
 
     @Override
     public Response toResponse(final Exception e) {
-        logger.log(Level.FINE, "Exception while processing request", e);
+        logger.log(Level.WARNING, "Exception while processing request", e);
 
         return ExceptionMapperUtils.toResponse(Response.Status.INTERNAL_SERVER_ERROR, e);
     }
