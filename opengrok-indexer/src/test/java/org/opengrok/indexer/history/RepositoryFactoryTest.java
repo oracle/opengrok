@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.history;
+package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +28,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertFalse;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensolaris.opengrok.util.TestRepository;
+import org.opengrok.indexer.util.TestRepository;
 
 /**
  * Test RepositoryFactory
