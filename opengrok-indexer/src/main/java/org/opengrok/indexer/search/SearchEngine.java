@@ -290,9 +290,9 @@ public class SearchEngine {
      */
     public int search(HttpServletRequest req, String... projectNames) {
         ProjectHelper pHelper = PageConfig.get(req).getProjectHelper();
-        Set<Project> projects = pHelper.getAllProjects();
+        Set<Project> allProjects = pHelper.getAllProjects();
         List<Project> filteredProjects = new ArrayList<Project>();
-        for(Project project: projects) {
+        for(Project project: allProjects) {
             for (String name : projectNames) {
                 if (project.getName().equalsIgnoreCase(name)) {
                     filteredProjects.add(project);

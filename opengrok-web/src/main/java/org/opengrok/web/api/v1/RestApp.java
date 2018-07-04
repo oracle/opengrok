@@ -26,9 +26,11 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.ApplicationPath;
 
-@ApplicationPath("/api/v1")
+@ApplicationPath(RestApp.API_PATH)
 public class RestApp extends ResourceConfig {
 
+    public static final String API_PATH = "/api/v1";
+    
     public RestApp() {
         packages("org.opengrok.web.api.v1.controller", "org.opengrok.web.api.v1.filter");
     }

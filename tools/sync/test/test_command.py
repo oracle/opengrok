@@ -121,6 +121,18 @@ class TestApp(unittest.TestCase):
         self.assertEqual(Command.FINISHED, cmd.getstate())
         self.assertEqual(0, cmd.getretcode())
 
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    def test_stderr(self):
+        cmd = Command(["/bin/cat", "/foo/bar", "/etc/passwd"],
+                      redirect_stderr=False)
+        cmd.execute()
+        self.assertEqual(Command.FINISHED, cmd.getstate())
+        self.assertNotEqual(0, cmd.getretcode())
+        # The error could contain localized output strings so check just
+        # for the path itself.
+        self.assertTrue("/foo/bar" in "\n".join(cmd.geterroutput()))
+        self.assertFalse("/foo/bar" in "\n".join(cmd.getoutput()))
+        self.assertTrue("root" in "\n".join(cmd.getoutput()))
 
 if __name__ == '__main__':
     unittest.main()

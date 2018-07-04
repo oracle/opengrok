@@ -201,8 +201,10 @@ public final class Indexer {
                     IndexVersion.check(checkIndexVersionCfg, subFilesList);
                 } catch (IndexVersionException e) {
                     System.err.printf("Index version check failed: %s\n", e);
-                    System.err.printf("You might want to remove all data " +
-                            "under the DATA_ROOT and to reindex\n");
+                    System.err.printf("You might want to remove " +
+                            (subFilesList.size() > 0 ?
+                            "data for projects " + String.join(",", subFilesList) : "all data") +
+                            " under the DATA_ROOT and to reindex\n");
                     status = 1;
                     System.exit(status);
                 }

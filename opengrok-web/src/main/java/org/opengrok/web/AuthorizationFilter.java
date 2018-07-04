@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.web.PageConfig;
+import org.opengrok.indexer.web.api.v1.RestApp;
 
 public class AuthorizationFilter implements Filter {
 
@@ -49,6 +49,16 @@ public class AuthorizationFilter implements Filter {
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
         HttpServletResponse httpRes = (HttpServletResponse) sr1;
+
+        // All RESTful API requests are allowed for now (also see LocalhostFilter).
+        // The /search endpoint will go through authorization via SearchEngine.search()
+        // so does not have to be exempted here.
+        if (httpReq.getServletPath().startsWith(RestApp.API_PATH)) {
+            LOGGER.log(Level.FINER, "Allowing request to {0} in {1}",
+                    new Object[]{ httpReq.getServletPath(), AuthorizationFilter.class.getName() });
+            fc.doFilter(sr, sr1);
+            return;
+        }
 
         PageConfig config = PageConfig.get(httpReq);
         long processTime = System.currentTimeMillis();

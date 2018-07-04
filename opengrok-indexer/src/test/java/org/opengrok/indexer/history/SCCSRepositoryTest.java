@@ -24,12 +24,14 @@
 package org.opengrok.indexer.history;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -59,16 +61,33 @@ public class SCCSRepositoryTest {
     /**
      * Test of isRepositoryFor method, of class SCCSRepository.
      */
-    @Test
-    public void testIsRepositoryFor() {
-        //test bug 15954
-        File tdir = new File(System.getProperty("java.io.tmpdir")+File.separator+"testogrepo");
-        File test = new File(tdir,"Codemgr_wsdata");
-        test.mkdirs();//TODO fix FileUtilities to not leave over dummy directories in tmp and then use them here ;)
-        SCCSRepository instance = new SCCSRepository();        
-        assertTrue(instance.isRepositoryFor(tdir));
-        test.delete();
-        tdir.delete();
+    private void testIsRepositoryFor(final String fileName, boolean shouldPass) throws IOException {
+        File tdir = Files.createTempDirectory("SCCSrepotest" + fileName).toFile();
+        File test = new File(tdir, fileName);
+        test.mkdirs();
+        tdir.deleteOnExit();
+        test.deleteOnExit();
+        SCCSRepository instance = new SCCSRepository();
+        assertEquals(shouldPass, instance.isRepositoryFor(tdir));
     }
-
+    
+    @Test
+    public void testIsRepositoryForCodemgr1() throws IOException {
+        testIsRepositoryFor("Codemgr_wsdata", true);
+    }
+    
+    @Test
+    public void testIsRepositoryForCodemgr2() throws IOException {
+        testIsRepositoryFor("codemgr_wsdata", true);
+    }
+    
+    @Test
+    public void testIsRepositoryForCodemgr3() throws IOException {
+        testIsRepositoryFor("SCCS", true);
+    }
+    
+    @Test
+    public void testIsRepositoryForCodemgrNot() throws IOException {
+        testIsRepositoryFor("NOT", false);
+    }
 }
