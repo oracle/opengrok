@@ -20,19 +20,27 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.error;
+package org.opengrok.indexer.web.api.constraints;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Provider
-public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplicationException> {
+/**
+ * Validate that the annotated {@link java.time.Duration} is not null and positive.
+ */
+@Constraint(validatedBy = PositiveDurationValidator.class)
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PositiveDuration {
 
-    @Override
-    public Response toResponse(final WebApplicationException e) {
-        return e.getResponse();
-    }
+    String message() default "{org.opensolaris.opengrok.web.constraints.PositiveDuration.message}";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 
 }

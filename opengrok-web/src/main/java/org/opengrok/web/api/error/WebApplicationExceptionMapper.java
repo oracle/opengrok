@@ -20,26 +20,19 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.error;
+package org.opengrok.web.api.error;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
-
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Provider
-public class GenericExceptionMapper implements ExceptionMapper<Exception> {
-
-    private static final Logger logger = LoggerFactory.getLogger(GenericExceptionMapper.class);
+public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplicationException> {
 
     @Override
-    public Response toResponse(final Exception e) {
-        logger.log(Level.WARNING, "Exception while processing request", e);
-
-        return ExceptionMapperUtils.toResponse(Response.Status.INTERNAL_SERVER_ERROR, e);
+    public Response toResponse(final WebApplicationException e) {
+        return e.getResponse();
     }
 
 }

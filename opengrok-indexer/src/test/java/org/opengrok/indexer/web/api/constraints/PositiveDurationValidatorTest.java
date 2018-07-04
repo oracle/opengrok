@@ -20,10 +20,9 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.constraint;
+package org.opengrok.indexer.web.api.constraints;
 
 import org.junit.Test;
-import org.opensolaris.opengrok.web.api.constraints.PositiveDurationValidator;
 
 import java.time.Duration;
 

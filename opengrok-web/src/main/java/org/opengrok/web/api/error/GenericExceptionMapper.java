@@ -20,27 +20,26 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.constraints;
+package org.opengrok.web.api.error;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.opengrok.indexer.logger.LoggerFactory;
 
-/**
- * Validate that the annotated {@link java.time.Duration} is not null and positive.
- */
-@Constraint(validatedBy = PositiveDurationValidator.class)
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PositiveDuration {
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-    String message() default "{org.opensolaris.opengrok.web.constraints.PositiveDuration.message}";
+@Provider
+public class GenericExceptionMapper implements ExceptionMapper<Exception> {
 
-    Class<?>[] groups() default {};
+    private static final Logger logger = LoggerFactory.getLogger(GenericExceptionMapper.class);
 
-    Class<? extends Payload>[] payload() default {};
+    @Override
+    public Response toResponse(final Exception e) {
+        logger.log(Level.WARNING, "Exception while processing request", e);
+
+        return ExceptionMapperUtils.toResponse(Response.Status.INTERNAL_SERVER_ERROR, e);
+    }
 
 }

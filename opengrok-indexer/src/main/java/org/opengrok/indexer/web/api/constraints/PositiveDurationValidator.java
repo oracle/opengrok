@@ -20,19 +20,24 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.error;
+package org.opengrok.indexer.web.api.constraints;
 
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import javax.validation.constraintvalidation.SupportedValidationTarget;
+import javax.validation.constraintvalidation.ValidationTarget;
+import java.time.Duration;
 
-@Provider
-public class ValidationExceptionMapper implements ExceptionMapper<ValidationException> {
+@SupportedValidationTarget(ValidationTarget.ANNOTATED_ELEMENT)
+public class PositiveDurationValidator implements ConstraintValidator<PositiveDuration, Duration> {
 
     @Override
-    public Response toResponse(final ValidationException e) {
-        return ExceptionMapperUtils.toResponse(Response.Status.BAD_REQUEST, e);
+    public void initialize(final PositiveDuration positiveDuration) {
+
     }
 
+    @Override
+    public boolean isValid(final Duration duration, final ConstraintValidatorContext context) {
+        return duration != null && !duration.isNegative() && !duration.isZero();
+    }
 }
