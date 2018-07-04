@@ -42,12 +42,18 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
+import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.util.TestRepository;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -337,7 +343,7 @@ public class ProjectsControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testIndexed() {
+    public void testIndexed() throws IOException {
         String projectName = "mercurial";
 
         // When a project is added, it should be marked as not indexed.
@@ -357,9 +363,15 @@ public class ProjectsControllerTest extends JerseyTest {
 
         // Add some changes to the repository.
         File mercurialRoot = new File(repository.getSourceRoot() + File.separator + "mercurial");
-        MercurialRepositoryTest.runHgCommand(mercurialRoot,
-                "import", HistoryGuru.getInstance().getClass().
-                        getResource("/history/hg-export-subdir.txt").getPath());
+
+        // copy file from jar to a temp file
+        Path temp = Files.createTempFile("opengrok", "temp");
+        Files.copy(HistoryGuru.getInstance().getClass().getResourceAsStream("/history/hg-export-subdir.txt"),
+                temp, StandardCopyOption.REPLACE_EXISTING);
+
+        MercurialRepositoryTest.runHgCommand(mercurialRoot, "import", temp.toString());
+
+        temp.toFile().delete();
 
         // Test that the project's indexed flag becomes true only after
         // the message is applied.
