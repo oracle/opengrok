@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web.constraints;
+package org.opensolaris.opengrok.web.api.constraints;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PositiveDuration {
 
-    String message() default "{org.opengrok.indexer.web.constraints.PositiveDuration.message}";
+    String message() default "{org.opensolaris.opengrok.web.constraints.PositiveDuration.message}";
 
     Class<?>[] groups() default {};
 

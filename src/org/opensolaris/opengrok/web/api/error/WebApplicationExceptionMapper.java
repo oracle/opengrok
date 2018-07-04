@@ -20,20 +20,19 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web.api.v1;
+package org.opensolaris.opengrok.web.api.error;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-import javax.ws.rs.ApplicationPath;
+@Provider
+public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplicationException> {
 
-@ApplicationPath(RestApp.API_PATH)
-public class RestApp extends ResourceConfig {
-
-    public static final String API_PATH = "/api/v1";
-    
-    public RestApp() {
-        packages("org.opengrok.web.api.constraints", "org.opengrok.web.api.error");
-        packages(true, "org.opengrok.web.api.v1");
+    @Override
+    public Response toResponse(final WebApplicationException e) {
+        return e.getResponse();
     }
 
 }

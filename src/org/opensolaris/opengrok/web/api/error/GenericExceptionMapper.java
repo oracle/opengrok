@@ -20,23 +20,26 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.web.constraints;
+package org.opensolaris.opengrok.web.api.error;
 
-import javax.validation.ValidationException;
-import javax.ws.rs.core.MediaType;
+import org.opensolaris.opengrok.logger.LoggerFactory;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Provider
-public class ValidationExceptionMapper implements ExceptionMapper<ValidationException> {
+public class GenericExceptionMapper implements ExceptionMapper<Exception> {
+
+    private static final Logger logger = LoggerFactory.getLogger(GenericExceptionMapper.class);
 
     @Override
-    public Response toResponse(final ValidationException e) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity(e.getMessage())
-                .type(MediaType.TEXT_PLAIN)
-                .build();
+    public Response toResponse(final Exception e) {
+        logger.log(Level.WARNING, "Exception while processing request", e);
+
+        return ExceptionMapperUtils.toResponse(Response.Status.INTERNAL_SERVER_ERROR, e);
     }
 
 }

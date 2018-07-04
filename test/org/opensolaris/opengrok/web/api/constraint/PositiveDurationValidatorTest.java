@@ -20,24 +20,38 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web.constraints;
+package org.opensolaris.opengrok.web.api.constraint;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.constraintvalidation.SupportedValidationTarget;
-import javax.validation.constraintvalidation.ValidationTarget;
+import org.junit.Test;
+import org.opensolaris.opengrok.web.api.constraints.PositiveDurationValidator;
+
 import java.time.Duration;
 
-@SupportedValidationTarget(ValidationTarget.ANNOTATED_ELEMENT)
-public class PositiveDurationValidator implements ConstraintValidator<PositiveDuration, Duration> {
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-    @Override
-    public void initialize(final PositiveDuration positiveDuration) {
+public class PositiveDurationValidatorTest {
 
+    private PositiveDurationValidator validator = new PositiveDurationValidator();
+
+    @Test
+    public void testNull() {
+        assertFalse(validator.isValid(null, null));
     }
 
-    @Override
-    public boolean isValid(final Duration duration, final ConstraintValidatorContext context) {
-        return duration != null && !duration.isNegative() && !duration.isZero();
+    @Test
+    public void testNegative() {
+        assertFalse(validator.isValid(Duration.ofMinutes(-10), null));
     }
+
+    @Test
+    public void testZero() {
+        assertFalse(validator.isValid(Duration.ofMinutes(0), null));
+    }
+
+    @Test
+    public void testValid() {
+        assertTrue(validator.isValid(Duration.ofMinutes(5), null));
+    }
+
 }
