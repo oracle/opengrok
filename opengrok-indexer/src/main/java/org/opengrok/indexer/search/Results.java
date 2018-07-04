@@ -60,7 +60,7 @@ import org.opengrok.indexer.web.Prefix;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.indexer.web.Util;
 
-import static org.opensolaris.opengrok.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
+import static org.opengrok.indexer.web.messages.MessagesContainer.MESSAGES_MAIN_PAGE_TAG;
 
 /**
  * @author Chandan slightly rewritten by Lubos Kosco

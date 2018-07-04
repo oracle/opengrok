@@ -64,6 +64,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
         <compileSource>1.8</compileSource>
         <compileTarget>1.8</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jersey.version>2.27</jersey.version>
     </properties>
 
     <dependencyManagement>

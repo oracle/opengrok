@@ -37,10 +37,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
     <name>OpenGrok Indexer</name>
 
-    <properties>
-        <jersey.version>2.27</jersey.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.bcel</groupId>
@@ -100,14 +96,9 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
+        <dependency> <!-- TODO: remove! (moving Messages to web module) -->
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-bean-validation</artifactId>
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
@@ -116,42 +107,26 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-bean-validation</artifactId>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
             <version>${jersey.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
-            <version>1.1</version>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
+        <dependency> <!-- TODO: remove! (moving Messages to web module) -->
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-            <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>2.19.0</version>
-        <scope>test</scope>
     </dependencies>
 
     <build>
@@ -173,6 +148,13 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </manifestEntries>
                     </archive>
                 </configuration>
+                <executions> <!-- so the web module can use test classes from indexer module -->
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -302,7 +284,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <!-- Test helper class with name that confuses surefire -->
                         <exclude>**/TestRepository.java</exclude>
                     </excludes>
-		            <argLine>${surefireArgLine}</argLine>
+                    <argLine>${surefireArgLine}</argLine>
                 </configuration>
             </plugin>
 
