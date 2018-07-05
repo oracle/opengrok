@@ -23,8 +23,8 @@
 package org.opensolaris.opengrok.web.suggester.provider;
 
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.opensolaris.opengrok.web.api.error.ExceptionMapperUtils;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -34,10 +34,7 @@ public class ParseExceptionMapper implements ExceptionMapper<ParseException> {
 
     @Override
     public Response toResponse(final ParseException e) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity(e.getMessage())
-                .type(MediaType.TEXT_PLAIN)
-                .build();
+        return ExceptionMapperUtils.toResponse(Response.Status.BAD_REQUEST, e);
     }
 
 }

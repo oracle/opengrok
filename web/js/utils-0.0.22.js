@@ -1800,7 +1800,7 @@ function initAutocompleteForField(inputId, field, config) {
                     input.autocomplete("close");
                     response(undefined); // to remove loading indicator
 
-                    showError(xhr.responseText)
+                    showError(xhr.responseJSON.message)
                 }
             });
         },

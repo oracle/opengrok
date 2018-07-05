@@ -31,8 +31,11 @@ public class SuggesterApp extends ResourceConfig {
 
     public SuggesterApp() {
         register(new SuggesterAppBinder());
-        packages(true, "org.opensolaris.opengrok.web.suggester.controller",
-                "org.opensolaris.opengrok.web.suggester.provider", "org.opensolaris.opengrok.web.constraints");
+        packages(true,
+                "org.opensolaris.opengrok.web.suggester.controller",
+                "org.opensolaris.opengrok.web.suggester.provider",
+                "org.opensolaris.opengrok.web.api.constraints",
+                "org.opensolaris.opengrok.web.api.error");
     }
 
 }
