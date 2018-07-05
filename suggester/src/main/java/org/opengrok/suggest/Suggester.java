@@ -47,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class Suggester {
 
@@ -221,8 +222,12 @@ public final class Suggester {
 
             if (isOnlySuggestQuery && suggesterQuery instanceof SuggesterPrefixQuery) {
                 String prefix = ((SuggesterPrefixQuery) suggesterQuery).getPrefix().text();
-                return projectData.get(namedIndexReader.name)
-                        .lookup(suggesterQuery.getField(), prefix, resultSize)
+                FieldWFSTCollection data = projectData.get(namedIndexReader.name);
+                if (data == null) {
+                    logger.log(Level.FINE, "{0} not yet initialized", namedIndexReader.name);
+                    return Stream.empty();
+                }
+                return data.lookup(suggesterQuery.getField(), prefix, resultSize)
                         .stream()
                         .map(item -> new LookupResultItem(item.key.toString(), namedIndexReader.name, item.value));
             } else {
