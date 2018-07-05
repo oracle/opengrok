@@ -29,8 +29,11 @@ import java.util.List;
 
 class LookupPriorityQueue extends PriorityQueue<LookupResultItem> {
 
+    private final int maxSize;
+
     LookupPriorityQueue(final int maxSize) {
         super(maxSize);
+        this.maxSize = maxSize;
     }
 
     @Override
@@ -47,6 +50,13 @@ class LookupPriorityQueue extends PriorityQueue<LookupResultItem> {
         }
 
         return Arrays.asList(res);
+    }
+
+    boolean canInsert(final long score) {
+        if (size() < maxSize) {
+            return true;
+        }
+        return size() > 0 && score >= top().getScore();
     }
 
 }

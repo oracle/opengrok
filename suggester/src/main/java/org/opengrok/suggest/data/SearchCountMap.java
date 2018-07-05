@@ -22,9 +22,11 @@
  */
 package org.opengrok.suggest.data;
 
+import org.apache.lucene.util.BytesRef;
+
 @FunctionalInterface
 public interface SearchCountMap {
 
-    int get(String key);
+    int get(BytesRef key);
 
 }

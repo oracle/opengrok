@@ -23,6 +23,7 @@
 package org.opengrok.suggest.util;
 
 import net.openhft.chronicle.map.ChronicleMap;
+import org.apache.lucene.util.BytesRef;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +38,7 @@ public class ChroniceMapUtilsTest {
 
     private static final String FIELD = "test";
 
-    private ChronicleMap<String, Integer> map;
+    private ChronicleMap<BytesRef, Integer> map;
 
     private Path tempFile;
 
@@ -45,10 +46,11 @@ public class ChroniceMapUtilsTest {
     public void setUp() throws IOException {
         tempFile = Files.createTempFile("opengrok", "test");
 
-        map = ChronicleMap.of(String.class, Integer.class)
+        map = ChronicleMap.of(BytesRef.class, Integer.class)
                 .name(FIELD)
-                .averageKey("avg")
+                .averageKeySize(3)
                 .entries(10)
+                .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
                 .createOrRecoverPersistedTo(tempFile.toFile());
     }
 
@@ -60,26 +62,26 @@ public class ChroniceMapUtilsTest {
     @Test
     public void dataNotLostAfterResizeTest() throws IOException {
         fillData(0, 10, map);
-        ChronicleMap<String, Integer> newMap = ChronicleMapUtils.resize(tempFile.toFile(), map, 20, 20);
+        ChronicleMap<BytesRef, Integer> newMap = ChronicleMapUtils.resize(tempFile.toFile(), map, 20, 20);
         checkData(10, newMap);
     }
 
-    private void fillData(int start, int end, ChronicleMap<String, Integer> map) {
+    private void fillData(int start, int end, ChronicleMap<BytesRef, Integer> map) {
         for (int i = start; i < end; i++) {
-            map.put("" + i, i);
+            map.put(new BytesRef("" + i), i);
         }
     }
 
-    private void checkData(int count, ChronicleMap<String, Integer> map) {
+    private void checkData(int count, ChronicleMap<BytesRef, Integer> map) {
         for (int i = 0; i < count; i++) {
-            assertEquals(Integer.valueOf(i), map.get("" + i));
+            assertEquals(Integer.valueOf(i), map.get(new BytesRef("" + i)));
         }
     }
 
     @Test
     public void testResize() throws IOException {
         fillData(0, 10, map);
-        ChronicleMap<String, Integer> newMap = ChronicleMapUtils.resize(tempFile.toFile(), map, 500, 20);
+        ChronicleMap<BytesRef, Integer> newMap = ChronicleMapUtils.resize(tempFile.toFile(), map, 500, 20);
 
         fillData(10, 500, newMap);
 

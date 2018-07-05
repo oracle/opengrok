@@ -110,11 +110,11 @@ class SuggesterSearcher extends IndexSearcher {
     ) throws IOException {
 
         boolean shouldLeaveOutSameTerms = shouldLeaveOutSameTerms(query, suggesterQuery);
-        Set<String> tokensAlreadyIncluded = null;
+        Set<BytesRef> tokensAlreadyIncluded = null;
         if (shouldLeaveOutSameTerms) {
             tokensAlreadyIncluded = SuggesterUtils.intoTermsExceptPhraseQuery(query).stream()
                     .filter(t -> t.field().equals(suggesterQuery.getField()))
-                    .map(Term::text)
+                    .map(Term::bytes)
                     .collect(Collectors.toSet());
         }
 
@@ -153,13 +153,13 @@ class SuggesterSearcher extends IndexSearcher {
             }
 
             if (score > 0) {
-                String termStr = term.utf8ToString();
-
-                if (!shouldLeaveOutSameTerms || !tokensAlreadyIncluded.contains(termStr)) {
-                    int add = searchCounts.get(termStr);
+                if (!shouldLeaveOutSameTerms || !tokensAlreadyIncluded.contains(term)) {
+                    int add = searchCounts.get(term);
                     score += add * TERM_ALREADY_SEARCHED_MULTIPLIER;
 
-                    queue.insertWithOverflow(new LookupResultItem(termStr, suggester, score));
+                    if (queue.canInsert(score)) {
+                        queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), suggester, score));
+                    }
                 }
             }
 
