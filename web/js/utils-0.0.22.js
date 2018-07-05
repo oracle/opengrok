@@ -1826,15 +1826,17 @@ function initAutocompleteForField(inputId, field, config) {
         },
         focus: function (event, ui) {
             var pos = text.indexOf(identifier);
-            input.val(text.replace(identifier, ui.item.phrase));
-            input.caret(pos + ui.item.phrase.length);
+            var phrase = escapeLuceneCharacters(ui.item.phrase);
+            input.val(text.replace(identifier, phrase));
+            input.caret(pos + phrase.length);
 
             event.preventDefault(); // to prevent the movement of the caret to the end
         },
         select: function (event, ui) {
             var pos = text.indexOf(identifier);
-            input.val(text.replace(identifier, ui.item.phrase));
-            input.caret(pos + ui.item.phrase.length);
+            var phrase = escapeLuceneCharacters(ui.item.phrase);
+            input.val(text.replace(identifier, phrase));
+            input.caret(pos + phrase.length);
 
             event.preventDefault(); // to prevent the movement of the caret to the end
         },
@@ -1941,6 +1943,13 @@ function getSuggestionListItem(itemData, config) {
     }).appendTo(listItemChild);
 
     return listItem;
+}
+
+function escapeLuceneCharacters(term) {
+    // must escape: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
+    var pattern = /([\+\-\!\(\)\{\}\[\]\^\"\~\*\?\:\\]|&&|\|\|)/g;
+
+    return term.replace(pattern, "\\$1");
 }
 
 function domReadyHistory() {
