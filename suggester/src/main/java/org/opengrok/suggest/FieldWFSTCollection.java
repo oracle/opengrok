@@ -37,6 +37,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.data.SearchCountMap;
+import org.opengrok.suggest.util.BytesRefDataAccess;
+import org.opengrok.suggest.util.BytesRefSizedReader;
 import org.opengrok.suggest.util.ChronicleMapConfiguration;
 import org.opengrok.suggest.util.ChronicleMapUtils;
 
@@ -78,7 +80,7 @@ class FieldWFSTCollection implements Closeable {
 
     private final Map<String, WFSTCompletionLookup> lookups = new HashMap<>();
 
-    private final Map<String, ChronicleMap<String, Integer>> searchCountMaps = new HashMap<>();
+    private final Map<String, ChronicleMap<BytesRef, Integer>> searchCountMaps = new HashMap<>();
 
     private final Map<String, Double> averageLengths = new HashMap<>();
 
@@ -200,9 +202,10 @@ class FieldWFSTCollection implements Closeable {
 
                 File f = getChronicleMapFile(field);
 
-                ChronicleMap<String, Integer> m = ChronicleMap.of(String.class, Integer.class)
+                ChronicleMap<BytesRef, Integer> m = ChronicleMap.of(BytesRef.class, Integer.class)
                         .name(field)
                         .averageKeySize(conf.getAverageKeySize())
+                        .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
                         .entries(conf.getEntries())
                         .createOrRecoverPersistedTo(f);
 
@@ -237,9 +240,9 @@ class FieldWFSTCollection implements Closeable {
         return AVERAGE_LENGTH_DEFAULT;
     }
 
-    private void removeOldTerms(final ChronicleMap<String, Integer> map, final WFSTCompletionLookup lookup) {
+    private void removeOldTerms(final ChronicleMap<BytesRef, Integer> map, final WFSTCompletionLookup lookup) {
         if (!map.isEmpty()) {
-            map.entrySet().removeIf(e -> lookup.get(e.getKey()) == null);
+            map.entrySet().removeIf(e -> lookup.get(e.getKey().utf8ToString()) == null);
         }
     }
 
@@ -268,9 +271,9 @@ class FieldWFSTCollection implements Closeable {
     }
 
     public void incrementSearchCount(final Term term) {
-        ChronicleMap<String, Integer> m = searchCountMaps.get(term.field());
+        ChronicleMap<BytesRef, Integer> m = searchCountMaps.get(term.field());
         if (m != null) {
-            m.merge(term.text(), 1, (a, b) -> a + b);
+            m.merge(term.bytes(), 1, (a, b) -> a + b);
         }
     }
 
@@ -317,9 +320,7 @@ class FieldWFSTCollection implements Closeable {
         @Override
         public long weight() {
             if (last != null) {
-                String str = last.utf8ToString();
-
-                int add = searchCounts.get(str);
+                int add = searchCounts.get(last);
 
                 return SuggesterUtils.computeWeight(indexReader, field, last)
                         + add * SuggesterSearcher.TERM_ALREADY_SEARCHED_MULTIPLIER;

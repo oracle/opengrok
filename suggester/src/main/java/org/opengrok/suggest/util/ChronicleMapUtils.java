@@ -23,6 +23,7 @@
 package org.opengrok.suggest.util;
 
 import net.openhft.chronicle.map.ChronicleMap;
+import org.apache.lucene.util.BytesRef;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,9 +35,9 @@ public class ChronicleMapUtils {
     private ChronicleMapUtils() {
     }
 
-    public static <K, V> ChronicleMap<K, V> resize(
+    public static ChronicleMap<BytesRef, Integer> resize(
             final File oldMapFile,
-            final ChronicleMap<K, V> oldMap,
+            final ChronicleMap<BytesRef, Integer> oldMap,
             final int newMapSize,
             final double newMapAvgKey
     ) throws IOException {
@@ -59,17 +60,15 @@ public class ChronicleMapUtils {
 
         String field = oldMap.name();
 
-        Class<K> keyClass = oldMap.keyClass();
-        Class<V> valueClass = oldMap.valueClass();
-
         oldMap.close();
 
         Files.delete(oldMapFile.toPath());
 
-        ChronicleMap<K, V> m = ChronicleMap.of(keyClass, valueClass)
+        ChronicleMap<BytesRef, Integer> m = ChronicleMap.of(BytesRef.class, Integer.class)
                 .name(field)
                 .averageKeySize(newMapAvgKey)
                 .entries(newMapSize)
+                .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
                 .createOrRecoverPersistedTo(oldMapFile);
 
         m.putAll(tempFile.toFile());
