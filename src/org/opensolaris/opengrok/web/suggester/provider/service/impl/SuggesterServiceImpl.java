@@ -54,6 +54,7 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -69,6 +70,8 @@ public class SuggesterServiceImpl implements SuggesterService {
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
 
     private SuggesterServiceImpl() {
     }
@@ -87,13 +90,17 @@ public class SuggesterServiceImpl implements SuggesterService {
             final SuggesterQuery suggesterQuery,
             final Query query
     ) {
-        if (suggester == null) {
-            return Collections.emptyList();
+        rwl.readLock().lock();
+        try {
+            if (suggester == null) {
+                return Collections.emptyList();
+            }
+            List<NamedIndexReader> namedReaders = getNamedIndexReaders(projects);
+
+            return suggester.search(namedReaders, suggesterQuery, query);
+        } finally {
+            rwl.readLock().unlock();
         }
-
-        List<NamedIndexReader> namedReaders = getNamedIndexReaders(projects);
-
-        return suggester.search(namedReaders, suggesterQuery, query);
     }
 
     private List<NamedIndexReader> getNamedIndexReaders(final Collection<String> projects) {
@@ -108,8 +115,14 @@ public class SuggesterServiceImpl implements SuggesterService {
     }
 
     @Override
-    public void refresh(Configuration configuration) {
-        // TODO:
+    public void refresh(final Configuration configuration) {
+        rwl.writeLock().lock();
+        try {
+            suggester.close();
+            initSuggester();
+        } finally {
+            rwl.writeLock().unlock();
+        }
     }
 
     @Override
