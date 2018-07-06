@@ -31,6 +31,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
 import org.opengrok.suggest.query.SuggesterQuery;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -49,7 +50,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class Suggester {
+public final class Suggester implements Closeable {
 
     private static final Logger logger = Logger.getLogger(Suggester.class.getName());
 
@@ -275,6 +276,17 @@ public final class Suggester {
                     "Time to await termination of building the suggester data cannot be 0 or negative");
         }
         this.awaitTerminationTime = awaitTerminationTime;
+    }
+
+    @Override
+    public void close() {
+        projectData.values().forEach(f -> {
+            try {
+                f.close();
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Could not close suggester data " + f, e);
+            }
+        });
     }
 
     public static class NamedIndexReader {
