@@ -279,10 +279,10 @@ class FieldWFSTCollection implements Closeable {
 
     public SearchCountMap getSearchCountMap(final String field) {
         if (!searchCountMaps.containsKey(field)) {
-            return (key) -> 0;
+            return key -> 0;
         }
 
-        return (key) -> searchCountMaps.get(field).getOrDefault(key, 0);
+        return key -> searchCountMaps.get(field).getOrDefault(key, 0);
     }
 
     @Override
