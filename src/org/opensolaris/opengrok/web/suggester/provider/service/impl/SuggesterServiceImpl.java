@@ -53,6 +53,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -68,6 +69,8 @@ public class SuggesterServiceImpl implements SuggesterService {
     private static SuggesterServiceImpl instance;
 
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    private ScheduledFuture<?> future;
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
@@ -180,11 +183,15 @@ public class SuggesterServiceImpl implements SuggesterService {
     }
 
     private void scheduleRebuild() {
+        if (future != null && !future.isDone()) {
+            future.cancel(false);
+        }
+
         Duration timeToNextRebuild = getTimeToNextRebuild();
 
         logger.log(Level.INFO, "Scheduling suggester rebuild in {0}", timeToNextRebuild);
 
-        instance.scheduler.schedule(instance.getRebuildAllProjectsRunnable(), timeToNextRebuild.toMillis(),
+        future = instance.scheduler.schedule(instance.getRebuildAllProjectsRunnable(), timeToNextRebuild.toMillis(),
                 TimeUnit.MILLISECONDS);
     }
 
