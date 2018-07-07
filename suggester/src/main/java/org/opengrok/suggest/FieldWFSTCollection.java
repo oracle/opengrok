@@ -26,6 +26,7 @@ import net.openhft.chronicle.hash.ChronicleHash;
 import net.openhft.chronicle.map.ChronicleMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Term;
@@ -47,9 +48,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,8 @@ class FieldWFSTCollection implements Closeable {
     private static final String WFST_FILE_SUFFIX = ".wfst";
 
     private static final String SEARCH_COUNT_MAP_NAME = "search_count.db";
+
+    private static final String VERSION_FILE_NAME = "version.txt";
 
     private static final int DEFAULT_WEIGHT = 0;
 
@@ -93,22 +96,30 @@ class FieldWFSTCollection implements Closeable {
     }
 
     public void init() throws IOException {
-        if (hasStoredData()) {
+        long commitVersion = getCommitVersion();
+
+        if (hasStoredData() && commitVersion == getDataVersion()) {
             loadStoredWFSTs();
         } else {
-            if (!suggesterDir.toFile().exists()) {
-                boolean directoryCreated = suggesterDir.toFile().mkdirs();
-                if (!directoryCreated) {
-                    throw new IOException("Could not create suggester directory " + suggesterDir);
-                }
-            }
-
+            createSuggesterDir();
             rebuild();
         }
 
         if (allowMostPopular) {
             initSearchCountMap();
         }
+
+        storeDataVersion(commitVersion);
+    }
+
+    private long getCommitVersion() throws IOException {
+        List<IndexCommit> commits = DirectoryReader.listCommits(indexDir);
+        if (commits.size() > 1) {
+            throw new IllegalStateException("IndexDeletionPolicy changed, normally only one commit should be stored");
+        }
+        IndexCommit commit = commits.get(0);
+
+        return commit.getGeneration();
     }
 
     private boolean hasStoredData() {
@@ -154,7 +165,11 @@ class FieldWFSTCollection implements Closeable {
     }
 
     private File getWFSTFile(final String field) {
-        return Paths.get(suggesterDir.toString(), field + WFST_FILE_SUFFIX).toFile();
+        return getFile(field + WFST_FILE_SUFFIX);
+    }
+
+    private File getFile(final String fileName) {
+        return suggesterDir.resolve(fileName).toFile();
     }
 
     public void rebuild() throws IOException {
@@ -191,6 +206,15 @@ class FieldWFSTCollection implements Closeable {
         WFST.store(fos);
     }
 
+    private void createSuggesterDir() throws IOException {
+        if (!suggesterDir.toFile().exists()) {
+            boolean directoryCreated = suggesterDir.toFile().mkdirs();
+            if (!directoryCreated) {
+                throw new IOException("Could not create suggester directory " + suggesterDir);
+            }
+        }
+    }
+
     private void initSearchCountMap() throws IOException {
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
             for (String field : MultiFields.getIndexedFields(indexReader)) {
@@ -209,22 +233,21 @@ class FieldWFSTCollection implements Closeable {
                         .entries(conf.getEntries())
                         .createOrRecoverPersistedTo(f);
 
-                removeOldTerms(m, lookups.get(field));
+                if (getCommitVersion() != getDataVersion()) {
+                    removeOldTerms(m, lookups.get(field));
 
-                if (conf.getEntries() < lookups.get(field).getCount()) {
-                    int newEntriesCount = (int) lookups.get(field).getCount();
-                    double newKeyAvgLength = getAverageLength(field);
+                    if (conf.getEntries() < lookups.get(field).getCount()) {
+                        int newEntriesCount = (int) lookups.get(field).getCount();
+                        double newKeyAvgLength = getAverageLength(field);
 
-                    conf.setEntries(newEntriesCount);
-                    conf.setAverageKeySize(newKeyAvgLength);
-                    conf.save(suggesterDir, field);
+                        conf.setEntries(newEntriesCount);
+                        conf.setAverageKeySize(newKeyAvgLength);
+                        conf.save(suggesterDir, field);
 
-                    m = ChronicleMapUtils.resize(f, m, newEntriesCount, newKeyAvgLength);
-
-                    searchCountMaps.put(field, m);
-                } else {
-                    searchCountMaps.put(field, m);
+                        m = ChronicleMapUtils.resize(f, m, newEntriesCount, newKeyAvgLength);
+                    }
                 }
+                searchCountMaps.put(field, m);
             }
         }
     }
@@ -289,6 +312,23 @@ class FieldWFSTCollection implements Closeable {
     public void close() throws IOException {
         searchCountMaps.values().forEach(ChronicleHash::close);
         indexDir.close();
+    }
+
+    private long getDataVersion() {
+        try {
+            String str = FileUtils.readFileToString(getFile(VERSION_FILE_NAME), StandardCharsets.UTF_8);
+            return Long.parseLong(str);
+        } catch (IOException e) {
+            return -1;
+        }
+    }
+
+    private void storeDataVersion(final long version) {
+        try {
+            FileUtils.writeStringToFile(getFile(VERSION_FILE_NAME), "" + version, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Could not store version", e);
+        }
     }
 
     private static class WFSTInputIterator implements InputIterator {
