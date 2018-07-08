@@ -22,6 +22,7 @@
  */
 package org.opensolaris.opengrok.web.suggester.provider.service;
 
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.query.SuggesterQuery;
@@ -50,6 +51,8 @@ public interface SuggesterService {
     void delete(String project);
 
     void onSearch(Iterable<String> projects, Query q);
+
+    void increaseSearchCount(String project, Term term, int value);
 
     void close();
 

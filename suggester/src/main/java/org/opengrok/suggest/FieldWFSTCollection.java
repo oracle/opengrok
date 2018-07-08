@@ -300,6 +300,13 @@ class FieldWFSTCollection implements Closeable {
         }
     }
 
+    public void incrementSearchCount(final Term term, final int value) {
+        ChronicleMap<BytesRef, Integer> m = searchCountMaps.get(term.field());
+        if (m != null) {
+            m.merge(term.bytes(), value, (a, b) -> a + b);
+        }
+    }
+
     public SearchCountMap getSearchCountMap(final String field) {
         if (!searchCountMaps.containsKey(field)) {
             return key -> 0;

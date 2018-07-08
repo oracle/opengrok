@@ -278,6 +278,10 @@ public final class Suggester implements Closeable {
         this.awaitTerminationTime = awaitTerminationTime;
     }
 
+    public void increaseSearchCount(final String project, final Term term, final int value) {
+        projectData.get(project).incrementSearchCount(term, value);
+    }
+
     @Override
     public void close() {
         projectData.values().forEach(f -> {

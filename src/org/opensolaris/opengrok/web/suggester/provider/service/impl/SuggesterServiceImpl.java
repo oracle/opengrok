@@ -27,6 +27,7 @@ import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.Suggester;
@@ -144,6 +145,11 @@ public class SuggesterServiceImpl implements SuggesterService {
     @Override
     public void onSearch(final Iterable<String> projects, final Query q) {
         suggester.onSearch(projects, q);
+    }
+
+    @Override
+    public void increaseSearchCount(final String project, final Term term, final int value) {
+        suggester.increaseSearchCount(project, term, value);
     }
 
     private void initSuggester() {

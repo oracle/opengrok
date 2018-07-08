@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -39,6 +41,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.*;
 
 /**
@@ -509,4 +512,63 @@ public class UtilTest {
          */
         assertEquals("http://www.example.com:8080/cgi-%22bin/user=123&id=", Util.completeUrl("/cgi-\"bin/user=123&id=", req));
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getQueryParamsNullTest() {
+        Util.getQueryParams(null);
+    }
+
+    @Test
+    public void getQueryParamsEmptyTest() throws MalformedURLException {
+        URL url = new URL("http://test.com/test");
+        assertTrue(Util.getQueryParams(url).isEmpty());
+    }
+
+    @Test
+    public void getQueryParamsEmptyTest2() throws MalformedURLException {
+        URL url = new URL("http://test.com/test?");
+        assertTrue(Util.getQueryParams(url).isEmpty());
+    }
+
+    @Test
+    public void getQueryParamsSingleTest() throws MalformedURLException {
+        URL url = new URL("http://test.com?param1=value1");
+        Map<String, List<String>> params = Util.getQueryParams(url);
+
+        assertEquals(1, params.size());
+
+        assertThat(params.get("param1"), contains("value1"));
+    }
+
+    @Test
+    public void getQueryParamsMultipleTest() throws MalformedURLException {
+        URL url = new URL("http://test.com?param1=value1&param2=value2");
+        Map<String, List<String>> params = Util.getQueryParams(url);
+
+        assertEquals(2, params.size());
+
+        assertThat(params.get("param1"), contains("value1"));
+        assertThat(params.get("param2"), contains("value2"));
+    }
+
+    @Test
+    public void getQueryParamsMultipleSameTest() throws MalformedURLException {
+        URL url = new URL("http://test.com?param1=value1&param1=value2");
+        Map<String, List<String>> params = Util.getQueryParams(url);
+
+        assertEquals(1, params.size());
+
+        assertThat(params.get("param1"), contains("value1", "value2"));
+    }
+
+    @Test
+    public void getQueryParamsEncodedTest() throws MalformedURLException {
+        URL url = new URL("http://test.com?param1=%3Fvalue%3F");
+        Map<String, List<String>> params = Util.getQueryParams(url);
+
+        assertEquals(1, params.size());
+
+        assertThat(params.get("param1"), contains("?value?"));
+    }
+
 }
