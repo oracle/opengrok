@@ -20,12 +20,12 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.suggest.data;
+package org.opengrok.suggest.popular;
 
 import org.apache.lucene.util.BytesRef;
 
 @FunctionalInterface
-public interface SearchCountMap {
+public interface PopularityCounter {
 
     int get(BytesRef key);
 
