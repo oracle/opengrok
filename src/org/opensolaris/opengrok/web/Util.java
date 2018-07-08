@@ -38,6 +38,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
@@ -47,6 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -1840,4 +1842,45 @@ public final class Util {
             return url;
         }
     }
+
+    /**
+     * Parses the specified url and returns its query params.
+     * @param url url to retrieve the query params from
+     * @return query params of {@code url}
+     */
+    public static Map<String, List<String>> getQueryParams(final URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("Cannot get query params from the null url");
+        }
+        Map<String, List<String>> returnValue = new HashMap<>();
+
+        if (url.getQuery() == null) {
+            return returnValue;
+        }
+
+        String[] pairs = url.getQuery().split("&");
+
+        for (String pair : pairs) {
+            if (pair.isEmpty()) {
+                continue;
+            }
+
+            int idx = pair.indexOf('=');
+
+            String key = pair.substring(0, idx);
+            String value = pair.substring(idx + 1);
+
+            try {
+                key = URLDecoder.decode(key, StandardCharsets.UTF_8.toString());
+                value = URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalArgumentException("Could not find UTF-8 encoding", e);
+            }
+
+            List<String> paramValues = returnValue.computeIfAbsent(key, k -> new LinkedList<>());
+            paramValues.add(value);
+        }
+        return returnValue;
+    }
+
 }
