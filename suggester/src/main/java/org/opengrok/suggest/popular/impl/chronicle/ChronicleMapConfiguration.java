@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.suggest.util;
+package org.opengrok.suggest.popular.impl.chronicle;
 
 import java.io.File;
 import java.io.FileInputStream;

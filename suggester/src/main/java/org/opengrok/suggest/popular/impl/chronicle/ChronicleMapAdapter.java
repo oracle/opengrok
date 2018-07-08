@@ -20,33 +20,52 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.suggest.util;
+package org.opengrok.suggest.popular.impl.chronicle;
 
 import net.openhft.chronicle.map.ChronicleMap;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.suggest.popular.PopularityMap;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Predicate;
 
-public class ChronicleMapUtils {
+public class ChronicleMapAdapter implements PopularityMap {
 
-    private ChronicleMapUtils() {
+    private ChronicleMap<BytesRef, Integer> map;
+
+    private final File f;
+
+    public ChronicleMapAdapter(final String name, final double averageKeySize, final int entries, final File f)
+            throws IOException {
+        map = ChronicleMap.of(BytesRef.class, Integer.class)
+                .name(name)
+                .averageKeySize(averageKeySize)
+                .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
+                .entries(entries)
+                .createOrRecoverPersistedTo(f);
+        this.f = f;
     }
 
-    public static ChronicleMap<BytesRef, Integer> resize(
-            final File oldMapFile,
-            final ChronicleMap<BytesRef, Integer> oldMap,
+    @Override
+    public int get(BytesRef key) {
+        return map.getOrDefault(key, 0);
+    }
+
+    public void increment(BytesRef key, int value) {
+        map.merge(key, value, (a, b) -> a + b);
+    }
+
+    public void removeIf(Predicate<BytesRef> predicate) {
+        map.entrySet().removeIf(e -> predicate.test(e.getKey()));
+    }
+
+    public void resize(
             final int newMapSize,
             final double newMapAvgKey
     ) throws IOException {
-        if (oldMapFile == null || !oldMapFile.exists()) {
-            throw new IllegalArgumentException("Cannot resize chronicle map because of invalid old map file");
-        }
-        if (oldMap == null) {
-            throw new IllegalArgumentException("Cannot resize null chronicle map");
-        }
         if (newMapSize < 0) {
             throw new IllegalArgumentException("Cannot resize chronicle map to negative size");
         }
@@ -56,26 +75,30 @@ public class ChronicleMapUtils {
 
         Path tempFile = Files.createTempFile("opengrok", "chronicle");
 
-        oldMap.getAll(tempFile.toFile());
+        map.getAll(tempFile.toFile());
 
-        String field = oldMap.name();
+        String field = map.name();
 
-        oldMap.close();
+        map.close();
 
-        Files.delete(oldMapFile.toPath());
+        Files.delete(f.toPath());
 
         ChronicleMap<BytesRef, Integer> m = ChronicleMap.of(BytesRef.class, Integer.class)
                 .name(field)
                 .averageKeySize(newMapAvgKey)
                 .entries(newMapSize)
                 .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
-                .createOrRecoverPersistedTo(oldMapFile);
+                .createOrRecoverPersistedTo(f);
 
         m.putAll(tempFile.toFile());
 
         Files.delete(tempFile);
 
-        return m;
+        map = m;
     }
 
+    @Override
+    public void close() {
+        map.close();
+    }
 }

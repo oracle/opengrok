@@ -38,7 +38,7 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.BytesRef;
-import org.opengrok.suggest.data.SearchCountMap;
+import org.opengrok.suggest.popular.PopularityCounter;
 import org.opengrok.suggest.query.SuggesterRangeQuery;
 import org.opengrok.suggest.query.data.BitIntsHolder;
 import org.opengrok.suggest.query.data.IntsHolder;
@@ -71,7 +71,7 @@ class SuggesterSearcher extends IndexSearcher {
             final Query query,
             final String suggester,
             final SuggesterQuery suggesterQuery,
-            final SearchCountMap searchCountMap
+            final PopularityCounter popularityCounter
     ) {
         List<LookupResultItem> results = new LinkedList<>();
 
@@ -88,7 +88,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         for (LeafReaderContext context : this.leafContexts) {
             try {
-                results.addAll(suggest(rewrittenQuery, context, suggester, suggesterQuery, searchCountMap));
+                results.addAll(suggest(rewrittenQuery, context, suggester, suggesterQuery, popularityCounter));
             } catch (IOException e) {
                 logger.log(Level.WARNING, "Cannot perform suggester search", e);
             }
@@ -106,7 +106,7 @@ class SuggesterSearcher extends IndexSearcher {
             final LeafReaderContext leafReaderContext,
             final String suggester,
             final SuggesterQuery suggesterQuery,
-            final SearchCountMap searchCounts
+            final PopularityCounter searchCounts
     ) throws IOException {
 
         boolean shouldLeaveOutSameTerms = shouldLeaveOutSameTerms(query, suggesterQuery);

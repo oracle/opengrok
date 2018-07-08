@@ -22,8 +22,6 @@
  */
 package org.opengrok.suggest;
 
-import net.openhft.chronicle.hash.ChronicleHash;
-import net.openhft.chronicle.map.ChronicleMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
@@ -37,11 +35,10 @@ import org.apache.lucene.search.suggest.fst.WFSTCompletionLookup;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
-import org.opengrok.suggest.data.SearchCountMap;
-import org.opengrok.suggest.util.BytesRefDataAccess;
-import org.opengrok.suggest.util.BytesRefSizedReader;
-import org.opengrok.suggest.util.ChronicleMapConfiguration;
-import org.opengrok.suggest.util.ChronicleMapUtils;
+import org.opengrok.suggest.popular.PopularityCounter;
+import org.opengrok.suggest.popular.PopularityMap;
+import org.opengrok.suggest.popular.impl.chronicle.ChronicleMapAdapter;
+import org.opengrok.suggest.popular.impl.chronicle.ChronicleMapConfiguration;
 
 import java.io.Closeable;
 import java.io.File;
@@ -83,7 +80,7 @@ class FieldWFSTCollection implements Closeable {
 
     private final Map<String, WFSTCompletionLookup> lookups = new HashMap<>();
 
-    private final Map<String, ChronicleMap<BytesRef, Integer>> searchCountMaps = new HashMap<>();
+    private final Map<String, PopularityMap> searchCountMaps = new HashMap<>();
 
     private final Map<String, Double> averageLengths = new HashMap<>();
 
@@ -226,12 +223,7 @@ class FieldWFSTCollection implements Closeable {
 
                 File f = getChronicleMapFile(field);
 
-                ChronicleMap<BytesRef, Integer> m = ChronicleMap.of(BytesRef.class, Integer.class)
-                        .name(field)
-                        .averageKeySize(conf.getAverageKeySize())
-                        .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
-                        .entries(conf.getEntries())
-                        .createOrRecoverPersistedTo(f);
+                ChronicleMapAdapter m = new ChronicleMapAdapter(field, conf.getAverageKeySize(), conf.getEntries(), f);
 
                 if (getCommitVersion() != getDataVersion()) {
                     removeOldTerms(m, lookups.get(field));
@@ -244,7 +236,7 @@ class FieldWFSTCollection implements Closeable {
                         conf.setAverageKeySize(newKeyAvgLength);
                         conf.save(suggesterDir, field);
 
-                        m = ChronicleMapUtils.resize(f, m, newEntriesCount, newKeyAvgLength);
+                        m.resize(newEntriesCount, newKeyAvgLength);
                     }
                 }
                 searchCountMaps.put(field, m);
@@ -263,10 +255,8 @@ class FieldWFSTCollection implements Closeable {
         return AVERAGE_LENGTH_DEFAULT;
     }
 
-    private void removeOldTerms(final ChronicleMap<BytesRef, Integer> map, final WFSTCompletionLookup lookup) {
-        if (!map.isEmpty()) {
-            map.entrySet().removeIf(e -> lookup.get(e.getKey().utf8ToString()) == null);
-        }
+    private void removeOldTerms(final ChronicleMapAdapter adapter, final WFSTCompletionLookup lookup) {
+        adapter.removeIf(key -> lookup.get(key.toString()) == null);
     }
 
     public List<Lookup.LookupResult> lookup(final String field, final String prefix, final int resultSize) {
@@ -294,30 +284,36 @@ class FieldWFSTCollection implements Closeable {
     }
 
     public void incrementSearchCount(final Term term) {
-        ChronicleMap<BytesRef, Integer> m = searchCountMaps.get(term.field());
-        if (m != null) {
-            m.merge(term.bytes(), 1, (a, b) -> a + b);
+        PopularityMap map = searchCountMaps.get(term.field());
+        if (map != null) {
+            map.increment(term.bytes(), 1);
         }
     }
 
     public void incrementSearchCount(final Term term, final int value) {
-        ChronicleMap<BytesRef, Integer> m = searchCountMaps.get(term.field());
-        if (m != null) {
-            m.merge(term.bytes(), value, (a, b) -> a + b);
+        PopularityMap map = searchCountMaps.get(term.field());
+        if (map != null) {
+            map.increment(term.bytes(), value);
         }
     }
 
-    public SearchCountMap getSearchCountMap(final String field) {
+    public PopularityCounter getSearchCountMap(final String field) {
         if (!searchCountMaps.containsKey(field)) {
             return key -> 0;
         }
 
-        return key -> searchCountMaps.get(field).getOrDefault(key, 0);
+        return key -> searchCountMaps.get(field).get(key);
     }
 
     @Override
     public void close() throws IOException {
-        searchCountMaps.values().forEach(ChronicleHash::close);
+        searchCountMaps.values().forEach(val -> {
+            try{
+                val.close();
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Could not properly close popularity data close", e);
+            }
+        });
         indexDir.close();
     }
 
@@ -348,13 +344,13 @@ class FieldWFSTCollection implements Closeable {
 
         private long termLengthAccumulator = 0;
 
-        private final SearchCountMap searchCounts;
+        private final PopularityCounter searchCounts;
 
         WFSTInputIterator(
                 final InputIterator wrapped,
                 final IndexReader indexReader,
                 final String field,
-                final SearchCountMap searchCounts
+                final PopularityCounter searchCounts
         ) {
             this.wrapped = wrapped;
             this.indexReader = indexReader;
