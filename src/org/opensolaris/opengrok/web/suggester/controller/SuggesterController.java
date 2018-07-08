@@ -202,9 +202,10 @@ public final class SuggesterController {
     @Path("/add")
     @Localhost
     @Consumes(MediaType.APPLICATION_JSON)
-    public void addSearchCountsJson(final List<TermCount> termCounts) {
-        for (TermCount termCount : termCounts) {
-            suggester.increaseSearchCount(termCount.project, new Term(termCount.field, termCount.token), termCount.count);
+    public void addSearchCountsJson(final List<TermIncrementData> termIncrements) {
+        for (TermIncrementData termIncrement : termIncrements) {
+            suggester.increaseSearchCount(termIncrement.project,
+                    new Term(termIncrement.field, termIncrement.token), termIncrement.increment);
         }
     }
 
@@ -263,7 +264,7 @@ public final class SuggesterController {
         }
     }
 
-    private static class TermCount {
+    private static class TermIncrementData {
 
         private String project;
 
@@ -271,7 +272,7 @@ public final class SuggesterController {
 
         private String token;
 
-        private int count;
+        private int increment;
 
         public String getProject() {
             return project;
@@ -297,12 +298,12 @@ public final class SuggesterController {
             this.token = token;
         }
 
-        public int getCount() {
-            return count;
+        public int getIncrement() {
+            return increment;
         }
 
-        public void setCount(int count) {
-            this.count = count;
+        public void setIncrement(int increment) {
+            this.increment = increment;
         }
     }
 
