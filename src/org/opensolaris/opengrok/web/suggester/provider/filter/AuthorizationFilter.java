@@ -45,6 +45,9 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext context) {
+        if (request == null) { // happens in tests
+            return;
+        }
         AuthorizationFramework auth = env.getAuthorizationFramework();
         if (auth != null) {
             String[] projects = request.getParameterValues(SuggesterQueryData.PROJECTS_PARAM);

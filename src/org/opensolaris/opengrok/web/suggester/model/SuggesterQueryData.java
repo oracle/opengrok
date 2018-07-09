@@ -26,6 +26,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import javax.ws.rs.QueryParam;
 import java.util.List;
 
@@ -36,11 +37,13 @@ public final class SuggesterQueryData {
     @QueryParam(PROJECTS_PARAM)
     private List<String> projects;
 
-    @NotBlank
+    @NotBlank(message = "Field param cannot be blank")
+    @Pattern(message = "Unknown field", regexp = "(" + QueryBuilder.FULL + "|" + QueryBuilder.DEFS + "|" +
+            QueryBuilder.REFS + "|" + QueryBuilder.PATH + "|" + QueryBuilder.HIST + ")")
     @QueryParam("field")
     private String field;
 
-    @Min(0)
+    @Min(message = "Caret position cannot be negative", value = 0)
     @QueryParam("caret")
     private int caretPosition;
 

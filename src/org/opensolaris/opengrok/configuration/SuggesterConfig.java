@@ -22,6 +22,7 @@
  */
 package org.opensolaris.opengrok.configuration;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class SuggesterConfig {
@@ -191,4 +192,36 @@ public class SuggesterConfig {
     public void setSuggesterBuildTerminationTimeSec(final int suggesterBuildTerminationTimeSec) {
         this.suggesterBuildTerminationTimeSec = suggesterBuildTerminationTimeSec;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        SuggesterConfig that = (SuggesterConfig) o;
+        return enabled == that.enabled &&
+                maxResults == that.maxResults &&
+                minChars == that.minChars &&
+                maxProjects == that.maxProjects &&
+                allowComplexQueries == that.allowComplexQueries &&
+                allowMostPopular == that.allowMostPopular &&
+                showScores == that.showScores &&
+                showProjects == that.showProjects &&
+                showTime == that.showTime &&
+                suggesterBuildTerminationTimeSec == that.suggesterBuildTerminationTimeSec &&
+                Objects.equals(allowedProjects, that.allowedProjects) &&
+                Objects.equals(allowedFields, that.allowedFields) &&
+                Objects.equals(rebuildCronConfig, that.rebuildCronConfig);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(enabled, maxResults, minChars, allowedProjects, maxProjects, allowedFields,
+                allowComplexQueries, allowMostPopular, showScores, showProjects, showTime, rebuildCronConfig,
+                suggesterBuildTerminationTimeSec);
+    }
+
 }
