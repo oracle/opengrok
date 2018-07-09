@@ -33,7 +33,13 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * {@link net.openhft.chronicle.map.ChronicleMap} does not have the configuration stored in the file. Therefore,
+ * other means were necessary to remember the configuration.
+ */
 public class ChronicleMapConfiguration implements Serializable {
+
+    private static final long serialVersionUID = -18408710536443827L;
 
     private static final Logger logger = Logger.getLogger(ChronicleMapConfiguration.class.getName());
 
@@ -62,6 +68,11 @@ public class ChronicleMapConfiguration implements Serializable {
         this.averageKeySize = averageKeySize;
     }
 
+    /**
+     * Stores this into a file.
+     * @param dir directory where to store the file
+     * @param field field this configuration is for
+     */
     public void save(final Path dir, final String field) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(getFile(dir, field)))) {
             oos.writeObject(this);
@@ -70,6 +81,12 @@ public class ChronicleMapConfiguration implements Serializable {
         }
     }
 
+    /**
+     * Loads configuration from file.
+     * @param dir directory from which to load the configuration
+     * @param field field this configuration is for
+     * @return loaded configuration or {@code null} if this configuration could not be loaded
+     */
     public static ChronicleMapConfiguration load(final Path dir, final String field) {
         File f = getFile(dir, field);
         if (!f.exists()) {

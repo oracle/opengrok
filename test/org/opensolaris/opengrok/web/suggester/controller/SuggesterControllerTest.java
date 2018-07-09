@@ -35,6 +35,7 @@ import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.TestRepository;
 import org.opensolaris.opengrok.web.suggester.SuggesterApp;
 import org.opensolaris.opengrok.web.suggester.model.SuggesterQueryData;
+import org.opensolaris.opengrok.web.suggester.provider.filter.AuthorizationFilter;
 import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
 
 import javax.ws.rs.client.Entity;
@@ -101,7 +102,7 @@ public class SuggesterControllerTest extends JerseyTest {
                 false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
-        env.getConfiguration().getSuggester().setRebuildCronConfig(null);
+        env.getConfiguration().getSuggesterConfig().setRebuildCronConfig(null);
     }
 
     @AfterClass
@@ -132,13 +133,13 @@ public class SuggesterControllerTest extends JerseyTest {
                 .request()
                 .get(SuggesterConfig.class);
 
-        assertEquals(env.getConfiguration().getSuggester(), config);
+        assertEquals(env.getConfiguration().getSuggesterConfig(), config);
     }
 
     @Test
     public void testGetSuggestionsSimpleFull() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "inner")
                 .request()
@@ -151,7 +152,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testGetSuggestionsSimpleDefs() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.DEFS)
                 .queryParam(QueryBuilder.DEFS, "Inner")
                 .request()
@@ -164,7 +165,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testGetSuggestionsSimpleRefs() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.REFS)
                 .queryParam(QueryBuilder.REFS, "Inner")
                 .request()
@@ -177,7 +178,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testGetSuggestionsSimplePath() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "c")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "c")
                 .queryParam("field", QueryBuilder.PATH)
                 .queryParam(QueryBuilder.PATH, "he")
                 .request()
@@ -221,7 +222,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testGetSuggestionsMultipleProjects() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java", "kotlin")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "me")
                 .request()
@@ -234,7 +235,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testGetSuggestionsMultipleProjects2() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java", "kotlin")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "mai")
                 .request()
@@ -247,7 +248,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testComplexSuggestions() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "s")
                 .queryParam(QueryBuilder.PATH, "bug15890")
@@ -261,7 +262,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testWildcard() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "b?")
                 .queryParam(QueryBuilder.PATH, "sample")
@@ -275,7 +276,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testRegex() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "/b./")
                 .queryParam(QueryBuilder.PATH, "sample")
@@ -290,7 +291,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testPhraseAfter() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "\"contents of this \"")
                 .queryParam(QueryBuilder.PATH, "sample")
@@ -305,7 +306,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testPhraseBefore() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "\" contents of this\"")
                 .queryParam(QueryBuilder.PATH, "sample")
@@ -320,7 +321,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testPhraseMiddle() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "\"contents  this\"")
                 .queryParam(QueryBuilder.PATH, "sample")
@@ -335,7 +336,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testSloppyPhrase() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "java")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "\"contents of this \"~1")
                 .queryParam(QueryBuilder.PATH, "sample")
@@ -350,7 +351,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testRangeQueryUpper() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "kotlin")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "{templ}").resolveTemplate("templ", "{main TO m}")
                 .queryParam("caret", 10)
@@ -364,7 +365,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testRangeQueryLower() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "kotlin")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "{templ}").resolveTemplate("templ", "{m TO mutablelistof}")
                 .queryParam("caret", 1)
@@ -378,7 +379,7 @@ public class SuggesterControllerTest extends JerseyTest {
     @Test
     public void testComplexSuggestions2() {
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "kotlin")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "me m")
                 .queryParam("caret", 4)
@@ -405,7 +406,7 @@ public class SuggesterControllerTest extends JerseyTest {
                 .post(Entity.json(queries));
 
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "kotlin")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "t")
                 .queryParam("caret", 1)
@@ -441,7 +442,7 @@ public class SuggesterControllerTest extends JerseyTest {
                 .post(Entity.json(Arrays.asList(data1, data2)));
 
         Result res = target()
-                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "kotlin")
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "kotlin")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "a")
                 .queryParam("caret", 1)

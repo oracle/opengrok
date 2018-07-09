@@ -29,12 +29,19 @@ import org.apache.lucene.search.RegexpQuery;
 
 import java.io.IOException;
 
+/**
+ * Query for possible suggestions of {@link RegexpQuery}.
+ */
 public class SuggesterRegexpQuery extends RegexpQuery implements SuggesterQuery {
 
+    /**
+     * @param term term with regexp symbols
+     */
     public SuggesterRegexpQuery(final Term term) {
         super(term);
     }
 
+    /** {@inheritDoc} */
     @Override
     public TermsEnum getTermsEnumForSuggestions(final Terms terms) throws IOException {
         if (terms == null) {
@@ -43,6 +50,7 @@ public class SuggesterRegexpQuery extends RegexpQuery implements SuggesterQuery 
         return super.getTermsEnum(terms);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int length() {
         return getRegexp().text().length();

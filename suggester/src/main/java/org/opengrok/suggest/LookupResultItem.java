@@ -26,6 +26,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Represents one suggestion.
+ */
 public final class LookupResultItem implements Comparable<LookupResultItem> {
 
     private final String phrase;
@@ -52,6 +55,10 @@ public final class LookupResultItem implements Comparable<LookupResultItem> {
         return score;
     }
 
+    /**
+     * Combines score and projects with the other instance with the same {@code phrase}.
+     * @param other instance to combine with
+     */
     void combine(final LookupResultItem other) {
         if (other == null || !canBeCombinedWith(other)) {
             throw new IllegalArgumentException("Cannot combine with " + other);

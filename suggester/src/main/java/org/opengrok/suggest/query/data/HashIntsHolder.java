@@ -24,8 +24,12 @@ package org.opengrok.suggest.query.data;
 
 import java.util.HashSet;
 
+/**
+ * {@link IntsHolder} representation by using the {@link HashSet}.
+ */
 public class HashIntsHolder extends HashSet<Integer> implements IntsHolder {
 
+    /** {@inheritDoc} */
     @Override
     public boolean has(final int i) {
         return contains(i);

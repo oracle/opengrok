@@ -36,6 +36,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Parser for the raw {@link SuggesterQueryData}.
+ */
 public class SuggesterQueryDataParser {
 
     private static final int IDENTIFIER_LENGTH = 5;
@@ -45,6 +48,12 @@ public class SuggesterQueryDataParser {
     private SuggesterQueryDataParser() {
     }
 
+    /**
+     * Parses the {@link SuggesterQueryData}.
+     * @param data data to parse
+     * @return parsed data for the suggester use
+     * @throws ParseException if could not parse the search data into a valid {@link Query}
+     */
     public static SuggesterData parse(final SuggesterQueryData data) throws ParseException {
         Map<String, String> fieldQueries = getFieldQueries(data);
 

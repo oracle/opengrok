@@ -37,12 +37,23 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Query for possible suggestions of {@link TermRangeQuery}.
+ */
 public class SuggesterRangeQuery extends TermRangeQuery implements SuggesterQuery {
 
     private static final Logger logger = Logger.getLogger(SuggesterRangeQuery.class.getName());
 
     private final SuggestPosition suggestPosition;
 
+    /**
+     * @param field term field
+     * @param lowerTerm term on the left side of the range query
+     * @param upperTerm term on the right side of the range query
+     * @param includeLower if the lower term should be included in the result
+     * @param includeUpper if the upper term should be included in the result
+     * @param suggestPosition if the suggestions are for the lower or upper term
+     */
     public SuggesterRangeQuery(
             final String field,
             final BytesRef lowerTerm,
@@ -59,6 +70,7 @@ public class SuggesterRangeQuery extends TermRangeQuery implements SuggesterQuer
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public TermsEnum getTermsEnumForSuggestions(final Terms terms) {
         if (terms == null) {
@@ -100,6 +112,7 @@ public class SuggesterRangeQuery extends TermRangeQuery implements SuggesterQuer
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public int length() {
         BytesRef prefix = getPrefix();

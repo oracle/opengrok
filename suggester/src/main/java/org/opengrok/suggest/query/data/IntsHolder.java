@@ -22,8 +22,16 @@
  */
 package org.opengrok.suggest.query.data;
 
+/**
+ * Simple interface for querying if some data structure contains some {@code int} value.
+ */
 public interface IntsHolder {
 
+    /**
+     * Determines whether the data structure contains {@code i} value.
+     * @param i value which presence is checked
+     * @return {@code true} if {@code i} is present. {@code false} otherwise.
+     */
     boolean has(int i);
 
 }

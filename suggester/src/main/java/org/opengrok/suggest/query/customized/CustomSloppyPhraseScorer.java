@@ -37,6 +37,10 @@ import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.data.IntsHolder;
 import org.opengrok.suggest.query.data.HashIntsHolder;
 
+/**
+ * Modified Apache Lucene's SloppyPhraseScorer (now {@link org.apache.lucene.search.SloppyPhraseMatcher}) to remember
+ * the positions of the matches.
+ */
 final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
 
     private final DocIdSetIterator conjunction;

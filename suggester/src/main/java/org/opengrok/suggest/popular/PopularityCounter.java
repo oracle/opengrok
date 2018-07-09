@@ -24,9 +24,17 @@ package org.opengrok.suggest.popular;
 
 import org.apache.lucene.util.BytesRef;
 
+/**
+ * Simple interface for accessing the popularity data for specific terms.
+ */
 @FunctionalInterface
 public interface PopularityCounter {
 
+    /**
+     * For the term {@code key} returns the number the term was searched for.
+     * @param key the term to retrieve data for
+     * @return number of times the {@key} was searched for
+     */
     int get(BytesRef key);
 
 }

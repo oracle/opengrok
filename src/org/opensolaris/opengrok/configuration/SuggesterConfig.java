@@ -25,6 +25,9 @@ package org.opensolaris.opengrok.configuration;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * The suggester specific configuration.
+ */
 public class SuggesterConfig {
 
     public static final boolean ENABLED_DEFAULT = true;
@@ -42,30 +45,71 @@ public class SuggesterConfig {
     public static final Set<String> allowedProjectsDefault = null;
     public static final Set<String> allowedFieldsDefault = null;
 
+    /**
+     * Specifies if the suggester is enabled.
+     */
     private boolean enabled;
 
+    /**
+     * Specifies how many results suggester should return at maximum.
+     */
     private int maxResults;
 
+    /**
+     * Specifies minimum number of characters that are needed for suggester to start looking for suggestions.
+     */
     private int minChars;
 
+    /**
+     * Specifies set of projects for which the suggester should be enabled. If {@code null} then all projects are
+     * enabled.
+     */
     private Set<String> allowedProjects;
 
+    /**
+     * Specifies how many maximum projects can be selected at the same time and the suggestions will work.
+     */
     private int maxProjects;
 
+    /**
+     * Specifies the fields for which the suggester should be enabled.
+     */
     private Set<String> allowedFields;
 
+    /**
+     * Specifies if the suggester should support complex queries.
+     */
     private boolean allowComplexQueries;
 
+    /**
+     * Specifies if the most popular completion should be enabled.
+     */
     private boolean allowMostPopular;
 
+    /**
+     * Specifies if the scores should be displayed next to the suggestions.
+     */
     private boolean showScores;
 
+    /**
+     * Specifies if the suggestions should show in which project the term was found.
+     */
     private boolean showProjects;
 
+    /**
+     * specifies if the time it took the suggester to find the queries should be displayed.
+     */
     private boolean showTime;
 
+    /**
+     * Specifies how often should the suggester rebuild the WFST data structures. (Data structures for simple prefix
+     * queries.)
+     */
     private String rebuildCronConfig;
 
+    /**
+     * Specifies after how much time the suggester should kill the threads that build the suggester data structures.
+     */
     private int suggesterBuildTerminationTimeSec;
 
     private SuggesterConfig() {

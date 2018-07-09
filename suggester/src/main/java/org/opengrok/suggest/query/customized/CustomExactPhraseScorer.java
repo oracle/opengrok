@@ -32,6 +32,10 @@ import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.data.IntsHolder;
 import org.opengrok.suggest.query.data.HashIntsHolder;
 
+/**
+ * Modified Apache Lucene's ExactPhraseScorer (now {@link org.apache.lucene.search.ExactPhraseMatcher}) to support
+ * remembering the positions where the match was found.
+ */
 final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
 
     private static class PostingsAndPosition {

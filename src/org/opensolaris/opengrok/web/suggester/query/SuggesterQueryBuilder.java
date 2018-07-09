@@ -28,6 +28,10 @@ import org.opengrok.suggest.query.SuggesterQuery;
 import org.opensolaris.opengrok.search.CustomQueryParser;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
+/**
+ * Used for preserving the OpenGrok query building properties with special handling for the suggestions field which
+ * uses {@link SuggesterQueryParser} instead of OpenGrok's {@link CustomQueryParser}.
+ */
 public class SuggesterQueryBuilder extends QueryBuilder {
 
     private final String suggestField;
@@ -35,6 +39,10 @@ public class SuggesterQueryBuilder extends QueryBuilder {
 
     private SuggesterQueryParser suggesterQueryParser;
 
+    /**
+     * @param suggestField field that contain the {@link SuggesterQuery}
+     * @param identifier identifier that was inserted into the query to detect the {@link SuggesterQuery}
+     */
     public SuggesterQueryBuilder(final String suggestField, final String identifier) {
         this.suggestField = suggestField;
         this.identifier = identifier;

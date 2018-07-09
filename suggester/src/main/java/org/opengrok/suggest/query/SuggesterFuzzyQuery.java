@@ -30,12 +30,16 @@ import org.apache.lucene.util.AttributeSource;
 
 import java.io.IOException;
 
+/**
+ * Query for possible suggestions of {@link FuzzyQuery}.
+ */
 public class SuggesterFuzzyQuery extends FuzzyQuery implements SuggesterQuery {
 
     public SuggesterFuzzyQuery(final Term term, final int maxEdits, final int prefixLength) {
         super(term, maxEdits, prefixLength);
     }
 
+    /** {@inheritDoc} */
     @Override
     public TermsEnum getTermsEnumForSuggestions(final Terms terms) throws IOException {
         if (terms == null) {
@@ -44,6 +48,7 @@ public class SuggesterFuzzyQuery extends FuzzyQuery implements SuggesterQuery {
         return getTermsEnum(terms, new AttributeSource());
     }
 
+    /** {@inheritDoc} */
     @Override
     public int length() {
         return getTerm().text().length();

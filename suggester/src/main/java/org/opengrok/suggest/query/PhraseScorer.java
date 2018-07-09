@@ -24,8 +24,17 @@ package org.opengrok.suggest.query;
 
 import org.opengrok.suggest.query.data.IntsHolder;
 
+/**
+ * Interface for {@link org.apache.lucene.search.Scorer} of {@link org.apache.lucene.search.PhraseQuery} which allows
+ * to query the positions where the next term in the query should be.
+ */
 public interface PhraseScorer {
 
+    /**
+     * Returns the possible positions of the term to fit the {@link SuggesterPhraseQuery}.
+     * @param docId document id
+     * @return positions where the next term might occur
+     */
     IntsHolder getPositions(int docId);
 
 }

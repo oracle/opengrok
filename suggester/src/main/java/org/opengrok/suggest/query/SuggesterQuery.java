@@ -27,12 +27,28 @@ import org.apache.lucene.index.TermsEnum;
 
 import java.io.IOException;
 
+/**
+ * Query that selects the terms that could be used as suggestions.
+ */
 public interface SuggesterQuery {
 
+    /**
+     * @return field for which the query is
+     */
     String getField();
 
+    /**
+     * Returns terms that satisfy this query.
+     * @param terms terms from which to filter the ones that satisfy this query
+     * @return terms enum of the terms that satisfy this query
+     * @throws IOException if an error occurred
+     */
     TermsEnum getTermsEnumForSuggestions(Terms terms) throws IOException;
 
+    /**
+     * Length of the query. Used for determining whether query is longer than specified in configuration.
+     * @return query length
+     */
     int length();
 
 }

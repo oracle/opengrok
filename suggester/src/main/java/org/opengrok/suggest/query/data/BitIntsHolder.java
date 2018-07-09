@@ -24,6 +24,9 @@ package org.opengrok.suggest.query.data;
 
 import java.util.BitSet;
 
+/**
+ * {@link IntsHolder} implementation by using the {@link BitSet}.
+ */
 public class BitIntsHolder extends BitSet implements IntsHolder {
 
     public BitIntsHolder() {
@@ -33,6 +36,7 @@ public class BitIntsHolder extends BitSet implements IntsHolder {
         super(nbits);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean has(final int i) {
         return get(i);

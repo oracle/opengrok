@@ -61,6 +61,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of {@link SuggesterService}.
+ */
 public class SuggesterServiceImpl implements SuggesterService {
 
     private static final Logger logger = LoggerFactory.getLogger(SuggesterServiceImpl.class);
@@ -88,6 +91,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         return instance;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<LookupResultItem> getSuggestions(
             final Collection<String> projects,
@@ -118,6 +122,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
+    /** {@inheritDoc} */
     @Override
     public void refresh(final Configuration configuration) {
         rwl.writeLock().lock();
@@ -129,6 +134,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void refresh(final String project) {
         Configuration config = env.getConfiguration();
@@ -137,16 +143,19 @@ public class SuggesterServiceImpl implements SuggesterService {
         suggester.rebuild(Collections.singletonList(Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR, p.getPath())));
     }
 
+    /** {@inheritDoc} */
     @Override
     public void delete(final String project) {
         suggester.remove(Collections.singleton(project));
     }
 
+    /** {@inheritDoc} */
     @Override
     public void onSearch(final Iterable<String> projects, final Query q) {
         suggester.onSearch(projects, q);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void increaseSearchCount(final String project, final Term term, final int value) {
         suggester.increaseSearchCount(project, term, value);
@@ -155,7 +164,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     private void initSuggester() {
         Configuration config = env.getConfiguration();
 
-        SuggesterConfig suggesterConfig = config.getSuggester();
+        SuggesterConfig suggesterConfig = config.getSuggesterConfig();
 
         File suggesterDir = new File(config.getDataRoot(), IndexDatabase.SUGGESTER_DIR);
         suggester = new Suggester(suggesterDir,
@@ -206,7 +215,7 @@ public class SuggesterServiceImpl implements SuggesterService {
     }
 
     private Duration getTimeToNextRebuild() {
-        String cronDefinition = env.getConfiguration().getSuggester().getRebuildCronConfig();
+        String cronDefinition = env.getConfiguration().getSuggesterConfig().getRebuildCronConfig();
         if (cronDefinition == null) {
             return null;
         }
@@ -227,6 +236,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         return d.get();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close() {
         scheduler.shutdownNow();

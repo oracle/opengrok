@@ -51,6 +51,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Used for parsing the text of a query for which suggestions should be retrieved. Decouples the query into 2 parts:
+ * {@link SuggesterQuery} for suggestions and ordinary {@link Query} which serves as a dependency of
+ * {@link SuggesterQuery}.
+ */
 class SuggesterQueryParser extends CustomQueryParser {
 
     private static final Logger logger = Logger.getLogger(SuggesterQueryParser.class.getName());
@@ -63,6 +68,10 @@ class SuggesterQueryParser extends CustomQueryParser {
 
     private String queryTextWithPlaceholder;
 
+    /**
+     * @param field field that is being parsed
+     * @param identifier identifier that was inserted into the query to detect the {@link SuggesterQuery}
+     */
     SuggesterQueryParser(final String field, final String identifier) {
         super(field);
         this.identifier = identifier;

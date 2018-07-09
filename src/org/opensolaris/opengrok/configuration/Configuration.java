@@ -291,7 +291,7 @@ public final class Configuration {
      */
     private boolean listDirsFirst = true;
 
-    private SuggesterConfig suggester = SuggesterConfig.getDefault();
+    private SuggesterConfig suggesterConfig = SuggesterConfig.getDefault();
 
     /*
      * types of handling history for remote SCM repositories:
@@ -1355,12 +1355,12 @@ public final class Configuration {
         this.projectsEnabled = flag;
     }
 
-    public SuggesterConfig getSuggester() {
-        return suggester;
+    public SuggesterConfig getSuggesterConfig() {
+        return suggesterConfig;
     }
 
-    public void setSuggester(SuggesterConfig suggester) {
-        this.suggester = suggester;
+    public void setSuggesterConfig(SuggesterConfig config) {
+        this.suggesterConfig = config;
     }
 
     /**

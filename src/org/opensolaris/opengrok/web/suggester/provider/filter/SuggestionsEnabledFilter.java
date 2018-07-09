@@ -30,6 +30,9 @@ import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
+/**
+ * Filter which checks if suggester is enabled and if not then returns {@link Response.Status#NOT_FOUND}.
+ */
 @Provider
 @PreMatching
 public class SuggestionsEnabledFilter implements ContainerRequestFilter {
@@ -38,7 +41,7 @@ public class SuggestionsEnabledFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext context) {
-        if (env.getConfiguration() == null || !env.getConfiguration().getSuggester().isEnabled()) {
+        if (!env.getConfiguration().getSuggesterConfig().isEnabled()) {
             context.abortWith(Response.status(Response.Status.NOT_FOUND).build());
         }
     }

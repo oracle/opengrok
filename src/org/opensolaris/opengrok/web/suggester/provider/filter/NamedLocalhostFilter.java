@@ -26,6 +26,9 @@ import org.opensolaris.opengrok.web.api.v1.filter.LocalhostFilter;
 
 import javax.ws.rs.ext.Provider;
 
+/**
+ * Filters all non-localhost requests.
+ */
 @Provider
 @Localhost
 public class NamedLocalhostFilter extends LocalhostFilter {

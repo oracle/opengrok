@@ -44,16 +44,42 @@ public interface SuggesterService {
      */
     List<LookupResultItem> getSuggestions(Collection<String> projects, SuggesterQuery suggesterQuery, Query query);
 
+    /**
+     * Refreshes the suggester based on the new configuration.
+     * @param configuration new configuration
+     */
     void refresh(Configuration configuration);
 
+    /**
+     * Refreshes the suggester for specified {@code project}.
+     * @param project name of the project to refresh
+     */
     void refresh(String project);
 
+    /**
+     * Deletes all suggester data for the {@code project}.
+     * @param project name of the project to delete
+     */
     void delete(String project);
 
+    /**
+     * Increments most popular completion data according to the passed parameters.
+     * @param projects projects that were searched
+     * @param q search query
+     */
     void onSearch(Iterable<String> projects, Query q);
 
+    /**
+     * Increments most popular completion data for the specified {@code term} by {@value}.
+     * @param project project to update
+     * @param term term to update
+     * @param value value by which to change the data, represents how many times was the {@code term} searched
+     */
     void increaseSearchCount(String project, Term term, int value);
 
+    /**
+     * Closes the underlying service explicitly.
+     */
     void close();
 
 }
