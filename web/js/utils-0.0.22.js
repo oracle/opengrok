@@ -1726,7 +1726,7 @@ function domReadyMenu() {
             }
         },
         error: function(xhr, ajaxOptions, error) {
-            console.error('Could not determine if autocomplete is enabled', xhr);
+            console.log('Could not get autocomplete configuration, probably disabled');
         }
     });
 }
@@ -1801,6 +1801,11 @@ function initAutocompleteForField(inputId, field, config) {
                     response(undefined); // to remove loading indicator
 
                     showError(xhr.responseJSON.message)
+                },
+                statusCode: {
+                    404: function() {
+                        response(); // do not show anything
+                    }
                 }
             });
         },

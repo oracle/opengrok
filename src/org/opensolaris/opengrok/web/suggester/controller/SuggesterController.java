@@ -48,7 +48,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -94,6 +96,7 @@ public final class SuggesterController {
 
         if (!satisfiesConfiguration(suggesterData, config)) {
             logger.log(Level.FINER, "Suggester request with data {0} does not satisfy configuration settings", data);
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
         List<LookupResultItem> suggestedItems = suggester.getSuggestions(
