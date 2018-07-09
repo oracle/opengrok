@@ -316,9 +316,9 @@ project to this directory. The creation of the per-project directory and the
 The command used in step 2 can thus look like this:
 
 ```bash
-OPENGROK_LOGGER_CONFIG_PATH=/var/opengrok/myproj.logging
-OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml
-OpenGrok indexpart /myproj
+OPENGROK_LOGGER_CONFIG_PATH=/var/opengrok/myproj.logging \
+    OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
+    OpenGrok indexpart /myproj
 ```
 
 The last argument is path relative to `SRC_ROOT`.
