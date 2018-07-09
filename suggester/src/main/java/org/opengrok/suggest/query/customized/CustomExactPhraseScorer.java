@@ -45,7 +45,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         }
     }
 
-    public Map<Integer, IntsHolder> map = new HashMap<>();
+    private Map<Integer, IntsHolder> map = new HashMap<>();
 
     private int offset;
 
@@ -175,7 +175,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
     }
 
     @Override
-    public IntsHolder getPositions(int docId) {
+    public IntsHolder getPositions(final int docId) {
         return map.get(docId);
     }
 
