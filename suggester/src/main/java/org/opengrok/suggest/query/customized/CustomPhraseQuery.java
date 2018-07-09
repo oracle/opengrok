@@ -228,16 +228,16 @@ public class CustomPhraseQuery extends Query {
 
     @Override
     public Weight createWeight(IndexSearcher searcher, boolean needsScores, float boost) throws IOException {
-        return new MyPhraseWeight(searcher, this);
+        return new CustomPhraseWeight(searcher, this);
     }
 
-    private static class MyPhraseWeight extends Weight {
+    private static class CustomPhraseWeight extends Weight {
 
         private CustomPhraseQuery query;
 
         private TermContext[] states;
 
-        MyPhraseWeight(IndexSearcher searcher, CustomPhraseQuery query) throws IOException {
+        CustomPhraseWeight(IndexSearcher searcher, CustomPhraseQuery query) throws IOException {
             super(query);
             this.query = query;
 
