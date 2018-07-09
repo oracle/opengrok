@@ -1854,7 +1854,8 @@ function initAutocompleteForField(inputId, field, config) {
                 var noMatchesFoundResult = {phrase: 'No matches found', selectable: false};
                 ui.content.push(noMatchesFoundResult);
             }
-        }
+        },
+        minLength: config.minChars
     }).click(function() {
         $(this).autocomplete('search', $(this).val());
     }).keyup(function(e) {
