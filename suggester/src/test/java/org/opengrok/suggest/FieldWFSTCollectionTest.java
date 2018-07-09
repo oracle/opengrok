@@ -32,6 +32,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.suggest.Lookup;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 
 public class FieldWFSTCollectionTest {
 
@@ -127,7 +129,7 @@ public class FieldWFSTCollectionTest {
     }
 
     @Test
-    public void testRemove() throws IOException {
+    public void testRebuild() throws IOException {
         addText("test", "term1 term2 term1");
 
         init(false);
@@ -165,6 +167,93 @@ public class FieldWFSTCollectionTest {
         List<String> suggestions = getSuggestions("test", "a", 2);
 
         assertEquals(2, suggestions.size());
+    }
+
+    @Test
+    public void incrementTest() throws IOException {
+        addText("test", "text");
+
+        init(true);
+
+        f.incrementSearchCount(new Term("test", "text"));
+
+        assertEquals(1, f.getSearchCountMap("test").get(new BytesRef("text")));
+    }
+
+    @Test
+    public void incrementByValueTest() throws IOException {
+        addText("test", "some text");
+
+        init(true);
+
+        f.incrementSearchCount(new Term("test", "some"), 20);
+
+        assertEquals(20, f.getSearchCountMap("test").get(new BytesRef("some")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void incrementByNegativeValueTest() throws IOException {
+        addText("test", "another text example");
+
+        init(true);
+
+        f.incrementSearchCount(new Term("test", "example"), -10);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void incrementUnknownTermTest() throws IOException {
+        addText("test", "test case document");
+
+        init(true);
+
+        f.incrementSearchCount(new Term("test", "unknown"));
+    }
+
+    @Test
+    public void rebuildRemoveOldTermsTest() throws IOException {
+        addText("test", "term");
+
+        init(true);
+
+        f.incrementSearchCount(new Term("test", "term"), 10);
+
+        try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
+            iw.deleteAll();
+        }
+
+        addText("test", "term2");
+
+        f.rebuild();
+
+        assertEquals(0, f.getSearchCountMap("test").get(new BytesRef("term")));
+    }
+
+    @Test
+    public void initAfterChangingIndexTest() throws IOException {
+        addText("test", "term");
+        init(false);
+
+        addText("test", "term2");
+
+        f.init();
+
+        assertThat(getSuggestions("test", "t", 2), containsInAnyOrder("term", "term2"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void incrementSearchCountNullTest() throws IOException {
+        addText("test", "term");
+        init(false);
+
+        f.incrementSearchCount(null);
+    }
+
+    @Test
+    public void getSearchCountMapNullTest() throws IOException {
+        addText("test", "term");
+        init(true);
+
+        f.getSearchCountMap(null);
     }
 
 }
