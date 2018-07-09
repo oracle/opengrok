@@ -113,10 +113,6 @@ A lot more customizations can be found inside the script, you just need to have 
 
 Additional information can be found in the [https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt EXAMPLE.txt] in the doc folder
 
-## Windows installation
-*August 22, 2017: http://deferredhappiness.com/opengrok/
-*July 20, 2012 (partially broken): http://algopadawan.blogspot.co.uk/2012/07/installing-opengrok-on-windows.html
-
 ## Custom ctags configuration
 
 To make ctags recognize additional symbols/definitions/etc. it is possible to
