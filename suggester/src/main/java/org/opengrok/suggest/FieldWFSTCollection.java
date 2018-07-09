@@ -99,7 +99,7 @@ class FieldWFSTCollection implements Closeable {
             loadStoredWFSTs();
         } else {
             createSuggesterDir();
-            rebuild();
+            build();
         }
 
         if (allowMostPopular) {
@@ -171,6 +171,12 @@ class FieldWFSTCollection implements Closeable {
 
     public void rebuild() throws IOException {
         build();
+
+        if (allowMostPopular) {
+            initSearchCountMap();
+        }
+
+        storeDataVersion(getCommitVersion());
     }
 
     private void build() throws IOException {
@@ -213,6 +219,7 @@ class FieldWFSTCollection implements Closeable {
     }
 
     private void initSearchCountMap() throws IOException {
+        searchCountMaps.clear();
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
             for (String field : MultiFields.getIndexedFields(indexReader)) {
                 ChronicleMapConfiguration conf = ChronicleMapConfiguration.load(suggesterDir, field);
@@ -284,13 +291,17 @@ class FieldWFSTCollection implements Closeable {
     }
 
     public void incrementSearchCount(final Term term) {
-        PopularityMap map = searchCountMaps.get(term.field());
-        if (map != null) {
-            map.increment(term.bytes(), 1);
-        }
+        incrementSearchCount(term, 1);
     }
 
     public void incrementSearchCount(final Term term, final int value) {
+        if (term == null) {
+            throw new IllegalArgumentException("Cannot increment search count for null");
+        }
+        if (lookups.get(term.field()).get(term.text()) == null) {
+            throw new IllegalArgumentException("Unknown term " + term);
+        }
+
         PopularityMap map = searchCountMaps.get(term.field());
         if (map != null) {
             map.increment(term.bytes(), value);

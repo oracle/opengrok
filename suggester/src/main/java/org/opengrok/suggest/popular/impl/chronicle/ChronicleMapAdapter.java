@@ -54,7 +54,10 @@ public class ChronicleMapAdapter implements PopularityMap {
         return map.getOrDefault(key, 0);
     }
 
-    public void increment(BytesRef key, int value) {
+    public void increment(final BytesRef key, final int value) {
+        if (value < 0) {
+            throw new IllegalArgumentException("Cannot increment by negative value " + value);
+        }
         map.merge(key, value, (a, b) -> a + b);
     }
 
