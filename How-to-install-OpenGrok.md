@@ -117,6 +117,41 @@ Additional information can be found in the [https://github.com/OpenGrok/OpenGrok
 *August 22, 2017: http://deferredhappiness.com/opengrok/
 *July 20, 2012 (partially broken): http://algopadawan.blogspot.co.uk/2012/07/installing-opengrok-on-windows.html
 
+## Custom ctags configuration
+
+To make ctags recognize additional symbols/definitions/etc. it is possible to
+specify configuration file with extra configuration options for ctags.
+
+This can be done by setting `OPENGROK_CTAGS_OPTIONS_FILE` environment variable
+when running the OpenGrok shell script (or directly with the `-o` option for
+`opengrok.jar`). Default location for the configuration file in the OpenGrok
+shell script is `etc/ctags.config` under the OpenGrok base directory (by default
+the full path to the file will be `/var/opengrok/etc/ctags.config`).
+
+Sample configuration file for Solaris code base:
+
+```
+--regex-asm=/^[ \t]*(ENTRY_NP|ENTRY|RTENTRY)+\(([a-zA-Z0-9_]+)\)/\2/f,function/
+--regex-asm=/^[ \t]*ENTRY2\(([a-zA-Z0-9_]+),[ ]*([a-zA-Z0-9_]+)\)/\1/f,function/
+--regex-asm=/^[ \t]*ENTRY2\(([a-zA-Z0-9_]+),[ ]*([a-zA-Z0-9_]+)\)/\2/f,function/
+--regex-asm=/^[ \t]*ENTRY_NP2\(([a-zA-Z0-9_]+),[ ]*([a-zA-Z0-9_]+)\)/\1/f,function/
+--regex-asm=/^[ \t]*ENTRY_NP2\(([a-zA-Z0-9_]+),[ ]*([a-zA-Z0-9_]+)\)/\2/f,function/
+```
+
+## Introduce own mapping for an extension to analyzer
+
+OpenGrok script doesn't support this out of box, so you'd need to add it there.
+Usually to `StdInvocation()` function after line `-jar ${OPENGROK_JAR}`.
+It would look like this:
+
+```
+-A cs:org.opensolaris.opengrok.analysis.PlainAnalyzer
+```
+
+(this will map extension `.cs` to `PlainAnalyzer`)
+You should even be able to override OpenGroks analyzers using this option.
+
+
 ## CLI - Command Line Interface Usage
 
 You need to pass location of project file + the query to Search class, e.g. for fulltext search for project with above generated configuration.xml you'd do:
