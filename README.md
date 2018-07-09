@@ -344,33 +344,6 @@ configuration into a separate file and simplify future upgrades.
 
   See `opengrok.jar` manual below for more details.
 
-#### 5.4.5 Custom ctags configuration
-
-To make ctags recognize additional symbols/definitions/etc. it is possible to
-specify configuration file with extra configuration options for ctags.
-
-This can be done by setting `OPENGROK_CTAGS_OPTIONS_FILE` environment variable
-when running the OpenGrok shell script (or directly with the `-o` option for
-`opengrok.jar`). Default location for the configuration file in the OpenGrok
-shell script is `etc/ctags.config` under the OpenGrok base directory (by default
-the full path to the file will be `/var/opengrok/etc/ctags.config`).
-
-Sample configuration file for Solaris code base is delivered in the `doc/`
-directory.
-
-### 5.6 Introduce own mapping for an extension to analyzer
-
-OpenGrok script doesn't support this out of box, so you'd need to add it there.
-Usually to `StdInvocation()` function after line `-jar ${OPENGROK_JAR}`.
-It would look like this:
-
-```
--A cs:org.opensolaris.opengrok.analysis.PlainAnalyzer
-```
-
-(this will map extension `.cs` to `PlainAnalyzer`)
-You should even be able to override OpenGroks analyzers using this option.
-
 ### 5.7 Logging
 
 Both indexer and web app emit extensive log messages.
