@@ -34,9 +34,9 @@ public final class LookupResultItem implements Comparable<LookupResultItem> {
 
     private long score;
 
-    LookupResultItem(final String phrase, final String suggester, final long score) {
+    LookupResultItem(final String phrase, final String project, final long score) {
         this.phrase = phrase;
-        this.projects.add(suggester);
+        this.projects.add(project);
         this.score = score;
     }
 
@@ -53,7 +53,7 @@ public final class LookupResultItem implements Comparable<LookupResultItem> {
     }
 
     void combine(final LookupResultItem other) {
-        if (!canBeCombinedWith(other)) {
+        if (other == null || !canBeCombinedWith(other)) {
             throw new IllegalArgumentException("Cannot combine with " + other);
         }
         projects.addAll(other.projects);

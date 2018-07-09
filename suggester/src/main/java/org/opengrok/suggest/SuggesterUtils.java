@@ -66,7 +66,7 @@ public class SuggesterUtils {
             }
         }
 
-        // `queue` holds only `RESULT_COUNT` items with the highest weight
+        // `queue` holds only `resultSize` items with the highest score
         map.values().forEach(queue::insertWithOverflow);
 
         return queue.getResult();
