@@ -34,7 +34,6 @@ import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.TestRepository;
 import org.opensolaris.opengrok.web.suggester.SuggesterApp;
-import org.opensolaris.opengrok.web.suggester.model.SuggesterQueryData;
 import org.opensolaris.opengrok.web.suggester.provider.filter.AuthorizationFilter;
 import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
 
@@ -114,6 +113,8 @@ public class SuggesterControllerTest extends JerseyTest {
     public void before() {
         await().atMost(15, TimeUnit.SECONDS).until(() ->
                 getSuggesterProjectDataSize() == env.getProjectList().size());
+
+        env.getConfiguration().setSuggesterConfig(SuggesterConfig.getDefault());
     }
 
     private static int getSuggesterProjectDataSize() throws Exception {
@@ -470,6 +471,34 @@ public class SuggesterControllerTest extends JerseyTest {
                 .post(Entity.json(Collections.singleton(data)));
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
+    }
+
+    @Test
+    public void testDisabledSuggestions() {
+        env.getConfiguration().getSuggesterConfig().setEnabled(false);
+
+        Response r = target()
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "inner")
+                .request()
+                .get();
+
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), r.getStatus());
+    }
+
+    @Test
+    public void testMaxResults() {
+        env.getConfiguration().getSuggesterConfig().setMinChars(2);
+
+        Response r = target()
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "i")
+                .request()
+                .get();
+
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), r.getStatus());
     }
 
 }
