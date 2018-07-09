@@ -22,63 +22,20 @@
  */
 package org.opengrok.suggest.query.customized;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TwoPhaseIterator;
-import org.apache.lucene.search.Weight;
-import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertTrue;
-
 public class CustomExactPhraseScorerTest {
 
     @Test
-    public void simpleTest() throws IOException {
-        RAMDirectory dir = new RAMDirectory();
+    public void simpleTestAfter() throws IOException {
+        CustomSloppyPhraseScorerTest.test(0, 2, new String[] {"one", "two"}, new Integer[] {3});
+    }
 
-        try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
-            Document doc = new Document();
-            doc.add(new TextField("test", "one two three", Field.Store.NO));
-
-            iw.addDocument(doc);
-        }
-
-        CustomPhraseQuery query = new CustomPhraseQuery("test", "one", "two");
-        query.offset = 2;
-
-        try (IndexReader ir = DirectoryReader.open(dir)) {
-            IndexSearcher is = new IndexSearcher(ir);
-
-            Weight w = query.createWeight(is, false, 1);
-
-            LeafReaderContext context = ir.getContext().leaves().get(0);
-
-            CustomExactPhraseScorer scorer = (CustomExactPhraseScorer) w.scorer(context);
-
-            TwoPhaseIterator it = scorer.twoPhaseIterator();
-
-            int correctDoc = -1;
-
-            int docId;
-            while ((docId = it.approximation().nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-                if (it.matches()) {
-                    correctDoc = docId;
-                }
-            }
-
-            assertTrue(scorer.getPositions(correctDoc).has(2));
-        }
+    @Test
+    public void simpleTestBefore() throws IOException {
+        CustomSloppyPhraseScorerTest.test(0, -1, new String[] {"one", "two"}, new Integer[] {0});
     }
 
 }
