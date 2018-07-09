@@ -1,32 +1,32 @@
 {OpenGrok can be installed and used under different use cases, we will just show how to use the wrapper script. Advanced usage depends on your knowledge of running java applications and command line options of {OpenGrok.
 Note, that you '''need''' the create the index no matter what is your use case. Without indexes {Opengrok will be simply useless.
 
-== Requirements ==
+# Requirements
 
 You need the following:
 
-* [http://www.oracle.com/technetwork/java/ JDK] 1.8 or higher
-* {OpenGrok '''binaries''' from https://github.com/OpenGrok/OpenGrok/releases (.tar.gz file with binaries, not the source code tarball !)
-* https://github.com/universal-ctags for analysis (Exuberant ctags can be used too however they are not as supported as Universal ctags)
-* A servlet container like [https://glassfish.dev.java.net/ GlassFish] or [http://tomcat.apache.org Tomcat] 8.0 or later also running with Java at least 1.8
-* If history is needed, appropriate binaries (in some cases also cvs/svn repository) must be present on the system (e.g. [http://subversion.tigris.org Subversion] or [http://www.selenic.com/mercurial/wiki/index.cgi Mercurial] or [http://dlc.sun.com/osol/devpro/downloads/current/ SCCS] or ... )
-* 2GB of memory for indexing process using OpenGrok script (bigger deployments will need more)
-* a recent browser for clients - IE, Firefox, recent Chrome or Safari
-* Optional tuning (see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
+- [JDK](http://www.oracle.com/technetwork/java/) 1.8 or higher
+- {OpenGrok '''binaries''' from https://github.com/OpenGrok/OpenGrok/releases (.tar.gz file with binaries, not the source code tarball !)
+- https://github.com/universal-ctags for analysis (Exuberant ctags can be used too however they are not as supported as Universal ctags)
+- A servlet container like [GlassFish](https://glassfish.dev.java.net/) or [Tomcat](http://tomcat.apache.org) 8.0 or later also running with Java at least 1.8
+- If history is needed, appropriate binaries (in some cases also cvs/svn repository) must be present on the system (e.g. [Subversion](http://subversion.tigris.org) or [Mercurial](http://www.selenic.com/mercurial/wiki/index.cgi) or SCCS or ... )
+- 2GB of memory for indexing process using OpenGrok script (bigger deployments will need more)
+- a recent browser for clients - IE, Firefox, recent Chrome or Safari
+- Optional tuning (see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
 
-== Recommended links to read for advanced users ==
+# Recommended links to read for advanced users
 
-* [https://github.com/OpenGrok/OpenGrok/blob/master/OpenGrok Opengrok script trunk source]
-* [https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt Sample setup]
-* [https://github.com/OpenGrok/OpenGrok/blob/master/src/org/opensolaris/opengrok/index/CommandLineOptions.java#L71 development trunk usage info (CommandLineOptions class]]
+- the `Opengrok` script
+- [Sample setup](https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt)
+- `CommandLineOptions` class
 
-== Indexing and web application setup ==
+# Indexing and web application setup
 
-After installing the package or unpacking the binaries in your target directory (e.g. <code>cd your_target_dir ; gzcat opengrok-VERSION.tar.gz | tar xf - </code>), you just need to create the index and then you can use the command line interface to grok your sources.
+After installing the package or unpacking the binaries in your target directory (e.g. `cd your_target_dir ; gzcat opengrok-VERSION.tar.gz | tar xf -`), you just need to create the index and then you can use the command line interface to grok your sources.
 
 It is also necessary to install SCM environment accessible by OpenGrok for your repositories for the history indexing to work.
 
-=== Creating the index ===
+# Creating the index
 
 OpenGrok's command line use is a typical case where OpenGrok is deployed as indexing service on a webserver for an active source repository, which is updated automatically using scheduled cron jobs.
 
@@ -34,54 +34,54 @@ OpenGrok's command line use is a typical case where OpenGrok is deployed as inde
 
 [[/images/setup-project.png]]
 
-==== <u>Step.0</u> - Setting up the Sources. Having the web application container ready. ====
+## <u>Step.0</u> - Setting up the Sources. Having the web application container ready.
 
 Source base must be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the '''checked out source''' tree under SRC_ROOT.
 
 '''Note:''' A local CVSROOT (or SVN if opengrok version less than 0.7) repository must be available. File history will not be fetched from a remote server for CVS (& SVN if opengrok version less than 0.7) !. For newer opengrok versions you must use option <code>-r on</code> for remote repositories history to be indexed, also note this can be more resource (time,cpu,network) demanding.
 Note also that OpenGrok ignores symbolic links.
 
-Please install web application container of your choice (e.g. [http://tomcat.apache.org/ Tomcat],[https://glassfish.dev.java.net/ GlassFish] or [http://www.sun.com/software/products/appsrvr Sun Java Application Server]) before going to the next step and make sure it's started.
+Please install web application container of your choice (e.g. [Tomcat](http://tomcat.apache.org/), [Glassfish](https://glassfish.dev.java.net/)) before going to the next step and make sure it's started.
 
-==== <u>Step.1</u> - Deploy the web application ====
+## <u>Step.1</u> - Deploy the web application
 
 We provided you with OpenGrok wrapper script, which should aid in deploying the web application.
 Please change to opengrok directory (can vary on your system)
 
- # cd /usr/opengrok/bin
+ `cd /usr/opengrok/bin`
 
 and run 
 
- # ./OpenGrok deploy
+ `./OpenGrok deploy`
 
 This command will do some sanity checks and will deploy the source.war in its directory to one of detected web application containers.
 Please follow the error message it provides.
 If it fails to discover your container, please refer to optional steps on changing web application properties, which has manual steps on how to do this.
 Alternatively use <code>OPENGROK_TOMCAT_BASE</code> environment variable, e.g.
 
- # OPENGROK_TOMCAT_BASE=/path/to/my/tomcat/install ./OpenGrok deploy
+ `OPENGROK_TOMCAT_BASE=/path/to/my/tomcat/install ./OpenGrok deploy`
 
 Note that OpenGrok script expects the directory <code>/var/opengrok</code> to be available to user running opengrok with all permissions. In root user case it will create all the directories needed, otherwise you have to manually create the directory and grant all permissions to the user used.
 
-==== <u>Step.2</u> - Populate DATA_ROOT Directory, let the indexer generate the project XML config file, update configuration.xml to your web app ====
+## <u>Step.2</u> - Populate DATA_ROOT Directory, let the indexer generate the project XML config file, update configuration.xml to your web app
 
 Second step is to just run the indexing (can take a lot of time). After this is done, indexer automatically attempts to upload newly generated configuration to the web application. Most probably you will not be able to use {Opengrok before this is done. <code>OPENGROK_CTAGS</code> environment variable can be used to tell {Opengrok which ctags implementation to use for indexing.
 
 Please change to opengrok directory (can vary on your system)
 
- $ cd /usr/opengrok/bin
+ `cd /usr/opengrok/bin`
 
 and run, if your SRC_ROOT is prepared under <code>/var/opengrok/src</code>
 
- $ ./OpenGrok index
+ `./OpenGrok index`
 
 otherwise (if SRC_ROOT is in different directory) run:
 
- $ ./OpenGrok index <absolute_path_to_your_SRC_ROOT>
+ `./OpenGrok index <absolute_path_to_your_SRC_ROOT>`
 
 specify alternative ctags binary:
 
- $ OPENGROK_CTAGS=<absolute_path_to_ctags_binary> ./OpenGrok index
+ `OPENGROK_CTAGS=<absolute_path_to_ctags_binary> ./OpenGrok index`
 
 NOTE: Please DON'T use symlinks to /var/opengrok/src - rather use above command with parameter.
 
@@ -101,24 +101,23 @@ A common case would be, that you want the data in some other directory than /var
 This can be easily achieved by using environment variable OPENGROK_INSTANCE_BASE .
 E.g. if my opengrok data directory is <code>/tank/opengrok</code> and my source root is in <code>/tank/source</code> and I'd like to get more verbosity I'd run the indexer as:
 
- $ OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok ./OpenGrok index /tank/source
+ `OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok ./OpenGrok index /tank/source`
 
 Since above will also change default location of config file, beforehands(or restart your web container after creating this symlink) I suggest doing below for our case of having opengrok instance in <code>/tank/opengrok</code> :
 
- # ln -s /tank/opengrok/etc/configuration.xml /var/opengrok/etc/configuration.xml
-
+ `ln -s /tank/opengrok/etc/configuration.xml /var/opengrok/etc/configuration.xml`
 
 A lot more customizations can be found inside the script, you just need to have a look [https://github.com/OpenGrok/OpenGrok/blob/master/OpenGrok at it], eventually create a configuration out of it and use <code>OPENGROK_CONFIGURATION</code> environment variable to point to it. Obviously such setups can be used for nightly cron job updates of index or other automated purposes.
 
-== Optional info ==
+# Optional info
 
 Additional information can be found in the [https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt EXAMPLE.txt] in the doc folder
 
-=== Windows installation ===
+## Windows installation
 *August 22, 2017: http://deferredhappiness.com/opengrok/
 *July 20, 2012 (partially broken): http://algopadawan.blogspot.co.uk/2012/07/installing-opengrok-on-windows.html
 
-=== CLI - Command Line Interface Usage ===
+## CLI - Command Line Interface Usage
 
 You need to pass location of project file + the query to Search class, e.g. for fulltext search for project with above generated configuration.xml you'd do:
 
@@ -132,7 +131,7 @@ Sample search:
 
 [[/images/CLI-search.png]]
 
-==== Optional need to change web application properties or name ====
+## Optional need to change web application properties or name
 
 You might need to modify the web application if you don't store the configuration file in the default location (<code>/var/opengrok/etc/configuration.xml</code>).
 
@@ -143,36 +142,36 @@ To '''configure''' the webapp source.war, look into the parameters defined in <c
 
 If you need to change name of the web application from source to something else you need to use special option <code>-w <new_name></code> for indexer to create proper xrefs, besides changing the <code>.war</code> file name. Examples below show just deploying source.war, but you can use it to deploy your new_name.war too.
 
-==== Deploy the modified .war file in glassfish/Sun Java App Server: ====
+### Deploy the modified .war file in glassfish/Sun Java App Server: ====
 
 * '''Option 1:''' Use browser and log into <code>glassfish web administration interface</code>
 
 : Common Tasks / Applications / Web Applications , button '''Deploy''' and point it to your source.war webarchive
 
-* '''Option 2:''' Copy the source.war file to //GLASSFISH///domains///YOURDOMAIN///autodeploy directory, glassfish will try to deploy it "automagically".
-* '''Option 3:''' Use cli from //GLASSFISH// directory:
+* '''Option 2:''' Copy the source.war file to `//GLASSFISH///domains///YOURDOMAIN///autodeploy` directory, glassfish will try to deploy it "automagically".
+* '''Option 3:''' Use CLI from `//GLASSFISH//` directory:
 
- # ./bin/asadmin deploy /path/to/source.war
+ `./bin/asadmin deploy /path/to/source.war`
 
-==== Deploy the modified .war file in tomcat: ====
+### Deploy the modified .war file in tomcat:
 
-* just copy the source.war file to //TOMCAT_INSTALL///webapps directory.
+* just copy the source.war file to `//TOMCAT_INSTALL///webapps` directory.
 
-==== Optional setup of security manager for tomcat ====
+## Optional setup of security manager for Tomcat
 
 On some linux distribution you need to setup permissions for SRC_ROOT and DATA_ROOT. Please check your [http://tomcat.apache.org/tomcat-5.5-doc/security-manager-howto.html Tomcat documentation] on this, or simply disable (your risk!) <u>security manager</u> for Tomcat (e.g. in debian/ubuntu : in file <code>/etc/default/tomcat5.5</code> set <code>TOMCAT5_SECURITY=no</code>).
 A sample approach is to <u>edit</u> <code>/etc/tomcat5.5/04webapps.policy</code> (or <code>/var/apache/tomcat/conf/catalina.policy</code>) and set this (it will give opengrok all permissions) for your opengrok webapp instance:
 
-<pre>
+```
 grant codeBase "file:${catalina.home}/webapps/source/-" {     
 permission java.security.AllPermission;};
 grant codeBase "file:${catalina.home}/webapps/source/WEB-INF/lib/-" {     
 permission java.security.AllPermission;};
-</pre>
+```
 
 Alternatively you can be more restrictive (haven't tested below with a complex setup(e.g. some versioning system which needs local access as cvs), if it will not work, please report through [[Discussions]].
 
-<pre>
+```
 grant codeBase "file:${catalina.home}/webapps/source/-" {  
 permission java.util.PropertyPermission "subversion.native.library", "read";  
 permission java.lang.RuntimePermission "loadLibrary.svnjavahl-1?;  
@@ -202,6 +201,4 @@ permission java.lang.RuntimePermission "loadLibrary.svnjavahl-1?;
 permission java.util.PropertyPermission "disableLuceneLocks", "read";  
 permission java.util.PropertyPermission "catalina.home", "read";  
 permission java.util.PropertyPermission "java.io.tmpdir", "read";};
-</pre>
-
-Thanks to Vincent Liu & Flo.
+```
