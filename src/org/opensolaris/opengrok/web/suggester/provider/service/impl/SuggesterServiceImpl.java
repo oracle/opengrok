@@ -194,6 +194,10 @@ public class SuggesterServiceImpl implements SuggesterService {
         }
 
         Duration timeToNextRebuild = getTimeToNextRebuild();
+        if (timeToNextRebuild == null) {
+            logger.log(Level.INFO, "Suggester rebuild not scheduled");
+            return;
+        }
 
         logger.log(Level.INFO, "Scheduling suggester rebuild in {0}", timeToNextRebuild);
 
@@ -202,9 +206,10 @@ public class SuggesterServiceImpl implements SuggesterService {
     }
 
     private Duration getTimeToNextRebuild() {
-        Configuration config = env.getConfiguration();
-
-        String cronDefinition = config.getSuggester().getRebuildCronConfig();
+        String cronDefinition = env.getConfiguration().getSuggester().getRebuildCronConfig();
+        if (cronDefinition == null) {
+            return null;
+        }
 
         ZonedDateTime now = ZonedDateTime.now();
 
