@@ -282,8 +282,8 @@ It basically works like this:
 3. index the project. It will become searchable after that.
 
   ```
-  OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml
-  OpenGrok indexpart /foo
+  OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
+      OpenGrok indexpart /foo
   ```
 
 4. make the project `indexed` status of the project persistent so that if
