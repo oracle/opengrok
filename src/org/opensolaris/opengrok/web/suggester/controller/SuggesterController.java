@@ -73,6 +73,9 @@ public final class SuggesterController {
         Instant start = Instant.now();
 
         SuggesterData suggesterData = SuggesterQueryDataParser.parse(data);
+        if (suggesterData.getSuggesterQuery() == null) {
+            throw new ParseException("Could not determine suggester query");
+        }
 
         SuggesterConfig config = env.getConfiguration().getSuggester();
 
