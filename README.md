@@ -266,7 +266,7 @@ It basically works like this:
 2. add a new project **foo**:
 
   ```
-  Messages -t foo -n project add
+  curl -d "foo" -H "Content-Type: text/plain" -X POST "${webapp_uri}/api/v1/projects"
   ```
 
   * the project **foo** is now visible in the configuration however is not yet
