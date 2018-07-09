@@ -84,6 +84,9 @@ public class SuggesterQueryDataParser {
         if (text == null) {
             throw new IllegalArgumentException("Cannot process null text");
         }
+        if (caretPosition > text.length()) {
+            throw new IllegalArgumentException("Caret position has greater value than text length");
+        }
 
         logger.log(Level.FINEST, "Processing suggester query: {0} at {1}", new Object[] {text, caretPosition});
 

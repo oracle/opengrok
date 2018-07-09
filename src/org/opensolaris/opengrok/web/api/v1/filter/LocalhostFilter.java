@@ -70,6 +70,9 @@ public class LocalhostFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext context) {
+        if (request == null) { // happens in tests
+            return;
+        }
         String path = context.getUriInfo().getPath();
         if (allowedPaths.contains(path)) {
             return;

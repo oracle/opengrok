@@ -72,7 +72,7 @@ public class QueryBuilder {
     public static final String OBJSER = "objser"; // object serialized
     public static final String OBJVER = "objver"; // object version
 
-    public static final List<String> searchFields = Arrays.asList(FULL, DEFS, REFS, PATH, HIST, TYPE);
+    public static final List<String> searchFields = Arrays.asList("q", DEFS, REFS, PATH, HIST);
 
     /** Used for paths, so SHA-1 is completely sufficient */
     private static final String DIRPATH_HASH_ALGORITHM = "SHA-1";
