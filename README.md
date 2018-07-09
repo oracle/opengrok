@@ -254,7 +254,9 @@ them and index them.
 
 It basically works like this:
 
-1. bootstrap initial configuration: OpenGrok bootstrap
+1. create initial configuration:
+
+  `OpenGrok bootstrap`
 
   * this will create `/var/opengrok/etc/configuration.xml` with basic set of
     properties. If more is needed use:
