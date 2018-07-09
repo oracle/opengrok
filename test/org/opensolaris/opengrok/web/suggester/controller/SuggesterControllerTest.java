@@ -37,10 +37,12 @@ import org.opensolaris.opengrok.web.suggester.SuggesterApp;
 import org.opensolaris.opengrok.web.suggester.model.SuggesterQueryData;
 import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
 
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +69,13 @@ public class SuggesterControllerTest extends JerseyTest {
         public String phrase;
         public Set<String> projects;
         public long score;
+    }
+
+    private static class TermIncrementData {
+        public String project;
+        public String field;
+        public String token;
+        public int increment;
     }
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -378,6 +387,88 @@ public class SuggesterControllerTest extends JerseyTest {
 
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
                 containsInAnyOrder("main", "mutablelistof"));
+    }
+
+    @Test
+    public void testInitPopularTermsFromQueries() {
+        // terms for prefix t: "text", "texttrim", "tell", "teach", "trimmargin"
+
+        List<String> queries = Arrays.asList(
+                "http://localhost:8080/source/search?project=kotlin&q=text",
+                "http://localhost:8080/source/search?project=kotlin&q=text",
+                "http://localhost:8080/source/search?project=kotlin&q=teach"
+        );
+
+        target().path("init")
+                .path("queries")
+                .request()
+                .post(Entity.json(queries));
+
+        Result res = target()
+                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "kotlin")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "t")
+                .queryParam("caret", 1)
+                .queryParam(QueryBuilder.PATH, "kt")
+                .request()
+                .get(Result.class);
+
+        List<String> suggestions = res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList());
+
+        assertEquals("text", suggestions.get(0));
+        assertEquals("teach", suggestions.get(1));
+    }
+
+    @Test
+    public void testInitPopularTermsFromRawData() {
+        // terms for prefix a: "args", "array", "and"
+
+        TermIncrementData data1 = new TermIncrementData();
+        data1.project = "kotlin";
+        data1.field = QueryBuilder.FULL;
+        data1.token = "args";
+        data1.increment = 100;
+
+        TermIncrementData data2 = new TermIncrementData();
+        data2.project = "kotlin";
+        data2.field = QueryBuilder.FULL;
+        data2.token = "array";
+        data2.increment = 50;
+
+        target().path("init")
+                .path("raw")
+                .request()
+                .post(Entity.json(Arrays.asList(data1, data2)));
+
+        Result res = target()
+                .queryParam(SuggesterQueryData.PROJECTS_PARAM, "kotlin")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "a")
+                .queryParam("caret", 1)
+                .queryParam(QueryBuilder.PATH, "kt")
+                .request()
+                .get(Result.class);
+
+        List<String> suggestions = res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList());
+
+        assertEquals("args", suggestions.get(0));
+        assertEquals("array", suggestions.get(1));
+    }
+
+    @Test
+    public void testInitPopularTermsFromRawDataInvalidRequest() {
+        TermIncrementData data = new TermIncrementData();
+        data.project = "kotlin";
+        data.field = QueryBuilder.FULL;
+        data.token = "array";
+        data.increment = -10;
+
+        Response r = target().path("init")
+                .path("raw")
+                .request()
+                .post(Entity.json(Collections.singleton(data)));
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), r.getStatus());
     }
 
 }
