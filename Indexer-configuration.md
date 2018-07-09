@@ -4,5 +4,4 @@ This is a list of the most common configuration options with their defaults whic
  - `authorizationWatchdogEnabled` - XXX
  - `pluginDirectory` - XXX
  - `pluginConfiguration` - XXX
- - `groups` - see https://github.com/oracle/opengrok/wiki/Project-groups
  - ...
