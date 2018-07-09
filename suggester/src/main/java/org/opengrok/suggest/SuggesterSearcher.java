@@ -54,6 +54,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Variation of {@link IndexSearcher} but instead of returning the relevant documents can return also suggestions.
+ */
 class SuggesterSearcher extends IndexSearcher {
 
     public static final int TERM_ALREADY_SEARCHED_MULTIPLIER = 1000;
@@ -62,14 +65,28 @@ class SuggesterSearcher extends IndexSearcher {
 
     private final int resultSize;
 
+    /**
+     * @param reader reader of the index for which to provide suggestions
+     * @param resultSize size of the results
+     */
     SuggesterSearcher(final IndexReader reader, final int resultSize) {
         super(reader);
         this.resultSize = resultSize;
     }
 
+    /**
+     * Returns the suggestions for generic {@link SuggesterQuery} (almost all except lone
+     * {@link org.opengrok.suggest.query.SuggesterPrefixQuery} for which check {@link FieldWFSTCollection}).
+     * @param query query on which the suggestions depend
+     * @param project name of the project
+     * @param suggesterQuery query for the suggestions
+     * @param popularityCounter data structure which contains the number of times the terms were searched for. It is
+     * used to provide the most popular completion functionality.
+     * @return suggestions
+     */
     public List<LookupResultItem> suggest(
             final Query query,
-            final String suggester,
+            final String project,
             final SuggesterQuery suggesterQuery,
             final PopularityCounter popularityCounter
     ) {
@@ -88,7 +105,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         for (LeafReaderContext context : this.leafContexts) {
             try {
-                results.addAll(suggest(rewrittenQuery, context, suggester, suggesterQuery, popularityCounter));
+                results.addAll(suggest(rewrittenQuery, context, project, suggesterQuery, popularityCounter));
             } catch (IOException e) {
                 logger.log(Level.WARNING, "Cannot perform suggester search", e);
             }

@@ -56,6 +56,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Holds all the necessary data for one index directory. In the context of OpenGrok it is one project.
+ */
 class FieldWFSTCollection implements Closeable {
 
     private static final Logger logger = Logger.getLogger(FieldWFSTCollection.class.getName());
@@ -92,6 +95,10 @@ class FieldWFSTCollection implements Closeable {
         this.allowMostPopular = allowMostPopular;
     }
 
+    /**
+     * Initializes the data structure. Rebuild is launched only if necessary.
+     * @throws IOException if initialization was not successful
+     */
     public void init() throws IOException {
         long commitVersion = getCommitVersion();
 
@@ -169,6 +176,10 @@ class FieldWFSTCollection implements Closeable {
         return suggesterDir.resolve(fileName).toFile();
     }
 
+    /**
+     * Forces the rebuild of the data structure.
+     * @throws IOException if some error occurred
+     */
     public void rebuild() throws IOException {
         build();
 
@@ -192,7 +203,7 @@ class FieldWFSTCollection implements Closeable {
 
     private WFSTCompletionLookup build(final IndexReader indexReader, final String field) throws IOException {
         WFSTInputIterator iterator = new WFSTInputIterator(
-                new LuceneDictionary(indexReader, field).getEntryIterator(), indexReader, field, getSearchCountMap(field));
+                new LuceneDictionary(indexReader, field).getEntryIterator(), indexReader, field, getSearchCounts(field));
 
         WFSTCompletionLookup lookup = createWFST();
         lookup.build(iterator);
@@ -266,6 +277,13 @@ class FieldWFSTCollection implements Closeable {
         adapter.removeIf(key -> lookup.get(key.toString()) == null);
     }
 
+    /**
+     * Looks up the terms in the WFST data structure.
+     * @param field term field
+     * @param prefix prefix the returned terms must contain
+     * @param resultSize number of terms to return
+     * @return terms with highest score
+     */
     public List<Lookup.LookupResult> lookup(final String field, final String prefix, final int resultSize) {
         try {
             return lookups.get(field).lookup(prefix, false, resultSize);
@@ -276,6 +294,9 @@ class FieldWFSTCollection implements Closeable {
         return Collections.emptyList();
     }
 
+    /**
+     * Removes all stored data structures.
+     */
     public void remove() {
         try {
             close();
@@ -290,10 +311,19 @@ class FieldWFSTCollection implements Closeable {
         }
     }
 
+    /**
+     * Increments search count for {@code term} by 1.
+     * @param term term for which to increment search count
+     */
     public void incrementSearchCount(final Term term) {
         incrementSearchCount(term, 1);
     }
 
+    /**
+     * Increments search count for {@code term} by {@code value}.
+     * @param term term for which to increment search count
+     * @param value value to increment by
+     */
     public void incrementSearchCount(final Term term, final int value) {
         if (term == null) {
             throw new IllegalArgumentException("Cannot increment search count for null");
@@ -308,7 +338,12 @@ class FieldWFSTCollection implements Closeable {
         }
     }
 
-    public PopularityCounter getSearchCountMap(final String field) {
+    /**
+     * Returns search counts for term field.
+     * @param field term field
+     * @return search counts object
+     */
+    public PopularityCounter getSearchCounts(final String field) {
         if (!searchCountMaps.containsKey(field)) {
             return key -> 0;
         }
@@ -316,6 +351,10 @@ class FieldWFSTCollection implements Closeable {
         return key -> searchCountMaps.get(field).get(key);
     }
 
+    /**
+     * Closes the open data structures.
+     * @throws IOException if the index directory could not be closed
+     */
     @Override
     public void close() throws IOException {
         searchCountMaps.values().forEach(val -> {
@@ -345,6 +384,9 @@ class FieldWFSTCollection implements Closeable {
         }
     }
 
+    /**
+     * An {@link InputIterator} for WFST data structure with most popular completion support.
+     */
     private static class WFSTInputIterator implements InputIterator {
 
         private final InputIterator wrapped;
@@ -376,7 +418,7 @@ class FieldWFSTCollection implements Closeable {
             if (last != null) {
                 int add = searchCounts.get(last);
 
-                return SuggesterUtils.computeWeight(indexReader, field, last)
+                return SuggesterUtils.computeScore(indexReader, field, last)
                         + add * SuggesterSearcher.TERM_ALREADY_SEARCHED_MULTIPLIER;
             }
 
@@ -413,8 +455,6 @@ class FieldWFSTCollection implements Closeable {
             }
 
             if (last != null) {
-                // it might be a little bigger because of UTF8 but overestimating is fine
-                // source code is almost always in English so there should not be much overhead
                 termLengthAccumulator += last.length;
             }
 

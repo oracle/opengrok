@@ -30,12 +30,19 @@ import org.apache.lucene.util.AttributeSource;
 
 import java.io.IOException;
 
+/**
+ * Query for possible suggestions of {@link PrefixQuery}.
+ */
 public class SuggesterPrefixQuery extends PrefixQuery implements SuggesterQuery {
 
+    /**
+     * @param prefix term prefix
+     */
     public SuggesterPrefixQuery(final Term prefix) {
         super(prefix);
     }
 
+    /** {@inheritDoc} */
     @Override
     public TermsEnum getTermsEnumForSuggestions(final Terms terms) throws IOException {
         if (terms == null) {
@@ -44,6 +51,7 @@ public class SuggesterPrefixQuery extends PrefixQuery implements SuggesterQuery 
         return super.getTermsEnum(terms, new AttributeSource());
     }
 
+    /** {@inheritDoc} */
     @Override
     public int length() {
         return getPrefix().text().length();

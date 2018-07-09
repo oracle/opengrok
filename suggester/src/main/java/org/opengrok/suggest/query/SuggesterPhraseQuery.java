@@ -31,6 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Query for possible suggestions of {@link org.apache.lucene.search.PhraseQuery}. It is divided into
+ * {@link CustomPhraseQuery} which represents the bare {@link org.apache.lucene.search.PhraseQuery} and
+ * {@link SuggesterQuery} which represent the query for suggestions.
+ */
 public class SuggesterPhraseQuery extends Query {
 
     private enum SuggestPosition {
@@ -51,6 +56,12 @@ public class SuggesterPhraseQuery extends Query {
 
     private SuggesterQuery suggesterQuery;
 
+    /**
+     * @param field term field
+     * @param identifier unique String which identifies the token for which the suggestions should be made
+     * @param tokens all the tokens of the phrase query
+     * @param slop word Levenshtein's distance
+     */
     public SuggesterPhraseQuery(
             final String field,
             final String identifier,

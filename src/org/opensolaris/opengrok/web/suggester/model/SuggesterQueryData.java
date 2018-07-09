@@ -24,17 +24,19 @@ package org.opensolaris.opengrok.web.suggester.model;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.web.suggester.provider.filter.AuthorizationFilter;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import javax.ws.rs.QueryParam;
 import java.util.List;
 
+/**
+ * Combines multiple query params for suggester into one concise class.
+ */
 public final class SuggesterQueryData {
 
-    public static final String PROJECTS_PARAM = "projects[]";
-
-    @QueryParam(PROJECTS_PARAM)
+    @QueryParam(AuthorizationFilter.PROJECTS_PARAM)
     private List<String> projects;
 
     @NotBlank(message = "Field param cannot be blank")

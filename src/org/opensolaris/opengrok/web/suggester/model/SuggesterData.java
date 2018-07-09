@@ -27,6 +27,9 @@ import org.opengrok.suggest.query.SuggesterQuery;
 
 import java.util.List;
 
+/**
+ * Represents processed {@link SuggesterQueryData}.
+ */
 public final class SuggesterData {
 
     private final SuggesterQuery suggesterQuery;

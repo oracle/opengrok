@@ -27,6 +27,9 @@ import org.apache.lucene.util.PriorityQueue;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Priority queue that holds {@code maxSize} {@link LookupResultItem}s with the highest scores.
+ */
 class LookupPriorityQueue extends PriorityQueue<LookupResultItem> {
 
     private final int maxSize;
@@ -36,11 +39,16 @@ class LookupPriorityQueue extends PriorityQueue<LookupResultItem> {
         this.maxSize = maxSize;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected boolean lessThan(final LookupResultItem item1, final LookupResultItem item2) {
         return item1.getScore() < item2.getScore();
     }
 
+    /**
+     * Transforms queue values into list sorted from highest scores to the lowest.
+     * @return list of the values
+     */
     List<LookupResultItem> getResult() {
         int size = this.size();
         LookupResultItem[] res = new LookupResultItem[size];
@@ -52,6 +60,11 @@ class LookupPriorityQueue extends PriorityQueue<LookupResultItem> {
         return Arrays.asList(res);
     }
 
+    /**
+     * Determines whether element with {@code score} would be inserted into this queue.
+     * @param score score of the element to insert
+     * @return {@code true} if the element would be inserted. {@code false} otherwise.
+     */
     boolean canInsert(final long score) {
         if (size() < maxSize) {
             return true;

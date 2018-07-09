@@ -30,12 +30,19 @@ import org.apache.lucene.util.AttributeSource;
 
 import java.io.IOException;
 
+/**
+ * Query for possible suggestions of {@link WildcardQuery}.
+ */
 public class SuggesterWildcardQuery extends WildcardQuery implements SuggesterQuery {
 
+    /**
+     * @param term term with wildcard symbols
+     */
     public SuggesterWildcardQuery(final Term term) {
         super(term);
     }
 
+    /** {@inheritDoc} */
     @Override
     public TermsEnum getTermsEnumForSuggestions(final Terms terms) throws IOException {
         if (terms == null) {
@@ -44,6 +51,7 @@ public class SuggesterWildcardQuery extends WildcardQuery implements SuggesterQu
         return super.getTermsEnum(terms, new AttributeSource());
     }
 
+    /** {@inheritDoc} */
     @Override
     public int length() {
         return getTerm().text().length();

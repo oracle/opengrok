@@ -41,6 +41,10 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Modified Apache Lucene's {@link PhraseQuery} to allow to use {@link CustomExactPhraseScorer} and
+ * {@link CustomSloppyPhraseScorer}.
+ */
 public class CustomPhraseQuery extends Query {
 
     public int offset;

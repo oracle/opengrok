@@ -32,6 +32,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Predicate;
 
+/**
+ * Adapter for {@link ChronicleMap} to expose only the necessary operations needed for most popular completion.
+ */
 public class ChronicleMapAdapter implements PopularityMap {
 
     private ChronicleMap<BytesRef, Integer> map;
@@ -49,11 +52,14 @@ public class ChronicleMapAdapter implements PopularityMap {
         this.f = f;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public int get(BytesRef key) {
+    public int get(final BytesRef key) {
         return map.getOrDefault(key, 0);
     }
 
+    /** {@inheritDoc} */
+    @Override
     public void increment(final BytesRef key, final int value) {
         if (value < 0) {
             throw new IllegalArgumentException("Cannot increment by negative value " + value);
@@ -61,14 +67,21 @@ public class ChronicleMapAdapter implements PopularityMap {
         map.merge(key, value, (a, b) -> a + b);
     }
 
-    public void removeIf(Predicate<BytesRef> predicate) {
+    /**
+     * Removes the entries with key that meets the predicate.
+     * @param predicate
+     */
+    public void removeIf(final Predicate<BytesRef> predicate) {
         map.entrySet().removeIf(e -> predicate.test(e.getKey()));
     }
 
-    public void resize(
-            final int newMapSize,
-            final double newMapAvgKey
-    ) throws IOException {
+    /**
+     * Resizes the underlying {@link ChronicleMap}.
+     * @param newMapSize new entries count
+     * @param newMapAvgKey new average key size
+     * @throws IOException if some error occurred
+     */
+    public void resize(final int newMapSize, final double newMapAvgKey) throws IOException {
         if (newMapSize < 0) {
             throw new IllegalArgumentException("Cannot resize chronicle map to negative size");
         }
@@ -100,8 +113,12 @@ public class ChronicleMapAdapter implements PopularityMap {
         map = m;
     }
 
+    /**
+     * Closes the opened {@link ChronicleMap}.
+     */
     @Override
     public void close() {
         map.close();
     }
+
 }

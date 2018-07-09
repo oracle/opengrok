@@ -26,6 +26,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.ApplicationPath;
 
+/**
+ * Represents suggester part of the web application. Initializes and enables all the suggester related services.
+ */
 @ApplicationPath("/suggest")
 public class SuggesterApp extends ResourceConfig {
 

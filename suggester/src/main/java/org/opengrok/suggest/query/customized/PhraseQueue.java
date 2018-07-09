@@ -18,6 +18,10 @@ package org.opengrok.suggest.query.customized;
 
 import org.apache.lucene.util.PriorityQueue;
 
+/**
+ * Copy of the Lucene's {@link org.apache.lucene.search.PhraseQueue}. It is needed by
+ * {@link CustomExactPhraseScorer} and {@link CustomSloppyPhraseScorer} and has package private access.
+ */
 final class PhraseQueue extends PriorityQueue<PhrasePositions> {
 
     PhraseQueue(int size) {

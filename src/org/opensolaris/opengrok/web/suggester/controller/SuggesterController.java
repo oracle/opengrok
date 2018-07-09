@@ -58,6 +58,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Endpoint for suggester related REST queries.
+ */
 @Path("/")
 public final class SuggesterController {
 
@@ -68,6 +71,12 @@ public final class SuggesterController {
     @Inject
     private SuggesterService suggester;
 
+    /**
+     * Returns suggestions based on the search criteria specified in {@code data}.
+     * @param data suggester form data
+     * @return list of suggestions and other related information
+     * @throws ParseException if the Lucene query created from {@code data} could not be parsed
+     */
     @GET
     @Authorized
     @Produces(MediaType.APPLICATION_JSON)
@@ -79,7 +88,7 @@ public final class SuggesterController {
             throw new ParseException("Could not determine suggester query");
         }
 
-        SuggesterConfig config = env.getConfiguration().getSuggester();
+        SuggesterConfig config = env.getConfiguration().getSuggesterConfig();
 
         modifyDataBasedOnConfiguration(suggesterData, config);
 
@@ -123,13 +132,26 @@ public final class SuggesterController {
         return true;
     }
 
+    /**
+     * Returns the suggester configuration {@link SuggesterConfig}.
+     * Because of the {@link org.opensolaris.opengrok.web.api.v1.filter.LocalhostFilter}, the
+     * {@link org.opensolaris.opengrok.web.api.v1.controller.ConfigurationController} cannot be accessed from the
+     * web page by the remote user. To resolve the problem, this method exposes this functionality.
+     * @return suggester configuration
+     */
     @GET
     @Path("/config")
     @Produces(MediaType.APPLICATION_JSON)
     public SuggesterConfig getConfig() {
-        return RuntimeEnvironment.getInstance().getConfiguration().getSuggester();
+        return RuntimeEnvironment.getInstance().getConfiguration().getSuggesterConfig();
     }
 
+    /**
+     * Initializes the search data used by suggester to perform most popular completion. The passed {@code urls} are
+     * decomposed into single terms and those search counts are then increased by 1.
+     * @param urls list of URLs in JSON format, e.g.
+     * {@code ["http://demo.opengrok.org/search?project=opengrok&q=test"]}
+     */
     @POST
     @Path("/init/queries")
     @Localhost
@@ -200,6 +222,10 @@ public final class SuggesterController {
         return builder.build();
     }
 
+    /**
+     * Initializes the search data used by suggester to perform most popular completion.
+     * @param termIncrements data by which to initialize the search data
+     */
     @POST
     @Path("/init/raw")
     @Localhost

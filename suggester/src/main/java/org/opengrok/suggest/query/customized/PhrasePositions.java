@@ -20,6 +20,9 @@ import java.io.IOException;
 import org.apache.lucene.index.*;
 
 /**
+ * Copy of the Lucene's {@link org.apache.lucene.search.PhrasePositions}. It is needed by
+ * {@link CustomExactPhraseScorer} and {@link CustomSloppyPhraseScorer} and has package private access.
+ *
  * Position of a term in a document that takes into account the term offset within the phrase.
  */
 final class PhrasePositions {

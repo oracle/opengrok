@@ -41,6 +41,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Provides some useful utility methods to be used in suggester module.
+ */
 public class SuggesterUtils {
 
     private static final Logger logger = Logger.getLogger(SuggesterUtils.class.getName());
@@ -52,6 +55,13 @@ public class SuggesterUtils {
     private SuggesterUtils() {
     }
 
+    /**
+     * Combines the suggestions from multiple suggesters with the same {@code phrase} and returns the
+     * {@code resultSize} of the ones with the highest scores.
+     * @param results suggestions
+     * @param resultSize the size of the list to return
+     * @return combined results from multiple suggester
+     */
     static List<LookupResultItem> combineResults(final List<LookupResultItem> results, final int resultSize) {
         LookupPriorityQueue queue = new LookupPriorityQueue(resultSize);
 
@@ -72,7 +82,14 @@ public class SuggesterUtils {
         return queue.getResult();
     }
 
-    static long computeWeight(final IndexReader indexReader, final String field, final BytesRef bytesRef) {
+    /**
+     * Computes score of the of the specified term.
+     * @param indexReader reader where the term occurs
+     * @param field term field
+     * @param bytesRef term text
+     * @return score for the term
+     */
+    static long computeScore(final IndexReader indexReader, final String field, final BytesRef bytesRef) {
         try {
             Term term = new Term(field, bytesRef);
             double normalizedDocumentFrequency = computeNormalizedDocumentFrequency(indexReader, term);
@@ -91,6 +108,11 @@ public class SuggesterUtils {
         return ((double) documentFrequency) / indexReader.numDocs();
     }
 
+    /**
+     * Decomposes the provided {@code query} into terms.
+     * @param query query to decompose
+     * @return terms that were in the {@code query}
+     */
     public static List<Term> intoTerms(final Query query) {
         if (query == null) {
             return Collections.emptyList();
@@ -118,6 +140,13 @@ public class SuggesterUtils {
         return terms;
     }
 
+    /**
+     * Decomposes the provided {@code query} into terms with the exception of {@link PhraseQuery}. Is useful when
+     * determining which terms should not be suggested. {@link PhraseQuery} is exempted because not suggesting some
+     * term which were contained in it is invalid.
+     * @param query query to decompose
+     * @return terms that were in the {@code query}
+     */
     public static List<Term> intoTermsExceptPhraseQuery(final Query query) {
         if (query == null) {
             return Collections.emptyList();

@@ -177,7 +177,7 @@ public class FieldWFSTCollectionTest {
 
         f.incrementSearchCount(new Term("test", "text"));
 
-        assertEquals(1, f.getSearchCountMap("test").get(new BytesRef("text")));
+        assertEquals(1, f.getSearchCounts("test").get(new BytesRef("text")));
     }
 
     @Test
@@ -188,7 +188,7 @@ public class FieldWFSTCollectionTest {
 
         f.incrementSearchCount(new Term("test", "some"), 20);
 
-        assertEquals(20, f.getSearchCountMap("test").get(new BytesRef("some")));
+        assertEquals(20, f.getSearchCounts("test").get(new BytesRef("some")));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -225,7 +225,7 @@ public class FieldWFSTCollectionTest {
 
         f.rebuild();
 
-        assertEquals(0, f.getSearchCountMap("test").get(new BytesRef("term")));
+        assertEquals(0, f.getSearchCounts("test").get(new BytesRef("term")));
     }
 
     @Test
@@ -253,7 +253,7 @@ public class FieldWFSTCollectionTest {
         addText("test", "term");
         init(true);
 
-        f.getSearchCountMap(null);
+        f.getSearchCounts(null);
     }
 
 }

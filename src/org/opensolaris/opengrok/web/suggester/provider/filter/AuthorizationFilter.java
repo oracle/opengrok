@@ -25,7 +25,6 @@ package org.opensolaris.opengrok.web.suggester.provider.filter;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.web.suggester.model.SuggesterQueryData;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -34,15 +33,25 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
+/**
+ * Serves for authorization of specific REST API endpoints.
+ */
 @Provider
 @Authorized
 public class AuthorizationFilter implements ContainerRequestFilter {
+
+    public static final String PROJECTS_PARAM = "projects[]";
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @Context
     private HttpServletRequest request;
 
+    /**
+     * Checks if the request contains {@link #PROJECTS_PARAM} and if so then checks if the user has access to the
+     * specified projects.
+     * @param context request context
+     */
     @Override
     public void filter(final ContainerRequestContext context) {
         if (request == null) { // happens in tests
@@ -50,7 +59,7 @@ public class AuthorizationFilter implements ContainerRequestFilter {
         }
         AuthorizationFramework auth = env.getAuthorizationFramework();
         if (auth != null) {
-            String[] projects = request.getParameterValues(SuggesterQueryData.PROJECTS_PARAM);
+            String[] projects = request.getParameterValues(PROJECTS_PARAM);
             if (projects != null) {
                 for (String project : projects) {
                     Project p = Project.getByName(project);

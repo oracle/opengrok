@@ -50,6 +50,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Provides an interface for accessing suggester functionality.
+ */
 public final class Suggester implements Closeable {
 
     private static final Logger logger = Logger.getLogger(Suggester.class.getName());
@@ -66,6 +69,12 @@ public final class Suggester implements Closeable {
 
     private boolean allowMostPopular;
 
+    /**
+     * @param suggesterDir directory under which the suggester data should be created
+     * @param resultSize maximum number of suggestions that should be returned
+     * @param awaitTerminationTime how much time to wait for suggester to initialize
+     * @param allowMostPopular specifies if the most popular completion is enabled
+     */
     public Suggester(
             final File suggesterDir,
             final int resultSize,
@@ -87,6 +96,10 @@ public final class Suggester implements Closeable {
         this.allowMostPopular = allowMostPopular;
     }
 
+    /**
+     * Initializes suggester data for specified indexes. The data is initialized asynchronously.
+     * @param luceneIndexes paths where Lucene indexes are stored
+     */
     public void init(final Collection<Path> luceneIndexes) {
         if (luceneIndexes == null || luceneIndexes.isEmpty()) {
             logger.log(Level.INFO, "No index directories found, exiting...");
@@ -152,6 +165,10 @@ public final class Suggester implements Closeable {
         }
     }
 
+    /**
+     * Rebuilds the data structures for specified indexes.
+     * @param indexDirs paths where Lucene indexes are stored
+     */
     public void rebuild(final List<Path> indexDirs) {
         if (indexDirs == null || indexDirs.isEmpty()) {
             logger.log(Level.INFO, "Not rebuilding suggester data because no index directories were specified");
@@ -188,6 +205,11 @@ public final class Suggester implements Closeable {
         };
     }
 
+    /**
+     * Removes the data associated with the names {@code projectNames}.
+     * @param projectNames names of the indexes to delete (name is determined by the name of the Lucene index
+     * directory)
+     */
     public void remove(final Iterable<String> projectNames) {
         if (projectNames == null) {
             return;
@@ -208,20 +230,27 @@ public final class Suggester implements Closeable {
         }
     }
 
+    /**
+     * Retrieves suggestions based on the specified parameters.
+     * @param indexReaders index readers with specified name (OpenGrok's project name)
+     * @param suggesterQuery query for suggestions
+     * @param query query on which the suggestions depend
+     * @return suggestions
+     */
     public List<LookupResultItem> search(
-            final List<NamedIndexReader> suggesters,
+            final List<NamedIndexReader> indexReaders,
             final SuggesterQuery suggesterQuery,
             final Query query
     ) {
-        if (suggesters == null || suggesterQuery == null) {
+        if (indexReaders == null || suggesterQuery == null) {
             return Collections.emptyList();
         }
 
         boolean isOnlySuggestQuery = query == null;
 
-        List<LookupResultItem> results = suggesters.parallelStream().flatMap(namedIndexReader -> {
+        List<LookupResultItem> results = indexReaders.parallelStream().flatMap(namedIndexReader -> {
 
-            if (isOnlySuggestQuery && suggesterQuery instanceof SuggesterPrefixQuery) {
+            if (isOnlySuggestQuery && suggesterQuery instanceof SuggesterPrefixQuery) { // use WFST for lone prefix
                 String prefix = ((SuggesterPrefixQuery) suggesterQuery).getPrefix().text();
                 FieldWFSTCollection data = projectData.get(namedIndexReader.name);
                 if (data == null) {
@@ -235,7 +264,7 @@ public final class Suggester implements Closeable {
                 SuggesterSearcher searcher = new SuggesterSearcher(namedIndexReader.reader, resultSize);
 
                 List<LookupResultItem> resultItems = searcher.suggest(query, namedIndexReader.name, suggesterQuery,
-                        projectData.get(namedIndexReader.name).getSearchCountMap(suggesterQuery.getField()));
+                        projectData.get(namedIndexReader.name).getSearchCounts(suggesterQuery.getField()));
 
                 return resultItems.stream();
             }
@@ -245,6 +274,11 @@ public final class Suggester implements Closeable {
         return SuggesterUtils.combineResults(results, resultSize);
     }
 
+    /**
+     * Handler for search events.
+     * @param projects projects that the {@code query} was used to search in
+     * @param query query that was used to perform the search
+     */
     public void onSearch(final Iterable<String> projects, final Query query) {
         if (!allowMostPopular) {
             return;
@@ -263,6 +297,10 @@ public final class Suggester implements Closeable {
         }
     }
 
+    /**
+     * Sets the new maximum number of elements the suggester should suggest.
+     * @param resultSize new number of suggestions to return
+     */
     public final void setResultSize(final int resultSize) {
         if (resultSize < 0) {
             throw new IllegalArgumentException("Result size cannot be negative");
@@ -270,6 +308,11 @@ public final class Suggester implements Closeable {
         this.resultSize = resultSize;
     }
 
+    /**
+     * Sets the new duration for which to await the initialization of the suggester data. Does not affect already
+     * running initialization.
+     * @param awaitTerminationTime maximum duration for which to wait for initialization
+     */
     public final void setAwaitTerminationTime(final Duration awaitTerminationTime) {
         if (awaitTerminationTime.isNegative() || awaitTerminationTime.isZero()) {
             throw new IllegalArgumentException(
@@ -278,10 +321,19 @@ public final class Suggester implements Closeable {
         this.awaitTerminationTime = awaitTerminationTime;
     }
 
+    /**
+     * Increases search counts for specific term.
+     * @param project project where the term resides
+     * @param term term for which to increase search count
+     * @param value positive value by which to increase the search count
+     */
     public void increaseSearchCount(final String project, final Term term, final int value) {
         projectData.get(project).incrementSearchCount(term, value);
     }
 
+    /**
+     * Closes opened resources.
+     */
     @Override
     public void close() {
         projectData.values().forEach(f -> {
@@ -293,6 +345,9 @@ public final class Suggester implements Closeable {
         });
     }
 
+    /**
+     * Model class to hold the project name and its {@link IndexReader}.
+     */
     public static class NamedIndexReader {
 
         private final String name;

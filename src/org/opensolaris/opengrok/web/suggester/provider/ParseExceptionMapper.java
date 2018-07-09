@@ -29,6 +29,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+/**
+ * Maps the {@link ParseException} to a {@link javax.ws.rs.core.Response.Status#BAD_REQUEST} status.
+ */
 @Provider
 public class ParseExceptionMapper implements ExceptionMapper<ParseException> {
 
