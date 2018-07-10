@@ -118,7 +118,7 @@ class Command:
             def __init__(self, event, logger):
                 super(OutputThread, self).__init__()
                 self.read_fd, self.write_fd = os.pipe()
-                self.pipe_fobj = os.fdopen(self.read_fd)
+                self.pipe_fobj = os.fdopen(self.read_fd, encoding='utf8')
                 self.out = []
                 self.event = event
                 self.logger = logger
