@@ -147,21 +147,6 @@ It would look like this:
 (this will map extension `.cs` to `PlainAnalyzer`)
 You should even be able to override OpenGroks analyzers using this option.
 
-
-## CLI - Command Line Interface Usage
-
-You need to pass location of project file + the query to Search class, e.g. for fulltext search for project with above generated configuration.xml you'd do:
-
- $ java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search -R /var/opengrok/etc/configuration.xml -f fulltext_search_string
-
-For quick help run:
-
- $ java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search
-
-Sample search:
-
-[[/images/CLI-search.png]]
-
 ## Optional need to change web application properties or name
 
 You might need to modify the web application if you don't store the configuration file in the default location (<code>/var/opengrok/etc/configuration.xml</code>).
