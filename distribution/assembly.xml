@@ -40,16 +40,10 @@
           </includes>
         </fileSet>
         <fileSet>
-          <directory>${project.basedir}/..</directory>
-          <outputDirectory>bin</outputDirectory>
-          <includes>
-            <include>OpenGrok</include>
-          </includes>
-        </fileSet>
-        <fileSet>
           <directory>${project.basedir}/../tools</directory>
           <outputDirectory>bin</outputDirectory>
           <includes>
+            <include>OpenGrok</include>
             <include>ConfigMerge</include>
             <include>Groups</include>
           </includes>
