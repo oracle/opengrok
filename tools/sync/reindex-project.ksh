@@ -69,10 +69,17 @@ function reindex_one
 
 	CFG_URI_PATH="${OPENGROK_WEBAPP_CONTEXT}/api/v1/configuration"
 	CFG_URI_PATH=$(echo ${CFG_URI_PATH} | sed 's://:/:g')
+	if [ -n "${OPENGROK_WEBAPP_CFGADDR}" ]; then
+		WEBAPP_CONFIG_ADDRESS=${OPENGROK_WEBAPP_CFGADDR}
+	else
+		WEBAPP_CONFIG_ADDRESS="http://localhost:8080/source"
+	fi
 
-	curl "${OPENGROK_WEBAPP_CFGADDR%/}/${CFG_URI_PATH#/}" > "$config_xml"
+	URI="${WEBAPP_CONFIG_ADDRESS%/}/${CFG_URI_PATH#/}"
+
+	curl --silent "$URI" > "$config_xml"
 	if (( $? != 0 )); then
-		print -u2 "failed to get configuration from webapp"
+		print -u2 "failed to get configuration from webapp ($URI)"
 		rm -f "$config_xml"
 		exit 1
 	fi
