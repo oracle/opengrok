@@ -55,6 +55,8 @@ import java.util.stream.Stream;
  */
 public final class Suggester implements Closeable {
 
+    private static final String PROJECTS_DISABLED_KEY = "project";
+
     private static final Logger logger = Logger.getLogger(Suggester.class.getName());
 
     private final Map<String, FieldWFSTCollection> projectData = new ConcurrentHashMap<>();
@@ -69,17 +71,21 @@ public final class Suggester implements Closeable {
 
     private boolean allowMostPopular;
 
+    private boolean projectsEnabled;
+
     /**
      * @param suggesterDir directory under which the suggester data should be created
      * @param resultSize maximum number of suggestions that should be returned
      * @param awaitTerminationTime how much time to wait for suggester to initialize
      * @param allowMostPopular specifies if the most popular completion is enabled
+     * @param projectsEnabled specifies if the OpenGrok projects are enabled
      */
     public Suggester(
             final File suggesterDir,
             final int resultSize,
             final Duration awaitTerminationTime,
-            final boolean allowMostPopular
+            final boolean allowMostPopular,
+            final boolean projectsEnabled
     ) {
         if (suggesterDir == null) {
             throw new IllegalArgumentException("Suggester needs to have directory specified");
@@ -94,6 +100,7 @@ public final class Suggester implements Closeable {
         setAwaitTerminationTime(awaitTerminationTime);
 
         this.allowMostPopular = allowMostPopular;
+        this.projectsEnabled = projectsEnabled;
     }
 
     /**
@@ -104,6 +111,9 @@ public final class Suggester implements Closeable {
         if (luceneIndexes == null || luceneIndexes.isEmpty()) {
             logger.log(Level.INFO, "No index directories found, exiting...");
             return;
+        }
+        if (!projectsEnabled && luceneIndexes.size() > 1) {
+            throw new IllegalArgumentException("Projects are not enabled and multiple lucene indexes were passed");
         }
 
         synchronized (lock) {
@@ -124,17 +134,28 @@ public final class Suggester implements Closeable {
             try {
                 logger.log(Level.FINE, "Initializing {0}", indexDir);
 
-                FieldWFSTCollection wfst = new FieldWFSTCollection(FSDirectory.open(indexDir), Paths.get(
-                        Suggester.this.suggesterDir.getAbsolutePath(), indexDir.getFileName().toString()),
+                FieldWFSTCollection wfst = new FieldWFSTCollection(FSDirectory.open(indexDir), getSuggesterDir(indexDir),
                         allowMostPopular);
                 wfst.init();
-                projectData.put(indexDir.getFileName().toString(), wfst);
+                if (projectsEnabled) {
+                    projectData.put(indexDir.getFileName().toString(), wfst);
+                } else {
+                    projectData.put(PROJECTS_DISABLED_KEY, wfst);
+                }
 
                 logger.log(Level.FINE, "Finished initialization for {0}", indexDir);
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Could not initialize suggester data for " + indexDir, e);
             }
         };
+    }
+
+    private Path getSuggesterDir(final Path indexDir) {
+        if (projectsEnabled) {
+            return Paths.get(Suggester.this.suggesterDir.getAbsolutePath(), indexDir.getFileName().toString());
+        } else {
+            return this.suggesterDir.toPath();
+        }
     }
 
     private boolean indexExists(final Path indexDir) throws IOException {
@@ -246,9 +267,15 @@ public final class Suggester implements Closeable {
             return Collections.emptyList();
         }
 
+        List<NamedIndexReader> readers = indexReaders;
+        if (!projectsEnabled) {
+            readers = Collections.singletonList(new NamedIndexReader(PROJECTS_DISABLED_KEY,
+                    indexReaders.get(0).getReader()));
+        }
+
         boolean isOnlySuggestQuery = query == null;
 
-        List<LookupResultItem> results = indexReaders.parallelStream().flatMap(namedIndexReader -> {
+        List<LookupResultItem> results = readers.parallelStream().flatMap(namedIndexReader -> {
 
             if (isOnlySuggestQuery && suggesterQuery instanceof SuggesterPrefixQuery) { // use WFST for lone prefix
                 String prefix = ((SuggesterPrefixQuery) suggesterQuery).getPrefix().text();

@@ -58,14 +58,14 @@ import static org.junit.Assert.assertThat;
 
 public class SuggesterControllerTest extends JerseyTest {
 
-    private static class Result {
+    public static class Result {
         public long time;
         public List<ResultItem> suggestions;
         public String identifier;
         public String queryText;
     }
 
-    private static class ResultItem {
+    public static class ResultItem {
         public String phrase;
         public Set<String> projects;
         public long score;

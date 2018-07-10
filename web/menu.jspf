@@ -69,13 +69,12 @@ org.opensolaris.opengrok.web.Util"
             String esc = Util.formQuoteEscape(p.getName());
             pMap.put(name, esc);
         }
-%>
-<script type="text/javascript">/* <![CDATA[ */
-    document.domReady.push(function() { domReadyMenu(); });
-/* ]]> */
-</script><%
     }
 %>
+<script type="text/javascript">/* <![CDATA[ */
+document.domReady.push(function() { domReadyMenu(); });
+/* ]]> */
+</script>
 <form action="<%= request.getContextPath() %>/search" id="sbox" onsubmit="searchSubmit(this)">
 <div id="qtbl">
     <table>

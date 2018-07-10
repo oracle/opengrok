@@ -37,6 +37,7 @@ import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.SuggesterConfig;
+import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
@@ -49,6 +50,7 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -65,6 +67,8 @@ import java.util.stream.Collectors;
  * Implementation of {@link SuggesterService}.
  */
 public class SuggesterServiceImpl implements SuggesterService {
+
+    private static final String DEFAULT_PROJECT_NAME = "default";
 
     private static final Logger logger = LoggerFactory.getLogger(SuggesterServiceImpl.class);
 
@@ -99,27 +103,58 @@ public class SuggesterServiceImpl implements SuggesterService {
             final Query query
     ) {
         rwl.readLock().lock();
+        List<SuperIndexSearcher> superIndexSearchers = new LinkedList<>();
         try {
             if (suggester == null) {
                 return Collections.emptyList();
             }
-            List<NamedIndexReader> namedReaders = getNamedIndexReaders(projects);
+            List<NamedIndexReader> namedReaders = getNamedIndexReaders(projects, superIndexSearchers);
 
             return suggester.search(namedReaders, suggesterQuery, query);
         } finally {
+            for (SuperIndexSearcher s : superIndexSearchers) {
+                try {
+                    s.getSearcherManager().release(s);
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, "Could not release " + s, e);
+                }
+            }
             rwl.readLock().unlock();
         }
     }
 
-    private List<NamedIndexReader> getNamedIndexReaders(final Collection<String> projects) {
-        return projects.stream().map(project -> {
-            try {
-                return new NamedIndexReader(project, env.getIndexSearcher(project).getIndexReader());
-            } catch (IOException e) {
-                logger.log(Level.WARNING, "Could not get index reader for {0}", project);
+    private List<NamedIndexReader> getNamedIndexReaders(
+            final Collection<String> projects,
+            final List<SuperIndexSearcher> superIndexSearchers
+    ) {
+        if (env.getConfiguration().isProjectsEnabled()) {
+            return projects.stream().map(project -> {
+                try {
+                    SuperIndexSearcher searcher = env.getIndexSearcher(project);
+                    superIndexSearchers.add(searcher);
+                    return new NamedIndexReader(project, searcher.getIndexReader());
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, "Could not get index reader for " + project, e);
+                }
+                return null;
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+        } else {
+            String project;
+            if (!projects.isEmpty()) {
+                project = projects.iterator().next();
+            } else {
+                project = DEFAULT_PROJECT_NAME;
             }
-            return null;
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+            SuperIndexSearcher searcher;
+            try {
+                searcher = env.getIndexSearcher("");
+                superIndexSearchers.add(searcher);
+                return Collections.singletonList(new NamedIndexReader(project, searcher.getIndexReader()));
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Could not get index reader for " + project, e);
+            }
+            return Collections.emptyList();
+        }
     }
 
     /** {@inheritDoc} */
@@ -170,7 +205,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         suggester = new Suggester(suggesterDir,
                 suggesterConfig.getMaxResults(),
                 Duration.ofSeconds(suggesterConfig.getSuggesterBuildTerminationTimeSec()),
-                suggesterConfig.isAllowMostPopular());
+                suggesterConfig.isAllowMostPopular(), env.isProjectsEnabled());
 
         new Thread(() -> {
             suggester.init(getAllProjectIndexDirs());
@@ -180,14 +215,16 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     private static List<Path> getAllProjectIndexDirs() {
         Configuration config = RuntimeEnvironment.getInstance().getConfiguration();
-        if (config == null) {
-            return Collections.emptyList();
-        }
 
-        return RuntimeEnvironment.getInstance().getProjectList().stream()
-                .filter(Project::isIndexed)
-                .map(project -> Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR, project.getPath()))
-                .collect(Collectors.toList());
+        if (config.isProjectsEnabled()) {
+            return RuntimeEnvironment.getInstance().getProjectList().stream()
+                    .filter(Project::isIndexed)
+                    .map(project -> Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR, project.getPath()))
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.singletonList(Paths.get(
+                    RuntimeEnvironment.getInstance().getDataRootPath(), IndexDatabase.INDEX_DIR));
+        }
     }
 
     private Runnable getRebuildAllProjectsRunnable() {
