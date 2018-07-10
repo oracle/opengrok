@@ -70,7 +70,7 @@ public interface SuggesterService {
     void onSearch(Iterable<String> projects, Query q);
 
     /**
-     * Increments most popular completion data for the specified {@code term} by {@value}.
+     * Increments most popular completion data for the specified {@code term} by {@code value}.
      * @param project project to update
      * @param term term to update
      * @param value value by which to change the data, represents how many times was the {@code term} searched
