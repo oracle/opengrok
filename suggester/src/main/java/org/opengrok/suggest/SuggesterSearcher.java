@@ -59,7 +59,7 @@ import java.util.stream.Collectors;
  */
 class SuggesterSearcher extends IndexSearcher {
 
-    public static final int TERM_ALREADY_SEARCHED_MULTIPLIER = 1000;
+    public static final int TERM_ALREADY_SEARCHED_MULTIPLIER = 100;
 
     private static final Logger logger = Logger.getLogger(SuggesterSearcher.class.getName());
 
