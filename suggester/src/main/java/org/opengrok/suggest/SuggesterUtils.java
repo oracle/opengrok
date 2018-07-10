@@ -30,6 +30,8 @@ import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
+import org.opengrok.suggest.query.SuggesterPrefixQuery;
+import org.opengrok.suggest.query.SuggesterQuery;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -170,6 +172,17 @@ public class SuggesterUtils {
         }
 
         return terms;
+    }
+
+    /**
+     * Determines if the query is deemed complex by the suggester standards. Complex means that it needs to search in
+     * the index rather than WFST data structure.
+     * @param query dependent query
+     * @param suggesterQuery suggester query
+     * @return {@code true} if complex, {@code false} otherwise
+     */
+    public static boolean isComplexQuery(final Query query, final SuggesterQuery suggesterQuery) {
+        return query != null || !(suggesterQuery instanceof SuggesterPrefixQuery);
     }
 
 }

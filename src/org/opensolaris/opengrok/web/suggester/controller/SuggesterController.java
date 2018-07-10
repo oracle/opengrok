@@ -27,6 +27,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.opengrok.suggest.LookupResultItem;
+import org.opengrok.suggest.SuggesterUtils;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.SuggesterConfig;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -128,7 +129,7 @@ public final class SuggesterController {
             return false;
         }
 
-        if (!config.isAllowComplexQueries() && data.getQuery() != null) {
+        if (!config.isAllowComplexQueries() && SuggesterUtils.isComplexQuery(data.getQuery(), data.getSuggesterQuery())) {
             return false;
         }
 
