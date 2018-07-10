@@ -69,7 +69,7 @@ public class ChronicleMapAdapter implements PopularityMap {
 
     /**
      * Removes the entries with key that meets the predicate.
-     * @param predicate
+     * @param predicate predicate which tests which entries should be removed
      */
     public void removeIf(final Predicate<BytesRef> predicate) {
         map.entrySet().removeIf(e -> predicate.test(e.getKey()));

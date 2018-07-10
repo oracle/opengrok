@@ -33,7 +33,7 @@ public interface PopularityCounter {
     /**
      * For the term {@code key} returns the number the term was searched for.
      * @param key the term to retrieve data for
-     * @return number of times the {@key} was searched for
+     * @return number of times the {@code key} was searched for
      */
     int get(BytesRef key);
 
