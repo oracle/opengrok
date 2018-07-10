@@ -25,7 +25,7 @@ package org.opensolaris.opengrok.web.suggester.controller;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.constraints.NotBlank;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.SuggesterUtils;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -152,7 +152,7 @@ public final class SuggesterController {
 
     /**
      * Initializes the search data used by suggester to perform most popular completion. The passed {@code urls} are
-     * decomposed into single terms and those search counts are then increased by 1.
+     * decomposed into single terms which search counts are then increased by 1.
      * @param urls list of URLs in JSON format, e.g.
      * {@code ["http://demo.opengrok.org/search?project=opengrok&q=test"]}
      */
@@ -160,7 +160,7 @@ public final class SuggesterController {
     @Path("/init/queries")
     @Localhost
     @Consumes(MediaType.APPLICATION_JSON)
-    public void addSearchCountsPlain(final List<String> urls) {
+    public void addSearchCountsQueries(final List<String> urls) {
         for (String urlStr : urls) {
             try {
                 URL url = new URL(urlStr);
@@ -175,7 +175,7 @@ public final class SuggesterController {
                         continue;
                     }
                     if (fieldQueryText.size() > 2) {
-                        logger.log(Level.WARNING, "Bad format, ignorign");
+                        logger.log(Level.WARNING, "Bad format, ignoring");
                         continue;
                     }
                     String value = fieldQueryText.get(0);
@@ -234,7 +234,7 @@ public final class SuggesterController {
     @Path("/init/raw")
     @Localhost
     @Consumes(MediaType.APPLICATION_JSON)
-    public void addSearchCountsJson(@Valid final List<TermIncrementData> termIncrements) {
+    public void addSearchCountsRaw(@Valid final List<TermIncrementData> termIncrements) {
         for (TermIncrementData termIncrement : termIncrements) {
             suggester.increaseSearchCount(termIncrement.project,
                     new Term(termIncrement.field, termIncrement.token), termIncrement.increment);
@@ -298,13 +298,12 @@ public final class SuggesterController {
 
     private static class TermIncrementData {
 
-        @NotEmpty(message = "Project cannot be empty")
         private String project;
 
-        @NotEmpty(message = "Field cannot be empty")
+        @NotBlank(message = "Field cannot be blank")
         private String field;
 
-        @NotEmpty(message = "Token cannot be empty")
+        @NotBlank(message = "Token cannot be blank")
         private String token;
 
         @Min(message = "Increment must be positive", value = 0)

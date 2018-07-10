@@ -72,11 +72,11 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     private static final Logger logger = LoggerFactory.getLogger(SuggesterServiceImpl.class);
 
-    private Suggester suggester;
-
     private static SuggesterServiceImpl instance;
 
-    private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private Suggester suggester;
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     private ScheduledFuture<?> future;
 
@@ -102,8 +102,8 @@ public class SuggesterServiceImpl implements SuggesterService {
             final SuggesterQuery suggesterQuery,
             final Query query
     ) {
-        rwl.readLock().lock();
         List<SuperIndexSearcher> superIndexSearchers = new LinkedList<>();
+        rwl.readLock().lock();
         try {
             if (suggester == null) {
                 return Collections.emptyList();
@@ -112,6 +112,8 @@ public class SuggesterServiceImpl implements SuggesterService {
 
             return suggester.search(namedReaders, suggesterQuery, query);
         } finally {
+            rwl.readLock().unlock();
+
             for (SuperIndexSearcher s : superIndexSearchers) {
                 try {
                     s.getSearcherManager().release(s);
@@ -119,7 +121,6 @@ public class SuggesterServiceImpl implements SuggesterService {
                     logger.log(Level.WARNING, "Could not release " + s, e);
                 }
             }
-            rwl.readLock().unlock();
         }
     }
 

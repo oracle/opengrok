@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.configuration;
@@ -1359,7 +1359,10 @@ public final class Configuration {
         return suggesterConfig;
     }
 
-    public void setSuggesterConfig(SuggesterConfig config) {
+    public void setSuggesterConfig(final SuggesterConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException("Cannot set Suggester configuration to null");
+        }
         this.suggesterConfig = config;
     }
 

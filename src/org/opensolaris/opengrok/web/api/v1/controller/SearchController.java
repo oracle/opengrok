@@ -70,9 +70,9 @@ public class SearchController {
                 throw new WebApplicationException("Invalid request", Response.Status.BAD_REQUEST);
             }
 
-            SuggesterServiceImpl.getInstance().onSearch(projects, engine.getQuery());
-
             Instant startTime = Instant.now();
+
+            SuggesterServiceImpl.getInstance().onSearch(projects, engine.getQuery());
 
             Map<String, List<SearchHit>> hits = engine.search(req, projects, startDocIndex, maxResults)
                     .stream()

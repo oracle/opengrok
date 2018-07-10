@@ -92,9 +92,9 @@ class SuggesterQueryParser extends CustomQueryParser {
     @Override
     protected Query newTermQuery(final Term term) {
         if (term.text().contains(identifier)) {
-            SuggesterPrefixQuery suggesterQuery = new SuggesterPrefixQuery(replaceIdentifier(term, identifier));
-            this.suggesterQuery = suggesterQuery;
-            return suggesterQuery;
+            SuggesterPrefixQuery q = new SuggesterPrefixQuery(replaceIdentifier(term, identifier));
+            this.suggesterQuery = q;
+            return q;
         }
 
         return super.newTermQuery(term);
@@ -174,9 +174,9 @@ class SuggesterQueryParser extends CustomQueryParser {
     @Override
     protected Query newPrefixQuery(final Term prefix) {
         if (prefix.text().contains(identifier)) {
-            SuggesterPrefixQuery suggesterQuery = new SuggesterPrefixQuery(replaceIdentifier(prefix, identifier));
-            this.suggesterQuery = suggesterQuery;
-            return suggesterQuery;
+            SuggesterPrefixQuery q = new SuggesterPrefixQuery(replaceIdentifier(prefix, identifier));
+            this.suggesterQuery = q;
+            return q;
         }
 
         return super.newPrefixQuery(prefix);
@@ -189,14 +189,14 @@ class SuggesterQueryParser extends CustomQueryParser {
             if (term.endsWith("*")) {
                 identifier = t.text();
                 term = term.substring(0, term.length() - 1);
-                SuggesterPrefixQuery suggesterQuery = new SuggesterPrefixQuery(new Term(t.field(), term));
-                this.suggesterQuery = suggesterQuery;
-                return suggesterQuery;
+                SuggesterPrefixQuery q = new SuggesterPrefixQuery(new Term(t.field(), term));
+                this.suggesterQuery = q;
+                return q;
             } else {
-                SuggesterWildcardQuery suggesterQuery = new SuggesterWildcardQuery(replaceIdentifier(t, identifier));
+                SuggesterWildcardQuery q = new SuggesterWildcardQuery(replaceIdentifier(t, identifier));
                 identifier = t.text();
-                this.suggesterQuery = suggesterQuery;
-                return suggesterQuery;
+                this.suggesterQuery = q;
+                return q;
             }
         }
 
@@ -214,11 +214,12 @@ class SuggesterQueryParser extends CustomQueryParser {
                 identifier = term.text() + "~" + ((int) minimumSimilarity);
             }
 
-            int numEdits = FuzzyQuery.floatToEdits(minimumSimilarity, newTerm.text().codePointCount(0, newTerm.text().length()));
+            int numEdits = FuzzyQuery.floatToEdits(minimumSimilarity,
+                    newTerm.text().codePointCount(0, newTerm.text().length()));
 
-            SuggesterFuzzyQuery suggesterQuery = new SuggesterFuzzyQuery(newTerm, numEdits, prefixLength);
-            this.suggesterQuery = suggesterQuery;
-            return suggesterQuery;
+            SuggesterFuzzyQuery q = new SuggesterFuzzyQuery(newTerm, numEdits, prefixLength);
+            this.suggesterQuery = q;
+            return q;
         }
 
         return super.newFuzzyQuery(term, minimumSimilarity, prefixLength);
@@ -231,9 +232,9 @@ class SuggesterQueryParser extends CustomQueryParser {
 
             identifier = "/" + regexp.text() + "/";
 
-            SuggesterRegexpQuery suggesterQuery = new SuggesterRegexpQuery(newTerm);
-            this.suggesterQuery = suggesterQuery;
-            return suggesterQuery;
+            SuggesterRegexpQuery q = new SuggesterRegexpQuery(newTerm);
+            this.suggesterQuery = q;
+            return q;
         }
 
         return super.newRegexpQuery(regexp);

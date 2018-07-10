@@ -86,7 +86,8 @@ public class SuggesterQueryDataParser {
             query = null;
         }
 
-        return new SuggesterData(suggesterQuery, data.getProjects(), query, builder.getQueryTextWithPlaceholder(), builder.getIdentifier());
+        return new SuggesterData(suggesterQuery, data.getProjects(), query, builder.getQueryTextWithPlaceholder(),
+                builder.getIdentifier());
     }
 
     private static ProcessedQueryData processQuery(final String text, final int caretPosition) {

@@ -76,7 +76,7 @@ public class SuggesterConfig {
     private int maxProjects;
 
     /**
-     * Specifies the fields for which the suggester should be enabled.
+     * Specifies the fields for which the suggester should be enabled. If {@code null} then all fields are enabled.
      */
     private Set<String> allowedFields;
 
@@ -101,7 +101,7 @@ public class SuggesterConfig {
     private boolean showProjects;
 
     /**
-     * specifies if the time it took the suggester to find the queries should be displayed.
+     * Specifies if the time it took the suggester to find the suggestions should be displayed.
      */
     private boolean showTime;
 
@@ -129,10 +129,11 @@ public class SuggesterConfig {
         config.setAllowedFields(allowedFieldsDefault);
         config.setAllowComplexQueries(ALLOW_COMPLEX_QUERIES_DEFAULT);
         config.setAllowMostPopular(ALLOW_MOST_POPULAR_DEFAULT);
-        config.setShowScores(true); // TODO: change after implementation complete
+        config.setShowScores(SHOW_SCORES_DEFAULT);
         config.setShowProjects(SHOW_PROJECTS_DEFAULT);
-        config.setShowTime(true); // TODO: change after implementation complete
-        config.setRebuildCronConfig(REBUILD_CRON_CONFIG_DEFAULT);
+        config.setShowTime(SHOW_TIME_DEFAULT);
+        // do not use setter because indexer invocation with --man will fail
+        config.rebuildCronConfig = REBUILD_CRON_CONFIG_DEFAULT;
         config.setSuggesterBuildTerminationTimeSec(SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT);
         return config;
     }
