@@ -241,7 +241,18 @@ class FieldWFSTCollection implements Closeable {
 
                 File f = getChronicleMapFile(field);
 
-                ChronicleMapAdapter m = new ChronicleMapAdapter(field, conf.getAverageKeySize(), conf.getEntries(), f);
+                ChronicleMapAdapter m;
+                try {
+                    m = new ChronicleMapAdapter(field, conf.getAverageKeySize(), conf.getEntries(), f);
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE,
+                            "Could not create ChronicleMap, most popular completion disabled, if you are using "
+                                    + "JDK9+ make sure to specify: "
+                                    + "--add-exports java.base/jdk.internal.ref=ALL-UNNAMED "
+                                    + "--add-exports java.base/jdk.internal.misc=ALL-UNNAMED "
+                                    + "--add-exports java.base/sun.nio.ch=ALL-UNNAMED", e);
+                    return;
+                }
 
                 if (getCommitVersion() != getDataVersion()) {
                     removeOldTerms(m, lookups.get(field));
