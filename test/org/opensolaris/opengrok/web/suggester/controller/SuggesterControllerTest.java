@@ -488,13 +488,72 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testMaxResults() {
+    public void testMinChars() {
         env.getConfiguration().getSuggesterConfig().setMinChars(2);
 
         Response r = target()
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "i")
+                .request()
+                .get();
+
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), r.getStatus());
+    }
+
+    @Test
+    public void testAllowedProjects() {
+        env.getConfiguration().getSuggesterConfig().setAllowedProjects(Collections.singleton("kotlin"));
+
+        Result res = target()
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "me")
+                .request()
+                .get(Result.class);
+
+        // only terms from kotlin project are expected
+        assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
+                containsInAnyOrder("me"));
+    }
+
+    @Test
+    public void testMaxProjects() {
+        env.getConfiguration().getSuggesterConfig().setMaxProjects(1);
+
+        Response r = target()
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "me")
+                .request()
+                .get();
+
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), r.getStatus());
+    }
+
+    @Test
+    public void testAllowedFields() {
+        env.getConfiguration().getSuggesterConfig().setAllowedFields(Collections.singleton(QueryBuilder.DEFS));
+
+        Response r = target()
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "me")
+                .request()
+                .get();
+
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), r.getStatus());
+    }
+
+    @Test
+    public void testAllowComplexQueries() {
+        env.getConfiguration().getSuggesterConfig().setAllowComplexQueries(false);
+
+        Response r = target()
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "me")
+                .queryParam(QueryBuilder.PATH, "kt")
                 .request()
                 .get();
 

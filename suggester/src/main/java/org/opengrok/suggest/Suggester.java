@@ -273,11 +273,9 @@ public final class Suggester implements Closeable {
                     indexReaders.get(0).getReader()));
         }
 
-        boolean isOnlySuggestQuery = query == null;
-
         List<LookupResultItem> results = readers.parallelStream().flatMap(namedIndexReader -> {
 
-            if (isOnlySuggestQuery && suggesterQuery instanceof SuggesterPrefixQuery) { // use WFST for lone prefix
+            if (!SuggesterUtils.isComplexQuery(query, suggesterQuery)) { // use WFST for lone prefix
                 String prefix = ((SuggesterPrefixQuery) suggesterQuery).getPrefix().text();
                 FieldWFSTCollection data = projectData.get(namedIndexReader.name);
                 if (data == null) {
