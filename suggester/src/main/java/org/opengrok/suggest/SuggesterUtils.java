@@ -62,7 +62,7 @@ public class SuggesterUtils {
      * {@code resultSize} of the ones with the highest scores.
      * @param results suggestions
      * @param resultSize the size of the list to return
-     * @return combined results from multiple suggester
+     * @return combined results from multiple suggesters
      */
     static List<LookupResultItem> combineResults(final List<LookupResultItem> results, final int resultSize) {
         LookupPriorityQueue queue = new LookupPriorityQueue(resultSize);

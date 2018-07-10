@@ -114,6 +114,8 @@ public final class WebappListener
             LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
         }
 
+        // need to explicitly close the suggester service because it might have scheduled rebuild which could prevent
+        // the web application from closing
         SuggesterServiceImpl.getInstance().close();
     }
 

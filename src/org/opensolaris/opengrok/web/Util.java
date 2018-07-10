@@ -1874,7 +1874,7 @@ public final class Util {
                 key = URLDecoder.decode(key, StandardCharsets.UTF_8.toString());
                 value = URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
             } catch (UnsupportedEncodingException e) {
-                throw new IllegalArgumentException("Could not find UTF-8 encoding", e);
+                throw new IllegalStateException("Could not find UTF-8 encoding", e);
             }
 
             List<String> paramValues = returnValue.computeIfAbsent(key, k -> new LinkedList<>());

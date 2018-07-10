@@ -374,7 +374,7 @@ public class SearchHelper {
      * @return this instance
      */
     public SearchHelper executeQuery() {
-        SuggesterServiceImpl.getInstance().onSearch(projects, query);
+        SuggesterServiceImpl.getInstance().onSearch(projects, query); // notify suggester that query was searched
 
         if (redirect != null || errorMsg != null) {
             return this;

@@ -372,19 +372,25 @@ class FieldWFSTCollection implements Closeable {
             try{
                 val.close();
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Could not properly close popularity data close", e);
+                logger.log(Level.WARNING, "Could not properly close most popular completion data", e);
             }
         });
         indexDir.close();
     }
 
     private long getDataVersion() {
-        try {
-            String str = FileUtils.readFileToString(getFile(VERSION_FILE_NAME), StandardCharsets.UTF_8);
-            return Long.parseLong(str);
-        } catch (IOException e) {
+        File versionFile = getFile(VERSION_FILE_NAME);
+        if (!versionFile.exists()) {
             return -1;
         }
+
+        try {
+            String str = FileUtils.readFileToString(versionFile, StandardCharsets.UTF_8);
+            return Long.parseLong(str);
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Could not read suggester data version", e);
+        }
+        return -1;
     }
 
     private void storeDataVersion(final long version) {

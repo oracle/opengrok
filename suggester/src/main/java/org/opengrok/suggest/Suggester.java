@@ -129,6 +129,18 @@ public final class Suggester implements Closeable {
         }
     }
 
+    private void submitInitIfIndexExists(final ExecutorService executorService, final Path indexDir) {
+        try {
+            if (indexExists(indexDir)) {
+                executorService.submit(getInitRunnable(indexDir));
+            } else {
+                logger.log(Level.FINE, "Index in {0} directory does not exist, skipping...", indexDir);
+            }
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Could not check if index exists", e);
+        }
+    }
+
     private Runnable getInitRunnable(final Path indexDir) {
         return () -> {
             try {
@@ -143,7 +155,7 @@ public final class Suggester implements Closeable {
                     projectData.put(PROJECTS_DISABLED_KEY, wfst);
                 }
 
-                logger.log(Level.FINE, "Finished initialization for {0}", indexDir);
+                logger.log(Level.FINE, "Finished initialization of {0}", indexDir);
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Could not initialize suggester data for " + indexDir, e);
             }
@@ -152,7 +164,7 @@ public final class Suggester implements Closeable {
 
     private Path getSuggesterDir(final Path indexDir) {
         if (projectsEnabled) {
-            return Paths.get(Suggester.this.suggesterDir.getAbsolutePath(), indexDir.getFileName().toString());
+            return suggesterDir.toPath().resolve(indexDir.getFileName());
         } else {
             return this.suggesterDir.toPath();
         }
@@ -161,18 +173,6 @@ public final class Suggester implements Closeable {
     private boolean indexExists(final Path indexDir) throws IOException {
         try (Directory indexDirectory = FSDirectory.open(indexDir)) {
             return DirectoryReader.indexExists(indexDirectory);
-        }
-    }
-
-    private void submitInitIfIndexExists(final ExecutorService executorService, final Path indexDir) {
-        try {
-            if (indexExists(indexDir)) {
-                executorService.submit(getInitRunnable(indexDir));
-            } else {
-                logger.log(Level.FINE, "Index in {0} directory does not exist, skipping...", indexDir);
-            }
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Could not check if index exists", e);
         }
     }
 
@@ -311,10 +311,15 @@ public final class Suggester implements Closeable {
         try {
             List<Term> terms = SuggesterUtils.intoTerms(query);
 
-            for (String project : projects) {
-
+            if (!projectsEnabled) {
                 for (Term t : terms) {
-                    projectData.get(project).incrementSearchCount(t);
+                    projectData.get(PROJECTS_DISABLED_KEY).incrementSearchCount(t);
+                }
+            } else {
+                for (String project : projects) {
+                    for (Term t : terms) {
+                        projectData.get(project).incrementSearchCount(t);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -353,7 +358,16 @@ public final class Suggester implements Closeable {
      * @param value positive value by which to increase the search count
      */
     public void increaseSearchCount(final String project, final Term term, final int value) {
-        projectData.get(project).incrementSearchCount(term, value);
+        if (!allowMostPopular) {
+            return;
+        }
+        FieldWFSTCollection data;
+        if (!projectsEnabled) {
+            data = projectData.get(PROJECTS_DISABLED_KEY);
+        } else {
+            data = projectData.get(project);
+        }
+        data.incrementSearchCount(term, value);
     }
 
     /**

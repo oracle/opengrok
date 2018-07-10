@@ -148,11 +148,12 @@ class SuggesterSearcher extends IndexSearcher {
 
         LookupPriorityQueue queue = new LookupPriorityQueue(resultSize);
 
-        BytesRef term = termsEnum.next();
 
         boolean needPositionsAndFrequencies = needPositionsAndFrequencies(query);
 
         PostingsEnum postingsEnum = null;
+
+        BytesRef term = termsEnum.next();
         while (term != null) {
             if (needPositionsAndFrequencies) {
                 postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.POSITIONS | PostingsEnum.FREQS);
@@ -171,8 +172,7 @@ class SuggesterSearcher extends IndexSearcher {
 
             if (score > 0) {
                 if (!shouldLeaveOutSameTerms || !tokensAlreadyIncluded.contains(term)) {
-                    int add = searchCounts.get(term);
-                    score += add * TERM_ALREADY_SEARCHED_MULTIPLIER;
+                    score += searchCounts.get(term) * TERM_ALREADY_SEARCHED_MULTIPLIER;
 
                     if (queue.canInsert(score)) {
                         queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), suggester, score));
