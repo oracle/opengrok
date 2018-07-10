@@ -40,11 +40,13 @@ final (i.e. non-prerelease) version is released:
    Then commit and push the change:
 
      `git commit --all`
+
      `git push`
 
 1. Trigger release creation
 
      `git tag 1.1-rcXYZ`
+
      `git push origin tag 1.1-rcXYZ`
 
    Wait for the build to finish and release created.
