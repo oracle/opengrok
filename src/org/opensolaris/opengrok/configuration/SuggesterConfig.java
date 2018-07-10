@@ -22,6 +22,10 @@
  */
 package org.opensolaris.opengrok.configuration;
 
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.parser.CronParser;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -146,6 +150,9 @@ public class SuggesterConfig {
     }
 
     public void setMaxResults(final int maxResults) {
+        if (maxResults <= 0) {
+            throw new IllegalArgumentException("Max results cannot be negative or zero");
+        }
         this.maxResults = maxResults;
     }
 
@@ -154,6 +161,10 @@ public class SuggesterConfig {
     }
 
     public void setMinChars(final int minChars) {
+        if (minChars < 0) {
+            throw new IllegalArgumentException(
+                    "Minimum number of characters needed for suggester to provide suggestions cannot be negative");
+        }
         this.minChars = minChars;
     }
 
@@ -170,6 +181,9 @@ public class SuggesterConfig {
     }
 
     public void setMaxProjects(final int maxProjects) {
+        if (maxProjects < 1) {
+            throw new IllegalArgumentException("Maximum projects for suggestions cannot be less than 1");
+        }
         this.maxProjects = maxProjects;
     }
 
@@ -226,6 +240,10 @@ public class SuggesterConfig {
     }
 
     public void setRebuildCronConfig(final String rebuildCronConfig) {
+        if (rebuildCronConfig != null) { // check cron format
+            CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX));
+            parser.parse(rebuildCronConfig); // throws IllegalArgumentException if invalid
+        }
         this.rebuildCronConfig = rebuildCronConfig;
     }
 
@@ -234,6 +252,9 @@ public class SuggesterConfig {
     }
 
     public void setSuggesterBuildTerminationTimeSec(final int suggesterBuildTerminationTimeSec) {
+        if (suggesterBuildTerminationTimeSec < 0) {
+            throw new IllegalArgumentException("Suggester build termination time cannot be negative");
+        }
         this.suggesterBuildTerminationTimeSec = suggesterBuildTerminationTimeSec;
     }
 
