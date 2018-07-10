@@ -28,7 +28,7 @@ Let us make some definitions before we start. We take the default values for the
 
  - main configuration `/var/opengrok/etc/configuration.xml`
  - read only configuration `/var/opengrok/etc/read-only.xml`
- - listen address for the web application `localhost:2424`
+ - REST API endpoint for configuration `{webapp_uri}/api/v1/configuration`
 
 The flow is as follows:
 
@@ -38,7 +38,7 @@ The flow is as follows:
 
     The word *overwrites* here is somewhat important because if you made a customization in that file - **it will simply disappear**. This is radically different to how configuration files are treated e.g. in Unix world where one expects that the application never changes its configuration file.
 
-    At the end of indexing it will usually (depends on whether the `-U` option is used) send the new configuration through the `localhost:2424` communication protocol to the web application so that it can refresh its inner structures to reflect the changes.
+    At the end of indexing it will usually (depends on whether the `-U` option is used) send the new configuration via the REST API to the web application so that it can refresh its inner structures to reflect the changes.
 
 2. Web application start
   
@@ -135,22 +135,20 @@ This is particularly handy when using [per-project management ](https://github.c
 
 ## Single property change
 
-Mostly for testing purposes it is available also to test some of the settings in the web application without the need to run the indexer. To do this there is a tool [Messages](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Messages) which can send a configuration message to the web application.
+Mostly for testing purposes it is available also to test some of the settings in the web application without the need to run the indexer. To do this there is are [Web Services](https://github.com/oracle/opengrok/wiki/Web-services).
 
 ```bash
-$ Messages -n config -t set "pluginDirectory = /var/opengrok/src"
-$ Messages -n config -t set "authorizationWatchdogEnabled = true"
-$ Messages -n config -t set "hitsPerPage = 10" # instead of 25
+$ curl -d "/var/opengrok/src" "${webapp_uri}/api/v1/configuration/pluginDirectory"
+$ curl -d "true" "${webapp_uri}/api/v1/configuration/authorizationWatchdogEnabled"
+$ curl -d "25" "${webapp_uri}/api/v1/configuration/hitsPerPage" # instead of 10
 ```
 
-This tool only works for primitive java types and has only meaning for the options which actually changes some behaviour in the web application.
+This call only works for primitive java types and has only meaning for the options which actually changes some behaviour in the web application.
 
 ## Complete configuration change
   
-With the [Messages](https://github.com/OpenGrok/OpenGrok/wiki/Messages) tool you can send a brand new configuration to the web application.
+Via the [Web Services](https://github.com/oracle/opengrok/wiki/Web-services) interface you can send a brand new configuration to the web application.
 
 ```bash
-$ Messages -n config setconf /var/opengrok/etc/configuration.xml
+$ curl -d "@/var/opengrok/etc/configuration.xml" -H "Content-Type: application/xml" -X PUT "${webapp_uri}/api/v1/configuration"
 ```
-
-The above will send the configuration in the `/var/opengrok/etc/configuration.xml` to the web application and replace its previous configuration.
