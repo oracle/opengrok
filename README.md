@@ -12,13 +12,12 @@ Copyright (c) 2006, 2018 Oracle and/or its affiliates. All rights reserved.
 3.  [Usage](#3-usage)
 4.  [OpenGrok install](#4-opengrok-install)
 5.  [OpenGrok setup](#5-opengrok-setup)
-6.  [Optional Command Line Interface Usage](#6-optional-command-line-interface-usage)
-7.  [Change web application properties or name](#7-change-web-application-properties-or-name)
-8.  [Information for developers](#8-information-for-developers)
-9.  [Tuning OpenGrok for large code bases](#9-tuning-opengrok-for-large-code-bases)
-10. [Authors](#10-authors)
-11. [Contact us](#11-contact-us)
-12. [Demo](#12-demo)
+6.  [Change web application properties or name](#7-change-web-application-properties-or-name)
+7.  [Information for developers](#8-information-for-developers)
+8.  [Tuning OpenGrok for large code bases](#9-tuning-opengrok-for-large-code-bases)
+9. [Authors](#10-authors)
+10. [Contact us](#11-contact-us)
+11. [Demo](#12-demo)
 
 ## 1. Introduction
 
@@ -361,43 +360,25 @@ If not using the shell script, the path to the configuration file can be
 set using the `-Djava.util.logging.config.file=/PATH/TO/MY/logging.properties`
 java parameter.
 
-
-## 6. Optional Command Line Interface Usage
-
-You need to pass location of project file + the query to `Search` class, e.g.
-for fulltext search for project with above generated `configuration.xml` you'd
-do:
-
-```bash
-java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search -R \
-    /var/opengrok/etc/configuration.xml -f fulltext_search_string
-```
- For quick help run:
-
-```bash
-java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search
-```
-
-## 7. Change web application properties or name
+## 6. Change web application properties or name
 
 See https://github.com/oracle/opengrok/wiki/Webapp-configuration
 
-
-## 8. Information for developers
+## 7. Information for developers
 
 See https://github.com/oracle/opengrok/wiki/Developer-intro and https://github.com/oracle/opengrok/wiki/Developers
 
-## 9. Tuning OpenGrok for large code bases
+## 8. Tuning OpenGrok for large code bases
 
 See https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases
 
-## 10. Authors
+## 9. Authors
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
 
 For full list of contributors see https://github.com/oracle/opengrok/graphs/contributors
 
-## 11. Contact us
+## 10. Contact us
 
 Feel free to participate in discussion on the mailing lists:
 
@@ -407,5 +388,6 @@ Feel free to participate in discussion on the mailing lists:
 
 To subscribe, send email to `<mailing_list_name>-subscribe@yahoogroups.com`
 
-## 12. Demo
+## 11. Demo
+
 Visit <http://demo.opengrok.org>
