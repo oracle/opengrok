@@ -2148,9 +2148,13 @@ function clearSearchFrom() {
 }
 
 function getSelectedProjectNames() {
-    return $.map($("#project").searchableOptionList().getSelection(), function (item) {
-        return $(item).attr("value");
-    });
+    try {
+        return $.map($("#project").searchableOptionList().getSelection(), function (item) {
+            return $(item).attr("value");
+        });
+    } catch (e) { // happens when projects are not enabled
+        return [];
+    }
 }
 
 /**
