@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
+import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
 
 /**
  * Initialize webapp context
@@ -116,7 +116,7 @@ public final class WebappListener
 
         // need to explicitly close the suggester service because it might have scheduled rebuild which could prevent
         // the web application from closing
-        SuggesterService.getInstance().close();
+        SuggesterServiceFactory.getDefault().close();
     }
 
     /**
