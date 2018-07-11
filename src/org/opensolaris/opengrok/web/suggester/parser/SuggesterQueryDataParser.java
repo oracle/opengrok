@@ -26,6 +26,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.opengrok.suggest.query.SuggesterQuery;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.suggester.model.SuggesterData;
 import org.opensolaris.opengrok.web.suggester.model.SuggesterQueryData;
@@ -43,7 +44,7 @@ public class SuggesterQueryDataParser {
 
     private static final int IDENTIFIER_LENGTH = 5;
 
-    private static final Logger logger = Logger.getLogger(SuggesterQueryDataParser.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SuggesterQueryDataParser.class);
 
     private SuggesterQueryDataParser() {
     }

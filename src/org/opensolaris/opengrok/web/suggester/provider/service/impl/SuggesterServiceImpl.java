@@ -58,6 +58,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,8 +68,6 @@ import java.util.stream.Collectors;
  * Implementation of {@link SuggesterService}.
  */
 public class SuggesterServiceImpl implements SuggesterService {
-
-    private static final String DEFAULT_PROJECT_NAME = "default";
 
     private static final Logger logger = LoggerFactory.getLogger(SuggesterServiceImpl.class);
 
@@ -82,7 +81,7 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     private SuggesterServiceImpl() {
     }
@@ -103,7 +102,7 @@ public class SuggesterServiceImpl implements SuggesterService {
             final Query query
     ) {
         List<SuperIndexSearcher> superIndexSearchers = new LinkedList<>();
-        rwl.readLock().lock();
+        lock.readLock().lock();
         try {
             if (suggester == null) {
                 return Collections.emptyList();
@@ -112,7 +111,7 @@ public class SuggesterServiceImpl implements SuggesterService {
 
             return suggester.search(namedReaders, suggesterQuery, query);
         } finally {
-            rwl.readLock().unlock();
+            lock.readLock().unlock();
 
             for (SuperIndexSearcher s : superIndexSearchers) {
                 try {
@@ -140,19 +139,13 @@ public class SuggesterServiceImpl implements SuggesterService {
                 return null;
             }).filter(Objects::nonNull).collect(Collectors.toList());
         } else {
-            String project;
-            if (!projects.isEmpty()) {
-                project = projects.iterator().next();
-            } else {
-                project = DEFAULT_PROJECT_NAME;
-            }
             SuperIndexSearcher searcher;
             try {
                 searcher = env.getIndexSearcher("");
                 superIndexSearchers.add(searcher);
-                return Collections.singletonList(new NamedIndexReader(project, searcher.getIndexReader()));
+                return Collections.singletonList(new NamedIndexReader("", searcher.getIndexReader()));
             } catch (IOException e) {
-                logger.log(Level.WARNING, "Could not get index reader for " + project, e);
+                logger.log(Level.WARNING, "Could not get index reader", e);
             }
             return Collections.emptyList();
         }
@@ -161,12 +154,12 @@ public class SuggesterServiceImpl implements SuggesterService {
     /** {@inheritDoc} */
     @Override
     public void refresh(final Configuration configuration) {
-        rwl.writeLock().lock();
+        lock.writeLock().lock();
         try {
             suggester.close();
             initSuggester();
         } finally {
-            rwl.writeLock().unlock();
+            lock.writeLock().unlock();
         }
     }
 

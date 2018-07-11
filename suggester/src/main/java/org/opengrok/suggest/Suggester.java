@@ -54,7 +54,7 @@ import java.util.stream.Stream;
  */
 public final class Suggester implements Closeable {
 
-    private static final String PROJECTS_DISABLED_KEY = "project";
+    private static final String PROJECTS_DISABLED_KEY = "";
 
     private static final Logger logger = Logger.getLogger(Suggester.class.getName());
 

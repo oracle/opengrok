@@ -2267,18 +2267,17 @@ function textInputHasFocus() {
         document.activeElement.type === 'text';
 }
 
-var htmlEscapeMap = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-    '/': '&#x2F;',
-    '`': '&#x60;',
-    '=': '&#x3D;'
-};
-
 function escapeHtml(string) { // taken from https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery
+    var htmlEscapeMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+    };
     return String(string).replace(/[&<>"'`=\/]/g, function (s) {
         return htmlEscapeMap[s];
     });

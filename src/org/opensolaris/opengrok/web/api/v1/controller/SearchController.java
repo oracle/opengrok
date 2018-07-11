@@ -25,7 +25,7 @@ package org.opensolaris.opengrok.web.api.v1.controller;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.SearchEngine;
-import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
+import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
@@ -72,7 +72,7 @@ public class SearchController {
 
             Instant startTime = Instant.now();
 
-            SuggesterServiceImpl.getInstance().onSearch(projects, engine.getQuery());
+            SuggesterService.getInstance().onSearch(projects, engine.getQuery());
 
             Map<String, List<SearchHit>> hits = engine.search(req, projects, startDocIndex, maxResults)
                     .stream()
