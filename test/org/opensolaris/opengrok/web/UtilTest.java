@@ -571,4 +571,25 @@ public class UtilTest {
         assertThat(params.get("param1"), contains("?value?"));
     }
 
+    @Test
+    public void getQueryParamsEmptyValueTest() throws MalformedURLException {
+        URL url = new URL("http://test.com?param1=");
+
+        Map<String, List<String>> params = Util.getQueryParams(url);
+
+        assertThat(params.get("param1"), contains(""));
+    }
+
+    @Test
+    public void getQueryParamsEmptyAndNormalValuesCombinedTest() throws MalformedURLException {
+        URL url = new URL("http://test.com?param1=value1&param2=&param3&param4=value4");
+
+        Map<String, List<String>> params = Util.getQueryParams(url);
+
+        assertThat(params.get("param1"), contains("value1"));
+        assertThat(params.get("param2"), contains(""));
+        assertTrue(params.containsKey("param3"));
+        assertThat(params.get("param4"), contains("value4"));
+    }
+
 }

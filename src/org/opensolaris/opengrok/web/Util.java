@@ -1866,6 +1866,10 @@ public final class Util {
             }
 
             int idx = pair.indexOf('=');
+            if (idx == -1) {
+                returnValue.computeIfAbsent(pair, k -> new LinkedList<>());
+                continue;
+            }
 
             String key = pair.substring(0, idx);
             String value = pair.substring(idx + 1);

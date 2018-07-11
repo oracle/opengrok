@@ -309,36 +309,34 @@ class SuggesterQueryParser extends CustomQueryParser {
     @Override
     protected Query newRangeQuery(
             final String field,
-            final String part1,
-            final String part2,
+            final String lowerTerm,
+            final String upperTerm,
             final boolean startInclusive,
             final boolean endInclusive
     ) {
-        if (part1.contains(identifier)) {
-            String newPart1 = part1.replace(identifier, "");
-            this.identifier = part1;
+        if (lowerTerm.contains(identifier)) {
+            String bareLowerTerm = lowerTerm.replace(identifier, "");
+            this.identifier = lowerTerm;
 
-            SuggesterRangeQuery rangeQuery = new SuggesterRangeQuery(field, new BytesRef(newPart1),
-                    new BytesRef(part2), startInclusive, endInclusive, SuggesterRangeQuery.SuggestPosition.LOWER);
-
-            this.suggesterQuery = rangeQuery;
-
-            return rangeQuery;
-
-        } else if (part2.contains(identifier)) {
-            String newPart2 = part2.replace(identifier, "");
-            this.identifier = part2;
-
-            SuggesterRangeQuery rangeQuery = new SuggesterRangeQuery(field, new BytesRef(part1),
-                    new BytesRef(newPart2), startInclusive, endInclusive, SuggesterRangeQuery.SuggestPosition.UPPER);
+            SuggesterRangeQuery rangeQuery = new SuggesterRangeQuery(field, new BytesRef(bareLowerTerm),
+                    new BytesRef(upperTerm), startInclusive, endInclusive, SuggesterRangeQuery.SuggestPosition.LOWER);
 
             this.suggesterQuery = rangeQuery;
 
             return rangeQuery;
+        } else if (upperTerm.contains(identifier)) {
+            String bareUpperTerm = upperTerm.replace(identifier, "");
+            this.identifier = upperTerm;
 
+            SuggesterRangeQuery rangeQuery = new SuggesterRangeQuery(field, new BytesRef(lowerTerm),
+                    new BytesRef(bareUpperTerm), startInclusive, endInclusive, SuggesterRangeQuery.SuggestPosition.UPPER);
+
+            this.suggesterQuery = rangeQuery;
+
+            return rangeQuery;
         }
 
-        return super.newRangeQuery(field, part1, part2, startInclusive, endInclusive);
+        return super.newRangeQuery(field, lowerTerm, upperTerm, startInclusive, endInclusive);
     }
 
 }
