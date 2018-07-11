@@ -1830,6 +1830,10 @@ function initAutocompleteForField(inputId, field, config) {
             };
         },
         focus: function (event, ui) {
+            if (ui.item.selectable === false) {
+                event.preventDefault();
+                return;
+            }
             var pos = text.indexOf(identifier);
             var phrase = escapeLuceneCharacters(ui.item.phrase);
             input.val(text.replace(identifier, phrase));
