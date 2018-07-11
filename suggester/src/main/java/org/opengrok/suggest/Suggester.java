@@ -35,7 +35,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -275,26 +274,35 @@ public final class Suggester implements Closeable {
 
         List<LookupResultItem> results = readers.parallelStream().flatMap(namedIndexReader -> {
 
-            if (!SuggesterUtils.isComplexQuery(query, suggesterQuery)) { // use WFST for lone prefix
-                String prefix = ((SuggesterPrefixQuery) suggesterQuery).getPrefix().text();
-                FieldWFSTCollection data = projectData.get(namedIndexReader.name);
-                if (data == null) {
-                    logger.log(Level.FINE, "{0} not yet initialized", namedIndexReader.name);
-                    return Stream.empty();
+            FieldWFSTCollection data = projectData.get(namedIndexReader.name);
+            if (data == null) {
+                logger.log(Level.FINE, "{0} not yet initialized", namedIndexReader.name);
+                return Stream.empty();
+            }
+            boolean gotLock = data.tryLock();
+            if (!gotLock) { // do not wait for rebuild
+                return Stream.empty();
+            }
+
+            try {
+                if (!SuggesterUtils.isComplexQuery(query, suggesterQuery)) { // use WFST for lone prefix
+                    String prefix = ((SuggesterPrefixQuery) suggesterQuery).getPrefix().text();
+
+                    return data.lookup(suggesterQuery.getField(), prefix, resultSize)
+                            .stream()
+                            .map(item -> new LookupResultItem(item.key.toString(), namedIndexReader.name, item.value));
+                } else {
+                    SuggesterSearcher searcher = new SuggesterSearcher(namedIndexReader.reader, resultSize);
+
+                    List<LookupResultItem> resultItems = searcher.suggest(query, namedIndexReader.name, suggesterQuery,
+                            data.getSearchCounts(suggesterQuery.getField()));
+
+                    return resultItems.stream();
                 }
-                return data.lookup(suggesterQuery.getField(), prefix, resultSize)
-                        .stream()
-                        .map(item -> new LookupResultItem(item.key.toString(), namedIndexReader.name, item.value));
-            } else {
-                SuggesterSearcher searcher = new SuggesterSearcher(namedIndexReader.reader, resultSize);
-
-                List<LookupResultItem> resultItems = searcher.suggest(query, namedIndexReader.name, suggesterQuery,
-                        projectData.get(namedIndexReader.name).getSearchCounts(suggesterQuery.getField()));
-
-                return resultItems.stream();
+            } finally {
+                data.unlock();
             }
         }).collect(Collectors.toList());
-
 
         return SuggesterUtils.combineResults(results, resultSize);
     }
