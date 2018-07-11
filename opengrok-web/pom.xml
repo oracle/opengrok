@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.1-rc30</version>
+        <version>1.1-rc33</version>
     </parent>
 
     <artifactId>opengrok-web</artifactId>
@@ -100,16 +100,6 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat7-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <server>${tomcat.server.id}</server>
-                    <path>${tomcat.servlet.context.path}</path>
-                    <url>${tomcat.url}</url>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.tomcat.maven</groupId>
                 <artifactId>tomcat7-maven-plugin</artifactId>

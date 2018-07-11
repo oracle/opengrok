@@ -350,7 +350,20 @@ class PendingFileCompleter {
             }
             Path sourcePath = Paths.get(lnk.source);
             deleteFileOrDirectory(sourcePath);
-            Files.createSymbolicLink(sourcePath, Paths.get(lnk.targetRel));
+
+            File sourceParentFile = sourcePath.getParent().toFile();
+            /**
+             * The double check-exists in the following conditional is necessary
+             * because during a race when two threads are simultaneously linking
+             * for a not-yet-existent `sourceParentFile`, the first check-exists
+             * will be false for both threads, but then only one will see true
+             * from mkdirs -- so the other needs a fallback again to
+             * check-exists.
+             */
+            if (sourceParentFile.exists() || sourceParentFile.mkdirs() ||
+                    sourceParentFile.exists()) {
+                Files.createSymbolicLink(sourcePath, Paths.get(lnk.targetRel));
+            }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to link: {0} -> {1}",
                     new Object[]{lnk.source, lnk.targetRel});

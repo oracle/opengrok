@@ -71,12 +71,17 @@ class Commands(CommandsBase):
         logging.basicConfig()
 
     def run_command(self, command):
+        """
+        Execute a command and return its return code.
+        """
         cmd = Command(command,
                       args_subst={"PROJECT": self.name},
                       args_append=[self.name], excl_subst=True)
         cmd.execute()
         self.retcodes[str(cmd)] = cmd.getretcode()
         self.outputs[str(cmd)] = cmd.getoutput()
+
+        return cmd.getretcode()
 
     def call_rest_api(self, command):
         """
@@ -118,18 +123,17 @@ class Commands(CommandsBase):
             if is_web_uri(command[0]):
                 self.call_rest_api(command)
             else:
-                self.run_command(command)
+                retcode = self.run_command(command)
 
                 # If a command fails, terminate the sequence of commands.
-                retcode = cmd.getretcode()
                 if retcode != 0:
                     if retcode == 2:
                         self.logger.info("command '{}' requested break".
-                                         format(cmd))
+                                         format(command))
                         self.run_cleanup()
                     else:
                         self.logger.info("command '{}' failed with code {}, "
-                                         "breaking".format(cmd, retcode))
+                                         "breaking".format(command, retcode))
                         self.failed = True
                         self.run_cleanup()
                     break

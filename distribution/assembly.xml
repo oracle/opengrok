@@ -33,17 +33,6 @@
           </includes>
         </fileSet>
         <fileSet>
-          <directory>${project.basedir}/../doc</directory>
-          <outputDirectory>doc</outputDirectory>
-          <includes>
-            <include>README*</include>
-            <include>authorization_howto.txt</include>
-            <include>ctags.config</include>
-            <include>EXAMPLE.txt</include>
-            <include>groups_howto.txt</include>
-          </includes>
-        </fileSet>
-        <fileSet>
           <directory>${project.build.directory}/dist</directory>
           <outputDirectory>man/man1</outputDirectory>
           <includes>
@@ -51,16 +40,10 @@
           </includes>
         </fileSet>
         <fileSet>
-          <directory>${project.basedir}/..</directory>
-          <outputDirectory>bin</outputDirectory>
-          <includes>
-            <include>OpenGrok</include>
-          </includes>
-        </fileSet>
-        <fileSet>
           <directory>${project.basedir}/../tools</directory>
           <outputDirectory>bin</outputDirectory>
           <includes>
+            <include>OpenGrok</include>
             <include>ConfigMerge</include>
             <include>Groups</include>
           </includes>

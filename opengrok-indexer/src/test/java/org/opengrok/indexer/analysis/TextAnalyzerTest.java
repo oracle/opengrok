@@ -40,7 +40,6 @@ import org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory;
 
 public class TextAnalyzerTest {
 
-    private final String defaultEncoding = new InputStreamReader(new ByteArrayInputStream(new byte[0])).getEncoding();
     private String encoding;
     private String contents;
 
@@ -54,21 +53,9 @@ public class TextAnalyzerTest {
     }
 
     @Test
-    public void defaultEncoding() throws IOException {
-        new TestableTextAnalyzer().analyze(new Document(),
-                getStreamSource("hello".getBytes()), null);
-
-        assertEquals(defaultEncoding, encoding);
-
-        assertEquals("hello", contents);
-    }
-
-    @Test
     public void resetsStreamOnShortInput() throws IOException {
         new TestableTextAnalyzer().analyze(new Document(),
                 getStreamSource("hi".getBytes()), null);
-
-        assertEquals(defaultEncoding, encoding);
 
         assertEquals("hi", contents);
     }

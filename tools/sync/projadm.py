@@ -180,13 +180,9 @@ def project_delete(doit, logger, project, uri):
         delete_project(logger, project, uri)
 
     src_root = get_config_value(logger, 'sourceRoot', uri)
-    if not src_root:
-        raise Exception("Could not get source root")
-
-    src_root = src_root[0].rstrip()
-    logger.debug("Source root = {}".format(src_root))
     if not src_root or len(src_root) == 0:
         raise Exception("source root empty")
+    logger.debug("Source root = {}".format(src_root))
     sourcedir = path.join(src_root, project)
     logger.debug("Removing directory tree {}".format(sourcedir))
     if doit:
