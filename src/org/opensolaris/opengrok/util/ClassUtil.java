@@ -33,6 +33,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
@@ -122,7 +124,7 @@ public class ClassUtil {
                                 setter.getName(), field));
             }
 
-            Class c = setter.getParameterTypes()[0];
+            Class<?> c = setter.getParameterTypes()[0];
             String paramClass = c.getName();
 
             /**
@@ -165,10 +167,9 @@ public class ClassUtil {
             } else if (paramClass.equals(String.class.getName())) {
                 setter.invoke(obj, value);
             } else {
-                // error unknown type
-                throw new IOException(
-                        String.format("Unsupported type conversion for the name \"%s\". Expecting \"%s\".",
-                                field, paramClass));
+                ObjectMapper mapper = new ObjectMapper();
+                Object objValue = mapper.readValue(value, c);
+                setter.invoke(obj, objValue);
             }
         } catch (NumberFormatException ex) {
             throw new IOException(
