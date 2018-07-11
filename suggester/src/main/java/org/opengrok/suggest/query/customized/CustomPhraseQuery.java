@@ -347,7 +347,9 @@ public class CustomPhraseQuery extends Query {
             }
             for (int i=0; i<terms.length; i++) {
                 int res = terms[i].compareTo(other.terms[i]);
-                if (res!=0) return res;
+                if (res!=0) {
+                    return res;
+                }
             }
             return 0;
         }

@@ -440,7 +440,9 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
             // simpler - no multi-terms - can base on positions in first doc
             for (int i=0; i<rpp.length; i++) {
                 PhrasePositions pp = rpp[i];
-                if (pp.rptGroup >=0) continue; // already marked as a repetition
+                if (pp.rptGroup >=0) {
+                    continue; // already marked as a repetition
+                }
                 int tpPos = tpPos(pp);
                 for (int j=i+1; j<rpp.length; j++) {
                     PhrasePositions pp2 = rpp[j];

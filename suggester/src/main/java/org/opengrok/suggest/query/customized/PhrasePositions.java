@@ -16,8 +16,10 @@
  */
 package org.opengrok.suggest.query.customized;
 
+import org.apache.lucene.index.PostingsEnum;
+import org.apache.lucene.index.Term;
+
 import java.io.IOException;
-import org.apache.lucene.index.*;
 
 /**
  * Copy of the Lucene's {@link org.apache.lucene.search.PhrasePositions}. It is needed by
@@ -58,8 +60,9 @@ final class PhrasePositions {
         if (count-- > 0) {  // read subsequent pos's
             position = postings.nextPosition() - offset;
             return true;
-        } else
+        } else {
             return false;
+        }
     }
 
     /** for debug purposes */
