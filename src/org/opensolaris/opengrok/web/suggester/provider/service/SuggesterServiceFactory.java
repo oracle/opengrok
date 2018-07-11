@@ -20,28 +20,17 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.api.v1.controller;
+package org.opensolaris.opengrok.web.suggester.provider.service;
 
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
+import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.MediaType;
-import java.util.Collections;
+public class SuggesterServiceFactory {
 
-@Path("/system")
-public class SystemController {
+    private SuggesterServiceFactory() {
+    }
 
-    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-    @PUT
-    @Path("/refresh")
-    @Consumes(MediaType.TEXT_PLAIN)
-    public void refresh(final String project) {
-        env.maybeRefreshIndexSearchers(Collections.singleton(project));
-        SuggesterServiceFactory.getDefault().refresh(project);
+    public static SuggesterService getDefault() {
+        return SuggesterServiceImpl.getInstance();
     }
 
 }

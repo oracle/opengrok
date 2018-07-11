@@ -24,6 +24,7 @@ package org.opensolaris.opengrok.web.suggester;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
+import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
 
 /**
  * Binder for dependency injection in {@link SuggesterApp}.
@@ -32,7 +33,7 @@ public class SuggesterAppBinder extends AbstractBinder {
 
     @Override
     protected void configure() {
-        bind(SuggesterService.getInstance()).to(SuggesterService.class);
+        bind(SuggesterServiceFactory.getDefault()).to(SuggesterService.class);
     }
 
 }

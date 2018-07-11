@@ -34,7 +34,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.ClassUtil;
 import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
+import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -184,7 +184,7 @@ public class ProjectsController {
                     }
                 }).collect(Collectors.toSet()));
 
-        SuggesterService.getInstance().delete(projectName);
+        SuggesterServiceFactory.getDefault().delete(projectName);
     }
 
     @PUT
@@ -220,7 +220,7 @@ public class ProjectsController {
 
         env.refreshDateForLastIndexRun();
 
-        SuggesterService.getInstance().refresh(projectName);
+        SuggesterServiceFactory.getDefault().refresh(projectName);
     }
 
     @PUT

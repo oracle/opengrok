@@ -27,7 +27,6 @@ import org.apache.lucene.search.Query;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opensolaris.opengrok.configuration.Configuration;
-import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -82,13 +81,5 @@ public interface SuggesterService {
      * Closes the underlying service explicitly.
      */
     void close();
-
-    /**
-     * Factory method for this service.
-     * @return default service implementation
-     */
-    static SuggesterService getInstance() {
-        return SuggesterServiceImpl.getInstance();
-    }
 
 }
