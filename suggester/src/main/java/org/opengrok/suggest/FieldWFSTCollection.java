@@ -53,6 +53,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -89,6 +91,8 @@ class FieldWFSTCollection implements Closeable {
 
     private boolean allowMostPopular;
 
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
     FieldWFSTCollection(final Directory indexDir, final Path suggesterDir, final boolean allowMostPopular) {
         this.indexDir = indexDir;
         this.suggesterDir = suggesterDir;
@@ -100,20 +104,25 @@ class FieldWFSTCollection implements Closeable {
      * @throws IOException if initialization was not successful
      */
     public void init() throws IOException {
-        long commitVersion = getCommitVersion();
+        lock.writeLock().lock();
+        try {
+            long commitVersion = getCommitVersion();
 
-        if (hasStoredData() && commitVersion == getDataVersion()) {
-            loadStoredWFSTs();
-        } else {
-            createSuggesterDir();
-            build();
+            if (hasStoredData() && commitVersion == getDataVersion()) {
+                loadStoredWFSTs();
+            } else {
+                createSuggesterDir();
+                build();
+            }
+
+            if (allowMostPopular) {
+                initSearchCountMap();
+            }
+
+            storeDataVersion(commitVersion);
+        } finally {
+            lock.writeLock().unlock();
         }
-
-        if (allowMostPopular) {
-            initSearchCountMap();
-        }
-
-        storeDataVersion(commitVersion);
     }
 
     private long getCommitVersion() throws IOException {
@@ -181,13 +190,18 @@ class FieldWFSTCollection implements Closeable {
      * @throws IOException if some error occurred
      */
     public void rebuild() throws IOException {
-        build();
+        lock.writeLock().lock();
+        try {
+            build();
 
-        if (allowMostPopular) {
-            initSearchCountMap();
+            if (allowMostPopular) {
+                initSearchCountMap();
+            }
+
+            storeDataVersion(getCommitVersion());
+        } finally {
+            lock.writeLock().unlock();
         }
-
-        storeDataVersion(getCommitVersion());
     }
 
     private void build() throws IOException {
@@ -296,11 +310,14 @@ class FieldWFSTCollection implements Closeable {
      * @return terms with highest score
      */
     public List<Lookup.LookupResult> lookup(final String field, final String prefix, final int resultSize) {
+        lock.readLock().lock();
         try {
             return lookups.get(field).lookup(prefix, false, resultSize);
         } catch (IOException e) {
             logger.log(Level.WARNING, "Could not perform lookup in {0} for {1}:{2}",
                     new Object[] {suggesterDir, field, prefix});
+        } finally {
+            lock.readLock().unlock();
         }
         return Collections.emptyList();
     }
@@ -309,16 +326,21 @@ class FieldWFSTCollection implements Closeable {
      * Removes all stored data structures.
      */
     public void remove() {
+        lock.writeLock().lock();
         try {
-            close();
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Could not close opened index directory {0}", indexDir);
-        }
+            try {
+                close();
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Could not close opened index directory {0}", indexDir);
+            }
 
-        try {
-            FileUtils.deleteDirectory(suggesterDir.toFile());
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Cannot remove suggester data: {0}", suggesterDir);
+            try {
+                FileUtils.deleteDirectory(suggesterDir.toFile());
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Cannot remove suggester data: {0}", suggesterDir);
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
@@ -339,18 +361,25 @@ class FieldWFSTCollection implements Closeable {
         if (term == null) {
             throw new IllegalArgumentException("Cannot increment search count for null");
         }
-        if (lookups.get(term.field()).get(term.text()) == null) {
-            throw new IllegalArgumentException("Unknown term " + term);
-        }
 
-        PopularityMap map = searchCountMaps.get(term.field());
-        if (map != null) {
-            map.increment(term.bytes(), value);
+        lock.readLock().lock();
+        try {
+            if (lookups.get(term.field()).get(term.text()) == null) {
+                throw new IllegalArgumentException("Unknown term " + term);
+            }
+
+            PopularityMap map = searchCountMaps.get(term.field());
+            if (map != null) {
+                map.increment(term.bytes(), value);
+            }
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
     /**
-     * Returns search counts for term field.
+     * Returns search counts for term field. For the time the returned data structure is used this object needs to be
+     * locked by {@link #tryLock()}.
      * @param field term field
      * @return search counts object
      */
@@ -368,14 +397,19 @@ class FieldWFSTCollection implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        searchCountMaps.values().forEach(val -> {
-            try{
-                val.close();
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "Could not properly close most popular completion data", e);
-            }
-        });
-        indexDir.close();
+        lock.writeLock().lock();
+        try {
+            searchCountMaps.values().forEach(val -> {
+                try {
+                    val.close();
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Could not properly close most popular completion data", e);
+                }
+            });
+            indexDir.close();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     private long getDataVersion() {
@@ -399,6 +433,21 @@ class FieldWFSTCollection implements Closeable {
         } catch (IOException e) {
             logger.log(Level.WARNING, "Could not store version", e);
         }
+    }
+
+    /**
+     * Tries to lock the inner data structures for reading, so far only for {@link #getSearchCounts(String)}.
+     * @return {@code true} if lock was acquired, {@code false} otherwise
+     */
+    public boolean tryLock() {
+        return lock.readLock().tryLock();
+    }
+
+    /**
+     * Unlocks the inner data structures for reading.
+     */
+    public void unlock() {
+        lock.readLock().unlock();
     }
 
     /**
