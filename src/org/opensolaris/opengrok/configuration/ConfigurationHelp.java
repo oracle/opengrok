@@ -168,7 +168,7 @@ public class ConfigurationHelp {
             }
             return null;
         } else if (paramType == SuggesterConfig.class) {
-            return SuggesterConfig.getDefault();
+            return new SuggesterConfig();
         } else {
             throw new UnsupportedOperationException("getSampleValue() for " +
                 paramType + ", " + genType);
