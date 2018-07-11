@@ -291,7 +291,7 @@ public final class Configuration {
      */
     private boolean listDirsFirst = true;
 
-    private SuggesterConfig suggesterConfig = SuggesterConfig.getDefault();
+    private SuggesterConfig suggesterConfig = new SuggesterConfig();
 
     /*
      * types of handling history for remote SCM repositories:

@@ -114,7 +114,7 @@ public class SuggesterControllerTest extends JerseyTest {
         await().atMost(15, TimeUnit.SECONDS).until(() ->
                 getSuggesterProjectDataSize() == env.getProjectList().size());
 
-        env.getConfiguration().setSuggesterConfig(SuggesterConfig.getDefault());
+        env.getConfiguration().setSuggesterConfig(new SuggesterConfig());
     }
 
     private static int getSuggesterProjectDataSize() throws Exception {

@@ -88,7 +88,7 @@ public class SuggesterControllerProjectsDisabledTest extends JerseyTest {
     public void before() {
         await().atMost(15, TimeUnit.SECONDS).until(() -> getSuggesterProjectDataSize() == 1);
 
-        env.getConfiguration().setSuggesterConfig(SuggesterConfig.getDefault());
+        env.getConfiguration().setSuggesterConfig(new SuggesterConfig());
     }
 
     private static int getSuggesterProjectDataSize() throws Exception {

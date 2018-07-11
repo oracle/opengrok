@@ -116,26 +116,21 @@ public class SuggesterConfig {
      */
     private int suggesterBuildTerminationTimeSec;
 
-    private SuggesterConfig() {
-    }
-
-    public static SuggesterConfig getDefault() {
-        SuggesterConfig config = new SuggesterConfig();
-        config.setEnabled(ENABLED_DEFAULT);
-        config.setMaxResults(MAX_RESULTS_DEFAULT);
-        config.setMinChars(MIN_CHARS_DEFAULT);
-        config.setAllowedProjects(allowedProjectsDefault);
-        config.setMaxProjects(MAX_PROJECTS_DEFAULT);
-        config.setAllowedFields(allowedFieldsDefault);
-        config.setAllowComplexQueries(ALLOW_COMPLEX_QUERIES_DEFAULT);
-        config.setAllowMostPopular(ALLOW_MOST_POPULAR_DEFAULT);
-        config.setShowScores(SHOW_SCORES_DEFAULT);
-        config.setShowProjects(SHOW_PROJECTS_DEFAULT);
-        config.setShowTime(SHOW_TIME_DEFAULT);
+    public SuggesterConfig() {
+        setEnabled(ENABLED_DEFAULT);
+        setMaxResults(MAX_RESULTS_DEFAULT);
+        setMinChars(MIN_CHARS_DEFAULT);
+        setAllowedProjects(allowedProjectsDefault);
+        setMaxProjects(MAX_PROJECTS_DEFAULT);
+        setAllowedFields(allowedFieldsDefault);
+        setAllowComplexQueries(ALLOW_COMPLEX_QUERIES_DEFAULT);
+        setAllowMostPopular(ALLOW_MOST_POPULAR_DEFAULT);
+        setShowScores(SHOW_SCORES_DEFAULT);
+        setShowProjects(SHOW_PROJECTS_DEFAULT);
+        setShowTime(SHOW_TIME_DEFAULT);
         // do not use setter because indexer invocation with --man will fail
-        config.rebuildCronConfig = REBUILD_CRON_CONFIG_DEFAULT;
-        config.setSuggesterBuildTerminationTimeSec(SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT);
-        return config;
+        rebuildCronConfig = REBUILD_CRON_CONFIG_DEFAULT;
+        setSuggesterBuildTerminationTimeSec(SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT);
     }
 
     public boolean isEnabled() {
