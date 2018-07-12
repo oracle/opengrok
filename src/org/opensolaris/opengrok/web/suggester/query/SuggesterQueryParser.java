@@ -76,6 +76,8 @@ class SuggesterQueryParser extends CustomQueryParser {
     SuggesterQueryParser(final String field, final String identifier) {
         super(field);
         this.identifier = identifier;
+        // always allow leading wildcard suggestions (even if they are disabled in configuration)
+        setAllowLeadingWildcard(true);
     }
 
     public SuggesterQuery getSuggesterQuery() {
