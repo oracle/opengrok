@@ -370,7 +370,7 @@ class FieldWFSTCollection implements Closeable {
         lock.readLock().lock();
         try {
             if (lookups.get(term.field()).get(term.text()) == null) {
-                throw new IllegalArgumentException("Unknown term " + term);
+                return; // unknown term
             }
 
             PopularityMap map = searchCountMaps.get(term.field());

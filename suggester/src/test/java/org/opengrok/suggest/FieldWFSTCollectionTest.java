@@ -200,15 +200,6 @@ public class FieldWFSTCollectionTest {
         f.incrementSearchCount(new Term("test", "example"), -10);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void incrementUnknownTermTest() throws IOException {
-        addText("test", "test case document");
-
-        init(true);
-
-        f.incrementSearchCount(new Term("test", "unknown"));
-    }
-
     @Test
     public void rebuildRemoveOldTermsTest() throws IOException {
         addText("test", "term");
