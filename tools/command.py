@@ -27,6 +27,7 @@ import subprocess
 import threading
 import time
 import resource
+import signal
 
 
 class TimeoutException(Exception):
@@ -92,6 +93,33 @@ class Command:
                 self.start()
                 self.exception = None
 
+            def terminate(self, p):
+                """
+                Make sure the process goes away.
+                """
+                p.terminate()
+
+                # The following code tries more methods to terminate
+                # the process and is specific to Unix.
+                if os.name == 'posix':
+                    timeout = self.timeout
+                    term_signals = [signal.SIGINT, signal.SIGKILL]
+                    for sig in term_signals:
+                        timeout = timeout / 2  # exponential back-off
+                        self.logger.info("Sleeping for {} seconds".
+                                         format(timeout))
+                        time.sleep(timeout)
+
+                        if p.poll() is None:
+                            self.logger.info("Command with PID {} still alive,"
+                                             " killing with signal {}".
+                                             format(p.pid, sig))
+                            p.send_signal(sig)
+                        else:
+                            self.logger.info("Command with PID {} is gone".
+                                             format(p.pid))
+                            break
+
             def run(self):
                 with self.condition:
                     if not self.condition.wait(self.timeout):
@@ -99,11 +127,11 @@ class Command:
                         self.logger.info("Terminating command {} with PID {} "
                                          "after timeout of {} seconds".
                                          format(p.args, p.pid, self.timeout))
-                        p.terminate()
                         self.exception = TimeoutException("Command {} with pid"
                                                           " {} timed out".
                                                           format(p.args,
                                                                  p.pid))
+                        self.terminate(p)
                     else:
                         return None
 
@@ -207,7 +235,8 @@ class Command:
 
             if self.timeout:
                 time_condition = threading.Condition()
-                self.logger.debug("Setting timeout to {}".format(self.timeout))
+                self.logger.debug("Setting timeout to {} seconds".
+                                  format(self.timeout))
                 timeout_thread = TimeoutThread(self.logger, self.timeout,
                                                time_condition, p)
 
