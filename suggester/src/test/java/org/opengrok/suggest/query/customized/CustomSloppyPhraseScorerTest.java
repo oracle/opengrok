@@ -38,9 +38,11 @@ import org.apache.lucene.search.Weight;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
 import org.opengrok.suggest.query.PhraseScorer;
-import org.opengrok.suggest.query.data.HashIntsHolder;
+import org.opengrok.suggest.query.data.BitIntsHolder;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
@@ -85,8 +87,20 @@ public class CustomSloppyPhraseScorerTest {
                 }
             }
 
-            assertThat((HashIntsHolder) ((PhraseScorer) scorer).getPositions(correctDoc), contains(expectedPositions));
+            BitIntsHolder bs = (BitIntsHolder) ((PhraseScorer) scorer).getPositions(correctDoc);
+
+            assertThat(toSet(bs), contains(expectedPositions));
         }
+    }
+
+    private static Set<Integer> toSet(final BitIntsHolder bs) {
+        Set<Integer> intSet = new HashSet<>();
+        for (int i = 0; i < bs.length(); i++) {
+            if (bs.has(i)) {
+                intSet.add(i);
+            }
+        }
+        return intSet;
     }
 
     @Test
