@@ -96,21 +96,25 @@ org.opensolaris.opengrok.web.Util"%><%
             %>"><span id="download"></span>Download</a></li>
 	<%
     }
-        %><li><input type="text" id="search" name="q" class="q" />
-            <input type="submit" value="Search" class="submit" /></li><%
+        %><li><input type="text" id="search" name="q" class="q" /></li>
+            <li><input type="submit" value="Search" class="submit" /></li><%
     Project proj = cfg.getProject();
     String[] vals = cfg.getSearchOnlyIn();
-        %><li><input type="checkbox" name="path" value='"<%= vals[0]
+        %><li><input id="minisearch-path" type="checkbox" name="path" value='"<%= vals[0]
             %>"' <%= vals[2] %>/> current directory</li>
     </ul><%
     if (proj != null) {
     %>
-    <input type="hidden" name="project" value="<%=proj.getName()%>" /><%
+    <input id="minisearch-project" type="hidden" name="project" value="<%=proj.getName()%>" /><%
     }
 %>
     <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />
 </div>
         </form>
+        <script type="text/javascript">/* <![CDATA[ */
+            document.domReady.push(function() { domReadyMenu(true); });
+            /* ]]> */
+        </script>
     </div>
 <div id="content">
 <% 

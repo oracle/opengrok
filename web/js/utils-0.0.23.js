@@ -1715,14 +1715,14 @@ function domReadyMast() {
 function pageReadyMast() {
 }
 
-function domReadyMenu() {
+function domReadyMenu(minisearch) {
     $.ajax({
         // cannot use "/api/v1/configuration/suggester" because of security
         url: window.contextPath + "/suggest/config",
         dataType: "json",
         success: function(config) {
             if (config.enabled) {
-                initAutocomplete(config);
+                initAutocomplete(config, minisearch);
             }
         },
         error: function(xhr, ajaxOptions, error) {
@@ -1731,23 +1731,9 @@ function domReadyMenu() {
     });
 }
 
-function initAutocomplete(config) {
-    if (config.allowedFields) {
-        if (config.allowedFields.includes('full')) {
-            initAutocompleteForField("q", "full", config);
-        }
-        if (config.allowedFields.includes('defs')) {
-            initAutocompleteForField("defs", "defs", config);
-        }
-        if (config.allowedFields.includes('refs')) {
-            initAutocompleteForField("refs", "refs", config);
-        }
-        if (config.allowedFields.includes('path')) {
-            initAutocompleteForField("path", "path", config);
-        }
-        if (config.allowedFields.includes('hist')) {
-            initAutocompleteForField("hist", "hist", config);
-        }
+function initAutocomplete(config, minisearch) {
+    if (minisearch) {
+        initMinisearchAutocomplete(config);
     } else {
         initAutocompleteForField("q", "full", config);
         initAutocompleteForField("defs", "defs", config);
@@ -1757,38 +1743,63 @@ function initAutocomplete(config) {
     }
 }
 
-function initAutocompleteForField(inputId, field, config) {
+function initMinisearchAutocomplete(config) {
+    if (config.allowedFields && !config.allowedFields.contains('full')) {
+        return;
+    }
+
+    var project = '';
+
+    var projectElem = $('#minisearch-project');
+    if (projectElem) {
+        project = projectElem.val();
+    }
+
+    var pathElem = $('#minisearch-path');
+
+    initAutocompleteForField('search', 'full', config, function (input, field) {
+        var caretPos = input.caret();
+        if (!Number.isInteger(caretPos)) {
+            console.error("Suggest: could not get caret position");
+            return;
+        }
+        return {
+            projects: [project],
+            field: field,
+            full: input.val(),
+            path: pathElem.is(':checked') ? pathElem.val() : '',
+            caret: caretPos
+        }
+    }, 'search');
+}
+
+function initAutocompleteForField(inputId, field, config, dataFunction, errorElemId) {
+    if (config.allowedFields && !config.allowedFields.contains(field)) {
+        return;
+    }
+
     var text;
     var identifier;
     var time;
 
     var input = $("#" + inputId);
 
+    if (!dataFunction) {
+        dataFunction = getAutocompleteMenuData;
+    }
+    if (!errorElemId) {
+        errorElemId = 'q';
+    }
+    var errorElem = $('#' + errorElemId);
+
     input.autocomplete({
         source: function(request, response) {
-
-            var caretPos = $('#' + inputId).caret();
-            if (!Number.isInteger(caretPos)) {
-                console.error("Suggest: could not get caret position");
-                return;
-            }
-
             $.ajax({
                 url: window.contextPath + "/suggest",
                 dataType: "json",
-                data: {
-                    projects: getSelectedProjectNames(),
-                    field: field,
-                    full: $('#q').val(),
-                    defs: $('#defs').val(),
-                    refs: $('#refs').val(),
-                    path: $('#path').val(),
-                    hist: $('#hist').val(),
-                    type: $('#type').val(),
-                    caret: caretPos
-                },
+                data: dataFunction(input, field),
                 success: function(data) {
-                    hideError();
+                    hideError(errorElem);
 
                     text = data.queryText;
                     identifier = data.identifier;
@@ -1800,7 +1811,7 @@ function initAutocompleteForField(inputId, field, config) {
                     input.autocomplete("close");
                     response(undefined); // to remove loading indicator
 
-                    showError(xhr.responseJSON.message)
+                    showError(xhr.responseJSON.message, errorElem)
                 },
                 statusCode: {
                     404: function() {
@@ -1872,12 +1883,31 @@ function initAutocompleteForField(inputId, field, config) {
     });
 }
 
-function showError(errorText) {
-    var topInputParent = $('#q').parent();
+function getAutocompleteMenuData(input, field) {
+    var caretPos = input.caret();
+    if (!Number.isInteger(caretPos)) {
+        console.error("Suggest: could not get caret position");
+        return;
+    }
+    return {
+        projects: getSelectedProjectNames(),
+        field: field,
+        full: $('#q').val(),
+        defs: $('#defs').val(),
+        refs: $('#refs').val(),
+        path: $('#path').val(),
+        hist: $('#hist').val(),
+        type: $('#type').val(),
+        caret: caretPos
+    }
+}
 
-    topInputParent.css('position', 'relative');
+function showError(errorText, errorElem) {
+    var parent = errorElem.parent();
 
-    var span = topInputParent.find('#autocomplete-error')[0];
+    parent.css('position', 'relative');
+
+    var span = parent.find('#autocomplete-error')[0];
     if (!span) {
         span = $("<span>", {
             class: "important-note important-note-rounded",
@@ -1886,7 +1916,7 @@ function showError(errorText) {
             id: 'autocomplete-error'
         });
 
-        span.appendTo(topInputParent);
+        span.appendTo(parent);
     } else {
         span = $(span);
         span.off("mouseenter mouseleave");
@@ -1901,9 +1931,9 @@ function showError(errorText) {
     });
 }
 
-function hideError() {
-    var topInputParent = $('#q').parent();
-    var span = topInputParent.find('#autocomplete-error')[0];
+function hideError(errorElem) {
+    var parent = errorElem.parent();
+    var span = parent.find('#autocomplete-error')[0];
     if (span) {
         span.remove();
     }
