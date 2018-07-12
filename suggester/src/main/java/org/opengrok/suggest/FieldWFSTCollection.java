@@ -312,7 +312,12 @@ class FieldWFSTCollection implements Closeable {
     public List<Lookup.LookupResult> lookup(final String field, final String prefix, final int resultSize) {
         lock.readLock().lock();
         try {
-            return lookups.get(field).lookup(prefix, false, resultSize);
+            WFSTCompletionLookup lookup = lookups.get(field);
+            if (lookup == null) {
+                logger.log(Level.WARNING, "No WFST for field {0}", field);
+                return Collections.emptyList();
+            }
+            return lookup.lookup(prefix, false, resultSize);
         } catch (IOException e) {
             logger.log(Level.WARNING, "Could not perform lookup in {0} for {1}:{2}",
                     new Object[] {suggesterDir, field, prefix});
