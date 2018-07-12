@@ -45,6 +45,9 @@ public class ClassUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassUtil.class);
 
+    private ClassUtil() {
+    }
+
     /**
      * Mark all transient fields in {@code targetClass} as @Transient for the
      * XML serialization.
