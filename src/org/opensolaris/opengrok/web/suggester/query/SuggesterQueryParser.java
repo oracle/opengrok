@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Used for parsing the text of a query for which suggestions should be retrieved. Decouples the query into 2 parts:
@@ -102,9 +103,17 @@ class SuggesterQueryParser extends CustomQueryParser {
 
     private Term replaceIdentifier(final Term term, final String identifier) {
         Term newTerm = new Term(term.field(), term.text().replace(identifier, ""));
-        this.identifier = term.text();
-
+        replaceIdentifier(term.field(), term.text());
         return newTerm;
+    }
+
+    private void replaceIdentifier(final String field, final String text) {
+        this.identifier = text;
+        if (!isCaseSensitive(field)) {
+            // fixes problem when prefix contains upper case chars for case insensitive field
+            queryTextWithPlaceholder = queryTextWithPlaceholder.replaceAll(
+                    "(?i)" + Pattern.quote(identifier), identifier);
+        }
     }
 
     @Override
@@ -187,14 +196,14 @@ class SuggesterQueryParser extends CustomQueryParser {
         if (t.text().contains(identifier)) {
             String term = t.text().replace(identifier, "");
             if (term.endsWith("*")) {
-                identifier = t.text();
+                replaceIdentifier(t.field(), t.text());
                 term = term.substring(0, term.length() - 1);
                 SuggesterPrefixQuery q = new SuggesterPrefixQuery(new Term(t.field(), term));
                 this.suggesterQuery = q;
                 return q;
             } else {
                 SuggesterWildcardQuery q = new SuggesterWildcardQuery(replaceIdentifier(t, identifier));
-                identifier = t.text();
+                replaceIdentifier(t.field(), t.text());
                 this.suggesterQuery = q;
                 return q;
             }
@@ -209,9 +218,9 @@ class SuggesterQueryParser extends CustomQueryParser {
             Term newTerm = replaceIdentifier(term, identifier);
 
             if (minimumSimilarity < 1) {
-                identifier = term.text() + "~" + minimumSimilarity;
+                replaceIdentifier(term.field(), term.text() + "~" + minimumSimilarity);
             } else { // similarity greater than 1 must be an integer
-                identifier = term.text() + "~" + ((int) minimumSimilarity);
+                replaceIdentifier(term.field(), term.text() + "~" + ((int) minimumSimilarity));
             }
 
             int numEdits = FuzzyQuery.floatToEdits(minimumSimilarity,
@@ -230,7 +239,7 @@ class SuggesterQueryParser extends CustomQueryParser {
         if (regexp.text().contains(identifier)) {
             Term newTerm = replaceIdentifier(regexp, identifier);
 
-            identifier = "/" + regexp.text() + "/";
+            replaceIdentifier(regexp.field(), "/" + regexp.text() + "/");
 
             SuggesterRegexpQuery q = new SuggesterRegexpQuery(newTerm);
             this.suggesterQuery = q;
@@ -253,7 +262,7 @@ class SuggesterQueryParser extends CustomQueryParser {
 
             SuggesterPhraseQuery spq = new SuggesterPhraseQuery(field, identifier, tokens, this.getPhraseSlop());
             this.suggesterQuery = spq.getSuggesterQuery();
-            this.identifier = tokens.stream().filter(t -> t.contains(identifier)).findAny().get();
+            replaceIdentifier(field, tokens.stream().filter(t -> t.contains(identifier)).findAny().get());
             return spq;
         }
 
@@ -316,7 +325,7 @@ class SuggesterQueryParser extends CustomQueryParser {
     ) {
         if (lowerTerm.contains(identifier)) {
             String bareLowerTerm = lowerTerm.replace(identifier, "");
-            this.identifier = lowerTerm;
+            replaceIdentifier(field, lowerTerm);
 
             SuggesterRangeQuery rangeQuery = new SuggesterRangeQuery(field, new BytesRef(bareLowerTerm),
                     new BytesRef(upperTerm), startInclusive, endInclusive, SuggesterRangeQuery.SuggestPosition.LOWER);
@@ -326,7 +335,7 @@ class SuggesterQueryParser extends CustomQueryParser {
             return rangeQuery;
         } else if (upperTerm.contains(identifier)) {
             String bareUpperTerm = upperTerm.replace(identifier, "");
-            this.identifier = upperTerm;
+            replaceIdentifier(field, upperTerm);
 
             SuggesterRangeQuery rangeQuery = new SuggesterRangeQuery(field, new BytesRef(lowerTerm),
                     new BytesRef(bareUpperTerm), startInclusive, endInclusive, SuggesterRangeQuery.SuggestPosition.UPPER);
