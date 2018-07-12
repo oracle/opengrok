@@ -467,7 +467,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                   <arguments>
 		    <argument>-v</argument>
 		    <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>
-                    <argument>${project.basedir}/../tools/sync</argument>
+                    <argument>${project.basedir}/../tools</argument>
                   </arguments>
                 </configuration>
            </plugin>
