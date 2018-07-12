@@ -70,7 +70,7 @@ Analyzer#normalize.
      * @return {@code true} if the field is case sensitive, {@code false}
      * otherwise
      */
-    private static boolean isCaseSensitive(String field) {
+    protected static boolean isCaseSensitive(String field) {
         // Only definition search and reference search are case sensitive
         return QueryBuilder.DEFS.equals(field)
                 || QueryBuilder.REFS.equals(field);
