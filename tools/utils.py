@@ -23,6 +23,7 @@
 
 import os
 from shutil import which
+from logging import log
 import logging
 import sys
 from urllib.parse import urlparse
@@ -45,11 +46,14 @@ def check_create_dir(path):
             sys.exit(1)
 
 
-def get_command(logger, path, name):
+def get_command(logger, path, name, level=logging.ERROR):
     """
     Get the path to the command specified by path and name.
     If the path does not contain executable, search for the command
     according to name in OS environment and/or dirname.
+
+    The logging level can be used to set different log level to error messages.
+    This is handy when trying to determine optional command.
 
     Return path to the command or None.
     """
@@ -58,8 +62,8 @@ def get_command(logger, path, name):
     if path:
         cmd_file = which(path)
         if not is_exe(cmd_file):
-            logger.error("file {} is not executable file".
-                         format(path))
+            log(level, "file {} is not executable file".
+                       format(path))
             return None
     else:
         cmd_file = which(name)
@@ -68,8 +72,8 @@ def get_command(logger, path, name):
             cmd_file = which(name,
                              path=os.path.dirname(sys.argv[0]))
             if not cmd_file:
-                logger.error("cannot determine path to the {} script".
-                             format(name))
+                log(level, "cannot determine path to the {} command".
+                           format(name))
                 return None
     logger.debug("{} = {}".format(name, cmd_file))
 

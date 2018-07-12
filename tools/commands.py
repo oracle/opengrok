@@ -76,7 +76,10 @@ class Commands(CommandsBase):
         """
         Execute a command and return its return code.
         """
-        cmd = Command(command,
+        command_args = command.get("command")
+        cmd = Command(command_args,
+                      env_vars=command.get("env"),
+                      resource_limits=command.get("limits"),
                       args_subst={self.PROJECT_SUBST: self.name},
                       args_append=[self.name], excl_subst=True)
         cmd.execute()
@@ -89,6 +92,7 @@ class Commands(CommandsBase):
         """
         Make RESTful API call.
         """
+        command = command.get("command")
         uri = command[0].replace(self.PROJECT_SUBST, self.name)
         verb = command[1]
         data = command[2]
@@ -120,7 +124,7 @@ class Commands(CommandsBase):
         """
 
         for command in self.commands:
-            if is_web_uri(command[0]):
+            if is_web_uri(command.get("command")[0]):
                 self.call_rest_api(command)
             else:
                 retcode = self.run_command(command)
@@ -143,19 +147,20 @@ class Commands(CommandsBase):
         Call cleanup in case the sequence failed or termination was requested.
         """
         if self.cleanup:
-            if is_web_uri(self.cleanup[0]):
+            if is_web_uri(self.cleanup.get("command")[0]):
                 self.call_rest_api(self.cleanup)
             else:
+                command_args = self.cleanup.get("command")
                 self.logger.debug("Running cleanup command '{}'".
-                                  format(self.cleanup))
-                cmd = Command(self.cleanup,
+                                  format(command_args))
+                cmd = Command(command_args,
                               args_subst={self.PROJECT_SUBST: self.name},
                               args_append=[self.name], excl_subst=True)
                 cmd.execute()
                 if cmd.getretcode() != 0:
                     self.logger.info("cleanup command '{}' failed with "
                                      "code {}".
-                                     format(self.cleanup, cmd.getretcode()))
+                                     format(command_args, cmd.getretcode()))
 
     def check(self, ignore_errors):
         """

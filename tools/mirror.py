@@ -44,7 +44,6 @@ import logging
 from logging.handlers import RotatingFileHandler
 import tempfile
 import commands
-from commands import Commands, CommandsBase
 from repository import Repository
 from mercurial import MercurialRepository
 from repofactory import get_repository
