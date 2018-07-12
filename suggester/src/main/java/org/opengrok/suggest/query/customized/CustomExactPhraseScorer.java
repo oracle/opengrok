@@ -29,8 +29,8 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
 import org.opengrok.suggest.query.PhraseScorer;
+import org.opengrok.suggest.query.data.BitIntsHolder;
 import org.opengrok.suggest.query.data.IntsHolder;
-import org.opengrok.suggest.query.data.HashIntsHolder;
 
 /**
  * Modified Apache Lucene's ExactPhraseScorer (now {@link org.apache.lucene.search.ExactPhraseMatcher}) to support
@@ -138,7 +138,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         int freq = 0;
         final PostingsAndPosition lead = postings[0];
 
-        HashIntsHolder positions = new HashIntsHolder();
+        BitIntsHolder positions = new BitIntsHolder();
 
         advanceHead:
         while (true) {
@@ -162,7 +162,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
             }
 
             freq += 1;
-            positions.add(phrasePos + offset);
+            positions.set(phrasePos + offset);
 
             if (lead.upTo == lead.freq) {
                 break;

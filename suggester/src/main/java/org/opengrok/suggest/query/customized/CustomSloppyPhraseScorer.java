@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.ConjunctionDISI;
@@ -34,8 +33,8 @@ import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.FixedBitSet;
 import org.opengrok.suggest.query.PhraseScorer;
+import org.opengrok.suggest.query.data.BitIntsHolder;
 import org.opengrok.suggest.query.data.IntsHolder;
-import org.opengrok.suggest.query.data.HashIntsHolder;
 
 /**
  * Modified Apache Lucene's SloppyPhraseScorer (now {@link org.apache.lucene.search.SloppyPhraseMatcher}) to remember
@@ -103,9 +102,9 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
      * We may want to fix this in the future (currently not, for performance reasons).
      */
     private float phraseFreq() throws IOException {
-        Set<Integer> allPositions = new HashSet<>();
+        BitIntsHolder allPositions = new BitIntsHolder();
 
-        HashIntsHolder positions = new HashIntsHolder();
+        BitIntsHolder positions = new BitIntsHolder();
 
         if (phrasePositions.length == 1) { // special handling for one term
             end = Integer.MIN_VALUE;
@@ -116,7 +115,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
             }
             int matchCount = 0;
             while (advancePP(pp)) {
-                allPositions.add(pp.position + pp.offset);
+                allPositions.set(pp.position + pp.offset);
                 addPositions(positions, allPositions, pp.position + pp.offset,0);
                 matchCount++;
             }
@@ -131,7 +130,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
         }
 
         for (PhrasePositions phrasePositions : this.pq) {
-            allPositions.add(phrasePositions.position + phrasePositions.offset);
+            allPositions.set(phrasePositions.position + phrasePositions.offset);
         }
 
         int numMatches = 0;
@@ -147,7 +146,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
                 break; // pps exhausted
             }
 
-            allPositions.add(pp.position + pp.offset);
+            allPositions.set(pp.position + pp.offset);
 
             if (pp.position > next) { // done minimizing current match-length
                 if (matchLength <= slop) {
@@ -180,14 +179,14 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
         return numMatches;
     }
 
-    private void addPositions(Set<Integer> positions, Set<Integer> allPositions, int lastEnd, int matchLength) {
+    private void addPositions(BitIntsHolder positions, IntsHolder allPositions, int lastEnd, int matchLength) {
         int expectedPos = lastEnd + offset;
 
         int range = this.slop - matchLength;
         for (int i = 0; i < (2 * range) + 1; i++) {
             int pos = expectedPos + i - range;
-            if (pos > 0 && !allPositions.contains(pos)) {
-                positions.add(pos);
+            if (pos > 0 && !allPositions.has(pos)) {
+                positions.set(pos);
             }
         }
     }
