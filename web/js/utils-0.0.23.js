@@ -1845,18 +1845,12 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                 event.preventDefault();
                 return;
             }
-            var pos = text.indexOf(identifier);
-            var phrase = escapeLuceneCharacters(ui.item.phrase);
-            input.val(text.replace(identifier, phrase));
-            input.caret(pos + phrase.length);
+            replaceValueWithSuggestion(input, text, identifier, ui.item.phrase);
 
             event.preventDefault(); // to prevent the movement of the caret to the end
         },
         select: function (event, ui) {
-            var pos = text.indexOf(identifier);
-            var phrase = escapeLuceneCharacters(ui.item.phrase);
-            input.val(text.replace(identifier, phrase));
-            input.caret(pos + phrase.length);
+            replaceValueWithSuggestion(input, text, identifier, ui.item.phrase);
 
             event.preventDefault(); // to prevent the movement of the caret to the end
         },
@@ -1901,6 +1895,13 @@ function getAutocompleteMenuData(input, field) {
         type: $('#type').val(),
         caret: caretPos
     }
+}
+
+function replaceValueWithSuggestion(input, queryText, identifier, suggestion) {
+    var pos = queryText.indexOf(identifier);
+    var phrase = escapeLuceneCharacters(suggestion);
+    input.val(queryText.replace(identifier, phrase));
+    input.caret(pos + phrase.length);
 }
 
 function showError(errorText, errorElem) {
