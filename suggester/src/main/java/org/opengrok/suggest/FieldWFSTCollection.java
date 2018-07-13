@@ -455,6 +455,15 @@ class FieldWFSTCollection implements Closeable {
         lock.readLock().unlock();
     }
 
+    @Override
+    public String toString() {
+        return "FieldWFSTCollection{" +
+                "indexDir=" + indexDir +
+                ", suggesterDir=" + suggesterDir +
+                ", allowMostPopular=" + allowMostPopular +
+                '}';
+    }
+
     /**
      * An {@link InputIterator} for WFST data structure with most popular completion support.
      */

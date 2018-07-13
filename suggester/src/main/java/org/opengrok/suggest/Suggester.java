@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -143,6 +144,7 @@ public final class Suggester implements Closeable {
     private Runnable getInitRunnable(final Path indexDir) {
         return () -> {
             try {
+                Instant start = Instant.now();
                 logger.log(Level.FINE, "Initializing {0}", indexDir);
 
                 FieldWFSTCollection wfst = new FieldWFSTCollection(FSDirectory.open(indexDir), getSuggesterDir(indexDir),
@@ -154,7 +156,8 @@ public final class Suggester implements Closeable {
                     projectData.put(PROJECTS_DISABLED_KEY, wfst);
                 }
 
-                logger.log(Level.FINE, "Finished initialization of {0}", indexDir);
+                Duration d = Duration.between(start, Instant.now());
+                logger.log(Level.FINE, "Finished initialization of {0}, took {1}", new Object[] {indexDir, d});
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Could not initialize suggester data for " + indexDir, e);
             }
@@ -216,9 +219,12 @@ public final class Suggester implements Closeable {
     private Runnable getRebuildRunnable(final FieldWFSTCollection fieldsWFST) {
         return () -> {
             try {
+                Instant start = Instant.now();
                 logger.log(Level.FINE, "Rebuilding {0}", fieldsWFST);
                 fieldsWFST.rebuild();
-                logger.log(Level.FINE, "Rebuild of {0} finished", fieldsWFST);
+
+                Duration d = Duration.between(start, Instant.now());
+                logger.log(Level.FINE, "Rebuild of {0} finished, took {1}", new Object[] {fieldsWFST, d});
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Could not rebuild suggester", e);
             }
