@@ -210,6 +210,7 @@ public class ProjectsController {
                     }
                 }
             }
+            SuggesterServiceFactory.getDefault().refresh(projectName);
         } else {
             logger.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
         }
@@ -219,8 +220,6 @@ public class ProjectsController {
         env.maybeRefreshIndexSearchers(Collections.singleton(projectName));
 
         env.refreshDateForLastIndexRun();
-
-        SuggesterServiceFactory.getDefault().refresh(projectName);
     }
 
     @PUT
