@@ -1877,7 +1877,8 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
         if (e.keyCode === 37 || e.keyCode === 39) { // left or right arrow key
             $(this).autocomplete('search', $(this).val());
         }
-        if (input.val() === "") { // try to refresh on empty input (error might go away)
+        // try to refresh on empty input (error might go away) except when pressed esc key
+        if (input.val() === "" && e.keyCode !== 27) {
             $(this).autocomplete('search', ' ');
         }
     });
