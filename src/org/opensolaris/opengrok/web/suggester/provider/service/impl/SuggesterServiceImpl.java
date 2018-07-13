@@ -169,6 +169,10 @@ public class SuggesterServiceImpl implements SuggesterService {
         Configuration config = env.getConfiguration();
 
         Project p = config.getProjects().get(project);
+        if (p == null) {
+            logger.log(Level.WARNING, "Cannot refresh suggester because project for name {0} was not found", project);
+            return;
+        }
         suggester.rebuild(Collections.singletonList(Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR, p.getPath())));
     }
 
