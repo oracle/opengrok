@@ -23,8 +23,9 @@
 package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -36,12 +37,15 @@ public class SystemController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    @Inject
+    private SuggesterService suggester;
+
     @PUT
     @Path("/refresh")
     @Consumes(MediaType.TEXT_PLAIN)
     public void refresh(final String project) {
         env.maybeRefreshIndexSearchers(Collections.singleton(project));
-        SuggesterServiceFactory.getDefault().refresh(project);
+        suggester.refresh(project);
     }
 
 }

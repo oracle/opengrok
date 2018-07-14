@@ -22,12 +22,15 @@
  */
 package org.opensolaris.opengrok.web.api.v1.controller;
 
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.CtagsInstalled;
@@ -43,6 +46,7 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.util.TestRepository;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
@@ -60,6 +64,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.opensolaris.opengrok.history.RepositoryFactory.getRepository;
 import static org.opensolaris.opengrok.util.IOUtils.removeRecursive;
 
@@ -75,9 +80,19 @@ public class ProjectsControllerTest extends JerseyTest {
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
+    @Mock
+    private SuggesterService suggesterService;
+
     @Override
     protected Application configure() {
-        return new ResourceConfig(ProjectsController.class);
+        MockitoAnnotations.initMocks(this);
+        return new ResourceConfig(ProjectsController.class)
+                .register(new AbstractBinder() {
+                    @Override
+                    protected void configure() {
+                        bind(suggesterService).to(SuggesterService.class);
+                    }
+                });
     }
 
     @Before

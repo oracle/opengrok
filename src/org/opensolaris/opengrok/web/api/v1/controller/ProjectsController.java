@@ -34,8 +34,9 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.ClassUtil;
 import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -68,6 +69,9 @@ public class ProjectsController {
     private static final Logger logger = LoggerFactory.getLogger(ProjectsController.class);
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    @Inject
+    private SuggesterService suggester;
 
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
@@ -184,7 +188,7 @@ public class ProjectsController {
                     }
                 }).collect(Collectors.toSet()));
 
-        SuggesterServiceFactory.getDefault().delete(projectName);
+        suggester.delete(projectName);
     }
 
     @PUT
@@ -210,7 +214,7 @@ public class ProjectsController {
                     }
                 }
             }
-            SuggesterServiceFactory.getDefault().refresh(projectName);
+            suggester.refresh(projectName);
         } else {
             logger.log(Level.WARNING, "cannot find project {0} to mark as indexed", projectName);
         }

@@ -72,7 +72,7 @@ import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
 import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
 /**
  * Working set for a search basically to factor out/separate search related

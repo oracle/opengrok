@@ -20,16 +20,16 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.provider.filter;
+package org.opensolaris.opengrok.web.api.v1.suggester.provider.filter;
 
-import org.opensolaris.opengrok.web.api.v1.filter.LocalhostFilter;
+import javax.ws.rs.NameBinding;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import javax.ws.rs.ext.Provider;
-
-/**
- * Filters all non-localhost requests.
- */
-@Provider
-@Localhost
-public class NamedLocalhostFilter extends LocalhostFilter {
+@NameBinding
+@Target({ElementType.METHOD, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Localhost {
 }

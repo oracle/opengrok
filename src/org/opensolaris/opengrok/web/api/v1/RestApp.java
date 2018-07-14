@@ -23,6 +23,7 @@
 package org.opensolaris.opengrok.web.api.v1;
 
 import org.glassfish.jersey.server.ResourceConfig;
+import org.opensolaris.opengrok.web.api.v1.suggester.SuggesterAppBinder;
 
 import javax.ws.rs.ApplicationPath;
 
@@ -32,6 +33,7 @@ public class RestApp extends ResourceConfig {
     public static final String API_PATH = "/api/v1";
     
     public RestApp() {
+        register(new SuggesterAppBinder());
         packages("org.opensolaris.opengrok.web.api.constraints", "org.opensolaris.opengrok.web.api.error");
         packages(true, "org.opensolaris.opengrok.web.api.v1");
     }

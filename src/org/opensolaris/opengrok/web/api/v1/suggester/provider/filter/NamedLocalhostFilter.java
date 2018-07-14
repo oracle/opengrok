@@ -20,30 +20,16 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.provider.filter;
+package org.opensolaris.opengrok.web.api.v1.suggester.provider.filter;
 
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.web.api.v1.filter.LocalhostFilter;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Filter which checks if suggester is enabled and if not then returns {@link Response.Status#NOT_FOUND}.
+ * Filters all non-localhost requests.
  */
 @Provider
-@PreMatching
-public class SuggestionsEnabledFilter implements ContainerRequestFilter {
-
-    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-    @Override
-    public void filter(final ContainerRequestContext context) {
-        if (!env.getConfiguration().getSuggesterConfig().isEnabled()) {
-            context.abortWith(Response.status(Response.Status.NOT_FOUND).build());
-        }
-    }
-
+@Localhost
+public class NamedLocalhostFilter extends LocalhostFilter {
 }

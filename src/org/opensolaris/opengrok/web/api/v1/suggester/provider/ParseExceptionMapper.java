@@ -20,16 +20,24 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.provider.filter;
+package org.opensolaris.opengrok.web.api.v1.suggester.provider;
 
-import javax.ws.rs.NameBinding;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.opensolaris.opengrok.web.api.error.ExceptionMapperUtils;
 
-@NameBinding
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Localhost {
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+
+/**
+ * Maps the {@link ParseException} to a {@link javax.ws.rs.core.Response.Status#BAD_REQUEST} status.
+ */
+@Provider
+public class ParseExceptionMapper implements ExceptionMapper<ParseException> {
+
+    @Override
+    public Response toResponse(final ParseException e) {
+        return ExceptionMapperUtils.toResponse(Response.Status.BAD_REQUEST, e);
+    }
+
 }

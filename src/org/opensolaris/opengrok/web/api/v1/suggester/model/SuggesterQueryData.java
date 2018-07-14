@@ -20,11 +20,11 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.model;
+package org.opensolaris.opengrok.web.api.v1.suggester.model;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.web.suggester.provider.filter.AuthorizationFilter;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.filter.AuthorizationFilter;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;

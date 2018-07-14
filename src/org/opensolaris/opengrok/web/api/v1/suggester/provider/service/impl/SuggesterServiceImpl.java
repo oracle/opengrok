@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.provider.service.impl;
+package org.opensolaris.opengrok.web.api.v1.suggester.provider.service.impl;
 
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
@@ -40,7 +40,7 @@ import org.opensolaris.opengrok.configuration.SuggesterConfig;
 import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import java.io.File;
 import java.io.IOException;
