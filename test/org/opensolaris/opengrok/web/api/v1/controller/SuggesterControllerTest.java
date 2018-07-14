@@ -22,6 +22,7 @@
  */
 package org.opensolaris.opengrok.web.api.v1.controller;
 
+import org.apache.lucene.index.Term;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -39,13 +40,16 @@ import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.impl.Sugge
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.Field;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -79,6 +83,10 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+    private static final GenericType<List<Entry<String, Integer>>> popularityDataType =
+            new GenericType<List<Entry<String, Integer>>>() {};
+
 
     private static TestRepository repository;
 
@@ -562,6 +570,35 @@ public class SuggesterControllerTest extends JerseyTest {
                 .get();
 
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), r.getStatus());
+    }
+
+    @Test
+    public void testGetPopularityDataSimple() {
+        SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.FULL, "print"), 10);
+
+        List<Entry<String, Integer>> res = target(SuggesterController.PATH)
+                .path("popularity")
+                .path("swift")
+                .request()
+                .get(popularityDataType);
+
+
+        assertThat(res, contains(new SimpleEntry<>("print", 10)));
+    }
+
+    @Test
+    public void testGetPopularityDataDifferentField() {
+        SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.FULL, "print"), 10);
+        SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.DEFS, "greet"), 4);
+
+        List<Entry<String, Integer>> res = target(SuggesterController.PATH)
+                .path("popularity")
+                .path("swift")
+                .queryParam("field", QueryBuilder.DEFS)
+                .request()
+                .get(popularityDataType);
+
+        assertThat(res, contains(new SimpleEntry<>("greet", 4)));
     }
 
 }

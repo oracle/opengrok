@@ -46,10 +46,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -57,10 +60,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Endpoint for suggester related REST queries.
@@ -70,6 +76,8 @@ import java.util.logging.Logger;
 public final class SuggesterController {
 
     public static final String PATH = "suggest";
+
+    private static final int POPULARITY_DEFAULT_PAGE_SIZE = 100;
 
     private static final Logger logger = LoggerFactory.getLogger(SuggesterController.class);
 
@@ -243,6 +251,21 @@ public final class SuggesterController {
             suggester.increaseSearchCount(termIncrement.project,
                     new Term(termIncrement.field, termIncrement.token), termIncrement.increment);
         }
+    }
+
+    @GET
+    @Path("/popularity/{project}")
+    @Localhost
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Entry<String, Integer>> getPopularityData(
+            @PathParam("project") final String project,
+            @QueryParam("field") @DefaultValue(QueryBuilder.FULL) final String field,
+            @QueryParam("page") @DefaultValue("" + 0) final int page,
+            @QueryParam("pageSize") @DefaultValue("" + POPULARITY_DEFAULT_PAGE_SIZE) final int pageSize
+    ) {
+        return suggester.getPopularityData(project, field, page, pageSize).stream()
+                .map(e -> new SimpleEntry<>(e.getKey().utf8ToString(), e.getValue()))
+                .collect(Collectors.toList());
     }
 
     private static class Result {

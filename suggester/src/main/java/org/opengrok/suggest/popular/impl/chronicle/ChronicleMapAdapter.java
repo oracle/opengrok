@@ -30,6 +30,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Predicate;
 
 /**
@@ -65,6 +69,31 @@ public class ChronicleMapAdapter implements PopularityMap {
             throw new IllegalArgumentException("Cannot increment by negative value " + value);
         }
         map.merge(key, value, (a, b) -> a + b);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<Entry<BytesRef, Integer>> getPopularityData(final int page, final int pageSize) {
+        if (page < 0) {
+            throw new IllegalArgumentException("Cannot retrieve popularity data for negative page: " + page);
+        }
+        if (pageSize < 0) {
+            throw new IllegalArgumentException("Cannot retrieve negative number of results: " + pageSize);
+        }
+
+        List<Entry<BytesRef, Integer>> list = new ArrayList<>(map.entrySet());
+        list.sort(Entry.<BytesRef, Integer>comparingByValue().reversed());
+
+        int startIndex = page * pageSize;
+        if (startIndex >= list.size()) {
+            return Collections.emptyList();
+        }
+        int endIndex = startIndex + pageSize;
+        if (endIndex > list.size()) {
+            endIndex = list.size();
+        }
+
+        return list.subList(startIndex, endIndex);
     }
 
     /**

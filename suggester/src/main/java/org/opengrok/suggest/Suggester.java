@@ -28,6 +28,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
 import org.opengrok.suggest.query.SuggesterQuery;
 
@@ -41,6 +42,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -382,6 +384,30 @@ public final class Suggester implements Closeable {
             data = projectData.get(project);
         }
         data.incrementSearchCount(term, value);
+    }
+
+    /**
+     * Returns the searched terms sorted according to their popularity.
+     * @param project project for which to return the data
+     * @param field field for which to return the data
+     * @param page which page of data to retrieve
+     * @param pageSize number of results to return
+     * @return list of terms with their popularity
+     */
+    public List<Entry<BytesRef, Integer>> getSearchCounts(
+            final String project,
+            final String field,
+            final int page,
+            final int pageSize
+    ) {
+        FieldWFSTCollection data = projectData.get(project);
+        if (data == null) {
+            logger.log(Level.FINE, "Cannot retrieve search counts because data for project {0} were not found",
+                    project);
+            return Collections.emptyList();
+        }
+
+        return data.getSearchCountsSorted(field, page, pageSize);
     }
 
     /**
