@@ -154,9 +154,16 @@ public class SuggesterServiceImpl implements SuggesterService {
     /** {@inheritDoc} */
     @Override
     public void refresh(final Configuration configuration) {
+        logger.log(Level.FINE, "Refreshing suggester for new configuration {0}", configuration);
         lock.writeLock().lock();
         try {
-            suggester.close();
+            // close and init from scratch because many things may have changed in the configuration
+            // e.g. sourceRoot
+            cancelScheduledRebuild();
+            if (suggester != null) {
+                suggester.close();
+            }
+            suggester = null;
             initSuggester();
         } finally {
             lock.writeLock().unlock();
@@ -170,34 +177,75 @@ public class SuggesterServiceImpl implements SuggesterService {
 
         Project p = config.getProjects().get(project);
         if (p == null) {
-            logger.log(Level.WARNING, "Cannot refresh suggester because project for name {0} was not found", project);
+            logger.log(Level.WARNING, "Cannot refresh suggester because project for name {0} was not found",
+                    project);
             return;
         }
-        suggester.rebuild(Collections.singletonList(Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR, p.getPath())));
+        lock.readLock().lock();
+        try {
+            if (suggester == null) {
+                logger.log(Level.FINE, "Cannot refresh {0} because suggester is not initialized", project);
+                return;
+            }
+            suggester.rebuild(Collections.singletonList(Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR,
+                    p.getPath())));
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public void delete(final String project) {
-        suggester.remove(Collections.singleton(project));
+        lock.readLock().lock();
+        try {
+            if (suggester == null) {
+                logger.log(Level.FINE, "Cannot remove {0} because suggester is not initialized", project);
+                return;
+            }
+            suggester.remove(Collections.singleton(project));
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public void onSearch(final Iterable<String> projects, final Query q) {
-        suggester.onSearch(projects, q);
+        lock.readLock().lock();
+        try {
+            if (suggester == null) {
+                logger.log(Level.FINEST, "Suggester not initialized, ignoring query {0} in onSearch event", q);
+                return;
+            }
+            suggester.onSearch(projects, q);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public void increaseSearchCount(final String project, final Term term, final int value) {
-        suggester.increaseSearchCount(project, term, value);
+        lock.readLock().lock();
+        try {
+            if (suggester == null) {
+                return;
+            }
+            suggester.increaseSearchCount(project, term, value);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     private void initSuggester() {
         Configuration config = env.getConfiguration();
 
         SuggesterConfig suggesterConfig = config.getSuggesterConfig();
+        if (!suggesterConfig.isEnabled()) {
+            logger.log(Level.INFO, "Suggester disabled");
+            return;
+        }
 
         File suggesterDir = new File(config.getDataRoot(), IndexDatabase.SUGGESTER_DIR);
         suggester = new Suggester(suggesterDir,
@@ -227,15 +275,21 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     private Runnable getRebuildAllProjectsRunnable() {
         return () -> {
-            suggester.rebuild(getAllProjectIndexDirs());
-            scheduleRebuild();
+            lock.readLock().lock();
+            try {
+                if (suggester == null) {
+                    return;
+                }
+                suggester.rebuild(getAllProjectIndexDirs());
+                scheduleRebuild();
+            } finally {
+                lock.readLock().unlock();
+            }
         };
     }
 
     private void scheduleRebuild() {
-        if (future != null && !future.isDone()) {
-            future.cancel(false);
-        }
+        cancelScheduledRebuild();
 
         Duration timeToNextRebuild = getTimeToNextRebuild();
         if (timeToNextRebuild == null) {
@@ -247,6 +301,12 @@ public class SuggesterServiceImpl implements SuggesterService {
 
         future = instance.scheduler.schedule(instance.getRebuildAllProjectsRunnable(), timeToNextRebuild.toMillis(),
                 TimeUnit.MILLISECONDS);
+    }
+
+    private void cancelScheduledRebuild() {
+        if (future != null && !future.isDone()) {
+            future.cancel(false);
+        }
     }
 
     private Duration getTimeToNextRebuild() {
@@ -274,7 +334,16 @@ public class SuggesterServiceImpl implements SuggesterService {
     /** {@inheritDoc} */
     @Override
     public void close() {
-        scheduler.shutdownNow();
+        lock.writeLock().lock();
+        try {
+            scheduler.shutdownNow();
+            if (suggester != null) {
+                suggester.close();
+                suggester = null;
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
 }
