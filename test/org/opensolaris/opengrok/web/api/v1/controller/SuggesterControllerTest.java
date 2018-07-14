@@ -574,16 +574,16 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @Test
     public void testGetPopularityDataSimple() {
-        SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.FULL, "print"), 10);
+        SuggesterServiceImpl.getInstance().increaseSearchCount("rust", new Term(QueryBuilder.FULL, "main"), 10);
 
         List<Entry<String, Integer>> res = target(SuggesterController.PATH)
                 .path("popularity")
-                .path("swift")
+                .path("rust")
                 .request()
                 .get(popularityDataType);
 
 
-        assertThat(res, contains(new SimpleEntry<>("print", 10)));
+        assertThat(res, contains(new SimpleEntry<>("main", 10)));
     }
 
     @Test
