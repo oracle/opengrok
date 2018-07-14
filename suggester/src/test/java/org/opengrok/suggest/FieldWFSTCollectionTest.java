@@ -41,11 +41,15 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 
@@ -67,8 +71,12 @@ public class FieldWFSTCollectionTest {
 
     @After
     public void tearDown() throws IOException {
-        f.close();
-        FileUtils.deleteDirectory(tempDir.toFile());
+        if (f != null) {
+            f.close();
+        }
+        if (tempDir.toFile().exists()) {
+            FileUtils.deleteDirectory(tempDir.toFile());
+        }
     }
 
     @Test
@@ -248,6 +256,36 @@ public class FieldWFSTCollectionTest {
         init(true);
 
         f.getSearchCounts(null);
+    }
+
+    @Test
+    public void testRemove() throws IOException {
+        Directory dir = new RAMDirectory();
+        Path tempDir = Files.createTempDirectory("test");
+
+        try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
+            Document doc = new Document();
+            doc.add(new TextField("test", "text", Field.Store.NO));
+
+            iw.addDocument(doc);
+        }
+
+        FieldWFSTCollection f = new FieldWFSTCollection(dir, tempDir, false, Collections.singleton("test"));
+        f.init();
+        f.remove();
+
+        assertFalse(tempDir.toFile().exists());
+    }
+
+    @Test
+    public void testUnknownFieldIgnored() throws IOException {
+        addText(FIELD, "term");
+        f = new FieldWFSTCollection(dir, tempDir, false, new HashSet<>(Arrays.asList(FIELD, "unknown")));
+        f.init();
+
+        List<Lookup.LookupResult> res = f.lookup("unknown", "a", 10);
+
+        assertTrue(res.isEmpty());
     }
 
 }

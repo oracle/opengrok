@@ -64,6 +64,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- to get rid of SL4J warning messages -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
     </dependencies>
 
     <build>
