@@ -89,7 +89,6 @@ import static org.opensolaris.opengrok.configuration.Configuration.makeXMLString
 import org.opensolaris.opengrok.util.ForbiddenSymlinkException;
 import org.opensolaris.opengrok.util.PathUtils;
 import org.opensolaris.opengrok.web.Prefix;
-import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -1718,7 +1717,6 @@ public final class RuntimeEnvironment {
         getAuthorizationFramework().reload();
 
         messagesContainer.setMessageLimit(config.getMessageLimit());
-        SuggesterServiceFactory.getDefault().refresh(configuration);
     }
 
     public void setIndexTimestamp() throws IOException {

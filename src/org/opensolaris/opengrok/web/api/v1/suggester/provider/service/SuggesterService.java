@@ -26,7 +26,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.query.SuggesterQuery;
-import org.opensolaris.opengrok.configuration.Configuration;
 
 import java.util.Collection;
 import java.util.List;
@@ -46,9 +45,8 @@ public interface SuggesterService {
 
     /**
      * Refreshes the suggester based on the new configuration.
-     * @param configuration new configuration
      */
-    void refresh(Configuration configuration);
+    void refresh();
 
     /**
      * Refreshes the suggester for specified {@code project}.
