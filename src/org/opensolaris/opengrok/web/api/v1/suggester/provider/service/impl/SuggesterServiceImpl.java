@@ -153,8 +153,8 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     /** {@inheritDoc} */
     @Override
-    public void refresh(final Configuration configuration) {
-        logger.log(Level.FINE, "Refreshing suggester for new configuration {0}", configuration);
+    public void refresh() {
+        logger.log(Level.FINE, "Refreshing suggester for new configuration {0}", env.getConfiguration());
         lock.writeLock().lock();
         try {
             // close and init from scratch because many things may have changed in the configuration

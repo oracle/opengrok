@@ -24,7 +24,9 @@ package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.ClassUtil;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -43,6 +45,9 @@ public class ConfigurationController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    @Inject
+    private SuggesterService suggesterService;
+
     @GET
     @Produces(MediaType.APPLICATION_XML)
     public String get() {
@@ -53,6 +58,7 @@ public class ConfigurationController {
     @Consumes(MediaType.APPLICATION_XML)
     public void set(final String body, @QueryParam("reindex") final boolean reindex) {
         env.applyConfig(body, reindex, !reindex);
+        suggesterService.refresh();
     }
 
     @GET
@@ -77,6 +83,7 @@ public class ConfigurationController {
 
         // apply the configuration - let the environment reload the configuration if necessary
         env.applyConfig(env.getConfiguration(), false, true);
+        suggesterService.refresh();
     }
 
     @POST

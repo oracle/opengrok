@@ -22,7 +22,7 @@
  */
 package org.opensolaris.opengrok.web.api.v1.controller;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
@@ -64,7 +64,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.opensolaris.opengrok.history.RepositoryFactory.getRepository;
 import static org.opensolaris.opengrok.util.IOUtils.removeRecursive;
 
