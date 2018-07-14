@@ -29,11 +29,15 @@ import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.junit.Test;
+import org.opengrok.suggest.query.SuggesterPrefixQuery;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 public class SuggesterUtilsTest {
@@ -78,6 +82,29 @@ public class SuggesterUtilsTest {
 
         assertEquals(1, terms.size());
         assertEquals(t, terms.get(0));
+    }
+
+    @Test
+    public void testIsComplexQuery() {
+        assertFalse(SuggesterUtils.isComplexQuery(null, new SuggesterPrefixQuery(new Term("test", "t"))));
+    }
+
+    @Test
+    public void testCombineResults() {
+        LookupResultItem item1 = new LookupResultItem("test", "proj1", 10);
+        LookupResultItem item2 = new LookupResultItem("test", "proj2", 10);
+        LookupResultItem item3 = new LookupResultItem("test", "proj3", 10);
+        LookupResultItem item4 = new LookupResultItem("test2", "proj3", 10);
+        LookupResultItem item5 = new LookupResultItem("test3", "proj1", 15);
+
+        List<LookupResultItem> res = SuggesterUtils.combineResults(
+                Arrays.asList(item1, item2, item3, item4, item5), 2);
+
+        LookupResultItem combined = new LookupResultItem("test", "proj1", 10);
+        combined.combine(new LookupResultItem("test", "proj2", 10));
+        combined.combine(new LookupResultItem("test", "proj3", 10));
+
+        assertThat(res, contains(combined, item5));
     }
 
 }

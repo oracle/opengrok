@@ -24,6 +24,7 @@ package org.opengrok.suggest;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -74,6 +75,25 @@ public final class LookupResultItem implements Comparable<LookupResultItem> {
     @Override
     public int compareTo(final LookupResultItem other) {
         return Long.compare(score, other.score);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        LookupResultItem that = (LookupResultItem) o;
+        return score == that.score &&
+                Objects.equals(phrase, that.phrase) &&
+                Objects.equals(projects, that.projects);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(phrase, projects, score);
     }
 
     @Override

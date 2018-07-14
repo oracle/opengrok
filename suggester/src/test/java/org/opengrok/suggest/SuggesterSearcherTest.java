@@ -33,12 +33,14 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengrok.suggest.query.SuggesterFuzzyQuery;
 import org.opengrok.suggest.query.SuggesterPhraseQuery;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
+import org.opengrok.suggest.query.SuggesterRangeQuery;
 import org.opengrok.suggest.query.SuggesterRegexpQuery;
 import org.opengrok.suggest.query.SuggesterWildcardQuery;
 
@@ -131,6 +133,30 @@ public class SuggesterSearcherTest {
         List<String> tokens = suggestions.stream().map(LookupResultItem::getPhrase).collect(Collectors.toList());
 
         assertThat(tokens, contains("opengrok2"));
+    }
+
+    @Test
+    public void testRangeQueryUpper() {
+        SuggesterRangeQuery q = new SuggesterRangeQuery("test", new BytesRef("opengrok"),
+                new BytesRef("t"), true, true, SuggesterRangeQuery.SuggestPosition.UPPER);
+
+        List<LookupResultItem> suggestions = searcher.suggest(null, "test", q, k -> 0);
+
+        List<String> tokens = suggestions.stream().map(LookupResultItem::getPhrase).collect(Collectors.toList());
+
+        assertThat(tokens, contains("test"));
+    }
+
+    @Test
+    public void testRangeQueryLower() {
+        SuggesterRangeQuery q = new SuggesterRangeQuery("test", new BytesRef("o"),
+                new BytesRef("test"), true, true, SuggesterRangeQuery.SuggestPosition.LOWER);
+
+        List<LookupResultItem> suggestions = searcher.suggest(null, "test", q, k -> 0);
+
+        List<String> tokens = suggestions.stream().map(LookupResultItem::getPhrase).collect(Collectors.toList());
+
+        assertThat(tokens, contains("opengrok", "opengrok2"));
     }
 
 }
