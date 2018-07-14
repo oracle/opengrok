@@ -1744,7 +1744,7 @@ function initAutocomplete(config, minisearch) {
 }
 
 function initMinisearchAutocomplete(config) {
-    if (config.allowedFields && !config.allowedFields.contains('full')) {
+    if (config.allowedFields && !config.allowedFields.includes('full')) {
         return;
     }
 
@@ -1774,7 +1774,7 @@ function initMinisearchAutocomplete(config) {
 }
 
 function initAutocompleteForField(inputId, field, config, dataFunction, errorElemId) {
-    if (config.allowedFields && !config.allowedFields.contains(field)) {
+    if (config.allowedFields && !config.allowedFields.includes(field)) {
         return;
     }
 

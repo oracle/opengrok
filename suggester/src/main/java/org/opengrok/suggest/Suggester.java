@@ -40,9 +40,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -75,19 +77,24 @@ public final class Suggester implements Closeable {
 
     private boolean projectsEnabled;
 
+    private final Set<String> allowedFields;
+
     /**
      * @param suggesterDir directory under which the suggester data should be created
      * @param resultSize maximum number of suggestions that should be returned
      * @param awaitTerminationTime how much time to wait for suggester to initialize
      * @param allowMostPopular specifies if the most popular completion is enabled
      * @param projectsEnabled specifies if the OpenGrok projects are enabled
+     * @param allowedFields fields for which should the suggester be enabled,
+     * if {@code null} then enabled for all fields
      */
     public Suggester(
             final File suggesterDir,
             final int resultSize,
             final Duration awaitTerminationTime,
             final boolean allowMostPopular,
-            final boolean projectsEnabled
+            final boolean projectsEnabled,
+            final Set<String> allowedFields
     ) {
         if (suggesterDir == null) {
             throw new IllegalArgumentException("Suggester needs to have directory specified");
@@ -103,6 +110,7 @@ public final class Suggester implements Closeable {
 
         this.allowMostPopular = allowMostPopular;
         this.projectsEnabled = projectsEnabled;
+        this.allowedFields = new HashSet<>(allowedFields);
     }
 
     /**
@@ -149,8 +157,8 @@ public final class Suggester implements Closeable {
                 Instant start = Instant.now();
                 logger.log(Level.FINE, "Initializing {0}", indexDir);
 
-                FieldWFSTCollection wfst = new FieldWFSTCollection(FSDirectory.open(indexDir), getSuggesterDir(indexDir),
-                        allowMostPopular);
+                FieldWFSTCollection wfst = new FieldWFSTCollection(FSDirectory.open(indexDir),
+                        getSuggesterDir(indexDir), allowMostPopular, allowedFields);
                 wfst.init();
                 if (projectsEnabled) {
                     projectData.put(indexDir.getFileName().toString(), wfst);

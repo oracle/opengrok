@@ -48,8 +48,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -94,10 +96,38 @@ class FieldWFSTCollection implements Closeable {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    FieldWFSTCollection(final Directory indexDir, final Path suggesterDir, final boolean allowMostPopular) {
+    private Set<String> fields;
+
+    FieldWFSTCollection(
+            final Directory indexDir,
+            final Path suggesterDir,
+            final boolean allowMostPopular,
+            final Set<String> fields
+    ) throws IOException {
         this.indexDir = indexDir;
         this.suggesterDir = suggesterDir;
         this.allowMostPopular = allowMostPopular;
+
+        initFields(fields);
+    }
+
+    private void initFields(final Set<String> fields) throws IOException {
+        try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
+            Collection<String> indexedFields = MultiFields.getIndexedFields(indexReader);
+            if (fields == null) {
+                this.fields = new HashSet<>(indexedFields);
+            } else if (!indexedFields.containsAll(fields)) {
+                Set<String> copy = new HashSet<>(fields);
+                copy.removeAll(indexedFields);
+                logger.log(Level.WARNING, "Fields {0} will be ignored because they are not indexed", copy);
+
+                copy = new HashSet<>(fields);
+                copy.retainAll(indexedFields);
+                this.fields = copy;
+            } else {
+                this.fields = new HashSet<>(fields);
+            }
+        }
     }
 
     /**
@@ -147,14 +177,14 @@ class FieldWFSTCollection implements Closeable {
 
     private void loadStoredWFSTs() throws IOException {
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
-            for (String field : MultiFields.getIndexedFields(indexReader)) {
+            for (String field : fields) {
 
                 File WFSTfile = getWFSTFile(field);
                 if (WFSTfile.exists()) {
                     WFSTCompletionLookup WFST = loadStoredWFST(WFSTfile);
                     lookups.put(field, WFST);
                 } else {
-                    logger.log(Level.INFO, "Missing FieldWFSTCollection file for {0} field in {1}, creating a new one",
+                    logger.log(Level.INFO, "Missing WFST file for {0} field in {1}, creating a new one",
                             new Object[] {field, suggesterDir});
 
                     WFSTCompletionLookup lookup = build(indexReader, field);
@@ -207,7 +237,7 @@ class FieldWFSTCollection implements Closeable {
 
     private void build() throws IOException {
         try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
-            for (String field : MultiFields.getIndexedFields(indexReader)) {
+            for (String field : fields) {
                 WFSTCompletionLookup lookup = build(indexReader, field);
                 store(lookup, field);
 
@@ -246,45 +276,44 @@ class FieldWFSTCollection implements Closeable {
 
     private void initSearchCountMap() throws IOException {
         searchCountMaps.clear();
-        try (IndexReader indexReader = DirectoryReader.open(indexDir)) {
-            for (String field : MultiFields.getIndexedFields(indexReader)) {
-                ChronicleMapConfiguration conf = ChronicleMapConfiguration.load(suggesterDir, field);
-                if (conf == null) { // it was not yet initialized
-                    conf = new ChronicleMapConfiguration((int) lookups.get(field).getCount(), getAverageLength(field));
-                    conf.save(suggesterDir, field);
-                }
 
-                File f = getChronicleMapFile(field);
-
-                ChronicleMapAdapter m;
-                try {
-                    m = new ChronicleMapAdapter(field, conf.getAverageKeySize(), conf.getEntries(), f);
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE,
-                            "Could not create ChronicleMap, most popular completion disabled, if you are using "
-                                    + "JDK9+ make sure to specify: "
-                                    + "--add-exports java.base/jdk.internal.ref=ALL-UNNAMED "
-                                    + "--add-exports java.base/jdk.internal.misc=ALL-UNNAMED "
-                                    + "--add-exports java.base/sun.nio.ch=ALL-UNNAMED", e);
-                    return;
-                }
-
-                if (getCommitVersion() != getDataVersion()) {
-                    removeOldTerms(m, lookups.get(field));
-
-                    if (conf.getEntries() < lookups.get(field).getCount()) {
-                        int newEntriesCount = (int) lookups.get(field).getCount();
-                        double newKeyAvgLength = getAverageLength(field);
-
-                        conf.setEntries(newEntriesCount);
-                        conf.setAverageKeySize(newKeyAvgLength);
-                        conf.save(suggesterDir, field);
-
-                        m.resize(newEntriesCount, newKeyAvgLength);
-                    }
-                }
-                searchCountMaps.put(field, m);
+        for (String field : fields) {
+            ChronicleMapConfiguration conf = ChronicleMapConfiguration.load(suggesterDir, field);
+            if (conf == null) { // it was not yet initialized
+                conf = new ChronicleMapConfiguration((int) lookups.get(field).getCount(), getAverageLength(field));
+                conf.save(suggesterDir, field);
             }
+
+            File f = getChronicleMapFile(field);
+
+            ChronicleMapAdapter m;
+            try {
+                m = new ChronicleMapAdapter(field, conf.getAverageKeySize(), conf.getEntries(), f);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE,
+                        "Could not create ChronicleMap, most popular completion disabled, if you are using "
+                                + "JDK9+ make sure to specify: "
+                                + "--add-exports java.base/jdk.internal.ref=ALL-UNNAMED "
+                                + "--add-exports java.base/jdk.internal.misc=ALL-UNNAMED "
+                                + "--add-exports java.base/sun.nio.ch=ALL-UNNAMED", e);
+                return;
+            }
+
+            if (getCommitVersion() != getDataVersion()) {
+                removeOldTerms(m, lookups.get(field));
+
+                if (conf.getEntries() < lookups.get(field).getCount()) {
+                    int newEntriesCount = (int) lookups.get(field).getCount();
+                    double newKeyAvgLength = getAverageLength(field);
+
+                    conf.setEntries(newEntriesCount);
+                    conf.setAverageKeySize(newKeyAvgLength);
+                    conf.save(suggesterDir, field);
+
+                    m.resize(newEntriesCount, newKeyAvgLength);
+                }
+            }
+            searchCountMaps.put(field, m);
         }
     }
 
