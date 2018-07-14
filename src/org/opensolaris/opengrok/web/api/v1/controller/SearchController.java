@@ -25,8 +25,9 @@ package org.opensolaris.opengrok.web.api.v1.controller;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.SearchEngine;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -45,10 +46,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Path("/search")
+@Path(SearchController.PATH)
 public class SearchController {
 
+    public static final String PATH = "search";
+
     private static final int MAX_RESULTS = 1000;
+
+    @Inject
+    private SuggesterService suggester;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -72,7 +78,7 @@ public class SearchController {
 
             Instant startTime = Instant.now();
 
-            SuggesterServiceFactory.getDefault().onSearch(projects, engine.getQuery());
+            suggester.onSearch(projects, engine.getQuery());
 
             Map<String, List<SearchHit>> hits = engine.search(req, projects, startDocIndex, maxResults)
                     .stream()

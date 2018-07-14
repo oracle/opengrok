@@ -23,6 +23,8 @@
 package org.opensolaris.opengrok.web.api.v1.filter;
 
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.web.api.v1.controller.SearchController;
+import org.opensolaris.opengrok.web.api.v1.controller.SuggesterController;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -35,7 +37,6 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -47,7 +48,8 @@ public class LocalhostFilter implements ContainerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalhostFilter.class);
 
-    private static final Set<String> allowedPaths = Collections.singleton("search");
+    private static final Set<String> allowedPaths = new HashSet<>(Arrays.asList(
+            SearchController.PATH, SuggesterController.PATH));
 
     @Context
     private HttpServletRequest request;

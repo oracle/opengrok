@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.provider.service;
+package org.opensolaris.opengrok.web.api.v1.suggester.provider.service;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;

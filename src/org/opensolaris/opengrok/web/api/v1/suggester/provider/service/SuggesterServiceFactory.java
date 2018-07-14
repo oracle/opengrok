@@ -20,24 +20,17 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.provider;
+package org.opensolaris.opengrok.web.api.v1.suggester.provider.service;
 
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.opensolaris.opengrok.web.api.error.ExceptionMapperUtils;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.impl.SuggesterServiceImpl;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+public class SuggesterServiceFactory {
 
-/**
- * Maps the {@link ParseException} to a {@link javax.ws.rs.core.Response.Status#BAD_REQUEST} status.
- */
-@Provider
-public class ParseExceptionMapper implements ExceptionMapper<ParseException> {
+    private SuggesterServiceFactory() {
+    }
 
-    @Override
-    public Response toResponse(final ParseException e) {
-        return ExceptionMapperUtils.toResponse(Response.Status.BAD_REQUEST, e);
+    public static SuggesterService getDefault() {
+        return SuggesterServiceImpl.getInstance();
     }
 
 }

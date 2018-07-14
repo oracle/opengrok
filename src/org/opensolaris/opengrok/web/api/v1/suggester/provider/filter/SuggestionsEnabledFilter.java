@@ -20,20 +20,29 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester;
+package org.opensolaris.opengrok.web.api.v1.suggester.provider.filter;
 
-import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
 
 /**
- * Binder for dependency injection in {@link SuggesterApp}.
+ * Filter which checks if suggester is enabled and if not then returns {@link Response.Status#NOT_FOUND}.
  */
-public class SuggesterAppBinder extends AbstractBinder {
+@Provider
+@Suggester
+public class SuggestionsEnabledFilter implements ContainerRequestFilter {
+
+    private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     @Override
-    protected void configure() {
-        bind(SuggesterServiceFactory.getDefault()).to(SuggesterService.class);
+    public void filter(final ContainerRequestContext context) {
+        if (!env.getConfiguration().getSuggesterConfig().isEnabled()) {
+            context.abortWith(Response.status(Response.Status.NOT_FOUND).build());
+        }
     }
 
 }

@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.controller;
+package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -33,12 +33,13 @@ import org.opensolaris.opengrok.configuration.SuggesterConfig;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.Util;
-import org.opensolaris.opengrok.web.suggester.model.SuggesterData;
-import org.opensolaris.opengrok.web.suggester.model.SuggesterQueryData;
-import org.opensolaris.opengrok.web.suggester.parser.SuggesterQueryDataParser;
-import org.opensolaris.opengrok.web.suggester.provider.filter.Authorized;
-import org.opensolaris.opengrok.web.suggester.provider.filter.Localhost;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterService;
+import org.opensolaris.opengrok.web.api.v1.suggester.model.SuggesterData;
+import org.opensolaris.opengrok.web.api.v1.suggester.model.SuggesterQueryData;
+import org.opensolaris.opengrok.web.api.v1.suggester.parser.SuggesterQueryDataParser;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.filter.Authorized;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.filter.Localhost;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.filter.Suggester;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -64,8 +65,11 @@ import java.util.logging.Logger;
 /**
  * Endpoint for suggester related REST queries.
  */
-@Path("/")
+@Path(SuggesterController.PATH)
+@Suggester
 public final class SuggesterController {
+
+    public static final String PATH = "suggest";
 
     private static final Logger logger = LoggerFactory.getLogger(SuggesterController.class);
 

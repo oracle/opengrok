@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.controller;
+package org.opensolaris.opengrok.web.api.v1.controller;
 
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.AfterClass;
@@ -33,8 +33,8 @@ import org.opensolaris.opengrok.configuration.SuggesterConfig;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.TestRepository;
-import org.opensolaris.opengrok.web.suggester.SuggesterApp;
-import org.opensolaris.opengrok.web.suggester.provider.service.impl.SuggesterServiceImpl;
+import org.opensolaris.opengrok.web.api.v1.RestApp;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.impl.SuggesterServiceImpl;
 
 import javax.ws.rs.core.Application;
 import java.io.File;
@@ -57,7 +57,7 @@ public class SuggesterControllerProjectsDisabledTest extends JerseyTest {
 
     @Override
     protected Application configure() {
-        return new SuggesterApp();
+        return new RestApp();
     }
 
     @BeforeClass
@@ -104,7 +104,7 @@ public class SuggesterControllerProjectsDisabledTest extends JerseyTest {
 
     @Test
     public void suggestionsSimpleTest() {
-        SuggesterControllerTest.Result res = target()
+        SuggesterControllerTest.Result res = target(SuggesterController.PATH)
                 .queryParam("field", QueryBuilder.FULL)
                 .queryParam(QueryBuilder.FULL, "inner")
                 .request()

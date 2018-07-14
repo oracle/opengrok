@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.provider.filter;
+package org.opensolaris.opengrok.web.api.v1.suggester.provider.filter;
 
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Project;

@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
-import org.opensolaris.opengrok.web.suggester.provider.service.SuggesterServiceFactory;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
 /**
  * Initialize webapp context

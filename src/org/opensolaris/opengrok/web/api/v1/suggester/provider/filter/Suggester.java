@@ -20,25 +20,16 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester;
+package org.opensolaris.opengrok.web.api.v1.suggester.provider.filter;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import javax.ws.rs.NameBinding;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import javax.ws.rs.ApplicationPath;
-
-/**
- * Represents suggester part of the web application. Initializes and enables all the suggester related services.
- */
-@ApplicationPath("/suggest")
-public class SuggesterApp extends ResourceConfig {
-
-    public SuggesterApp() {
-        register(new SuggesterAppBinder());
-        packages(true,
-                "org.opensolaris.opengrok.web.suggester.controller",
-                "org.opensolaris.opengrok.web.suggester.provider",
-                "org.opensolaris.opengrok.web.api.constraints",
-                "org.opensolaris.opengrok.web.api.error");
-    }
-
+@NameBinding
+@Target({ElementType.METHOD, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Suggester {
 }

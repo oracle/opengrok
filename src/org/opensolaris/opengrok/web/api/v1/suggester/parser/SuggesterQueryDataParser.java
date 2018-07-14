@@ -20,7 +20,7 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.parser;
+package org.opensolaris.opengrok.web.api.v1.suggester.parser;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -28,9 +28,9 @@ import org.apache.lucene.search.Query;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.web.suggester.model.SuggesterData;
-import org.opensolaris.opengrok.web.suggester.model.SuggesterQueryData;
-import org.opensolaris.opengrok.web.suggester.query.SuggesterQueryBuilder;
+import org.opensolaris.opengrok.web.api.v1.suggester.model.SuggesterData;
+import org.opensolaris.opengrok.web.api.v1.suggester.model.SuggesterQueryData;
+import org.opensolaris.opengrok.web.api.v1.suggester.query.SuggesterQueryBuilder;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1718,7 +1718,7 @@ function pageReadyMast() {
 function domReadyMenu(minisearch) {
     $.ajax({
         // cannot use "/api/v1/configuration/suggester" because of security
-        url: window.contextPath + "/suggest/config",
+        url: window.contextPath + "/api/v1/suggest/config",
         dataType: "json",
         success: function(config) {
             if (config.enabled) {
@@ -1795,7 +1795,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
     input.autocomplete({
         source: function(request, response) {
             $.ajax({
-                url: window.contextPath + "/suggest",
+                url: window.contextPath + "/api/v1/suggest",
                 dataType: "json",
                 data: dataFunction(input, field),
                 success: function(data) {

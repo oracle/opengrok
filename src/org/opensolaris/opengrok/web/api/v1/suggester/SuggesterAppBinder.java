@@ -20,16 +20,20 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opensolaris.opengrok.web.suggester.provider.filter;
+package org.opensolaris.opengrok.web.api.v1.suggester;
 
-import javax.ws.rs.NameBinding;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
+import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
-@NameBinding
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Authorized {
+/**
+ * Binder for suggester related dependency injection.
+ */
+public class SuggesterAppBinder extends AbstractBinder {
+
+    @Override
+    protected void configure() {
+        bind(SuggesterServiceFactory.getDefault()).to(SuggesterService.class);
+    }
+
 }
