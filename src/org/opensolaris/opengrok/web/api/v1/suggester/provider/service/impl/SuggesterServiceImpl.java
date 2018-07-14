@@ -273,7 +273,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         suggester = new Suggester(suggesterDir,
                 suggesterConfig.getMaxResults(),
                 Duration.ofSeconds(suggesterConfig.getSuggesterBuildTerminationTimeSec()),
-                suggesterConfig.isAllowMostPopular(), env.isProjectsEnabled());
+                suggesterConfig.isAllowMostPopular(), env.isProjectsEnabled(), suggesterConfig.getAllowedFields());
 
         new Thread(() -> {
             suggester.init(getAllProjectIndexDirs());

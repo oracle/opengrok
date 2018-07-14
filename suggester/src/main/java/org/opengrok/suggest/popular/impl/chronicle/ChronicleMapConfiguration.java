@@ -43,6 +43,8 @@ public class ChronicleMapConfiguration implements Serializable {
 
     private static final Logger logger = Logger.getLogger(ChronicleMapConfiguration.class.getName());
 
+    private static final String FILE_NAME_SUFFIX = "_map.cfg";
+
     private int entries;
 
     private double averageKeySize;
@@ -101,7 +103,7 @@ public class ChronicleMapConfiguration implements Serializable {
     }
 
     private static File getFile(final Path dir, final String field) {
-        return dir.resolve(field + "_map.cfg").toFile();
+        return dir.resolve(field + FILE_NAME_SUFFIX).toFile();
     }
 
 }

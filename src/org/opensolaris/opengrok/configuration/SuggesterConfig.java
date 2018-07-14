@@ -25,7 +25,11 @@ package org.opensolaris.opengrok.configuration;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -47,7 +51,14 @@ public class SuggesterConfig {
     public static final int SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT = 1800; // half an hour should be enough
 
     public static final Set<String> allowedProjectsDefault = null;
-    public static final Set<String> allowedFieldsDefault = null;
+    public static final Set<String> allowedFieldsDefault = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            QueryBuilder.FULL,
+            QueryBuilder.DEFS,
+            QueryBuilder.REFS,
+            QueryBuilder.PATH,
+            QueryBuilder.HIST,
+            QueryBuilder.TYPE
+    )));
 
     /**
      * Specifies if the suggester is enabled.
