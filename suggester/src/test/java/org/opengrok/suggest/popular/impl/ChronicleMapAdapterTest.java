@@ -31,8 +31,13 @@ import org.opengrok.suggest.popular.impl.chronicle.ChronicleMapAdapter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
+import java.util.Map.Entry;
 
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class ChronicleMapAdapterTest {
 
@@ -84,6 +89,38 @@ public class ChronicleMapAdapterTest {
         fillData(10, 500, map);
 
         checkData(500, map);
+    }
+
+    @Test
+    public void testGetPopularityData() {
+        Entry<BytesRef, Integer> e1 = new SimpleEntry<>(new BytesRef("test"), 1);
+        Entry<BytesRef, Integer> e2 = new SimpleEntry<>(new BytesRef("test2"), 2);
+
+        map.increment(e1.getKey(), e1.getValue());
+        map.increment(e2.getKey(), e2.getValue());
+
+        List<Entry<BytesRef, Integer>> data = map.getPopularityData(0, 10);
+
+        assertThat(data, contains(e2, e1));
+    }
+
+    @Test
+    public void testGetPopularityPaging() {
+        Entry<BytesRef, Integer> e1 = new SimpleEntry<>(new BytesRef("test"), 1);
+        Entry<BytesRef, Integer> e2 = new SimpleEntry<>(new BytesRef("test2"), 2);
+        Entry<BytesRef, Integer> e3 = new SimpleEntry<>(new BytesRef("test3"), 3);
+
+        map.increment(e1.getKey(), e1.getValue());
+        map.increment(e2.getKey(), e2.getValue());
+        map.increment(e3.getKey(), e3.getValue());
+
+        List<Entry<BytesRef, Integer>> data = map.getPopularityData(0, 2);
+
+        assertThat(data, contains(e3, e2));
+
+        data = map.getPopularityData(1, 2);
+
+        assertThat(data, contains(e1));
     }
 
 }

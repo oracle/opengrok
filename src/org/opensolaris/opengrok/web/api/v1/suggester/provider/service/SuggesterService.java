@@ -24,11 +24,13 @@ package org.opensolaris.opengrok.web.api.v1.suggester.provider.service;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.query.SuggesterQuery;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 
 public interface SuggesterService {
 
@@ -74,6 +76,16 @@ public interface SuggesterService {
      * @param value value by which to change the data, represents how many times was the {@code term} searched
      */
     void increaseSearchCount(String project, Term term, int value);
+
+    /**
+     * Returns the searched terms sorted according to their popularity.
+     * @param project project for which to return the data
+     * @param field field for which to return the data
+     * @param page which page of data to retrieve
+     * @param pageSize number of results to return
+     * @return list of terms with their popularity
+     */
+    List<Entry<BytesRef, Integer>> getPopularityData(String project, String field, int page, int pageSize);
 
     /**
      * Closes the underlying service explicitly.

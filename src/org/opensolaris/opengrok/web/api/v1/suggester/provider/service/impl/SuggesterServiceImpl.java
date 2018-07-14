@@ -29,6 +29,7 @@ import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.Suggester;
 import org.opengrok.suggest.Suggester.NamedIndexReader;
@@ -52,6 +53,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -233,6 +235,26 @@ public class SuggesterServiceImpl implements SuggesterService {
                 return;
             }
             suggester.increaseSearchCount(project, term, value);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<Entry<BytesRef, Integer>> getPopularityData(
+            final String project,
+            final String field,
+            final int page,
+            final int pageSize
+    ) {
+        lock.readLock().lock();
+        try {
+            if (suggester == null) {
+                logger.log(Level.FINE, "Cannot retrieve popularity data because suggester is not initialized");
+                return Collections.emptyList();
+            }
+            return suggester.getSearchCounts(project, field, page, pageSize);
         } finally {
             lock.readLock().unlock();
         }

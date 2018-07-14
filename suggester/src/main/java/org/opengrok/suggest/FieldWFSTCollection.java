@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -453,6 +454,28 @@ class FieldWFSTCollection implements Closeable {
      */
     public void unlock() {
         lock.readLock().unlock();
+    }
+
+    /**
+     * Returns the searched terms sorted according to their popularity.
+     * @param field field for which to return the data
+     * @param page which page of data to retrieve
+     * @param pageSize number of results to return
+     * @return list of terms with their popularity
+     */
+    public List<Entry<BytesRef, Integer>> getSearchCountsSorted(final String field, int page, int pageSize) {
+        lock.readLock().lock();
+        try {
+            PopularityMap map = searchCountMaps.get(field);
+            if (map == null) {
+                logger.log(Level.FINE, "No search count map initialized for field {0}", field);
+                return Collections.emptyList();
+            }
+
+            return map.getPopularityData(page, pageSize);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override

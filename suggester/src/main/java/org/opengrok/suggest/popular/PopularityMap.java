@@ -24,6 +24,9 @@ package org.opengrok.suggest.popular;
 
 import org.apache.lucene.util.BytesRef;
 
+import java.util.List;
+import java.util.Map.Entry;
+
 /**
  * Abstraction for the map to store the data for most popular completion.
  */
@@ -35,5 +38,13 @@ public interface PopularityMap extends PopularityCounter, AutoCloseable {
      * @param value positive value by which to increment the data
      */
     void increment(BytesRef key, int value);
+
+    /**
+     * Returns the popularity data sorted according to their value.
+     * @param page which page of data to retrieve
+     * @param pageSize number of results to return
+     * @return popularity data sorted according to their value
+     */
+    List<Entry<BytesRef, Integer>> getPopularityData(int page, int pageSize);
 
 }
