@@ -41,10 +41,12 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static junit.framework.Assert.assertTrue;
@@ -52,6 +54,7 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
 public class FieldWFSTCollectionTest {
 
@@ -286,6 +289,22 @@ public class FieldWFSTCollectionTest {
         List<Lookup.LookupResult> res = f.lookup("unknown", "a", 10);
 
         assertTrue(res.isEmpty());
+    }
+
+    @Test
+    public void testGetSearchCountMapSorted() throws IOException {
+        addText(FIELD, "test1 test2");
+        init(true);
+
+        Term t1 = new Term(FIELD, "test1");
+        Term t2 = new Term(FIELD, "test2");
+
+        f.incrementSearchCount(t1, 10);
+        f.incrementSearchCount(t2, 5);
+
+        List<Entry<BytesRef, Integer>> searchCounts = f.getSearchCountsSorted(FIELD, 0, 10);
+
+        assertThat(searchCounts, contains(new SimpleEntry<>(t1.bytes(), 10), new SimpleEntry<>(t2.bytes(), 5)));
     }
 
 }
