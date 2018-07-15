@@ -30,25 +30,35 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.junit.Test;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
+import org.opengrok.suggest.query.SuggesterWildcardQuery;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class SuggesterTest {
 
@@ -114,7 +124,7 @@ public class SuggesterTest {
 
         Path tempSuggesterDir = Files.createTempDirectory("opengrok");
 
-        Suggester s = new Suggester(tempSuggesterDir.toFile(), 10, Duration.ofMinutes(1), false,
+        Suggester s = new Suggester(tempSuggesterDir.toFile(), 10, Duration.ofMinutes(1), true,
                 true, Collections.singleton("test"));
 
         s.init(Collections.singleton(new Suggester.NamedIndexDir("test", tempIndexDir)));
@@ -214,6 +224,60 @@ public class SuggesterTest {
 
         FileUtils.deleteDirectory(t.suggesterDir.toFile());
         FileUtils.deleteDirectory(t.indexDir.toFile());
+    }
+
+    @Test
+    public void testComplexQuerySearch() throws IOException {
+        SuggesterTestData t = initSuggester();
+
+        List<LookupResultItem> res = t.s.search(Collections.singletonList(t.getNamedIndexReader()),
+                new SuggesterWildcardQuery(new Term("test", "*1")), null);
+
+        assertThat(res.stream().map(LookupResultItem::getPhrase).collect(Collectors.toList()),
+                contains("term1"));
+
+        t.close();
+    }
+
+    @Test
+    public void testOnSearch() throws IOException {
+        SuggesterTestData t = initSuggester();
+
+        Query q = new BooleanQuery.Builder()
+                .add(new TermQuery(new Term("test", "term1")), BooleanClause.Occur.MUST)
+                .add(new TermQuery(new Term("test", "term3")), BooleanClause.Occur.MUST)
+                .build();
+
+        t.s.onSearch(Collections.singleton("test"), q);
+
+        List<Entry<BytesRef, Integer>> res = t.s.getSearchCounts("test", "test", 0, 10);
+
+        assertThat(res, containsInAnyOrder(new SimpleEntry<>(new BytesRef("term1"), 1),
+                new SimpleEntry<>(new BytesRef("term3"), 1)));
+
+        t.close();
+    }
+
+    @Test
+    public void testGetSearchCountsForUnknown() throws IOException {
+        SuggesterTestData t = initSuggester();
+
+        assertTrue(t.s.getSearchCounts("unknown", "unknown", 0, 10).isEmpty());
+
+        t.close();
+    }
+
+    @Test
+    public void testIncreaseSearchCount() throws IOException {
+        SuggesterTestData t = initSuggester();
+
+        t.s.increaseSearchCount("test", new Term("test", "term2"), 100);
+
+        List<Entry<BytesRef, Integer>> res = t.s.getSearchCounts("test", "test", 0, 10);
+
+        assertThat(res, contains(new SimpleEntry<>(new BytesRef("term2"), 100)));
+
+        t.close();
     }
 
 }
