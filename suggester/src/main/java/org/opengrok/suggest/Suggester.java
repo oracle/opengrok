@@ -465,6 +465,11 @@ public final class Suggester implements Closeable {
         public Path getPath() {
             return path;
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     /**
@@ -501,6 +506,12 @@ public final class Suggester implements Closeable {
         public IndexReader getReader() {
             return reader;
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
     }
 
 }
