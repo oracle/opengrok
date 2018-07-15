@@ -9,6 +9,9 @@
     </parent>
 
     <artifactId>suggester</artifactId>
+    <packaging>jar</packaging>
+
+    <name>OpenGrok Suggester</name>
 
     <dependencies>
         <dependency>
