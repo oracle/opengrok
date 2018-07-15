@@ -76,7 +76,7 @@ class SuggesterSearcher extends IndexSearcher {
 
     /**
      * Returns the suggestions for generic {@link SuggesterQuery} (almost all except lone
-     * {@link org.opengrok.suggest.query.SuggesterPrefixQuery} for which check {@link FieldWFSTCollection}).
+     * {@link org.opengrok.suggest.query.SuggesterPrefixQuery} for which see {@link SuggesterProjectData}).
      * @param query query on which the suggestions depend
      * @param project name of the project
      * @param suggesterQuery query for the suggestions

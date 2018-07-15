@@ -32,6 +32,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.Suggester;
+import org.opengrok.suggest.Suggester.NamedIndexDir;
 import org.opengrok.suggest.Suggester.NamedIndexReader;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opensolaris.opengrok.configuration.Configuration;
@@ -189,11 +190,15 @@ public class SuggesterServiceImpl implements SuggesterService {
                 logger.log(Level.FINE, "Cannot refresh {0} because suggester is not initialized", project);
                 return;
             }
-            suggester.rebuild(Collections.singletonList(Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR,
-                    p.getPath())));
+            suggester.rebuild(Collections.singleton(getNamedIndexDir(p)));
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    private NamedIndexDir getNamedIndexDir(final Project p) {
+        Path indexPath = Paths.get(env.getConfiguration().getDataRoot(), IndexDatabase.INDEX_DIR, p.getPath());
+        return new NamedIndexDir(p.getName(), indexPath);
     }
 
     /** {@inheritDoc} */
@@ -281,17 +286,15 @@ public class SuggesterServiceImpl implements SuggesterService {
         }).start();
     }
 
-    private static List<Path> getAllProjectIndexDirs() {
-        Configuration config = RuntimeEnvironment.getInstance().getConfiguration();
-
-        if (config.isProjectsEnabled()) {
-            return RuntimeEnvironment.getInstance().getProjectList().stream()
+    private Collection<NamedIndexDir> getAllProjectIndexDirs() {
+        if (env.getConfiguration().isProjectsEnabled()) {
+            return env.getProjectList().stream()
                     .filter(Project::isIndexed)
-                    .map(project -> Paths.get(config.getDataRoot(), IndexDatabase.INDEX_DIR, project.getPath()))
+                    .map(this::getNamedIndexDir)
                     .collect(Collectors.toList());
         } else {
-            return Collections.singletonList(Paths.get(
-                    RuntimeEnvironment.getInstance().getDataRootPath(), IndexDatabase.INDEX_DIR));
+            Path indexDir = Paths.get(env.getDataRootPath(), IndexDatabase.INDEX_DIR);
+            return Collections.singleton(new NamedIndexDir("", indexDir));
         }
     }
 
