@@ -56,7 +56,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
-public class FieldWFSTCollectionTest {
+public class SuggesterProjectDataTest {
 
     private static final String FIELD = "test";
 
@@ -64,7 +64,7 @@ public class FieldWFSTCollectionTest {
 
     private Path tempDir;
 
-    private FieldWFSTCollection f;
+    private SuggesterProjectData data;
 
     @Before
     public void setUp() throws IOException {
@@ -74,8 +74,8 @@ public class FieldWFSTCollectionTest {
 
     @After
     public void tearDown() throws IOException {
-        if (f != null) {
-            f.close();
+        if (data != null) {
+            data.close();
         }
         if (tempDir.toFile().exists()) {
             FileUtils.deleteDirectory(tempDir.toFile());
@@ -92,12 +92,12 @@ public class FieldWFSTCollectionTest {
 
         assertThat(suggestions, Matchers.containsInAnyOrder("term1", "term2"));
 
-        f.close();
+        data.close();
     }
 
     private void init(boolean allowMostPopular) throws IOException {
-        f = new FieldWFSTCollection(dir, tempDir, allowMostPopular, Collections.singleton(FIELD));
-        f.init();
+        data = new SuggesterProjectData(dir, tempDir, allowMostPopular, Collections.singleton(FIELD));
+        data.init();
     }
 
     private void addText(final String field, final String text) throws IOException {
@@ -110,7 +110,7 @@ public class FieldWFSTCollectionTest {
     }
 
     private List<String> getSuggestions(String field, String prefix, int size) {
-        List<Lookup.LookupResult> res = f.lookup(field, prefix, size);
+        List<Lookup.LookupResult> res = data.lookup(field, prefix, size);
 
         return res.stream().map(r -> r.key.toString()).collect(Collectors.toList());
     }
@@ -132,10 +132,10 @@ public class FieldWFSTCollectionTest {
 
         init(true);
 
-        f.incrementSearchCount(new Term(FIELD, "term2"));
-        f.incrementSearchCount(new Term(FIELD, "term2"));
+        data.incrementSearchCount(new Term(FIELD, "term2"));
+        data.incrementSearchCount(new Term(FIELD, "term2"));
 
-        f.rebuild();
+        data.rebuild();
 
         List<String> suggestions = getSuggestions(FIELD, "t", 10);
 
@@ -154,7 +154,7 @@ public class FieldWFSTCollectionTest {
 
         addText(FIELD, "term3 term4 term5");
 
-        f.rebuild();
+        data.rebuild();
 
         List<String> suggestions = getSuggestions(FIELD, "t", 10);
 
@@ -189,9 +189,9 @@ public class FieldWFSTCollectionTest {
 
         init(true);
 
-        f.incrementSearchCount(new Term(FIELD, "text"));
+        data.incrementSearchCount(new Term(FIELD, "text"));
 
-        assertEquals(1, f.getSearchCounts(FIELD).get(new BytesRef("text")));
+        assertEquals(1, data.getSearchCounts(FIELD).get(new BytesRef("text")));
     }
 
     @Test
@@ -200,9 +200,9 @@ public class FieldWFSTCollectionTest {
 
         init(true);
 
-        f.incrementSearchCount(new Term(FIELD, "some"), 20);
+        data.incrementSearchCount(new Term(FIELD, "some"), 20);
 
-        assertEquals(20, f.getSearchCounts(FIELD).get(new BytesRef("some")));
+        assertEquals(20, data.getSearchCounts(FIELD).get(new BytesRef("some")));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -211,7 +211,7 @@ public class FieldWFSTCollectionTest {
 
         init(true);
 
-        f.incrementSearchCount(new Term(FIELD, "example"), -10);
+        data.incrementSearchCount(new Term(FIELD, "example"), -10);
     }
 
     @Test
@@ -220,7 +220,7 @@ public class FieldWFSTCollectionTest {
 
         init(true);
 
-        f.incrementSearchCount(new Term(FIELD, "term"), 10);
+        data.incrementSearchCount(new Term(FIELD, "term"), 10);
 
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
             iw.deleteAll();
@@ -228,9 +228,9 @@ public class FieldWFSTCollectionTest {
 
         addText(FIELD, "term2");
 
-        f.rebuild();
+        data.rebuild();
 
-        assertEquals(0, f.getSearchCounts(FIELD).get(new BytesRef("term")));
+        assertEquals(0, data.getSearchCounts(FIELD).get(new BytesRef("term")));
     }
 
     @Test
@@ -240,7 +240,7 @@ public class FieldWFSTCollectionTest {
 
         addText(FIELD, "term2");
 
-        f.init();
+        data.init();
 
         assertThat(getSuggestions(FIELD, "t", 2), containsInAnyOrder("term", "term2"));
     }
@@ -250,7 +250,7 @@ public class FieldWFSTCollectionTest {
         addText(FIELD, "term");
         init(false);
 
-        f.incrementSearchCount(null);
+        data.incrementSearchCount(null);
     }
 
     @Test
@@ -258,7 +258,7 @@ public class FieldWFSTCollectionTest {
         addText(FIELD, "term");
         init(true);
 
-        f.getSearchCounts(null);
+        data.getSearchCounts(null);
     }
 
     @Test
@@ -273,9 +273,9 @@ public class FieldWFSTCollectionTest {
             iw.addDocument(doc);
         }
 
-        FieldWFSTCollection f = new FieldWFSTCollection(dir, tempDir, false, Collections.singleton("test"));
-        f.init();
-        f.remove();
+        SuggesterProjectData data = new SuggesterProjectData(dir, tempDir, false, Collections.singleton("test"));
+        data.init();
+        data.remove();
 
         assertFalse(tempDir.toFile().exists());
     }
@@ -283,10 +283,10 @@ public class FieldWFSTCollectionTest {
     @Test
     public void testUnknownFieldIgnored() throws IOException {
         addText(FIELD, "term");
-        f = new FieldWFSTCollection(dir, tempDir, false, new HashSet<>(Arrays.asList(FIELD, "unknown")));
-        f.init();
+        data = new SuggesterProjectData(dir, tempDir, false, new HashSet<>(Arrays.asList(FIELD, "unknown")));
+        data.init();
 
-        List<Lookup.LookupResult> res = f.lookup("unknown", "a", 10);
+        List<Lookup.LookupResult> res = data.lookup("unknown", "a", 10);
 
         assertTrue(res.isEmpty());
     }
@@ -299,10 +299,10 @@ public class FieldWFSTCollectionTest {
         Term t1 = new Term(FIELD, "test1");
         Term t2 = new Term(FIELD, "test2");
 
-        f.incrementSearchCount(t1, 10);
-        f.incrementSearchCount(t2, 5);
+        data.incrementSearchCount(t1, 10);
+        data.incrementSearchCount(t2, 5);
 
-        List<Entry<BytesRef, Integer>> searchCounts = f.getSearchCountsSorted(FIELD, 0, 10);
+        List<Entry<BytesRef, Integer>> searchCounts = data.getSearchCountsSorted(FIELD, 0, 10);
 
         assertThat(searchCounts, contains(new SimpleEntry<>(t1.bytes(), 10), new SimpleEntry<>(t2.bytes(), 5)));
     }

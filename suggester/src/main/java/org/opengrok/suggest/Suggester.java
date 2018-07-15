@@ -63,7 +63,7 @@ public final class Suggester implements Closeable {
 
     private static final Logger logger = Logger.getLogger(Suggester.class.getName());
 
-    private final Map<String, FieldWFSTCollection> projectData = new ConcurrentHashMap<>();
+    private final Map<String, SuggesterProjectData> projectData = new ConcurrentHashMap<>();
 
     private final Object lock = new Object();
 
@@ -115,9 +115,9 @@ public final class Suggester implements Closeable {
 
     /**
      * Initializes suggester data for specified indexes. The data is initialized asynchronously.
-     * @param luceneIndexes paths where Lucene indexes are stored
+     * @param luceneIndexes paths to lucene indexes and name with which the index should be associated
      */
-    public void init(final Collection<Path> luceneIndexes) {
+    public void init(final Collection<NamedIndexDir> luceneIndexes) {
         if (luceneIndexes == null || luceneIndexes.isEmpty()) {
             logger.log(Level.INFO, "No index directories found, exiting...");
             return;
@@ -131,7 +131,7 @@ public final class Suggester implements Closeable {
 
             ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-            for (Path indexDir : luceneIndexes) {
+            for (NamedIndexDir indexDir : luceneIndexes) {
                 submitInitIfIndexExists(executorService, indexDir);
             }
 
@@ -139,9 +139,9 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private void submitInitIfIndexExists(final ExecutorService executorService, final Path indexDir) {
+    private void submitInitIfIndexExists(final ExecutorService executorService, final NamedIndexDir indexDir) {
         try {
-            if (indexExists(indexDir)) {
+            if (indexExists(indexDir.path)) {
                 executorService.submit(getInitRunnable(indexDir));
             } else {
                 logger.log(Level.FINE, "Index in {0} directory does not exist, skipping...", indexDir);
@@ -151,17 +151,17 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private Runnable getInitRunnable(final Path indexDir) {
+    private Runnable getInitRunnable(final NamedIndexDir indexDir) {
         return () -> {
             try {
                 Instant start = Instant.now();
                 logger.log(Level.FINE, "Initializing {0}", indexDir);
 
-                FieldWFSTCollection wfst = new FieldWFSTCollection(FSDirectory.open(indexDir),
-                        getSuggesterDir(indexDir), allowMostPopular, allowedFields);
+                SuggesterProjectData wfst = new SuggesterProjectData(FSDirectory.open(indexDir.path),
+                        getSuggesterDir(indexDir.name), allowMostPopular, allowedFields);
                 wfst.init();
                 if (projectsEnabled) {
-                    projectData.put(indexDir.getFileName().toString(), wfst);
+                    projectData.put(indexDir.name, wfst);
                 } else {
                     projectData.put(PROJECTS_DISABLED_KEY, wfst);
                 }
@@ -174,9 +174,9 @@ public final class Suggester implements Closeable {
         };
     }
 
-    private Path getSuggesterDir(final Path indexDir) {
+    private Path getSuggesterDir(final String indexDirName) {
         if (projectsEnabled) {
-            return suggesterDir.toPath().resolve(indexDir.getFileName());
+            return suggesterDir.toPath().resolve(indexDirName);
         } else {
             return this.suggesterDir.toPath();
         }
@@ -200,9 +200,9 @@ public final class Suggester implements Closeable {
 
     /**
      * Rebuilds the data structures for specified indexes.
-     * @param indexDirs paths where Lucene indexes are stored
+     * @param indexDirs paths to lucene indexes and name with which the index should be associated
      */
-    public void rebuild(final List<Path> indexDirs) {
+    public void rebuild(final Collection<NamedIndexDir> indexDirs) {
         if (indexDirs == null || indexDirs.isEmpty()) {
             logger.log(Level.INFO, "Not rebuilding suggester data because no index directories were specified");
             return;
@@ -213,10 +213,10 @@ public final class Suggester implements Closeable {
 
             ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-            for (Path indexDir : indexDirs) {
-                FieldWFSTCollection fieldsWFST = projectData.get(indexDir.getFileName().toString());
-                if (fieldsWFST != null) {
-                    executorService.submit(getRebuildRunnable(fieldsWFST));
+            for (NamedIndexDir indexDir : indexDirs) {
+                SuggesterProjectData data = this.projectData.get(indexDir.name);
+                if (data != null) {
+                    executorService.submit(getRebuildRunnable(data));
                 } else {
                     submitInitIfIndexExists(executorService, indexDir);
                 }
@@ -226,15 +226,15 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private Runnable getRebuildRunnable(final FieldWFSTCollection fieldsWFST) {
+    private Runnable getRebuildRunnable(final SuggesterProjectData data) {
         return () -> {
             try {
                 Instant start = Instant.now();
-                logger.log(Level.FINE, "Rebuilding {0}", fieldsWFST);
-                fieldsWFST.rebuild();
+                logger.log(Level.FINE, "Rebuilding {0}", data);
+                data.rebuild();
 
                 Duration d = Duration.between(start, Instant.now());
-                logger.log(Level.FINE, "Rebuild of {0} finished, took {1}", new Object[] {fieldsWFST, d});
+                logger.log(Level.FINE, "Rebuild of {0} finished, took {1}", new Object[] {data, d});
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Could not rebuild suggester", e);
             }
@@ -242,20 +242,19 @@ public final class Suggester implements Closeable {
     }
 
     /**
-     * Removes the data associated with the names {@code projectNames}.
-     * @param projectNames names of the indexes to delete (name is determined by the name of the Lucene index
-     * directory)
+     * Removes the data associated with the provided names.
+     * @param names names of the indexes to delete
      */
-    public void remove(final Iterable<String> projectNames) {
-        if (projectNames == null) {
+    public void remove(final Iterable<String> names) {
+        if (names == null) {
             return;
         }
 
         synchronized (lock) {
-            logger.log(Level.INFO, "Removing following suggesters: {0}", projectNames);
+            logger.log(Level.INFO, "Removing following suggesters: {0}", names);
 
-            for (String suggesterName : projectNames) {
-                FieldWFSTCollection collection = projectData.get(suggesterName);
+            for (String suggesterName : names) {
+                SuggesterProjectData collection = projectData.get(suggesterName);
                 if (collection == null) {
                     logger.log(Level.WARNING, "Unknown suggester {0}", suggesterName);
                     continue;
@@ -290,7 +289,7 @@ public final class Suggester implements Closeable {
 
         List<LookupResultItem> results = readers.parallelStream().flatMap(namedIndexReader -> {
 
-            FieldWFSTCollection data = projectData.get(namedIndexReader.name);
+            SuggesterProjectData data = projectData.get(namedIndexReader.name);
             if (data == null) {
                 logger.log(Level.FINE, "{0} not yet initialized", namedIndexReader.name);
                 return Stream.empty();
@@ -385,7 +384,7 @@ public final class Suggester implements Closeable {
         if (!allowMostPopular) {
             return;
         }
-        FieldWFSTCollection data;
+        SuggesterProjectData data;
         if (!projectsEnabled) {
             data = projectData.get(PROJECTS_DISABLED_KEY);
         } else {
@@ -408,7 +407,7 @@ public final class Suggester implements Closeable {
             final int page,
             final int pageSize
     ) {
-        FieldWFSTCollection data = projectData.get(project);
+        SuggesterProjectData data = projectData.get(project);
         if (data == null) {
             logger.log(Level.FINE, "Cannot retrieve search counts because data for project {0} were not found",
                     project);
@@ -433,15 +432,64 @@ public final class Suggester implements Closeable {
     }
 
     /**
+     * Model classes for holding project name and path to ist index directory.
+     */
+    public static class NamedIndexDir {
+
+        /**
+         * Name of the project.
+         */
+        private final String name;
+
+        /**
+         * Path to index directory for project with name {@link #name}.
+         */
+        private final Path path;
+
+        public NamedIndexDir(final String name, final Path path) {
+            if (name == null) {
+                throw new IllegalArgumentException("Name cannot be null");
+            }
+            if (path == null) {
+                throw new IllegalArgumentException("Path cannot be null");
+            }
+
+            this.name = name;
+            this.path = path;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Path getPath() {
+            return path;
+        }
+    }
+
+    /**
      * Model class to hold the project name and its {@link IndexReader}.
      */
     public static class NamedIndexReader {
 
+        /**
+         * Name of the project.
+         */
         private final String name;
 
+        /**
+         * IndexReader of the project with {@link #name}.
+         */
         private final IndexReader reader;
 
         public NamedIndexReader(final String name, final IndexReader reader) {
+            if (name == null) {
+                throw new IllegalArgumentException("Name cannot be null");
+            }
+            if (reader == null) {
+                throw new IllegalArgumentException("Reader cannot be null");
+            }
+
             this.name = name;
             this.reader = reader;
         }

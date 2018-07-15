@@ -64,9 +64,9 @@ import java.util.logging.Logger;
 /**
  * Holds all the necessary data for one index directory. In the context of OpenGrok it is one project.
  */
-class FieldWFSTCollection implements Closeable {
+class SuggesterProjectData implements Closeable {
 
-    private static final Logger logger = Logger.getLogger(FieldWFSTCollection.class.getName());
+    private static final Logger logger = Logger.getLogger(SuggesterProjectData.class.getName());
 
     private static final int MAX_TERM_SIZE = Short.MAX_VALUE - 3;
 
@@ -98,7 +98,7 @@ class FieldWFSTCollection implements Closeable {
 
     private Set<String> fields;
 
-    FieldWFSTCollection(
+    SuggesterProjectData(
             final Directory indexDir,
             final Path suggesterDir,
             final boolean allowMostPopular,
@@ -275,6 +275,7 @@ class FieldWFSTCollection implements Closeable {
     }
 
     private void initSearchCountMap() throws IOException {
+        searchCountMaps.values().forEach(PopularityMap::close);
         searchCountMaps.clear();
 
         for (String field : fields) {
@@ -325,6 +326,7 @@ class FieldWFSTCollection implements Closeable {
         if (averageLengths.containsKey(field)) {
             return averageLengths.get(field);
         }
+        logger.log(Level.FINE, "Could not determine average length for field {0}, using default one", field);
         return AVERAGE_LENGTH_DEFAULT;
     }
 
@@ -509,7 +511,7 @@ class FieldWFSTCollection implements Closeable {
 
     @Override
     public String toString() {
-        return "FieldWFSTCollection{" +
+        return "SuggesterProjectData{" +
                 "indexDir=" + indexDir +
                 ", suggesterDir=" + suggesterDir +
                 ", allowMostPopular=" + allowMostPopular +

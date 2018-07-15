@@ -47,4 +47,8 @@ public interface PopularityMap extends PopularityCounter, AutoCloseable {
      */
     List<Entry<BytesRef, Integer>> getPopularityData(int page, int pageSize);
 
+    /** {@inheritDoc} */
+    @Override
+    void close();
+
 }
