@@ -67,6 +67,7 @@ public class SuggesterControllerTest extends JerseyTest {
         public List<ResultItem> suggestions;
         public String identifier;
         public String queryText;
+        public boolean partialResult;
     }
 
     public static class ResultItem {

@@ -25,7 +25,7 @@ package org.opensolaris.opengrok.web.api.v1.suggester.provider.service;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
-import org.opengrok.suggest.LookupResultItem;
+import org.opengrok.suggest.Suggester.Suggestions;
 import org.opengrok.suggest.query.SuggesterQuery;
 
 import java.util.Collection;
@@ -43,7 +43,7 @@ public interface SuggesterService {
      *              considered to be complex because it takes more resources to find the proper suggestions.
      * @return suggestions to be displayed
      */
-    List<LookupResultItem> getSuggestions(Collection<String> projects, SuggesterQuery suggesterQuery, Query query);
+    Suggestions getSuggestions(Collection<String> projects, SuggesterQuery suggesterQuery, Query query);
 
     /**
      * Refreshes the suggester based on the new configuration.

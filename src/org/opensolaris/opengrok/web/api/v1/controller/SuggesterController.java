@@ -27,6 +27,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.hibernate.validator.constraints.NotBlank;
 import org.opengrok.suggest.LookupResultItem;
+import org.opengrok.suggest.Suggester.Suggestions;
 import org.opengrok.suggest.SuggesterUtils;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.SuggesterConfig;
@@ -111,14 +112,15 @@ public final class SuggesterController {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
 
-        List<LookupResultItem> suggestedItems = suggester.getSuggestions(
+        Suggestions suggestions = suggester.getSuggestions(
                 suggesterData.getProjects(), suggesterData.getSuggesterQuery(), suggesterData.getQuery());
 
         Instant end = Instant.now();
 
         long timeInMs = Duration.between(start, end).toMillis();
 
-        return new Result(suggestedItems, suggesterData.getIdentifier(), suggesterData.getSuggesterQueryFieldText(), timeInMs);
+        return new Result(suggestions.getItems(), suggesterData.getIdentifier(),
+                suggesterData.getSuggesterQueryFieldText(), timeInMs, suggestions.isPartialResult());
     }
 
     private void modifyDataBasedOnConfiguration(final SuggesterData data, final SuggesterConfig config) {
@@ -274,16 +276,20 @@ public final class SuggesterController {
 
         private String queryText;
 
+        private boolean partialResult;
+
         Result(
                 final List<LookupResultItem> suggestions,
                 final String identifier,
                 final String queryText,
-                final long time
+                final long time,
+                final boolean partialResult
         ) {
             this.suggestions = suggestions;
             this.identifier = identifier;
             this.queryText = queryText;
             this.time = time;
+            this.partialResult = partialResult;
         }
 
         public long getTime() {
@@ -316,6 +322,14 @@ public final class SuggesterController {
 
         public void setQueryText(String queryText) {
             this.queryText = queryText;
+        }
+
+        public boolean isPartialResult() {
+            return partialResult;
+        }
+
+        public void setPartialResult(boolean partialResult) {
+            this.partialResult = partialResult;
         }
     }
 

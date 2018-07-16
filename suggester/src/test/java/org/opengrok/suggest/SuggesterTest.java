@@ -161,7 +161,7 @@ public class SuggesterTest {
         Suggester.NamedIndexReader ir = t.getNamedIndexReader();
 
         List<LookupResultItem> res = t.s.search(Collections.singletonList(ir),
-                new SuggesterPrefixQuery(new Term("test", "t")), null);
+                new SuggesterPrefixQuery(new Term("test", "t")), null).getItems();
 
         assertThat(res.stream().map(LookupResultItem::getPhrase).collect(Collectors.toList()),
                 containsInAnyOrder("term1", "term2", "term3"));
@@ -180,7 +180,7 @@ public class SuggesterTest {
         Suggester.NamedIndexReader ir = t.getNamedIndexReader();
 
         List<LookupResultItem> res = t.s.search(Collections.singletonList(ir),
-                new SuggesterPrefixQuery(new Term("test", "a")), null);
+                new SuggesterPrefixQuery(new Term("test", "a")), null).getItems();
 
         assertThat(res.stream().map(LookupResultItem::getPhrase).collect(Collectors.toList()),
                 containsInAnyOrder("a1", "a2"));
@@ -206,7 +206,7 @@ public class SuggesterTest {
         Suggester.NamedIndexReader ir = t.getNamedIndexReader();
 
         List<LookupResultItem> res = t.s.search(Collections.singletonList(ir),
-                new SuggesterPrefixQuery(new Term("test", "a")), null);
+                new SuggesterPrefixQuery(new Term("test", "a")), null).getItems();
 
         assertThat(res.stream().map(LookupResultItem::getPhrase).collect(Collectors.toList()),
                 containsInAnyOrder("a1", "a2"));
@@ -231,7 +231,7 @@ public class SuggesterTest {
         SuggesterTestData t = initSuggester();
 
         List<LookupResultItem> res = t.s.search(Collections.singletonList(t.getNamedIndexReader()),
-                new SuggesterWildcardQuery(new Term("test", "*1")), null);
+                new SuggesterWildcardQuery(new Term("test", "*1")), null).getItems();
 
         assertThat(res.stream().map(LookupResultItem::getPhrase).collect(Collectors.toList()),
                 contains("term1"));
