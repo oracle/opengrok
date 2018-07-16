@@ -49,7 +49,7 @@ public class LocalhostFilter implements ContainerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(LocalhostFilter.class);
 
     private static final Set<String> allowedPaths = new HashSet<>(Arrays.asList(
-            SearchController.PATH, SuggesterController.PATH));
+            SearchController.PATH, SuggesterController.PATH, SuggesterController.PATH + "/config"));
 
     @Context
     private HttpServletRequest request;

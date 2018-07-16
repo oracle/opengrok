@@ -37,7 +37,6 @@ import org.opensolaris.opengrok.web.api.v1.suggester.model.SuggesterData;
 import org.opensolaris.opengrok.web.api.v1.suggester.model.SuggesterQueryData;
 import org.opensolaris.opengrok.web.api.v1.suggester.parser.SuggesterQueryDataParser;
 import org.opensolaris.opengrok.web.api.v1.suggester.provider.filter.Authorized;
-import org.opensolaris.opengrok.web.api.v1.suggester.provider.filter.Localhost;
 import org.opensolaris.opengrok.web.api.v1.suggester.provider.filter.Suggester;
 import org.opensolaris.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
@@ -170,7 +169,6 @@ public final class SuggesterController {
      */
     @POST
     @Path("/init/queries")
-    @Localhost
     @Consumes(MediaType.APPLICATION_JSON)
     public void addSearchCountsQueries(final List<String> urls) {
         for (String urlStr : urls) {
@@ -244,7 +242,6 @@ public final class SuggesterController {
      */
     @POST
     @Path("/init/raw")
-    @Localhost
     @Consumes(MediaType.APPLICATION_JSON)
     public void addSearchCountsRaw(@Valid final List<TermIncrementData> termIncrements) {
         for (TermIncrementData termIncrement : termIncrements) {
@@ -255,7 +252,6 @@ public final class SuggesterController {
 
     @GET
     @Path("/popularity/{project}")
-    @Localhost
     @Produces(MediaType.APPLICATION_JSON)
     public List<Entry<String, Integer>> getPopularityData(
             @PathParam("project") final String project,
