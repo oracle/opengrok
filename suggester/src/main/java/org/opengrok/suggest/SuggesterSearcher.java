@@ -47,7 +47,8 @@ import org.opengrok.suggest.query.SuggesterQuery;
 import org.opengrok.suggest.query.customized.CustomPhraseQuery;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -64,6 +65,8 @@ class SuggesterSearcher extends IndexSearcher {
     private static final Logger logger = Logger.getLogger(SuggesterSearcher.class.getName());
 
     private final int resultSize;
+
+    private boolean interrupted;
 
     /**
      * @param reader reader of the index for which to provide suggestions
@@ -90,7 +93,7 @@ class SuggesterSearcher extends IndexSearcher {
             final SuggesterQuery suggesterQuery,
             final PopularityCounter popularityCounter
     ) {
-        List<LookupResultItem> results = new LinkedList<>();
+        List<LookupResultItem> results = new ArrayList<>(resultSize * leafContexts.size());
 
         Query rewrittenQuery = null;
 
@@ -104,6 +107,9 @@ class SuggesterSearcher extends IndexSearcher {
         }
 
         for (LeafReaderContext context : this.leafContexts) {
+            if (interrupted) {
+                break;
+            }
             try {
                 results.addAll(suggest(rewrittenQuery, context, project, suggesterQuery, popularityCounter));
             } catch (IOException e) {
@@ -125,6 +131,10 @@ class SuggesterSearcher extends IndexSearcher {
             final SuggesterQuery suggesterQuery,
             final PopularityCounter searchCounts
     ) throws IOException {
+        if (Thread.interrupted()) {
+            interrupted = true;
+            return Collections.emptyList();
+        }
 
         boolean shouldLeaveOutSameTerms = shouldLeaveOutSameTerms(query, suggesterQuery);
         Set<BytesRef> tokensAlreadyIncluded = null;
@@ -148,13 +158,17 @@ class SuggesterSearcher extends IndexSearcher {
 
         LookupPriorityQueue queue = new LookupPriorityQueue(resultSize);
 
-
         boolean needPositionsAndFrequencies = needPositionsAndFrequencies(query);
 
         PostingsEnum postingsEnum = null;
 
         BytesRef term = termsEnum.next();
         while (term != null) {
+            if (Thread.interrupted()) {
+                interrupted = true;
+                break;
+            }
+
             if (needPositionsAndFrequencies) {
                 postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.POSITIONS | PostingsEnum.FREQS);
             } else {

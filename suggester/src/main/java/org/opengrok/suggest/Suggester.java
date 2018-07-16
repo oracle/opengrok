@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,6 +62,8 @@ import java.util.stream.Stream;
 public final class Suggester implements Closeable {
 
     private static final String PROJECTS_DISABLED_KEY = "";
+
+    private static final int MAX_TIME_MS = 1000;
 
     private static final Logger logger = Logger.getLogger(Suggester.class.getName());
 
@@ -78,6 +82,8 @@ public final class Suggester implements Closeable {
     private boolean projectsEnabled;
 
     private final Set<String> allowedFields;
+
+    private final ExecutorService executorService = Executors.newWorkStealingPool();
 
     /**
      * @param suggesterDir directory under which the suggester data should be created
@@ -129,13 +135,13 @@ public final class Suggester implements Closeable {
         synchronized (lock) {
             logger.log(Level.INFO, "Initializing suggester");
 
-            ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            ExecutorService executor = Executors.newWorkStealingPool();
 
             for (NamedIndexDir indexDir : luceneIndexes) {
-                submitInitIfIndexExists(executorService, indexDir);
+                submitInitIfIndexExists(executor, indexDir);
             }
 
-            shutdownAndAwaitTermination(executorService, "Suggester successfully initialized");
+            shutdownAndAwaitTermination(executor, "Suggester successfully initialized");
         }
     }
 
@@ -195,6 +201,7 @@ public final class Suggester implements Closeable {
             logger.log(Level.INFO, logMessageOnSuccess);
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "Interrupted while building suggesters", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -211,18 +218,18 @@ public final class Suggester implements Closeable {
         synchronized (lock) {
             logger.log(Level.INFO, "Rebuilding following suggesters: {0}", indexDirs);
 
-            ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            ExecutorService executor = Executors.newWorkStealingPool();
 
             for (NamedIndexDir indexDir : indexDirs) {
                 SuggesterProjectData data = this.projectData.get(indexDir.name);
                 if (data != null) {
-                    executorService.submit(getRebuildRunnable(data));
+                    executor.submit(getRebuildRunnable(data));
                 } else {
-                    submitInitIfIndexExists(executorService, indexDir);
+                    submitInitIfIndexExists(executor, indexDir);
                 }
             }
 
-            shutdownAndAwaitTermination(executorService, "Suggesters for " + indexDirs + " were successfully rebuilt");
+            shutdownAndAwaitTermination(executor, "Suggesters for " + indexDirs + " were successfully rebuilt");
         }
     }
 
@@ -287,8 +294,21 @@ public final class Suggester implements Closeable {
                     indexReaders.get(0).getReader()));
         }
 
-        List<LookupResultItem> results = readers.parallelStream().flatMap(namedIndexReader -> {
+        List<LookupResultItem> results;
+        if (!SuggesterUtils.isComplexQuery(query, suggesterQuery)) { // use WFST for lone prefix
+            results = prefixLookup(readers, (SuggesterPrefixQuery) suggesterQuery);
+        } else {
+            results = complexLookup(readers, suggesterQuery, query);
+        }
 
+        return SuggesterUtils.combineResults(results, resultSize);
+    }
+
+    private List<LookupResultItem> prefixLookup(
+            final List<NamedIndexReader> readers,
+            final SuggesterPrefixQuery suggesterQuery
+    ) {
+        return readers.parallelStream().flatMap(namedIndexReader -> {
             SuggesterProjectData data = projectData.get(namedIndexReader.name);
             if (data == null) {
                 logger.log(Level.FINE, "{0} not yet initialized", namedIndexReader.name);
@@ -300,26 +320,45 @@ public final class Suggester implements Closeable {
             }
 
             try {
-                if (!SuggesterUtils.isComplexQuery(query, suggesterQuery)) { // use WFST for lone prefix
-                    String prefix = ((SuggesterPrefixQuery) suggesterQuery).getPrefix().text();
+                String prefix = suggesterQuery.getPrefix().text();
 
-                    return data.lookup(suggesterQuery.getField(), prefix, resultSize)
-                            .stream()
-                            .map(item -> new LookupResultItem(item.key.toString(), namedIndexReader.name, item.value));
-                } else {
-                    SuggesterSearcher searcher = new SuggesterSearcher(namedIndexReader.reader, resultSize);
-
-                    List<LookupResultItem> resultItems = searcher.suggest(query, namedIndexReader.name, suggesterQuery,
-                            data.getSearchCounts(suggesterQuery.getField()));
-
-                    return resultItems.stream();
-                }
+                return data.lookup(suggesterQuery.getField(), prefix, resultSize)
+                        .stream()
+                        .map(item -> new LookupResultItem(item.key.toString(), namedIndexReader.name, item.value));
             } finally {
                 data.unlock();
             }
         }).collect(Collectors.toList());
+    }
 
-        return SuggesterUtils.combineResults(results, resultSize);
+    private List<LookupResultItem> complexLookup(
+            final List<NamedIndexReader> readers,
+            final SuggesterQuery suggesterQuery,
+            final Query query
+    ) {
+        List<LookupResultItem> results = new ArrayList<>(readers.size() * resultSize);
+        List<SuggesterSearchTask> searchTasks = new ArrayList<>(readers.size());
+        for (NamedIndexReader ir : readers) {
+            searchTasks.add(new SuggesterSearchTask(ir, query, suggesterQuery, results));
+        }
+
+        try {
+            executorService.invokeAll(searchTasks, MAX_TIME_MS, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            logger.log(Level.WARNING, "Interrupted while invoking suggester search", e);
+            Thread.currentThread().interrupt();
+        }
+
+        // wait for tasks to finish
+        for (SuggesterSearchTask searchTask : searchTasks) {
+            if (!searchTask.started) {
+                continue;
+            }
+            // "spin lock" – should be fast since all the tasks either finished or were interrupted
+            while (!searchTask.finished) {
+            }
+        }
+        return results;
     }
 
     /**
@@ -422,6 +461,7 @@ public final class Suggester implements Closeable {
      */
     @Override
     public void close() {
+        executorService.shutdownNow();
         projectData.values().forEach(f -> {
             try {
                 f.close();
@@ -429,6 +469,62 @@ public final class Suggester implements Closeable {
                 logger.log(Level.WARNING, "Could not close suggester data " + f, e);
             }
         });
+    }
+
+    private class SuggesterSearchTask implements Callable<Void> {
+
+        private final NamedIndexReader namedIndexReader;
+        private final Query query;
+        private final SuggesterQuery suggesterQuery;
+        private final List<LookupResultItem> results;
+
+        private volatile boolean finished = false;
+        private volatile boolean started = false;
+
+        SuggesterSearchTask(
+                final NamedIndexReader namedIndexReader,
+                final Query query,
+                final SuggesterQuery suggesterQuery,
+                final List<LookupResultItem> results
+        ) {
+            this.namedIndexReader = namedIndexReader;
+            this.query = query;
+            this.suggesterQuery = suggesterQuery;
+            this.results = results;
+        }
+
+        @Override
+        public Void call() {
+            try {
+                started = true;
+
+                SuggesterProjectData data = projectData.get(namedIndexReader.name);
+                if (data == null) {
+                    logger.log(Level.FINE, "{0} not yet initialized", namedIndexReader.name);
+                    return null;
+                }
+                boolean gotLock = data.tryLock();
+                if (!gotLock) { // do not wait for rebuild
+                    return null;
+                }
+
+                try {
+                    SuggesterSearcher searcher = new SuggesterSearcher(namedIndexReader.reader, resultSize);
+
+                    List<LookupResultItem> resultItems = searcher.suggest(query, namedIndexReader.name, suggesterQuery,
+                            data.getSearchCounts(suggesterQuery.getField()));
+
+                    synchronized (results) {
+                        results.addAll(resultItems);
+                    }
+                } finally {
+                    data.unlock();
+                }
+            } finally {
+                finished = true;
+            }
+            return null;
+        }
     }
 
     /**
