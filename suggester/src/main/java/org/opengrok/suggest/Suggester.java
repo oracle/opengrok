@@ -63,8 +63,6 @@ public final class Suggester implements Closeable {
 
     private static final String PROJECTS_DISABLED_KEY = "";
 
-    private static final int MAX_TIME_MS = 1000;
-
     private static final Logger logger = Logger.getLogger(Suggester.class.getName());
 
     private final Map<String, SuggesterProjectData> projectData = new ConcurrentHashMap<>();
@@ -83,6 +81,8 @@ public final class Suggester implements Closeable {
 
     private final Set<String> allowedFields;
 
+    private final int timeThreshold;
+
     private final ExecutorService executorService = Executors.newWorkStealingPool();
 
     /**
@@ -100,7 +100,8 @@ public final class Suggester implements Closeable {
             final Duration awaitTerminationTime,
             final boolean allowMostPopular,
             final boolean projectsEnabled,
-            final Set<String> allowedFields
+            final Set<String> allowedFields,
+            final int timeThreshold
     ) {
         if (suggesterDir == null) {
             throw new IllegalArgumentException("Suggester needs to have directory specified");
@@ -117,6 +118,7 @@ public final class Suggester implements Closeable {
         this.allowMostPopular = allowMostPopular;
         this.projectsEnabled = projectsEnabled;
         this.allowedFields = new HashSet<>(allowedFields);
+        this.timeThreshold = timeThreshold;
     }
 
     /**
@@ -343,7 +345,7 @@ public final class Suggester implements Closeable {
         }
 
         try {
-            executorService.invokeAll(searchTasks, MAX_TIME_MS, TimeUnit.MILLISECONDS);
+            executorService.invokeAll(searchTasks, timeThreshold, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             logger.log(Level.WARNING, "Interrupted while invoking suggester search", e);
             Thread.currentThread().interrupt();

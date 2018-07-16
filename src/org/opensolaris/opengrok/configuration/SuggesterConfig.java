@@ -49,6 +49,7 @@ public class SuggesterConfig {
     public static final boolean SHOW_TIME_DEFAULT = false;
     public static final String REBUILD_CRON_CONFIG_DEFAULT = "0 0 * * *"; // every day at midnight
     public static final int SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT = 1800; // half an hour should be enough
+    public static final int TIME_THRESHOLD_DEFAULT = 2000; // 2 sec
 
     public static final Set<String> allowedProjectsDefault = null;
     public static final Set<String> allowedFieldsDefault = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
@@ -127,6 +128,12 @@ public class SuggesterConfig {
      */
     private int suggesterBuildTerminationTimeSec;
 
+    /**
+     * Time threshold for suggestions in milliseconds. If the computation exceeds this time,
+     * it will be stopped and partial results will be returned.
+     */
+    private int timeThreshold;
+
     public SuggesterConfig() {
         setEnabled(ENABLED_DEFAULT);
         setMaxResults(MAX_RESULTS_DEFAULT);
@@ -139,6 +146,7 @@ public class SuggesterConfig {
         setShowScores(SHOW_SCORES_DEFAULT);
         setShowProjects(SHOW_PROJECTS_DEFAULT);
         setShowTime(SHOW_TIME_DEFAULT);
+        setTimeThreshold(TIME_THRESHOLD_DEFAULT);
         // do not use setter because indexer invocation with --man will fail
         rebuildCronConfig = REBUILD_CRON_CONFIG_DEFAULT;
         setSuggesterBuildTerminationTimeSec(SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT);
@@ -263,6 +271,17 @@ public class SuggesterConfig {
             throw new IllegalArgumentException("Suggester build termination time cannot be negative");
         }
         this.suggesterBuildTerminationTimeSec = suggesterBuildTerminationTimeSec;
+    }
+
+    public int getTimeThreshold() {
+        return timeThreshold;
+    }
+
+    public void setTimeThreshold(final int timeThreshold) {
+        if (timeThreshold < 0) {
+            throw new IllegalArgumentException("Time threshold for suggestions cannot be negative");
+        }
+        this.timeThreshold = timeThreshold;
     }
 
     @Override
