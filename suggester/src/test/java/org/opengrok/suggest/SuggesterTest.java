@@ -91,14 +91,14 @@ public class SuggesterTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullSuggesterDir() {
-        new Suggester(null, 10, Duration.ofMinutes(5), false, true, null);
+        new Suggester(null, 10, Duration.ofMinutes(5), false, true, null, Integer.MAX_VALUE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullDuration() throws IOException {
         Path tempFile = Files.createTempFile("opengrok", "test");
         try {
-            new Suggester(tempFile.toFile(), 10, null, false, true, null);
+            new Suggester(tempFile.toFile(), 10, null, false, true, null, Integer.MAX_VALUE);
         } finally {
             tempFile.toFile().delete();
         }
@@ -108,7 +108,7 @@ public class SuggesterTest {
     public void testNegativeDuration() throws IOException {
         Path tempFile = Files.createTempFile("opengrok", "test");
         try {
-            new Suggester(tempFile.toFile(), 10, Duration.ofMinutes(-4), false, true, null);
+            new Suggester(tempFile.toFile(), 10, Duration.ofMinutes(-4), false, true, null, Integer.MAX_VALUE);
         } finally {
             tempFile.toFile().delete();
         }
@@ -125,7 +125,7 @@ public class SuggesterTest {
         Path tempSuggesterDir = Files.createTempDirectory("opengrok");
 
         Suggester s = new Suggester(tempSuggesterDir.toFile(), 10, Duration.ofMinutes(1), true,
-                true, Collections.singleton("test"));
+                true, Collections.singleton("test"), Integer.MAX_VALUE);
 
         s.init(Collections.singleton(new Suggester.NamedIndexDir("test", tempIndexDir)));
 
@@ -197,7 +197,7 @@ public class SuggesterTest {
         addText(t.getIndexDirectory(), "a1 a2");
 
         t.s = new Suggester(t.suggesterDir.toFile(), 10, Duration.ofMinutes(1), false,
-                true, Collections.singleton("test"));
+                true, Collections.singleton("test"), Integer.MAX_VALUE);
 
         t.s.init(Collections.singleton(t.getNamedIndexDir()));
 
