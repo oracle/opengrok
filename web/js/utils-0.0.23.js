@@ -1781,6 +1781,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
     var text;
     var identifier;
     var time;
+    var partialResult;
 
     var input = $("#" + inputId);
 
@@ -1804,6 +1805,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                     text = data.queryText;
                     identifier = data.identifier;
                     time = data.time;
+                    partialResult = data.partialResult;
 
                     response(data.suggestions);
                 },
@@ -1835,7 +1837,15 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                 if (config.showTime) {
                     $("<li>", {
                         class: "ui-state-disabled",
+                        style: 'padding-left: 5px;',
                         text: time + 'ms'
+                    }).appendTo(ul);
+                }
+                if (partialResult) {
+                    $("<li>", {
+                        class: "ui-state-disabled",
+                        style: 'padding-left: 5px;',
+                        text: 'Partial result due to timeout'
                     }).appendTo(ul);
                 }
             };
@@ -1859,7 +1869,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                 // error occurred
                 return;
             }
-            if (ui.content.length === 0) {
+            if (ui.content.length === 0 && !partialResult) {
                 var noMatchesFoundResult = {phrase: 'No matches found', selectable: false};
                 ui.content.push(noMatchesFoundResult);
             }

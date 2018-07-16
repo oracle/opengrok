@@ -30,10 +30,10 @@ import com.cronutils.parser.CronParser;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
-import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.Suggester;
 import org.opengrok.suggest.Suggester.NamedIndexDir;
 import org.opengrok.suggest.Suggester.NamedIndexReader;
+import org.opengrok.suggest.Suggester.Suggestions;
 import org.opengrok.suggest.query.SuggesterQuery;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
@@ -99,7 +99,7 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     /** {@inheritDoc} */
     @Override
-    public List<LookupResultItem> getSuggestions(
+    public Suggestions getSuggestions(
             final Collection<String> projects,
             final SuggesterQuery suggesterQuery,
             final Query query
@@ -108,7 +108,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         lock.readLock().lock();
         try {
             if (suggester == null) {
-                return Collections.emptyList();
+                return new Suggestions(Collections.emptyList(), true);
             }
             List<NamedIndexReader> namedReaders = getNamedIndexReaders(projects, superIndexSearchers);
 

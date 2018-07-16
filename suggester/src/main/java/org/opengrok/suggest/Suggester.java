@@ -50,6 +50,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,7 +88,7 @@ public final class Suggester implements Closeable {
 
     /**
      * @param suggesterDir directory under which the suggester data should be created
-     * @param resultSize maximum number of suggestions that should be returned
+     * @param resultSize maximum number of items that should be returned
      * @param awaitTerminationTime how much time to wait for suggester to initialize
      * @param allowMostPopular specifies if the most popular completion is enabled
      * @param projectsEnabled specifies if the OpenGrok projects are enabled
@@ -281,13 +282,13 @@ public final class Suggester implements Closeable {
      * @param query query on which the suggestions depend
      * @return suggestions
      */
-    public List<LookupResultItem> search(
+    public Suggestions search(
             final List<NamedIndexReader> indexReaders,
             final SuggesterQuery suggesterQuery,
             final Query query
     ) {
         if (indexReaders == null || suggesterQuery == null) {
-            return Collections.emptyList();
+            return new Suggestions(Collections.emptyList(), true);
         }
 
         List<NamedIndexReader> readers = indexReaders;
@@ -296,28 +297,33 @@ public final class Suggester implements Closeable {
                     indexReaders.get(0).getReader()));
         }
 
-        List<LookupResultItem> results;
+        Suggestions suggestions;
         if (!SuggesterUtils.isComplexQuery(query, suggesterQuery)) { // use WFST for lone prefix
-            results = prefixLookup(readers, (SuggesterPrefixQuery) suggesterQuery);
+            suggestions = prefixLookup(readers, (SuggesterPrefixQuery) suggesterQuery);
         } else {
-            results = complexLookup(readers, suggesterQuery, query);
+            suggestions = complexLookup(readers, suggesterQuery, query);
         }
 
-        return SuggesterUtils.combineResults(results, resultSize);
+        return new Suggestions(SuggesterUtils.combineResults(suggestions.items, resultSize),
+                suggestions.partialResult);
     }
 
-    private List<LookupResultItem> prefixLookup(
+    private Suggestions prefixLookup(
             final List<NamedIndexReader> readers,
             final SuggesterPrefixQuery suggesterQuery
     ) {
-        return readers.parallelStream().flatMap(namedIndexReader -> {
+        BooleanWrapper partialResult = new BooleanWrapper();
+
+        List<LookupResultItem> results = readers.parallelStream().flatMap(namedIndexReader -> {
             SuggesterProjectData data = projectData.get(namedIndexReader.name);
             if (data == null) {
                 logger.log(Level.FINE, "{0} not yet initialized", namedIndexReader.name);
+                partialResult.value = true;
                 return Stream.empty();
             }
             boolean gotLock = data.tryLock();
             if (!gotLock) { // do not wait for rebuild
+                partialResult.value = true;
                 return Stream.empty();
             }
 
@@ -331,9 +337,11 @@ public final class Suggester implements Closeable {
                 data.unlock();
             }
         }).collect(Collectors.toList());
+
+        return new Suggestions(results, partialResult.value);
     }
 
-    private List<LookupResultItem> complexLookup(
+    private Suggestions complexLookup(
             final List<NamedIndexReader> readers,
             final SuggesterQuery suggesterQuery,
             final Query query
@@ -344,12 +352,16 @@ public final class Suggester implements Closeable {
             searchTasks.add(new SuggesterSearchTask(ir, query, suggesterQuery, results));
         }
 
+        List<Future<Void>> futures;
         try {
-            executorService.invokeAll(searchTasks, timeThreshold, TimeUnit.MILLISECONDS);
+            futures = executorService.invokeAll(searchTasks, timeThreshold, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             logger.log(Level.WARNING, "Interrupted while invoking suggester search", e);
             Thread.currentThread().interrupt();
+            return new Suggestions(Collections.emptyList(), true);
         }
+
+        boolean partialResult = futures.stream().anyMatch(Future::isCancelled);
 
         // wait for tasks to finish
         for (SuggesterSearchTask searchTask : searchTasks) {
@@ -360,7 +372,7 @@ public final class Suggester implements Closeable {
             while (!searchTask.finished) {
             }
         }
-        return results;
+        return new Suggestions(results, partialResult);
     }
 
     /**
@@ -369,7 +381,7 @@ public final class Suggester implements Closeable {
      * @param query query that was used to perform the search
      */
     public void onSearch(final Iterable<String> projects, final Query query) {
-        if (!allowMostPopular) {
+        if (!allowMostPopular || projects == null) {
             return;
         }
         try {
@@ -377,12 +389,18 @@ public final class Suggester implements Closeable {
 
             if (!projectsEnabled) {
                 for (Term t : terms) {
-                    projectData.get(PROJECTS_DISABLED_KEY).incrementSearchCount(t);
+                    SuggesterProjectData data = projectData.get(PROJECTS_DISABLED_KEY);
+                    if (data != null) {
+                        data.incrementSearchCount(t);
+                    }
                 }
             } else {
                 for (String project : projects) {
                     for (Term t : terms) {
-                        projectData.get(project).incrementSearchCount(t);
+                        SuggesterProjectData data = projectData.get(project);
+                        if (data != null) {
+                            data.incrementSearchCount(t);
+                        }
                     }
                 }
             }
@@ -530,6 +548,28 @@ public final class Suggester implements Closeable {
     }
 
     /**
+     * Result suggestions data.
+     */
+    public static class Suggestions {
+
+        private final List<LookupResultItem> items;
+        private final boolean partialResult;
+
+        public Suggestions(final List<LookupResultItem> items, final boolean partialResult) {
+            this.items = items;
+            this.partialResult = partialResult;
+        }
+
+        public List<LookupResultItem> getItems() {
+            return items;
+        }
+
+        public boolean isPartialResult() {
+            return partialResult;
+        }
+    }
+
+    /**
      * Model classes for holding project name and path to ist index directory.
      */
     public static class NamedIndexDir {
@@ -609,6 +649,12 @@ public final class Suggester implements Closeable {
         public String toString() {
             return name;
         }
+
+    }
+
+    private static class BooleanWrapper {
+
+        private volatile boolean value;
 
     }
 
