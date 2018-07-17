@@ -131,7 +131,7 @@ class SuggesterSearcher extends IndexSearcher {
             final SuggesterQuery suggesterQuery,
             final PopularityCounter searchCounts
     ) throws IOException {
-        if (Thread.interrupted()) {
+        if (Thread.currentThread().isInterrupted()) {
             interrupted = true;
             return Collections.emptyList();
         }
@@ -150,6 +150,9 @@ class SuggesterSearcher extends IndexSearcher {
         ComplexQueryData complexQueryData = null;
         if (needsDocumentIds) {
             complexQueryData = getComplexQueryData(query, leafReaderContext);
+            if (interrupted) {
+                return Collections.emptyList();
+            }
         }
 
         Terms terms = leafReaderContext.reader().terms(suggesterQuery.getField());
@@ -164,7 +167,7 @@ class SuggesterSearcher extends IndexSearcher {
 
         BytesRef term = termsEnum.next();
         while (term != null) {
-            if (Thread.interrupted()) {
+            if (Thread.currentThread().isInterrupted()) {
                 interrupted = true;
                 break;
             }
@@ -261,6 +264,13 @@ class SuggesterSearcher extends IndexSearcher {
                     return false;
                 }
             });
+        } catch (IOException e) {
+            if (Thread.currentThread().isInterrupted()) {
+                interrupted = true;
+                return null;
+            } else {
+                logger.log(Level.WARNING, "Could not get document ids for " + query, e);
+            }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Could not get document ids for " + query, e);
         }

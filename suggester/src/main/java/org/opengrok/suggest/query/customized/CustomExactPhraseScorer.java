@@ -96,6 +96,10 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // 
         return new TwoPhaseIterator(conjunction) {
             @Override
             public boolean matches() throws IOException {
+                // custom – interrupt handler
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new IOException("Interrupted while scoring documents");
+                }
                 return phraseFreq() > 0; // custom – only necessary part left
             }
 
