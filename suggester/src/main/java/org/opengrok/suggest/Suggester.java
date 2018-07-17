@@ -368,8 +368,18 @@ public final class Suggester implements Closeable {
             if (!searchTask.started) {
                 continue;
             }
-            // "spin lock" – should be fast since all the tasks either finished or were interrupted
-            while (!searchTask.finished) {
+
+            if (!searchTask.finished) {
+                synchronized (searchTask) {
+                    while (!searchTask.finished) {
+                        try {
+                            searchTask.wait();
+                        } catch (InterruptedException e) {
+                            logger.log(Level.WARNING, "Interrupted while waiting for task: {0}", searchTask);
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                }
             }
         }
         return new Suggestions(results, partialResult);
@@ -541,7 +551,10 @@ public final class Suggester implements Closeable {
                     data.unlock();
                 }
             } finally {
-                finished = true;
+                synchronized (this) {
+                    finished = true;
+                    this.notifyAll();
+                }
             }
             return null;
         }

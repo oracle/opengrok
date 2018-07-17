@@ -160,7 +160,7 @@ public final class SuggesterController {
     @Path("/config")
     @Produces(MediaType.APPLICATION_JSON)
     public SuggesterConfig getConfig() {
-        return RuntimeEnvironment.getInstance().getConfiguration().getSuggesterConfig();
+        return env.getConfiguration().getSuggesterConfig();
     }
 
     /**
