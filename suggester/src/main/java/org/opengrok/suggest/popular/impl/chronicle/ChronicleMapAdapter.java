@@ -68,7 +68,7 @@ public class ChronicleMapAdapter implements PopularityMap {
         if (value < 0) {
             throw new IllegalArgumentException("Cannot increment by negative value " + value);
         }
-        map.merge(key, value, (a, b) -> a + b);
+        map.merge(key, value, Integer::sum);
     }
 
     /** {@inheritDoc} */

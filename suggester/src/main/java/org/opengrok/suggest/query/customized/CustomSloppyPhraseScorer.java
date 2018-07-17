@@ -61,7 +61,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
 
     private int offset;
 
-    public Map<Integer, IntsHolder> map = new HashMap<>();
+    private Map<Integer, IntsHolder> map = new HashMap<>();
 
     CustomSloppyPhraseScorer(Weight weight, CustomPhraseQuery.PostingsAndFreq[] postings, int slop, int offset) {
         super(weight);

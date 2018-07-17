@@ -127,7 +127,7 @@ class SuggesterSearcher extends IndexSearcher {
     private List<LookupResultItem> suggest(
             final Query query,
             final LeafReaderContext leafReaderContext,
-            final String suggester,
+            final String project,
             final SuggesterQuery suggesterQuery,
             final PopularityCounter searchCounts
     ) throws IOException {
@@ -189,7 +189,7 @@ class SuggesterSearcher extends IndexSearcher {
                     score += searchCounts.get(term) * TERM_ALREADY_SEARCHED_MULTIPLIER;
 
                     if (queue.canInsert(score)) {
-                        queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), suggester, score));
+                        queue.insertWithOverflow(new LookupResultItem(term.utf8ToString(), project, score));
                     }
                 }
             }
