@@ -84,7 +84,9 @@ public final class Suggester implements Closeable {
 
     private final int timeThreshold;
 
-    private final ExecutorService executorService = Executors.newWorkStealingPool();
+    // do NOT use fork join thread pool (work stealing thread pool) because it does not send interrupts upon cancellation
+    private final ExecutorService executorService = Executors.newFixedThreadPool(
+            Runtime.getRuntime().availableProcessors());
 
     /**
      * @param suggesterDir directory under which the suggester data should be created

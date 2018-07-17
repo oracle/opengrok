@@ -633,6 +633,10 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { //
         return new TwoPhaseIterator(conjunction) {
             @Override
             public boolean matches() throws IOException {
+                // custom – interrupt handler
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new IOException("Interrupted while scoring documents");
+                }
                 sloppyFreq = phraseFreq(); // check for phrase
                 return sloppyFreq != 0F;
             }
