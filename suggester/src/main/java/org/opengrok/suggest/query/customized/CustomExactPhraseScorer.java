@@ -36,7 +36,7 @@ import org.opengrok.suggest.query.data.IntsHolder;
  * Modified Apache Lucene's ExactPhraseScorer (now {@link org.apache.lucene.search.ExactPhraseMatcher}) to support
  * remembering the positions where the match was found.
  */
-final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
+final class CustomExactPhraseScorer extends Scorer implements PhraseScorer { // custom – special interface
 
     private static class PostingsAndPosition {
         private final PostingsEnum postings;
@@ -49,17 +49,30 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         }
     }
 
-    private Map<Integer, IntsHolder> map = new HashMap<>();
+    // custom begins – only necessary attributes
+    private Map<Integer, IntsHolder> documentToPositionsMap = new HashMap<>();
 
     private int offset;
 
     private final DocIdSetIterator conjunction;
     private final PostingsAndPosition[] postings;
+    // custom ends
 
-    public CustomExactPhraseScorer(Weight weight, CustomPhraseQuery.PostingsAndFreq[] postings, int offset) {
+    // custom – constructor parameters
+    /**
+     * Creates custom exact phrase scorer which remembers the positions of the found matches.
+     * @param weight query weight
+     * @param postings postings of the terms
+     * @param offset the offset that is added to the found match position
+     */
+    public CustomExactPhraseScorer(
+            final Weight weight,
+            final CustomPhraseQuery.PostingsAndFreq[] postings,
+            final int offset
+    ) {
         super(weight);
 
-        this.offset = offset;
+        this.offset = offset; // custom
 
         List<DocIdSetIterator> iterators = new ArrayList<>();
         List<PostingsAndPosition> postingsAndPositions = new ArrayList<>();
@@ -67,11 +80,13 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
             iterators.add(posting.postings);
             postingsAndPositions.add(new PostingsAndPosition(posting.postings, posting.position));
         }
+        // custom begins – support for single term
         if (iterators.size() == 1) {
             conjunction = iterators.get(0);
         } else {
             conjunction = ConjunctionDISI.intersectIterators(iterators);
         }
+        // custom ends
         assert TwoPhaseIterator.unwrap(conjunction) == null;
         this.postings = postingsAndPositions.toArray(new PostingsAndPosition[postingsAndPositions.size()]);
     }
@@ -81,12 +96,12 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         return new TwoPhaseIterator(conjunction) {
             @Override
             public boolean matches() throws IOException {
-                return phraseFreq() > 0;
+                return phraseFreq() > 0; // custom – only necessary part left
             }
 
             @Override
             public float matchCost() {
-                return 0;
+                return 0; // custom – default value
             }
         };
     }
@@ -98,7 +113,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
 
     @Override
     public String toString() {
-        return "CustomExactPhraseScorer(" + weight + ")";
+        return "CustomExactPhraseScorer(" + weight + ")"; // custom – renamed class
     }
 
     @Override
@@ -108,7 +123,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
 
     @Override
     public float score() {
-        return 1;
+        return 1; // custom – default value
     }
 
     /** Advance the given pos enum to the first doc on or after {@code target}.
@@ -138,7 +153,7 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
         int freq = 0;
         final PostingsAndPosition lead = postings[0];
 
-        BitIntsHolder positions = new BitIntsHolder();
+        BitIntsHolder positions = null; // custom – store positions
 
         advanceHead:
         while (true) {
@@ -162,7 +177,12 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
             }
 
             freq += 1;
+            // custom begins – found a match
+            if (positions == null) {
+                positions = new BitIntsHolder();
+            }
             positions.set(phrasePos + offset);
+            // custom ends
 
             if (lead.upTo == lead.freq) {
                 break;
@@ -171,16 +191,21 @@ final class CustomExactPhraseScorer extends Scorer implements PhraseScorer {
             lead.upTo += 1;
         }
 
-        if (!positions.isEmpty()) {
-            map.put(docID(), positions);
+        // custom begin – if some positions were found then store them
+        if (positions != null) {
+            documentToPositionsMap.put(docID(), positions);
         }
+        // custom ends
 
         return freq;
     }
 
+    // custom begins – special interface implementation
+    /** {@inheritDoc} */
     @Override
     public IntsHolder getPositions(final int docId) {
-        return map.get(docId);
+        return documentToPositionsMap.get(docId);
     }
+    // custom ends
 
 }

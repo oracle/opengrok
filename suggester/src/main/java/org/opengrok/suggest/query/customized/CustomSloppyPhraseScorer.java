@@ -40,7 +40,7 @@ import org.opengrok.suggest.query.data.IntsHolder;
  * Modified Apache Lucene's SloppyPhraseScorer (now {@link org.apache.lucene.search.SloppyPhraseMatcher}) to remember
  * the positions of the matches.
  */
-final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
+final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer { // custom – specific interface
 
     private final DocIdSetIterator conjunction;
     private final PhrasePositions[] phrasePositions;
@@ -59,14 +59,29 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
     private PhrasePositions[][] rptGroups; // in each group are PPs that repeats each other (i.e. same term), sorted by (query) offset
     private PhrasePositions[] rptStack; // temporary stack for switching colliding repeating pps
 
+    // custom begins
     private int offset;
 
-    private Map<Integer, IntsHolder> map = new HashMap<>();
+    private Map<Integer, IntsHolder> documentsToPositionsMap = new HashMap<>();
+    // custom ends
 
-    CustomSloppyPhraseScorer(Weight weight, CustomPhraseQuery.PostingsAndFreq[] postings, int slop, int offset) {
+    // custom – constructor parameters
+    /**
+     * Creates custom sloppy phrase scorer which remembers the positions of the found matches.
+     * @param weight query weight
+     * @param postings postings of the terms
+     * @param slop "word edit distance"
+     * @param offset the offset that is added to the found match position
+     */
+    CustomSloppyPhraseScorer(
+            final Weight weight,
+            final CustomPhraseQuery.PostingsAndFreq[] postings,
+            final int slop,
+            final int offset
+    ) {
         super(weight);
         this.slop = slop;
-        this.offset = offset;
+        this.offset = offset; // custom
         this.numPostings = postings==null ? 0 : postings.length;
         pq = new PhraseQueue(postings.length);
         DocIdSetIterator[] iterators = new DocIdSetIterator[postings.length];
@@ -75,11 +90,13 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
             iterators[i] = postings[i].postings;
             phrasePositions[i] = new PhrasePositions(postings[i].postings, postings[i].position, i, postings[i].terms);
         }
+        // custom begins – support for single term
         if (iterators.length == 1) {
             conjunction = iterators[0];
         } else {
             conjunction = ConjunctionDISI.intersectIterators(Arrays.asList(iterators));
         }
+        // custom ends
         assert TwoPhaseIterator.unwrap(conjunction) == null;
     }
 
@@ -102,6 +119,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
      * We may want to fix this in the future (currently not, for performance reasons).
      */
     private float phraseFreq() throws IOException {
+        // custom begins
         BitIntsHolder allPositions = new BitIntsHolder();
 
         BitIntsHolder positions = new BitIntsHolder();
@@ -120,25 +138,28 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
                 matchCount++;
             }
             if (!positions.isEmpty()) {
-                map.put(docID(), positions);
+                documentsToPositionsMap.put(docID(), positions);
             }
             return matchCount;
         }
+        // custom ends
 
         if (!initPhrasePositions()) {
             return 0.0f;
         }
 
+        // custom begins
         for (PhrasePositions phrasePositions : this.pq) {
             allPositions.set(phrasePositions.position + phrasePositions.offset);
         }
+        // custom ends
 
         int numMatches = 0;
         PhrasePositions pp = pq.pop();
         int matchLength = end - pp.position;
         int next = pq.top().position;
 
-        int lastEnd = this.end;
+        int lastEnd = this.end; // custom – remember last matched position
 
         while (advancePP(pp)) {
 
@@ -151,6 +172,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
             if (pp.position > next) { // done minimizing current match-length
                 if (matchLength <= slop) {
                     numMatches++;
+                    // custom – match found, remember positions
                     addPositions(positions, allPositions, lastEnd, matchLength);
                 }
                 pq.add(pp);
@@ -158,7 +180,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
                 next = pq.top().position;
                 matchLength = end - pp.position;
 
-                lastEnd = this.end;
+                lastEnd = this.end; // custom – remember position of last match
 
             } else {
                 int matchLength2 = end - pp.position;
@@ -166,20 +188,35 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
                     matchLength = matchLength2;
                 }
 
-                lastEnd = this.end;
+                lastEnd = this.end; // custom – remember position of last match
             }
         }
         if (matchLength <= slop) {
             numMatches++;
-            addPositions(positions, allPositions, lastEnd, matchLength);
+            addPositions(positions, allPositions, lastEnd, matchLength); // custom – match found, remember positions
         }
+        // custom begins – if some positions were found then store them
         if (!positions.isEmpty()) {
-            map.put(docID(), positions);
+            documentsToPositionsMap.put(docID(), positions);
         }
+        // custom ends
         return numMatches;
     }
 
-    private void addPositions(BitIntsHolder positions, IntsHolder allPositions, int lastEnd, int matchLength) {
+    // custom begins
+    /**
+     * Stores all the possible positions.
+     * @param positions where to store the positions
+     * @param allPositions positions already taken by the terms
+     * @param lastEnd match position
+     * @param matchLength how many words from "edit distance" was already taken to find this match
+     */
+    private void addPositions(
+            final BitIntsHolder positions,
+            final IntsHolder allPositions,
+            final int lastEnd,
+            final int matchLength
+    ) {
         int expectedPos = lastEnd + offset;
 
         int range = this.slop - matchLength;
@@ -190,6 +227,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
             }
         }
     }
+    // custom ends
 
     /** advance a PhrasePosition and update 'end', return false if exhausted */
     private boolean advancePP(PhrasePositions pp) throws IOException {
@@ -439,7 +477,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
             // simpler - no multi-terms - can base on positions in first doc
             for (int i=0; i<rpp.length; i++) {
                 PhrasePositions pp = rpp[i];
-                if (pp.rptGroup >=0) {
+                if (pp.rptGroup >=0) { // custom – add braces because of checkstyle
                     continue; // already marked as a repetition
                 }
                 int tpPos = tpPos(pp);
@@ -582,11 +620,13 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
 
     @Override
     public float score() {
-        return 1;
+        return 1; // custom – default value
     }
 
     @Override
-    public String toString() { return "CustomSloppyPhraseScorer(" + weight + ")"; }
+    public String toString() {
+        return "CustomSloppyPhraseScorer(" + weight + ")"; // custom – renamed class
+    }
 
     @Override
     public TwoPhaseIterator twoPhaseIterator() {
@@ -599,7 +639,7 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
 
             @Override
             public float matchCost() {
-                return 0;
+                return 0; // custom – default value
             }
 
             @Override
@@ -614,8 +654,11 @@ final class CustomSloppyPhraseScorer extends Scorer implements PhraseScorer {
         return TwoPhaseIterator.asDocIdSetIterator(twoPhaseIterator());
     }
 
+    // custom begins – special interface implementation
+    /** {@inheritDoc} */
     @Override
     public IntsHolder getPositions(int docId) {
-        return map.get(docId);
+        return documentsToPositionsMap.get(docId);
     }
+    // custom ends
 }
