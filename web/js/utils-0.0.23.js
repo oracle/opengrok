@@ -1838,7 +1838,7 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                     $("<li>", {
                         class: "ui-state-disabled",
                         style: 'padding-left: 5px;',
-                        text: time + 'ms'
+                        text: time + ' ms'
                     }).appendTo(ul);
                 }
                 if (partialResult) {
@@ -1855,7 +1855,9 @@ function initAutocompleteForField(inputId, field, config, dataFunction, errorEle
                 event.preventDefault();
                 return;
             }
-            replaceValueWithSuggestion(input, text, identifier, ui.item.phrase);
+            if (event.originalEvent.originalEvent.type.startsWith('key')) { // replace value only on key events
+                replaceValueWithSuggestion(input, text, identifier, ui.item.phrase);
+            }
 
             event.preventDefault(); // to prevent the movement of the caret to the end
         },
