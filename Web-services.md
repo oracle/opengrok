@@ -172,8 +172,12 @@ There are a few endpoints which provide different functionality.
       ```json
       [{"project":"kotlin","field":"full","token":"args","increment":100}]
       ```
-
-
+* `/popularity/{project}`
+  * **GET** – retrieves popularity data for `{project}`
+    * `?field={field}` – field for which to retrieve data, default: `full`
+    * `?page={page}` – page of data, default: `0`
+    * `?pageSize={pageSize}` – size of the page, default: `100`
+    * `?all={all}` – if all data should be retrieved, if `true` then `page` and `pageSize` params are ignored
 ### `/system`
 
 * `/refresh`
