@@ -48,7 +48,7 @@ public class SuggesterConfig {
     public static final boolean SHOW_PROJECTS_DEFAULT = true;
     public static final boolean SHOW_TIME_DEFAULT = false;
     public static final String REBUILD_CRON_CONFIG_DEFAULT = "0 0 * * *"; // every day at midnight
-    public static final int SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT = 1800; // half an hour should be enough
+    public static final int BUILD_TERMINATION_TIME_DEFAULT = 1800; // half an hour should be enough
     public static final int TIME_THRESHOLD_DEFAULT = 2000; // 2 sec
 
     public static final Set<String> allowedProjectsDefault = null;
@@ -124,9 +124,10 @@ public class SuggesterConfig {
     private String rebuildCronConfig;
 
     /**
-     * Specifies after how much time the suggester should kill the threads that build the suggester data structures.
+     * Specifies after how much time (in seconds) the suggester should kill the threads that build the suggester data
+     * structures.
      */
-    private int suggesterBuildTerminationTimeSec;
+    private int buildTerminationTime;
 
     /**
      * Time threshold for suggestions in milliseconds. If the computation exceeds this time,
@@ -149,7 +150,7 @@ public class SuggesterConfig {
         setTimeThreshold(TIME_THRESHOLD_DEFAULT);
         // do not use setter because indexer invocation with --man will fail
         rebuildCronConfig = REBUILD_CRON_CONFIG_DEFAULT;
-        setSuggesterBuildTerminationTimeSec(SUGGESTER_BUILD_TERMINATION_TIME_DEFAULT);
+        setBuildTerminationTime(BUILD_TERMINATION_TIME_DEFAULT);
     }
 
     public boolean isEnabled() {
@@ -262,15 +263,15 @@ public class SuggesterConfig {
         this.rebuildCronConfig = rebuildCronConfig;
     }
 
-    public int getSuggesterBuildTerminationTimeSec() {
-        return suggesterBuildTerminationTimeSec;
+    public int getBuildTerminationTime() {
+        return buildTerminationTime;
     }
 
-    public void setSuggesterBuildTerminationTimeSec(final int suggesterBuildTerminationTimeSec) {
-        if (suggesterBuildTerminationTimeSec < 0) {
+    public void setBuildTerminationTime(final int buildTerminationTime) {
+        if (buildTerminationTime < 0) {
             throw new IllegalArgumentException("Suggester build termination time cannot be negative");
         }
-        this.suggesterBuildTerminationTimeSec = suggesterBuildTerminationTimeSec;
+        this.buildTerminationTime = buildTerminationTime;
     }
 
     public int getTimeThreshold() {
@@ -302,7 +303,7 @@ public class SuggesterConfig {
                 showScores == that.showScores &&
                 showProjects == that.showProjects &&
                 showTime == that.showTime &&
-                suggesterBuildTerminationTimeSec == that.suggesterBuildTerminationTimeSec &&
+                buildTerminationTime == that.buildTerminationTime &&
                 Objects.equals(allowedProjects, that.allowedProjects) &&
                 Objects.equals(allowedFields, that.allowedFields) &&
                 Objects.equals(rebuildCronConfig, that.rebuildCronConfig);
@@ -312,7 +313,7 @@ public class SuggesterConfig {
     public int hashCode() {
         return Objects.hash(enabled, maxResults, minChars, allowedProjects, maxProjects, allowedFields,
                 allowComplexQueries, allowMostPopular, showScores, showProjects, showTime, rebuildCronConfig,
-                suggesterBuildTerminationTimeSec);
+                buildTerminationTime);
     }
 
 }
