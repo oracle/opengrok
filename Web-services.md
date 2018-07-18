@@ -127,6 +127,53 @@ There are a few endpoints which provide different functionality.
 * `/reload`
   * **PUT** – reloads statistics (useful when configuration path to statistics changed)
 
+### `/suggest`
+
+* **GET** – returns suggestions
+  * `?projects[]={project1}&projects[]={project2}` – list of projects for which to retrieve suggestions
+  * `?field={field}` – field for which to suggest
+  * `?caret={position}` – position of the caret in the input field
+  * `?full={full}` – value of the `Full Search` input
+  * `?defs={defs}`– value of the `Definitions` input
+  * `?refs={refs}` – value of `Symbol` input
+  * `?path={path}` – value of the `File Path` input
+  * `?hist={hist}` – value of the `History` input
+  * `?type={type}` – value of the `Type` input
+  * example:
+  ```json
+  {
+    "time": 60,
+    "suggestions": [{
+      "phrase": "package",
+      "projects": ["kotlin"],
+      "score": 387
+    }],
+    "identifier": "pprttq",
+    "queryText": "pprttq",
+    "partialResult":false
+  }
+  ```
+
+* `/config`
+  * **GET** – returns suggester configuration
+
+* `/init/queries`
+  * **POST** – updates popularity data based on the queries
+    * **body** – JSON encoded list of queries
+      * example:
+      ```json
+      ["http://localhost:8080/source/search?project=kotlin&q=text"]
+      ```
+
+* `/init/raw`
+  * **POST** – updates popularity data based on the provided data
+    * **body** – JSON encoded data
+      * example:
+      ```json
+      [{"project":"kotlin","field":"full","token":"args","increment":100}]
+      ```
+
+
 ### `/system`
 
 * `/refresh`
