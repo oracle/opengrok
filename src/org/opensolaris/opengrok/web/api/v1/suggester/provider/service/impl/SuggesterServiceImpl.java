@@ -277,7 +277,7 @@ public class SuggesterServiceImpl implements SuggesterService {
         File suggesterDir = new File(config.getDataRoot(), IndexDatabase.SUGGESTER_DIR);
         suggester = new Suggester(suggesterDir,
                 suggesterConfig.getMaxResults(),
-                Duration.ofSeconds(suggesterConfig.getSuggesterBuildTerminationTimeSec()),
+                Duration.ofSeconds(suggesterConfig.getBuildTerminationTime()),
                 suggesterConfig.isAllowMostPopular(),
                 env.isProjectsEnabled(),
                 suggesterConfig.getAllowedFields(),
@@ -318,6 +318,11 @@ public class SuggesterServiceImpl implements SuggesterService {
 
     private void scheduleRebuild() {
         cancelScheduledRebuild();
+
+        if (!env.getConfiguration().getSuggesterConfig().isAllowMostPopular()) { // no need to rebuild
+            logger.log(Level.INFO, "Suggester rebuild not scheduled");
+            return;
+        }
 
         Duration timeToNextRebuild = getTimeToNextRebuild();
         if (timeToNextRebuild == null) {
