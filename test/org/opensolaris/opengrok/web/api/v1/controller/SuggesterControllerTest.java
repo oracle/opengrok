@@ -612,7 +612,7 @@ public class SuggesterControllerTest extends JerseyTest {
                 .get(Result.class);
 
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
-                contains("printf"));
+                containsInAnyOrder("print", "printf"));
     }
 
 }

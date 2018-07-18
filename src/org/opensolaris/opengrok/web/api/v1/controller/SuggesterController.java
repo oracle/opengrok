@@ -252,10 +252,18 @@ public final class SuggesterController {
         }
     }
 
+    /**
+     * Returns the searched terms sorted according to their popularity.
+     * @param project project for which to return the data
+     * @param field field for which to return the data
+     * @param page which page of data to retrieve
+     * @param pageSize number of results to return
+     * @return list of terms with their popularity
+     */
     @GET
     @Path("/popularity/{project}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Entry<String, Integer>> getPopularityData(
+    public List<Entry<String, Integer>> getPopularityDataPaged(
             @PathParam("project") final String project,
             @QueryParam("field") @DefaultValue(QueryBuilder.FULL) final String field,
             @QueryParam("page") @DefaultValue("" + 0) final int page,
