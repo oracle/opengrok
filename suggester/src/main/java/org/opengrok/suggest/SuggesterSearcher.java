@@ -68,12 +68,15 @@ class SuggesterSearcher extends IndexSearcher {
 
     private boolean interrupted;
 
+    private final int numDocs;
+
     /**
      * @param reader reader of the index for which to provide suggestions
      * @param resultSize size of the results
      */
     SuggesterSearcher(final IndexReader reader, final int resultSize) {
         super(reader);
+        numDocs = reader.numDocs();
         this.resultSize = resultSize;
     }
 
@@ -180,7 +183,7 @@ class SuggesterSearcher extends IndexSearcher {
 
             int score;
             if (!needsDocumentIds) {
-                score = termsEnum.docFreq();
+                score = normalizeDocumentFrequency(termsEnum.docFreq(), numDocs);
             } else if (needPositionsAndFrequencies) {
                 score = getPhraseScore(complexQueryData, leafReaderContext.docBase, postingsEnum);
             } else {
@@ -314,7 +317,7 @@ class SuggesterSearcher extends IndexSearcher {
                 weight++;
             }
         }
-        return weight;
+        return normalizeDocumentFrequency(weight, documentIds.numberOfElements());
     }
 
     private boolean needPositionsAndFrequencies(final Query query) {
@@ -331,6 +334,10 @@ class SuggesterSearcher extends IndexSearcher {
         }
 
         return false;
+    }
+
+    private static int normalizeDocumentFrequency(final int count, final int documents) {
+        return (int) (((double) count / documents) * SuggesterUtils.NORMALIZED_DOCUMENT_FREQUENCY_MULTIPLIER);
     }
 
     private static class ComplexQueryData {

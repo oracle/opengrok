@@ -34,4 +34,10 @@ public interface IntsHolder {
      */
     boolean has(int i);
 
+    /**
+     * Returns number of elements.
+     * @return number of elements.
+     */
+    int numberOfElements();
+
 }

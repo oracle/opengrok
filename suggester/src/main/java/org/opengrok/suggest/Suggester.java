@@ -96,6 +96,7 @@ public final class Suggester implements Closeable {
      * @param projectsEnabled specifies if the OpenGrok projects are enabled
      * @param allowedFields fields for which should the suggester be enabled,
      * if {@code null} then enabled for all fields
+     * @param timeThreshold time in milliseconds after which the suggestions requests should time out
      */
     public Suggester(
             final File suggesterDir,
@@ -585,7 +586,7 @@ public final class Suggester implements Closeable {
     }
 
     /**
-     * Model classes for holding project name and path to ist index directory.
+     * Model classes for holding project name and path to its index directory.
      */
     public static class NamedIndexDir {
 

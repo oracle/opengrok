@@ -35,4 +35,10 @@ public class HashIntsHolder extends HashSet<Integer> implements IntsHolder {
         return contains(i);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public int numberOfElements() {
+        return size();
+    }
+
 }
