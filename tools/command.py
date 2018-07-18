@@ -313,8 +313,8 @@ class Command:
 
     def set_resource_limits(self, limits):
         self.logger.debug("Setting resource limits")
-        for name in limits.keys():
-            self.set_resource_limit(name, limits[name])
+        for name, value in limits.items():
+            self.set_resource_limit(name, value)
 
     def getretcode(self):
         if self.state is not Command.FINISHED:
