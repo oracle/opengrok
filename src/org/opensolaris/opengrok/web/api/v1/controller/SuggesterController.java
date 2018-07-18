@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.web.api.v1.controller;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.util.BytesRef;
 import org.hibernate.validator.constraints.NotBlank;
 import org.opengrok.suggest.LookupResultItem;
 import org.opengrok.suggest.Suggester.Suggestions;
@@ -187,7 +188,7 @@ public final class SuggesterController {
                         continue;
                     }
                     if (fieldQueryText.size() > 2) {
-                        logger.log(Level.WARNING, "Bad format, ignoring");
+                        logger.log(Level.WARNING, "Bad format, ignoring {0}", urlStr);
                         continue;
                     }
                     String value = fieldQueryText.get(0);
@@ -267,9 +268,16 @@ public final class SuggesterController {
             @PathParam("project") final String project,
             @QueryParam("field") @DefaultValue(QueryBuilder.FULL) final String field,
             @QueryParam("page") @DefaultValue("" + 0) final int page,
-            @QueryParam("pageSize") @DefaultValue("" + POPULARITY_DEFAULT_PAGE_SIZE) final int pageSize
+            @QueryParam("pageSize") @DefaultValue("" + POPULARITY_DEFAULT_PAGE_SIZE) final int pageSize,
+            @QueryParam("all") final boolean all
     ) {
-        return suggester.getPopularityData(project, field, page, pageSize).stream()
+        List<Entry<BytesRef, Integer>> data;
+        if (all) {
+            data = suggester.getPopularityData(project, field, 0, Integer.MAX_VALUE);
+        } else {
+            data = suggester.getPopularityData(project, field, page, pageSize);
+        }
+        return data.stream()
                 .map(e -> new SimpleEntry<>(e.getKey().utf8ToString(), e.getValue()))
                 .collect(Collectors.toList());
     }

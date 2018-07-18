@@ -588,6 +588,24 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
+    public void testGetPopularityDataAll() {
+        SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
+                new Term(QueryBuilder.FULL, "mynamespace"), 10);
+        SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
+                new Term(QueryBuilder.FULL, "topclass"), 15);
+
+        List<Entry<String, Integer>> res = target(SuggesterController.PATH)
+                .path("popularity")
+                .path("csharp")
+                .queryParam("pageSize", 1)
+                .queryParam("all", true)
+                .request()
+                .get(popularityDataType);
+
+        assertThat(res, contains(new SimpleEntry<>("stopclass", 15), new SimpleEntry<>("mynamespace", 10)));
+    }
+
+    @Test
     public void testGetPopularityDataDifferentField() {
         SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.FULL, "print"), 10);
         SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.DEFS, "greet"), 4);
