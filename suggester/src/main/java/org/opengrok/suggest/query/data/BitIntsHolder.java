@@ -42,4 +42,10 @@ public class BitIntsHolder extends BitSet implements IntsHolder {
         return get(i);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public int numberOfElements() {
+        return cardinality();
+    }
+
 }

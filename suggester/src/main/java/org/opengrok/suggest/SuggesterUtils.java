@@ -48,11 +48,11 @@ import java.util.logging.Logger;
  */
 public class SuggesterUtils {
 
+    public static final int NORMALIZED_DOCUMENT_FREQUENCY_MULTIPLIER = 1000;
+
     private static final Logger logger = Logger.getLogger(SuggesterUtils.class.getName());
 
     private static final long DEFAULT_TERM_WEIGHT = 0;
-
-    private static final int NORMALIZED_DOCUMENT_FREQUENCY_MULTIPLIER = 1000;
 
     private SuggesterUtils() {
     }
