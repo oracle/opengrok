@@ -602,7 +602,7 @@ public class SuggesterControllerTest extends JerseyTest {
                 .request()
                 .get(popularityDataType);
 
-        assertThat(res, contains(new SimpleEntry<>("stopclass", 15), new SimpleEntry<>("mynamespace", 10)));
+        assertThat(res, contains(new SimpleEntry<>("topclass", 15), new SimpleEntry<>("mynamespace", 10)));
     }
 
     @Test
