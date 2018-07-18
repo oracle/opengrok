@@ -197,7 +197,8 @@ class SuggesterQueryParser extends CustomQueryParser {
     protected Query newWildcardQuery(final Term t) {
         if (t.text().contains(identifier)) {
             String term = t.text().replace(identifier, "");
-            if (term.endsWith("*")) {
+            if (term.endsWith("*") && !containsWildcardCharacter(term.substring(0, term.length() - 1))) {
+                // the term ends with "*" but contains no other wildcard characters so faster method can be used
                 replaceIdentifier(t.field(), t.text());
                 term = term.substring(0, term.length() - 1);
                 SuggesterPrefixQuery q = new SuggesterPrefixQuery(new Term(t.field(), term));
@@ -212,6 +213,10 @@ class SuggesterQueryParser extends CustomQueryParser {
         }
 
         return super.newWildcardQuery(t);
+    }
+
+    private boolean containsWildcardCharacter(final String s) {
+        return s.contains("?") || s.contains("*");
     }
 
     @Override
