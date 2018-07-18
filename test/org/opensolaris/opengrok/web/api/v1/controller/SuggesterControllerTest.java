@@ -602,4 +602,17 @@ public class SuggesterControllerTest extends JerseyTest {
         assertThat(res, contains(new SimpleEntry<>("greet", 4)));
     }
 
+    @Test
+    public void testWildcardQueryEndingWithAsterisk() {
+        Result res = target(SuggesterController.PATH)
+                .queryParam(AuthorizationFilter.PROJECTS_PARAM, "c")
+                .queryParam("field", QueryBuilder.FULL)
+                .queryParam(QueryBuilder.FULL, "pr?nt*")
+                .request()
+                .get(Result.class);
+
+        assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
+                contains("printf"));
+    }
+
 }
