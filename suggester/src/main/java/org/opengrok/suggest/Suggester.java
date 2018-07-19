@@ -31,6 +31,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.opengrok.suggest.query.SuggesterPrefixQuery;
 import org.opengrok.suggest.query.SuggesterQuery;
+import org.opengrok.suggest.util.Statistics;
 
 import java.io.Closeable;
 import java.io.File;
@@ -148,6 +149,7 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
+            Statistics elapsed = new Statistics();
             logger.log(Level.INFO, "Initializing suggester");
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
@@ -156,7 +158,7 @@ public final class Suggester implements Closeable {
                 submitInitIfIndexExists(executor, indexDir);
             }
 
-            shutdownAndAwaitTermination(executor, "Suggester successfully initialized");
+            shutdownAndAwaitTermination(executor, elapsed, "Suggester successfully initialized");
         }
     }
 
@@ -209,11 +211,11 @@ public final class Suggester implements Closeable {
         }
     }
 
-    private void shutdownAndAwaitTermination(final ExecutorService executorService, final String logMessageOnSuccess) {
+    private void shutdownAndAwaitTermination(final ExecutorService executorService, Statistics elapsed, final String logMessageOnSuccess) {
         executorService.shutdown();
         try {
             executorService.awaitTermination(awaitTerminationTime.toMillis(), TimeUnit.MILLISECONDS);
-            logger.log(Level.INFO, logMessageOnSuccess);
+            elapsed.report(logger, logMessageOnSuccess);
         } catch (InterruptedException e) {
             logger.log(Level.SEVERE, "Interrupted while building suggesters", e);
             Thread.currentThread().interrupt();
@@ -231,6 +233,7 @@ public final class Suggester implements Closeable {
         }
 
         synchronized (lock) {
+            Statistics elapsed = new Statistics();
             logger.log(Level.INFO, "Rebuilding the following suggesters: {0}", indexDirs);
 
             ExecutorService executor = Executors.newWorkStealingPool(rebuildParallelismLevel);
@@ -244,7 +247,7 @@ public final class Suggester implements Closeable {
                 }
             }
 
-            shutdownAndAwaitTermination(executor, "Suggesters for " + indexDirs + " were successfully rebuilt");
+            shutdownAndAwaitTermination(executor, elapsed, "Suggesters for " + indexDirs + " were successfully rebuilt");
         }
     }
 
