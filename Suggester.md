@@ -1,6 +1,19 @@
 # Suggester
 OpenGrok has a suggester support which tries to autocomplete the user queries.
 
+## Java 9+ problems
+The `ChronicleMap` dependency does not work out of the box with Java 9+; as a result, promoting terms based on the previous searches won't work. To solve this issue, following parameters are needed to add to `java` invocation:
+```
+--add-exports java.base/jdk.internal.ref=ALL-UNNAMED
+--add-exports java.base/jdk.internal.misc=ALL-UNNAMED
+--add-exports java.base/sun.nio.ch=ALL-UNNAMED
+```
+
+If you use Tomcat as a servlet container, these options can be specified by adding the following to the `setenv.sh` file:
+```bash
+JDK_JAVA_OPTIONS="--add-exports java.base/jdk.internal.ref=ALL-UNNAMED --add-exports java.base/jdk.internal.misc=ALL-UNNAMED --add-exports java.base/sun.nio.ch=ALL-UNNAMED"
+```
+
 ## Queries that suggester supports
 **Note:** `|` specifies the caret position in the input field.
 
@@ -111,4 +124,3 @@ Specifies a time threshold for suggestions in milliseconds.
 If the computation exceeds this time, it will be stopped and partial results will be returned.
 Property: `timeThreshold`.
 Default value: `2000` (2 seconds).
-
