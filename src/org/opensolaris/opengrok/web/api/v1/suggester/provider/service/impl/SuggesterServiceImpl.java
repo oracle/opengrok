@@ -184,6 +184,10 @@ public class SuggesterServiceImpl implements SuggesterService {
                     project);
             return;
         }
+        if (!p.isIndexed()) {
+            logger.log(Level.WARNING, "Cannot refresh project {0} because it is not indexed yet", project);
+            return;
+        }
         lock.readLock().lock();
         try {
             if (suggester == null) {
