@@ -119,7 +119,9 @@ class SuggesterProjectData implements Closeable {
             } else if (!indexedFields.containsAll(fields)) {
                 Set<String> copy = new HashSet<>(fields);
                 copy.removeAll(indexedFields);
-                logger.log(Level.WARNING, "Fields {0} will be ignored because they are not indexed", copy);
+                logger.log(Level.WARNING,
+                        "Fields {0} will be ignored because they were not found in index directory {1}",
+                        new Object[] {copy, indexDir});
 
                 copy = new HashSet<>(fields);
                 copy.retainAll(indexedFields);
@@ -346,7 +348,7 @@ class SuggesterProjectData implements Closeable {
         try {
             WFSTCompletionLookup lookup = lookups.get(field);
             if (lookup == null) {
-                logger.log(Level.WARNING, "No WFST for field {0}", field);
+                logger.log(Level.WARNING, "No WFST for field {0} in {1}", new Object[] {field, suggesterDir});
                 return Collections.emptyList();
             }
             return lookup.lookup(prefix, false, resultSize);
