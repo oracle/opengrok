@@ -20,27 +20,20 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web.api.constraints;
+package org.opengrok.web.api.v1.suggester;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
+import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
 /**
- * Validate that the annotated {@link java.time.Duration} is not null and positive.
+ * Binder for suggester related dependency injection.
  */
-@Constraint(validatedBy = PositiveDurationValidator.class)
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PositiveDuration {
+public class SuggesterAppBinder extends AbstractBinder {
 
-    String message() default "{org.opengrok.indexer.web.api.constraints.PositiveDuration.message}";
-
-    Class<?>[] groups() default {};
-
-    Class<? extends Payload>[] payload() default {};
+    @Override
+    protected void configure() {
+        bind(SuggesterServiceFactory.getDefault()).to(SuggesterService.class);
+    }
 
 }

@@ -52,7 +52,7 @@ public class LocalhostFilter implements ContainerRequestFilter {
      * Endpoint paths that are exempted from this filter.
      * @see SearchController#search(HttpServletRequest, String, String, String, String, String, String,
      * java.util.List, int, int)
-     * @see SuggesterController#getSuggestions(org.opensolaris.opengrok.web.api.v1.suggester.model.SuggesterQueryData)
+     * @see SuggesterController#getSuggestions(org.opengrok.web.api.v1.suggester.model.SuggesterQueryData)
      * @see SuggesterController#getConfig()
      */
     private static final Set<String> allowedPaths = new HashSet<>(Arrays.asList(

@@ -30,7 +30,9 @@ org.opengrok.indexer.search.Results,
 org.opengrok.indexer.web.SearchHelper,
 org.opengrok.indexer.web.SortOrder,
 org.opengrok.indexer.web.Suggestion"
-%><%
+%>
+<%@ page import="org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory" %>
+<%
 {
     PageConfig cfg = PageConfig.get(request);
     cfg.checkSourceRootExistence();
@@ -75,6 +77,8 @@ include file="projects.jspf"
     request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
     request.setAttribute("search.jsp-query-start-time", starttime);
     searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
+    // notify suggester that query was searched
+    SuggesterServiceFactory.getDefault().onSearch(cfg.getRequestedProjects(), searchHelper.query);
     if (searchHelper.redirect != null) {
         response.sendRedirect(searchHelper.redirect);
     }

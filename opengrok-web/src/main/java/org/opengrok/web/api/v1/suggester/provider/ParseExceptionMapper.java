@@ -20,27 +20,24 @@
 /*
  * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
  */
-package org.opengrok.indexer.web.api.constraints;
+package org.opengrok.web.api.v1.suggester.provider;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.opengrok.web.api.error.ExceptionMapperUtils;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
 /**
- * Validate that the annotated {@link java.time.Duration} is not null and positive.
+ * Maps the {@link ParseException} to a {@link javax.ws.rs.core.Response.Status#BAD_REQUEST} status.
  */
-@Constraint(validatedBy = PositiveDurationValidator.class)
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PositiveDuration {
+@Provider
+public class ParseExceptionMapper implements ExceptionMapper<ParseException> {
 
-    String message() default "{org.opengrok.indexer.web.api.constraints.PositiveDuration.message}";
-
-    Class<?>[] groups() default {};
-
-    Class<? extends Payload>[] payload() default {};
+    @Override
+    public Response toResponse(final ParseException e) {
+        return ExceptionMapperUtils.toResponse(Response.Status.BAD_REQUEST, e);
+    }
 
 }

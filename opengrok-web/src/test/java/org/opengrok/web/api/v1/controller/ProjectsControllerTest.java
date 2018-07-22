@@ -45,7 +45,7 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
-import org.opengrok.util.TestRepository;
+import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import javax.ws.rs.client.Entity;
@@ -53,7 +53,6 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;

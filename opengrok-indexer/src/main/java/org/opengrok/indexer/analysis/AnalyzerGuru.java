@@ -172,9 +172,9 @@ public class AnalyzerGuru {
 
     /**
      * Appended when
-     * {@link #addExtension(java.lang.String, org.opensolaris.opengrok.analysis.FileAnalyzerFactory)}
+     * {@link #addExtension(java.lang.String, org.opengrok.indexer.analysis.FileAnalyzerFactory)}
      * or
-     * {@link #addPrefix(java.lang.String, org.opensolaris.opengrok.analysis.FileAnalyzerFactory)}
+     * {@link #addPrefix(java.lang.String, org.opengrok.indexer.analysis.FileAnalyzerFactory)}
      * are called to augment the value in {@link #getVersionNo()}.
      */
     private static final TreeSet<String> CUSTOMIZATION_KEYS = new TreeSet<>();
@@ -328,9 +328,9 @@ public class AnalyzerGuru {
      * @return a value whose lower 32-bits are a static value
      * 20171230_00
      * for the current implementation and whose higher-32 bits are non-zero if
-     * {@link #addExtension(java.lang.String, org.opensolaris.opengrok.analysis.FileAnalyzerFactory)}
+     * {@link #addExtension(java.lang.String, org.opengrok.indexer.analysis.FileAnalyzerFactory)}
      * or
-     * {@link #addPrefix(java.lang.String, org.opensolaris.opengrok.analysis.FileAnalyzerFactory)}
+     * {@link #addPrefix(java.lang.String, org.opengrok.indexer.analysis.FileAnalyzerFactory)}
      * has been called.
      */
     public static long getVersionNo() {
