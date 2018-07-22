@@ -80,6 +80,7 @@ org.opengrok.indexer.web.PageConfig"
     cfg.addScript("tablesorter-parsers");
     cfg.addScript("searchable-option-list");
     cfg.addScript("utils");
+    cfg.addScript("jquery-caret");
 
 if (cfg.getPrefix().equals(Prefix.HIST_L)) {
     out.write("<link rel=\"alternate\" type=\"application/rss+xml\" " +

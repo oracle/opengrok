@@ -22,26 +22,42 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 public class ConfigurationControllerTest extends JerseyTest {
 
     private RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    @Mock
+    private SuggesterService suggesterService;
+
     @Override
     protected Application configure() {
-        return new ResourceConfig(ConfigurationController.class);
+        MockitoAnnotations.initMocks(this);
+        return new ResourceConfig(ConfigurationController.class)
+                .register(new AbstractBinder() {
+                    @Override
+                    protected void configure() {
+                        bind(suggesterService).to(SuggesterService.class);
+                    }
+                });
     }
 
     @Test
@@ -202,6 +218,22 @@ public class ConfigurationControllerTest extends JerseyTest {
                 .get(boolean.class);
 
         assertEquals(env.getConfiguration().isHistoryCache(), response);
+    }
+
+    @Test
+    public void testSuggesterServiceNotifiedOnConfigurationFieldChange() {
+        reset(suggesterService);
+        setValue("sourceRoot", "test");
+        verify(suggesterService).refresh();
+    }
+
+    @Test
+    public void testSuggesterServiceNotifiedOnConfigurationChange() {
+        reset(suggesterService);
+        target("configuration")
+                .request()
+                .put(Entity.xml(new Configuration().getXMLRepresentationAsString()));
+        verify(suggesterService).refresh();
     }
 
 }

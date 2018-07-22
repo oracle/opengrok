@@ -23,7 +23,9 @@
 package org.opengrok.web.api.v1.controller;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -35,11 +37,15 @@ public class SystemController {
 
     private final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+    @Inject
+    private SuggesterService suggester;
+
     @PUT
     @Path("/refresh")
     @Consumes(MediaType.TEXT_PLAIN)
     public void refresh(final String project) {
         env.maybeRefreshIndexSearchers(Collections.singleton(project));
+        suggester.refresh(project);
     }
 
 }

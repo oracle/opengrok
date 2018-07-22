@@ -1715,33 +1715,295 @@ function domReadyMast() {
 function pageReadyMast() {
 }
 
-function domReadyMenu() {
-    var sbox = document.getElementById('sbox');
-/*
-    $("#project").autocomplete(projects, {
-        minChars: 0,
-        multiple: true,
-        multipleSeparator: ",",
-        //mustMatch: true,
-        matchContains: "word",
-        max: 200,
-        cacheLength:20,
-        //autoFill: false,
-        formatItem: function(row, i, max) {
-                return (row != null) ? i + "/" + max + ": " + row[0] : "";
-            },
-        formatMatch: function(row, i, max) {
-                return (row != null) ? row[0] : "";
-            },
-        formatResult: function(row) {
-                return (row != null) ? row[0] : "";
-            },
-        width: "300px"
+function domReadyMenu(minisearch) {
+    $.ajax({
+        // cannot use "/api/v1/configuration/suggester" because of security
+        url: window.contextPath + "/api/v1/suggest/config",
+        dataType: "json",
+        success: function(config) {
+            if (config.enabled) {
+                initAutocomplete(config, minisearch);
+            }
+        },
+        error: function(xhr, ajaxOptions, error) {
+            console.log('Could not get autocomplete configuration, probably disabled');
+        }
     });
-*/
-    // TODO  Bug 11749
-    // var p = document.getElementById('project');
-    // p.setAttribute("autocomplete", "off");
+}
+
+function initAutocomplete(config, minisearch) {
+    if (minisearch) {
+        initMinisearchAutocomplete(config);
+    } else {
+        initAutocompleteForField("q", "full", config);
+        initAutocompleteForField("defs", "defs", config);
+        initAutocompleteForField("refs", "refs", config);
+        initAutocompleteForField("path", "path", config);
+        initAutocompleteForField("hist", "hist", config);
+    }
+}
+
+function initMinisearchAutocomplete(config) {
+    if (config.allowedFields && !config.allowedFields.includes('full')) {
+        return;
+    }
+
+    var project = '';
+
+    var projectElem = $('#minisearch-project');
+    if (projectElem) {
+        project = projectElem.val();
+    }
+
+    var pathElem = $('#minisearch-path');
+
+    initAutocompleteForField('search', 'full', config, function (input, field) {
+        var caretPos = input.caret();
+        if (!Number.isInteger(caretPos)) {
+            console.error("Suggest: could not get caret position");
+            return;
+        }
+        return {
+            projects: [project],
+            field: field,
+            full: input.val(),
+            path: pathElem.is(':checked') ? pathElem.val() : '',
+            caret: caretPos
+        }
+    }, 'search');
+}
+
+function initAutocompleteForField(inputId, field, config, dataFunction, errorElemId) {
+    if (config.allowedFields && !config.allowedFields.includes(field)) {
+        return;
+    }
+
+    var text;
+    var identifier;
+    var time;
+    var partialResult;
+
+    var input = $("#" + inputId);
+
+    if (!dataFunction) {
+        dataFunction = getAutocompleteMenuData;
+    }
+    if (!errorElemId) {
+        errorElemId = 'q';
+    }
+    var errorElem = $('#' + errorElemId);
+
+    input.autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: window.contextPath + "/api/v1/suggest",
+                dataType: "json",
+                data: dataFunction(input, field),
+                success: function(data) {
+                    hideError(errorElem);
+
+                    text = data.queryText;
+                    identifier = data.identifier;
+                    time = data.time;
+                    partialResult = data.partialResult;
+
+                    response(data.suggestions);
+                },
+                error: function(xhr, ajaxOptions, error) {
+                    input.autocomplete("close");
+                    response(undefined); // to remove loading indicator
+
+                    showError(xhr.responseJSON.message, errorElem)
+                },
+                statusCode: {
+                    404: function() {
+                        response(); // do not show anything
+                    }
+                }
+            });
+        },
+        create: function () {
+            $(this).data('ui-autocomplete')._renderItem = function (ul, item) {
+                var listItem = getSuggestionListItem(item, config);
+
+                return listItem.appendTo(ul);
+            };
+
+            $(this).data('ui-autocomplete')._renderMenu = function (ul, items) {
+                var _this = this;
+                $.each(items, function(index, item) {
+                    _this._renderItemData(ul, item);
+                });
+                if (config.showTime) {
+                    $("<li>", {
+                        class: "ui-state-disabled",
+                        style: 'padding-left: 5px;',
+                        text: time + ' ms'
+                    }).appendTo(ul);
+                }
+                if (partialResult) {
+                    $("<li>", {
+                        class: "ui-state-disabled",
+                        style: 'padding-left: 5px;',
+                        text: 'Partial result due to timeout'
+                    }).appendTo(ul);
+                }
+            };
+        },
+        focus: function (event, ui) {
+            if (ui.item.selectable === false) {
+                event.preventDefault();
+                return;
+            }
+            if (event.originalEvent.originalEvent.type.startsWith('key')) { // replace value only on key events
+                replaceValueWithSuggestion(input, text, identifier, ui.item.phrase);
+            }
+
+            event.preventDefault(); // to prevent the movement of the caret to the end
+        },
+        select: function (event, ui) {
+            replaceValueWithSuggestion(input, text, identifier, ui.item.phrase);
+
+            event.preventDefault(); // to prevent the movement of the caret to the end
+        },
+        response: function (event, ui) {
+            if (!ui.content) {
+                // error occurred
+                return;
+            }
+            if (ui.content.length === 0 && !partialResult) {
+                var noMatchesFoundResult = {phrase: 'No matches found', selectable: false};
+                ui.content.push(noMatchesFoundResult);
+            }
+        },
+        minLength: config.minChars
+    }).click(function() {
+        $(this).autocomplete('search', $(this).val());
+    }).keyup(function(e) {
+        if (e.keyCode === 37 || e.keyCode === 39) { // left or right arrow key
+            $(this).autocomplete('search', $(this).val());
+        }
+        // try to refresh on empty input (error might go away) except when pressed esc key
+        if (input.val() === "" && e.keyCode !== 27) {
+            $(this).autocomplete('search', ' ');
+        }
+    });
+}
+
+function getAutocompleteMenuData(input, field) {
+    var caretPos = input.caret();
+    if (!Number.isInteger(caretPos)) {
+        console.error("Suggest: could not get caret position");
+        return;
+    }
+    return {
+        projects: getSelectedProjectNames(),
+        field: field,
+        full: $('#q').val(),
+        defs: $('#defs').val(),
+        refs: $('#refs').val(),
+        path: $('#path').val(),
+        hist: $('#hist').val(),
+        type: $('#type').val(),
+        caret: caretPos
+    }
+}
+
+function replaceValueWithSuggestion(input, queryText, identifier, suggestion) {
+    var pos = queryText.indexOf(identifier);
+    var phrase = escapeLuceneCharacters(suggestion);
+    input.val(queryText.replace(identifier, phrase));
+    input.caret(pos + phrase.length);
+}
+
+function showError(errorText, errorElem) {
+    var parent = errorElem.parent();
+
+    parent.css('position', 'relative');
+
+    var span = parent.find('#autocomplete-error')[0];
+    if (!span) {
+        span = $("<span>", {
+            class: "important-note important-note-rounded",
+            style: "right: -10px; position: absolute; top: 0px;",
+            text: "!",
+            id: 'autocomplete-error'
+        });
+
+        span.appendTo(parent);
+    } else {
+        span = $(span);
+        span.off("mouseenter mouseleave");
+    }
+
+    span.hover(function() { // mouse in
+        $.messagesWindow.empty();
+        $.messagesWindow.append(escapeHtml(errorText));
+        $.messagesWindow.show();
+    }, function() { // mouse out
+        $.messagesWindow.hide();
+    });
+}
+
+function hideError(errorElem) {
+    var parent = errorElem.parent();
+    var span = parent.find('#autocomplete-error')[0];
+    if (span) {
+        span.remove();
+    }
+}
+
+function getSuggestionListItem(itemData, config) {
+    if (itemData.selectable === false) {
+        return $("<li>", {
+            class: "ui-state-disabled",
+            text: itemData.phrase
+        });
+    }
+
+    var listItem = $("<li>", {
+        class: "ui-menu-item",
+        style: "display: block;"
+    });
+    var listItemChild = $("<div>", {
+        class: "ui-menu-item-wrapper",
+        style: "height: 20px; padding: 0;",
+        tabindex: "-1"
+    });
+
+    listItemChild.appendTo(listItem);
+
+    $("<span>", {
+        text: itemData.phrase,
+        style: "float: left; padding-left: 5px;"
+    }).appendTo(listItemChild);
+
+    var projectInfoText = "";
+    if (config.showProjects) {
+        if (itemData.projects.length > 1) {
+            projectInfoText = 'Found in ' + itemData.projects.length + ' projects';
+        } else {
+            projectInfoText = itemData.projects[0];
+        }
+    }
+
+    var score = "";
+    if (config.showScores) {
+        score = ' (' + itemData.score + ')';
+    }
+    $("<span>", {
+        text: projectInfoText + score,
+        style: "float: right; color: #999999; font-style: italic; padding-right: 5px;"
+    }).appendTo(listItemChild);
+
+    return listItem;
+}
+
+function escapeLuceneCharacters(term) {
+    // must escape: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
+    var pattern = /([\+\-\!\(\)\{\}\[\]\^\"\~\*\?\:\\]|&&|\|\|)/g;
+
+    return term.replace(pattern, "\\$1");
 }
 
 function domReadyHistory() {
@@ -1933,6 +2195,16 @@ function clearSearchFrom() {
     $("#type :selected").prop("selected", false);
 }
 
+function getSelectedProjectNames() {
+    try {
+        return $.map($("#project").searchableOptionList().getSelection(), function (item) {
+            return $(item).attr("value");
+        });
+    } catch (e) { // happens when projects are not enabled
+        return [];
+    }
+}
+
 /**
  * Fold or unfold a function definition.
  */
@@ -2037,4 +2309,20 @@ function textInputHasFocus() {
     return !!document.activeElement &&
         document.activeElement.nodeName === 'INPUT' &&
         document.activeElement.type === 'text';
+}
+
+function escapeHtml(string) { // taken from https://stackoverflow.com/questions/24816/escaping-html-strings-with-jquery
+    var htmlEscapeMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+    };
+    return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+        return htmlEscapeMap[s];
+    });
 }

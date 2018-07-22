@@ -31,14 +31,14 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 /**
  * A custom query parser for OpenGrok.
  */
-class CustomQueryParser extends QueryParser {
+public class CustomQueryParser extends QueryParser {
 
     /**
      * Create a query parser customized for OpenGrok.
      *
      * @param field default field for unqualified query terms
      */
-    CustomQueryParser(String field) {
+    public CustomQueryParser(String field) {
         super(field, new CompatibleAnalyser());
         setDefaultOperator(AND_OPERATOR);
         setAllowLeadingWildcard(
@@ -70,7 +70,7 @@ Analyzer#normalize.
      * @return {@code true} if the field is case sensitive, {@code false}
      * otherwise
      */
-    private static boolean isCaseSensitive(String field) {
+    protected static boolean isCaseSensitive(String field) {
         // Only definition search and reference search are case sensitive
         return QueryBuilder.DEFS.equals(field)
                 || QueryBuilder.REFS.equals(field);

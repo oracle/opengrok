@@ -22,12 +22,15 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.condition.ConditionalRun;
 import org.opengrok.indexer.condition.ConditionalRunRule;
 import org.opengrok.indexer.condition.CtagsInstalled;
@@ -42,8 +45,8 @@ import org.opengrok.indexer.history.RepositoryFactory;
 import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.index.Indexer;
-import org.opengrok.indexer.util.IOUtils;
-import org.opengrok.indexer.util.TestRepository;
+import org.opengrok.util.TestRepository;
+import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
@@ -81,9 +84,19 @@ public class ProjectsControllerTest extends JerseyTest {
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
 
+    @Mock
+    private SuggesterService suggesterService;
+
     @Override
     protected Application configure() {
-        return new ResourceConfig(ProjectsController.class);
+        MockitoAnnotations.initMocks(this);
+        return new ResourceConfig(ProjectsController.class)
+                .register(new AbstractBinder() {
+                    @Override
+                    protected void configure() {
+                        bind(suggesterService).to(SuggesterService.class);
+                    }
+                });
     }
 
     @Before

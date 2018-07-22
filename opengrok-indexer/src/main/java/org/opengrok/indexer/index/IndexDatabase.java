@@ -150,6 +150,7 @@ public class IndexDatabase {
     // Directory where we store indexes
     public static final String INDEX_DIR = "index";
     public static final String XREF_DIR = "xref";
+    public static final String SUGGESTER_DIR = "suggester";
 
     /**
      * Create a new instance of the Index Database. Use this constructor if you
@@ -381,7 +382,8 @@ public class IndexDatabase {
                         .put(Entity.text(""));
 
                 if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-                    System.err.println("Couldn't notify the webapp: " + r.toString());
+                    LOGGER.log(Level.WARNING, "Couldn''t notify the webapp that project {0} was indexed: {1}",
+                            new Object[] {project, r});
                 }
             }
 
@@ -483,7 +485,7 @@ public class IndexDatabase {
                         if (stat == TermsEnum.SeekStatus.END) {
                             uidIter = null;
                             LOGGER.log(Level.WARNING,
-                                "Couldn't find a start term for {0}, empty u field?",
+                                "Couldn''t find a start term for {0}, empty u field?",
                                 startuid);
                         }
                     }

@@ -13,24 +13,27 @@ from commands import Commands, CommandsBase
 
 class TestApp(unittest.TestCase):
     def test_str(self):
-        p = Commands(CommandsBase("opengrok-master",
-                     [['foo'], ["bar"]]))
-        self.assertEqual("opengrok-master", str(p))
+        cmds = Commands(CommandsBase("opengrok-master",
+                        [['foo'], ["bar"]]))
+        self.assertEqual("opengrok-master", str(cmds))
 
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
     def test_run_retcodes(self):
-        p = Commands(CommandsBase("opengrok-master",
-                     [["/bin/echo"], ["/bin/true"], ["/bin/false"]]))
-        p.run()
+        cmds = Commands(CommandsBase("opengrok-master",
+                        [["/bin/echo"], ["/bin/true"], ["/bin/false"]]))
+        cmds.run()
         # print(p.retcodes)
         self.assertEqual({'/bin/echo opengrok-master': 0,
                           '/bin/true opengrok-master': 0,
-                          '/bin/false opengrok-master': 1}, p.retcodes)
+                          '/bin/false opengrok-master': 1}, cmds.retcodes)
 
-    # def test_outputs(self):
-
-    # def test_get_cmd_output(self):
-        # print p.get_cmd_output('/var/tmp/print-error.ksh opengrok-master')
-
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    def test_project_subst(self):
+        cmds = Commands(CommandsBase("test-subst",
+                        [["/bin/echo", '%PROJECT%']]))
+        cmds.run()
+        self.assertEqual(['test-subst\n'],
+                         cmds.outputs['/bin/echo test-subst'])
 
 if __name__ == '__main__':
     unittest.main()

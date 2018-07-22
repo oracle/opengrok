@@ -36,8 +36,7 @@ import org.opengrok.indexer.Info;
 import org.opengrok.indexer.authorization.AuthorizationFramework;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.web.PageConfig;
-import org.opengrok.indexer.web.SearchHelper;
+import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
 /**
  * Initialize webapp context
@@ -114,6 +113,10 @@ public final class WebappListener
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
         }
+
+        // need to explicitly close the suggester service because it might have scheduled rebuild which could prevent
+        // the web application from closing
+        SuggesterServiceFactory.getDefault().close();
     }
 
     /**

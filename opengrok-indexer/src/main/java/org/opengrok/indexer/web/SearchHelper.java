@@ -72,6 +72,7 @@ import org.opengrok.indexer.search.context.Context;
 import org.opengrok.indexer.search.context.HistoryContext;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
 /**
  * Working set for a search basically to factor out/separate search related
@@ -373,6 +374,8 @@ public class SearchHelper {
      * @return this instance
      */
     public SearchHelper executeQuery() {
+        SuggesterServiceFactory.getDefault().onSearch(projects, query); // notify suggester that query was searched
+
         if (redirect != null || errorMsg != null) {
             return this;
         }

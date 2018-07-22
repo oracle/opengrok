@@ -64,6 +64,8 @@ class CommandsBase:
 
 
 class Commands(CommandsBase):
+    PROJECT_SUBST = '%PROJECT%'
+
     def __init__(self, base):
         super().__init__(base.name, base.commands, base.cleanup)
 
@@ -75,7 +77,7 @@ class Commands(CommandsBase):
         Execute a command and return its return code.
         """
         cmd = Command(command,
-                      args_subst={"PROJECT": self.name},
+                      args_subst={self.PROJECT_SUBST: self.name},
                       args_append=[self.name], excl_subst=True)
         cmd.execute()
         self.retcodes[str(cmd)] = cmd.getretcode()
@@ -87,15 +89,13 @@ class Commands(CommandsBase):
         """
         Make RESTful API call.
         """
-        PROJECT_SUBST = '%PROJECT%'
-
-        uri = command[0].replace(PROJECT_SUBST, self.name)
+        uri = command[0].replace(self.PROJECT_SUBST, self.name)
         verb = command[1]
         data = command[2]
 
         if len(data) > 0:
             headers = {'Content-Type': 'application/json'}
-            json_data = json.dumps(data).replace(PROJECT_SUBST, self.name)
+            json_data = json.dumps(data).replace(self.PROJECT_SUBST, self.name)
             self.logger.debug("JSON data: {}".format(json_data))
 
         if verb == 'PUT':
@@ -149,7 +149,7 @@ class Commands(CommandsBase):
                 self.logger.debug("Running cleanup command '{}'".
                                   format(self.cleanup))
                 cmd = Command(self.cleanup,
-                              args_subst={"ARG": self.name},
+                              args_subst={self.PROJECT_SUBST: self.name},
                               args_append=[self.name], excl_subst=True)
                 cmd.execute()
                 if cmd.getretcode() != 0:

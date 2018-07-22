@@ -33,6 +33,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -42,6 +44,9 @@ import org.opengrok.indexer.logger.LoggerFactory;
 public class ClassUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassUtil.class);
+
+    private ClassUtil() {
+    }
 
     /**
      * Mark all transient fields in {@code targetClass} as @Transient for the
@@ -122,7 +127,7 @@ public class ClassUtil {
                                 setter.getName(), field));
             }
 
-            Class c = setter.getParameterTypes()[0];
+            Class<?> c = setter.getParameterTypes()[0];
             String paramClass = c.getName();
 
             /**
@@ -165,10 +170,9 @@ public class ClassUtil {
             } else if (paramClass.equals(String.class.getName())) {
                 setter.invoke(obj, value);
             } else {
-                // error unknown type
-                throw new IOException(
-                        String.format("Unsupported type conversion for the name \"%s\". Expecting \"%s\".",
-                                field, paramClass));
+                ObjectMapper mapper = new ObjectMapper();
+                Object objValue = mapper.readValue(value, c);
+                setter.invoke(obj, objValue);
             }
         } catch (NumberFormatException ex) {
             throw new IOException(
