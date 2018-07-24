@@ -5,7 +5,7 @@
 <module name="Checker">
     <module name="NewlineAtEndOfFile"/>
     <module name="Header">
-        <property name="headerFile" value="checkstyle/fileheader.txt"/>
+        <property name="headerFile" value="${checkstyle.header.file}"/>
     </module>
     <module name="FileLength"/>
     <module name="FileTabCharacter"/>
@@ -30,8 +30,5 @@
             <property name="offCommentFormat" value="&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;Generated Code&quot;&gt;"/>
             <property name="onCommentFormat" value="&lt;/editor-fold&gt;"/>
         </module>
-    </module>
-    <module name="SuppressionFilter">
-        <property name="file" value="checkstyle/suppressions.xml" />
     </module>
 </module>
