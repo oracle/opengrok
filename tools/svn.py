@@ -51,8 +51,8 @@ class SubversionRepository(Repository):
         if http_proxy:
             data = http_proxy.split(':')
             if len(data) != 2:
-                logger.error("Cannot split '{}' into two strings by ':'".
-                             format(http_proxy))
+                self.logger.error("Cannot split '{}' into two strings by ':'".
+                                  format(http_proxy))
                 return 1
 
             svn_command.append("--config-option")

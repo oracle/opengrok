@@ -25,12 +25,8 @@
 import os
 import sys
 import argparse
-from utils import get_command, is_exe
+from utils import get_command
 from command import Command
-import string
-import tempfile
-from shutil import copyfile, rmtree
-import platform
 from java import Java, get_javaparser
 import logging
 

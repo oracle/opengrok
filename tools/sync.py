@@ -31,23 +31,17 @@
 """
 
 
-from multiprocessing import Pool, TimeoutError
+from multiprocessing import Pool
 import argparse
-import subprocess
-import time
 import os
 import sys
 from os import path
 import filelock
 from filelock import Timeout
-import command
-from command import Command
 import logging
 import tempfile
-import commands
 from commands import Commands, CommandsBase
 from readconfig import read_config
-from shutil import which
 import multiprocessing
 from opengrok import list_indexed_projects
 

@@ -463,7 +463,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                   </execution>
                 </executions>
                 <configuration>
-                  <executable>pep8</executable>
+                  <executable>flake8</executable>
                   <arguments>
 		    <argument>-v</argument>
 		    <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>

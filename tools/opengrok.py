@@ -21,7 +21,6 @@
 # Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-import logging
 import requests
 import urllib.parse
 import traceback
@@ -32,7 +31,7 @@ def get(logger, uri, params=None, headers=None):
     try:
         proxies = get_proxies(uri)
         return requests.get(uri, params=params, proxies=proxies)
-    except Exception as e:
+    except Exception:
         logger.debug(traceback.format_exc())
         return None
 
@@ -41,7 +40,7 @@ def delete(logger, uri, params=None, headers=None):
     try:
         proxies = get_proxies(uri)
         return requests.delete(uri, params=params, proxies=proxies)
-    except Exception as e:
+    except Exception:
         logger.debug(traceback.format_exc())
         return None
 
@@ -51,7 +50,7 @@ def post(logger, uri, headers=None, data=None):
     try:
         proxies = get_proxies(uri)
         rv = requests.post(uri, data=data, headers=headers, proxies=proxies)
-    except Exception as e:
+    except Exception:
         logger.debug(traceback.format_exc())
         return None
 
@@ -63,7 +62,7 @@ def put(logger, uri, headers=None, data=None):
     try:
         proxies = get_proxies(uri)
         rv = requests.put(uri, data=data, headers=headers, proxies=proxies)
-    except Exception as e:
+    except Exception:
         logger.debug(traceback.format_exc())
         return None
 

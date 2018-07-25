@@ -22,8 +22,6 @@
 #
 
 import logging
-import os
-import command
 from command import Command
 from opengrok import put, post, delete
 from utils import is_web_uri

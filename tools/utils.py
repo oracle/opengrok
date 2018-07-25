@@ -33,7 +33,7 @@ def is_exe(fpath):
     return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
 
-def check_create_dir(path):
+def check_create_dir(logger, path):
     """
     Make sure the directory specified by the path exists. If unsuccessful,
     exit the program.

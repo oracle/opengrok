@@ -12,7 +12,7 @@ box: openjdk:8-jdk
 build:
   steps:
     - install-packages:
-      packages: sudo maven exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs pep8
+      packages: sudo maven exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs pep8 flake8
     - script:
       name: Create non-root user
       code: |

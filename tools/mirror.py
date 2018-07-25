@@ -31,27 +31,18 @@
 
 
 import argparse
-import subprocess
-import time
 import os
 import sys
-from os import path
 import filelock
 from filelock import Timeout
-import command
-from command import Command
 import logging
 from logging.handlers import RotatingFileHandler
 import tempfile
-import commands
-from repository import Repository
-from mercurial import MercurialRepository
 from repofactory import get_repository
 from utils import is_exe, check_create_dir, get_int, diff_list
 from hook import run_hook
 from readconfig import read_config
 from opengrok import get_repos, get_config_value, get_repo_type
-from shutil import which
 import re
 
 
@@ -113,7 +104,7 @@ if __name__ == '__main__':
     # Make sure the log directory exists.
     logdir = config.get("logdir")
     if logdir:
-        check_create_dir(logdir)
+        check_create_dir(logger, logdir)
 
     uri = args.uri
     if not uri:
