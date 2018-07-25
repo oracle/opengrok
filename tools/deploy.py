@@ -25,11 +25,10 @@
 import os
 import sys
 import argparse
-from utils import get_command, is_exe
+from utils import get_command
 from command import Command
-import string
 import tempfile
-from shutil import copyfile, rmtree
+from shutil import copyfile
 import logging
 
 
@@ -57,7 +56,7 @@ def repack_war(logger, sourceWar, targetWar, configFile, defaultConfigFile):
         if not unzip_cmd:
             raise "unzip not found"
 
-        extract_cmd = [unzip]
+        extract_cmd = [unzip_cmd]
         compress_cmd = [zip_cmd, '-rf']
 
     # Resolve the full path. This is needed if sourceWar is specified as

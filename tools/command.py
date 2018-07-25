@@ -24,7 +24,6 @@
 import os
 import logging
 import subprocess
-import string
 import threading
 import time
 import resource

@@ -23,7 +23,6 @@
 
 from command import Command
 from repository import Repository
-from shutil import which
 import os
 
 
@@ -48,7 +47,7 @@ class TeamwareRepository(Repository):
 
             try:
                 path = os.environ['PATH']
-            except:
+            except KeyError:
                 self.logger.error("Cannot get PATH env var")
                 raise OSError
 
