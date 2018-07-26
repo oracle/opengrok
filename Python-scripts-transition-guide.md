@@ -52,7 +52,8 @@ OPENGROK_LOGGER_CONFIG_PATH | add `-Djava.util.logging.config.file=...` to -J
 
 - running full indexer:
   ```
-  ./indexer.py -C -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties -a ../dist/opengrok.jar -- \
+  ./indexer.py -C -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
+      -a ../dist/opengrok.jar -- \
       -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
       -W /var/opengrok/etc/configuration.xml` -U http://localhost:8080
   ```
