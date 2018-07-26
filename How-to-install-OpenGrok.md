@@ -1,5 +1,5 @@
-{OpenGrok can be installed and used under different use cases, we will just show how to use the wrapper script. Advanced usage depends on your knowledge of running java applications and command line options of {OpenGrok.
-Note, that you '''need''' the create the index no matter what is your use case. Without indexes {Opengrok will be simply useless.
+OpenGrok can be installed and used under different use cases, we will just show how to use the wrapper script. Advanced usage depends on your knowledge of running java applications and command line options of OpenGrok.
+Note, that you '''need''' the create the index no matter what is your use case. Without indexes Opengrok will be simply useless.
 
 # Requirements
 
