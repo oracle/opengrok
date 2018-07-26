@@ -6,7 +6,7 @@ There are 2 main scripts:
   - `sync.py` - provides a way how to run a sequence of commands for a set of projects (in parallel).
   - `mirror.py` - performs synchronization of given Source Code Management repository with its upstream.
 
-In the source these scripts live under the [tools/sync](https://github.com/OpenGrok/OpenGrok/tree/master/tools/sync) directory.
+In the source these scripts live under the [tools](https://github.com/OpenGrok/OpenGrok/tree/master/tools) directory.
 
 Both scripts take configuration either in JSON or YAML.
 
