@@ -63,7 +63,7 @@ indexer.py -a /opengrok/dist/lib/opengrok.jar -- -h
 ```
 
 It is assumed that any SCM commands are reachable in one of the components
-of the PATH environment variable (e.g. 'git' command for Git repositories).
+of the PATH environment variable (e.g. the `git` command for Git repositories).
 Likewise, this should be maintained in the environment of the user which runs
 the web server instance.
 
@@ -78,11 +78,7 @@ In some setups, it might be desirable to run the indexing (and especially mirror
 To make ctags recognize additional symbols/definitions/etc. it is possible to
 specify configuration file with extra configuration options for ctags.
 
-This can be done by setting `OPENGROK_CTAGS_OPTIONS_FILE` environment variable
-when running the OpenGrok shell script (or directly with the `-o` option for
-`opengrok.jar`). Default location for the configuration file in the OpenGrok
-shell script is `etc/ctags.config` under the OpenGrok base directory (by default
-the full path to the file will be `/var/opengrok/etc/ctags.config`).
+This can be done by using the `-o` option for `opengrok.jar`.
 
 Sample configuration file for Solaris code base:
 
