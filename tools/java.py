@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # CDDL HEADER START
 #
 # The contents of this file are subject to the terms of the
@@ -25,6 +27,8 @@ from command import Command
 from utils import is_exe
 import os
 import argparse
+import sys
+import logging
 
 
 class Java(Command):
@@ -77,7 +81,7 @@ class Java(Command):
         elif system_name == 'Darwin':
             cmd = Command('/usr/libexec/java_home')
             cmd.execute()
-            java = cmd.getoutputstr()
+            java = os.path.join(cmd.getoutputstr(), 'bin', 'java')
         elif system_name == 'Linux':
             link_path = '/etc/alternatives/java'
             if os.path.exists(link_path):
@@ -95,8 +99,40 @@ def get_javaparser():
                         help='path to java binary')
     parser.add_argument('-J', '--java_opts',
                         help='java options', action='append')
-    parser.add_argument('-a', '--jar', required=True,
-                        help='Path to jar archive to run')
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-a', '--jar',
+                       help='Path to jar archive to run')
+    group.add_argument('-c', '--classpath',
+                       help='Class path')
+
     parser.add_argument('options', nargs='+', help='options')
 
     return parser
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='java wrapper',
+                                     parents=[get_javaparser()])
+    parser.add_argument('-m', '--mainclass', required=True,
+                        help='Main class')
+
+    args = parser.parse_args()
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig()
+
+    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+
+    java = Java(args.options, logger=logger, java=args.java,
+                jar=args.jar, java_opts=args.java_opts,
+                classpath=args.classpath, main_class=args.mainclass)
+    java.execute()
+    ret = java.getretcode()
+    if ret is None or ret != 0:
+        logger.error(java.getoutputstr())
+        logger.error("java command failed (return code {})".format(ret))
+        sys.exit(1)
