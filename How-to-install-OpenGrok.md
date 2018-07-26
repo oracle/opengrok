@@ -10,7 +10,7 @@ You need the following:
 - https://github.com/universal-ctags for analysis (Exuberant ctags can be used too however they are not as supported as Universal ctags)
 - A servlet container like [GlassFish](https://glassfish.dev.java.net/) or [Tomcat](http://tomcat.apache.org) 8.0 or later also running with Java at least 1.8
 - If history is needed, appropriate binaries (in some cases also cvs/svn repository) must be present on the system (e.g. [Subversion](http://subversion.tigris.org) or [Mercurial](http://www.selenic.com/mercurial/wiki/index.cgi) or SCCS or ... )
-- 2GB of memory for indexing process using OpenGrok script (bigger deployments will need more)
+- 2GB of memory for the indexing process (bigger deployments will need more)
 - a recent browser for clients - IE, Firefox, recent Chrome or Safari
 - Optional tuning (see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
 
