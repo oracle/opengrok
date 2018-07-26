@@ -14,12 +14,6 @@ You need the following:
 - a recent browser for clients - IE, Firefox, recent Chrome or Safari
 - Optional tuning (see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
 
-# Recommended links to read for advanced users
-
-- the `Opengrok` script
-- [Sample setup](https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt)
-- `CommandLineOptions` class
-
 # Indexing and web application setup
 
 After installing the package or unpacking the binaries in your target directory (e.g. `cd your_target_dir ; gzcat opengrok-VERSION.tar.gz | tar xf -`), you just need to create the index and then you can use the command line interface to grok your sources.
