@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -139,8 +140,9 @@ public class RepositoryInfo implements Serializable {
      * @return the name of the root directory
      */
     public String getDirectoryName() {
-        return RuntimeEnvironment.getInstance().getSourceRootPath() +
-                directoryNameRelative;
+        return Paths.get(RuntimeEnvironment.getInstance().getSourceRootPath(),
+                directoryNameRelative).toString();
+
     }
 
     /**
