@@ -62,7 +62,7 @@ Run the command with `-h` to get more information about the options, i.e.:
 indexer.py -a /opengrok/dist/lib/opengrok.jar -- -h
 ```
 
-Optionally use `--detailed` together with `-h`.
+Optionally use `--detailed` together with `-h` to get extra detailed help, including examples.
 
 It is assumed that any SCM commands are reachable in one of the components
 of the PATH environment variable (e.g. the `git` command for Git repositories).
