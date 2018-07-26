@@ -52,14 +52,14 @@ OPENGROK_LOGGER_CONFIG_PATH | add `-Djava.util.logging.config.file=...` to -J
 
 - running full indexer:
   ```
-  ./indexer.py -C -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
+  indexer.py -C -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
       -a ../dist/opengrok.jar -- \
       -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
       -W /var/opengrok/etc/configuration.xml` -U http://localhost:8080
   ```
 - deploy:
   ```
-   /opengrok/dist/bin/deploy.py -c /opengrok/etc/configuration.xml -D /opengrok/dist/lib/source.war \
+   deploy.py -c /opengrok/etc/configuration.xml -D /opengrok/dist/lib/source.war \
        /var/tomcat8/webapps
   ```
 - new `sync.py` config example (together with `reindex-project.py` example): see https://github.com/oracle/opengrok/wiki/Repository-synchronization
