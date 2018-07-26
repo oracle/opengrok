@@ -105,12 +105,7 @@ You should even be able to override OpenGroks analyzers using this option.
 
 ## Optional need to change web application properties or name
 
-You might need to modify the web application if you don't store the configuration file in the default location (<code>/var/opengrok/etc/configuration.xml</code>).
-
-To '''configure''' the webapp source.war, look into the parameters defined in <code>WEB-INF/web.xml</code> of <code>source.war</code> (use <code>jar</code> or <code>zip/unzip</code> or your preffered zip tool to get into it - e.g. extract the web.xml file from source.war (<code>$ unzip source.war WEB-INF/web.xml</code>) file, edit web.xml and re-package the jar file (<code>zip -u source.war WEB-INF/web.xml</code>) ) file and change those web.xml parameters appropriately. These sample parameters need modifying.
-
-* CONFIGURATION - the absolute path to XML file containing project configuration (e.g. <code>/var/opengrok/etc/configuration.xml</code>)
-* ConfigAddress - port for remote updates to configuration, optional, but '''advised (since there is no authentification)''' to be set to '''localhost''':<some_port> (e.g. localhost:2424), if you choose some_port below 1024 you have to have root privileges.
+You might need to modify the web application if you don't store the configuration file in the default location (<code>/var/opengrok/etc/configuration.xml</code>). This can be conveniently done using the `deploy.py` script by supplying the path to the configuration.
 
 If you need to change name of the web application from `source` to something else, just deploy `source.war` as `new_name.war`.
 
