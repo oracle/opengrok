@@ -136,7 +136,7 @@ grant codeBase "file:${catalina.home}/webapps/source/WEB-INF/lib/-" {
 permission java.security.AllPermission;};
 ```
 
-Alternatively you can be more restrictive (haven't tested below with a complex setup(e.g. some versioning system which needs local access as cvs), if it will not work, please report through [[Discussions]].
+Alternatively you can be more restrictive (haven't tested below with a complex setup (e.g. some versioning system which needs local access as CVS), if it will not work, please report through [[Discussions]].
 
 ```
 grant codeBase "file:${catalina.home}/webapps/source/-" {  
