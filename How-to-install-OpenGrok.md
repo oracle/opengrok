@@ -20,7 +20,7 @@ After unpacking the binaries to your target directory, the index needs to be cre
 
 The data to be indexed should be stored in a directory called **source root**. Each subdirectory under this directory is called **project** (projects can be disabled but let's leave this detail aside for now) and usually contains checkout of a **repository** (or it's branch, version, ...) sources. Each project can have multiple repositories.
 
-The concept of projects was introduced to effectively replace the need for more web applications with opengrok <code>.war</code> and leave you with one indexer and one web application serving MORE source code repositories - projects.
+The concept of projects was introduced to effectively replace the need for more web applications with opengrok <code>.war</code> and leave you with one indexer and one web application serving more source code repositories - projects.
 
 [[/images/setup-project.png]]
 
