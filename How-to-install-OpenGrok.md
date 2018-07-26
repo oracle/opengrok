@@ -94,16 +94,13 @@ Sample configuration file for Solaris code base:
 
 ## Introduce own mapping for an extension to analyzer
 
-OpenGrok script doesn't support this out of box, so you'd need to add it there.
-Usually to `StdInvocation()` function after line `-jar ${OPENGROK_JAR}`.
-It would look like this:
+Use the `-A` Indexer option, e.g. like this:
 
 ```
 -A cs:org.opensolaris.opengrok.analysis.PlainAnalyzer
 ```
 
-(this will map extension `.cs` to `PlainAnalyzer`)
-You should even be able to override OpenGroks analyzers using this option.
+This will map extension `.cs` to `PlainAnalyzer`. You should even be able to override OpenGroks analyzers using this option.
 
 ## Optional need to change web application properties or name
 
