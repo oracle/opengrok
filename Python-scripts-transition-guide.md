@@ -1,4 +1,4 @@
-In OpenGrok 1.1 the shell scripts were all rewritten to Python. The main change is mainly to the `OpenGrok` shell script that is now a thin layer atop running the main class from `opengrok.jar`. This means users will have to supply `Indexer` options directly. This is a bit of transition guide for those who had been using the shell scripts.
+In OpenGrok 1.1 the shell scripts were all rewritten to Python. The main change is mainly to the `OpenGrok` shell script that is now a thin layer atop running the main class from `opengrok.jar`. This means users will have to supply `Indexer` options directly. This is a transition guide for those who had been using the shell scripts.
 
 # Environment variables replaceable with opengrok.jar options:
 
