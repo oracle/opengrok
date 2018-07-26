@@ -110,7 +110,7 @@ def repack_war(logger, sourceWar, targetWar, configFile, defaultConfigFile):
         os.chdir(origWorkingDir)
 
 
-def deployWar(logger, sourceWar, targetWar, configFile=None):
+def deploy_war(logger, sourceWar, targetWar, configFile=None):
     """
     Copy warSource to warTarget (checking existence of both), optionally
     repacking the warTarget archive if configuration file resides in
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     parser.add_argument('source_war', nargs=1,
                         help='Path to war file to deploy')
     parser.add_argument('target_war', nargs=1,
-                        help='Path where to depoy source war file to')
+                        help='Path where to deploy source war file to')
 
     args = parser.parse_args()
 
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
-    deployWar(logger, args.source_war[0], args.target_war[0], args.config)
+    deploy_war(logger, args.source_war[0], args.target_war[0], args.config)
 
     print("Start your application server (if it is not already running) "
           "or wait until it loads the just installed web application.\n"
