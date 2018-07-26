@@ -128,7 +128,7 @@ To '''configure''' the webapp source.war, look into the parameters defined in <c
 * CONFIGURATION - the absolute path to XML file containing project configuration (e.g. <code>/var/opengrok/etc/configuration.xml</code>)
 * ConfigAddress - port for remote updates to configuration, optional, but '''advised (since there is no authentification)''' to be set to '''localhost''':<some_port> (e.g. localhost:2424), if you choose some_port below 1024 you have to have root privileges.
 
-If you need to change name of the web application from source to something else you need to use special option <code>-w <new_name></code> for indexer to create proper xrefs, besides changing the <code>.war</code> file name. Examples below show just deploying source.war, but you can use it to deploy your new_name.war too.
+If you need to change name of the web application from `source` to something else, just deploy `source.war` as `new_name.war`.
 
 ### Deploy the modified .war file in glassfish/Sun Java App Server
 
