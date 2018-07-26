@@ -67,7 +67,7 @@ The `sync.conf` configuration can be also represented as YAML.
 In the above example it is assumed that `sync.py` is run as `root` and synchronization and reindexing are done under different users. This is done so that the web application cannot tamper with source code even if compromised.
 
 The commands got appended project name unless one of their arguments contains
-'%PROJECT%', in which case it is substituted with project name and no append is
+`%PROJECT%`, in which case it is substituted with project name and no append is
 done.
 
 For per-project reindexing to work properly, `reindex-project.py` uses
