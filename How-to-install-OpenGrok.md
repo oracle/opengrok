@@ -61,11 +61,7 @@ Note that OpenGrok script expects the directory <code>/var/opengrok</code> to be
 
 Second step is to just run the indexing (can take a lot of time). After this is done, indexer automatically attempts to upload newly generated configuration to the web application. Most probably you will not be able to use {Opengrok before this is done. <code>OPENGROK_CTAGS</code> environment variable can be used to tell {Opengrok which ctags implementation to use for indexing.
 
-Please change to opengrok directory (can vary on your system)
-
- `cd /usr/opengrok/bin`
-
-and run, if your SRC_ROOT is prepared under <code>/var/opengrok/src</code>
+run, if your SRC_ROOT is prepared under <code>/var/opengrok/src</code>
 
  `./OpenGrok index`
 
@@ -77,31 +73,15 @@ specify alternative ctags binary:
 
  `OPENGROK_CTAGS=<absolute_path_to_ctags_binary> ./OpenGrok index`
 
-NOTE: Please DON'T use symlinks to /var/opengrok/src - rather use above command with parameter.
-
 Above command should try to upload latest index status reflected into configuration.xml to a running source web application.
-Once above command finishes without errors(e.g. SEVERE: Failed to send configuration to localhost:2424
-), you should be able to enjoy your opengrok and search your sources using latest indexes and setup.
+Once above command finishes without errors it should be possible to use the Web interface for searching/browsing.
 
 It is assumed that any SCM commands are reachable in one of the components
 of the PATH environment variable (e.g. 'git' command for Git repositories).
 Likewise, this should be maintained in the environment of the user which runs
 the web server instance.
 
-Congratulations, you should now be able to point your browser to http://YOUR_WEBAPP_SERVER:WEBAPPSRV_PORT/source to work with your fresh opengrok installation! :-)
-
-At this time we'd like to point out some customization to OpenGrok script for advanced users.
-A common case would be, that you want the data in some other directory than /var/opengrok.
-This can be easily achieved by using environment variable OPENGROK_INSTANCE_BASE .
-E.g. if my opengrok data directory is <code>/tank/opengrok</code> and my source root is in <code>/tank/source</code> and I'd like to get more verbosity I'd run the indexer as:
-
- `OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok ./OpenGrok index /tank/source`
-
-Since above will also change default location of config file, beforehands(or restart your web container after creating this symlink) I suggest doing below for our case of having opengrok instance in <code>/tank/opengrok</code> :
-
- `ln -s /tank/opengrok/etc/configuration.xml /var/opengrok/etc/configuration.xml`
-
-A lot more customizations can be found inside the script, you just need to have a look [https://github.com/OpenGrok/OpenGrok/blob/master/OpenGrok at it], eventually create a configuration out of it and use <code>OPENGROK_CONFIGURATION</code> environment variable to point to it. Obviously such setups can be used for nightly cron job updates of index or other automated purposes.
+You should now be able to point your browser to http://YOUR_WEBAPP_SERVER:WEBAPPSRV_PORT/source to work with your fresh installation.
 
 # Optional info
 
@@ -150,7 +130,7 @@ To '''configure''' the webapp source.war, look into the parameters defined in <c
 
 If you need to change name of the web application from source to something else you need to use special option <code>-w <new_name></code> for indexer to create proper xrefs, besides changing the <code>.war</code> file name. Examples below show just deploying source.war, but you can use it to deploy your new_name.war too.
 
-### Deploy the modified .war file in glassfish/Sun Java App Server: ====
+### Deploy the modified .war file in glassfish/Sun Java App Server
 
 * '''Option 1:''' Use browser and log into <code>glassfish web administration interface</code>
 
