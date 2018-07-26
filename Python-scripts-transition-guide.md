@@ -65,6 +65,6 @@ OPENGROK_LOGGER_CONFIG_PATH | add `-Djava.util.logging.config.file=...` to -J
 - new `sync.py` config example (together with `reindex-project.py` example): see https://github.com/oracle/opengrok/wiki/Repository-synchronization
 - update path descriptions (previously done in the `OpenGrok` shell script with each reindex):
   ```
-  java.py --classpath opengrok.jar org.opensolaris.opengrok.web.EftarFile \
+  java.py --classpath opengrok.jar -m org.opensolaris.opengrok.web.EftarFile \
        -- /var/opengrok/etc/paths.tsv /var/opengrok/data/index/dtags.eftar
   ```
