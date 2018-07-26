@@ -14,67 +14,53 @@ You need the following:
 - a recent browser for clients - IE, Firefox, recent Chrome or Safari
 - Optional tuning (see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
 
-# Indexing and web application setup
-
-After installing the package or unpacking the binaries in your target directory (e.g. `cd your_target_dir ; gzcat opengrok-VERSION.tar.gz | tar xf -`), you just need to create the index and then you can use the command line interface to grok your sources.
-
-It is also necessary to install SCM environment accessible by OpenGrok for your repositories for the history indexing to work.
+After unpacking the binaries to your target directory, the index needs to be created and the web application deployed.
 
 # Creating the index
 
-OpenGrok's command line use is a typical case where OpenGrok is deployed as indexing service on a webserver for an active source repository, which is updated automatically using scheduled cron jobs.
+The data to be indexed should be stored in a directory called **source root**. Each subdirectory under this directory is called **project** (projects can be disabled but let's leave this detail aside for now) and usually contains checkout of a **repository** (or it's branch, version, ...) sources. Each project can have multiple repositories.
 
-'''Project concept''' - one project is one directory underneath <code>SRC_ROOT</code> and usually contains a checkout of a project (or it's branch, version, ...) sources, it can have several attributes (in its XML description), note that interface of projects is being stabilized so it can change. Projects effectively replace need for more web applications with opengrok <code>.war</code> and leave you with one indexer and one web application serving MORE source code repositories - projects. A nice concept is to have directories underneath <code>SRC_ROOT</code> with a naming convention, thereby creating a good overview of projects (e.g. name-version-branch). Then you have a simple update script & simple index refresher script in place, which simplifies management of more repositories.
+The concept of projects was introduced to effectively replace the need for more web applications with opengrok <code>.war</code> and leave you with one indexer and one web application serving MORE source code repositories - projects.
 
 [[/images/setup-project.png]]
 
-## <u>Step.0</u> - Setting up the Sources. Having the web application container ready.
+The index data will be created under directory called **data root**.
 
-Source base must be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the '''checked out source''' tree under SRC_ROOT.
+## <u>Step.0</u> - Setting up the sources
 
-'''Note:''' A local CVSROOT (or SVN if opengrok version less than 0.7) repository must be available. File history will not be fetched from a remote server for CVS (& SVN if opengrok version less than 0.7) !. For newer opengrok versions you must use option <code>-r on</code> for remote repositories history to be indexed, also note this can be more resource (time,cpu,network) demanding.
-Note also that OpenGrok ignores symbolic links.
-
-Please install web application container of your choice (e.g. [Tomcat](http://tomcat.apache.org/), [Glassfish](https://glassfish.dev.java.net/)) before going to the next step and make sure it's started.
+Source base should be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the '''checked out source''' tree under source root.
 
 ## <u>Step.1</u> - Deploy the web application
 
-We provided you with OpenGrok wrapper script, which should aid in deploying the web application.
-Please change to opengrok directory (can vary on your system)
+Install web application container of your choice (e.g. [Tomcat](http://tomcat.apache.org/), [Glassfish](https://glassfish.dev.java.net/)).
 
- `cd /usr/opengrok/bin`
+Use the `deploy.py` script to copy the `.war` file to the location where the application container will detect it and deploy the web application.
 
-and run 
+## <u>Step.2</u> - Indexing
 
- `./OpenGrok deploy`
+This steps basically performs these steps:
+  - create index
+  - let the indexer generate the configuration file
+  - notify the web application that new index is available
 
-This command will do some sanity checks and will deploy the source.war in its directory to one of detected web application containers.
-Please follow the error message it provides.
-If it fails to discover your container, please refer to optional steps on changing web application properties, which has manual steps on how to do this.
-Alternatively use <code>OPENGROK_TOMCAT_BASE</code> environment variable, e.g.
+The indexing can take a lot of time - for large code bases (meaning both amount of source code and history) it can take many hours. After this is done, indexer automatically attempts to upload newly generated configuration to the web application. Until this is done, the web application will display the old state.
 
- `OPENGROK_TOMCAT_BASE=/path/to/my/tomcat/install ./OpenGrok deploy`
+The indexer can be run either using `opengrok.jar` directly or using the `indexer.py` wrapper like so:
 
-Note that OpenGrok script expects the directory <code>/var/opengrok</code> to be available to user running opengrok with all permissions. In root user case it will create all the directories needed, otherwise you have to manually create the directory and grant all permissions to the user used.
+```
+indexer.py -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
+    -a /opengrok/dist/lib/opengrok.jar -- \
+    -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
+    -W /var/opengrok/etc/configuration.xml` -U http://localhost:8080
+```
 
-## <u>Step.2</u> - Populate DATA_ROOT Directory, let the indexer generate the project XML config file, update configuration.xml to your web app
+The above will use `/var/opengrok/src` as source root, `/var/opengrok/data` as data root. The configuration will be written to `/var/opengrok/etc/configuration.xml` and sent to the web application (via the URL passed to the `-U` option) at the end of the indexing.
 
-Second step is to just run the indexing (can take a lot of time). After this is done, indexer automatically attempts to upload newly generated configuration to the web application. Most probably you will not be able to use {Opengrok before this is done. <code>OPENGROK_CTAGS</code> environment variable can be used to tell {Opengrok which ctags implementation to use for indexing.
+Run the command with `-h` to get more information about the options, i.e.:
 
-run, if your SRC_ROOT is prepared under <code>/var/opengrok/src</code>
-
- `./OpenGrok index`
-
-otherwise (if SRC_ROOT is in different directory) run:
-
- `./OpenGrok index <absolute_path_to_your_SRC_ROOT>`
-
-specify alternative ctags binary:
-
- `OPENGROK_CTAGS=<absolute_path_to_ctags_binary> ./OpenGrok index`
-
-Above command should try to upload latest index status reflected into configuration.xml to a running source web application.
-Once above command finishes without errors it should be possible to use the Web interface for searching/browsing.
+```
+indexer.py -a /opengrok/dist/lib/opengrok.jar -- -h
+```
 
 It is assumed that any SCM commands are reachable in one of the components
 of the PATH environment variable (e.g. 'git' command for Git repositories).
@@ -82,6 +68,8 @@ Likewise, this should be maintained in the environment of the user which runs
 the web server instance.
 
 You should now be able to point your browser to http://YOUR_WEBAPP_SERVER:WEBAPPSRV_PORT/source to work with your fresh installation.
+
+In some setups, it might be desirable to run the indexing (and especially mirroring) of each project in parallel in order to speed up the overall progress. See https://github.com/oracle/opengrok/wiki/Per-project-management on how this can be done.
 
 # Optional info
 
