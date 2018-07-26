@@ -21,19 +21,24 @@ Use e.g. like this:
 where the `sync.conf` file contents might look like this:
 
 ```json
-  {
-     "commands": [["http://localhost:8080/source/api/v1/messages", "POST",
-                   { "cssClass" : "info", "duration" : "PT1H",
-                     "tags" : ["%PROJECT%"], "text" : "resync + reindex in progress"}],
-                  ["sudo", "-u", "wsmirror", "/usr/opengrok/bin/mirror.py",
-                    "-c", "/opengrok/etc/mirror-config.yml", "-b"],
-                  ["sudo", "-u", "webservd", "/usr/opengrok/bin/reindex-project.ksh",
-                   "/opengrok/etc/opengrok.conf", "/usr/opengrok/bin"],
-                  ["http://localhost:8080/source/api/v1/messages?tag=%PROJECT%", "DELETE", ""],
-                  ["/scripts/check-indexer-logs.ksh"]],
-     "ignore_errors": ["NetBSD-current", "linux-mainline-next"],
-     "cleanup": ["http://localhost:8080/source/api/v1/messages?tag=%PROJECT%", "DELETE", ""]
-  }
+{
+   "commands": [{"command": ["http://localhost:8080/source/api/v1/messages", "POST",
+                 { "cssClass" : "info", "duration" : "PT1H",
+                   "tags" : ["%PROJECT%"], "text" : "resync + reindex in progress"}]},
+                {"command" : ["sudo", "-u", "wsmirror",
+                 "/opengrok/dist/bin/mirror.py", "-c", "/opengrok/etc/mirror-config.yml"]},
+                {"command": ["sudo", "-u", "webservd", "/opengrok/dist/bin/reindex-project.py", "-D",
+                 "-J=-d64", "-J=-XX:-UseGCOverheadLimit", "-J=-Xmx16g", "-J=-server",
+                 "--jar", "/opengrok/dist/lib/opengrok.jar", "-t", "/opengrok/etc/logging.properties.template",
+                 "-p", "%PROJ%", "-d", "/opengrok/log/%PROJECT%", "-P", "%PROJECT%", "--",
+                 "--renamedHistory", "on", "-r", "dirbased", "-G", "-m", "256", "-c", "/usr/local/bin/ctags",
+                 "-U", "http://localhost:8080/source",
+                 "-o", "/opengrok/etc/ctags.config", "-H", "%PROJECT%", "%PROJECT%"],
+                 "env": {"LC_ALL": "en_US.UTF-8"}, "limits": { "RLIMIT_NOFILE": 1024 }},
+                {"command": ["http://localhost:8080/source/api/v1/messages?tag=%PROJECT%", "DELETE", ""]},
+                {"command": ["/scripts/check-indexer-logs.ksh"]}],
+   "cleanup": {"command": ["http://localhost:8080/source/api/v1/messages?tag=%PROJECT%", "DELETE", ""]}
+}
 ```
 
 The above `sync.py` command will basically take all directories under `/ws-local` and for each it will run the sequence of commands specified in the `sync.conf` file. This will be done in parallel - on project level. The level of parallelism can be specified using the the `--workers` option (by default it will use as many workers as there are CPUs in the system).
@@ -43,7 +48,7 @@ Another variant of how to specify the list of projects to be synchronized is to 
 The commands above will basically:
   - mark the project with alert (to let the users know it is being synchronized/indexed) using the [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call (the `%PROJECT%` string is replaced with current project name)
   - pull the changes from all the upstream repositories that belong to the project using the `mirror.py` command
-  - reindex the project using `reindex-project.ksh`
+  - reindex the project using `reindex-project.py`
   - clear the alert using the second [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call
   - execute the `/scripts/check-indexer-logs.ksh` script to perform some pattern matching in the indexer logs to see if there were any serious failures there
 
@@ -61,13 +66,32 @@ The `sync.conf` configuration can be also represented as YAML.
 
 In the above example it is assumed that `sync.py` is run as `root` and synchronization and reindexing are done under different users. This is done so that the web application cannot tamper with source code even if compromised.
 
-The commands got appended project name unless one of their arguments is equal
-to 'ARG', in which case it is substituted with project name and no append is
+The commands got appended project name unless one of their arguments contains
+'%PROJECT%', in which case it is substituted with project name and no append is
 done.
 
-For per-project reindexing to work properly, `reindex-project.ksh` uses
+For per-project reindexing to work properly, `reindex-project.py` uses
 the `logging.properties.template` to make sure each project has its own
-log directory.
+log directory. The file can look e.g. like this:
+
+```
+handlers= java.util.logging.FileHandler
+
+.level= FINE
+
+java.util.logging.FileHandler.pattern = /opengrok/log/%PROJ%/opengrok%g.%u.log
+java.util.logging.FileHandler.limit = 52428800
+java.util.logging.FileHandler.count = 30
+java.util.logging.FileHandler.formatter = org.opensolaris.opengrok.logger.formatter.SimpleFileLogFormatter
+
+java.util.logging.ConsoleHandler.level = WARNING
+java.util.logging.ConsoleHandler.formatter = org.opensolaris.opengrok.logger.formatter.SimpleFileLogFormatter
+```
+
+The `%PROJ%` template is passed to the script for substitution in the
+logging template. This pattern must differ from the `%PROJECT%` pattern, otherwise the `sync.py`
+script would substitute it in the command arguments and the substitution in the template file
+would not happen.
 
 # mirror.py
 
