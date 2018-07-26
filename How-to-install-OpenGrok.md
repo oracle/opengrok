@@ -105,8 +105,6 @@ A lot more customizations can be found inside the script, you just need to have 
 
 # Optional info
 
-Additional information can be found in the [https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt EXAMPLE.txt] in the doc folder
-
 ## Custom ctags configuration
 
 To make ctags recognize additional symbols/definitions/etc. it is possible to
