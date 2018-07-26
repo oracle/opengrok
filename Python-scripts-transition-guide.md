@@ -44,7 +44,7 @@ OPENGROK_APP_SERVER, OPENGROK_WAR_TARGET_TOMCAT*, OPENGROK_TOMCAT*, OPENGROK_RES
 
 | `OpenGrok` environment variable | `indexer.py` option |
 | ----- | ---- |
-JAVA_OPTS | -J
+JAVA_OPTS | -J (can be specified multiple times, will be cumulative)
 JAVA | -j
 OPENGROK_LOGGER_CONFIG_PATH | add `-Djava.util.logging.config.file=...` to -J
 
