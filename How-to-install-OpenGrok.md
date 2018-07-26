@@ -126,8 +126,8 @@ If you need to change name of the web application from `source` to something els
 
 ## Optional setup of security manager for Tomcat
 
-On some linux distribution you need to setup permissions for SRC_ROOT and DATA_ROOT. Please check your [http://tomcat.apache.org/tomcat-5.5-doc/security-manager-howto.html Tomcat documentation] on this, or simply disable (your risk!) <u>security manager</u> for Tomcat (e.g. in debian/ubuntu : in file <code>/etc/default/tomcat5.5</code> set <code>TOMCAT5_SECURITY=no</code>).
-A sample approach is to <u>edit</u> <code>/etc/tomcat5.5/04webapps.policy</code> (or <code>/var/apache/tomcat/conf/catalina.policy</code>) and set this (it will give opengrok all permissions) for your opengrok webapp instance:
+On some Linux distributions you need to setup permissions for source root and data root. Please check your Tomcat documentation on this, or simply disable (your risk!) <u>security manager</u> for Tomcat (e.g. in debian/ubuntu : in file <code>/etc/default/tomcat5.5</code> set <code>TOMCAT5_SECURITY=no</code>).
+A sample approach is to <u>edit</u> <code>/etc/tomcat5.5/04webapps.policy</code> (or <code>/var/apache/tomcat/conf/catalina.policy</code>) and set this (it will give OpenGrok all permissions) for your OpenGrok webapp instance:
 
 ```
 grant codeBase "file:${catalina.home}/webapps/source/-" {     
