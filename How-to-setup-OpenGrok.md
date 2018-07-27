@@ -16,6 +16,8 @@ You need the following:
 
 After unpacking the binaries to your target directory, the index needs to be created and the web application deployed.
 
+See https://github.com/OpenGrok/platform for OS specific integration.
+
 # Creating the index
 
 The data to be indexed should be stored in a directory called **source root**. Each subdirectory under this directory is called **project** (projects can be disabled but let's leave this detail aside for now) and usually contains checkout of a **repository** (or it's branch, version, ...) sources. Each project can have multiple repositories.
