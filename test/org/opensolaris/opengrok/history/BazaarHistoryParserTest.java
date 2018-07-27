@@ -57,7 +57,10 @@ public class BazaarHistoryParserTest {
         if (RuntimeEnvironment.getInstance().getSourceRootPath() == null) {
             RuntimeEnvironment.getInstance().setSourceRoot("");
         }
-        instance = new BazaarHistoryParser(new BazaarRepository());
+        BazaarRepository bzrRepo = new BazaarRepository();
+        // BazaarHistoryParser needs to have a valid directory name.
+        bzrRepo.setDirectoryNameRelative("bzrRepo");
+        instance = new BazaarHistoryParser(bzrRepo);
     }
 
     @After
