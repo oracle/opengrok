@@ -30,7 +30,7 @@ import java.util.Set;
  * Represents a container for Ruby keywords and other string constants
  */
 public class Consts{
-    public static final Set<String> kwd = new HashSet<String>() ;
+    public static final Set<String> kwd = new HashSet<>() ;
     static {
         kwd.add("false");
         kwd.add("FALSE");

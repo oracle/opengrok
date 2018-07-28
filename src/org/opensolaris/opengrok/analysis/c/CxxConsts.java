@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class CxxConsts {
 
-    public static final Set<String> kwd = new HashSet<String>();
+    public static final Set<String> kwd = new HashSet<>();
 
 
     static {

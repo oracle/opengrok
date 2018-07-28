@@ -29,7 +29,7 @@ import java.util.Set;
   * Represents a container for Ada keywords and other string constants
   */
 public class Consts{
-    public static final Set<String> kwd = new HashSet<String>() ;
+    public static final Set<String> kwd = new HashSet<>() ;
     static {
         kwd.add("abort");
         kwd.add("abs");

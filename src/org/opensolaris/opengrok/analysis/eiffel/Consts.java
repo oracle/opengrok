@@ -31,10 +31,10 @@ import java.util.Set;
  */
 public class Consts {
 
-    public static final Set<String> kwd = new HashSet<String>();
+    public static final Set<String> kwd = new HashSet<>();
 
     static {
-     /*
+        /*
          * The following are defined with specific non-lower casing to
          * distinguish them as non-key words (e.g., "TUPLE"), but Eiffel is
          * case-insensitive per 8.2.19 Semantics: Case Insensitivity principle.

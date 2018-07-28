@@ -31,7 +31,7 @@ import java.util.Set;
   * Holds static hash set containing the Rust language keywords
   */
 public class Consts{
-    public static final Set<String> kwd = new HashSet<String>() ;
+    public static final Set<String> kwd = new HashSet<>() ;
     static {
         kwd.add( "abstract" );
         kwd.add( "alignof" );

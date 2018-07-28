@@ -35,7 +35,7 @@ import java.util.Set;
 public final class Consts {
     private static final Set<String> reservedKeywords;
     static {
-        HashSet<String> kwds = new HashSet<String>();
+        HashSet<String> kwds = new HashSet<>();
         try {
             //populateKeywordSet(kwds, "sql2003reserved.dat");
             //populateKeywordSet(kwds, "sql2008reserved.dat");
