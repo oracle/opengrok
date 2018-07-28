@@ -191,8 +191,8 @@ public final class Indexer {
             // Assemble the unprocessed command line arguments (possibly
             // a list of paths). This will be used to perform more fine
             // grained checking in invalidateRepositories().
-            for (String anArgv : argv) {
-                String path = Paths.get(cfg.getSourceRoot(), anArgv).toString();
+            for (String arg : argv) {
+                String path = Paths.get(cfg.getSourceRoot(), arg).toString();
                 subFilesList.add(path);
             }
 

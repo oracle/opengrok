@@ -30,7 +30,7 @@ import java.util.Set;
   * Holds static hash set containing the Pascal keywords
   */
 public class Consts{
-    public static final Set<String> kwd = new HashSet<String>() ;
+    public static final Set<String> kwd = new HashSet<>() ;
     static {
         kwd.add( "abstract" );
         kwd.add( "and" );

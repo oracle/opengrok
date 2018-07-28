@@ -28,7 +28,7 @@ import java.util.Set;
  * PowerShell keyword hash
  */
 public class Consts{
-    public static final Set<String> poshkwd = new HashSet<String>() ;
+    public static final Set<String> poshkwd = new HashSet<>() ;
     static {
         // Powershell keywords
         poshkwd.add( "begin" );
