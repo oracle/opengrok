@@ -1716,6 +1716,11 @@ function pageReadyMast() {
 }
 
 function domReadyMenu(minisearch) {
+    if (getCookie('suggester.enabled') === 'false') {
+        console.log('Suggester disabled by a cookie');
+        return;
+    }
+
     $.ajax({
         // cannot use "/api/v1/configuration/suggester" because of security
         url: window.contextPath + "/api/v1/suggest/config",
@@ -2325,4 +2330,25 @@ function escapeHtml(string) { // taken from https://stackoverflow.com/questions/
     return String(string).replace(/[&<>"'`=\/]/g, function (s) {
         return htmlEscapeMap[s];
     });
+}
+
+/**
+ * Taken from https://www.w3schools.com/js/js_cookies.asp .
+ * @param cname cookie name to retrieve
+ * @returns {string} cookie value
+ */
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
 }
