@@ -696,6 +696,16 @@ public class AnalyzerGuru {
     }
 
     /**
+     * Finds a {@code FileAnalyzerFactory} for the specified
+     * {@link FileAnalyzer#getFileTypeName()}.
+     * @param fileTypeName a defined instance
+     * @return a defined instance or {@code null}
+     */
+    public static FileAnalyzerFactory findByFileTypeName(String fileTypeName) {
+        return FILETYPE_FACTORIES.get(fileTypeName);
+    }
+
+    /**
      * Find a {@code FileAnalyzerFactory} with the specified class name. If one
      * doesn't exist, create one and register it. Allow specification of either
      * the complete class name (which includes the package name) or the simple
