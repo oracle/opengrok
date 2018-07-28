@@ -27,7 +27,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 
     <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.1-rc34</version>
+    <version>1.1-rc35</version>
     <packaging>pom</packaging>
 
     <name>OpenGrok</name>
@@ -246,6 +246,39 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <version>2.9</version>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.0.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>8.11</version>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <id>checkstyle</id>
+                            <phase>validate</phase>
+                            <configuration>
+                                <configLocation>/checkstyle/style.xml</configLocation>
+                                <encoding>UTF-8</encoding>
+                                <consoleOutput>true</consoleOutput>
+                                <failsOnError>true</failsOnError>
+                                <suppressionsLocation>/checkstyle/suppressions.xml</suppressionsLocation>
+                                <headerLocation>/checkstyle/fileheader.txt</headerLocation>
+                            </configuration>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <reporting>

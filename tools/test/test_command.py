@@ -42,17 +42,32 @@ class TestApp(unittest.TestCase):
     #    logging.basicConfig(level=logging.DEBUG)
 
     def test_subst_append_default(self):
-        cmd = Command(['foo', 'ARG', 'bar'],
+        cmd = Command(['foo', '=ARG=', 'bar'],
                       args_subst={"ARG": "blah"},
                       args_append=["1", "2"])
-        self.assertEqual(['foo', 'blah', 'bar', '1', '2'], cmd.cmd)
+        self.assertEqual(['foo', '=blah=', 'bar', '1', '2'], cmd.cmd)
 
     def test_subst_append_exclsubst(self):
+        """
+        Exclusive substitution is on and was performed, therefore no arguments
+        should be appended.
+        """
         cmd = Command(['foo', 'ARG', 'bar'],
                       args_subst={"ARG": "blah"},
                       args_append=["1", "2"],
                       excl_subst=True)
         self.assertEqual(['foo', 'blah', 'bar'], cmd.cmd)
+
+    def test_subst_append_exclsubst_nosubst(self):
+        """
+        Exclusive substituation is on however no substitution was performed,
+        therefore arguments can be appended.
+        """
+        cmd = Command(['foo', 'bar'],
+                      args_subst={"ARG": "blah"},
+                      args_append=["1", "2"],
+                      excl_subst=True)
+        self.assertEqual(['foo', 'bar', '1', '2'], cmd.cmd)
 
     def test_execute_nonexistent(self):
         cmd = Command(['/baaah', '/etc/passwd'])
@@ -79,7 +94,7 @@ class TestApp(unittest.TestCase):
     @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
     def test_env(self):
         cmd = Command(['/usr/bin/env'],
-                      env_vars={'FOO': 'BAR'})
+                      env_vars={'FOO': 'BAR', 'A': 'B'})
         cmd.execute()
         self.assertTrue("FOO=BAR\n" in cmd.getoutput())
 
@@ -133,6 +148,17 @@ class TestApp(unittest.TestCase):
         self.assertTrue("/foo/bar" in "\n".join(cmd.geterroutput()))
         self.assertFalse("/foo/bar" in "\n".join(cmd.getoutput()))
         self.assertTrue("root" in "\n".join(cmd.getoutput()))
+
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    def test_resource_limits(self):
+        """
+        Simple smoke test for setting resource limits.
+        """
+        resource_limits = {"RLIMIT_NOFILE": 1024}
+        cmd = Command(['/bin/cat', '/etc/passwd'],
+                      resource_limits=resource_limits)
+        cmd.set_resource_limits(resource_limits)
+        cmd.execute()
 
 if __name__ == '__main__':
     unittest.main()

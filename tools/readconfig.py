@@ -43,7 +43,7 @@ def read_config(logger, inputfile):
             try:
                 logger.debug("trying JSON")
                 cfg = json.loads(data)
-            except:
+            except json.decoder.JSONDecodeError:
                 # Not a valid JSON file.
                 logger.debug("got exception {}".format(sys.exc_info()[0]))
                 pass
@@ -53,13 +53,13 @@ def read_config(logger, inputfile):
             try:
                 logger.debug("trying YAML")
                 cfg = yaml.load(data)
-            except:
+            except AttributeError:
                 # Not a valid YAML file.
                 logger.debug("got exception {}".format(sys.exc_info()[0]))
                 pass
             else:
                 return cfg
-    except IOError as e:
+    except IOError:
         logger.error("cannot open '{}'".format(inputfile))
 
     return cfg

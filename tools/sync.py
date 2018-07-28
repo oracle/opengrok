@@ -31,23 +31,17 @@
 """
 
 
-from multiprocessing import Pool, TimeoutError
+from multiprocessing import Pool
 import argparse
-import subprocess
-import time
 import os
 import sys
 from os import path
 import filelock
 from filelock import Timeout
-import command
-from command import Command
 import logging
 import tempfile
-import commands
 from commands import Commands, CommandsBase
 from readconfig import read_config
-from shutil import which
 import multiprocessing
 from opengrok import list_indexed_projects
 
@@ -100,7 +94,7 @@ if __name__ == '__main__':
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
-                        help='uri of the webapp with context path')
+                        help='URI of the webapp with context path')
     args = parser.parse_args()
 
     if args.debug:
@@ -126,7 +120,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     try:
-        foo = config["commands"]
+        commands = config["commands"]
     except KeyError:
         logger.error("The config file has to contain key \"commands\"")
         sys.exit(1)
@@ -175,7 +169,7 @@ if __name__ == '__main__':
 
             cmds_base = []
             for d in dirs_to_process:
-                cmd_base = CommandsBase(d, config.get("commands"),
+                cmd_base = CommandsBase(d, commands,
                                         config.get("cleanup"))
                 cmds_base.append(cmd_base)
 

@@ -24,9 +24,10 @@
 import os
 import logging
 import subprocess
-import string
 import threading
 import time
+import resource
+import signal
 
 
 class TimeoutException(Exception):
@@ -50,7 +51,7 @@ class Command:
 
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
                  excl_subst=False, work_dir=None, env_vars=None, timeout=None,
-                 redirect_stderr=True):
+                 redirect_stderr=True, resource_limits=None):
         self.cmd = cmd
         self.state = "notrun"
         self.excl_subst = excl_subst
@@ -59,6 +60,7 @@ class Command:
         self.timeout = timeout
         self.pid = None
         self.redirect_stderr = redirect_stderr
+        self.limits = resource_limits
 
         self.logger = logger or logging.getLogger(__name__)
         logging.basicConfig()
@@ -91,6 +93,33 @@ class Command:
                 self.start()
                 self.exception = None
 
+            def terminate(self, p):
+                """
+                Make sure the process goes away.
+                """
+                p.terminate()
+
+                # The following code tries more methods to terminate
+                # the process and is specific to Unix.
+                if os.name == 'posix':
+                    timeout = self.timeout
+                    term_signals = [signal.SIGINT, signal.SIGKILL]
+                    for sig in term_signals:
+                        timeout = timeout / 2  # exponential back-off
+                        self.logger.info("Sleeping for {} seconds".
+                                         format(timeout))
+                        time.sleep(timeout)
+
+                        if p.poll() is None:
+                            self.logger.info("Command with PID {} still alive,"
+                                             " killing with signal {}".
+                                             format(p.pid, sig))
+                            p.send_signal(sig)
+                        else:
+                            self.logger.info("Command with PID {} is gone".
+                                             format(p.pid))
+                            break
+
             def run(self):
                 with self.condition:
                     if not self.condition.wait(self.timeout):
@@ -98,11 +127,11 @@ class Command:
                         self.logger.info("Terminating command {} with PID {} "
                                          "after timeout of {} seconds".
                                          format(p.args, p.pid, self.timeout))
-                        p.terminate()
                         self.exception = TimeoutException("Command {} with pid"
                                                           " {} timed out".
                                                           format(p.args,
                                                                  p.pid))
+                        self.terminate(p)
                     else:
                         return None
 
@@ -188,20 +217,26 @@ class Command:
             except PermissionError:
                 pass
             self.logger.debug("command = {}".format(self.cmd))
+            my_args = {}
+            my_args['stderr'] = stderr_dest
+            my_args['stdout'] = output_thread
             if self.env_vars:
                 my_env = os.environ.copy()
                 my_env.update(self.env_vars)
-                p = subprocess.Popen(self.cmd, stderr=stderr_dest,
-                                     stdout=output_thread, env=my_env)
-            else:
-                p = subprocess.Popen(self.cmd, stderr=stderr_dest,
-                                     stdout=output_thread)
+                my_args['env'] = my_env
+            if self.limits:
+                my_args['preexec_fn'] = \
+                    lambda: self.set_resource_limits(self.limits)
+
+            # Actually run the command.
+            p = subprocess.Popen(self.cmd, **my_args)
 
             self.pid = p.pid
 
             if self.timeout:
                 time_condition = threading.Condition()
-                self.logger.debug("Setting timeout to {}".format(self.timeout))
+                self.logger.debug("Setting timeout to {} seconds".
+                                  format(self.timeout))
                 timeout_thread = TimeoutThread(self.logger, self.timeout,
                                                time_condition, p)
 
@@ -264,27 +299,50 @@ class Command:
         """
         Replace argument names with actual values or append arguments
         to the command vector.
+
+        The action depends whether exclusive substitution is on.
+        If yes, arguments will be appended only if no substitution was
+        performed.
         """
 
         newcmd = []
-        subst_done = False
+        subst_done = -1
         for i, cmdarg in enumerate(self.cmd):
             if args_subst:
-                if cmdarg in args_subst.keys():
-                    self.logger.debug("replacing cmdarg with {}".
-                                      format(args_subst[cmdarg]))
-                    newcmd.append(args_subst[cmdarg])
-                    subst_done = True
-                else:
+                for pattern in args_subst.keys():
+                    if pattern in cmdarg:
+                        newarg = cmdarg.replace(pattern, args_subst[pattern])
+                        self.logger.debug("replacing cmdarg with {}".
+                                          format(newarg))
+                        newcmd.append(newarg)
+                        subst_done = i
+
+                if subst_done != i:
                     newcmd.append(self.cmd[i])
             else:
                 newcmd.append(self.cmd[i])
 
-        if args_append and (not self.excl_subst or not subst_done):
+        if args_append and (not self.excl_subst or subst_done == -1):
             self.logger.debug("appending {}".format(args_append))
             newcmd.extend(args_append)
 
         self.cmd = newcmd
+
+    def get_resource(self, name):
+        if name == "RLIMIT_NOFILE":
+            return resource.RLIMIT_NOFILE
+
+        raise NotImplementedError("unknown resource")
+
+    def set_resource_limit(self, name, value):
+        self.logger.debug("Setting resource {} to {}"
+                          .format(name, value))
+        resource.setrlimit(self.get_resource(name), (value, value))
+
+    def set_resource_limits(self, limits):
+        self.logger.debug("Setting resource limits")
+        for name, value in limits.items():
+            self.set_resource_limit(name, value)
 
     def getretcode(self):
         if self.state is not Command.FINISHED:

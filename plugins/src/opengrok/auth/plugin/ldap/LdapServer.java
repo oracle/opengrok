@@ -12,7 +12,7 @@
  * file and include the License file at LICENSE.txt.
  * If applicable, add the following below this CDDL HEADER, with the
  * fields enclosed by brackets "[]" replaced with your own identifying
- * information: Portions Copyright [yyyy] [url of copyright owner]
+ * information: Portions Copyright [yyyy] [name of copyright owner]
  *
  * CDDL HEADER END
  */

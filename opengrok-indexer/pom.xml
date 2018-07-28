@@ -28,11 +28,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <parent>
         <groupId>org.opengrok</groupId>
         <artifactId>opengrok-top</artifactId>
-        <version>1.1-rc34</version>
+        <version>1.1-rc35</version>
     </parent>
 
     <artifactId>opengrok</artifactId>
-    <version>1.1-rc34</version>
+    <version>1.1-rc35</version>
     <packaging>jar</packaging>
 
     <name>OpenGrok Indexer</name>
@@ -318,11 +318,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     </execution>
                 </executions>
                 <configuration>
-                    <executable>pep8</executable>
+                    <executable>flake8</executable>
                     <arguments>
                         <argument>-v</argument>
                         <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>
-                        <argument>${project.basedir}/../tools/sync</argument>
+                        <argument>${project.basedir}/../tools</argument>
                     </arguments>
                 </configuration>
             </plugin>
