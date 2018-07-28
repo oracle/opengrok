@@ -72,6 +72,6 @@ public class Consts{
         kwd.add("with");
         kwd.add("yield");
 
-        kwd.add("_");	// "Lexical syntax ... reserved words"
+        kwd.add("_"); // "Lexical syntax ... reserved words"
     }
 }

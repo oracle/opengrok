@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -61,11 +61,15 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
 
         @Override
         public FileAnalyzerFactory isMagic(byte[] content, InputStream in) {
-            if (content.length < 8) return null;
+            if (content.length < 8) {
+                return null;
+            }
 
             // Require CAFEBABE or indicate no match.
             for (int i = 0; i < CAFEBABE.length; ++i) {
-                if (content[i] != CAFEBABE[i]) return null;
+                if (content[i] != CAFEBABE[i]) {
+                    return null;
+                }
             }
             // Require known major_version number.
             int majorVersion = (content[MAJOR_VER_HIGHBYTE] << 1) |

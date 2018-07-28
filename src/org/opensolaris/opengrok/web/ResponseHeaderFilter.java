@@ -33,8 +33,9 @@ public class ResponseHeaderFilter implements Filter {
         // set the provided HTTP response parameters
         for (Enumeration e = fc.getInitParameterNames(); e.hasMoreElements();) {
             String headerName = (String)e.nextElement();
-            if (!response.containsHeader(headerName))
+            if (!response.containsHeader(headerName)) {
                 response.addHeader(headerName, fc.getInitParameter(headerName));
+            }
         }
 
         // pass the request/response on

@@ -64,13 +64,11 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
              */
             private boolean isPlainText(byte[] content) throws IOException {
                 int lengthBOM = IOUtils.skipForBOM(content);
-                if (lengthBOM > 0) return true;
-                String ascii = new String(content, "US-ASCII");
-                if (isPlainText(ascii)) {
+                if (lengthBOM > 0) {
                     return true;
                 }
-
-                return false;
+                String ascii = new String(content, "US-ASCII");
+                return isPlainText(ascii);
             }
 
             /**

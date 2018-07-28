@@ -64,10 +64,14 @@ public class AnalyzerGuruHelp {
 
         b.append("\nAnalyzerGuru magic matchers:\n");
         AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
-            if (m.getIsPreciseMagic()) b.append(reportable(m));
+            if (m.getIsPreciseMagic()) {
+                b.append(reportable(m));
+            }
         });
         AnalyzerGuru.getAnalyzerFactoryMatchers().forEach((m) -> {
-            if (!m.getIsPreciseMagic()) b.append(reportable(m));
+            if (!m.getIsPreciseMagic()) {
+                b.append(reportable(m));
+            }
         });
 
         return b.toString();
@@ -79,7 +83,9 @@ public class AnalyzerGuruHelp {
     }
 
     private static String reportable(String value) {
-        if (value.startsWith("#!")) return value;
+        if (value.startsWith("#!")) {
+            return value;
+        }
 
         boolean allAsciiPrintable = true;
         for (int i = 0; i < value.length(); ++i) {
@@ -89,7 +95,9 @@ public class AnalyzerGuruHelp {
                 break;
             }
         }
-        if (allAsciiPrintable) return value;
+        if (allAsciiPrintable) {
+            return value;
+        }
 
         StringBuilder b = new StringBuilder();
         int i = 0;
@@ -199,7 +207,9 @@ public class AnalyzerGuruHelp {
             String r2 = reportable(mf2.fac);
             int cmp = r1.toLowerCase(Locale.ROOT).compareTo(
                 r2.toLowerCase(Locale.ROOT));
-            if (cmp != 0) return cmp;
+            if (cmp != 0) {
+                return cmp;
+            }
             return mf1.key.toLowerCase(Locale.ROOT).compareTo(
                 mf2.key.toLowerCase(Locale.ROOT));
         });

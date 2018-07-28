@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -350,7 +350,7 @@ public class AccuRevRepository extends Repository {
                             // the repository workspace), then need to get the
                             // real path pointed to by the symbolic link so that
                             // the relative root fragment can be extracted.
-                            if (! Files.isSameFile(given, Paths.get(wsRoot))) {
+                            if (!Files.isSameFile(given, Paths.get(wsRoot))) {
                                 String linkedTo = Files.readSymbolicLink(given).toRealPath().toString();
                                 if (linkedTo.regionMatches(0, wsRoot, 0, wsRoot.length())) {
                                     relRoot = linkedTo.substring(wsRoot.length());
@@ -395,7 +395,7 @@ public class AccuRevRepository extends Repository {
         // Once depot name is determined, always assume inside depot.
         boolean status = (depotName != null);
 
-        if (! status && isWorking()) {
+        if (!status && isWorking()) {
             status = getAccuRevInfo(wsPath, interactive);
         }
 

@@ -101,7 +101,9 @@ public class PathUtils {
         Set<String> allowedSymlinks)
             throws IOException, ForbiddenSymlinkException, InvalidPathException {
 
-        if (path.equals(canonical)) return "";
+        if (path.equals(canonical)) {
+            return "";
+        }
 
         // The following fixup of \\ is really to allow
         // IndexDatabaseTest.testGetDefinitions() to succeed on Linux or macOS.
@@ -147,7 +149,9 @@ public class PathUtils {
                 return rel;
             }
 
-            if (tail == null) tail = new LinkedList<>();
+            if (tail == null) {
+                tail = new LinkedList<>();
+            }
             tail.push(iterPath.getName());
             iterPath = iterPath.getParentFile();
         }
@@ -169,7 +173,9 @@ public class PathUtils {
                 }
                 continue;
             }
-            if (canonicalFile.equals(canonicalLink)) return true;
+            if (canonicalFile.equals(canonicalLink)) {
+                return true;
+            }
         }
         return false;
     }

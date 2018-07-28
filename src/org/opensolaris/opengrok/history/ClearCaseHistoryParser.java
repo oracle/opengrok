@@ -32,18 +32,13 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Parse a stream of ClearCase log comments.
  */
 class ClearCaseHistoryParser implements Executor.StreamHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClearCaseHistoryParser.class);
 
     private History history;
     private ClearCaseRepository repository=new ClearCaseRepository();

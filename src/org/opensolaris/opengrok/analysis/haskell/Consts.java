@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 
@@ -59,6 +59,6 @@ public class Consts {
         kwd.add("type");
         kwd.add("where");
 
-        kwd.add("_");	// 2.4 Identifiers and Operators
+        kwd.add("_"); // 2.4 Identifiers and Operators
     }
 }

@@ -256,7 +256,9 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
 
             subn = StringUtils.countURIEndingPushback(uri);
             int ccn = StringUtils.countPushback(uri, collateralCapture);
-            if (ccn > subn) subn = ccn;
+            if (ccn > subn) {
+                subn = ccn;
+            }
 
             // Push back if positive, but not if equal to the current length.
             if (subn > 0 && subn < uri.length()) {
@@ -266,7 +268,9 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
                 subn = 0;
             }
         } while (subn != 0);
-        if (n > 0) yypushback(n);
+        if (n > 0) {
+            yypushback(n);
+        }
 
         NonSymbolMatchedListener l = nonSymbolListener;
         if (l != null) {
@@ -459,7 +463,9 @@ public abstract class JFlexSymbolMatcher extends JFlexStateStacker
         int n = 0;
         for (int i = 0; i < str.length(); ++i) {
             char c = str.charAt(i);
-            if (c == '\n') ++n;
+            if (c == '\n') {
+                ++n;
+            }
         }
         return n;
     }

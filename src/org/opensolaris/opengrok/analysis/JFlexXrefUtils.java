@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
@@ -100,7 +100,9 @@ public class JFlexXrefUtils {
                 subn = StringUtils.countURIEndingPushback(url);
             }
             int ccn = StringUtils.countPushback(url, collateralCapture);
-            if (ccn > subn) subn = ccn;
+            if (ccn > subn) {
+                subn = ccn;
+            }
 
             // Push back if positive, but not if equal to the current length.
             if (subn > 0 && subn < url.length()) {
@@ -110,7 +112,9 @@ public class JFlexXrefUtils {
                 subn = 0;
             }
         } while (subn != 0);
-        if (n > 0) lexer.yypushback(n);
+        if (n > 0) {
+            lexer.yypushback(n);
+        }
 
         out.write("<a href=\"");
         Util.htmlize(url, out);
@@ -149,7 +153,9 @@ public class JFlexXrefUtils {
     public static String disjointSpan(Writer out, String className,
         String currentDisjointSpanName)
             throws IOException {
-        if (currentDisjointSpanName != null) out.write(HtmlConsts.ZSPAN);
+        if (currentDisjointSpanName != null) {
+            out.write(HtmlConsts.ZSPAN);
+        }
         if (className != null) {
             out.write(String.format(HtmlConsts.SPAN_FMT, className));
         }

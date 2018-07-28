@@ -47,8 +47,12 @@ public class WriteXrefArgs {
      * @throws IllegalArgumentException thrown if any argument is null.
      */
     public WriteXrefArgs(Reader in, Writer out) {
-        if (in == null) throw new IllegalArgumentException("`in' is null");
-        if (out == null) throw new IllegalArgumentException("`out' is null");
+        if (in == null) {
+            throw new IllegalArgumentException("`in' is null");
+        }
+        if (out == null) {
+            throw new IllegalArgumentException("`out' is null");
+        }
         this.in = in;
         this.out = out;
     }

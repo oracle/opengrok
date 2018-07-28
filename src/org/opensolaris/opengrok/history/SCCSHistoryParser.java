@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -33,10 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
@@ -46,8 +43,6 @@ import org.opensolaris.opengrok.util.IOUtils;
  * taking a lot of time. Time to index history has reduced 4 to 1!
  */
 class SCCSHistoryParser {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SCCSHistoryParser.class);
 
     boolean pass;
     boolean passRecord;
