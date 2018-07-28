@@ -249,6 +249,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                                 <failsOnError>true</failsOnError>
                                 <suppressionsLocation>/checkstyle/suppressions.xml</suppressionsLocation>
                                 <headerLocation>/checkstyle/fileheader.txt</headerLocation>
+                                <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
                             </configuration>
                             <goals>
                                 <goal>check</goal>
