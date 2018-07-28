@@ -27,8 +27,12 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.opengrok.suggest.Suggester;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.CtagsInstalled;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.SuggesterConfig;
 import org.opensolaris.opengrok.index.Indexer;
@@ -60,6 +64,7 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+@ConditionalRun(CtagsInstalled.class)
 public class SuggesterControllerTest extends JerseyTest {
 
     public static class Result {
@@ -82,6 +87,9 @@ public class SuggesterControllerTest extends JerseyTest {
         public String token;
         public int increment;
     }
+
+    @ClassRule
+    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
