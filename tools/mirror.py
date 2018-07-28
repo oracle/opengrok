@@ -97,7 +97,7 @@ if __name__ == '__main__':
                        HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
     diff = diff_list(config.keys(), GLOBAL_TUNABLES)
     if diff:
-        logger.error("uknown global configuration option(s): '{}'"
+        logger.error("unknown global configuration option(s): '{}'"
                      .format(diff))
         sys.exit(1)
 
