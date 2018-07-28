@@ -532,9 +532,13 @@ public class IndexDatabase {
         } finally {
             completer = null;
             try {
-                if (writer != null) writer.close();
+                if (writer != null) {
+                    writer.close();
+                }
             } catch (IOException e) {
-                if (finishingException == null) finishingException = e;
+                if (finishingException == null) {
+                    finishingException = e;
+                }
                 LOGGER.log(Level.WARNING,
                     "An error occurred while closing writer", e);
             } finally {
@@ -545,7 +549,9 @@ public class IndexDatabase {
             }
         }
 
-        if (finishingException != null) throw finishingException;
+        if (finishingException != null) {
+            throw finishingException;
+        }
 
         if (!isInterrupted() && isDirty()) {
             if (env.isOptimizeDatabase()) {
@@ -631,7 +637,9 @@ public class IndexDatabase {
                 try {
                     wrt.close();
                 } catch (IOException e) {
-                    if (writerException == null) writerException = e;
+                    if (writerException == null) {
+                        writerException = e;
+                    }
                     LOGGER.log(Level.WARNING,
                         "An error occurred while closing writer", e);
                 }
@@ -641,7 +649,9 @@ public class IndexDatabase {
             }
         }
 
-        if (writerException != null) throw writerException;
+        if (writerException != null) {
+            throw writerException;
+        }
     }
 
     private boolean isDirty() {
@@ -732,7 +742,9 @@ public class IndexDatabase {
         }
 
         ctags.setTabSize(project != null ? project.getTabSize() : 0);
-        if (ctags.getBinary() != null) fa.setCtags(ctags);
+        if (ctags.getBinary() != null) {
+            fa.setCtags(ctags);
+        }
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
         fa.setFoldingEnabled(RuntimeEnvironment.getInstance().isFoldingEnabled());
@@ -1078,7 +1090,9 @@ public class IndexDatabase {
                     indexDown(file, path, args);
                 } else {
                     args.cur_count++;
-                    if (args.count_only) continue;
+                    if (args.count_only) {
+                        continue;
+                    }
 
                     if (uidIter != null) {
                         String uid = Util.path2uid(path,
@@ -1143,7 +1157,9 @@ public class IndexDatabase {
     private void indexParallel(IndexDownArgs args) throws IOException {
 
         int worksCount = args.works.size();
-        if (worksCount < 1) return;
+        if (worksCount < 1) {
+            return;
+        }
 
         AtomicInteger successCounter = new AtomicInteger();
         AtomicInteger currentCounter = new AtomicInteger();
@@ -1177,7 +1193,9 @@ public class IndexDatabase {
                             ret = false;
                         } catch (InterruptedException e) {
                             // Allow one retry if interrupted
-                            if (++tries <= 1) continue;
+                            if (++tries <= 1) {
+                                continue;
+                            }
                             LOGGER.log(Level.WARNING, "No retry: {0}", x.file);
                             x.exception = e;
                             ret = false;
@@ -1215,7 +1233,9 @@ public class IndexDatabase {
         if (bySuccess != null) {
             List<IndexFileWork> successes = bySuccess.getOrDefault(
                 Boolean.TRUE, null);
-            if (successes != null) failureCount -= successes.size();
+            if (successes != null) {
+                failureCount -= successes.size();
+            }
         }
         if (failureCount > 0) {
             double pctFailed = 100.0 * failureCount / worksCount;
@@ -1627,7 +1647,9 @@ public class IndexDatabase {
             hasPendingCommit = false;
             writer.commit();
         } catch (RuntimeException|IOException e) {
-            if (hasPendingCommit) writer.rollback();
+            if (hasPendingCommit) {
+                writer.rollback();
+            }
             LOGGER.log(Level.WARNING,
                 "An error occurred while finishing writer and completer", e);
             throw e;

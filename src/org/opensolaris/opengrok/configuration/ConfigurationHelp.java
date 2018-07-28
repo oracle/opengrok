@@ -75,7 +75,9 @@ public class ConfigurationHelp {
             // Get a pristine instance.
             conf = new Configuration();
             Object sampleValue = getSampleValue(mthd, defaultValue);
-            if (sampleValue == null) continue;
+            if (sampleValue == null) {
+                continue;
+            }
 
             try {
                 mthd.invoke(conf, sampleValue);
@@ -135,7 +137,9 @@ public class ConfigurationHelp {
         } else if (paramType == short.class) {
             return (short)(1 + (short)defaultValue);
         } else if (paramType == boolean.class) {
-            if (defaultValue == null) return null;
+            if (defaultValue == null) {
+                return null;
+            }
             return !(boolean)defaultValue;
         } else if (paramType == double.class) {
             return 1 + (double)defaultValue;
@@ -164,7 +168,9 @@ public class ConfigurationHelp {
             return inm;
         } else if (paramType.isEnum()) {
             for (Object value : paramType.getEnumConstants()) {
-                if (!value.equals(defaultValue)) return value;
+                if (!value.equals(defaultValue)) {
+                    return value;
+                }
             }
             return null;
         } else if (paramType == SuggesterConfig.class) {
@@ -286,7 +292,9 @@ public class ConfigurationHelp {
 
     private static boolean isDeprecated(Method mth) {
         for (Annotation annotation : mth.getAnnotations()) {
-            if (annotation instanceof Deprecated) return true;
+            if (annotation instanceof Deprecated) {
+                return true;
+            }
         }
         return false;
     }

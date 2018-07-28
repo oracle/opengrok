@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -286,7 +286,9 @@ public final class StringUtils {
      */
     public static int patindexOf(String value, Pattern pattern) {
         Matcher m = pattern.matcher(value);
-        if (!m.find()) return -1;
+        if (!m.find()) {
+            return -1;
+        }
         return m.start();
     }
 
@@ -318,7 +320,9 @@ public final class StringUtils {
             if (o >= 0) {
                 int n = capture.length() - o;
                 // Push back if positive, but not if equal to the full length.
-                if (n > 0 && n < capture.length()) return n;
+                if (n > 0 && n < capture.length()) {
+                    return n;
+                }
             }
         }
         return 0;

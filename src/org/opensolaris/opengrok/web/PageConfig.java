@@ -412,10 +412,11 @@ public final class PageConfig {
                                 } else if (f1.isFile() && f2.isFile()) {
                                     return f1.getName().compareTo(f2.getName());
                                 } else {
-                                    if (f1.isFile() && f2.isDirectory())
+                                    if (f1.isFile() && f2.isDirectory()) {
                                         return 1;
-                                    else
+                                    } else {
                                         return -1;
+                                    }
                                 }
                             }
                         });

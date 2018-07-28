@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2018, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2011 Trond Norbye 
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
@@ -257,7 +257,9 @@ public final class IOUtils {
                 while (i < bom.length && sig[i] == bom[i]) {
                     i++;
                 }
-                if (i == bom.length) return encoding;
+                if (i == bom.length) {
+                    return encoding;
+                }
             }
         }
         return null;

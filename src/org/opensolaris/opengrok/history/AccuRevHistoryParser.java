@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2018, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -32,10 +32,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -45,11 +42,8 @@ import org.opensolaris.opengrok.util.Executor;
  */
 public class AccuRevHistoryParser implements Executor.StreamHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccuRevHistoryParser.class);
-
     private AccuRevRepository repository;
     private History history;
-    private boolean foundHistory;
 
     /**
      * Parse the history for the specified file.
@@ -64,7 +58,6 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
         repository = (AccuRevRepository) repos;
 
         history = null;
-        foundHistory = false;
 
         String relPath = repository.getDepotRelativePath(file);
 
@@ -144,7 +137,6 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
                 String data[] = line.split("; ");
                 entry = new HistoryEntry();
 
-                foundHistory = true;
                 user = data[3].replaceFirst("user: ", "");
 
                 entry.setMessage("");

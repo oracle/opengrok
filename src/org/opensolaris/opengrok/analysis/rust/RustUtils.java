@@ -47,7 +47,9 @@ public class RustUtils {
 
         int n = 0;
         for (int i = capture.length() - 2; i >= 0; --i) {
-            if (capture.charAt(i) != '#') break;
+            if (capture.charAt(i) != '#') {
+                break;
+            }
             ++n;
         }
         return n;
@@ -75,9 +77,13 @@ public class RustUtils {
 
         int n = 0;
         for (int i = 1; i < capture.length(); ++i) {
-            if (capture.charAt(i) != '#') break;
+            if (capture.charAt(i) != '#') {
+                break;
+            }
             ++n;
-            if (n >= rawHashCount) break;
+            if (n >= rawHashCount) {
+                break;
+            }
         }
         return n >= rawHashCount;
     }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis;
@@ -189,7 +189,9 @@ public class AnalyzerGuru {
         @Override public int compare(String s1, String s2) {
             // DESC: s2 length <=> s1 length
             int cmp = Integer.compare(s2.length(), s1.length());
-            if (cmp != 0) return cmp;
+            if (cmp != 0) {
+                return cmp;
+            }
 
             // the Comparator must also be "consistent with equals", so check
             // string contents too when (length)cmp == 0. (ASC: s1 <=> s2.)
@@ -496,7 +498,7 @@ public class AnalyzerGuru {
             FileAnalyzer defaultAnalyzer = getAnalyzer();
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "{0}: fallback {1}",
-                    new Object[]{ file,
+                    new Object[]{file,
                     defaultAnalyzer.getClass().getSimpleName() });
             }
             return defaultAnalyzer;
@@ -568,8 +570,7 @@ public class AnalyzerGuru {
         if (fa != null) {
             Genre g = fa.getGenre();
             if (g == Genre.PLAIN || g == Genre.XREFABLE || g == Genre.HTML) {
-                doc.add(new Field(QueryBuilder.T, g.typeName(),
-		        string_ft_stored_nanalyzed_norms));
+                doc.add(new Field(QueryBuilder.T, g.typeName(), string_ft_stored_nanalyzed_norms));
             }
             fa.analyze(doc, StreamSource.fromFile(file), xrefOut);
 
@@ -859,7 +860,7 @@ public class AnalyzerGuru {
                 if (factory != null) {
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.log(Level.FINER, "{0}: chosen by prefix: {1}",
-                            new Object[]{ file,
+                            new Object[]{file,
                             factory.getClass().getSimpleName() });
                     }
                     return factory;
@@ -874,7 +875,7 @@ public class AnalyzerGuru {
             if (factory != null) {
                 if (LOGGER.isLoggable(Level.FINER)) {
                     LOGGER.log(Level.FINER, "{0}: chosen by suffix: {1}",
-                        new Object[]{ file,
+                        new Object[]{file,
                         factory.getClass().getSimpleName() });
                 }
                 return factory;
@@ -957,7 +958,7 @@ public class AnalyzerGuru {
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.log(Level.FINER,
                             "{0}: chosen by imprecise magic: {1}",
-                            new Object[]{ file,
+                            new Object[]{file,
                             fac.getClass().getSimpleName() });
                     }
                     return fac;
@@ -978,7 +979,7 @@ public class AnalyzerGuru {
         if (fac != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "{0}: chosen by magic {2}: {1}",
-                    new Object[]{ file, fac.getClass().getSimpleName(),
+                    new Object[]{file, fac.getClass().getSimpleName(),
                     fragment});
             }
             return fac;
@@ -990,7 +991,7 @@ public class AnalyzerGuru {
         if (fac != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "{0}: chosen by magic {2}: {1}",
-                    new Object[]{ file, fac.getClass().getSimpleName(),
+                    new Object[]{file, fac.getClass().getSimpleName(),
                     fragment});
             }
             return fac;
@@ -1025,12 +1026,16 @@ public class AnalyzerGuru {
      * @return The extracted words or <code>""</code>
      */
     private static String getWords(String value, int n) {
-        if (n < 1) return "";
+        if (n < 1) {
+            return "";
+        }
         int l = 0;
         while (n-- > 0) {
             int o = l > 0 ? l + 1 : l;
             int i = value.indexOf(' ', o);
-            if (i == -1) return value;
+            if (i == -1) {
+                return value;
+            }
             l = i;
         }
         return value.substring(0, l);
@@ -1074,20 +1079,28 @@ public class AnalyzerGuru {
         BufferedReader readr = new BufferedReader(
             new InputStreamReader(in, encoding), OPENING_MAX_CHARS);
         while ((r = readr.read()) != -1) {
-            if (++nRead > OPENING_MAX_CHARS) break;
+            if (++nRead > OPENING_MAX_CHARS) {
+                break;
+            }
             char c = (char)r;
             boolean isWhitespace = Character.isWhitespace(c);
             if (!sawNonWhitespace) {
-                if (isWhitespace) continue;
+                if (isWhitespace) {
+                    continue;
+                }
                 sawNonWhitespace = true;
             }
-            if (c == '\n') break;
+            if (c == '\n') {
+                break;
+            }
 
             if (isWhitespace) {
                 // Track `lastWhitespace' to condense stretches of whitespace,
                 // and use ' ' regardless of actual whitespace character to
                 // accord with magic string definitions.
-                if (!lastWhitespace && !postHashbang) opening.append(' ');
+                if (!lastWhitespace && !postHashbang) {
+                    opening.append(' ');
+                }
             } else {
                 opening.append(c);
                 postHashbang = false;

@@ -206,7 +206,9 @@ public class CtagsReader {
      * @param tagLine a defined line or null to no-op
      */
     public void readLine(String tagLine) {
-        if (tagLine == null) return;
+        if (tagLine == null) {
+            return;
+        }
 
         int p = tagLine.indexOf('\t');
         if (p <= 0) {
@@ -730,7 +732,9 @@ public class CtagsReader {
         int offz = signature.length();
         int soff = off0;
         int eoff = offz;
-        if (soff >= eoff) return null;
+        if (soff >= eoff) {
+            return null;
+        }
 
         // Trim outer punctuation if it exists.
         while (soff < signature.length() && (signature.charAt(soff) == '(' ||

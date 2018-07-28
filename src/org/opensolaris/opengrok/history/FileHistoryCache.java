@@ -698,7 +698,9 @@ class FileHistoryCache implements HistoryCache {
 
     private String getRepositoryCachedRevPath(Repository repository) {
         String histDir = getRepositoryHistDataDirname(repository);
-        if (histDir == null) return null;
+        if (histDir == null) {
+            return null;
+        }
         return histDir + File.separatorChar + LATEST_REV_FILE_NAME;
     }
 

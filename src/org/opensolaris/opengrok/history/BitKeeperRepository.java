@@ -88,7 +88,7 @@ public class BitKeeperRepository extends Repository {
      */
     public BitKeeperRepository() {
         type = "BitKeeper";
-        datePatterns = new String[] { "yyyy-MM-dd HH:mm:ss z" };
+        datePatterns = new String[] {"yyyy-MM-dd HH:mm:ss z"};
 
         ignoredDirs.add(".bk");
     }
@@ -99,7 +99,7 @@ public class BitKeeperRepository extends Repository {
     private void ensureVersion() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            final Executor exec = new Executor(new String[] { RepoCommand, "--version" });
+            final Executor exec = new Executor(new String[] {RepoCommand, "--version" });
             if (exec.exec(false) == 0) {
                 working = Boolean.TRUE;
                 final Matcher matcher = VERSION_PATTERN.matcher(exec.getOutputString());

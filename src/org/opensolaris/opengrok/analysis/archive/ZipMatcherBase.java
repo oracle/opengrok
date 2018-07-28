@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
@@ -69,7 +69,9 @@ public abstract class ZipMatcherBase implements FileAnalyzerFactory.Matcher {
             int xoff_end = Math.min(len, xoff + LOCEXT(buf));
             while ((xoff < xoff_end) && (len - xoff >= XFHSIZ)) {
                 int xfhid = SH(buf, xoff);
-                if (xfhid == strictExtraFieldID()) return forFactory();
+                if (xfhid == strictExtraFieldID()) {
+                    return forFactory();
+                }
                 int xfdatasiz = SH(buf, xoff + 2);
                 xoff += XFHSIZ + xfdatasiz;
             }

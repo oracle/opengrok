@@ -92,7 +92,9 @@ class PendingFileCompleter {
             int n2 = countPathSegments(s2);
             // DESC: s2 no. of segments <=> s1 no. of segments
             int cmp = Integer.compare(n2, n1);
-            if (cmp != 0) return cmp;
+            if (cmp != 0) {
+                return cmp;
+            }
 
             // the Comparator must also be "consistent with equals", so check
             // string contents too when (length)cmp == 0. (ASC: s1 <=> s2.)
@@ -181,7 +183,9 @@ class PendingFileCompleter {
         int numPending = renames.size();
         int numFailures = 0;
 
-        if (numPending < 1) return 0;
+        if (numPending < 1) {
+            return 0;
+        }
 
         List<PendingFileRenamingExec> pendingExecs = renames.
             parallelStream().map(f ->
@@ -226,7 +230,9 @@ class PendingFileCompleter {
         int numPending = deletions.size();
         int numFailures = 0;
 
-        if (numPending < 1) return 0;
+        if (numPending < 1) {
+            return 0;
+        }
 
         List<PendingFileDeletionExec> pendingExecs = deletions.
             parallelStream().map(f ->
@@ -248,7 +254,9 @@ class PendingFileCompleter {
 
         List<PendingFileDeletionExec> successes = bySuccess.getOrDefault(
             Boolean.TRUE, null);
-        if (successes != null) tryDeleteParents(successes);
+        if (successes != null) {
+            tryDeleteParents(successes);
+        }
 
         List<PendingFileDeletionExec> failures = bySuccess.getOrDefault(
             Boolean.FALSE, null);
@@ -466,7 +474,9 @@ class PendingFileCompleter {
      * up, and writes them to {@code skels}.
      */
     private void findFilelessChildren(SkeletonDirs skels, File directory) {
-        if (!directory.exists()) return;
+        if (!directory.exists()) {
+            return;
+        }
         String dirPath = directory.getAbsolutePath();
         boolean topLevelIneligible = false;
         boolean didLogFileTopLevelIneligible = false;
@@ -521,7 +531,9 @@ class PendingFileCompleter {
         int n = 1;
         for (int i = 0; i < path.length(); ++i) {
             char c = path.charAt(i);
-            if (c == File.separatorChar || c == '\\') ++n;
+            if (c == File.separatorChar || c == '\\') {
+                ++n;
+            }
         }
         return n;
     }

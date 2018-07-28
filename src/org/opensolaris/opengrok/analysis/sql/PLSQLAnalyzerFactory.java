@@ -31,7 +31,7 @@ public class PLSQLAnalyzerFactory extends FileAnalyzerFactory {
     
     private static final String name = "PL/SQL";
     
-    private static final String[] SUFFIXES = {        
+    private static final String[] SUFFIXES = {
         "PLS",
         "PKS", //?
         "PLD",

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2018 Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
  */
 package org.opensolaris.opengrok.analysis.perl;
@@ -96,7 +96,7 @@ public class Consts{
         kwd.add("dump");
         kwd.add("each");
         kwd.add("else");
-        kwd.add("elseif");	/* parsed "but only to warn you ..." */
+        kwd.add("elseif"); /* parsed "but only to warn you ..." */
         kwd.add("elsif");
         kwd.add("encoding");
         kwd.add("END");

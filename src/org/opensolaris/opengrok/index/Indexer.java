@@ -140,7 +140,9 @@ public final class Indexer {
                 System.exit(status);
             }
             
-            if (awaitProfiler) pauseToAwaitProfiler();
+            if (awaitProfiler) {
+                pauseToAwaitProfiler();
+            }
 
             env = RuntimeEnvironment.getInstance();
 
@@ -189,8 +191,8 @@ public final class Indexer {
             // Assemble the unprocessed command line arguments (possibly
             // a list of paths). This will be used to perform more fine
             // grained checking in invalidateRepositories().
-            for (int optind = 0; optind < argv.length; optind++) {
-                String path = Paths.get(cfg.getSourceRoot(), argv[optind]).toString();
+            for (String anArgv : argv) {
+                String path = Paths.get(cfg.getSourceRoot(), anArgv).toString();
                 subFilesList.add(path);
             }
 
@@ -283,7 +285,7 @@ public final class Indexer {
             }
 
             LOGGER.log(Level.INFO, "Indexer version {0} ({1})",
-                    new Object[]{ Info.getVersion(), Info.getRevision()});
+                    new Object[]{Info.getVersion(), Info.getRevision()});
             
             // Get history first.
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
@@ -376,7 +378,7 @@ public final class Indexer {
      * @throws ParseException if parsing failed
      */
     public static String[] parseOptions(String[] argv) throws ParseException {
-        String[] usage = { "--help" };
+        String[] usage = {"--help"};
         String program = "opengrok.jar";
         final String[] ON_OFF = {ON, OFF};
         final String[] REMOTE_REPO_CHOICES = {ON, OFF, DIRBASED, UIONLY};
@@ -1138,7 +1140,9 @@ public final class Indexer {
             in = scan.nextLine().toLowerCase(Locale.ROOT);
         } while (!in.equals("y") && !in.equals("n"));
 
-        if (in.equals("n")) System.exit(1);
+        if (in.equals("n")) {
+            System.exit(1);
+        }
     }
 
     private Indexer() {
