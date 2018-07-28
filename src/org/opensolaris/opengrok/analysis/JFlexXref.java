@@ -203,7 +203,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     public void symbolMatched(SymbolMatchedEvent evt) {
         try {
             JFlexXrefUtils.writeSymbol(out, defs, urlPrefix, project,
-                evt.getStr(), null, matcher.getLineNumber(), false, false);
+                evt.getStr(), evt.getNormalizedStr(), null, matcher.getLineNumber(), false, false);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -292,7 +292,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
                     break;
                 case LABELDEF:
                     // Only PowerShell seems to be using this.
-                    JFlexXrefUtils.writeSameFileLinkSymbol(out, str);
+                    JFlexXrefUtils.writeSameFileLinkSymbol(out, str, str);
                     break;
                 case FILELIKE:
                     out.write("<a href=\"");
@@ -585,7 +585,7 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      */
     protected void writeKeyword(String symbol, int line) throws IOException {
         JFlexXrefUtils.writeSymbol(out, defs, urlPrefix, project,
-            symbol, null, line, false, true);
+            symbol, symbol, null, line, false, true);
     }
 
     /**

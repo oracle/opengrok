@@ -116,6 +116,7 @@ public class FortranXrefTest {
             res, "UTF-8"));
 
         CtagsReader rdr = new CtagsReader();
+        rdr.setNormalizeIdentifier(FortranAnalyzer::normalizeIdentifier);
         String line;
         while ((line = in.readLine()) != null) {
             rdr.readLine(line);

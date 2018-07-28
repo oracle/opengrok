@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.analysis.fortran;
 
 import java.io.Reader;
+import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
@@ -35,6 +36,10 @@ import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
  * @author Scott Halstead
  */
 public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
+
+    public static String normalizeIdentifier(String id) {
+        return id.toLowerCase() + "_";
+    }
 
     FortranAnalyzer(FortranAnalyzerFactory factory) {
         super(factory, new JFlexTokenizer(new FortranSymbolTokenizer(

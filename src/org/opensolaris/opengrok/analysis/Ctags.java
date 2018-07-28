@@ -36,6 +36,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.fortran.FortranAnalyzer;
+import org.opensolaris.opengrok.analysis.fortran.FortranAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
@@ -380,6 +384,10 @@ public class Ctags implements Resettable {
         CtagsReader rdr = new CtagsReader();
         rdr.setSplitterSupplier(() -> { return trySplitSource(file); });
         rdr.setTabSize(tabSize);
+        FileAnalyzerFactory factory = AnalyzerGuru.find(file);
+        if (factory instanceof FortranAnalyzerFactory) {
+            rdr.setNormalizeIdentifier(FortranAnalyzer::normalizeIdentifier);
+        }
         Definitions ret;
         try {
             ctagsIn.write(file + "\n");

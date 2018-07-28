@@ -118,10 +118,10 @@ public class CustomAssertions {
 
         byte[] inputCopy = copyStream(iss);
         String input = new String(inputCopy, StandardCharsets.UTF_8);
-        JFlexTokenizer tokenizer = new JFlexTokenizer(
-            klass.getConstructor(Reader.class).newInstance(
+        JFlexSymbolMatcher matcher = klass.getConstructor(Reader.class).newInstance(
 	        new InputStreamReader(new ByteArrayInputStream(inputCopy),
-	        StandardCharsets.UTF_8)));
+	        StandardCharsets.UTF_8));
+        JFlexTokenizer tokenizer = new JFlexTokenizer(matcher);
 
         CharTermAttribute term = tokenizer.addAttribute(
             CharTermAttribute.class);
@@ -133,8 +133,8 @@ public class CustomAssertions {
             String termValue = term.toString();
             tokens.add(termValue);
 
-            String cutValue = input.substring(offs.startOffset(),
-                offs.endOffset());
+            String cutValue = matcher.normalizeIdentifier(
+              input.substring(offs.startOffset(), offs.endOffset()));
             assertEquals("cut term" + (1 + count), cutValue, termValue);
             ++count;
         }

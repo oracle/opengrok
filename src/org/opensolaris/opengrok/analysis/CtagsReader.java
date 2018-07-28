@@ -25,6 +25,7 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.util.EnumMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,6 +98,12 @@ public class CtagsReader {
 
     private int tabSize;
 
+    private Function<String, String> normalizeIdentifier = str -> str;
+
+    public void setNormalizeIdentifier(Function<String, String> normalize) {
+        this.normalizeIdentifier = normalize;
+    }
+
     /**
      * This should mimic
      * https://github.com/universal-ctags/ctags/blob/master/docs/format.rst or
@@ -145,7 +152,7 @@ public class CtagsReader {
          * VALIDATION happens of input - but then we gain LOTS of speed, due to
          * not comparing the same field names again and again fully.
          */
-        public static int charCmpEndOffset = 0;
+        public static int charCmpEndOffset = 1; // Need to distinguish FORTRAN's subroutine from signature
 
         /**
          * Quickly get if the field name matches allowed/consumed ones
@@ -283,8 +290,10 @@ public class CtagsReader {
                 " I will continue with line # 0) for symbol {0}", def);
         }
 
+        // NOTE: bestIndexOfTag searches the source, so it needs the
+        // precise, non-normalized symbol.
         CpatIndex cidx = bestIndexOfTag(lineno, whole, def);
-        addTag(defs, cidx.lineno, def, type, match, classInher, signature,
+        addTag(defs, cidx.lineno, normalizeIdentifier.apply(def), type, match, classInher, signature,
             cidx.lineStart, cidx.lineEnd);
 
         String[] args;
@@ -330,7 +339,7 @@ public class CtagsReader {
                     name = arg;
                 }
                 if (name != null) {
-                    addTag(defs, cidx.lineno, name, "argument", def.trim() +
+                    addTag(defs, cidx.lineno, normalizeIdentifier.apply(name), "argument", def.trim() +
                         signature.trim(), null, signature, cidx.lineStart,
                         cidx.lineEnd);
                 } else {

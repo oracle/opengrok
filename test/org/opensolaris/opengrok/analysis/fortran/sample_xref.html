@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>sampleFile - OpenGrok cross reference for /sampleFile</title></head><body>
 <script type="text/javascript">/* <![CDATA[ */
-function get_sym_list(){return [["Subroutine","xsr",[["DGESV",173]]]];} /* ]]> */</script><a class="l" name="1" href="#1">1</a><span class="c">* Copyright (c) 2013 Samuel Halliday</span>
+function get_sym_list(){return [["Subroutine","xsr",[["dgesv_",173]]]];} /* ]]> */</script><a class="l" name="1" href="#1">1</a><span class="c">* Copyright (c) 2013 Samuel Halliday</span>
 <a class="l" name="2" href="#2">2</a><span class="c">* Copyright (c) 1992-2011 The University of Tennessee and The University</span>
 <a class="l" name="3" href="#3">3</a><span class="c">*                         of Tennessee Research Foundation.  All rights</span>
 <a class="l" name="4" href="#4">4</a><span class="c">*                         reserved.</span>
@@ -176,7 +176,7 @@ function get_sym_list(){return [["Subroutine","xsr",[["DGESV",173]]]];} /* ]]> *
 <a class="hl" name="170" href="#170">170</a><span class="c">*&gt; \ingroup doubleGEsolve</span>
 <a class="l" name="171" href="#171">171</a><span class="c">*</span>
 <a class="l" name="172" href="#172">172</a><span class="c">*  =====================================================================</span>
-<a class="l" name="173" href="#173">173</a>      <b>SUBROUTINE</b> <a class="xsr" name="DGESV"/><a href="/source/s?refs=DGESV" class="xsr intelliWindow-symbol" data-definition-place="def">DGESV</a>( N, <a class="xa" name="NRHS"/><a href="/source/s?refs=NRHS" class="xa intelliWindow-symbol" data-definition-place="def">NRHS</a>, A, <a class="xa" name="LDA"/><a href="/source/s?refs=LDA" class="xa intelliWindow-symbol" data-definition-place="def">LDA</a>, <a class="xa" name="IPIV"/><a href="/source/s?refs=IPIV" class="xa intelliWindow-symbol" data-definition-place="def">IPIV</a>, B, <a class="xa" name="LDB"/><a href="/source/s?refs=LDB" class="xa intelliWindow-symbol" data-definition-place="def">LDB</a>, <a class="xa" name="INFO"/><a href="/source/s?refs=INFO" class="xa intelliWindow-symbol" data-definition-place="def">INFO</a> )
+<a class="l" name="173" href="#173">173</a>      <b>SUBROUTINE</b> <a class="xsr" name="dgesv_"/><a href="/source/s?refs=dgesv_" class="xsr intelliWindow-symbol" data-definition-place="def">DGESV</a>( N, <a class="xa" name="nrhs_"/><a href="/source/s?refs=nrhs_" class="xa intelliWindow-symbol" data-definition-place="def">NRHS</a>, A, <a class="xa" name="lda_"/><a href="/source/s?refs=lda_" class="xa intelliWindow-symbol" data-definition-place="def">LDA</a>, <a class="xa" name="ipiv_"/><a href="/source/s?refs=ipiv_" class="xa intelliWindow-symbol" data-definition-place="def">IPIV</a>, B, <a class="xa" name="ldb_"/><a href="/source/s?refs=ldb_" class="xa intelliWindow-symbol" data-definition-place="def">LDB</a>, <a class="xa" name="info_"/><a href="/source/s?refs=info_" class="xa intelliWindow-symbol" data-definition-place="def">INFO</a> )
 <a class="l" name="174" href="#174">174</a><span class="c">*</span>
 <a class="l" name="175" href="#175">175</a><span class="c">*  -- LAPACK driver routine (version 3.4.0) --</span>
 <a class="l" name="176" href="#176">176</a><span class="c">*  -- LAPACK is a software package provided by Univ. of Tennessee,    --</span>
@@ -184,49 +184,49 @@ function get_sym_list(){return [["Subroutine","xsr",[["DGESV",173]]]];} /* ]]> *
 <a class="l" name="178" href="#178">178</a><span class="c">*     November 2011</span>
 <a class="l" name="179" href="#179">179</a><span class="c">*</span>
 <a class="hl" name="180" href="#180">180</a><span class="c">*     .. Scalar Arguments ..</span>
-<a class="l" name="181" href="#181">181</a>      <b>INTEGER</b>            <a class="xl" name="INFO"/><a href="/source/s?refs=INFO" class="xl intelliWindow-symbol" data-definition-place="def">INFO</a>, <a class="xl" name="LDA"/><a href="/source/s?refs=LDA" class="xl intelliWindow-symbol" data-definition-place="def">LDA</a>, <a class="xl" name="LDB"/><a href="/source/s?refs=LDB" class="xl intelliWindow-symbol" data-definition-place="def">LDB</a>, N, <a class="xl" name="NRHS"/><a href="/source/s?refs=NRHS" class="xl intelliWindow-symbol" data-definition-place="def">NRHS</a>
+<a class="l" name="181" href="#181">181</a>      <b>INTEGER</b>            <a class="xl" name="info_"/><a href="/source/s?refs=info_" class="xl intelliWindow-symbol" data-definition-place="def">INFO</a>, <a class="xl" name="lda_"/><a href="/source/s?refs=lda_" class="xl intelliWindow-symbol" data-definition-place="def">LDA</a>, <a class="xl" name="ldb_"/><a href="/source/s?refs=ldb_" class="xl intelliWindow-symbol" data-definition-place="def">LDB</a>, N, <a class="xl" name="nrhs_"/><a href="/source/s?refs=nrhs_" class="xl intelliWindow-symbol" data-definition-place="def">NRHS</a>
 <a class="l" name="182" href="#182">182</a><span class="c">*     ..</span>
 <a class="l" name="183" href="#183">183</a><span class="c">*     .. Array Arguments ..</span>
-<a class="l" name="184" href="#184">184</a>      <b>INTEGER</b>            <a class="xl" name="IPIV"/><a href="/source/s?refs=IPIV" class="xl intelliWindow-symbol" data-definition-place="def">IPIV</a>( * )
-<a class="l" name="185" href="#185">185</a>      <b>DOUBLE</b> <b>PRECISION</b>   A( <a href="/source/s?defs=LDA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>, * ), B( <a href="/source/s?defs=LDB" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDB</a>, * )
+<a class="l" name="184" href="#184">184</a>      <b>INTEGER</b>            <a class="xl" name="ipiv_"/><a href="/source/s?refs=ipiv_" class="xl intelliWindow-symbol" data-definition-place="def">IPIV</a>( * )
+<a class="l" name="185" href="#185">185</a>      <b>DOUBLE</b> <b>PRECISION</b>   A( <a href="/source/s?defs=lda_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>, * ), B( <a href="/source/s?defs=ldb_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDB</a>, * )
 <a class="l" name="186" href="#186">186</a><span class="c">*     ..</span>
 <a class="l" name="187" href="#187">187</a><span class="c">*</span>
 <a class="l" name="188" href="#188">188</a><span class="c">*  =====================================================================</span>
 <a class="l" name="189" href="#189">189</a><span class="c">*</span>
 <a class="hl" name="190" href="#190">190</a><span class="c">*     .. External Subroutines ..</span>
-<a class="l" name="191" href="#191">191</a>      <b>EXTERNAL</b>           <a href="/source/s?defs=DGETRF" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRF</a>, <a href="/source/s?defs=DGETRS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRS</a>, <a href="/source/s?defs=XERBLA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">XERBLA</a>
+<a class="l" name="191" href="#191">191</a>      <b>EXTERNAL</b>           <a href="/source/s?defs=dgetrf_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRF</a>, <a href="/source/s?defs=dgetrs_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRS</a>, <a href="/source/s?defs=xerbla_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">XERBLA</a>
 <a class="l" name="192" href="#192">192</a><span class="c">*     ..</span>
 <a class="l" name="193" href="#193">193</a><span class="c">*     .. Intrinsic Functions ..</span>
-<a class="l" name="194" href="#194">194</a>      <a href="/source/s?defs=INTRINSIC" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTRINSIC</a>          <b>MAX</b>
+<a class="l" name="194" href="#194">194</a>      <a href="/source/s?defs=intrinsic_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INTRINSIC</a>          <b>MAX</b>
 <a class="l" name="195" href="#195">195</a><span class="c">*     ..</span>
 <a class="l" name="196" href="#196">196</a><span class="c">*     .. Executable Statements ..</span>
 <a class="l" name="197" href="#197">197</a><span class="c">*</span>
 <a class="l" name="198" href="#198">198</a><span class="c">*     Test the input parameters.</span>
 <a class="l" name="199" href="#199">199</a><span class="c">*</span>
-<a class="hl" name="200" href="#200">200</a>      <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = <span class="n">0</span> + <span class="n">0xFFFF</span> - <span class="n">0XFF</span> - <span class="n">0xFF00</span>
+<a class="hl" name="200" href="#200">200</a>      <a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = <span class="n">0</span> + <span class="n">0xFFFF</span> - <span class="n">0XFF</span> - <span class="n">0xFF00</span>
 <a class="l" name="201" href="#201">201</a>      <b>IF</b>( N.<b>LT</b>.<span class="n">0</span> ) <b>THEN</b>
-<a class="l" name="202" href="#202">202</a>         <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = -<span class="n">1</span>
-<a class="l" name="203" href="#203">203</a>      <b>ELSE</b> <b>IF</b>( <a href="/source/s?defs=NRHS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NRHS</a>.<b>LT</b>.<span class="n">0</span> ) <b>THEN</b>
-<a class="l" name="204" href="#204">204</a>         <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = -<span class="n">2</span>
-<a class="l" name="205" href="#205">205</a>      <b>ELSE</b> <b>IF</b>( <a href="/source/s?defs=LDA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>.<b>LT</b>.<b>MAX</b>( <span class="n">1</span>, N ) ) <b>THEN</b>
-<a class="l" name="206" href="#206">206</a>         <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = -<span class="n">4</span>
-<a class="l" name="207" href="#207">207</a>      <b>ELSE</b> <b>IF</b>( <a href="/source/s?defs=LDB" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDB</a>.<b>LT</b>.<b>MAX</b>( <span class="n">1</span>, N ) ) <b>THEN</b>
-<a class="l" name="208" href="#208">208</a>         <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = -<span class="n">7</span>
+<a class="l" name="202" href="#202">202</a>         <a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = -<span class="n">1</span>
+<a class="l" name="203" href="#203">203</a>      <b>ELSE</b> <b>IF</b>( <a href="/source/s?defs=nrhs_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NRHS</a>.<b>LT</b>.<span class="n">0</span> ) <b>THEN</b>
+<a class="l" name="204" href="#204">204</a>         <a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = -<span class="n">2</span>
+<a class="l" name="205" href="#205">205</a>      <b>ELSE</b> <b>IF</b>( <a href="/source/s?defs=lda_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>.<b>LT</b>.<b>MAX</b>( <span class="n">1</span>, N ) ) <b>THEN</b>
+<a class="l" name="206" href="#206">206</a>         <a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = -<span class="n">4</span>
+<a class="l" name="207" href="#207">207</a>      <b>ELSE</b> <b>IF</b>( <a href="/source/s?defs=ldb_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDB</a>.<b>LT</b>.<b>MAX</b>( <span class="n">1</span>, N ) ) <b>THEN</b>
+<a class="l" name="208" href="#208">208</a>         <a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> = -<span class="n">7</span>
 <a class="l" name="209" href="#209">209</a>      <b>END</b> <b>IF</b>
-<a class="hl" name="210" href="#210">210</a>      <b>IF</b>( <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a>.<b>NE</b>.<span class="n">0</span> ) <b>THEN</b>
-<a class="l" name="211" href="#211">211</a>         <b>CALL</b> <a href="/source/s?defs=XERBLA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">XERBLA</a>( <span class="s">&apos;DGESV &apos;</span>, -<a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> )
+<a class="hl" name="210" href="#210">210</a>      <b>IF</b>( <a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a>.<b>NE</b>.<span class="n">0</span> ) <b>THEN</b>
+<a class="l" name="211" href="#211">211</a>         <b>CALL</b> <a href="/source/s?defs=xerbla_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">XERBLA</a>( <span class="s">&apos;DGESV &apos;</span>, -<a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> )
 <a class="l" name="212" href="#212">212</a>         <b>RETURN</b>
 <a class="l" name="213" href="#213">213</a>      <b>END</b> <b>IF</b>
 <a class="l" name="214" href="#214">214</a><span class="c">*</span>
 <a class="l" name="215" href="#215">215</a><span class="c">*     Compute the LU factorization of A.</span>
 <a class="l" name="216" href="#216">216</a><span class="c">*</span>
-<a class="l" name="217" href="#217">217</a>      <b>CALL</b> <a href="/source/s?defs=DGETRF" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRF</a>( N, N, A, <a href="/source/s?defs=LDA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>, <a href="/source/s?defs=IPIV" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IPIV</a>, <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> )
-<a class="l" name="218" href="#218">218</a>      <b>IF</b>( <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a>.<b>EQ</b>.<span class="n">0</span> ) <b>THEN</b>
+<a class="l" name="217" href="#217">217</a>      <b>CALL</b> <a href="/source/s?defs=dgetrf_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRF</a>( N, N, A, <a href="/source/s?defs=lda_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>, <a href="/source/s?defs=ipiv_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IPIV</a>, <a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> )
+<a class="l" name="218" href="#218">218</a>      <b>IF</b>( <a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a>.<b>EQ</b>.<span class="n">0</span> ) <b>THEN</b>
 <a class="l" name="219" href="#219">219</a><span class="c">*</span>
 <a class="hl" name="220" href="#220">220</a><span class="c">*        Solve the system A*X = B, overwriting B with X.</span>
 <a class="l" name="221" href="#221">221</a><span class="c">*</span>
-<a class="l" name="222" href="#222">222</a>         <b>CALL</b> <a href="/source/s?defs=DGETRS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRS</a>( <span class="s">&apos;No transpose&apos;</span>, N, <a href="/source/s?defs=NRHS" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NRHS</a>, A, <a href="/source/s?defs=LDA" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>, <a href="/source/s?defs=IPIV" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IPIV</a>, B, <a href="/source/s?defs=LDB" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDB</a>,
-<a class="l" name="223" href="#223">223</a>     $                <a href="/source/s?defs=INFO" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> )
+<a class="l" name="222" href="#222">222</a>         <b>CALL</b> <a href="/source/s?defs=dgetrs_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">DGETRS</a>( <span class="s">&apos;No transpose&apos;</span>, N, <a href="/source/s?defs=nrhs_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">NRHS</a>, A, <a href="/source/s?defs=lda_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDA</a>, <a href="/source/s?defs=ipiv_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">IPIV</a>, B, <a href="/source/s?defs=ldb_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">LDB</a>,
+<a class="l" name="223" href="#223">223</a>     $                <a href="/source/s?defs=info_" class="intelliWindow-symbol" data-definition-place="undefined-in-file">INFO</a> )
 <a class="l" name="224" href="#224">224</a>      <b>END</b> <b>IF</b>
 <a class="l" name="225" href="#225">225</a>      <b>RETURN</b>
 <a class="l" name="226" href="#226">226</a><span class="c">*</span>
