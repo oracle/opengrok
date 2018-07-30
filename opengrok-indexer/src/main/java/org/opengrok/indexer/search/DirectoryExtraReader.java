@@ -99,7 +99,9 @@ public class DirectoryExtraReader {
     }
 
     private static Integer tryParseInt(String value) {
-        if (value == null) return null;
+        if (value == null) {
+            return null;
+        }
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {

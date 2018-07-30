@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opengrok.indexer.analysis.powershell;
 
 import java.util.HashSet;
@@ -29,7 +28,7 @@ import java.util.Set;
  * PowerShell keyword hash
  */
 public class Consts{
-    public static final Set<String> poshkwd = new HashSet<String>() ;
+    public static final Set<String> poshkwd = new HashSet<>() ;
     static {
         // Powershell keywords
         poshkwd.add( "begin" );
@@ -567,29 +566,29 @@ public class Consts{
         poshkwd.add( "write-verbose" );
         poshkwd.add( "write-warning" );
 
-        poshkwd.add("bool");	// Built-In Types Table (C# Reference)
-        poshkwd.add("boolean");	// Built-In Types Table (C# Reference)
-        poshkwd.add("byte");	// Built-In Types Table (C# Reference)
-        poshkwd.add("char");	// Built-In Types Table (C# Reference)
-        poshkwd.add("decimal");	// Built-In Types Table (C# Reference)
-        poshkwd.add("double");	// Built-In Types Table (C# Reference)
-        poshkwd.add("float");	// Built-In Types Table (C# Reference)
-        poshkwd.add("int");	// Built-In Types Table (C# Reference)
-        poshkwd.add("int16");	// Built-In Types Table (C# Reference)
-        poshkwd.add("int32");	// Built-In Types Table (C# Reference)
-        poshkwd.add("int64");	// Built-In Types Table (C# Reference)
-        poshkwd.add("long");	// Built-In Types Table (C# Reference)
-        poshkwd.add("object");	// Built-In Types Table (C# Reference)
-        poshkwd.add("sbyte");	// Built-In Types Table (C# Reference)
-        poshkwd.add("short");	// Built-In Types Table (C# Reference)
-        poshkwd.add("single");	// Built-In Types Table (C# Reference)
-        poshkwd.add("string");	// Built-In Types Table (C# Reference)
-        poshkwd.add("system");	// Built-In Types Table (C# Reference)
-        poshkwd.add("uint");	// Built-In Types Table (C# Reference)
-        poshkwd.add("uint16");	// Built-In Types Table (C# Reference)
-        poshkwd.add("uint32");	// Built-In Types Table (C# Reference)
-        poshkwd.add("uint64");	// Built-In Types Table (C# Reference)
-        poshkwd.add("ulong");	// Built-In Types Table (C# Reference)
-        poshkwd.add("ushort");	// Built-In Types Table (C# Reference)
+        poshkwd.add("bool"); // Built-In Types Table (C# Reference)
+        poshkwd.add("boolean"); // Built-In Types Table (C# Reference)
+        poshkwd.add("byte"); // Built-In Types Table (C# Reference)
+        poshkwd.add("char"); // Built-In Types Table (C# Reference)
+        poshkwd.add("decimal"); // Built-In Types Table (C# Reference)
+        poshkwd.add("double"); // Built-In Types Table (C# Reference)
+        poshkwd.add("float"); // Built-In Types Table (C# Reference)
+        poshkwd.add("int"); // Built-In Types Table (C# Reference)
+        poshkwd.add("int16"); // Built-In Types Table (C# Reference)
+        poshkwd.add("int32"); // Built-In Types Table (C# Reference)
+        poshkwd.add("int64"); // Built-In Types Table (C# Reference)
+        poshkwd.add("long"); // Built-In Types Table (C# Reference)
+        poshkwd.add("object"); // Built-In Types Table (C# Reference)
+        poshkwd.add("sbyte"); // Built-In Types Table (C# Reference)
+        poshkwd.add("short"); // Built-In Types Table (C# Reference)
+        poshkwd.add("single"); // Built-In Types Table (C# Reference)
+        poshkwd.add("string"); // Built-In Types Table (C# Reference)
+        poshkwd.add("system"); // Built-In Types Table (C# Reference)
+        poshkwd.add("uint"); // Built-In Types Table (C# Reference)
+        poshkwd.add("uint16"); // Built-In Types Table (C# Reference)
+        poshkwd.add("uint32"); // Built-In Types Table (C# Reference)
+        poshkwd.add("uint64"); // Built-In Types Table (C# Reference)
+        poshkwd.add("ulong"); // Built-In Types Table (C# Reference)
+        poshkwd.add("ushort"); // Built-In Types Table (C# Reference)
     }
 }

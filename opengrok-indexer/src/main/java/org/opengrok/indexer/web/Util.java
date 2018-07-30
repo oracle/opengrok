@@ -112,7 +112,9 @@ public final class Util {
      * @return a string representing the character sequence in HTML
      */
     public static String prehtmlize(String s) {
-        if (!needsHtmlize(s, true)) return s;
+        if (!needsHtmlize(s, true)) {
+            return s;
+        }
 
         StringBuilder sb = new StringBuilder(s.length() * 2);
         try {
@@ -182,7 +184,9 @@ public final class Util {
      * @return a string representing the character sequence in HTML
      */
     public static String htmlize(String s) {
-        if (!needsHtmlize(s, false)) return s;
+        if (!needsHtmlize(s, false)) {
+            return s;
+        }
 
         StringBuilder sb = new StringBuilder(s.length() * 2);
         try {
@@ -338,7 +342,9 @@ public final class Util {
             case '<':
                 return true;
             case '\n':
-                if (!pre) return true;
+                if (!pre) {
+                    return true;
+                }
             default:
                 if ((c >= ' ' && c <= '~') || (c < ' ' &&
                     Character.isWhitespace(c))) {
@@ -350,7 +356,9 @@ public final class Util {
 
     private static boolean needsHtmlize(CharSequence q, boolean pre) {
         for (int i = 0; i < q.length(); ++i) {
-            if (needsHtmlize(q.charAt(i), pre)) return true;
+            if (needsHtmlize(q.charAt(i), pre)) {
+                return true;
+            }
         }
         return false;
     }

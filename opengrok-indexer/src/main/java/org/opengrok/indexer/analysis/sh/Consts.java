@@ -30,7 +30,7 @@ import java.util.Set;
  * Shell keyword hash
  */
 public class Consts{
-    public static final Set<String> shkwd = new HashSet<String>() ;
+    public static final Set<String> shkwd = new HashSet<>() ;
     static {
         // Built-in shell commands mentioned in shell_builtins(1)
         shkwd.add( ":" );

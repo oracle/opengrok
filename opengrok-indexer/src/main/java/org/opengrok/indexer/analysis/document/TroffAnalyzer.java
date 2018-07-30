@@ -35,7 +35,7 @@ import org.opengrok.indexer.analysis.TextAnalyzer;
 import org.opengrok.indexer.analysis.OGKTextField;
 import org.opengrok.indexer.analysis.WriteXrefArgs;
 import org.opengrok.indexer.analysis.Xrefer;
-import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.search.QueryBuilder;
 
 /**
  * Analyzes [tn]roff files Created on September 30, 2005

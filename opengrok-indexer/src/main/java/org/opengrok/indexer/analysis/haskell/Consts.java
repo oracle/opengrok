@@ -59,6 +59,6 @@ public class Consts {
         kwd.add("type");
         kwd.add("where");
 
-        kwd.add("_");	// 2.4 Identifiers and Operators
+        kwd.add("_"); // 2.4 Identifiers and Operators
     }
 }

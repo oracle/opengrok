@@ -56,7 +56,7 @@ public class AuthorizationFilter implements Filter {
         // so does not have to be exempted here.
         if (httpReq.getServletPath().startsWith(RestApp.API_PATH)) {
             LOGGER.log(Level.FINER, "Allowing request to {0} in {1}",
-                    new Object[]{ httpReq.getServletPath(), AuthorizationFilter.class.getName() });
+                    new Object[]{httpReq.getServletPath(), AuthorizationFilter.class.getName() });
             fc.doFilter(sr, sr1);
             return;
         }

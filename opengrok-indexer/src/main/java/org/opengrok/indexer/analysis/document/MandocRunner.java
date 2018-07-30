@@ -143,7 +143,9 @@ public class MandocRunner {
      * @throws MandocException thrown if mandoc exits non-zero.
      */
     public String finish() throws IOException, MandocException {
-        if (mandoc == null) return "";
+        if (mandoc == null) {
+            return "";
+        }
 
         StringBuilder output = new StringBuilder();
 
@@ -163,7 +165,9 @@ public class MandocRunner {
             destroy();
         }
 
-        if (rc != 0) throw new MandocException("exit code " + rc);
+        if (rc != 0) {
+            throw new MandocException("exit code " + rc);
+        }
         return output.toString();
     }
 

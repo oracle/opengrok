@@ -121,7 +121,9 @@ class EiffelLexHelper implements Resettable {
             npushback = capture.length() - vstring_closer.length();
             vstring_closer = null;
         }
-        if (npushback > 0) lexer.yypushback(npushback);
+        if (npushback > 0) {
+            lexer.yypushback(npushback);
+        }
     }
 
     /**

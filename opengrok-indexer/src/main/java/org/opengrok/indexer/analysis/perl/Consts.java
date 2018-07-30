@@ -30,7 +30,7 @@ import java.util.Set;
   * Holds static hash set containing the Perl keywords
   */
 public class Consts{
-    public static final Set<String> kwd = new HashSet<String>() ;
+    public static final Set<String> kwd = new HashSet<>() ;
     static {
         // Note that keywords with 1 letter will be ignored for historical
         // reasons, as the {Identifier} used to require 2 characters in
@@ -96,7 +96,7 @@ public class Consts{
         kwd.add("dump");
         kwd.add("each");
         kwd.add("else");
-        kwd.add("elseif");	/* parsed "but only to warn you ..." */
+        kwd.add("elseif"); /* parsed "but only to warn you ..." */
         kwd.add("elsif");
         kwd.add("encoding");
         kwd.add("END");

@@ -26,8 +26,12 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.opengrok.suggest.Suggester;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.CtagsInstalled;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.configuration.SuggesterConfig;
 import org.opengrok.indexer.index.Indexer;
@@ -49,7 +53,11 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
+@ConditionalRun(CtagsInstalled.class)
 public class SuggesterControllerProjectsDisabledTest extends JerseyTest {
+
+    @ClassRule
+    public static ConditionalRunRule rule = new ConditionalRunRule();
 
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 

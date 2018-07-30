@@ -158,14 +158,11 @@ public final class RuntimeEnvironment {
     public static synchronized ExecutorService getHistoryExecutor() {
         if (historyExecutor == null) {
             historyExecutor = Executors.newFixedThreadPool(getInstance().getHistoryParallelism(),
-                    new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable runnable) {
-                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                    thread.setName("history-handling-" + thread.getId());
-                    return thread;
-                }
-            });
+                    runnable -> {
+                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                        thread.setName("history-handling-" + thread.getId());
+                        return thread;
+                    });
         }
 
         return historyExecutor;
@@ -175,14 +172,11 @@ public final class RuntimeEnvironment {
     public static synchronized ExecutorService getHistoryRenamedExecutor() {
         if (historyRenamedExecutor == null) {
             historyRenamedExecutor = Executors.newFixedThreadPool(getInstance().getHistoryRenamedParallelism(),
-                    new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable runnable) {
-                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                    thread.setName("renamed-handling-" + thread.getId());
-                    return thread;
-                }
-            });
+                    runnable -> {
+                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                        thread.setName("renamed-handling-" + thread.getId());
+                        return thread;
+                    });
         }
 
         return historyRenamedExecutor;
@@ -235,12 +229,7 @@ public final class RuntimeEnvironment {
      */
     private RuntimeEnvironment() {
         configuration = new Configuration();
-        threadConfig = new ThreadLocal<Configuration>() {
-            @Override
-            protected Configuration initialValue() {
-                return configuration;
-            }
-        };
+        threadConfig = ThreadLocal.withInitial(() -> configuration);
     }
 
     private String getCanonicalPath(String s) {
@@ -1443,11 +1432,7 @@ public final class RuntimeEnvironment {
             }
 
             if ((proj = Project.getProject(repoPath)) != null) {
-                List<RepositoryInfo> values = repository_map.get(proj);
-                if (values == null) {
-                    values = new ArrayList<>();
-                    repository_map.put(proj, values);
-                }
+                List<RepositoryInfo> values = repository_map.computeIfAbsent(proj, k -> new ArrayList<>());
                 values.add(r);
             }
         }
@@ -1748,57 +1733,50 @@ public final class RuntimeEnvironment {
             return;
         }
         LOGGER.log(Level.INFO, "Starting watchdog in: {0}", directory);
-        watchDogThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    watchDogWatcher = FileSystems.getDefault().newWatchService();
-                    Path dir = Paths.get(directory.getAbsolutePath());
+        watchDogThread = new Thread(() -> {
+            try {
+                watchDogWatcher = FileSystems.getDefault().newWatchService();
+                Path dir = Paths.get(directory.getAbsolutePath());
 
-                    Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
-                        @Override
-                        public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
-                            // attach monitor
-                            LOGGER.log(Level.FINEST, "Watchdog registering {0}", d);
-                            d.register(watchDogWatcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-                            return CONTINUE;
-                        }
-                    });
+                Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
+                        // attach monitor
+                        LOGGER.log(Level.FINEST, "Watchdog registering {0}", d);
+                        d.register(watchDogWatcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+                        return CONTINUE;
+                    }
+                });
 
-                    LOGGER.log(Level.INFO, "Watch dog started {0}", directory);
-                    while (!Thread.currentThread().isInterrupted()) {
-                        final WatchKey key;
-                        try {
-                            key = watchDogWatcher.take();
-                        } catch (ClosedWatchServiceException x) {
-                            break;
-                        }
-                        boolean reload = false;
-                        for (WatchEvent<?> event : key.pollEvents()) {
-                            final WatchEvent.Kind<?> kind = event.kind();
+                LOGGER.log(Level.INFO, "Watch dog started {0}", directory);
+                while (!Thread.currentThread().isInterrupted()) {
+                    final WatchKey key;
+                    try {
+                        key = watchDogWatcher.take();
+                    } catch (ClosedWatchServiceException x) {
+                        break;
+                    }
+                    boolean reload = false;
+                    for (WatchEvent<?> event : key.pollEvents()) {
+                        final WatchEvent.Kind<?> kind = event.kind();
 
-                            if (kind == ENTRY_CREATE) {
-                                reload = true;
-                            } else if (kind == ENTRY_DELETE) {
-                                reload = true;
-                            } else if (kind == ENTRY_MODIFY) {
-                                reload = true;
-                            }
-                        }
-                        if (reload) {
-                            Thread.sleep(THREAD_SLEEP_TIME); // experimental wait if file is being written right now
-                            getAuthorizationFramework().reload();
-                        }
-                        if (!key.reset()) {
-                            break;
+                        if (kind == ENTRY_CREATE || kind == ENTRY_DELETE || kind == ENTRY_MODIFY) {
+                            reload = true;
                         }
                     }
-                } catch (InterruptedException | IOException ex) {
-                    LOGGER.log(Level.FINEST, "Watchdog finishing (exiting)", ex);
-                    Thread.currentThread().interrupt();
+                    if (reload) {
+                        Thread.sleep(THREAD_SLEEP_TIME); // experimental wait if file is being written right now
+                        getAuthorizationFramework().reload();
+                    }
+                    if (!key.reset()) {
+                        break;
+                    }
                 }
-                LOGGER.log(Level.FINER, "Watchdog finishing (exiting)");
+            } catch (InterruptedException | IOException ex) {
+                LOGGER.log(Level.FINEST, "Watchdog finishing (exiting)", ex);
+                Thread.currentThread().interrupt();
             }
+            LOGGER.log(Level.FINER, "Watchdog finishing (exiting)");
         }, "watchDogService");
         watchDogThread.start();
     }
@@ -1943,11 +1921,7 @@ public final class RuntimeEnvironment {
                 SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
                 subreaders[ii++] = searcher.getIndexReader();
                 searcherList.add(searcher);
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE,
-                    "cannot get IndexReader for project " + proj, ex);
-                return null;
-            } catch (NullPointerException ex) {
+            } catch (IOException | NullPointerException ex) {
                 LOGGER.log(Level.SEVERE,
                     "cannot get IndexReader for project " + proj, ex);
                 return null;

@@ -478,7 +478,9 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
     @Override
     public void write(Writer out) throws IOException {
         this.out = out;
-        if (defs != null) defs.resetUnused();
+        if (defs != null) {
+            defs.resetUnused();
+        }
         JFlexXrefUtils.writeSymbolTable(out, defs);
         startNewLine();
         while (matcher.yylex() != matcher.getYYEOF()) {
@@ -607,6 +609,6 @@ public class JFlexXref implements Xrefer, SymbolMatchedListener,
      * @throws IOException if an error occurs while writing to the stream
      */
     protected void writeEMailAddress(String address) throws IOException {
-	    JFlexXrefUtils.writeEMailAddress(out, address);
+        JFlexXrefUtils.writeEMailAddress(out, address);
     }
 }

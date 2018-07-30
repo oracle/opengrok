@@ -149,7 +149,9 @@ class PerlLexHelper implements Resettable {
     public void reset() {
         collateralCapture = null;
         endqchar = '\0';
-        if (hereSettings != null) hereSettings.clear();
+        if (hereSettings != null) {
+            hereSettings.clear();
+        }
         nendqchar = 0;
         nestqchar = '\0';
         nsections = 0;
@@ -379,8 +381,12 @@ class PerlLexHelper implements Resettable {
                 ++numlf;
                 off = i + 1;
             }
-            while (numlf-- > 0) lexer.startNewLine();
-            if (off < whsp.length()) lexer.offer(whsp.substring(off));
+            while (numlf-- > 0) {
+                lexer.startNewLine();
+            }
+            if (off < whsp.length()) {
+                lexer.offer(whsp.substring(off));
+            }
         }
     }
 
@@ -395,7 +401,9 @@ class PerlLexHelper implements Resettable {
         }
 
         lexer.offer(capture);
-        if (hereSettings == null) hereSettings = new LinkedList<>();
+        if (hereSettings == null) {
+            hereSettings = new LinkedList<>();
+        }
 
         String remaining = capture;
         int i = 0;
@@ -441,7 +449,9 @@ class PerlLexHelper implements Resettable {
             }
         } else {
             Matcher m = HERE_TERMINATOR_MATCH.matcher(remaining);
-            if (!m.find()) return;
+            if (!m.find()) {
+                return;
+            }
             terminator = m.group(0);
         }
 
@@ -491,7 +501,9 @@ class PerlLexHelper implements Resettable {
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
             lexer.yybegin(settings.state);
-            if (didZspan) lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+            if (didZspan) {
+                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+            }
             return false;
         } else {
             lexer.yypop();
@@ -513,7 +525,9 @@ class PerlLexHelper implements Resettable {
         if (capture.charAt(0) == endqchar) {
             lexer.skipSymbol();
             lexer.offer(sigil);
-            if (maybeEndQuote(sigil)) lexer.abortQuote();
+            if (maybeEndQuote(sigil)) {
+                lexer.abortQuote();
+            }
             lexer.yypushback(capture.length() - 1);
             return;
         }
@@ -550,7 +564,9 @@ class PerlLexHelper implements Resettable {
                 lexer.skipSymbol();
             }
             lexer.offer(p0);
-            if (maybeEndQuote(p0)) lexer.abortQuote();
+            if (maybeEndQuote(p0)) {
+                lexer.abortQuote();
+            }
             lexer.yypushback(w1.length());
         }
     }
@@ -624,8 +640,12 @@ class PerlLexHelper implements Resettable {
      * @return a defined pattern or null
      */
     public Pattern getCollateralCapturePattern() {
-        if (endqchar == '\0') return null;
-        if (collateralCapture != null) return collateralCapture;
+        if (endqchar == '\0') {
+            return null;
+        }
+        if (collateralCapture != null) {
+            return collateralCapture;
+        }
 
         StringBuilder patb = new StringBuilder("[");
         patb.append(Pattern.quote(String.valueOf(endqchar)));

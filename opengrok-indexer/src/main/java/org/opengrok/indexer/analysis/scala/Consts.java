@@ -30,7 +30,7 @@ import java.util.Set;
   * Holds static hash set containing the Scala keywords
   */
 public class Consts{
-    public static final Set<String> kwd = new HashSet<String>() ;
+    public static final Set<String> kwd = new HashSet<>() ;
     static {
         kwd.add("abstract");
         kwd.add("case");
@@ -72,6 +72,6 @@ public class Consts{
         kwd.add("with");
         kwd.add("yield");
 
-        kwd.add("_");	// "Lexical syntax ... reserved words"
+        kwd.add("_"); // "Lexical syntax ... reserved words"
     }
 }

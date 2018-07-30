@@ -68,7 +68,9 @@ public abstract class TextAnalyzer extends FileAnalyzer {
      */
     @Override
     public Xrefer writeXref(WriteXrefArgs args) throws IOException {
-        if (args == null) throw new IllegalArgumentException("`args' is null");
+        if (args == null) {
+            throw new IllegalArgumentException("`args' is null");
+        }
         Xrefer xref = newXref(args.getIn());
         xref.setDefs(args.getDefs());
         xref.setScopesEnabled(scopesEnabled);

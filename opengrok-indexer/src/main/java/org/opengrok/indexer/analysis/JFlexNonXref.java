@@ -330,7 +330,9 @@ public abstract class JFlexNonXref extends JFlexStateStacker
      */
     public void write(Writer out) throws IOException {
         this.out = out;
-        if (defs != null) defs.resetUnused();
+        if (defs != null) {
+            defs.resetUnused();
+        }
         JFlexXrefUtils.writeSymbolTable(out, defs);
         setLineNumber(1);
         startNewLine();
@@ -506,6 +508,6 @@ public abstract class JFlexNonXref extends JFlexStateStacker
      * @throws IOException if an error occurs while writing to the stream
      */
     protected void writeEMailAddress(String address) throws IOException {
-	    JFlexXrefUtils.writeEMailAddress(out, address);
+        JFlexXrefUtils.writeEMailAddress(out, address);
     }
 }

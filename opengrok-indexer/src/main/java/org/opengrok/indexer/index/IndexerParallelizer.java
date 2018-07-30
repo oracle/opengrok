@@ -91,10 +91,16 @@ public class IndexerParallelizer implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
-        if (ctagsPool != null) ctagsPool.shutdown();
-        if (forkJoinPool != null) forkJoinPool.shutdown();
-        if (fixedExecutor != null) fixedExecutor.shutdown();
+    public void close() {
+        if (ctagsPool != null) {
+            ctagsPool.shutdown();
+        }
+        if (forkJoinPool != null) {
+            forkJoinPool.shutdown();
+        }
+        if (fixedExecutor != null) {
+            fixedExecutor.shutdown();
+        }
     }
 
     /**

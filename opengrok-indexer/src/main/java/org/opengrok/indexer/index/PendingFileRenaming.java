@@ -12,7 +12,7 @@
  * file and include the License file at LICENSE.txt.
  * If applicable, add the following below this CDDL HEADER, with the
  * fields enclosed by brackets "[]" replaced with your own identifying
- * information: Portions Copyright [yyyy] [absoluteName of copyright owner]
+ * information: Portions Copyright [yyyy] [name of copyright owner]
  *
  * CDDL HEADER END
  */
@@ -57,7 +57,9 @@ public final class PendingFileRenaming {
      */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof PendingFileRenaming)) return false;
+        if (!(o instanceof PendingFileRenaming)) {
+            return false;
+        }
         PendingFileRenaming other = (PendingFileRenaming)o;
         return this.absolutePath.equals(other.absolutePath);
     }

@@ -456,70 +456,7 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     public DateFormat getDateFormat() {
-        return new DateFormat() {
-            private final Locale locale = Locale.ENGLISH;
-            private final SimpleDateFormat[] formatters = new SimpleDateFormat[datePatterns.length];
-
-            {
-                // initialize date formatters
-                for (int i = 0; i < datePatterns.length; i++) {
-                    formatters[i] = new SimpleDateFormat(datePatterns[i], locale);
-                    /*
-                     * TODO: the following would be nice - but currently it
-                     * could break the compatibility with some repository dates
-                     */
-                    // formatters[i].setLenient(false);
-                }
-            }
-
-            @Override
-            public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
-                for (DateFormat formatter : formatters) {
-                    return formatter.format(date, toAppendTo, fieldPosition);
-                }
-                return toAppendTo.append("(date null)");
-            }
-
-            @Override
-            public Date parse(String source) throws ParseException {
-                ParseException head = null, tail = null;
-                for (SimpleDateFormat formatter : formatters) {
-                    try {
-                        return formatter.parse(source);
-                    } catch (ParseException ex1) {
-                        /*
-                         * Adding all exceptions together to get some info in
-                         * the logs.
-                         */
-                        ex1 = new ParseException(
-                                String.format("%s with format \"%s\" and locale \"%s\"",
-                                        ex1.getMessage(),
-                                        formatter.toPattern(),
-                                        locale),
-                                ex1.getErrorOffset()
-                        );
-                        if (head == null || tail == null) {
-                            head = tail = ex1;
-                        } else {
-                            tail.initCause(ex1);
-                            tail = ex1;
-                        }
-                    }
-                }
-                throw head != null ? head : new ParseException(String.format("Unparseable date: \"%s\"", source), 0);
-            }
-
-            @Override
-            public Date parse(String source, ParsePosition pos) {
-                Date d = null;
-                for (DateFormat formatter : formatters) {
-                    if ((d = formatter.parse(source, pos)) != null) {
-                        return d;
-                    }
-                }
-                return d;
-            }
-        };
+        return new RepositoryDateFormat();
     }
 
     static Boolean checkCmd(String... args) {
@@ -574,5 +511,70 @@ public abstract class Repository extends RepositoryInfo {
             }
         }
         return filename;
+    }
+
+    private class RepositoryDateFormat extends DateFormat {
+        private final Locale locale = Locale.ENGLISH;
+        private final SimpleDateFormat[] formatters = new SimpleDateFormat[datePatterns.length];
+
+        {
+            // initialize date formatters
+            for (int i = 0; i < datePatterns.length; i++) {
+                formatters[i] = new SimpleDateFormat(datePatterns[i], locale);
+                /*
+                 * TODO: the following would be nice - but currently it
+                 * could break the compatibility with some repository dates
+                 */
+                // formatters[i].setLenient(false);
+            }
+        }
+
+        @Override
+        public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
+            for (DateFormat formatter : formatters) {
+                return formatter.format(date, toAppendTo, fieldPosition);
+            }
+            return toAppendTo.append("(date null)");
+        }
+
+        @Override
+        public Date parse(String source) throws ParseException {
+            ParseException head = null, tail = null;
+            for (SimpleDateFormat formatter : formatters) {
+                try {
+                    return formatter.parse(source);
+                } catch (ParseException ex1) {
+                    /*
+                     * Adding all exceptions together to get some info in
+                     * the logs.
+                     */
+                    ex1 = new ParseException(
+                            String.format("%s with format \"%s\" and locale \"%s\"",
+                                    ex1.getMessage(),
+                                    formatter.toPattern(),
+                                    locale),
+                            ex1.getErrorOffset()
+                    );
+                    if (head == null || tail == null) {
+                        head = tail = ex1;
+                    } else {
+                        tail.initCause(ex1);
+                        tail = ex1;
+                    }
+                }
+            }
+            throw head != null ? head : new ParseException(String.format("Unparseable date: \"%s\"", source), 0);
+        }
+
+        @Override
+        public Date parse(String source, ParsePosition pos) {
+            Date d = null;
+            for (DateFormat formatter : formatters) {
+                if ((d = formatter.parse(source, pos)) != null) {
+                    return d;
+                }
+            }
+            return d;
+        }
     }
 }

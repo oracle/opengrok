@@ -32,9 +32,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 
-import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;
 
 /**
@@ -44,11 +42,8 @@ import org.opengrok.indexer.util.Executor;
  */
 public class AccuRevHistoryParser implements Executor.StreamHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccuRevHistoryParser.class);
-
     private AccuRevRepository repository;
     private History history;
-    private boolean foundHistory;
 
     /**
      * Parse the history for the specified file.
@@ -63,7 +58,6 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
         repository = (AccuRevRepository) repos;
 
         history = null;
-        foundHistory = false;
 
         String relPath = repository.getDepotRelativePath(file);
 
@@ -143,7 +137,6 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
                 String data[] = line.split("; ");
                 entry = new HistoryEntry();
 
-                foundHistory = true;
                 user = data[3].replaceFirst("user: ", "");
 
                 entry.setMessage("");

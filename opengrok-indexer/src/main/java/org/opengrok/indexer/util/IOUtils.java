@@ -257,7 +257,9 @@ public final class IOUtils {
                 while (i < bom.length && sig[i] == bom[i]) {
                     i++;
                 }
-                if (i == bom.length) return encoding;
+                if (i == bom.length) {
+                    return encoding;
+                }
             }
         }
         return null;

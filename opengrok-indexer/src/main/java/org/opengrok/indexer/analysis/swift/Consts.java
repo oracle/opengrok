@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class Consts {
 
-    public static final Set<String> kwd = new HashSet<String>();
+    public static final Set<String> kwd = new HashSet<>();
 
     static {
         kwd.add("associatedtype");
@@ -129,6 +129,6 @@ public class Consts {
         kwd.add("weak");
         kwd.add("willSet");
 
-        kwd.add("_");	// 4.0.3 "Keywords ... used in patterns"
+        kwd.add("_"); // 4.0.3 "Keywords ... used in patterns"
     }
 }

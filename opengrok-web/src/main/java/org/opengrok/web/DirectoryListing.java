@@ -105,8 +105,9 @@ public class DirectoryListing {
         String[] files = dir.list();
 
         // Permissions can prevent getting list of items in the directory.
-        if (files == null)
+        if (files == null) {
             return dir.getName();
+        }
 
         if (files.length == 1) {
             File entry = new File(dir, files[0]);
@@ -268,7 +269,9 @@ public class DirectoryListing {
         Integer numlines = null;
         String readableNumlines = "";
         FileExtra extra = entry.getExtra();
-        if (extra != null) numlines = extra.getNumlines();
+        if (extra != null) {
+            numlines = extra.getNumlines();
+        }
         if (numlines != null) {
             readableNumlines = Util.readableCount(numlines);
         }
@@ -283,7 +286,9 @@ public class DirectoryListing {
         Integer loc = null;
         String readableLoc = "";
         FileExtra extra = entry.getExtra();
-        if (extra != null) loc = extra.getLoc();
+        if (extra != null) {
+            loc = extra.getLoc();
+        }
         if (loc != null) {
             readableLoc = Util.readableCount(loc);
         }

@@ -107,8 +107,7 @@ class RubyLexHelper implements Resettable {
      */
     private Pattern collateralCapture;
 
-    public RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN,
-	    RubyLexer lexer,
+    public RubyLexHelper(int qUO, int qUOxN, int qUOxL, int qUOxLxN, RubyLexer lexer,
         int hERE, int hERExN, int hEREin, int hEREinxN, int sCOMMENT,
         int pOD) {
         if (lexer == null) {
@@ -134,7 +133,9 @@ class RubyLexHelper implements Resettable {
     public void reset() {
         collateralCapture = null;
         endqchar = '\0';
-        if (hereSettings != null) hereSettings.clear();
+        if (hereSettings != null) {
+            hereSettings.clear();
+        }
         nendbrace = 0;
         nendqchar = 0;
         nestqchar = '\0';
@@ -198,7 +199,9 @@ class RubyLexHelper implements Resettable {
         // N.b. the following will write anyway -- despite any `doWrite'
         // setting -- if interpolation is truly ending, but that is OK as a
         // quote-like operator is not starting in that case.
-        if (maybeEndInterpolation(capture)) return;
+        if (maybeEndInterpolation(capture)) {
+            return;
+        }
 
         // If namelength is positive, allow that a non-zero-width word boundary
         // character may have needed to be matched since jflex does not conform
@@ -284,7 +287,9 @@ class RubyLexHelper implements Resettable {
      * to output.
      */
     public void hqopPunc(String capture) throws IOException {
-        if (maybeEndInterpolation(capture)) return;
+        if (maybeEndInterpolation(capture)) {
+            return;
+        }
 
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
@@ -307,7 +312,9 @@ class RubyLexHelper implements Resettable {
      * parts to output.
      */
     public void hqopSymbol(String capture) throws IOException {
-        if (maybeEndInterpolation(capture)) return;
+        if (maybeEndInterpolation(capture)) {
+            return;
+        }
 
         // `preceding' is everything before the '/'; 'lede' is the initial part
         // before any whitespace; and `intervening' is any whitespace.
@@ -337,8 +344,12 @@ class RubyLexHelper implements Resettable {
                 ++numlf;
                 off = i + 1;
             }
-            while (numlf-- > 0) lexer.startNewLine();
-            if (off < whsp.length()) lexer.offer(whsp.substring(off));
+            while (numlf-- > 0) {
+                lexer.startNewLine();
+            }
+            if (off < whsp.length()) {
+                lexer.offer(whsp.substring(off));
+            }
         }
     }
 
@@ -353,7 +364,9 @@ class RubyLexHelper implements Resettable {
         }
 
         lexer.offer(capture);
-        if (hereSettings == null) hereSettings = new LinkedList<>();
+        if (hereSettings == null) {
+            hereSettings = new LinkedList<>();
+        }
 
         String remaining = capture;
         int i = 0;
@@ -394,7 +407,9 @@ class RubyLexHelper implements Resettable {
             }
         } else {
             Matcher m = HERE_TERMINATOR_MATCH.matcher(remaining);
-            if (!m.find()) return;
+            if (!m.find()) {
+                return;
+            }
             terminator = m.group(0);
         }
 
@@ -444,7 +459,9 @@ class RubyLexHelper implements Resettable {
         if (hereSettings.size() > 0) {
             settings = hereSettings.peek();
             lexer.yybegin(settings.state);
-            if (didZspan) lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+            if (didZspan) {
+                lexer.disjointSpan(HtmlConsts.STRING_CLASS);
+            }
             return false;
         } else {
             lexer.yypop();
@@ -480,7 +497,9 @@ class RubyLexHelper implements Resettable {
                 lexer.yypop();
                 lexer.disjointSpan(HtmlConsts.STRING_CLASS);
                 lexer.offer(opener);
-                if (rem > 0) lexer.yypushback(rem);
+                if (rem > 0) {
+                    lexer.yypushback(rem);
+                }
                 return true;
             }
         } else if (capture.startsWith("{")) {
@@ -517,7 +536,9 @@ class RubyLexHelper implements Resettable {
     public int nameLength(String capture) {
         int len = capture.length();
         for (int i = 0; i < capture.length(); ++i) {
-            if (Character.isLetterOrDigit(capture.charAt(i))) break;
+            if (Character.isLetterOrDigit(capture.charAt(i))) {
+                break;
+            }
             --len;
         }
         return len;
@@ -529,8 +550,12 @@ class RubyLexHelper implements Resettable {
      * @return a defined pattern or null
      */
     public Pattern getCollateralCapturePattern() {
-        if (endqchar == '\0') return null;
-        if (collateralCapture != null) return collateralCapture;
+        if (endqchar == '\0') {
+            return null;
+        }
+        if (collateralCapture != null) {
+            return collateralCapture;
+        }
 
         StringBuilder patb = new StringBuilder("[");
         patb.append(Pattern.quote(String.valueOf(endqchar)));

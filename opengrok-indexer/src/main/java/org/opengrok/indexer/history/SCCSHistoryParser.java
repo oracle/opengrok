@@ -33,9 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.logging.Logger;
 
-import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.IOUtils;
 
 /**
@@ -45,8 +43,6 @@ import org.opengrok.indexer.util.IOUtils;
  * taking a lot of time. Time to index history has reduced 4 to 1!
  */
 class SCCSHistoryParser {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SCCSHistoryParser.class);
 
     boolean pass;
     boolean passRecord;

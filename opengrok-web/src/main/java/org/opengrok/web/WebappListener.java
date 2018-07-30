@@ -59,8 +59,8 @@ public final class WebappListener
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         LOGGER.log(Level.INFO, "Starting webapp with version {0} ({1})",
-                    new Object[]{ Info.getVersion(), Info.getRevision()});
-
+                    new Object[]{Info.getVersion(), Info.getRevision()});
+        
         String config = context.getInitParameter("CONFIGURATION");
         if (config == null) {
             LOGGER.severe("CONFIGURATION section missing in web.xml");

@@ -115,7 +115,9 @@ public class Definitions implements Serializable {
             LineTagMap line_map = line_maps.get(lineNumber);
             if (line_map != null) {
                 for (Tag tag : line_map.sym_tags.get(symbol)) {
-                    if (tag.used) continue;
+                    if (tag.used) {
+                        continue;
+                    }
                     if (strs.length > 0) { //NOPMD
                         strs[0] = tag.type;
                     }

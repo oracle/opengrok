@@ -22,7 +22,6 @@
   */
 package org.opengrok.indexer.configuration;
 
-import java.io.IOException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.SearcherFactory;
 
@@ -33,11 +32,11 @@ import org.apache.lucene.search.SearcherFactory;
  * @author vkotal
  */
 class ThreadpoolSearcherFactory extends SearcherFactory {
+
     @Override
-    public SuperIndexSearcher newSearcher(IndexReader r, IndexReader prev) throws IOException {
+    public SuperIndexSearcher newSearcher(IndexReader r, IndexReader prev) {
         // The previous IndexReader is not used here.
-        SuperIndexSearcher searcher = new SuperIndexSearcher(r,
-            RuntimeEnvironment.getInstance().getSearchExecutor());
-        return searcher;
+        return new SuperIndexSearcher(r, RuntimeEnvironment.getInstance().getSearchExecutor());
     }
+
 }

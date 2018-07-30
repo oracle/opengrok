@@ -100,7 +100,9 @@ public class DocumentMatcher implements Matcher {
     public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
         throws IOException {
 
-        if (!in.markSupported()) return null;
+        if (!in.markSupported()) {
+            return null;
+        }
         in.mark(MARK_READ_LIMIT);
 
         // read encoding, and skip past any BOM
@@ -119,8 +121,12 @@ public class DocumentMatcher implements Matcher {
         // affirm that a LF exists in a first block
         boolean foundLF = hasLineFeed(in, encoding);
         in.reset();
-        if (!foundLF) return null;
-        if (bomLength > 0) in.skip(bomLength);
+        if (!foundLF) {
+            return null;
+        }
+        if (bomLength > 0) {
+            in.skip(bomLength);
+        }
 
         // read line-by-line for a first few lines
         BufferedReader rdr = new BufferedReader(new InputStreamReader(
@@ -210,7 +216,9 @@ public class DocumentMatcher implements Matcher {
                     return true;
                 }
             } else {
-                if (buf[i] == '\n') return true;
+                if (buf[i] == '\n') {
+                    return true;
+                }
             }
         }
         return false;

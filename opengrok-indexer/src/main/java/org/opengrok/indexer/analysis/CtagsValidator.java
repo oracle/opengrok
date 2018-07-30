@@ -34,13 +34,17 @@ public final class CtagsValidator implements ObjectValidator<Ctags> {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         CtagsValidator.class);
 
+    @Override
     public boolean isValid(Ctags ctags) {
         return ctags != null && !ctags.isClosed();
     }
 
+    @Override
     public void invalidate(Ctags ctags) {
         try {
-            if (ctags != null) ctags.close();
+            if (ctags != null) {
+                ctags.close();
+            }
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error closing ctags", ex);
         }
