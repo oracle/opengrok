@@ -40,9 +40,8 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 ## Deleting a project
 
 - backup current config
-- remove any per-project settings - see [putting read-only configuration into effect](https://github.com/oracle/opengrok/wiki/Read-only-configuration#putting-read-only-configuration-into-effect)
 - delete the project from configuration (deletes project's index data and refreshes on disk configuration). The -R option can be used to supply path to read-only configuration so that it is merged with current configuration.
 ```
    projadm -b /opengrok -d PROJECT
 ```
-- perform any necessary authorization/group adjustments in read-only configuration (if any)
+- perform any necessary authorization, group, per-project adjustments in read-only configuration (if any) - see [putting read-only configuration into effect](https://github.com/oracle/opengrok/wiki/Read-only-configuration#putting-read-only-configuration-into-effect) 
