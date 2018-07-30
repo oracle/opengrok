@@ -37,6 +37,7 @@ from command import Command
 import logging
 import tempfile
 import shutil
+import io
 from utils import get_command
 from opengrok import get_configuration, set_configuration, add_project, \
     delete_project, get_config_value
@@ -207,7 +208,7 @@ if __name__ == '__main__':
                         help='path to the ConfigMerge binary')
     parser.add_argument('-u', '--upload', action='store_true',
                         help='Upload configuration at the end')
-    parser.add_argument('-n', '--noop', action='store_false', default=True,
+    parser.add_argument('-n', '--noop', action='store_true', default=False,
                         help='Do not run any commands or modify any config'
                         ', just report. Usually implies the --debug option.')
 
@@ -223,6 +224,7 @@ if __name__ == '__main__':
                        'configuration.')
 
     args = parser.parse_args()
+    doit = not args.noop
 
     #
     # Setup logger as a first thing after parsing arguments so that it can be
@@ -271,28 +273,28 @@ if __name__ == '__main__':
         with lock.acquire(timeout=0):
             if args.add:
                 for proj in args.add:
-                    project_add(doit=args.noop, logger=logger,
+                    project_add(doit=doit, logger=logger,
                                 project=proj,
                                 uri=uri)
 
-                config_refresh(doit=args.noop, logger=logger,
+                config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
                                uri=uri,
                                configmerge=configmerge_file,
                                roconfig=args.roconfig)
             elif args.delete:
                 for proj in args.delete:
-                    project_delete(doit=args.noop, logger=logger,
+                    project_delete(doit=doit, logger=logger,
                                    project=proj,
                                    uri=uri)
 
-                config_refresh(doit=args.noop, logger=logger,
+                config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
                                uri=uri,
                                configmerge=configmerge_file,
                                roconfig=args.roconfig)
             elif args.refresh:
-                config_refresh(doit=args.noop, logger=logger,
+                config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
                                uri=uri,
                                configmerge=configmerge_file,
@@ -304,9 +306,12 @@ if __name__ == '__main__':
             if args.upload:
                 main_config = get_config_file(basedir=args.base)
                 if path.isfile(main_config):
-                    if args.noop:
-                        set_configuration(logger, main_config, uri)
-
+                    if doit:
+                        with io.open(main_config, mode='r',
+                                     encoding="utf-8") as config_file:
+                            config_data = config_file.read()
+                            set_configuration(logger,
+                                              config_data.encode("utf-8"), uri)
                 else:
                     logger.error("file {} does not exist".format(main_config))
                     sys.exit(1)
