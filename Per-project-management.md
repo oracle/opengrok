@@ -45,4 +45,4 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 ```
    projadm -b /opengrok -d PROJECT
 ```
-- perform any necessary authorization adjustments
+- perform any necessary authorization/group adjustments in read-only configuration (if any)
