@@ -75,7 +75,7 @@ Default value: `true`.
 
 ### Maximum results
 Specifies how many results the suggester should return at maximum. 
-Property: `masResults`. 
+Property: `maxResults`. 
 Default value: `10`.
 
 ### Minimum characters 
