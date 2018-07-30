@@ -309,9 +309,10 @@ if __name__ == '__main__':
                     if doit:
                         with io.open(main_config, mode='r',
                                      encoding="utf-8") as config_file:
-                            config_data = config_file.read()
-                            set_configuration(logger,
-                                              config_data.encode("utf-8"), uri)
+                            config_data = config_file.read().encode("utf-8")
+                            if not set_configuration(logger,
+                                                     config_data, uri):
+                                sys.exit(1)
                 else:
                     logger.error("file {} does not exist".format(main_config))
                     sys.exit(1)
