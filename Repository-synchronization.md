@@ -20,25 +20,29 @@ Use e.g. like this:
 
 where the `sync.conf` file contents might look like this:
 
-```json
-{
-   "commands": [{"command": ["http://localhost:8080/source/api/v1/messages", "POST",
-                 { "cssClass" : "info", "duration" : "PT1H",
-                   "tags" : ["%PROJECT%"], "text" : "resync + reindex in progress"}]},
-                {"command" : ["sudo", "-u", "wsmirror",
-                 "/opengrok/dist/bin/mirror.py", "-c", "/opengrok/etc/mirror-config.yml"]},
-                {"command": ["sudo", "-u", "webservd", "/opengrok/dist/bin/reindex-project.py", "-D",
-                 "-J=-d64", "-J=-XX:-UseGCOverheadLimit", "-J=-Xmx16g", "-J=-server",
-                 "--jar", "/opengrok/dist/lib/opengrok.jar", "-t", "/opengrok/etc/logging.properties.template",
-                 "-p", "%PROJ%", "-d", "/opengrok/log/%PROJECT%", "-P", "%PROJECT%", "--",
-                 "--renamedHistory", "on", "-r", "dirbased", "-G", "-m", "256", "-c", "/usr/local/bin/ctags",
-                 "-U", "http://localhost:8080/source",
-                 "-o", "/opengrok/etc/ctags.config", "-H", "%PROJECT%", "%PROJECT%"],
-                 "env": {"LC_ALL": "en_US.UTF-8"}, "limits": { "RLIMIT_NOFILE": 1024 }},
-                {"command": ["http://localhost:8080/source/api/v1/messages?tag=%PROJECT%", "DELETE", ""]},
-                {"command": ["/scripts/check-indexer-logs.ksh"]}],
-   "cleanup": {"command": ["http://localhost:8080/source/api/v1/messages?tag=%PROJECT%", "DELETE", ""]}
-}
+```YML
+commands:
+- command:
+  - http://localhost:8080/source/api/v1/messages
+  - POST
+  - cssClass: info
+    duration: PT1H
+    tags: ['%PROJECT%']
+    text: resync + reindex in progress
+- command: [sudo, -u, wsmirror, /opengrok/dist/bin/mirror.py, -c, /opengrok/etc/mirror-config.yml]
+- command: [sudo, -u, webservd, /opengrok/dist/bin/reindex-project.py, -D, -J=-d64,
+    '-J=-XX:-UseGCOverheadLimit', -J=-Xmx16g, -J=-server, --jar, /opengrok/dist/lib/opengrok.jar,
+    -t, /opengrok/etc/logging.properties.template, -p, '%PROJ%', -d, /opengrok/log/%PROJECT%,
+    -P, '%PROJECT%', --, --renamedHistory, 'on', -r, dirbased, -G, -m, '256', -c,
+    /usr/local/bin/ctags, -U, 'http://localhost:8080/source', -o, /opengrok/etc/ctags.config,
+    -H, '%PROJECT%', '%PROJECT%']
+  env: {LC_ALL: en_US.UTF-8}
+  limits: {RLIMIT_NOFILE: 1024}
+- command: ['http://localhost:8080/source/api/v1/messages?tag=%PROJECT%', DELETE,
+    '']
+- command: [/scripts/check-indexer-logs.ksh]
+cleanup:
+  command: ['http://localhost:8080/source/api/v1/messages?tag=%PROJECT%', DELETE, '']
 ```
 
 The above `sync.py` command will basically take all directories under `/ws-local` and for each it will run the sequence of commands specified in the `sync.conf` file. This will be done in parallel - on project level. The level of parallelism can be specified using the the `--workers` option (by default it will use as many workers as there are CPUs in the system).
