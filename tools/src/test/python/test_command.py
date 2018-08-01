@@ -24,13 +24,14 @@
 #
 
 import unittest
-import logging
 import sys
 import os
 import time
 
+
 sys.path.insert(0, os.path.abspath(
-                os.path.join(os.path.dirname(__file__), '..')))
+                os.path.join(os.path.dirname(__file__), '..', '..',
+                'main', 'python')))
 
 import command
 from command import Command
