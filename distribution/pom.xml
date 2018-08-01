@@ -33,6 +33,12 @@
       <version>1.1-rc35</version>
       <type>war</type>
     </dependency>
+
+    <dependency>
+      <groupId>org.opengrok</groupId>
+      <artifactId>tools</artifactId>
+      <version>1.1-rc35</version>
+    </dependency>
   </dependencies>
 
   <build>

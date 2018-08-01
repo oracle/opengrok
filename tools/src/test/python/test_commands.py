@@ -27,10 +27,11 @@ import unittest
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(
-                os.path.join(os.path.dirname(__file__), '..')))
 
-import commands
+sys.path.insert(0, os.path.abspath(
+                os.path.join(os.path.dirname(__file__), '..', '..',
+                'main', 'python')))
+
 from commands import Commands, CommandsBase
 
 
