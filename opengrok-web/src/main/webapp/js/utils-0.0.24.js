@@ -1716,7 +1716,7 @@ function pageReadyMast() {
 }
 
 function domReadyMenu(minisearch) {
-    if (getCookie('suggester.enabled') === 'false') {
+    if (getCookie('opengrok.suggester.enabled') === 'false') {
         console.log('Suggester disabled by a cookie');
         return;
     }
@@ -2341,7 +2341,7 @@ function getCookie(cname) {
     var name = cname + "=";
     var decodedCookie = decodeURIComponent(document.cookie);
     var ca = decodedCookie.split(';');
-    for(var i = 0; i <ca.length; i++) {
+    for (var i = 0; i < ca.length; i++) {
         var c = ca[i];
         while (c.charAt(0) == ' ') {
             c = c.substring(1);
