@@ -1,0 +1,232 @@
+<%--
+$Id$
+
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Portions Copyright 2011 Jens Elkner.
+
+--%><%@page import="org.json.simple.JSONArray"%>
+<%@page import="org.opengrok.indexer.configuration.RuntimeEnvironment"%>
+<%@page import="java.util.TreeSet"%>
+<%@page import="java.util.Set"%>
+<%@page import="java.util.LinkedList"%>
+<%@page import="org.opengrok.indexer.configuration.Group"%>
+<%@page import="org.opengrok.indexer.web.ProjectHelper"%>
+<%@page import="org.opengrok.indexer.web.SearchHelper"%>
+<%@page import="java.util.Map"%>
+<%@page import="
+java.util.SortedSet,
+java.util.TreeMap,
+java.util.Map.Entry,
+java.util.List,
+java.util.HashMap,
+java.util.ArrayList,
+
+org.opengrok.indexer.configuration.Project,
+org.opengrok.indexer.search.QueryBuilder,
+org.opengrok.indexer.web.PageConfig,
+org.opengrok.indexer.web.Prefix,
+org.opengrok.indexer.web.Util"
+%><%
+/* ---------------------- menu.jspf start --------------------- */
+{
+    PageConfig cfg = PageConfig.get(request);
+    ProjectHelper ph = ProjectHelper.getInstance(cfg);
+    JSONArray messages;
+    Set<Project> projects = ph.getAllProjects();
+    if (projects == null) {
+        projects = new TreeSet<>();
+    }
+    int projectsSize = ph.getAllUngrouped().size();
+    if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0)
+        projectsSize++;
+    for (Group group : ph.getGroups()) {
+        projectsSize++;
+        projectsSize += ph.getAllGrouped(group).size();
+    }
+    TreeMap<String, String> pMap = new TreeMap<>();
+    QueryBuilder queryParams = cfg.getQueryBuilder();
+    if (projects.size() != 0) {
+        for (Project p : projects) {
+            String name = p.getName();
+            String esc = Util.formQuoteEscape(p.getName());
+            pMap.put(name, esc);
+        }
+    }
+%>
+<script type="text/javascript">/* <![CDATA[ */
+document.domReady.push(function() { domReadyMenu(); });
+/* ]]> */
+</script>
+<form action="<%= request.getContextPath() %>/search" id="sbox" onsubmit="searchSubmit(this)">
+<div id="qtbl">
+    <table>
+    <%
+    if (projects.size() != 0) {
+    %>
+    <tbody id="ptbl">
+    <tr>
+    <td id="projectLabelTd">
+    <label for="project">Project(s)</label>
+    </td>
+    <td colspan="2">
+    <select tabindex="8" class="q" id="project"
+        name="project" multiple="multiple" size="<%=
+        Math.min(15, projectsSize) %>"><%
+        SortedSet<String> pRequested = cfg.getRequestedProjects();
+        for (Group group : ph.getGroups()) {
+            Set<Project> groupProjects = ph.getAllGrouped(group);
+            if (groupProjects.size() > 0) {
+                %><optgroup label="<%= group.getName() %>"><%
+                for (Project p : groupProjects) {
+                    if (!p.isIndexed()) {
+                        continue;
+                    }
+
+                // TODO below "selected" has no effect if one refreshes the page
+                // with F5
+
+                %><option value="<%= p.getName() %>"<%
+                    if (pRequested.contains(p.getName())) {
+                        %> selected="selected"<%
+                    }
+                    if (!(messages = Util.messagesToJson(p)).isEmpty()) {
+                    %> data-messages='<%= messages %>' <%
+                        }
+                    %>><%= Util.formQuoteEscape(p.getName()) %></option><%
+                }
+                %></optgroup><%
+            }
+        }
+  
+        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
+            %><optgroup label="Other"><%
+        }
+        for (Project p : ph.getAllUngrouped()) {
+            if (!p.isIndexed()) {
+                continue;
+            }
+
+        %><option value="<%= p.getName() %>"<%
+            if (pRequested.contains(p.getName())) {
+                %> selected="selected"<%
+            }
+            if (!(messages = Util.messagesToJson(p)).isEmpty()) {
+                %> data-messages='<%= messages %>' <%
+            }
+            %>><%= Util.formQuoteEscape(p.getName()) %></option><%
+        }
+        if (ph.getGroups().size() > 0 && ph.getAllUngrouped().size() > 0) {
+            %></optgroup><%
+        }
+    %></select>
+    </td>
+    </tr>
+    <tr>
+    <td colspan="3" >
+    <button tabindex="6" type="button"
+        onclick="javascript: selectAllProjects(); return false;"
+        >select all</button>
+    &nbsp;
+    <button tabindex="7" type="button"
+        onclick="javascript: invertAllProjects(); return false;"
+        >invert selection</button>
+    &nbsp;
+    <button tabindex="8" type="button"
+        onclick="javascript: deselectAllProjects(); return false;"
+        >clear</button>
+    </td>
+    </tr>
+    </tbody>
+    <%
+    }
+    %>
+    <tbody>
+    <tr>
+        <td><label for="q" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
+        <td colspan="2"><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
+                Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="defs" title="Definition of function/variable/class">Definition</label></td>
+        <td colspan="2"><input class="q" tabindex="2" name="defs" id="defs" type="text" value="<%=
+            Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="refs" title="Usage of function/variable/class">Symbol</label></td>
+        <td colspan="2"><input class="q" tabindex="3" name="refs" id="refs" type="text" value="<%=
+            Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="path" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
+        <td colspan="2"><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
+            Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
+    </tr>
+    <%
+        if (cfg.getEnv().isHistoryEnabled()) {
+    %>
+    <tr>
+        <td><label for="hist" title="Search in log messages">History</label></td>
+        <td colspan="2"><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
+            Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
+    </tr>
+    <%
+        }
+    %>
+    <tr>
+        <td id="typeLabelTd"><label for="type">Type</label></td>
+        <td><select class="q" tabindex="6" name="type" id="type"><%
+                String selection = queryParams.getType();
+                %>
+                <option value="">Any</option><%
+                for (Map.Entry<String, String> d : SearchHelper.getFileTypeDescriptions()) {
+                    %>
+                <option value="<%= Util.formQuoteEscape(d.getKey()) %>"<%
+                    if (d.getKey().equals(selection)) {
+                        %> selected="selected"<%
+                    }
+                    %>><%= Util.htmlize(d.getValue()) %></option><%
+                }
+            %>
+            </select>
+        </td>
+        <td id="type-select-container">
+            <!-- filled with javascript -->
+        </td>
+    </tr>
+    </tbody>
+</table>
+<div id="form-controls">
+    <input tabindex="9" class="submit btn" type="submit" value="Search"/>
+    <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
+           type="button" value="Clear"/>
+    <input tabindex="11" class="submit btn" onclick="window.open('help.jsp', '_blank');"
+           type="button" value="Help"/>
+</div>
+</div>
+<div id="ltbl">
+    <!-- filled with javascript -->
+</div>
+</form>
+<div class="clearfix"></div>
+<%
+}
+/* ---------------------- menu.jspf end --------------------- */
+%>

@@ -47,7 +47,7 @@ import javax.servlet.http.Part;
 
 import opengrok.auth.plugin.UserPlugin;
 import opengrok.auth.plugin.entity.User;
-import org.opensolaris.opengrok.util.RandomString;
+import org.opengrok.indexer.util.RandomString;
 
 public class DummyHttpServletRequestLdap implements HttpServletRequest {
 

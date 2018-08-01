@@ -1,0 +1,107 @@
+<%--
+$Id$
+
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright 2011 Jens Elkner.
+Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
+
+--%><%--
+
+All pages, which include this fragment should use the following code snippet
+to set the title of the document before the include directive for this fragment:
+<pre>
+
+    cfg = PageConfig.get(request);
+    cfg.setTitle("your title");
+
+</pre>
+--%><%@page import="org.opengrok.indexer.web.Scripts"%>
+<%@page import="org.opengrok.indexer.web.Prefix"%>
+<%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="
+org.opengrok.indexer.Info,
+org.opengrok.indexer.web.PageConfig"
+%><%
+/* ---------------------- httpheader.jsp start --------------------- */
+{
+    PageConfig cfg = PageConfig.get(request);
+    String styleDir = cfg.getCssDir();
+    String ctxPath = request.getContextPath();
+    String dstyle = styleDir + '/' + "style.css";
+    String pstyle = styleDir + '/' + "print.css";
+%><!DOCTYPE html>
+<html lang="en"
+      class="<%= request.getServletPath().length() > 0 ? request.getServletPath().substring(1) : "" %>">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="{OpenGrok <%=Info.getVersion()%> (<%=Info.getRevision()%>)" />
+<link rel="icon" href="<%=styleDir%>/img/icon.png" type="image/png" />
+<link rel="stylesheet" type="text/css" media="all"
+    title="Default" href="<%= dstyle %>" />
+<link rel="alternate stylesheet" type="text/css" media="all"
+    title="Paper White" href="<%= pstyle %>" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/mandoc.css" media="all" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/print.css" media="print" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.1-custom.min.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.1-custom.structure.min.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.1-custom.theme.min.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tooltip.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tablesorter.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/searchable-option-list-2.0.3.min.css" />
+
+<%
+    /**
+     * The order can be arbitrary here, it is hardcoded in Scripts. These
+     * are printed out in footer.
+     *
+     * @see Scripts
+     */
+    cfg.addScript("jquery");
+    cfg.addScript("jquery-ui");
+    cfg.addScript("jquery-tablesorter");
+    cfg.addScript("tablesorter-parsers");
+    cfg.addScript("searchable-option-list");
+    cfg.addScript("utils");
+    cfg.addScript("jquery-caret");
+
+if (cfg.getPrefix().equals(Prefix.HIST_L)) {
+    out.write("<link rel=\"alternate\" type=\"application/rss+xml\" " +
+        "title=\"RSS feed for " + cfg.getPath() + "\" " +
+        "href=\"" + ctxPath + Prefix.RSS_P + cfg.getPath() + "\" />");
+}
+%>
+<link rel="search" href="<%=ctxPath%>/opensearch"
+    type="application/opensearchdescription+xml"
+    title="OpenGrok Search for current project(s)" />
+<script type="text/javascript">/* <![CDATA[ */
+    window.contextPath = '<%= ctxPath %>';
+    document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P %>';
+    document.pageReady = [];
+    document.domReady = [];
+/* ]]> */
+</script>
+<title><%=cfg.getTitle()%></title><%
+    out.write(cfg.getHeaderData());
+%>
+</head><%
+}
+/* ---------------------- httpheader.jsp end --------------------- */
+%>

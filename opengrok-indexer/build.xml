@@ -41,7 +41,6 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
     <property name="test.razor.repo" value="../ext/SampleRazorRepository/"/>
-    <property name="test.plugins_jar" value="${test.plugins}/testplugins.jar"/>
     <property name="build.test.reposroots" value="target/reposroot"/>
     <property name="build.test.classes.dir" value="target/test-classes"/>
 
@@ -99,9 +98,9 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <target name="-update-build-info"
             depends="-get-changeset-from-command,-get-changeset-from-file">
-        <mkdir dir="${build.classes.dir}/org/opensolaris/opengrok"/>
+        <mkdir dir="${build.classes.dir}/org/opengrok"/>
         <propertyfile
-            file="${build.classes.dir}/org/opensolaris/opengrok/info.properties">
+            file="${build.classes.dir}/org/opengrok/info.properties">
             <entry  key="version" value="${version}"/>
             <entry  key="changeset" value="${changeset}"/>
         </propertyfile>
@@ -141,19 +140,15 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
             <fileset dir="${test.bzr}/bzr"/>
         </copy>
 
-        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
+        <zip destfile="${build.test.classes.dir}/org/opengrok/indexer/index/source.zip"
               basedir="${test.sources}"
               update="false"
               defaultexcludes="no"/>
-        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
+        <zip destfile="${build.test.classes.dir}/org/opengrok/indexer/history/repositories.zip"
                 basedir="${test.repositories}"
                 excludes="mercurial/hg/**, mercurial/hgignore, git/git/**, bitkeeper/bk/**, bazaar/bzr/**"
                 update="false"
                 defaultexcludes="no"/>
-
-        <copy
-             file="${test.plugins_jar}"
-             tofile="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/testplugins.jar" />
 
         <antcall target="-delete-generated-repository-files"/>
     </target>
