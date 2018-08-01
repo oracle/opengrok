@@ -52,9 +52,9 @@ def repack_war(logger, sourceWar, targetWar, configFile, defaultConfigFile):
         zip_cmd = get_command(logger, None, 'zip')
         unzip_cmd = get_command(logger, None, 'unzip')
         if not zip_cmd:
-            raise "zip not found"
+            raise Exception("zip not found")
         if not unzip_cmd:
-            raise "unzip not found"
+            raise Exception("unzip not found")
 
         extract_cmd = [unzip_cmd]
         compress_cmd = [zip_cmd, '-rf']
