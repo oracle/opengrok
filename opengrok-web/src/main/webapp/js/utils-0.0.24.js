@@ -1716,7 +1716,7 @@ function pageReadyMast() {
 }
 
 function domReadyMenu(minisearch) {
-    if (getCookie('opengrok.suggester.enabled') === 'false') {
+    if (getCookie('OpenGrokSuggester.enabled') === 'false') {
         console.log('Suggester disabled by a cookie');
         return;
     }
