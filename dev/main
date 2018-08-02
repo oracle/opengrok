@@ -8,7 +8,14 @@ extra_args=""
 if [ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" ]; then
 	echo "Enabling Jacoco/Coveralls"
 	extra_args="jacoco:report org.eluder.coveralls:coveralls-maven-plugin:report"
-	extra_args="$extra_args sonar:sonar"
+
+	#
+	# Sonar seems to only work on master branch commits.
+	#
+	if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
+		echo "Enabling Sonar"
+		extra_args="$extra_args sonar:sonar"
+	fi
 fi
 
 mvn -B -V verify $extra_args
