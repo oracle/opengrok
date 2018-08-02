@@ -1,7 +1,7 @@
 # Table of contents
 
 <!-- toc -->
-- [include files](#include-files)
+- [Include files](#include-files)
 - [webapp parameters](#webapp-parameters)
   * [Changing webapp parameters](#changing-webapp-params)
   * [Changing webapp name](#changing-webapp-name)
