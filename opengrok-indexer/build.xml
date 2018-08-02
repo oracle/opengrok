@@ -98,9 +98,9 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <target name="-update-build-info"
             depends="-get-changeset-from-command,-get-changeset-from-file">
-        <mkdir dir="${build.classes.dir}/org/opengrok"/>
+        <mkdir dir="${build.classes.dir}/org/opengrok/indexer"/>
         <propertyfile
-            file="${build.classes.dir}/org/opengrok/info.properties">
+            file="${build.classes.dir}/org/opengrok/indexer/info.properties">
             <entry  key="version" value="${version}"/>
             <entry  key="changeset" value="${changeset}"/>
         </propertyfile>
