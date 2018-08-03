@@ -30,12 +30,12 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.jrcs.diff.PatchFailedException;
-import org.apache.commons.jrcs.rcs.Archive;
-import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
-import org.apache.commons.jrcs.rcs.Node;
-import org.apache.commons.jrcs.rcs.ParseException;
-import org.apache.commons.jrcs.rcs.Version;
+import org.suigeneris.jrcs.diff.PatchFailedException;
+import org.suigeneris.jrcs.rcs.Archive;
+import org.suigeneris.jrcs.rcs.InvalidFileFormatException;
+import org.suigeneris.jrcs.rcs.Node;
+import org.suigeneris.jrcs.rcs.ParseException;
+import org.suigeneris.jrcs.rcs.Version;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**

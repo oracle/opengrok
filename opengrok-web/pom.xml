@@ -96,6 +96,11 @@
             <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jvnet.hudson</groupId>
+            <artifactId>org.suigeneris.jrcs.diff</artifactId>
+            <version>0.4.2</version>
+        </dependency>
     </dependencies>
 
     <build>
