@@ -343,7 +343,7 @@ public class GitRepository extends Repository {
 
         if (status != 0) {
             LOGGER.log(Level.WARNING,
-                    "Failed to get original name in revision {3} for: \"{0}\" Exit code: {1}",
+                    "Failed to get original name in revision {2} for: \"{0}\" Exit code: {1}",
                     new Object[]{fullpath, String.valueOf(status), changeset});
             return null;
         }
@@ -655,14 +655,13 @@ public class GitRepository extends Repository {
         int indexOf = StringUtils.nthIndexOf(output, delim, 1);
         if (indexOf < 0) {
             throw new IOException(
-                    String.format("Couldn't extract date from \"%s\".",
-                            new Object[]{output}));
+                    String.format("Couldn't extract date from \"%s\".", output));
         }
 
         try {
             Date date = getDateFormat().parse(output.substring(0, indexOf));
             return String.format("%s %s",
-                    new Object[]{outputDateFormat.format(date), output.substring(indexOf + 1)});
+                    outputDateFormat.format(date), output.substring(indexOf + 1));
         } catch (ParseException ex) {
             throw new IOException(ex);
         }

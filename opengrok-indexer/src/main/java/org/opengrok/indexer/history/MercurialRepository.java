@@ -352,7 +352,7 @@ public class MercurialRepository extends Repository {
 
         if (status != 0) {
             LOGGER.log(Level.WARNING,
-                    "Failed to get original name in revision {3} for: \"{0}\" Exit code: {1}",
+                    "Failed to get original name in revision {2} for: \"{0}\" Exit code: {1}",
                     new Object[]{fullpath, String.valueOf(status), full_rev_to_find});
             return null;
         }
