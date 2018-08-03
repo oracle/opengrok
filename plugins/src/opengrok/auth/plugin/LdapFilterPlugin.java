@@ -44,7 +44,8 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
     private static final Logger LOGGER = Logger.getLogger(LdapFilterPlugin.class.getName());
 
     protected static final String FILTER_PARAM = "filter";
-    protected String SESSION_ALLOWED = "opengrok-filter-plugin-allowed";
+    private static final String SESSION_ALLOWED_PREFIX = "opengrok-filter-plugin-allowed";
+    private String SESSION_ALLOWED = SESSION_ALLOWED_PREFIX;
 
     private String ldapFilter;
 

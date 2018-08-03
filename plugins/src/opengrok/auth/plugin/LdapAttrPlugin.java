@@ -45,7 +45,8 @@ public class LdapAttrPlugin extends AbstractLdapPlugin {
     protected static final String ATTR_PARAM = "attribute";
     protected static final String FILE_PARAM = "file";
 
-    public String SESSION_ALLOWED = "opengrok-attr-plugin-allowed";
+    private final static String SESSION_ALLOWED_PREFIX = "opengrok-attr-plugin-allowed";
+    private String SESSION_ALLOWED = SESSION_ALLOWED_PREFIX;
 
     private String ldapAttr;
     private final Set<String> whitelist = new TreeSet<>();
