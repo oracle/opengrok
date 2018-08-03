@@ -23,7 +23,7 @@
  */
 package org.opengrok.indexer.web;
 
-import org.apache.commons.jrcs.diff.Revision;
+import org.suigeneris.jrcs.diff.Revision;
 import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
 
 /**
