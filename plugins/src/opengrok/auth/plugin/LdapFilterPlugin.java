@@ -45,12 +45,12 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
 
     protected static final String FILTER_PARAM = "filter";
     private static final String SESSION_ALLOWED_PREFIX = "opengrok-filter-plugin-allowed";
-    private String SESSION_ALLOWED = SESSION_ALLOWED_PREFIX;
+    private String sessionAllowed = SESSION_ALLOWED_PREFIX;
 
     private String ldapFilter;
 
     public LdapFilterPlugin() {
-        SESSION_ALLOWED += "-" + nextId++;
+        sessionAllowed += "-" + nextId++;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
     @Override
     protected boolean sessionExists(HttpServletRequest req) {
         return super.sessionExists(req)
-                && req.getSession().getAttribute(SESSION_ALLOWED) != null;
+                && req.getSession().getAttribute(sessionAllowed) != null;
     }
 
     @Override
@@ -152,16 +152,16 @@ public class LdapFilterPlugin extends AbstractLdapPlugin {
      * @param allowed the new value
      */
     protected void updateSession(HttpServletRequest req, boolean allowed) {
-        req.getSession().setAttribute(SESSION_ALLOWED, allowed);
+        req.getSession().setAttribute(sessionAllowed, allowed);
     }
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Project project) {
-        return ((Boolean) request.getSession().getAttribute(SESSION_ALLOWED));
+        return ((Boolean) request.getSession().getAttribute(sessionAllowed));
     }
 
     @Override
     public boolean checkEntity(HttpServletRequest request, Group group) {
-        return ((Boolean) request.getSession().getAttribute(SESSION_ALLOWED));
+        return ((Boolean) request.getSession().getAttribute(sessionAllowed));
     }
 }
