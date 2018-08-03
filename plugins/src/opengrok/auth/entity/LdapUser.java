@@ -22,6 +22,7 @@
  */
 package opengrok.auth.entity;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +32,7 @@ import java.util.TreeSet;
  *
  * @author Krystof Tulinger
  */
-public class LdapUser {
+public class LdapUser implements Serializable {
 
     private String mail;
     private String uid;
