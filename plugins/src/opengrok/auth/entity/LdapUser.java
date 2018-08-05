@@ -39,7 +39,9 @@ public class LdapUser implements Serializable {
     private Set<String> ou;
     private final Map<String, Set<String>> attrs = new HashMap<>();
 
-    private static final long serialVersionUID = 1L;
+    // Use default serial ID value. If the serialized form of the object
+    // changes, feel free to start from 1L.
+    private static final long serialVersionUID = -8207597677599370334L;
 
     public LdapUser(String mail, String uid, Set<String> ou) {
         this.mail = mail;
