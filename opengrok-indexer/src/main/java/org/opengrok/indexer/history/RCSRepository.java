@@ -98,7 +98,7 @@ public class RCSRepository extends Repository {
     Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> argv = new ArrayList<>();
 
-        if (isAnnotationWorking()) {
+        if (!isAnnotationWorking()) {
             LOGGER.log(Level.WARNING, "Could not find command to get annotation for RCS repository");
             return null;
         }
