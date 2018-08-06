@@ -33,10 +33,10 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.jrcs.rcs.Archive;
-import org.apache.commons.jrcs.rcs.Node;
-import org.apache.commons.jrcs.rcs.ParseException;
-import org.apache.commons.jrcs.rcs.Version;
+import org.suigeneris.jrcs.rcs.Archive;
+import org.suigeneris.jrcs.rcs.impl.Node;
+import org.suigeneris.jrcs.rcs.parse.ParseException;
+import org.suigeneris.jrcs.rcs.Version;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 

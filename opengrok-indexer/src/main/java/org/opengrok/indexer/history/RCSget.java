@@ -27,11 +27,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.jrcs.diff.PatchFailedException;
-import org.apache.commons.jrcs.rcs.Archive;
-import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
-import org.apache.commons.jrcs.rcs.NodeNotFoundException;
-import org.apache.commons.jrcs.rcs.ParseException;
+import org.suigeneris.jrcs.diff.PatchFailedException;
+import org.suigeneris.jrcs.rcs.Archive;
+import org.suigeneris.jrcs.rcs.InvalidFileFormatException;
+import org.suigeneris.jrcs.rcs.impl.NodeNotFoundException;
+import org.suigeneris.jrcs.rcs.parse.ParseException;
 import org.opengrok.indexer.util.IOUtils;
 
 /**

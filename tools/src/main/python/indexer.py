@@ -70,6 +70,7 @@ class Indexer(Java):
             'git': '-Dorg.opensolaris.opengrok.history.git',
             'p4': '-Dorg.opensolaris.opengrok.history.Perforce',
             'mtn': '-Dorg.opensolaris.opengrok.history.Monotone',
+            'blame': '-Dorg.opensolaris.opengrok.history.RCS.blame',
             'bzr': '-Dorg.opensolaris.opengrok.history.Bazaar'}
 
         properties = []
