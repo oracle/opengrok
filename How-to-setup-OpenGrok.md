@@ -6,8 +6,8 @@ Note, that you need the create the index no matter what is your use case. Withou
 You need the following:
 
 - [JDK](http://www.oracle.com/technetwork/java/) 1.8 or higher
-- {OpenGrok '''binaries''' from https://github.com/OpenGrok/OpenGrok/releases (.tar.gz file with binaries, not the source code tarball !)
-- https://github.com/universal-ctags for analysis (Exuberant ctags can be used too however they are not as supported as Universal ctags)
+- OpenGrok '''binaries''' from https://github.com/OpenGrok/OpenGrok/releases (.tar.gz file with binaries, not the source code tarball !)
+- https://github.com/universal-ctags for analysis (avoid Exuberant ctags, they are not maintained anymore)
 - A servlet container like [GlassFish](https://glassfish.dev.java.net/) or [Tomcat](http://tomcat.apache.org) 8.0 or later also running with Java at least 1.8
 - If history is needed, appropriate binaries (in some cases also cvs/svn repository) must be present on the system (e.g. [Subversion](http://subversion.tigris.org) or [Mercurial](http://www.selenic.com/mercurial/wiki/index.cgi) or SCCS or ... )
 - 2GB of memory for the indexing process (bigger deployments will need more)
