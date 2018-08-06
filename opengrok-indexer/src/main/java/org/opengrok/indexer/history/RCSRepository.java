@@ -50,7 +50,7 @@ public class RCSRepository extends Repository {
     private static final String CMD_BLAME_PROPERTY_KEY
             = "org.opengrok.indexer.history.RCS.blame";
     /**
-     * the command to use to get annotation the repository if none was given explicitly
+     * the command to use to get annotation if none was given explicitly
      */
     private static final String CMD_BLAME_FALLBACK = "blame";
 
@@ -84,12 +84,21 @@ public class RCSRepository extends Repository {
         return fileHasHistory(file);
     }
 
-    @Override
-    Annotation annotate(File file, String revision) throws IOException {
-        ArrayList<String> argv = new ArrayList<>();
+    protected boolean isAnnotationWorking() {
         ensureCommand(CMD_BLAME_PROPERTY_KEY, CMD_BLAME_FALLBACK);
 
         if (RepoCommand == null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    Annotation annotate(File file, String revision) throws IOException {
+        ArrayList<String> argv = new ArrayList<>();
+
+        if (isAnnotationWorking()) {
             LOGGER.log(Level.WARNING, "Could not find command to get annotation for RCS repository");
             return null;
         }

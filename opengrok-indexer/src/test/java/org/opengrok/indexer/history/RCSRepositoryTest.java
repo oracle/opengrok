@@ -69,6 +69,9 @@ public class RCSRepositoryTest {
     public void testAnnotation() throws Exception {
         File root = new File(repository.getSourceRoot(), "rcs_test");
         RCSRepository repo = (RCSRepository) RepositoryFactory.getRepository(root);
+        if (!repo.isAnnotationWorking()) {
+            return;
+        }
         File header = new File(root, "header.h");
         Annotation annotation = repo.annotate(header, null);
         assertNotNull(annotation);
