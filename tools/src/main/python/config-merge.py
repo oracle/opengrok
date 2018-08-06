@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts,
-               main_class='org.opensolaris.opengrok.configuration.ConfigMerge',
+               main_class='org.opengrok.indexer.configuration.ConfigMerge',
                logger=logger)
     cmd.execute()
     ret = cmd.getretcode()
