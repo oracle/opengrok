@@ -84,24 +84,10 @@ public class RCSRepository extends Repository {
         return fileHasHistory(file);
     }
 
-    protected boolean isAnnotationWorking() {
-        ensureCommand(CMD_BLAME_PROPERTY_KEY, CMD_BLAME_FALLBACK);
-
-        if (RepoCommand == null) {
-            return false;
-        }
-
-        return true;
-    }
-
     @Override
     Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> argv = new ArrayList<>();
-
-        if (!isAnnotationWorking()) {
-            LOGGER.log(Level.WARNING, "Could not find command to get annotation for RCS repository");
-            return null;
-        }
+        ensureCommand(CMD_BLAME_PROPERTY_KEY, CMD_BLAME_FALLBACK);
 
         argv.add(RepoCommand);
         if (revision != null) {
