@@ -24,6 +24,8 @@ package org.opengrok.indexer.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -46,6 +48,13 @@ public class RCSRepositoryTest {
     public ConditionalRunRule rule = new ConditionalRunRule();
 
     static private TestRepository repository = new TestRepository();
+
+    /**
+     * Revision numbers present in the RCS test repository, in the order
+     * they are supposed to be returned from getHistory(), that is latest
+     * changeset first.
+     */
+    private static final String[] REVISIONS = { "1.2", "1.1" };
 
     @BeforeClass
     public static void setUpClass() throws IOException {
@@ -77,6 +86,23 @@ public class RCSRepositoryTest {
             expAnnotation.addLine("1.1", "kah", true);
             expAnnotation.addLine("1.1", "kah", true);
             assertEquals(expAnnotation.toString(), annotation.toString());
+        }
+    }
+
+    @Test
+    public void testGetHistory() throws Exception {
+        File root = new File(repository.getSourceRoot(), "rcs_test");
+        RCSRepository repo = (RCSRepository) RepositoryFactory.getRepository(root);
+        History hist = repo.getHistory(new File(root, "Makefile"));
+        List<HistoryEntry> entries = hist.getHistoryEntries();
+        assertEquals(REVISIONS.length, entries.size());
+        for (int i = 0; i < entries.size(); i++) {
+            HistoryEntry e = entries.get(i);
+            assertEquals(REVISIONS[i], e.getRevision());
+            assertNotNull(e.getAuthor());
+            assertNotNull(e.getDate());
+            assertNotNull(e.getFiles());
+            assertNotNull(e.getMessage());
         }
     }
 }
