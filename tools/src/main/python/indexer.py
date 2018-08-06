@@ -61,17 +61,17 @@ class Indexer(Java):
         SCM commands.
         """
         SCM_COMMANDS = {
-            'bk': '-Dorg.opensolaris.opengrok.history.BitKeeper',
-            'hg': '-Dorg.opensolaris.opengrok.history.Mercurial',
-            'cvs': '-Dorg.opensolaris.opengrok.history.cvs',
-            'svn': '-Dorg.opensolaris.opengrok.history.Subversion',
-            'sccs': '-Dorg.opensolaris.opengrok.history.SCCS',
-            'cleartool': '-Dorg.opensolaris.opengrok.history.ClearCase',
-            'git': '-Dorg.opensolaris.opengrok.history.git',
-            'p4': '-Dorg.opensolaris.opengrok.history.Perforce',
-            'mtn': '-Dorg.opensolaris.opengrok.history.Monotone',
-            'blame': '-Dorg.opensolaris.opengrok.history.RCS.blame',
-            'bzr': '-Dorg.opensolaris.opengrok.history.Bazaar'}
+            'bk': '-Dorg.opengrok.indexer.history.BitKeeper',
+            'hg': '-Dorg.opengrok.indexer.history.Mercurial',
+            'cvs': '-Dorg.opengrok.indexer.history.cvs',
+            'svn': '-Dorg.opengrok.indexer.history.Subversion',
+            'sccs': '-Dorg.opengrok.indexer.history.SCCS',
+            'cleartool': '-Dorg.opengrok.indexer.history.ClearCase',
+            'git': '-Dorg.opengrok.indexer.history.git',
+            'p4': '-Dorg.opengrok.indexer.history.Perforce',
+            'mtn': '-Dorg.opengrok.indexer.history.Monotone',
+            'blame': '-Dorg.opengrok.indexer.history.RCS',
+            'bzr': '-Dorg.opengrok.indexer.history.Bazaar'}
 
         properties = []
         for cmd in SCM_COMMANDS.keys():
