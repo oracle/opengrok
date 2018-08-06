@@ -69,15 +69,14 @@ public class RCSRepositoryTest {
     public void testAnnotation() throws Exception {
         File root = new File(repository.getSourceRoot(), "rcs_test");
         RCSRepository repo = (RCSRepository) RepositoryFactory.getRepository(root);
-        if (!repo.isAnnotationWorking()) {
-            return;
-        }
         File header = new File(root, "header.h");
         Annotation annotation = repo.annotate(header, null);
-        assertNotNull(annotation);
-        Annotation expAnnotation = new Annotation(header.getName());
-        expAnnotation.addLine("1.1", "kah", true);
-        expAnnotation.addLine("1.1", "kah", true);
-        assertEquals(expAnnotation.toString(), annotation.toString());
+        if (annotation != null) {
+            Annotation expAnnotation = new Annotation(header.getName());
+            assertEquals(2, annotation.size());
+            expAnnotation.addLine("1.1", "kah", true);
+            expAnnotation.addLine("1.1", "kah", true);
+            assertEquals(expAnnotation.toString(), annotation.toString());
+        }
     }
 }
