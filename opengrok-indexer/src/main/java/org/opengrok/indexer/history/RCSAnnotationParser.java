@@ -58,21 +58,9 @@ public class RCSAnnotationParser implements Executor.StreamHandler {
         String line;
         int lineno = 0;
         Matcher matcher = ANNOTATION_PATTERN.matcher("");
-        boolean start = false;
 
         try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
             while ((line = in.readLine()) != null) {
-                /*
-                if (line.equals("***************")) {
-                    start = true;
-                    continue;
-                }
-
-                if (!start) {
-                    continue;
-                }
-                */
-
                 ++lineno;
                 matcher.reset(line);
                 if (matcher.find()) {
