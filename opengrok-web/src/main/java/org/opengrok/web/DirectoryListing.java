@@ -170,7 +170,7 @@ public class DirectoryListing {
         if (desc != null) {
             parentFNode = desc.getNode(path);
             if (parentFNode != null) {
-                offset = parentFNode.childOffset;
+                offset = parentFNode.getChildOffset();
             }
         }
 
