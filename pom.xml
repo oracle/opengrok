@@ -261,12 +261,12 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                             <id>checkstyle</id>
                             <phase>validate</phase>
                             <configuration>
-                                <configLocation>/checkstyle/style.xml</configLocation>
+                                <configLocation>/dev/checkstyle/style.xml</configLocation>
                                 <encoding>UTF-8</encoding>
                                 <consoleOutput>true</consoleOutput>
                                 <failsOnError>true</failsOnError>
-                                <suppressionsLocation>/checkstyle/suppressions.xml</suppressionsLocation>
-                                <headerLocation>/checkstyle/fileheader.txt</headerLocation>
+                                <suppressionsLocation>/dev/checkstyle/suppressions.xml</suppressionsLocation>
+                                <headerLocation>/dev/checkstyle/fileheader.txt</headerLocation>
                                 <sourceDirectories>${project.build.sourceDirectory}</sourceDirectories>
                             </configuration>
                             <goals>
