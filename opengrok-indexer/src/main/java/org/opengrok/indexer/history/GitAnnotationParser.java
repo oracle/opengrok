@@ -69,21 +69,22 @@ public class GitAnnotationParser implements Executor.StreamHandler {
     
     @Override
     public void processStream(InputStream input) throws IOException {
-        BufferedReader in = new BufferedReader(GitRepository.newLogReader(input));
-        String line = "";
-        int lineno = 0;
-        Matcher matcher = BLAME_PATTERN.matcher(line);
-        while ((line = in.readLine()) != null) {
-            ++lineno;
-            matcher.reset(line);
-            if (matcher.find()) {
-                String rev = matcher.group(1);
-                String author = matcher.group(2).trim();
-                annotation.addLine(rev, author, true);
-            } else {
-                LOGGER.log(Level.SEVERE,
-                        "Error: did not find annotation in line {0}: [{1}] of {2}",
-                        new Object[]{String.valueOf(lineno), line, annotation.getFilename()});
+        try (BufferedReader in = new BufferedReader(GitRepository.newLogReader(input))) {
+            String line = "";
+            int lineno = 0;
+            Matcher matcher = BLAME_PATTERN.matcher(line);
+            while ((line = in.readLine()) != null) {
+                ++lineno;
+                matcher.reset(line);
+                if (matcher.find()) {
+                    String rev = matcher.group(1);
+                    String author = matcher.group(2).trim();
+                    annotation.addLine(rev, author, true);
+                } else {
+                    LOGGER.log(Level.SEVERE,
+                            "Error: did not find annotation in line {0}: [{1}] of {2}",
+                            new Object[]{String.valueOf(lineno), line, annotation.getFilename()});
+                }
             }
         }
     }
