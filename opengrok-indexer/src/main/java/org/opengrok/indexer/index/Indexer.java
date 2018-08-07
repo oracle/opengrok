@@ -104,10 +104,6 @@ public final class Indexer {
     private static RuntimeEnvironment env = null;
     private static String host = null;
 
-    public static OptionParser getOptParser() {
-        return optParser;
-    }
-
     private static OptionParser optParser = null;
 
     public static Indexer getInstance() {
@@ -1150,5 +1146,9 @@ public final class Indexer {
     }
 
     private Indexer() {
+    }
+
+    public static OptionParser getOptParser() {
+        return optParser;
     }
 }
