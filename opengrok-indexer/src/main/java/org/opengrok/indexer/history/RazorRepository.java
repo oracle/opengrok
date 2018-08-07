@@ -256,6 +256,10 @@ public class RazorRepository extends Repository {
     Annotation annotate(File file, String revision)
             throws IOException {
         // @TODO : Rename & Delete Support
+        File rcsFile = getRazorArchiveRCSFileFor(file);
+        if (rcsFile != null && rcsFile.exists()) {
+            return (new RCSRepository()).annotate(file, revision);
+        }
 
         File sccsFile = getRazorArchiveSCCSFileFor(file);
         if (sccsFile != null && sccsFile.exists()) {
