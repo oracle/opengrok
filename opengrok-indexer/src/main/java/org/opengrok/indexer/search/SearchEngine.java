@@ -436,10 +436,10 @@ public class SearchEngine {
     }
 
     /**
-     * get results , if no search was started before, no results are returned
-     * this method will requery if end is more than first query from search,
+     * Get results , if no search was started before, no results are returned.
+     * This method will requery if {@code end} is more than first query from search,
      * hence performance hit applies, if you want results in later pages than
-     * number of cachePages also end has to be bigger than start !
+     * number of cachePages. {@code end} has to be bigger than {@code start} !
      *
      * @param start start of the hit list
      * @param end end of the hit list
@@ -456,8 +456,8 @@ public class SearchEngine {
 
         ret.clear();
 
-        //TODO check if below fits for if end=old hits.length, or it should include it
-        if (end > hits.length & !allCollected) {
+        // TODO check if below fits for if end=old hits.length, or it should include it
+        if (end > hits.length && !allCollected) {
             //do the requery, we want more than 5 pages
             collector = TopScoreDocCollector.create(totalHits);
             try {
