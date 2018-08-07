@@ -196,8 +196,9 @@ public class SCCSRepository extends Repository {
             try (BufferedReader in = new BufferedReader(new FileReader(parentFile))) {
                 if ((line = in.readLine()) == null) {
                     LOGGER.log(Level.WARNING,
-                            "Failed to get parent for {0} (cannot read line)",
-                            getDirectoryName());
+                            "Failed to get parent for {0} (cannot read first line of {1})",
+                            new Object[]{getDirectoryName(), parentFile.getName()});
+                    return null;
                 }
                 if (!line.startsWith("VERSION")) {
                     LOGGER.log(Level.WARNING,
@@ -206,8 +207,8 @@ public class SCCSRepository extends Repository {
                 }
                 if ((parent = in.readLine()) == null) {
                     LOGGER.log(Level.WARNING,
-                            "Failed to get parent for {0} (cannot read second line)",
-                            getDirectoryName());
+                            "Failed to get parent for {0} (cannot read second line of {1})",
+                            new Object[]{getDirectoryName(), parentFile.getName()});
                 }
             }
         }
