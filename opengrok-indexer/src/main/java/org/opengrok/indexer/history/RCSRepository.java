@@ -28,6 +28,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,7 +87,7 @@ public class RCSRepository extends Repository {
 
     @Override
     Annotation annotate(File file, String revision) throws IOException {
-        ArrayList<String> argv = new ArrayList<>();
+        List<String> argv = new ArrayList<>();
         ensureCommand(CMD_BLAME_PROPERTY_KEY, CMD_BLAME_FALLBACK);
 
         argv.add(RepoCommand);
