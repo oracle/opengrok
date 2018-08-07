@@ -46,12 +46,12 @@ public class RCSRepository extends Repository {
     private static final long serialVersionUID = 1L;
 
     /**
-     * the property name used to obtain the command to get annotation for this repository
+     * This property name is used to obtain the command to get annotation for this repository.
      */
     private static final String CMD_BLAME_PROPERTY_KEY
             = "org.opengrok.indexer.history.RCS.blame";
     /**
-     * the command to use to get annotation if none was given explicitly
+     * The command to use to get annotation if none was given explicitly.
      */
     private static final String CMD_BLAME_FALLBACK = "blame";
 
