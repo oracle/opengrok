@@ -104,7 +104,11 @@ public final class Indexer {
     private static RuntimeEnvironment env = null;
     private static String host = null;
 
-    public static OptionParser openGrok = null;
+    public static OptionParser getOptParser() {
+        return optParser;
+    }
+
+    private static OptionParser optParser = null;
 
     public static Indexer getInstance() {
         return index;
@@ -319,7 +323,7 @@ public final class Indexer {
             System.exit(1);
         } catch (IndexerException ex) {
             LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
-            System.err.println(openGrok.getUsage());
+            System.err.println(optParser.getUsage());
             System.exit(1);
         } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Unexpected Exception", e);
@@ -402,7 +406,7 @@ public final class Indexer {
         // An example of how to add a data type for option parsing
         OptionParser.accept(WebAddress.class, s -> { return parseWebAddress(s); });
 
-        openGrok = OptionParser.Do(parser -> {
+        optParser = OptionParser.Do(parser -> {
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
@@ -779,7 +783,7 @@ public final class Indexer {
 
         cfg.setHistoryEnabled(false);  // force user to turn on history capture
 
-        argv = openGrok.parse(argv);
+        argv = optParser.parse(argv);
 
         return argv;
     }

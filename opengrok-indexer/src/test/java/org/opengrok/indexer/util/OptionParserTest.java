@@ -528,7 +528,7 @@ public class OptionParserTest {
         String[] argv = {"---unitTest"};
         try {
             Indexer.parseOptions(argv);
-            OptionParser op = Indexer.openGrok;
+            OptionParser op = Indexer.getOptParser();
             
             for (OptionParser.Option o : op.getOptionList()) {
                 if (o.description == null) {
