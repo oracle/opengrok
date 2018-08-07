@@ -352,6 +352,44 @@ public class GitRepository extends Repository {
     }
 
     /**
+     * Get first revision of given file without following renames.
+     * @param file file to get first revision of
+     */
+    private String getFirstRevision(String fullpath) throws IOException {
+        String[] argv = {
+                ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK),
+                "rev-list",
+                "--reverse",
+                "--max-count=1",
+                "HEAD",
+                "--",
+                fullpath
+        };
+
+        Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        int status = executor.exec();
+
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(executor.getOutputStream()))) {
+            String line;
+
+            if ((line = in.readLine()) != null) {
+                return line.trim();
+            }
+        }
+
+        if (status != 0) {
+            LOGGER.log(Level.WARNING,
+                    "Failed to get first revision for: \"{0}\" Exit code: {1}",
+                    new Object[]{fullpath, String.valueOf(status)});
+            return null;
+        }
+
+        return null;
+    }
+
+    /**
      * Annotate the specified file/revision.
      *
      * @param file file to annotate
@@ -369,7 +407,18 @@ public class GitRepository extends Repository {
         cmd.add(ABBREV_BLAME);
         if (revision != null) {
             cmd.add(revision);
+        } else {
+            // {@code git blame} follows renames by default. If renamed file handling is off, its output would
+            // contain invalid revisions. Therefore, the revision range needs to be constrained.
+            if (!isHandleRenamedFiles()) {
+                String firstRevision = getFirstRevision(file.getAbsolutePath());
+                if (firstRevision == null) {
+                    return null;
+                }
+                cmd.add(firstRevision + "..");
+            }
         }
+        cmd.add("--");
         cmd.add(file.getName());
 
         Executor exec = new Executor(cmd, file.getParentFile(),
@@ -377,7 +426,8 @@ public class GitRepository extends Repository {
         GitAnnotationParser parser = new GitAnnotationParser(file.getName());
         int status = exec.exec(true, parser);
 
-        // File might have changed its location
+        // File might have changed its location if it was renamed.
+        // Try to lookup its original name and get the annotation again.
         if (status != 0) {
             cmd.clear();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);

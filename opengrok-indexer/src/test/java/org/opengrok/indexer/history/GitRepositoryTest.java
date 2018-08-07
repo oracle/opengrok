@@ -32,6 +32,10 @@ import java.io.StringReader;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -198,6 +202,41 @@ public class GitRepositoryTest {
             }
             i++;
         }
+    }
+
+    private void testAnnotationOfRenamedFile(GitRepository gitrepo, File file, Set<String> revSet) throws Exception {
+        Annotation annotation = gitrepo.annotate(file, null);
+
+        assertNotNull(annotation);
+        assertEquals(revSet, annotation.getRevisions());
+    }
+
+    @Test
+    public void testAnnotationOfRenamedFileWithHandlingOff() throws Exception {
+        String[] revisions = {"84599b3c"};
+        Set<String> revSet = new HashSet<>();
+        Collections.addAll(revSet, revisions);
+
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo
+                = (GitRepository) RepositoryFactory.getRepository(root);
+        gitrepo.setHandleRenamedFiles(false);
+        File renamedFile = Paths.get(root.getAbsolutePath(),"moved2", "renamed2.c").toFile();
+        testAnnotationOfRenamedFile(gitrepo, renamedFile, revSet);
+    }
+
+    @Test
+    public void testAnnotationOfRenamedFileWithHandlingOn() throws Exception {
+        String[] revisions = {"1086eaf5", "ce4c98ec"};
+        Set<String> revSet = new HashSet<>();
+        Collections.addAll(revSet, revisions);
+
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo
+                = (GitRepository) RepositoryFactory.getRepository(root);
+        gitrepo.setHandleRenamedFiles(true);
+        File renamedFile = Paths.get(root.getAbsolutePath(),"moved2", "renamed2.c").toFile();
+        testAnnotationOfRenamedFile(gitrepo, renamedFile, revSet);
     }
 
     @Test(expected = IOException.class)
