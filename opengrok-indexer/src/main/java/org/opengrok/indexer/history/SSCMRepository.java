@@ -30,6 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -175,19 +176,8 @@ public class SSCMRepository extends Repository {
 
         Process process = null;
         try {
-            final File tmp = File.createTempFile("opengrok", "tmp");
+            final File tmp = Files.createTempDirectory("opengrokSSCMtmp").toFile();
             String tmpName = tmp.getCanonicalPath();
-
-            // cleartool can't get to a previously existing file
-            if (tmp.exists() && !tmp.delete()) {
-                LOGGER.log(Level.WARNING,
-                        "Failed to remove temporary file used by history cache");
-            }
-
-            if (!tmp.mkdir()) {
-                LOGGER.log(Level.WARNING,
-                        "Failed to create temporary directory used by history cache");
-            }
 
             List<String> argv = new ArrayList<>();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
