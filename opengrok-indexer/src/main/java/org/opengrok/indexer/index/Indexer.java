@@ -1147,8 +1147,4 @@ public final class Indexer {
 
     private Indexer() {
     }
-
-    public static OptionParser getOptParser() {
-        return optParser;
-    }
 }

@@ -29,6 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import org.opengrok.indexer.index.Indexer;
 
@@ -524,12 +525,16 @@ public class OptionParserTest {
     
     // Fail options put into Indexer.java that do not have a description.
     @Test
-    public void catchIndexerOptionsWithoutDescription() {
+    public void catchIndexerOptionsWithoutDescription() throws NoSuchFieldException, IllegalAccessException {
         String[] argv = {"---unitTest"};
         try {
             Indexer.parseOptions(argv);
-            OptionParser op = Indexer.getOptParser();
-            
+
+            // Use reflection to get the option parser from Indexer.
+            Field f = Indexer.class.getDeclaredField("optParser");
+            f.setAccessible(true);
+            OptionParser op = (OptionParser) f.get(Indexer.class);
+
             for (OptionParser.Option o : op.getOptionList()) {
                 if (o.description == null) {
                     fail("'"+o.names.get(0) + "' option needs description");
