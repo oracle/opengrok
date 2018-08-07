@@ -287,7 +287,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <version>3.0.4</version>
                 <configuration>
                     <xmlOutput>true</xmlOutput>
-                    <includeFilterFile>tools/findbugs_filter.xml</includeFilterFile>
+                    <includeFilterFile>dev/findbugs_filter.xml</includeFilterFile>
                     <xmlOutputDirectory>
                         ${project.build.directory}/findbugs-reports
                     </xmlOutputDirectory>
@@ -309,7 +309,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 </reportSets>
                 <configuration>
                     <rulesets>
-                        <ruleset>tools/pmd_ruleset.xml</ruleset>
+                        <ruleset>dev/pmd_ruleset.xml</ruleset>
                     </rulesets>
                     <targetJdk>${compileSource}</targetJdk>
                     <aggregate>true</aggregate>
