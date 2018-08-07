@@ -425,7 +425,6 @@ public class MercurialRepository extends Repository {
         argv.add(file.getName());
         Executor executor = new Executor(argv, file.getParentFile(),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        Annotation annotation = null;
         HashMap<String, HistoryEntry> revs = new HashMap<>();
 
         // Construct hash map for history entries from history cache. This is

@@ -45,7 +45,6 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
     </licenses>
 
     <modules>
-        <module>jrcs</module>
         <module>plugins</module>
         <module>opengrok-indexer</module>
         <module>opengrok-web</module>
@@ -229,9 +228,6 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${mavenjavadocplugin.version}</version>
-                <configuration>
-                    <excludePackageNames>org.apache.commons.jrcs.*</excludePackageNames>
-                </configuration>
                 <executions>
                   <execution>
                     <goals>

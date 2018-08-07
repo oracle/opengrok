@@ -88,11 +88,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <artifactId>json-simple</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.opengrok</groupId>
-            <artifactId>jrcs</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
         </dependency>
@@ -143,6 +138,16 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <groupId>com.cronutils</groupId>
             <artifactId>cron-utils</artifactId>
             <version>7.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.hudson</groupId>
+            <artifactId>org.suigeneris.jrcs.diff</artifactId>
+            <version>0.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.hudson</groupId>
+            <artifactId>org.suigeneris.jrcs.rcs</artifactId>
+            <version>0.4.2</version>
         </dependency>
     </dependencies>
 
