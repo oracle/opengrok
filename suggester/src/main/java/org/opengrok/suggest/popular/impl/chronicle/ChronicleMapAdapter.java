@@ -120,8 +120,6 @@ public class ChronicleMapAdapter implements PopularityMap {
 
         Path tempFile = Files.createTempFile("opengrok", "chronicle");
 
-        ChronicleMap<BytesRef, Integer> m;
-
         try {
             map.getAll(tempFile.toFile());
 
@@ -131,7 +129,7 @@ public class ChronicleMapAdapter implements PopularityMap {
 
             Files.delete(chronicleMapFile.toPath());
 
-            m = ChronicleMap.of(BytesRef.class, Integer.class)
+            ChronicleMap<BytesRef, Integer> m = ChronicleMap.of(BytesRef.class, Integer.class)
                     .name(field)
                     .averageKeySize(newMapAvgKey)
                     .entries(newMapSize)
