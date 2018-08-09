@@ -555,7 +555,7 @@ public abstract class Repository extends RepositoryInfo {
                                     locale),
                             ex1.getErrorOffset()
                     );
-                    if (head == null || tail == null) {
+                    if (head == null) {
                         head = tail = ex1;
                     } else {
                         tail.initCause(ex1);

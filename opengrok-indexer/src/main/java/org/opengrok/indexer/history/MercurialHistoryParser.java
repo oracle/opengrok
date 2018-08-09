@@ -126,7 +126,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             } else if (s.startsWith(MercurialRepository.USER) && entry != null) {
                 entry.setAuthor(s.substring(MercurialRepository.USER.length()).trim());
             } else if (s.startsWith(MercurialRepository.DATE) && entry != null) {
-                Date date = new Date();
+                Date date;
                 try {
                     date = df.parse(s.substring(MercurialRepository.DATE.length()).trim());
                 } catch (ParseException pe) {
