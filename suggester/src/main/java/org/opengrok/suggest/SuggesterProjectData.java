@@ -70,7 +70,7 @@ class SuggesterProjectData implements Closeable {
 
     private static final int MAX_TERM_SIZE = Short.MAX_VALUE - 3;
 
-    private static final String TEMP_DIR_PREFIX = "opengrok";
+    private static final String TEMP_DIR_PREFIX = "opengrok_suggester";
 
     private static final String WFST_FILE_SUFFIX = ".wfst";
 
@@ -98,6 +98,8 @@ class SuggesterProjectData implements Closeable {
 
     private Set<String> fields;
 
+    private final Path tempDir;
+
     SuggesterProjectData(
             final Directory indexDir,
             final Path suggesterDir,
@@ -107,6 +109,8 @@ class SuggesterProjectData implements Closeable {
         this.indexDir = indexDir;
         this.suggesterDir = suggesterDir;
         this.allowMostPopular = allowMostPopular;
+
+        tempDir = Files.createTempDirectory(TEMP_DIR_PREFIX);
 
         initFields(fields);
     }
@@ -207,7 +211,7 @@ class SuggesterProjectData implements Closeable {
     }
 
     private WFSTCompletionLookup createWFST() throws IOException {
-        return new WFSTCompletionLookup(FSDirectory.open(Files.createTempDirectory(TEMP_DIR_PREFIX)), TEMP_DIR_PREFIX);
+        return new WFSTCompletionLookup(FSDirectory.open(tempDir), TEMP_DIR_PREFIX);
     }
 
     private File getWFSTFile(final String field) {
@@ -446,6 +450,8 @@ class SuggesterProjectData implements Closeable {
                 }
             });
             indexDir.close();
+
+            FileUtils.deleteDirectory(tempDir.toFile());
         } finally {
             lock.writeLock().unlock();
         }
