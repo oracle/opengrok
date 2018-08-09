@@ -174,7 +174,6 @@ public class SSCMRepository extends Repository {
 
         File directory = new File(parent);
 
-        Process process = null;
         try {
             final File tmp = Files.createTempDirectory("opengrokSSCMtmp").toFile();
             String tmpName = tmp.getCanonicalPath();
@@ -233,16 +232,6 @@ public class SSCMRepository extends Repository {
         } catch (IOException exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get file: " + exp.getClass().toString(), exp);
-        } finally {
-            // Clean up zombie-processes...
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
         }
 
         return ret;
