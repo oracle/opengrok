@@ -327,8 +327,7 @@ public class MercurialRepository extends Repository {
 
                 if (!content.isEmpty()) {
                     /*
-                     * Split string of 'newfile1 (oldfile1)newfile2
-                     * (oldfile2) ...' into pairs of renames.
+                     * Split string of 'newfile1 (oldfile1)newfile2 (oldfile2) ...' into pairs of renames.
                      */
                     String[] splitArray = content.split("\\)");
                     for (String s : splitArray) {
@@ -342,10 +341,6 @@ public class MercurialRepository extends Repository {
                             break;
                         }
                     }
-                }
-
-                if (rev.equals(rev_to_find)) {
-                    break;
                 }
             }
         }
