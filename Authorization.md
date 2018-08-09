@@ -53,7 +53,7 @@ You can configure:
 
 1. Plugin directory
 
-   The configuration has been moved from `web.xml` to the usual OpenGrok configuration xml file. The way you provide new plugin directory is by creating a new xml configuration "read-only configuration" file which gets merged with the configuration made by the indexer.
+   The configuration has been moved from `web.xml` to the usual OpenGrok configuration XML file. The way you provide new plugin directory is by creating a new XML configuration "read-only configuration" file which gets merged with the configuration made by the indexer.
 
    There in the file provide a new variable named `pluginDirectory` with a `String` parameter with absolute path to the directory with plugins.
 
@@ -133,16 +133,16 @@ If you decide that your plugin uses some sort of sessions then you might want to
 
 ### Restrictions
 
-Custom classloader restricts the plugin to load only this classes from org.opensolaris.opengrok package:
+Custom classloader restricts the plugin to load only this classes from `org.opengrok.indexer` package:
 
 ```java
 private final static String[] classWhitelist = new String[]{
-    "org.opensolaris.opengrok.configuration.Group",
-    "org.opensolaris.opengrok.configuration.Project",
-    "org.opensolaris.opengrok.configuration.RuntimeEnvironment",
-    "org.opensolaris.opengrok.authorization.IAuthorizationPlugin",
-    "org.opensolaris.opengrok.util.*",
-    "org.opensolaris.opengrok.logger.*",
+    "org.opengrok.indexer.configuration.Group",
+    "org.opengrok.indexer.configuration.Project",
+    "org.opengrok.indexer.configuration.RuntimeEnvironment",
+    "org.opengrok.indexer.authorization.IAuthorizationPlugin",
+    "org.opengrok.indexer.util.*",
+    "org.opengrok.indexer.logger.*",
 };
 ```
 
@@ -163,12 +163,12 @@ Also JVM can forbid you to extend some packages which are not meant to be extend
 
 ### Set up
 
-The plugin class must be compiled to the .class file (and the it can be packaged into .jar file). The frameworks supports both .class and .jar files. For compiling you have to provide opengrok.jar and the servlet api (`HttpServletRequest`) in the classpath
+The plugin class must be compiled to the .class file (and the it can be packaged into .jar file). The frameworks supports both .class and .jar files. For compiling you have to provide `opengrok.jar` and the servlet api (`HttpServletRequest`) in the classpath
 
 Example (for the `TruePlugin` which is included in the repository):
 `$ javac -classpath dist/opengrok.jar -d . plugins/TruePlugin.java`
 
-Then you can just drop the compiled .class file into plugin directory and deploy the webapp.
+Then you can just drop the compiled `.class` file into plugin directory and deploy the webapp.
 If the plugin is a part of a package. Then you have to copy the full directory path which is made
 by the compiler relatively to the source file.
 
@@ -233,7 +233,7 @@ This is an example entry for the "read-only configuration". This defines three p
 ```xml
 <void property="pluginStack">
   <void method="add">
-    <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+    <object class="org.opengrok.indexer.authorization.AuthorizationPlugin">
       <void property="flag">
         <string>REQUISITE</string>
       </void>
@@ -243,7 +243,7 @@ This is an example entry for the "read-only configuration". This defines three p
     </object>
   </void> 
   <void method="add">
-    <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+    <object class="org.opengrok.indexer.authorization.AuthorizationPlugin">
       <void property="flag">
         <string>SUFFICIENT</string>
       </void>
@@ -253,7 +253,7 @@ This is an example entry for the "read-only configuration". This defines three p
     </object>
   </void>
   <void method="add">
-    <object class="org.opensolaris.opengrok.authorization.AuthorizationPlugin">
+    <object class="org.opengrok.indexer.authorization.AuthorizationPlugin">
       <void property="flag">
         <string>REQUIRED</string>
       </void>
@@ -492,7 +492,7 @@ Depending on what you have entered you should see filtered results on the main p
 You can try other accounts by logging out by forgetting the session (`ctrl+shift+delete` + forget current session/this can vary in different browsers).
 
 ## Complete code
-[HttpBasicAuthorizationPlugin.java](https://github.com/OpenGrok/OpenGrok/blob/master/plugins/src/main/java/HttpBasicAuthorizationPlugin.java)
+[HttpBasicAuthorizationPlugin.java](https://github.com/OpenGrok/OpenGrok/blob/master/plugins/src/opengrok/auth/plugin/HttpBasicAuthorizationPlugin.java)
 
 
 # Troubleshooting
