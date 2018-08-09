@@ -26,6 +26,7 @@ import json
 import yaml
 import sys
 
+# The following is to make the json parsing work on Python 3.4.
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
