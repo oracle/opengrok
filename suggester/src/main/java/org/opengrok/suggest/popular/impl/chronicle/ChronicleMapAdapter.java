@@ -138,13 +138,10 @@ public class ChronicleMapAdapter implements PopularityMap {
                     .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
                     .createOrRecoverPersistedTo(f);
             m.putAll(tempFile.toFile());
-        } catch (IOException e) {
-            throw e;
+            map = m;
         } finally {
             Files.delete(tempFile);
         }
-
-        map = m;
     }
 
     /**
