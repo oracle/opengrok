@@ -531,10 +531,7 @@ public abstract class Repository extends RepositoryInfo {
 
         @Override
         public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
-            for (DateFormat formatter : formatters) {
-                return formatter.format(date, toAppendTo, fieldPosition);
-            }
-            return toAppendTo.append("(date null)");
+            throw new UnsupportedOperationException("not implemented");
         }
 
         @Override
@@ -568,13 +565,7 @@ public abstract class Repository extends RepositoryInfo {
 
         @Override
         public Date parse(String source, ParsePosition pos) {
-            Date d = null;
-            for (DateFormat formatter : formatters) {
-                if ((d = formatter.parse(source, pos)) != null) {
-                    return d;
-                }
-            }
-            return d;
+            throw new UnsupportedOperationException("not implemented");
         }
     }
 }
