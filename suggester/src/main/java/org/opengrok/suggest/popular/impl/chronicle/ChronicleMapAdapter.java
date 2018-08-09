@@ -120,24 +120,29 @@ public class ChronicleMapAdapter implements PopularityMap {
 
         Path tempFile = Files.createTempFile("opengrok", "chronicle");
 
-        map.getAll(tempFile.toFile());
+        ChronicleMap<BytesRef, Integer> m;
 
-        String field = map.name();
+        try {
+            map.getAll(tempFile.toFile());
 
-        map.close();
+            String field = map.name();
 
-        Files.delete(f.toPath());
+            map.close();
 
-        ChronicleMap<BytesRef, Integer> m = ChronicleMap.of(BytesRef.class, Integer.class)
-                .name(field)
-                .averageKeySize(newMapAvgKey)
-                .entries(newMapSize)
-                .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
-                .createOrRecoverPersistedTo(f);
+            Files.delete(f.toPath());
 
-        m.putAll(tempFile.toFile());
-
-        Files.delete(tempFile);
+            m = ChronicleMap.of(BytesRef.class, Integer.class)
+                    .name(field)
+                    .averageKeySize(newMapAvgKey)
+                    .entries(newMapSize)
+                    .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
+                    .createOrRecoverPersistedTo(f);
+            m.putAll(tempFile.toFile());
+        } catch (IOException e) {
+            throw e;
+        } finally {
+            Files.delete(tempFile);
+        }
 
         map = m;
     }
