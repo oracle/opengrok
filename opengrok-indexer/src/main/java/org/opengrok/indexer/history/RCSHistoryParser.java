@@ -80,8 +80,13 @@ class RCSHistoryParser {
     }
 
     private History parseFile(File file) throws IOException {
+        File rcsfile = getRCSFile(file);
+        if (rcsfile == null) {
+            return null;
+        }
+
         try {
-            Archive archive = new Archive(getRCSFile(file).getPath());
+            Archive archive = new Archive(rcsfile.getPath());
             Version ver = archive.getRevisionVersion();
             Node n = archive.findNode(ver);
             n = n.root();
