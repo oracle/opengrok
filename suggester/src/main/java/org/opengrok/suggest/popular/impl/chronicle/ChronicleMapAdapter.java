@@ -43,17 +43,17 @@ public class ChronicleMapAdapter implements PopularityMap {
 
     private ChronicleMap<BytesRef, Integer> map;
 
-    private final File f;
+    private final File chronicleMapFile;
 
-    public ChronicleMapAdapter(final String name, final double averageKeySize, final int entries, final File f)
+    public ChronicleMapAdapter(final String name, final double averageKeySize, final int entries, final File file)
             throws IOException {
         map = ChronicleMap.of(BytesRef.class, Integer.class)
                 .name(name)
                 .averageKeySize(averageKeySize)
                 .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
                 .entries(entries)
-                .createOrRecoverPersistedTo(f);
-        this.f = f;
+                .createOrRecoverPersistedTo(file);
+        this.chronicleMapFile = file;
     }
 
     /** {@inheritDoc} */
@@ -120,26 +120,26 @@ public class ChronicleMapAdapter implements PopularityMap {
 
         Path tempFile = Files.createTempFile("opengrok", "chronicle");
 
-        map.getAll(tempFile.toFile());
+        try {
+            map.getAll(tempFile.toFile());
 
-        String field = map.name();
+            String field = map.name();
 
-        map.close();
+            map.close();
 
-        Files.delete(f.toPath());
+            Files.delete(chronicleMapFile.toPath());
 
-        ChronicleMap<BytesRef, Integer> m = ChronicleMap.of(BytesRef.class, Integer.class)
-                .name(field)
-                .averageKeySize(newMapAvgKey)
-                .entries(newMapSize)
-                .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
-                .createOrRecoverPersistedTo(f);
-
-        m.putAll(tempFile.toFile());
-
-        Files.delete(tempFile);
-
-        map = m;
+            ChronicleMap<BytesRef, Integer> m = ChronicleMap.of(BytesRef.class, Integer.class)
+                    .name(field)
+                    .averageKeySize(newMapAvgKey)
+                    .entries(newMapSize)
+                    .keyReaderAndDataAccess(BytesRefSizedReader.INSTANCE, new BytesRefDataAccess())
+                    .createOrRecoverPersistedTo(chronicleMapFile);
+            m.putAll(tempFile.toFile());
+            map = m;
+        } finally {
+            Files.delete(tempFile);
+        }
     }
 
     /**
