@@ -4,7 +4,7 @@ Ideally, the following minimum criteria should be fulfilled before a new
 final (i.e. non-prerelease) version is released:
 
   - The overall code coverage must be at least 70%
-  - No findbugs warnings
+  - Sonarcloud reported bugs should not have any critical issues
   - No stoppers
   - All bugs and enhancements must be evaluated
 
