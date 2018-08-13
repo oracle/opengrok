@@ -2,7 +2,7 @@
 
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 	sudo apt-get update -qq
-	sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs rcs-blame python3 python3-pip pep8;
+	sudo apt-get install -qq cvs git mercurial cssc bzr subversion monotone rcs rcs-blame python3 python3-pip pep8;
 	sudo ./dev/install-bitkeeper.sh
 	sudo pip3 install --upgrade pip
 	sudo pip3 install flake8
@@ -12,3 +12,5 @@ elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
 	brew upgrade python
 	pip3 install pep8 flake8
 fi
+
+sudo ./dev/install-universal_ctags.sh

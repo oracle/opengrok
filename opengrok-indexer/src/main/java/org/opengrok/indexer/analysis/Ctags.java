@@ -56,7 +56,6 @@ public class Ctags implements Resettable {
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
-    //default: setCtags(System.getProperty("org.opengrok.indexer.analysis.Ctags", "ctags"));
     private String binary;
     private String CTagsExtraOptionsFile = null;
     private int tabSize;
@@ -124,16 +123,15 @@ public class Ctags implements Resettable {
         command.add(binary);
         command.add("--c-kinds=+l");
 
-        if (env.isUniversalCtags()) {
-            command.add("--langmap=clojure:+.cljs");
-            command.add("--langmap=clojure:+.cljx");
+        command.add("--langmap=clojure:+.cljs");
+        command.add("--langmap=clojure:+.cljx");
 
-            // Workaround for bug #14924: Don't get local variables in Java
-            // code since that creates many false positives.
-            // CtagsTest : bug14924 "too many methods" guards for this
-            // universal ctags are however safe, so enabling for them
-            command.add("--java-kinds=+l");
-        }
+        // Workaround for bug #14924: Don't get local variables in Java
+        // code since that creates many false positives.
+        // CtagsTest : bug14924 "too many methods" guards for this
+        // universal ctags are however safe, so enabling for them
+        command.add("--java-kinds=+l");
+
         command.add("--sql-kinds=+l");
         command.add("--Fortran-kinds=+L");
         command.add("--C++-kinds=+l");
@@ -163,9 +161,7 @@ public class Ctags implements Resettable {
 
         addHaskellSupport(command);
 
-        if (!env.isUniversalCtags()) {
-            addGoLangSupport(command);
-        }
+        addGoLangSupport(command);
 
         //temporarily use our defs until ctags will fix https://github.com/universal-ctags/ctags/issues/988
         addClojureSupport(command);
@@ -198,19 +194,14 @@ public class Ctags implements Resettable {
         processBuilder = new ProcessBuilder(command);
 
         ctags = processBuilder.start();
-        ctagsIn = env.isUniversalCtags() ? new OutputStreamWriter(
-            ctags.getOutputStream(), StandardCharsets.UTF_8) :
-            new OutputStreamWriter(ctags.getOutputStream());
-        ctagsOut = new BufferedReader(env.isUniversalCtags() ?
-            new InputStreamReader(ctags.getInputStream(),
-            StandardCharsets.UTF_8) : new InputStreamReader(
-            ctags.getInputStream()));
+        ctagsIn = new OutputStreamWriter(
+            ctags.getOutputStream(), StandardCharsets.UTF_8);
+        ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream(),
+            StandardCharsets.UTF_8));
 
         errThread = new Thread(() -> {
-            try (BufferedReader error = new BufferedReader(
-                env.isUniversalCtags() ? new InputStreamReader(
-                ctags.getErrorStream(), StandardCharsets.UTF_8) :
-                new InputStreamReader(ctags.getErrorStream()))) {
+            try (BufferedReader error = new BufferedReader(new InputStreamReader(ctags.getErrorStream(),
+                    StandardCharsets.UTF_8))) {
                 String s;
                 while ((s = error.readLine()) != null) {
                     if (s.length() > 0) {
@@ -232,14 +223,14 @@ public class Ctags implements Resettable {
     private void addRustSupport(List<String> command) {
         command.add("--langdef=rust");
         command.add("--langmap=rust:+.rs");
-        if (!RuntimeEnvironment.getInstance().isUniversalCtags()) {
-            command.add("--regex-rust=/^[[:space:]]*(#\\[[^]]+\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\\\"[^\\\"]+\\\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/h,functions,function definitions/");
-            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?type[[:space:]]+([[:alnum:]_]+)/\\2/T,types,type definitions/");
-            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?enum[[:space:]]+([[:alnum:]_]+)/\\2/g,enum,enumeration names/");
-            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?struct[[:space:]]+([[:alnum:]_]+)/\\2/S,structure names/");
-            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?mod[[:space:]]+([[:alnum:]_]+)/\\2/N,modules,module names/");
-            command.add("--regex-rust=/^[[:space:]]*macro_rules![[:space:]]+([[:alnum:]_]+)/\\1/d,macros,macro definitions/");
-        }
+
+        command.add("--regex-rust=/^[[:space:]]*(#\\[[^]]+\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\\\"[^\\\"]+\\\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/h,functions,function definitions/");
+        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?type[[:space:]]+([[:alnum:]_]+)/\\2/T,types,type definitions/");
+        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?enum[[:space:]]+([[:alnum:]_]+)/\\2/g,enum,enumeration names/");
+        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?struct[[:space:]]+([[:alnum:]_]+)/\\2/S,structure names/");
+        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?mod[[:space:]]+([[:alnum:]_]+)/\\2/N,modules,module names/");
+        command.add("--regex-rust=/^[[:space:]]*macro_rules![[:space:]]+([[:alnum:]_]+)/\\1/d,macros,macro definitions/");
+
         // The following are not supported yet in Universal Ctags b13cb551
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?([[:alnum:]_]+)/\\4/C,consts,static constants/");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,trait implementations/");
@@ -254,20 +245,8 @@ public class Ctags implements Resettable {
         command.add("--regex-Posh=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v,variable/");
         command.add("--regex-Posh=/^[[:space:]]*(:[^[:space:]]+)/\\1/l,label/");
 
-        if (!RuntimeEnvironment.getInstance().isUniversalCtags()) {
-            command.add("--regex-Posh=/^[[:space:]]*([Ff]unction|[Ff]ilter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/");
-        } else {
-            command.add("--_fielddef-Posh=signature,signatures");
-            command.add("--fields-Posh=+{signature}");
 
-            // escaped variable markers
-            command.add("--regex-Posh=/`\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
-            command.add("--regex-Posh=/`\\$(\\{[^}]+\\})/\\1//{exclusive}");
-            command.add("--regex-Posh=/#.*\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
-            command.add("--regex-Posh=/#.*\\$(\\{[^}]+\\})/\\1//{exclusive}");
-            command.add("--regex-Posh=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/{icase}{exclusive}{_field=signature:(\\4)}");
-
-        }
+        command.add("--regex-Posh=/^[[:space:]]*([Ff]unction|[Ff]ilter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/");
     }
 
     private void addPascalSupport(List<String> command) {
@@ -317,10 +296,10 @@ public class Ctags implements Resettable {
     private void addClojureSupport(List<String> command) {
         command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/kul/8704283)
         command.add("--langmap=clojure:+.clj");
-        if (!RuntimeEnvironment.getInstance().isUniversalCtags()) {
-            command.add("--regex-clojure=/\\([[:space:]]*defn[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/f,function/");
-            command.add("--regex-clojure=/\\([[:space:]]*ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
-        }
+
+        command.add("--regex-clojure=/\\([[:space:]]*defn[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/f,function/");
+        command.add("--regex-clojure=/\\([[:space:]]*ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
+
         command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
         command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d,definition/");
         command.add("--regex-clojure=/\\([[:space:]]*defn-[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/p,private function/");

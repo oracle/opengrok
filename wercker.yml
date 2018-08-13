@@ -12,7 +12,10 @@ box: openjdk:8-jdk
 build:
   steps:
     - install-packages:
-      packages: sudo maven exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs pep8 flake8
+      packages: sudo maven cvs git mercurial cssc bzr subversion monotone rcs pep8 flake8
+    - script:
+      name: Install Universal ctags
+      code: ./dev/install-universal_ctags.sh
     - script:
       name: Create non-root user
       code: |

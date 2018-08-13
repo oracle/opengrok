@@ -142,6 +142,7 @@ public final class RuntimeEnvironment {
      * value is not mediated to {@link Configuration}.
      */
     private String ctags;
+    private static final String SYSTEM_CTAGS_PROPERTY = "org.opengrok.indexer.analysis.Ctags";
     /**
      * Stores a transient value when
      * {@link #setMandoc(java.lang.String)} is called -- i.e. the
@@ -535,7 +536,7 @@ public final class RuntimeEnvironment {
         String value;
         return ctags != null ? ctags : (value =
             threadConfig.get().getCtags()) != null ? value :
-            System.getProperty("org.opengrok.indexer.analysis.Ctags",
+            System.getProperty(SYSTEM_CTAGS_PROPERTY,
             "ctags");
     }
 
@@ -598,56 +599,32 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHitsPerPage(hitsPerPage);
     }
 
-    // cache these tests instead of rerunning them for every call
-    private transient Boolean exCtagsFound;
-    private transient Boolean isUniversalCtagsVal;
+    private transient Boolean ctagsFound;
 
     /**
-     * Validate that I have a Exuberant ctags program I may use
+     * Validate that there is a Universal ctags program.
      *
      * @return true if success, false otherwise
      */
-    public boolean validateExuberantCtags() {
-        if (exCtagsFound == null) {
+    public boolean validateUniversalCtags() {
+        if (ctagsFound == null) {
             Executor executor = new Executor(new String[]{getCtags(), "--version"});
             executor.exec(false);
             String output = executor.getOutputString();
             boolean isUnivCtags = output != null && output.contains("Universal Ctags");
-            if (output == null || (!output.contains("Exuberant Ctags") && !isUnivCtags)) {
-                LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
+            if (output == null && !isUnivCtags) {
+                LOGGER.log(Level.SEVERE, "Error: No Universal Ctags found in PATH !\n"
                         + "(tried running " + "{0}" + ")\n"
-                        + "Please use option -c to specify path to a good "
-                        + "Exuberant Ctags program.\n"
-                        + "Or set it in java property "
-                        + "org.opengrok.indexer.analysis.Ctags", getCtags());
-                exCtagsFound = false;
+                        + "Please use the -c option to specify path to a "
+                        + "Universal Ctags program.\n"
+                        + "Or set it in Java system property "
+                        + SYSTEM_CTAGS_PROPERTY, getCtags());
+                ctagsFound = false;
             } else {
-                if (isUnivCtags) {
-                    isUniversalCtagsVal = true;
-                }
-                exCtagsFound = true;
+                ctagsFound = true;
             }
         }
-        return exCtagsFound;
-    }
-
-    /**
-     * Are we using Universal ctags?
-     *
-     * @return true if we are using Universal ctags
-     */
-    public boolean isUniversalCtags() {
-        if (isUniversalCtagsVal == null) {
-            isUniversalCtagsVal = false;
-            Executor executor = new Executor(new String[]{getCtags(), "--version"});
-
-            executor.exec(false);
-            String output = executor.getOutputString();
-            if (output.contains("Universal Ctags")) {
-                isUniversalCtagsVal = true;
-            }
-        }
-        return isUniversalCtagsVal;
+        return ctagsFound;
     }
 
     /**

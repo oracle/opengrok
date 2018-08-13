@@ -86,7 +86,7 @@ public class ClojureAnalyzerFactoryTest {
         ClojureAnalyzerFactory analFact = new ClojureAnalyzerFactory();
         analyzer = analFact.getAnalyzer();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateExuberantCtags()) {
+        if (env.validateUniversalCtags()) {
             analyzer.setCtags(new Ctags());
         }
     }

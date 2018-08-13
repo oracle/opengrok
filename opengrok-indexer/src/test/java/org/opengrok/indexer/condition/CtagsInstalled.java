@@ -28,7 +28,7 @@ public class CtagsInstalled implements RunCondition {
 
     @Override
     public boolean isSatisfied() {
-        return RuntimeEnvironment.getInstance().validateExuberantCtags();
+        return RuntimeEnvironment.getInstance().validateUniversalCtags();
     }
 
 }
