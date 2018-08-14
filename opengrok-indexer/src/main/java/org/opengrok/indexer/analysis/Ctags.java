@@ -306,14 +306,6 @@ public class Ctags implements Resettable {
         command.add("--regex-clojure=/\\([[:space:]]*intern[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/v,intern/");
     }
 
-    private void addGoLangSupport(List<String> command) {
-        command.add("--langdef=golang");
-        command.add("--langmap=golang:+.go");
-        command.add("--regex-golang=/func([[:space:]]+([^)]+))?[[:space:]]+([a-zA-Z0-9_]+)/\\2/f,func/");
-        command.add("--regex-golang=/var[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/v,var/");
-        command.add("--regex-golang=/type[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/t,type/");
-    }
-
     private void addHaskellSupport(List<String> command) {
         command.add("--langdef=haskell"); // below was added with #912
         command.add("--langmap=haskell:+.hs");
