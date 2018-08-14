@@ -161,8 +161,6 @@ public class Ctags implements Resettable {
 
         addHaskellSupport(command);
 
-        addGoLangSupport(command);
-
         //temporarily use our defs until ctags will fix https://github.com/universal-ctags/ctags/issues/988
         addClojureSupport(command);
 
@@ -224,13 +222,6 @@ public class Ctags implements Resettable {
         command.add("--langdef=rust");
         command.add("--langmap=rust:+.rs");
 
-        command.add("--regex-rust=/^[[:space:]]*(#\\[[^]]+\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\\\"[^\\\"]+\\\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/h,functions,function definitions/");
-        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?type[[:space:]]+([[:alnum:]_]+)/\\2/T,types,type definitions/");
-        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?enum[[:space:]]+([[:alnum:]_]+)/\\2/g,enum,enumeration names/");
-        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?struct[[:space:]]+([[:alnum:]_]+)/\\2/S,structure names/");
-        command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?mod[[:space:]]+([[:alnum:]_]+)/\\2/N,modules,module names/");
-        command.add("--regex-rust=/^[[:space:]]*macro_rules![[:space:]]+([[:alnum:]_]+)/\\1/d,macros,macro definitions/");
-
         // The following are not supported yet in Universal Ctags b13cb551
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?([[:alnum:]_]+)/\\4/C,consts,static constants/");
         command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?([[:alnum:]_]+)/\\5 \\7 \\8/I,impls,trait implementations/");
@@ -245,8 +236,14 @@ public class Ctags implements Resettable {
         command.add("--regex-Posh=/\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1/v,variable/");
         command.add("--regex-Posh=/^[[:space:]]*(:[^[:space:]]+)/\\1/l,label/");
 
-
-        command.add("--regex-Posh=/^[[:space:]]*([Ff]unction|[Ff]ilter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/");
+        command.add("--_fielddef-Posh=signature,signatures");
+        command.add("--fields-Posh=+{signature}");
+        // escaped variable markers
+        command.add("--regex-Posh=/`\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
+        command.add("--regex-Posh=/`\\$(\\{[^}]+\\})/\\1//{exclusive}");
+        command.add("--regex-Posh=/#.*\\$([[:alnum:]_]+([:.][[:alnum:]_]+)*)/\\1//{exclusive}");
+        command.add("--regex-Posh=/#.*\\$(\\{[^}]+\\})/\\1//{exclusive}");
+        command.add("--regex-Posh=/^[[:space:]]*(function|filter)[[:space:]]+([^({[:space:]]+)[[:space:]]*(\\(([^)]+)\\))?/\\2/f,function,functions/{icase}{exclusive}{_field=signature:(\\4)}");
     }
 
     private void addPascalSupport(List<String> command) {
@@ -296,9 +293,6 @@ public class Ctags implements Resettable {
     private void addClojureSupport(List<String> command) {
         command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/kul/8704283)
         command.add("--langmap=clojure:+.clj");
-
-        command.add("--regex-clojure=/\\([[:space:]]*defn[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/f,function/");
-        command.add("--regex-clojure=/\\([[:space:]]*ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
 
         command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/n,namespace/");
         command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[:alnum:]*+!_:\\/.?]+)/\\1/d,definition/");
