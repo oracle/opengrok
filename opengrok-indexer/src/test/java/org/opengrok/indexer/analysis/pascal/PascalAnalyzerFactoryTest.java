@@ -86,7 +86,7 @@ public class PascalAnalyzerFactoryTest {
         PascalAnalyzerFactory analyzerFactory = new PascalAnalyzerFactory();
         analyzer = analyzerFactory.getAnalyzer();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.validateExuberantCtags()) {
+        if (env.validateUniversalCtags()) {
             analyzer.setCtags(new Ctags());
         }
     }

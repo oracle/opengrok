@@ -873,7 +873,7 @@ public final class Indexer {
             throw new IndexerException("ERROR: please specify a SRC_ROOT with option -s !");
         }
 
-        if (zapCache.isEmpty() && !env.validateExuberantCtags()) {
+        if (zapCache.isEmpty() && !env.validateUniversalCtags()) {
             throw new IndexerException("Didn't find Exuberant Ctags");
         }
         if (zapCache == null) {
