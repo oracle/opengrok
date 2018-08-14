@@ -46,8 +46,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,11 +66,13 @@ import java.util.logging.Logger;
  */
 class SuggesterProjectData implements Closeable {
 
+    private static final String TMP_DIR_PROPERTY = "java.io.tmpdir";
+
     private static final Logger logger = Logger.getLogger(SuggesterProjectData.class.getName());
 
     private static final int MAX_TERM_SIZE = Short.MAX_VALUE - 3;
 
-    private static final String TEMP_DIR_PREFIX = "opengrok_suggester";
+    private static final String WFST_TEMP_FILE_PREFIX = "opengrok_suggester_wfst";
 
     private static final String WFST_FILE_SUFFIX = ".wfst";
 
@@ -98,7 +100,7 @@ class SuggesterProjectData implements Closeable {
 
     private Set<String> fields;
 
-    private final Path tempDir;
+    private final Directory tempDir;
 
     SuggesterProjectData(
             final Directory indexDir,
@@ -110,7 +112,7 @@ class SuggesterProjectData implements Closeable {
         this.suggesterDir = suggesterDir;
         this.allowMostPopular = allowMostPopular;
 
-        tempDir = Files.createTempDirectory(TEMP_DIR_PREFIX);
+        tempDir = FSDirectory.open(Paths.get(System.getProperty(TMP_DIR_PROPERTY)));
 
         initFields(fields);
     }
@@ -210,8 +212,8 @@ class SuggesterProjectData implements Closeable {
         }
     }
 
-    private WFSTCompletionLookup createWFST() throws IOException {
-        return new WFSTCompletionLookup(FSDirectory.open(tempDir), TEMP_DIR_PREFIX);
+    private WFSTCompletionLookup createWFST() {
+        return new WFSTCompletionLookup(tempDir, WFST_TEMP_FILE_PREFIX);
     }
 
     private File getWFSTFile(final String field) {
@@ -451,7 +453,7 @@ class SuggesterProjectData implements Closeable {
             });
             indexDir.close();
 
-            FileUtils.deleteDirectory(tempDir.toFile());
+            tempDir.close();
         } finally {
             lock.writeLock().unlock();
         }
