@@ -124,7 +124,7 @@ public class MercurialRepositoryTest {
 
         // Add a subdirectory with some history.
         runHgCommand(root, "import",
-            getClass().getResource("/history/hg-export-subdir.txt").getPath());
+            Paths.get(getClass().getResource("/history/hg-export-subdir.txt").toURI()).toString());
 
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
