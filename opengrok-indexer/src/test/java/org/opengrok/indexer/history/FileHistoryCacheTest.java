@@ -170,7 +170,7 @@ public class FileHistoryCacheTest {
 
         // Add bunch of changesets with file based changes and tags.
         MercurialRepositoryTest.runHgCommand(reposRoot, "import",
-                getClass().getResource("/history/hg-export-tag.txt").getPath());
+                new File(getClass().getResource("/history/hg-export-tag.txt").getFile()).getAbsolutePath());
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
@@ -293,7 +293,7 @@ public class FileHistoryCacheTest {
 
         // test incremental update
         MercurialRepositoryTest.runHgCommand(reposRoot, "import",
-                getClass().getResource("/history/hg-export.txt").getPath());
+                new File(getClass().getResource("/history/hg-export.txt").getFile()).getAbsolutePath());
 
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
 
@@ -493,11 +493,11 @@ public class FileHistoryCacheTest {
 
         // Branch the repo and add one changeset.
         runHgCommand(reposRoot, "unbundle",
-            getClass().getResource("/history/hg-branch.bundle").getPath());
+            new File(getClass().getResource("/history/hg-branch.bundle").getFile()).getAbsolutePath());
 
         // Import changesets which rename one of the files in the default branch.
         runHgCommand(reposRoot, "import",
-            getClass().getResource("/history/hg-export-renamed.txt").getPath());
+            new File(getClass().getResource("/history/hg-export-renamed.txt").getFile()).getAbsolutePath());
 
         // Switch to the newly created branch.
         runHgCommand(reposRoot, "update", "mybranch");
