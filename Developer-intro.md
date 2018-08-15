@@ -119,7 +119,7 @@ To run tests type `mvn test` command. For specific tests you can use `-Dtest` op
 
 Also, OpenGrok repository is setup so that pushes will trigger [Travis](https://travis-ci.org) builds so it is not necessary to run tests on your workstation - just commit and push to Github (first it is necessary to enable Travis for your fork on the Travis web).
 
-See [Developers wiki](https://github.com/oracle/opengrok/wiki/Developers) for more info on testing.
+See [Testing wiki](https://github.com/oracle/opengrok/wiki/Testing) for more info on testing.
 
 ### Publish changes
 
