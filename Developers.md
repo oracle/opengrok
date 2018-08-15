@@ -192,7 +192,7 @@ $ ls jdepend/
 report.txt  report.xml
 ```
 
-### 8.7 Using SonarQube
+# Using SonarQube
 
 Use a sonar runner with included `sonar-project.properties` properties,
 e.g. using bash:
