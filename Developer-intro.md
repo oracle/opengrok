@@ -85,7 +85,11 @@ mvn tomcat7:redeploy
 
 Now setup the sources to be indexed under e.g. `/var/opengrok/src` and create data directory for storing indexes under e.g. `/var/opengrok/data`. Make sure both directories have correct permissions so that the user running the process can read and write to them.
 
-Once the Maven `package` phase is done, you can run the main method `org.opengrok.indexer.index.Indexer` e.g. like this:
+In IDEA, go to the _Run_ menu and select _Edit Configurations_ and create a configuration based on _Application_ so it looks e.g. like this:
+
+
+
+Or, you can run the main method `org.opengrok.indexer.index.Indexer` e.g. like this from command line (once the Maven `package` phase is done):
 ```
 java -cp 'distribution/target/dist/opengrok-1.1-rc38.jar:distribution/target/dist/*' \
     org.opengrok.indexer.index.Indexer \
