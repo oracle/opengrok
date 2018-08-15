@@ -1,4 +1,4 @@
-If you wanted to make a change to OpenGrok code base (small fix, new feature, anything) here's couple of steps to get you started.
+If you wanted to make a change to OpenGrok code base (small fix, new feature, anything - see https://github.com/opengrok/opengrok/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) here's couple of steps to get you started.
 
 ### Before we begin
 
