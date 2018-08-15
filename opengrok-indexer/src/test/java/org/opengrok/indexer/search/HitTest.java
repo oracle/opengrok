@@ -23,6 +23,9 @@
 package org.opengrok.indexer.search;
 
 import org.junit.Test;
+
+import java.io.File;
+
 import static org.junit.Assert.*;
 
 /**
@@ -45,7 +48,7 @@ public class HitTest {
     public void testPath() {
         Hit instance = new Hit("/foo/bar", null, null, false, false);
         assertEquals("/foo/bar", instance.getPath());
-        assertEquals("/foo", instance.getDirectory());
+        assertEquals(File.separator + "foo", instance.getDirectory());
     }
 
     @Test
