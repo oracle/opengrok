@@ -4,7 +4,7 @@ If you wanted to make a change to OpenGrok code base (small fix, new feature, [a
 
 Firstly, create Github account (of course !).
 
-OpenGrok can be built and tested on Linux, OS X, BSD, Solaris, Windows etc. You will need:
+OpenGrok can be built and tested on any system with Java. You will need:
 
 1. At least JDK8
 1. [Universal ctags](https://github.com/universal-ctags) (from source)
