@@ -87,9 +87,9 @@ Now setup the sources to be indexed under e.g. `/var/opengrok/src` and create da
 
 In IDEA, go to the _Run_ menu and select _Edit Configurations_ and create a configuration based on _Application_ so it looks e.g. like this:
 
-[![setting up basic indexer run in IDEA](http://oracle.github.io/opengrok/images/IDEA-basic_indexer_run.png)](http://oracle.github.io/opengrok/images/IDEA-basic_indexer_run.png)
+[![setting up basic indexer run in IDEA](images/IDEA-basic_indexer_run.png)](images/IDEA-basic_indexer_run.png)
 
-You can then run the indexer from the _Run_ item in the _Run_ menu.
+You can then run the indexer from the _Run_ item in the _Run_ menu. Of course, there can be multiple indexer runs preconfigured.
 
 Or, you can run the main method `org.opengrok.indexer.index.Indexer` e.g. like this from command line (once the Maven `package` phase is done):
 ```
