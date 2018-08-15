@@ -101,6 +101,11 @@
             <artifactId>org.suigeneris.jrcs.diff</artifactId>
             <version>0.4.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>7.3.1</version>
+        </dependency>
     </dependencies>
 
     <build>
