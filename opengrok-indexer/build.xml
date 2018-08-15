@@ -164,7 +164,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
       
       <!-- need absolute path for svn url -->
       <pathconvert property="test.svn.url">
-        <map from="" to="file://"/>
+        <map from="" to="file:///"/>
         <path location="${build.test.reposroots}/svn"/>
       </pathconvert>
 
