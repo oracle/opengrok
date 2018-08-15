@@ -11,24 +11,14 @@ See [[Developer intro|Developer-intro]]
 **Note**: For full coverage report, a proper junit test environment is required.
 That would mean:
 
-  * You have to use Ant 1.9 and above
-  * At least `junit-4.12.jar` and its dependencies have to be in ant's
-    classpath (e.g. in `./lib`). The test task will download them automatically.
-  * Your `PATH` must contain directory with exuberant ctags binary
-    * **Note**: make sure that the directory which contains exuberant ctags binary
+  * Your `PATH` must contain directory with Universal ctags binary
+    * **Note**: make sure that the directory which contains Universal ctags binary
       is prepended before the directory with plain ctags program.
   * Your `PATH` variable must contain directories which contain binaries of
-    appropriate SCM software which means commands hg, sccs, cvs, git, bzr, svn
-    (svnadmin too). They must be available for the full report.
+    appropriate SCM software which means commands `hg`, `sccs`, `cvs`, `git`, `bzr`, `svn`
+    (`svnadmin` too). They must be available for the full report.
 
-The tests are then run as follows:
-
-```bash
-ant -lib ./lib test
-```
-
-To check if the test completed without error look for `AssertionFailedError`
-occurrences in the `TESTS-TestSuites.xml` file produced by the test run.
+The tests are normally run in the usual Maven phases.
 
 # Using Findbugs
 
