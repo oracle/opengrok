@@ -93,7 +93,7 @@ You can then run the indexer from the _Run_ item in the _Run_ menu. Of course, t
 
 Or, you can run the main method `org.opengrok.indexer.index.Indexer` e.g. like this from command line (once the Maven `package` phase is done):
 ```
-java -cp 'distribution/target/dist/opengrok-1.1-rc38.jar:distribution/target/dist/*' \
+java -cp 'distribution/target/dist/*' \
     org.opengrok.indexer.index.Indexer \
     -W /var/opengrok/etc/configuration.xml -s /var/opengrok/src -d /var/opengrok/data \
     -c /usr/local/bin/ctags -H -S -U http://localhost:8080/source
