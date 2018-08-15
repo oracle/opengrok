@@ -4,14 +4,7 @@
 
 # Building
 
-Just run `ant` from command line in the top-level directory or use build
-process driven by graphical developer environment such as Netbeans.
-
-Note: in case you are behind http proxy, use `ANT_OPTS` to download jflex, lucene.
-E.g.
-```bash
-ANT_OPTS="-Dhttp.proxyHost=?.? -Dhttp.proxyPort=80" ant
-```
+See [[Developer intro|Developer-intro]]
 
 # Unit testing
 
