@@ -85,12 +85,15 @@ mvn tomcat7:redeploy
 
 Now setup the sources to be indexed under e.g. `/var/opengrok/src` and create data directory for storing indexes under e.g. `/var/opengrok/data`. Make sure both directories have correct permissions so that the user running the process can read and write to them.
 
-Run the main method of `org.opengrok.indexer.index.Indexer` with the following arguments: (IDE and command line steps will be updated)
+Once the Maven `package` phase is done, you can run the main method `org.opengrok.indexer.index.Indexer` e.g. like this:
 ```
--W /var/opengrok/etc/configuration.xml -s /var/opengrok/src -d /var/opengrok/data -c /usr/local/bin/ctags -H -S -U http://localhost:8080/source
+java -cp 'distribution/target/dist/opengrok-1.1-rc38.jar:distribution/target/dist/*' \
+    org.opengrok.indexer.index.Indexer \
+    -W /var/opengrok/etc/configuration.xml -s /var/opengrok/src -d /var/opengrok/data \
+    -c /usr/local/bin/ctags -H -S -U http://localhost:8080/source
 ```
 
-This is assuming the `ctags` binary of your Exuberant ctags installation resides in `/usr/local/bin/ctags`.
+This is assuming the `ctags` binary of your ctags installation resides in `/usr/local/bin/ctags`.
 
 If you now refresh the web page mentioned above it will reflect the reindex and you can do searches etc.
 
