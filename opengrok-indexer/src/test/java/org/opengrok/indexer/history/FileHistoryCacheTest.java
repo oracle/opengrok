@@ -33,6 +33,7 @@ import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.TestRepository;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -170,7 +171,7 @@ public class FileHistoryCacheTest {
 
         // Add bunch of changesets with file based changes and tags.
         MercurialRepositoryTest.runHgCommand(reposRoot, "import",
-                new File(getClass().getResource("/history/hg-export-tag.txt").getFile()).getAbsolutePath());
+                Paths.get(getClass().getResource("/history/hg-export-tag.txt").toURI()).toString());
 
         // Perform incremental reindex.
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
