@@ -64,14 +64,14 @@ public class PathUtilsTest {
 
     @Test
     public void shouldHandleSameInputs() throws IOException {
-        final String USR_BIN = Paths.get(URI.create("file:///usr/bin")).toString();
+        final String USR_BIN = Paths.get("/usr/bin").toString();
         String rel = PathUtils.getRelativeToCanonical(USR_BIN, USR_BIN);
         Assert.assertEquals(USR_BIN + " rel to itself", "", rel);
     }
 
     @Test
     public void shouldHandleEffectivelySameInputs() throws IOException {
-        final String USR_BIN = Paths.get(URI.create("file:///usr/bin")).toString();
+        final String USR_BIN = Paths.get("/usr/bin").toString();
         String rel = PathUtils.getRelativeToCanonical(USR_BIN + File.separator, USR_BIN);
         Assert.assertEquals(USR_BIN + " rel to ~itself", "", rel);
     }
