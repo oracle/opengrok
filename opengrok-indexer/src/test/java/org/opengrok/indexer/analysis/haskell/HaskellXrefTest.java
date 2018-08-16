@@ -122,8 +122,10 @@ public class HaskellXrefTest {
             expectedOutputSteam.close();
         }
 
-        String actual[] = new String(sampleOutputStream.toByteArray(), "UTF-8").split("\n");
-        String expected[] = new String(expectedOutputSteam.toByteArray(), "UTF-8").split("\n");
+        String actual[] = new String(sampleOutputStream.toByteArray(), "UTF-8").
+                replaceAll("\\r", "").split("\n");
+        String expected[] = new String(expectedOutputSteam.toByteArray(), "UTF-8").
+                replaceAll("\\r", "").split("\n");
         assertLinesEqual("Haskell sampleTest()", expected, actual);
         assertEquals("Haskell LOC", 3, actLOC);
     }
@@ -161,7 +163,7 @@ public class HaskellXrefTest {
         baos.close();
 
         String ostr = new String(baos.toByteArray(), "UTF-8");
-        String gotten[] = ostr.split("\n");
+        String gotten[] = ostr.replaceAll("\\r", "").split("\n");
 
         String estr = new String(expbytes, "UTF-8");
         String expected[] = estr.split("\n");
