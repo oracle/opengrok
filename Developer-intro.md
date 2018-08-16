@@ -91,7 +91,11 @@ In IDEA, go to the _Run_ menu and select _Edit Configurations_ and create a conf
 
 [![setting up basic indexer run in IDEA](images/IDEA-basic_indexer_run.png)](images/IDEA-basic_indexer_run.png)
 
-You can then run the indexer from the _Run_ item in the _Run_ menu. Of course, there can be multiple indexer runs preconfigured.
+You can then run the indexer from the _Run_ item in the _Run_ menu:
+
+[![arguments of basic indexer run in IDEA](images/IDEA-simple_indexer_run_example.png)](images/IDEA-simple_indexer_run_example.png)
+
+Of course, there can be multiple indexer runs preconfigured.
 
 Or, you can run the main method `org.opengrok.indexer.index.Indexer` e.g. like this from command line (once the Maven `package` phase is done):
 ```
