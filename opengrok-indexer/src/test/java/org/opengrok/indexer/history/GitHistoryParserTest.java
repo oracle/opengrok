@@ -290,7 +290,7 @@ public class GitHistoryParserTest {
         assertEquals(author1, e0.getAuthor());
         assertEquals(new SimpleDateFormat(gitISODatePattern).parse(date1), e0.getDate());
         assertEquals(1, e0.getFiles().size());
-        assertEquals(File.separator + filename1, e0.getFiles().first());
+        assertEquals(File.separator + filename1.replace('/', File.separatorChar), e0.getFiles().first());
         assertTrue(e0.getMessage().contains("subject title"));
         assertTrue(e0.getMessage().contains("Signed-off-by"));
         HistoryEntry e1 = result.getHistoryEntries().get(1);
@@ -298,8 +298,8 @@ public class GitHistoryParserTest {
         assertEquals(author2, e1.getAuthor());
         assertEquals(new SimpleDateFormat(gitISODatePattern).parse(date1), e1.getDate());
         assertEquals(2, e1.getFiles().size());
-        assertEquals(File.separator + filename1, e1.getFiles().first());
-        assertEquals(File.separator + filename2, e1.getFiles().last());
+        assertEquals(File.separator + filename1.replace('/', File.separatorChar), e1.getFiles().first());
+        assertEquals(File.separator + filename2.replace('/', File.separatorChar), e1.getFiles().last());
         assertTrue(e1.getMessage().contains("[PATCH]"));
         assertTrue(e1.getMessage().contains("Signed-off-by"));
     }
