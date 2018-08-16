@@ -23,7 +23,10 @@
 package org.opengrok.indexer.authorization;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.opengrok.indexer.configuration.Group;
@@ -34,9 +37,10 @@ public class AuthorizationPluginClassLoaderTest {
 
     private final File pluginDirectory;
 
-    public AuthorizationPluginClassLoaderTest() {
+    public AuthorizationPluginClassLoaderTest() throws URISyntaxException {
         URL resource = AuthorizationPluginClassLoaderTest.class.getResource("/authorization/plugins/testplugins.jar");
-        pluginDirectory = new File(resource.getFile()).getParentFile();
+        pluginDirectory = Paths.get(resource.toURI()).toFile().getParentFile();
+        Assert.assertTrue(pluginDirectory.isDirectory());
     }
 
     @Test
