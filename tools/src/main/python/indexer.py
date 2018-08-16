@@ -90,7 +90,7 @@ def FindCtags(logger):
     """
     binary = None
     logger.debug("Trying to find ctags binary")
-    for program in ['ctags-exuberant', 'exctags', 'ctags']:
+    for program in ['universal-ctags', 'ctags']:
         executable = get_command(logger, None, program)
         if executable:
             # Verify that this executable is or is based on Exuberant Ctags
