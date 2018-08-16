@@ -1077,7 +1077,7 @@ public class IndexDatabase {
         Arrays.sort(files, FILENAME_COMPARATOR);
 
         for (File file : files) {
-            String path = parent + '/' + file.getName();
+            String path = parent + File.separator + file.getName();
             if (!accept(dir, file, outLocalRelPath)) {
                 if (outLocalRelPath[0] != null) {
                     File xrefPath = new File(xrefDir, path);
