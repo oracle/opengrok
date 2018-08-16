@@ -79,7 +79,9 @@ cd opengrok-web
 mvn tomcat7:redeploy
 ```
 
-#### Use IDE (will be updated)
+or use IDE - in IDEA simply click on the Maven projects tab on the upper right side of the window. Then invoke the redeploy target of the Maven Tomcat plugin. It is advisable to toggle the 'Skip tests' button in order to speed up the redeploy.
+
+[![redeploy of the webapp in IDEA via Maven Tomcat plugin](images/IDEA-tomcat_redeploy.png)](images/IDEA-tomcat_redeploy.png)
 
 ### Setup sources and index them
 
