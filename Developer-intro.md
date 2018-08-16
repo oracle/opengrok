@@ -97,6 +97,8 @@ The arguments are nicely editable by expanding the field:
 
 You can then run the indexer from the _Run_ item in the _Run_ menu. Of course, there can be multiple indexer runs preconfigured.
 
+[![multiple indexer run profiles in IDEA](images/IDEA-multiple_run_profiles.png)](images/IDEA-multiple_run_profiles.png)
+
 Or, you can run the main method `org.opengrok.indexer.index.Indexer` e.g. like this from command line (once the Maven `package` phase is done):
 ```
 java -cp 'distribution/target/dist/*' org.opengrok.indexer.index.Indexer \
