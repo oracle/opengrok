@@ -25,6 +25,7 @@ package org.opengrok.indexer.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,16 +64,16 @@ public class PathUtilsTest {
 
     @Test
     public void shouldHandleSameInputs() throws IOException {
-        final String USR_BIN = "/usr/bin";
+        final String USR_BIN = Paths.get(URI.create("file:///usr/bin")).toString();
         String rel = PathUtils.getRelativeToCanonical(USR_BIN, USR_BIN);
-        Assert.assertEquals("/usr/bin rel to itself", "", rel);
+        Assert.assertEquals(USR_BIN + " rel to itself", "", rel);
     }
 
     @Test
     public void shouldHandleEffectivelySameInputs() throws IOException {
-        final String USR_BIN = "/usr/bin";
-        String rel = PathUtils.getRelativeToCanonical(USR_BIN + "/", USR_BIN);
-        Assert.assertEquals("/usr/bin rel to ~itself", "", rel);
+        final String USR_BIN = Paths.get(URI.create("file:///usr/bin")).toString();
+        String rel = PathUtils.getRelativeToCanonical(USR_BIN + File.separator, USR_BIN);
+        Assert.assertEquals(USR_BIN + " rel to ~itself", "", rel);
     }
 
     @Test
