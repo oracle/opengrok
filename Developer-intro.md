@@ -7,7 +7,7 @@ Firstly, create Github account (of course !).
 OpenGrok can be built and tested on any system with Java. You will need:
 
 1. At least JDK8
-1. [Universal ctags](https://github.com/universal-ctags) (from source)
+1. [Universal ctags](https://github.com/universal-ctags) (built from source)
 1. Git (for cloning the repository), Subversion (needed for successful build)
 1. Any modern IDE (e.g. [IDEA](https://www.jetbrains.com/idea/), [Eclipse](http://www.eclipse.org/downloads/packages/))
 1. other SCMs 
