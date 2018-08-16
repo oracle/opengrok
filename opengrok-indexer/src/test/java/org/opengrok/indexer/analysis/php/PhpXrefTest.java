@@ -136,8 +136,7 @@ public class PhpXrefTest {
                 "analysis/php/sampleXrefRes.html");
         byte[] expbytes = copyStream(exp);
 
-        String gotten[] = new String(baos.toByteArray(), "UTF-8").
-                replaceAll("\\r", "").split("\n");
+        String gotten[] = new String(baos.toByteArray(), "UTF-8").split("\\r?\\n");
         String expected[] = new String(expbytes, "UTF-8").split("\n");
         assertLinesEqual("PHP xref", expected, gotten);
         assertEquals("PHP LOC", 29, actLOC);
