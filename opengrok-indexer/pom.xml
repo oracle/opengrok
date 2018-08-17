@@ -37,6 +37,10 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
     <name>OpenGrok Indexer</name>
 
+    <properties>
+        <version>${project.version}</version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.bcel</groupId>
@@ -152,9 +156,78 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     </dependencies>
 
     <build>
-
         <plugins>
-
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.2.4</version>
+                <configuration>
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>^git.commit.id$</includeOnlyProperty>
+                    </includeOnlyProperties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                    <execution>
+                        <id>validate-the-git-infos</id>
+                        <goals>
+                            <goal>validateRevision</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-info-properties</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>write-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>
+                                ${project.build.outputDirectory}/org/opengrok/indexer/info.properties
+                            </outputFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <id>perform-git-substitutions</id>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <filesToInclude>
+                                ${project.build.outputDirectory}/org/opengrok/indexer/info.properties
+                            </filesToInclude>
+                            <replacements>
+                                <replacement>
+                                    <token>git.commit.id</token>
+                                    <value>changeset</value>
+                                </replacement>
+                            </replacements>
+                            <quiet>false</quiet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -210,6 +283,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <version>1.5.3</version>
                 <executions>
                     <execution>
+                        <id>replace-in-jflex-sources</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>replace</goal>
@@ -243,7 +317,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                             <token>[ \t]*/\* not supposed to occur according to specification of java\.io\.Reader \*/\s+if \(numRead == 0.*?\}[ \t]*\r?\n</token>
                             <value></value>
                         </replacement>
-
                     </replacements>
                     <regexFlags>
                         <regexFlag>DOTALL</regexFlag>
@@ -264,19 +337,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <property name="src.dir" value="src/main/resources"/>
                                 <property name="tgt.dir" value="${basedir}/target/jflex-sources"/>
                                 <ant target="-collect-lex-lexh"/>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>update-build-info</id>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <target>
-                                <property name="version" value="${project.version}"/>
-                                <ant target="-update-build-info"/>
                             </target>
                         </configuration>
                         <goals>
