@@ -48,7 +48,7 @@ if (MAJOR_VERSION < 3):
     print("Need Python 3, you are running {}".format(MAJOR_VERSION))
     sys.exit(1)
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 
 def exec_command(doit, logger, cmd, msg):
@@ -161,7 +161,7 @@ def project_add(doit, logger, project, uri):
         add_project(logger, project, uri)
 
 
-def project_delete(doit, logger, project, uri):
+def project_delete(logger, project, uri, doit=True, deletesource=False):
     """
     Delete the project for configuration and all its data.
     Works in multiple steps:
@@ -180,15 +180,16 @@ def project_delete(doit, logger, project, uri):
     if doit:
         delete_project(logger, project, uri)
 
-    src_root = get_config_value(logger, 'sourceRoot', uri)
-    if not src_root or len(src_root) == 0:
-        raise Exception("source root empty")
-    logger.debug("Source root = {}".format(src_root))
-    sourcedir = path.join(src_root, project)
-    logger.debug("Removing directory tree {}".format(sourcedir))
-    if doit:
-        logger.info("Removing source code under {}".format(sourcedir))
-        shutil.rmtree(sourcedir)
+    if deletesource:
+        src_root = get_config_value(logger, 'sourceRoot', uri)
+        if not src_root or len(src_root) == 0:
+            raise Exception("source root empty")
+        logger.debug("Source root = {}".format(src_root))
+        sourcedir = path.join(src_root, project)
+        logger.debug("Removing directory tree {}".format(sourcedir))
+        if doit:
+            logger.info("Removing source code under {}".format(sourcedir))
+            shutil.rmtree(sourcedir)
 
 
 if __name__ == '__main__':
@@ -211,6 +212,9 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--noop', action='store_true', default=False,
                         help='Do not run any commands or modify any config'
                         ', just report. Usually implies the --debug option.')
+    parser.add_argument('-N', '--nosourcedelete', action='store_true',
+                        default=False, help='Do not delete source code when '
+                        'deleting a project')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-a', '--add', metavar='project', nargs='+',
@@ -236,6 +240,10 @@ if __name__ == '__main__':
         logging.basicConfig(format="%(message)s", level=logging.INFO)
 
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
+
+    if args.nosourcedelete and not args.delete:
+        logger.error("The no source delete option is only valid for delete")
+        sys.exit(1)
 
     # Set the base directory
     if args.base:
@@ -284,9 +292,10 @@ if __name__ == '__main__':
                                roconfig=args.roconfig)
             elif args.delete:
                 for proj in args.delete:
-                    project_delete(doit=doit, logger=logger,
+                    project_delete(logger=logger,
                                    project=proj,
-                                   uri=uri)
+                                   uri=uri, doit=doit,
+                                   deletesource=not args.nosourcedelete)
 
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
