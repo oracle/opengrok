@@ -612,15 +612,16 @@ public final class RuntimeEnvironment {
             executor.exec(false);
             String output = executor.getOutputString();
             boolean isUnivCtags = output != null && output.contains("Universal Ctags");
-            if (output == null && !isUnivCtags) {
-                LOGGER.log(Level.SEVERE, "Error: No Universal Ctags found in PATH !\n"
+            if (output == null || !isUnivCtags) {
+                LOGGER.log(Level.SEVERE, "Error: No Universal Ctags found !\n"
                         + "(tried running " + "{0}" + ")\n"
                         + "Please use the -c option to specify path to a "
                         + "Universal Ctags program.\n"
-                        + "Or set it in Java system property "
-                        + SYSTEM_CTAGS_PROPERTY, getCtags());
+                        + "Or set it in Java system property {1}",
+                        new Object[]{getCtags(), SYSTEM_CTAGS_PROPERTY});
                 ctagsFound = false;
             } else {
+                LOGGER.log(Level.INFO, "Using ctags: {0}", output.trim());
                 ctagsFound = true;
             }
         }

@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import org.junit.After;
@@ -255,8 +256,8 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        runRenamedTest("moved2/renamed2.c", "84599b3", exp_str);
-        runRenamedTest("moved/renamed2.c", "67dfbe2", exp_str);
+        runRenamedTest(Paths.get("moved2", "renamed2.c").toString(), "84599b3", exp_str);
+        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "67dfbe2", exp_str);
     }
 
     /**
@@ -294,8 +295,8 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        runRenamedTest("moved/renamed.c", "1086eaf", exp_str);
-        runRenamedTest("moved/renamed2.c", "67dfbe2", exp_str);
+        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "1086eaf", exp_str);
+        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "67dfbe2", exp_str);
     }
 
     /**
@@ -321,7 +322,7 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        runRenamedTest("moved/renamed.c", "b641394", exp_str);
+        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "b641394", exp_str);
         runRenamedTest("renamed.c", "ce4c98e", exp_str);
     }
 
@@ -333,7 +334,7 @@ public class GitRepositoryTest {
      */
     @Test
     public void testGetHistoryForNonExistentRenamed() throws Exception {
-        runRenamedTest("moved/renamed.c", "67dfbe2", null);
+        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "67dfbe2", null);
         runRenamedTest("renamed.c", "67dfbe2", null);
     }
 
