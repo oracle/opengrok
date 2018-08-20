@@ -34,3 +34,7 @@ If you use NetBeans you should be able to open OpenGrok as a project and build i
 If you want to build from the command line, execute the following command (it will need internet connection first time, so setup any proxies if needed):
 
  mvn compile
+
+or (to clean and start from scratch)
+
+ mvn clean compile
