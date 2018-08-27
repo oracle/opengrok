@@ -523,6 +523,10 @@ public class AnalyzerGuru {
         FileAnalyzer fa, Writer xrefOut) throws IOException,
             InterruptedException, ForbiddenSymlinkException {
 
+        // Sanitize Windows path delimiters in order not to conflict with Lucene escape character
+        // and also so the path appears as correctly formed URI in the search results.
+        path = path.replace("\\", "/");
+
         String date = DateTools.timeToString(file.lastModified(),
                 DateTools.Resolution.MILLISECOND);
         doc.add(new Field(QueryBuilder.U, Util.path2uid(path, date),

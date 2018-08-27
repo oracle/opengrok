@@ -24,9 +24,13 @@
 package org.opengrok.indexer.index;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeSet;
+
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.ScoreDoc;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -44,6 +48,8 @@ import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.history.RepositoryFactory;
+import org.opengrok.indexer.search.QueryBuilder;
+import org.opengrok.indexer.search.SearchEngine;
 import org.opengrok.indexer.util.TestRepository;
 
 /**
@@ -179,5 +185,25 @@ public class IndexDatabaseTest {
         // Check that the data for the file has been removed.
         checkDataExistence(projectName + File.separator + fileName, false);
         Assert.assertEquals(origNumFiles - 1, idb.getNumFiles());
+    }
+
+    /**
+     * This is a test of {@code populateDocument} so it should be rather in {@code AnalyzerGuruTest}
+     * however it lacks the pre-requisite indexing phase.
+     * @throws IOException
+     */
+    @Test
+    public void testIndexPath() throws IOException {
+        SearchEngine instance = new SearchEngine();
+        // Use as broad search as possible.
+        instance.setFile("c");
+        instance.search();
+        ScoreDoc[] scoredocs = instance.scoreDocs();
+        assertTrue("need some search hits to perform the check",scoredocs.length > 0);
+        for (ScoreDoc sd : scoredocs) {
+            Document doc = instance.doc(sd.doc);
+            assertFalse("PATH field should not contain backslash characters",
+                    doc.getField(QueryBuilder.PATH).stringValue().contains("\\"));
+        }
     }
 }
