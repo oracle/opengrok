@@ -1521,9 +1521,8 @@ public class IndexDatabase {
             LOGGER.log(Level.FINER, e.getMessage());
             return null;
         }
-        //sanitize windows path delimiters
-        //in order not to conflict with Lucene escape character
-        path=path.replace("\\", "/");
+        // Sanitize Windows path delimiters in order not to conflict with Lucene escape character.
+        path = path.replace("\\", "/");
 
         IndexReader ireader = getIndexReader(path);
 
