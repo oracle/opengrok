@@ -169,7 +169,7 @@ public class ProjectsController {
         // Lastly, remove data associated with the project.
         logger.log(Level.INFO, "deleting data for project {0}", projectName);
         for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
-            java.nio.file.Path path = Paths.get(env.getDataRootPath(),dirName, projectName);
+            java.nio.file.Path path = Paths.get(env.getDataRootPath(), dirName, projectName);
             try {
                 IOUtils.removeRecursive(path);
             } catch (IOException e) {
