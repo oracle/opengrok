@@ -103,7 +103,7 @@ Or, you can run the main method `org.opengrok.indexer.index.Indexer` e.g. like t
 ```
 java -cp 'distribution/target/dist/*' org.opengrok.indexer.index.Indexer \
     -W /var/opengrok/etc/configuration.xml -s /var/opengrok/src -d /var/opengrok/data \
-    -c /usr/local/bin/ctags -H -S -U http://localhost:8080/source
+    -c /usr/local/bin/ctags -H -S -P -U http://localhost:8080/source
 ```
 
 This is assuming the `ctags` binary of your ctags installation resides in `/usr/local/bin/ctags`.
