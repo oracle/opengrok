@@ -26,13 +26,15 @@ then go to the 'Deployments' tab and select add the opengrok-web.war Artifact:
 
 [![Tomcat server configuration](images/IDEA-Tomcat_deployment.png)](images/IDEA-Tomcat_deployment.png)
 
-Then it is possible to start Tomcat via IDEA in debug mode:
+Then it is possible to start Tomcat via IDEA in debug mode by clicking on the small green bug icon (in the left bottom corner):
 
 [![Tomcat server startup in debug mode](images/IDEA-Tomcat_start_debug.png)](images/IDEA-Tomcat_start_debug.png)
 
 Once the server is up, it should be possible to insert breakpoints into JSPs:
 
 [![activated breakpoint in JSP file](images/IDEA_JSP_breakpoint.png)](images/IDEA_JSP_breakpoint.png)
+
+The active breakpoints are marked by a little tickmark.
 
 #### Supply debug options to Tomcat directly
 
