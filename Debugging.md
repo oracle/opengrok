@@ -16,7 +16,23 @@ Then simply insert a breakpoint either in the Indexer code.
 
 ### Web application
 
-In IDEA, in order to debug JSPs, you need the IDEA Ultimate edition. There, select the 'Attach to Process' item from the 'Run' menu and IDEA will offer process selection automatically.
+In IDEA, in order to debug JSPs, you need the IDEA Ultimate edition. In Netbeans it should work out of the box.
+
+Start by going to the 'Run' menu, select 'Edit Configurations' and create one based on Tomcat server (local) template:
+
+[![Tomcat server configuration](images/IDEA-Tomcat_server.png)](images/IDEA-Tomcat_server.png)
+
+then go to the 'Deployments' tab and select add the opengrok-web.war Artifact:
+
+[![Tomcat server configuration](images/IDEA-Tomcat_deployment.png)](images/IDEA-Tomcat_deployment.png)
+
+Then it is possible to start Tomcat via IDEA in debug mode:
+
+[![Tomcat server startup in debug mode](images/IDEA-Tomcat_start_debug.png)](images/IDEA-Tomcat_start_debug.png)
+
+Once the server is up, it should be possible to insert breakpoints into JSPs:
+
+[![activated breakpoint in JSP file](images/IDEA_JSP_breakpoint.png)](images/IDEA_JSP_breakpoint.png)
 
 #### Supply debug options to Tomcat directly
 
@@ -28,7 +44,7 @@ For Tomcat, create the `bin/setenv.sh` file with the following contents:
 CATALINA_OPTS="-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n"
 ```
 
-Then restart Tomcat and then you can simply use remote debugging from your IDE, i.e. in IDEA in the 'Run' menu, select 'Attach to Process':
+Then restart Tomcat and then you can simply use remote debugging from your IDE, i.e. in IDEA in the 'Run' menu, select 'Attach to Process' and IDEA will offer process selection automatically:
 
 [![attaching to Tomcat running with debugger](images/IDEA_ultimate-debug_web.png)](images/IDEA_ultimate-debug_web.png)
 
