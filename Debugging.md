@@ -26,6 +26,8 @@ CATALINA_OPTS="-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=
 
 Then restart Tomcat and then you can simply use remote debugging from your IDE.
 
+In IDEA, in order to debug JSPs, you need the IDEA Ultimate edition. There, select the 'Attach to Process' item from the 'Run' menu and IDEA will offer process selection automatically.
+
 ## Profiling
 
 For profiling an indexing run, JWDP is not required for a local `ProcessAttach`. It is convenient though to pause the run until the profiler is attached.
