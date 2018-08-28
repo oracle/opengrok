@@ -1,4 +1,4 @@
-## Debugging
+## Attaching a debugger
 
 ### Indexer
 
