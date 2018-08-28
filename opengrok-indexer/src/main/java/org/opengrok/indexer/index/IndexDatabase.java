@@ -1075,8 +1075,6 @@ public class IndexDatabase {
         }
         Arrays.sort(files, FILENAME_COMPARATOR);
 
-        final boolean[] outIsXrefWriter =  new boolean[1];
-
         for (File file : files) {
             String path = parent + File.separator + file.getName();
             if (!accept(dir, file, outLocalRelPath)) {
@@ -1122,15 +1120,11 @@ public class IndexDatabase {
                             }
                         }
 
-                        /**
-                         * If the file was not modified, probably skip to the
-                         * next one.
-                         */
-                        if (uidIter != null && uidIter.term() != null
-                                && uidIter.term().bytesEquals(buid)) {
-                            boolean chkres = chkSettings(outIsXrefWriter, file,
-                                    path) && (!outIsXrefWriter[0] ||
-                                    checkXrefExistence(path));
+                        // If the file was not modified, probably skip to the next one.
+                        if (uidIter != null && uidIter.term() != null &&
+                                uidIter.term().bytesEquals(buid)) {
+
+                            boolean chkres = checkSettings(file, path);
                             if (!chkres) {
                                 removeFile(false);
                             }
@@ -1666,16 +1660,15 @@ public class IndexDatabase {
     /**
      * Verify TABSIZE, and evaluate AnalyzerGuru version together with ZVER --
      * or return a value to indicate mismatch.
-     * @param outIsXrefWriter boolean array. After return its first member will
-     *                        contain return value of {@code isXrefWriter()}
-     *                        for the file analyzer matching given file
      * @param file the source file object
      * @param path the source file path
      * @return {@code false} if a mismatch is detected
      */
-    private boolean chkSettings(boolean[] outIsXrefWriter, File file,
-            String path) throws IOException {
+    private boolean checkSettings(File file,
+                                  String path) throws IOException {
 
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        boolean outIsXrefWriter = false;
         int reqTabSize = project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0;
         Integer actTabSize = settings.getTabSize();
@@ -1697,7 +1690,7 @@ public class IndexDatabase {
 
             long reqGuruVersion = AnalyzerGuru.getVersionNo();
             Long actGuruVersion = settings.getAnalyzerGuruVersion();
-            /**
+            /*
              * For an older OpenGrok index that does not yet have a defined,
              * stored analyzerGuruVersion, break so that no extra work is done.
              * After a re-index, the guru version check will be active.
@@ -1722,7 +1715,7 @@ public class IndexDatabase {
                     fa = fac.getAnalyzer();
                 }
             } else {
-                /**
+                /*
                  * If the stored guru version does not match, re-verify the
                  * selection of analyzer or return a value to indicate the
                  * analyzer is now mis-matched.
@@ -1753,7 +1746,7 @@ public class IndexDatabase {
             }
 
             if (fa != null) {
-                outIsXrefWriter[0] = isXrefWriter(fa);
+                outIsXrefWriter = isXrefWriter(fa);
             }
 
             // The versions checks have passed.
@@ -1764,8 +1757,16 @@ public class IndexDatabase {
             return false;
         }
 
-        // Assume "true" if otherwise no discrepancies were observed.
-        return true;
+        // If the economy mode is on, this should be treated as a match.
+        if (!env.isGenerateHtml()) {
+            if (xrefExistsFor(path)) {
+                LOGGER.log(Level.FINEST, "Extraneous {0} , removing its xref file", path);
+                removeXrefFile(path);
+            }
+            return true;
+        }
+
+        return (!outIsXrefWriter || xrefExistsFor(path));
     }
 
     private void writeAnalysisSettings() throws IOException {
@@ -1785,22 +1786,14 @@ public class IndexDatabase {
         return dao.read(reader);
     }
 
-    private boolean checkXrefExistence(String path) {
+    private boolean xrefExistsFor(String path) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        boolean chkres = whatXrefFile(path, env.isCompressXref()).exists();
-
-        if (!env.isGenerateHtml()) {
-            if (chkres) {
-                LOGGER.log(Level.FINEST, "Extraneous {0}", path);
-                removeXrefFile(path);
-            }
-            return true;
-        }
-
-        if (!chkres) {
+        if (!whatXrefFile(path, env.isCompressXref()).exists()) {
             LOGGER.log(Level.FINEST, "Missing {0}", path);
+            return false;
         }
-        return chkres;
+
+        return true;
     }
 
     private class IndexDownArgs {
