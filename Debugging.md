@@ -30,7 +30,7 @@ Then it is possible to start Tomcat via IDEA in debug mode by clicking on the sm
 
 [![Tomcat server startup in debug mode](images/IDEA-Tomcat_start_debug.png)](images/IDEA-Tomcat_start_debug.png)
 
-Once the server is up, it should be possible to insert breakpoints into JSPs:
+Once the server is up, IDEA will deploy the web application and open a browser window. It should be possible to insert breakpoints into JSPs:
 
 [![activated breakpoint in JSP file](images/IDEA_JSP_breakpoint.png)](images/IDEA_JSP_breakpoint.png)
 
