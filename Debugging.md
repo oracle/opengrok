@@ -16,7 +16,9 @@ Then simply insert a breakpoint either in the Indexer code.
 
 ### Web application
 
-In IDEA, in order to debug JSPs, you need the IDEA Ultimate edition. In Netbeans it should work out of the box.
+In IDEA, in order to debug JSPs, you need the IDEA Ultimate edition. In Netbeans it should work out of the box. We will describe how to debug in IDEA here.
+
+First, open the `opengrok-web` Maven project.
 
 Start by going to the 'Run' menu, select 'Edit Configurations' and create one based on Tomcat server (local) template:
 
