@@ -16,7 +16,11 @@ Then simply insert a breakpoint either in the Indexer code.
 
 ### Web application
 
-To debug the web application the most generic way would be to add debug parameters to the application server.
+In IDEA, in order to debug JSPs, you need the IDEA Ultimate edition. There, select the 'Attach to Process' item from the 'Run' menu and IDEA will offer process selection automatically.
+
+#### Supply debug options to Tomcat directly
+
+Alternatively, to debug the web application the most generic way would be to add debug parameters to the application server. However, I could not get the following to work:
 
 For Tomcat, create the `bin/setenv.sh` file with the following contents:
 
@@ -24,9 +28,10 @@ For Tomcat, create the `bin/setenv.sh` file with the following contents:
 CATALINA_OPTS="-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n"
 ```
 
-Then restart Tomcat and then you can simply use remote debugging from your IDE.
+Then restart Tomcat and then you can simply use remote debugging from your IDE, i.e. in IDEA in the 'Run' menu, select 'Attach to Process':
 
-In IDEA, in order to debug JSPs, you need the IDEA Ultimate edition. There, select the 'Attach to Process' item from the 'Run' menu and IDEA will offer process selection automatically.
+[![attaching to Tomcat running with debugger](images/IDEA_ultimate-debug_web.png)](images/IDEA_ultimate-debug_web.png)
+
 
 ## Profiling
 
