@@ -1666,6 +1666,9 @@ public class IndexDatabase {
     /**
      * Verify TABSIZE, and evaluate AnalyzerGuru version together with ZVER --
      * or return a value to indicate mismatch.
+     * @param outIsXrefWriter boolean array. After return its first member will
+     *                        contain return value of {@code isXrefWriter()}
+     *                        for the file analyzer matching given file
      * @param file the source file object
      * @param path the source file path
      * @return {@code false} if a mismatch is detected
