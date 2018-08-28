@@ -2,17 +2,17 @@
 
 ### Indexer
 
-When running the indexer, add the 
+When running the indexer, add the following Java options:
 
 ```
-export JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,address=8010,suspend=y"
+-agentlib:jdwp=transport=dt_socket,server=y,address=8010,suspend=y
 ```
 
-This will make the indexer to listen on the port 8010 until a debugger connects. 
+This will make the indexer to listen on the port 8010 until a debugger connects.
 
 In Netbeans, select the Debug -> Attach Debugger from the menu and fill in the port number in the dialog window and click Attach.
 
-Simply insert a breakpoint either in the Indexer code or the webapp.
+Then simply insert a breakpoint either in the Indexer code.
 
 ### Web application
 
