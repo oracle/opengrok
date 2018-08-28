@@ -112,13 +112,6 @@ If you now refresh the web page mentioned above it will reflect the reindex and 
 
 ### Debugging
 
-Simply insert a breakpoint either in the Indexer code or the webapp. 
-
-If you are running the Indexer then you can easily debug it from you IDE.
-
-To debug the web application the most generic way would be to add debug parameters to the application server.
-(e.g. `CATALINA_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n` for Tomcat in `setenv.sh` file). Then you can simply use remote debugging from your IDE.
-
 See [[Debugging wiki|Debugging]] for more information on debugging.
 
 ### Test
