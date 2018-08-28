@@ -18,7 +18,7 @@ Simply insert a breakpoint either in the Indexer code or the webapp.
 
 To debug the web application the most generic way would be to add debug parameters to the application server.
 
-For Tomcat, create the `bin/setenv.sh` with the following contents:
+For Tomcat, create the `bin/setenv.sh` file with the following contents:
 
 ```shell
 CATALINA_OPTS="-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n"
