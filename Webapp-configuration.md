@@ -26,6 +26,8 @@ There are various files that can be placed under data root directory (e.g. `/var
     The contents of this file will be displayed as the error page when
     the user is forbidden to see a particular project with `HTTP 403` code.
 
+The directory where to find include files can be configured in the read-only configuration with the `includeRoot` property.
+
 # webapp parameters
 
 You might need to modify the web application if you don't store the
