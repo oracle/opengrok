@@ -1,19 +1,24 @@
 package org.opengrok.web.api.v1.controller;
 
-import org.glassfish.jersey.server.*;
-import org.glassfish.jersey.test.*;
-import org.junit.*;
-import org.mockito.*;
-import org.opengrok.indexer.configuration.*;
+
+import org.glassfish.jersey.test.JerseyTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.opengrok.indexer.configuration.Configuration;
-import org.opengrok.indexer.util.*;
-import org.opengrok.web.api.v1.*;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.web.api.v1.RestApp;
 
-import javax.ws.rs.client.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Response;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
