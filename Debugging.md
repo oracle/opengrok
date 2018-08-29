@@ -38,6 +38,9 @@ Once the server is up, IDEA will deploy the web application and open a browser w
 
 The active breakpoints are marked by a little tickmark.
 
+In order to descend into source code not present in the `opengrok-web` module, it is necessary to tell IDEA where the sources live, otherwise it will show decompiled source (click on the top bar displayed when going through decompiled sources).
+
+
 #### Supply debug options to Tomcat directly
 
 Alternatively, to debug the web application the most generic way would be to add debug parameters to the application server. However, I could not get the following to work:
@@ -52,7 +55,6 @@ Then restart Tomcat and then you can simply use remote debugging from your IDE, 
 
 [![attaching to Tomcat running with debugger](images/IDEA_ultimate-debug_web.png)](images/IDEA_ultimate-debug_web.png)
 
-In order to descend into source code not present in the `opengrok-web` module, it is necessary to tell IDEA where the sources live, otherwise it will show decompiled source (click on the top bar displayed when going through decompiled sources).
 
 ## Profiling
 
