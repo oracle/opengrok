@@ -62,6 +62,13 @@ if __name__ == '__main__':
     # "constants"
     HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
     CMD_TIMEOUT_PROPERTY = 'command_timeout'
+    IGNORED_REPOS_PROPERTY = 'ignored_repos'
+    PROXY_PROPERTY = 'proxy'
+    COMMANDS_PROPERTY = 'commands'
+    DISABLED_PROPERTY = 'disabled'
+    HOOKDIR_PROPERTY = 'hookdir'
+    HOOKS_PROPERTY = 'hooks'
+    LOGDIR_PROPERTY = 'logdir'
 
     parser = argparse.ArgumentParser(description='project mirroring')
 
@@ -93,8 +100,9 @@ if __name__ == '__main__':
     else:
         config = {}
 
-    GLOBAL_TUNABLES = ['hookdir', 'proxy', 'logdir', 'commands', 'projects',
-                       HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
+    GLOBAL_TUNABLES = [HOOKDIR_PROPERTY, PROXY_PROPERTY, LOGDIR_PROPERTY,
+                       COMMANDS_PROPERTY, 'projects', HOOK_TIMEOUT_PROPERTY,
+                       CMD_TIMEOUT_PROPERTY]
     diff = diff_list(config.keys(), GLOBAL_TUNABLES)
     if diff:
         logger.error("unknown global configuration option(s): '{}'"
@@ -102,7 +110,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Make sure the log directory exists.
-    logdir = config.get("logdir")
+    logdir = config.get(LOGDIR_PROPERTY)
     if logdir:
         check_create_dir(logger, logdir)
 
@@ -140,7 +148,7 @@ if __name__ == '__main__':
                     project_config = projects.get(proj)
                     break
 
-    hookdir = config.get('hookdir')
+    hookdir = config.get(HOOKDIR_PROPERTY)
     if hookdir:
         logger.debug("Hook directory = {}".format(hookdir))
 
@@ -163,9 +171,9 @@ if __name__ == '__main__':
                      format(args.project))
 
         # Quick sanity check.
-        KNOWN_PROJECT_TUNABLES = ['disabled', CMD_TIMEOUT_PROPERTY,
-                                  HOOK_TIMEOUT_PROPERTY, 'proxy',
-                                  'ignored_repos', 'hooks']
+        KNOWN_PROJECT_TUNABLES = [DISABLED_PROPERTY, CMD_TIMEOUT_PROPERTY,
+                                  HOOK_TIMEOUT_PROPERTY, PROXY_PROPERTY,
+                                  IGNORED_REPOS_PROPERTY, HOOKS_PROPERTY]
         diff = diff_list(project_config.keys(), KNOWN_PROJECT_TUNABLES)
         if diff:
             logger.error("unknown project configuration option(s) '{}' "
@@ -190,20 +198,20 @@ if __name__ == '__main__':
             logger.debug("Project hook timeout = {}".
                          format(hook_timeout))
 
-        ignored_repos = project_config.get('ignored_repos')
+        ignored_repos = project_config.get(IGNORED_REPOS_PROPERTY)
         if ignored_repos:
             if type(ignored_repos) is not list:
-                logger.error("ignored_repos for project {} is not a list".
-                             format(args.project))
+                logger.error("{} for project {} is not a list".
+                             format(IGNORED_REPOS_PROPERTY, args.project))
                 sys.exit(1)
             logger.debug("has ignored repositories: {}".
                          format(ignored_repos))
 
-        hooks = project_config.get('hooks')
+        hooks = project_config.get(HOOKS_PROPERTY)
         if hooks:
             if not hookdir:
-                logger.error("Need to have 'hookdir' in the configuration "
-                             "to run hooks")
+                logger.error("Need to have '{}' in the configuration "
+                             "to run hooks".format(HOOKDIR_PROPERTY))
                 sys.exit(1)
 
             if not os.path.isdir(hookdir):
@@ -227,8 +235,8 @@ if __name__ == '__main__':
                                  "executable".format(hookpath))
                     sys.exit(1)
 
-        if project_config.get('proxy'):
-            if not config.get('proxy'):
+        if project_config.get(PROXY_PROPERTY):
+            if not config.get(PROXY_PROPERTY):
                 logger.error("global proxy setting is needed in order to"
                              "have per-project proxy")
                 sys.exit(1)
@@ -273,7 +281,7 @@ if __name__ == '__main__':
 
     # We want this to be logged to the log file (if any).
     if project_config:
-        if project_config.get('disabled'):
+        if project_config.get(DISABLED_PROPERTY):
             logger.info("Project {} disabled, exiting".
                         format(args.project))
             sys.exit(2)
@@ -282,7 +290,7 @@ if __name__ == '__main__':
                              args.project + "-mirror.lock"))
     try:
         with lock.acquire(timeout=0):
-            proxy = config.get('proxy') if use_proxy else None
+            proxy = config.get(PROXY_PROPERTY) if use_proxy else None
             if prehook:
                 logger.info("Running pre hook")
                 if run_hook(logger, prehook,
@@ -315,7 +323,7 @@ if __name__ == '__main__':
                                       source_root + repo_path,
                                       repo_type,
                                       args.project,
-                                      config.get('commands'),
+                                      config.get(COMMANDS_PROPERTY),
                                       proxy,
                                       None,
                                       command_timeout)
