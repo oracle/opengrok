@@ -32,16 +32,6 @@ public class SystemControllerTest extends JerseyTest {
         return new RestApp();
     }
 
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     @Test
     public void testIncludeReload() throws IOException {
         // Set new include root directory.
