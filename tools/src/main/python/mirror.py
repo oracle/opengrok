@@ -69,6 +69,7 @@ if __name__ == '__main__':
     HOOKDIR_PROPERTY = 'hookdir'
     HOOKS_PROPERTY = 'hooks'
     LOGDIR_PROPERTY = 'logdir'
+    PROJECTS_PROPERTY = 'projects'
 
     parser = argparse.ArgumentParser(description='project mirroring')
 
@@ -101,8 +102,8 @@ if __name__ == '__main__':
         config = {}
 
     GLOBAL_TUNABLES = [HOOKDIR_PROPERTY, PROXY_PROPERTY, LOGDIR_PROPERTY,
-                       COMMANDS_PROPERTY, 'projects', HOOK_TIMEOUT_PROPERTY,
-                       CMD_TIMEOUT_PROPERTY]
+                       COMMANDS_PROPERTY, PROJECTS_PROPERTY,
+                       HOOK_TIMEOUT_PROPERTY, CMD_TIMEOUT_PROPERTY]
     diff = diff_list(config.keys(), GLOBAL_TUNABLES)
     if diff:
         logger.error("unknown global configuration option(s): '{}'"
@@ -129,7 +130,7 @@ if __name__ == '__main__':
     logger.debug("Source root = {}".format(source_root))
 
     project_config = None
-    projects = config.get('projects')
+    projects = config.get(PROJECTS_PROPERTY)
     if projects:
         if projects.get(args.project):
             project_config = projects.get(args.project)
