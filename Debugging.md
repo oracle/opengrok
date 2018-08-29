@@ -52,6 +52,7 @@ Then restart Tomcat and then you can simply use remote debugging from your IDE, 
 
 [![attaching to Tomcat running with debugger](images/IDEA_ultimate-debug_web.png)](images/IDEA_ultimate-debug_web.png)
 
+In order to descend into source code not present in the `opengrok-web` module, it is necessary to tell IDEA where the sources live, otherwise it will show decompiled source (click on the top bar displayed when going through decompiled sources).
 
 ## Profiling
 
