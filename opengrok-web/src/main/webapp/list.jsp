@@ -244,7 +244,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
 </div><%
             }
         } else {
-            // requesting a previous revision
+            // requesting a previous revision or needed to generate xref on the fly (economy mode).
             FileAnalyzerFactory a = AnalyzerGuru.find(basename);
             Genre g = AnalyzerGuru.getGenre(a);
             String error = null;
