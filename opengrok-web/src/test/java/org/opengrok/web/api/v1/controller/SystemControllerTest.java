@@ -32,6 +32,10 @@ public class SystemControllerTest extends JerseyTest {
         return new RestApp();
     }
 
+    /**
+     * This method tests include files reload by testing it for one specific file out of the whole set.
+     * @throws IOException
+     */
     @Test
     public void testIncludeReload() throws IOException {
         // Set new include root directory.
