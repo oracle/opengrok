@@ -37,7 +37,8 @@ class Java(Command):
     """
 
     def __init__(self, command, logger=None, main_class=None, java=None,
-                 jar=None, java_opts=None, classpath=None, redirect_stderr=True):
+                 jar=None, java_opts=None, classpath=None,
+                 redirect_stderr=True):
 
         if not java:
             java = self.FindJava(logger)

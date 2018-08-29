@@ -103,7 +103,8 @@ def install_config(doit, src, dst):
         sys.exit(1)
 
 
-def config_refresh(doit, logger, basedir, uri, configmerge, jar_file, roconfig):
+def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
+                   roconfig):
     """
     Refresh current configuration file with configuration retrieved
     from webapp. If roconfig is not None, the current config is merged with
@@ -260,7 +261,8 @@ if __name__ == '__main__':
             logger.error("File {} does not exist".format(args.roconfig))
             sys.exit(1)
 
-        configmerge_file = get_command(logger, args.configmerge, "config-merge.py")
+        configmerge_file = get_command(logger, args.configmerge,
+                                       "config-merge.py")
         if configmerge_file is None:
             logger.error("Use the --configmerge option to specify the path to"
                          "the config merge script")
