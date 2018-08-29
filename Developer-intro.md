@@ -101,7 +101,8 @@ You can then run the indexer from the _Run_ item in the _Run_ menu. Of course, t
 
 Or, you can run the main method `org.opengrok.indexer.index.Indexer` e.g. like this from command line (once the Maven `package` phase is done):
 ```
-java -cp 'distribution/target/dist/*' org.opengrok.indexer.index.Indexer \
+java -Djava.util.logging.config.file=logging.properties \
+    -cp 'distribution/target/dist/*' org.opengrok.indexer.index.Indexer \
     -W /var/opengrok/etc/configuration.xml \
     -s /var/opengrok/src \
     -d /var/opengrok/data \
