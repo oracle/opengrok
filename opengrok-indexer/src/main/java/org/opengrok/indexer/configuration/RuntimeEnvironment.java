@@ -294,7 +294,15 @@ public final class RuntimeEnvironment {
     public String getIncludeRootPath() {
         return threadConfig.get().getIncludeRoot();
     }
-    
+
+    /**
+     * Set include root path
+     * @param includeRoot path
+     */
+    public void setIncludeRoot(String includeRoot) {
+        threadConfig.get().setIncludeRoot(getCanonicalPath(includeRoot));
+    }
+
     /**
      * Get the path to the where the index database is stored
      *
@@ -1502,13 +1510,13 @@ public final class RuntimeEnvironment {
 
     /**
      * Reload the content of all include files.
-     * @param config configuration
+     * @param configuration configuration
      */
-    public void reloadIncludeFiles(Configuration config) {
-        config.getBodyIncludeFileContent(true);
-        config.getHeaderIncludeFileContent(true);
-        config.getFooterIncludeFileContent(true);
-        config.getForbiddenIncludeFileContent(true);
+    public void reloadIncludeFiles(Configuration configuration) {
+        configuration.getBodyIncludeFileContent(true);
+        configuration.getHeaderIncludeFileContent(true);
+        configuration.getFooterIncludeFileContent(true);
+        configuration.getForbiddenIncludeFileContent(true);
     }
 
     public Configuration getConfiguration() {
