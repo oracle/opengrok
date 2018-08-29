@@ -31,6 +31,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -772,6 +773,8 @@ public final class Indexer {
         // Need to read the configuration file first
         // so that options may be overwritten later.
         configure.parse(argv);
+
+        LOGGER.log(Level.INFO, "Indexer options: {0}", Arrays.toString(argv));
 
         if (cfg == null) {
             cfg = new Configuration();
