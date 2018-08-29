@@ -182,4 +182,5 @@ java.py --classpath opengrok.jar -m org.opensolaris.opengrok.web.EftarFile \
      -- /var/opengrok/etc/paths.tsv /var/opengrok/data/index/dtags.eftar
 ```
 
-where `java.py` is Java wrapper tool shipped with OpenGrok.
+where `java.py` is Java wrapper tool shipped with OpenGrok. The web application will then
+automatically load the `dtags.eftar` file whenever is in a context to display path descriptions.
