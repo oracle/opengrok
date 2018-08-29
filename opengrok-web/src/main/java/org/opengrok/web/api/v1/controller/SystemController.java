@@ -48,4 +48,9 @@ public class SystemController {
         suggester.refresh(project);
     }
 
+    @PUT
+    @Path("/includes/reload")
+    public void reloadIncludes() {
+        env.reloadIncludeFiles(env.getConfiguration());
+    }
 }

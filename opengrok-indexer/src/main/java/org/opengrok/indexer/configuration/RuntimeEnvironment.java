@@ -1500,11 +1500,15 @@ public final class RuntimeEnvironment {
         reloadIncludeFiles(configuration);
     }
 
-    private void reloadIncludeFiles(Configuration configuration1) {
-        configuration1.getBodyIncludeFileContent(true);
-        configuration1.getHeaderIncludeFileContent(true);
-        configuration1.getFooterIncludeFileContent(true);
-        configuration1.getForbiddenIncludeFileContent(true);
+    /**
+     * Reload the content of all include files.
+     * @param config configuration
+     */
+    public void reloadIncludeFiles(Configuration config) {
+        config.getBodyIncludeFileContent(true);
+        config.getHeaderIncludeFileContent(true);
+        config.getFooterIncludeFileContent(true);
+        config.getForbiddenIncludeFileContent(true);
     }
 
     public Configuration getConfiguration() {
