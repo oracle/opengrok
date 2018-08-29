@@ -145,20 +145,19 @@ To specify default projects, either use:
 # Path Descriptions
 
 OpenGrok can use path descriptions in various places (e.g. while showing
-directory listings or search results). Example descriptions are in `paths.tsv`
-file (delivered as `/usr/opengrok/doc/paths.tsv` by OpenGrok package on Solaris).
+directory listings or search results).
 
-The `paths.tsv` file is read by OpenGrok indexing script from the configuration
-directory (the same where `configuration.xml` is located) which will create file
-`dtags.eftar` in the `index` subdirectory under `DATA_ROOT` directory which will
-then be used by the OpenGrok web application to display the descriptions. This "compilation" of configuration file
-into a binary file is done to get quick path-to-description in the web application.
+The descriptions are contained in plain text file normally called `paths.tsv`.
+In order for the path descriptions to be displayed in the web application, it is necessary
+to convert the file into a file that contains its efficient binary representation to get 
+quick path-to-description in the web application.
+The web application expects this binary filed to be called `dtags.eftar` and located in the `index` subdirectory under the data root directory.
 
 The file contains descriptions for directories one per line. Path to the
 directory and its description are separated by tab. The path to the directory
-is absolute path under the `SRC_ROOT` directory.
+is absolute path under the source root directory.
 
-For example, if the `SRC_ROOT` directory contains the following directories:
+For example, if the source root directory contains the following directories:
 
 * foo
 * bar
