@@ -182,3 +182,5 @@ For the path descriptions to be put into effect use something like:
 java.py --classpath opengrok.jar -m org.opensolaris.opengrok.web.EftarFile \
      -- /var/opengrok/etc/paths.tsv /var/opengrok/data/index/dtags.eftar
 ```
+
+where `java.py` is Java wrapper tool shipped with OpenGrok.
