@@ -168,7 +168,7 @@ if __name__ == '__main__':
                                   'ignored_repos', 'hooks']
         diff = diff_list(project_config.keys(), KNOWN_PROJECT_TUNABLES)
         if diff:
-            logger.error("uknown project configuration option(s) '{}' "
+            logger.error("unknown project configuration option(s) '{}' "
                          "for project {}".format(diff, args.project))
             sys.exit(1)
 
