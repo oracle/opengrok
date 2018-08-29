@@ -38,10 +38,10 @@ running a 8GB 64 bit server JDK indexer with tuned docs flushing(on Solaris 11):
 Tomcat by default also supports only small deployments. For bigger ones you
 **might** need to increase its heap which might necessitate the switch to 64-bit
 Java. It will most probably be the same for other containers as well.
-For tomcat you can easily get this done by creating `conf/setenv.sh`:
+For tomcat you can easily get this done by creating `$CATALINA_BASE/bin/setenv.sh`:
 
 ```bash
-# cat conf/setenv.sh
+# cat $CATALINA_BASE/bin/setenv.sh
 # 64-bit Java
 JAVA_OPTS="$JAVA_OPTS -d64 -server"
 
