@@ -183,3 +183,6 @@ There are a few endpoints which provide different functionality.
 * `/refresh`
   * **PUT** – refreshes index searchers for specified project
     * **body** – text/plain project name to refresh
+* `/includes/reload`
+   * **PUT** - reloads all [include files for web application](/OpenGrok/OpenGrok/wiki/Webapp-configuration#include-files)
+    * **body** – empty
