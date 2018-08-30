@@ -185,4 +185,4 @@ There are a few endpoints which provide different functionality.
     * **body** – text/plain project name to refresh
 * `/includes/reload`
    * **PUT** - reloads all [include files for web application](/OpenGrok/OpenGrok/wiki/Webapp-configuration#include-files)
-    * **body** – empty
+     * **body** – empty
