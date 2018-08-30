@@ -42,7 +42,7 @@ public class SystemControllerTest extends JerseyTest {
         Path includeRootPath = Files.createTempDirectory("systemControllerTest");
         File includeRoot = includeRootPath.toFile();
         env.setIncludeRoot(includeRoot.getAbsolutePath());
-        assertEquals(includeRoot.getAbsolutePath(), env.getIncludeRootPath());
+        assertEquals(includeRoot.getCanonicalPath(), env.getIncludeRootPath());
 
         // Create footer include file.
         File footerFile = new File(includeRoot, Configuration.FOOTER_INCLUDE_FILE);
