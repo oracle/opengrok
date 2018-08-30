@@ -172,7 +172,7 @@ then the `paths.tsv` file contents can look like this:
 
 Note that just some paths can have a description.
 
-For the path descriptions to be put into effect use something like:
+For the path descriptions to be put into effect use [RESTful API](/OpenGrok/OpenGrok/wiki/Web-services) call like so:
 
 ```shell
 curl -i -X POST -H "Content-Type: text/plain" \
