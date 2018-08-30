@@ -85,7 +85,7 @@ class Indexer(Java):
 
 def FindCtags(logger):
     """
-    Search for Exuberant ctags intelligently, skipping over other ctags
+    Search for Universal ctags intelligently, skipping over other ctags
     implementations. Return path to the command or None if not found.
     """
     binary = None
@@ -93,14 +93,14 @@ def FindCtags(logger):
     for program in ['universal-ctags', 'ctags']:
         executable = get_command(logger, None, program)
         if executable:
-            # Verify that this executable is or is based on Exuberant Ctags
+            # Verify that this executable is or is Universal Ctags
             # by matching the output when run with --version.
             logger.debug("Checking ctags command {}".format(executable))
             cmd = Command([executable, '--version'], logger=logger)
             cmd.execute()
 
             output_str = cmd.getoutputstr()
-            if output_str and output_str.find("Exuberant Ctags") != -1:
+            if output_str and output_str.find("Universal Ctags") != -1:
                 logger.debug("Got valid ctags binary: {}".format(executable))
                 binary = executable
                 break
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     # always check ctags presence unless told not to.
     #
     if not args.no_ctags_check and not FindCtags(logger):
-        logger.warning("Unable to determine Exuberant/Universal CTags command")
+        logger.warning("Unable to determine Universal CTags command")
 
     indexer = Indexer(args.options, logger=logger, java=args.java,
                       jar=args.jar, java_opts=args.java_opts)
