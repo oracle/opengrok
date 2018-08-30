@@ -53,7 +53,7 @@ The indexer can be run either using `opengrok.jar` directly or using the `indexe
 indexer.py -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
     -a /opengrok/dist/lib/opengrok.jar -- \
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
-    -W /var/opengrok/etc/configuration.xml` -U http://localhost:8080
+    -W /var/opengrok/etc/configuration.xml -U http://localhost:8080
 ```
 
 The above will use `/var/opengrok/src` as source root, `/var/opengrok/data` as data root. The configuration will be written to `/var/opengrok/etc/configuration.xml` and sent to the web application (via the URL passed to the `-U` option) at the end of the indexing.
