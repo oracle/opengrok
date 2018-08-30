@@ -23,13 +23,16 @@
 package org.opengrok.web.api.v1.controller;
 
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.web.EftarFile;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.util.Collections;
 
 @Path("/system")
@@ -52,5 +55,13 @@ public class SystemController {
     @Path("/includes/reload")
     public void reloadIncludes() {
         env.reloadIncludeFiles(env.getConfiguration());
+    }
+
+    @POST
+    @Path("/pathdesc")
+    @Consumes(MediaType.TEXT_PLAIN)
+    public void loadPathDescriptions(final String input) throws IOException {
+        EftarFile ef = new EftarFile();
+        ef.create(input, env.getConfiguration().getDtagsEftarPath().toString());
     }
 }

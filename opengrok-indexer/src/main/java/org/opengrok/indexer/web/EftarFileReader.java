@@ -142,6 +142,7 @@ public class EftarFileReader {
     public EftarFileReader(String file) throws FileNotFoundException {
         this(new File(file));
     }
+
     public EftarFileReader(File file) throws FileNotFoundException {
         f = new RandomAccessFile(file, "r");
         isOpen = true;
@@ -174,6 +175,12 @@ public class EftarFileReader {
         return null;
     }
 
+    /**
+     * Get description for path
+     * @param path path relative to source root
+     * @return path description string
+     * @throws IOException
+     */
     public String get(String path) throws IOException {
         StringTokenizer toks = new StringTokenizer(path, "/");
         f.seek(0);
