@@ -142,7 +142,6 @@ It is possible to set a list of projects that will be selected by default in the
 
 To specify default projects, either use:
   - the `-p` option when running the indexer directly from `opengrok.jar` file. Can be specified multiple times.
-  - the `OPENGROK_DEFAULT_PROJECTS` environment variable when using the `OpenGrok` shell script. The variable holds the set of projects paths relative to source root and starting with `/`. Multiple values can be separated with comma.
 
 # Path Descriptions
 
@@ -150,12 +149,8 @@ OpenGrok can use path descriptions in various places (e.g. while showing
 directory listings or search results).
 
 The descriptions are contained in plain text file normally called `paths.tsv`.
-In order for the path descriptions to be displayed in the web application, it is necessary
-to convert the file into a file that contains its efficient binary representation to get 
-quick path-to-description in the web application.
-The web application expects this binary filed to be called `dtags.eftar` and located in the `index` subdirectory under the data root directory.
 
-The file contains descriptions for directories one per line. Path to the
+The file contains descriptions for directories - one per line. Path to the
 directory and its description are separated by tab. The path to the directory
 is absolute path under the source root directory.
 
@@ -175,14 +170,14 @@ then the `paths.tsv` file contents can look like this:
 /bar/blah source code for blah
 ```
 
-Note that only some paths can have a description.
+Note that just some paths can have a description.
 
 For the path descriptions to be put into effect use something like:
 
 ```shell
-java.py --classpath opengrok.jar -m org.opensolaris.opengrok.web.EftarFile \
-     -- /var/opengrok/etc/paths.tsv /var/opengrok/data/index/dtags.eftar
+curl -i -X POST -H "Content-Type: text/plain" \
+    --data-binary "@/opengrok/etc/paths.tsv" \
+    http://localhost:8080/source/api/v1/system/pathdesc
 ```
 
-where `java.py` is Java wrapper tool shipped with OpenGrok. The web application will then
-automatically load the `dtags.eftar` file whenever is in a context to display path descriptions.
+where `/opengrok/etc/paths.tsv` is path to the plain text file with path descriptions.
