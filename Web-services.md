@@ -186,3 +186,6 @@ There are a few endpoints which provide different functionality.
 * `/includes/reload`
    * **PUT** - reloads all [include files for web application](/OpenGrok/OpenGrok/wiki/Webapp-configuration#include-files)
      * **body** – empty
+* `/pathdesc`
+   * **POST** - updates [path descriptions for web application](/OpenGrok/OpenGrok/wiki/Webapp-configuration#path-descriptions)
+     * **body** – lines of path description file
