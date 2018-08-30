@@ -114,7 +114,8 @@ if __name__ == '__main__':
     java_opts.append("-Djava.util.logging.config.file={}".
                      format(logprop_file))
     indexer = Indexer(command, logger=logger, jar=args.jar,
-                      java=args.java, java_opts=java_opts)
+                      java=args.java, java_opts=java_opts,
+                      env_vars=args.environment)
     indexer.execute()
     ret = indexer.getretcode()
     os.remove(conf_file)

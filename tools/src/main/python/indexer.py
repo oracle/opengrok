@@ -44,7 +44,7 @@ class Indexer(Java):
     """
 
     def __init__(self, command, logger=None, java=None, jar='opengrok.jar',
-                 java_opts=None):
+                 java_opts=None, env_vars=None):
 
         java_options = []
         java_options.extend(self.get_SCM_properties(logger))
@@ -53,7 +53,7 @@ class Indexer(Java):
         logger.debug("Java options: {}".format(java_options))
 
         super().__init__(command, jar=jar, java=java, java_opts=java_options,
-                         logger=logger)
+                         logger=logger, env_vars=env_vars)
 
     def get_SCM_properties(self, logger):
         """
@@ -132,7 +132,8 @@ if __name__ == '__main__':
         logger.warning("Unable to determine Universal CTags command")
 
     indexer = Indexer(args.options, logger=logger, java=args.java,
-                      jar=args.jar, java_opts=args.java_opts)
+                      jar=args.jar, java_opts=args.java_opts,
+                      env_vars=args.environment)
     indexer.execute()
     ret = indexer.getretcode()
     if ret is None or ret != 0:
