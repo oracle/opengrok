@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.util.IOUtils;
+import org.opengrok.indexer.web.EftarFileReader;
 import org.opengrok.web.api.v1.RestApp;
 
 import javax.ws.rs.client.Entity;
@@ -15,13 +16,16 @@ import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SystemControllerTest extends JerseyTest {
 
@@ -74,5 +78,45 @@ public class SystemControllerTest extends JerseyTest {
 
         // Cleanup
         IOUtils.removeRecursive(includeRootPath);
+    }
+
+    @Test
+    public void testDtagsEftarReload() throws IOException {
+        // The output file will be located in a directory under data root so create it first.
+        Path dataRoot = Files.createTempDirectory("api_dtags_test");
+        env.setDataRoot(dataRoot.toString());
+        Paths.get(dataRoot.toString(), "index").toFile().mkdir();
+
+        // Create path descriptions string.
+        StringBuilder sb = new StringBuilder();
+        String[][] descriptions = {
+                { "/path1", "foo foo" },
+                { "/path2", "bar bar" }
+        };
+
+        for (int i = 0; i < descriptions.length; i++) {
+            sb.append(descriptions[i][0]);
+            sb.append("\t");
+            sb.append(descriptions[i][1]);
+            sb.append("\n");
+        }
+        String input = sb.toString();
+
+        // Reload the contents via API call.
+        Response r = target("system")
+                .path("pathdesc")
+                .request().post(Entity.text(input));
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
+
+        // Check
+        Path eftarPath = env.getConfiguration().getDtagsEftarPath();
+        assertTrue(eftarPath.toFile().exists());
+        EftarFileReader er = new EftarFileReader(eftarPath.toString());
+        for (int i = 0; i < descriptions.length; i++) {
+            assertEquals(descriptions[i][1], er.get(descriptions[i][0]));
+        }
+
+        // Cleanup
+        IOUtils.removeRecursive(dataRoot);
     }
 }

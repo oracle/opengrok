@@ -38,6 +38,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -233,7 +235,7 @@ public final class Configuration {
      * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
      * contains definition tags.
      */
-    public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
+    public static final String EFTAR_DTAGS_NAME = "dtags.eftar";
     private transient File dtagsEftar = null;
 
     /**
@@ -1221,13 +1223,20 @@ public final class Configuration {
     }
 
     /**
-     * Get the eftar file, which contains definition tags.
+     * @return path to the file holding compiled path descriptions for the web application
+     */
+    public Path getDtagsEftarPath() {
+        return Paths.get(getDataRoot(), "index", EFTAR_DTAGS_NAME);
+    }
+
+    /**
+     * Get the eftar file, which contains definition tags for path descriptions.
      *
      * @return {@code null} if there is no such file, the file otherwise.
      */
     public File getDtagsEftar() {
         if (dtagsEftar == null) {
-            File tmp = new File(getDataRoot() + "/" + EFTAR_DTAGS_FILE);
+            File tmp = getDtagsEftarPath().toFile();
             if (tmp.canRead()) {
                 dtagsEftar = tmp;
             }

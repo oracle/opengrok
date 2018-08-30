@@ -45,6 +45,8 @@ public class EftarFileTest {
     public EftarFileTest() {
     }
 
+    private final static String PATH_STRING = "/path";
+
     @BeforeClass
     public static void setUpClass() throws Exception {
         tsv = File.createTempFile("paths", ".tsv");
@@ -55,7 +57,7 @@ public class EftarFileTest {
             out = new PrintWriter(new FileWriter(tsv));
             StringBuilder sb = new StringBuilder();
             for (int ii = 0; ii < 100; ii++) {
-                sb.append("/path");
+                sb.append(PATH_STRING);
                 sb.append(Integer.toString(ii));
                 out.print(sb.toString());
                 out.print("\tDescription ");
@@ -65,13 +67,13 @@ public class EftarFileTest {
         } finally {
             try { out.close(); } catch (Exception e) { }
         }
-        //create eftar files
-        String[] args = new String[2];
-        args[0] = tsv.getAbsolutePath();
-        args[1] = eftar.getAbsolutePath();
+
+        // Create eftar files.
+        String inputFile = tsv.getAbsolutePath();
+        String outputFile = eftar.getAbsolutePath();
 
         EftarFile ef = new EftarFile();
-        ef.create(args);
+        ef.create(new File(inputFile), outputFile);
     }
 
     @AfterClass
@@ -109,7 +111,7 @@ public class EftarFileTest {
         match.append("Description ");
         int offset = match.length();
         for (int ii = 0; ii < 100; ii++) {
-            sb.append("/path");
+            sb.append(PATH_STRING);
             sb.append(Integer.toString(ii));
             match.setLength(offset);
             match.append(Integer.toString(ii));
