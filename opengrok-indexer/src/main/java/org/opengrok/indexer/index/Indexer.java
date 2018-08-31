@@ -105,6 +105,7 @@ public final class Indexer {
     private static String host = null;
 
     private static OptionParser optParser = null;
+    private static boolean verbose = false;
 
     public static Indexer getInstance() {
         return index;
@@ -164,7 +165,7 @@ public final class Indexer {
             }
 
             // Logging starts here.
-            if (cfg.isVerbose()) {
+            if (verbose) {
                 String fn = LoggerUtil.getFileHandlerPattern();
                 if (fn != null) {
                     System.out.println("Logging filehandler pattern: " + fn);
@@ -639,7 +640,6 @@ public final class Indexer {
             });
 
             parser.on("-q", "--quiet", "Run as quietly as possible.").Do( v -> {
-                cfg.setVerbose(false);
                 LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
             });
 
@@ -758,7 +758,7 @@ public final class Indexer {
             });
 
             parser.on("-v", "--verbose", "Print progress information as we go along.").Do( v -> {
-                cfg.setVerbose(true);
+                verbose = true;
                 LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
             });
 

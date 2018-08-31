@@ -81,7 +81,6 @@ public class JarAnalyzerTest {
         env.setDataRoot(repository.getDataRoot());
         RepositoryFactory.initializeIgnoredNames(env);
 
-        env.setVerbose(false);
         env.setHistoryEnabled(false);
         IndexChangedListener progress = new DefaultIndexChangedListener();
         Indexer.getInstance().prepareIndexer(env, true, true,

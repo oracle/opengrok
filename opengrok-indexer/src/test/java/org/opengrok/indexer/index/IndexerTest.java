@@ -117,7 +117,6 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
-        env.setVerbose(true);
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true, new TreeSet<>(Collections.singletonList("/c")),
                 false, false, null, null, new ArrayList<>(), false);

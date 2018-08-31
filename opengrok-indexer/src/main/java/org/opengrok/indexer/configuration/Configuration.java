@@ -163,7 +163,6 @@ public final class Configuration {
      * Lucene 4.x uses 16MB and 8 threads, so below is a nice tunable.
      */
     private double ramBufferSize;
-    private boolean verbose;
     /**
      * If below is set, then we count how many files per project we need to
      * process and print percentage of completion per project.
@@ -465,7 +464,6 @@ public final class Configuration {
         // Set to empty string so we can append it to the URL
         // unconditionally later.
         setUserPageSuffix("");
-        setVerbose(false);
         setWebappLAF("default");
     }
 
@@ -845,14 +843,6 @@ public final class Configuration {
      */
     public void setRamBufferSize(double ramBufferSize) {
         this.ramBufferSize = ramBufferSize;
-    }
-
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     public boolean isPrintProgress() {

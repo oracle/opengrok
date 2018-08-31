@@ -125,7 +125,6 @@ public class SearchAndContextFormatterTest2 {
         env.setDataRoot(dataroot.getPath());
         RepositoryFactory.initializeIgnoredNames(env);
 
-        env.setVerbose(false);
         env.setHistoryEnabled(false);
         Indexer.getInstance().prepareIndexer(env, true, true,
                 new TreeSet<>(Collections.singletonList("/c")),

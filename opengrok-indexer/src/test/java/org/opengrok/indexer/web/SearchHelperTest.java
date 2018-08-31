@@ -63,7 +63,6 @@ public class SearchHelperTest {
         env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
-        env.setVerbose(true);
         env.setHistoryEnabled(false);
     }
 

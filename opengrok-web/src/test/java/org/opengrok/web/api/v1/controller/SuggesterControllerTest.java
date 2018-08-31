@@ -110,7 +110,6 @@ public class SuggesterControllerTest extends JerseyTest {
 
         repository.create(SuggesterControllerTest.class.getResourceAsStream("/org/opengrok/indexer/index/source.zip"));
 
-        env.setVerbose(false);
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(true);
         Indexer.getInstance().prepareIndexer(env, true, true,
