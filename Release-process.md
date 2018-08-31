@@ -6,9 +6,11 @@ final (i.e. non-prerelease) version is released:
   - The overall code coverage must be at least 70%
   - Sonarcloud reported bugs should not have any critical issues
   - No stoppers (meaning both Issues and Pull requests)
-  - All bugs and enhancements must be evaluated
+  - All bugs and enhancements must be evaluated (for final release also go through issues with given milestone)
 
 # Checklist for releasing OpenGrok:
+
+The below steps are common for both pre-release and final release:
 
 1. build must be clean
 
