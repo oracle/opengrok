@@ -129,7 +129,7 @@ public class IndexDatabase {
     private FSDirectory indexDirectory;
     private IndexReader reader;
     private IndexWriter writer;
-    private IndexAnalysisSettings2 settings;
+    private IndexAnalysisSettings settings;
     private PendingFileCompleter completer;
     private TermsEnum uidIter;
     private PostingsEnum postsIter;
@@ -468,7 +468,7 @@ public class IndexDatabase {
                 reader = DirectoryReader.open(indexDirectory); // open existing index
                 settings = readAnalysisSettings();
                 if (settings == null) {
-                    settings = new IndexAnalysisSettings2();
+                    settings = new IndexAnalysisSettings();
                 }
                 Terms terms = null;
                 int numDocs = reader.numDocs();
@@ -1770,7 +1770,7 @@ public class IndexDatabase {
     }
 
     private void writeAnalysisSettings() throws IOException {
-        settings = new IndexAnalysisSettings2();
+        settings = new IndexAnalysisSettings();
         settings.setProjectName(project != null ? project.getName() : null);
         settings.setTabSize(project != null && project.hasTabSizeSetting() ?
             project.getTabSize() : 0);
@@ -1781,7 +1781,7 @@ public class IndexDatabase {
         dao.write(writer, settings);
     }
 
-    private IndexAnalysisSettings2 readAnalysisSettings() throws IOException {
+    private IndexAnalysisSettings readAnalysisSettings() throws IOException {
         IndexAnalysisSettingsAccessor dao = new IndexAnalysisSettingsAccessor();
         return dao.read(reader);
     }

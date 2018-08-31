@@ -50,7 +50,7 @@ public class IndexAnalysisSettingsAccessor {
      * {@link QueryBuilder}-normalized value for UUID
      * 58859C75-F941-42E5-8D1A-FAF71DDEBBA7
      */
-    public static final String INDEX_ANALYSIS_SETTINGS_OBJUID =
+    static final String INDEX_ANALYSIS_SETTINGS_OBJUID =
         "uthuslvotkgltggqqjmurqojpjpjjkutkujktnkk";
 
     private static final int INDEX_ANALYSIS_SETTINGS_OBJVER = 2;
@@ -63,8 +63,8 @@ public class IndexAnalysisSettingsAccessor {
      * @return a defined instance or {@code null} if none could be found
      * @throws IOException if I/O error occurs while searching Lucene
      */
-    public IndexAnalysisSettings2 read(IndexReader reader) throws IOException {
-        IndexAnalysisSettings2[] res = read(reader, 1);
+    public IndexAnalysisSettings read(IndexReader reader) throws IOException {
+        IndexAnalysisSettings[] res = read(reader, 1);
         return res.length > 0 ? res[0] : null;
     }
 
@@ -77,7 +77,7 @@ public class IndexAnalysisSettingsAccessor {
      * @return a defined instance, which is empty if none could be found
      * @throws IOException if I/O error occurs while searching Lucene
      */
-    public IndexAnalysisSettings2[] read(IndexReader reader, int n)
+    public IndexAnalysisSettings[] read(IndexReader reader, int n)
             throws IOException {
         IndexSearcher searcher = new IndexSearcher(reader);
         Query q;
@@ -91,17 +91,18 @@ public class IndexAnalysisSettingsAccessor {
         TopDocs top = searcher.search(q, n);
 
         int nres = top.totalHits > n ? n : (int)top.totalHits;
-        IndexAnalysisSettings2[] res = new IndexAnalysisSettings2[nres];
+        IndexAnalysisSettings[] res = new IndexAnalysisSettings[nres];
 
-        IndexAnalysisSettingsUpgrader upgrader =
-                new IndexAnalysisSettingsUpgrader();
         for (int i = 0; i < nres; ++i) {
             Document doc = searcher.doc(top.scoreDocs[i].doc);
             IndexableField objser = doc.getField(QueryBuilder.OBJSER);
             int objver = readObjectVersion(doc);
+            if (objver != INDEX_ANALYSIS_SETTINGS_OBJVER) {
+                throw new IllegalArgumentException("Unknown version " + objver);
+            }
             try {
-                res[i] = objser == null ? null : upgrader.upgrade(
-                        objser.binaryValue().bytes, objver);
+                res[i] = objser == null ? null : IndexAnalysisSettings.deserialize(
+                        objser.binaryValue().bytes);
             } catch (ClassNotFoundException ex) {
                 // This is not expected, so translate to RuntimeException.
                 throw new RuntimeException(ex);
@@ -119,7 +120,7 @@ public class IndexAnalysisSettingsAccessor {
      * @param settings a defined instance
      * @throws IOException if I/O error occurs while writing Lucene
      */
-    public void write(IndexWriter writer, IndexAnalysisSettings2 settings)
+    public void write(IndexWriter writer, IndexAnalysisSettings settings)
             throws IOException {
         byte[] objser = settings.serialize();
 
