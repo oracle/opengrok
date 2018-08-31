@@ -567,8 +567,8 @@ public final class HistoryGuru {
         if (repository.isWorking()) {
             Statistics elapsed = new Statistics();
 
-            LOGGER.log(Level.INFO, "Creating historycache for {0} ({1})",
-                    new Object[]{path, type});
+            LOGGER.log(Level.INFO, "Creating historycache for {0} ({1}) {2} renamed file handling",
+                    new Object[]{path, type, repository.isHandleRenamedFiles() ? "with" : "without"});
 
             try {
                 repository.createCache(historyCache, sinceRevision);
