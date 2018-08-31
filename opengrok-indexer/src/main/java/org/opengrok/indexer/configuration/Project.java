@@ -341,14 +341,19 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         if (env.hasProjects()) {
             final String lpath = path.replace(File.separatorChar, '/');
             for (Project p : env.getProjectList()) {
-                String pp = p.getPath();
+                String projectPath = p.getPath();
+                if (projectPath == null) {
+                    LOGGER.log(Level.WARNING, "Path of project {0} is not set", p.getName());
+                    return null;
+                }
+
                 // Check if the project's path is a prefix of the given
                 // path. It has to be an exact match, or the project's path
                 // must be immediately followed by a separator. "/foo" is
                 // a prefix for "/foo" and "/foo/bar", but not for "/foof".
-                if (lpath.startsWith(pp)
-                        && (pp.length() == lpath.length()
-                        || lpath.charAt(pp.length()) == '/')) {
+                if (lpath.startsWith(projectPath)
+                        && (projectPath.length() == lpath.length()
+                        || lpath.charAt(projectPath.length()) == '/')) {
                     return p;
                 }
             }
