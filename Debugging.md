@@ -2,6 +2,8 @@
 
 ### Indexer
 
+Simply insert a breakpoint in the Indexer code in your favourite IDE.
+
 When running the indexer, add the following Java options:
 
 ```
@@ -12,7 +14,7 @@ This will make the indexer to listen on the port 8010 until a debugger connects.
 
 In Netbeans, select the Debug -> Attach Debugger from the menu and fill in the port number in the dialog window and click Attach.
 
-Then simply insert a breakpoint either in the Indexer code.
+Or, make given IDE add the arguments automatically, e.g. in IDEA just select 'Debug...' from the Run menu and pick one of the configurations to run indexer.
 
 ### Web application
 
