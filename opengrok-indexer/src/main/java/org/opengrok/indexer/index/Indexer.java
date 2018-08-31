@@ -639,7 +639,8 @@ public final class Indexer {
                 cfg.setQuickContextScan((Boolean)v);
             });
 
-            parser.on("-q", "--quiet", "Run as quietly as possible.").Do( v -> {
+            parser.on("-q", "--quiet", "Run as quietly as possible.",
+                    "Sets logging level to WARNING.").Do( v -> {
                 LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
             });
 
@@ -757,7 +758,7 @@ public final class Indexer {
                 System.exit(0);
             });
 
-            parser.on("-v", "--verbose", "Print progress information as we go along.").Do( v -> {
+            parser.on("-v", "--verbose", "Set logging level to INFO.").Do( v -> {
                 verbose = true;
                 LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
             });
