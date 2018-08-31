@@ -14,7 +14,9 @@ This will make the indexer to listen on the port 8010 until a debugger connects.
 
 In Netbeans, select the Debug -> Attach Debugger from the menu and fill in the port number in the dialog window and click Attach.
 
-Or, make given IDE add the arguments automatically, e.g. in IDEA just select 'Debug...' from the Run menu and pick one of the configurations to run indexer.
+Or, make given IDE add the Java arguments and connect the debugger automatically, e.g. in IDEA just select 'Debug...' from the Run menu and pick one of the configurations to run indexer.
+
+[![indexer debugging in IDEA](images/IDEA-indexer_debug.png)](images/IDEA-indexer_debug.png)
 
 ### Web application
 
