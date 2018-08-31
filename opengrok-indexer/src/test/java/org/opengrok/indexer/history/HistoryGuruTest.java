@@ -70,8 +70,6 @@ public class HistoryGuruTest {
                 FILES, true);
         Assert.assertNotEquals(0, FILES.size());
         
-        env.setVerbose(true);
-
         HistoryGuru histGuru = HistoryGuru.getInstance();
         assertNotNull(histGuru);
         Assert.assertEquals(0, histGuru.getRepositories().size());

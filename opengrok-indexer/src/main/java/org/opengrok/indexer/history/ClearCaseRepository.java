@@ -59,31 +59,11 @@ public class ClearCaseRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "cleartool";
 
-    private boolean verbose;
-
     public ClearCaseRepository() {
         type = "ClearCase";
         datePatterns = new String[]{
             "yyyyMMdd.HHmmss"
         };
-    }
-
-    /**
-     * Use verbose log messages, or just the summary
-     *
-     * @return true if verbose log messages are used for this repository
-     */
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    /**
-     * Specify if verbose log messages or just the summary should be used
-     *
-     * @param verbose set to true if verbose messages should be used
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     /**

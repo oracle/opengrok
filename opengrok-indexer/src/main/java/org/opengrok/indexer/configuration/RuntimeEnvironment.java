@@ -822,24 +822,6 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Is the verbosity flag turned on?
-     *
-     * @return true if we can print extra information
-     */
-    public boolean isVerbose() {
-        return threadConfig.get().isVerbose();
-    }
-
-    /**
-     * Set the verbosity flag (to add extra debug information in output)
-     *
-     * @param verbose new value
-     */
-    public void setVerbose(boolean verbose) {
-        threadConfig.get().setVerbose(verbose);
-    }
-
-    /**
      * Is the progress print flag turned on?
      *
      * @return true if we can print per project progress %

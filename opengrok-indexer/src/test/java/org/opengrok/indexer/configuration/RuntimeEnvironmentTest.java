@@ -294,14 +294,6 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testVerbose() {
-        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertFalse(instance.isVerbose());
-        instance.setVerbose(true);
-        assertTrue(instance.isVerbose());
-    }
-
-    @Test
     public void testAllowLeadingWildcard() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertFalse(instance.isAllowLeadingWildcard());
