@@ -17,14 +17,14 @@ The setting of per-project tunables is done in read-only configuration file (pas
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_121" class="java.beans.XMLDecoder">
- <object class="org.opensolaris.opengrok.configuration.Configuration" id="Configuration0">
+ <object class="org.opengrok.indexer.configuration.Configuration" id="Configuration0">
 
   ...
 
   <void property="projects">
    <void method="put">
     <string>PROJECT_NAME</string>
-    <object class="org.opensolaris.opengrok.configuration.Project">
+    <object class="org.opengrok.indeer.configuration.Project">
      <void property="navigateWindowEnabled">
       <boolean>true</boolean>
      </void>
