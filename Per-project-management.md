@@ -9,7 +9,7 @@ with incompatible Lucene indexes.
 
 The following is assuming that the commands `projadm.py`, `Groups` and `config-merge.py` tools are in `PATH`.
 
-Combine these procedures with the parallel processing tools under the [tools/sync](https://github.com/OpenGrok/OpenGrok/tree/master/tools/sync) directory and you have per-project management with parallel processing.
+Combine these procedures with the parallel processing tools and you have per-project management with parallel processing.
 
 The following examples assume that OpenGrok install base is under the `/opengrok` directory.
 
@@ -33,6 +33,7 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 ```
    projadm -b /opengrok -r
 ```
+- now it is possible to reindex the project with `reindex-project.py` (see [repository synchronization](/OpenGrok/OpenGrok/wiki/Repository-synchronization#syncpy))
 
 ## Deleting a project
 
