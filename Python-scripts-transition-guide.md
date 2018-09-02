@@ -72,4 +72,4 @@ OPENGROK_LOGGER_CONFIG_PATH | add `-Djava.util.logging.config.file=...` to -J
    deploy.py -c /opengrok/etc/configuration.xml -D /opengrok/dist/lib/source.war \
        /var/tomcat8/webapps
   ```
-- new `sync.py` config example (together with `reindex-project.py` example): see https://github.com/oracle/opengrok/wiki/Repository-synchronization
+- new `sync.py` config example (together with `reindex-project.py` example): see [Repository synchronization](/OpenGrok/OpenGrok/wiki/Repository-synchronization)
