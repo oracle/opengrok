@@ -5,6 +5,10 @@ In OpenGrok 1.1 the shell scripts were all rewritten to Python. The main change 
 | `OpenGrok` subcomand | Replacement |
 | ----- | ---- |
 bootstrap | use `indexer.py` with `--updateConfig` and the `-U` options
+index | use `indexer.py` with options as per the sections below
+indexpart | use `reindex-project.py` with options as per the sections below
+updateDesc | use [RESTful API](/OpenGrok/OpenGrok/wiki/Web-services#rest-api) for updating path descriptions
+deploy | use the `deploy.py` script
 
 # Environment variables replaceable with `Indexer` options:
 
@@ -69,4 +73,3 @@ OPENGROK_LOGGER_CONFIG_PATH | add `-Djava.util.logging.config.file=...` to -J
        /var/tomcat8/webapps
   ```
 - new `sync.py` config example (together with `reindex-project.py` example): see https://github.com/oracle/opengrok/wiki/Repository-synchronization
-- update path descriptions - use [RESTful API](/OpenGrok/OpenGrok/wiki/Web-services#rest-api)
