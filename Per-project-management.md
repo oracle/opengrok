@@ -22,10 +22,7 @@ The following examples assume that OpenGrok install base is under the `/opengrok
 ```
    projadm -b /opengrok -a PROJECT
 ```
-- change any per-project settings, e.g.:
-```
-   Messages -n project -t PROJECT "set handleRenamedFiles = true"
-```
+- change any per-project settings (see [Web services wiki](/OpenGrok/OpenGrok/wiki/Web-services#rest-api))
 - if per-project configuration was changed in the previous step, get the changed configuration (so that the indexer can follow it):
 ```
    projadm -b /opengrok -r
