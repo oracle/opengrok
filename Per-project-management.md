@@ -3,11 +3,11 @@ OpenGrok can be run with or without projects. Project is simply a directory unde
 This is handy in case the synchronization, indexing for some of the projects is taking a long time or simply you have lots of projects. Or all of it together.
 
 Previously, it was necessary to index all of source root in order to discover new projects.
-Starting with OpenGrok 1.1, using the `projadm` tool (that utilizes the `ConfigMerge` tool and RESTful API) it is possible to manage the projects.
+Starting with OpenGrok 1.1, using the `projadm.py` tool (that utilizes the `config-merge.py` tool and RESTful API) it is possible to manage the projects.
 As a result, the indexing of complete source root is only necessary when upgrading across OpenGrok version
 with incompatible Lucene indexes.
 
-The following is assuming that the commands `projadm`, `Groups` and `ConfigMerge` tools are in `PATH`.
+The following is assuming that the commands `projadm.py`, `Groups` and `config-merge.py` tools are in `PATH`.
 
 Combine these procedures with the parallel processing tools under the [tools/sync](https://github.com/OpenGrok/OpenGrok/tree/master/tools/sync) directory and you have per-project management with parallel processing.
 
