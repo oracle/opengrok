@@ -37,7 +37,8 @@ class Java(Command):
     """
 
     def __init__(self, command, logger=None, main_class=None, java=None,
-                 jar=None, java_opts=None, classpath=None, env_vars=None):
+                 jar=None, java_opts=None, classpath=None, env_vars=None,
+                 redirect_stderr=True):
 
         if not java:
             java = self.FindJava(logger)
@@ -71,7 +72,8 @@ class Java(Command):
         java_command.extend(command)
         logger.debug("Java command: {}".format(java_command))
 
-        super().__init__(java_command, logger=logger, env_vars=env)
+        super().__init__(java_command, logger=logger, env_vars=env,
+                         redirect_stderr=redirect_stderr)
 
     def FindJava(self, logger):
         """
