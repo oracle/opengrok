@@ -353,11 +353,11 @@ public class IndexDatabase {
             IndexDownArgs args = new IndexDownArgs();
             args.count_only = true;
 
+            Statistics elapsed = new Statistics();
             LOGGER.log(Level.INFO, "Counting files in {0} ...", dir);
             indexDown(sourceRoot, dir, args);
-            LOGGER.log(Level.INFO,
-                    "Need to process: {0} files for {1}",
-                    new Object[]{args.cur_count, dir});
+            elapsed.report(LOGGER, String.format("Need to process: %d files for %s",
+                    args.cur_count, dir));
         }
 
         return file_cnt;
@@ -496,10 +496,16 @@ public class IndexDatabase {
                     args.est_total = getFileCount(sourceRoot, dir);
 
                     args.cur_count = 0;
+                    Statistics elapsed = new Statistics();
+                    LOGGER.log(Level.INFO, "Starting traversal of directory {0}", dir);
                     indexDown(sourceRoot, dir, args);
+                    elapsed.report(LOGGER, String.format("Done traversal of directory %s", dir));
 
                     args.cur_count = 0;
+                    elapsed = new Statistics();
+                    LOGGER.log(Level.INFO, "Starting indexing of directory {0}", dir);
                     indexParallel(args);
+                    elapsed.report(LOGGER, String.format("Done indexing of directory %s", dir));
 
                     // Remove data for the trailing terms that indexDown()
                     // did not traverse. These correspond to files that have been
