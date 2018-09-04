@@ -103,7 +103,8 @@ def install_config(doit, src, dst):
         sys.exit(1)
 
 
-def config_refresh(doit, logger, basedir, uri, configmerge, roconfig):
+def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
+                   roconfig):
     """
     Refresh current configuration file with configuration retrieved
     from webapp. If roconfig is not None, the current config is merged with
@@ -137,7 +138,8 @@ def config_refresh(doit, logger, basedir, uri, configmerge, roconfig):
             logger.info('Refreshing configuration '
                         '(merging with read-only config)')
             merged_config = exec_command(doit, logger,
-                                         [configmerge, roconfig, fcur.name],
+                                         [configmerge, '-a', jar_file,
+                                          roconfig, fcur.name],
                                          "cannot merge configuration")
             with tempfile.NamedTemporaryFile() as fmerged:
                 logger.debug("Temporary file for merged config: {}".
@@ -193,8 +195,7 @@ def project_delete(logger, project, uri, doit=True, deletesource=False):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='grok configuration '
-                                     'management.',
+    parser = argparse.ArgumentParser(description='project management.',
                                      formatter_class=argparse.
                                      ArgumentDefaultsHelpFormatter)
     parser.add_argument('-D', '--debug', action='store_true',
@@ -204,9 +205,10 @@ if __name__ == '__main__':
     parser.add_argument('-R', '--roconfig',
                         help='OpenGrok read-only configuration file')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
-                        help='uri of the webapp with context path')
+                        help='URI of the webapp with context path')
     parser.add_argument('-c', '--configmerge',
                         help='path to the ConfigMerge binary')
+    parser.add_argument('--jar', help='Path to jar archive to run')
     parser.add_argument('-u', '--upload', action='store_true',
                         help='Upload configuration at the end')
     parser.add_argument('-n', '--noop', action='store_true', default=False,
@@ -256,7 +258,10 @@ if __name__ == '__main__':
                          .format(args.base))
             sys.exit(1)
 
-    # read-only configuration file.
+    # If read-only configuration file is specified, this means read-only
+    # configuration will need to be merged with active webapp configuration.
+    # This requires config merge tool to be run so couple of other things
+    # need to be checked.
     if args.roconfig:
         if path.isfile(args.roconfig):
             logger.debug("Using {} as read-only config".format(args.roconfig))
@@ -264,15 +269,21 @@ if __name__ == '__main__':
             logger.error("File {} does not exist".format(args.roconfig))
             sys.exit(1)
 
+        configmerge_file = get_command(logger, args.configmerge,
+                                       "config-merge.py")
+        if configmerge_file is None:
+            logger.error("Use the --configmerge option to specify the path to"
+                         "the config merge script")
+            sys.exit(1)
+
+        if args.jar is None:
+            logger.error('jar file needed for config merge tool, '
+                         'use --jar to specify one')
+            sys.exit(1)
+
     uri = args.uri
     if not uri:
-        logger.error("uri of the webapp not specified")
-        sys.exit(1)
-
-    configmerge_file = get_command(logger, args.configmerge, "ConfigMerge")
-    if not configmerge_file:
-        logger.error("Use the --configmerge option to specify the path to"
-                     "the ConfigMerge script")
+        logger.error("URI of the webapp not specified")
         sys.exit(1)
 
     lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
@@ -289,6 +300,7 @@ if __name__ == '__main__':
                                basedir=args.base,
                                uri=uri,
                                configmerge=configmerge_file,
+                               jar_file=args.jar,
                                roconfig=args.roconfig)
             elif args.delete:
                 for proj in args.delete:
@@ -301,12 +313,14 @@ if __name__ == '__main__':
                                basedir=args.base,
                                uri=uri,
                                configmerge=configmerge_file,
+                               jar_file=args.jar,
                                roconfig=args.roconfig)
             elif args.refresh:
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
                                uri=uri,
                                configmerge=configmerge_file,
+                               jar_file=args.jar,
                                roconfig=args.roconfig)
             else:
                 parser.print_help()
