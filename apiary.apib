@@ -78,21 +78,21 @@ Besides `/suggester` and `/search` endpoints, everything is accessible from `loc
           "duration":"PT10M"
         }
 
-+ Response 204
++ Response 201
 
 ### deletes messages with specified tag [DELETE]
 
 + Parameters
   + tag (string) - tag
 
-+ Response 222
++ Response 204
 
 ### returns all messages with specified tag [GET]
 
 + Parameters
   + tag (string) - tag
 
-+ Response 222 (application/json)
++ Response 200 (application/json)
 
         [
           {
