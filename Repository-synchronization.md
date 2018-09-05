@@ -84,12 +84,14 @@ handlers= java.util.logging.FileHandler
 .level= FINE
 
 java.util.logging.FileHandler.pattern = /opengrok/log/%PROJ%/opengrok%g.%u.log
-java.util.logging.FileHandler.limit = 52428800
+# Create one file per indexer run. This makes indexer log easy to check.
+java.util.logging.FileHandler.limit = 0
+java.util.logging.FileHandler.append = false
 java.util.logging.FileHandler.count = 30
-java.util.logging.FileHandler.formatter = org.opensolaris.opengrok.logger.formatter.SimpleFileLogFormatter
+java.util.logging.FileHandler.formatter = org.opengrok.indexer.logger.formatter.SimpleFileLogFormatter
 
 java.util.logging.ConsoleHandler.level = WARNING
-java.util.logging.ConsoleHandler.formatter = org.opensolaris.opengrok.logger.formatter.SimpleFileLogFormatter
+java.util.logging.ConsoleHandler.formatter = org.opengrok.indexer.logger.formatter.SimpleFileLogFormatter
 ```
 
 The `%PROJ%` template is passed to the script for substitution in the
