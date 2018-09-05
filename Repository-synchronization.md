@@ -54,7 +54,32 @@ The commands above will basically:
   - pull the changes from all the upstream repositories that belong to the project using the `mirror.py` command
   - reindex the project using `reindex-project.py`
   - clear the alert using the second [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call
-  - execute the `/scripts/check-indexer-logs.ksh` script to perform some pattern matching in the indexer logs to see if there were any serious failures there
+  - execute the `/scripts/check-indexer-logs.ksh` script to perform some pattern matching in the indexer logs to see if there were any serious failures there. The script can look e.g. like this:
+```shell
+#!/usr/bin/ksh
+#
+# Check OpenGrok indexer logs in the last 24 hours for any signs of serious
+# trouble.
+#
+
+if (( $# != 1 )); then
+        print -u2 "usage: $0 <project_name>"
+        exit 1
+fi
+
+project_name=$1
+
+typeset -r log_dir="/opengrok/log/$project_name/"
+if [[ ! -d $log_dir ]]; then
+        print -u2 "cannot open log directory $log_dir"
+        exit 1
+fi
+
+# Check the last log file.
+if grep SEVERE "$log_dir/opengrok0.0.log"; then
+        exit 1
+fi
+```
 
 The `sync.py` script will print any errors to the console and uses file level locking to provide exclusivity of run so it is handy to run from `crontab` periodically.
 
