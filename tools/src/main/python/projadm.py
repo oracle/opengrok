@@ -67,6 +67,8 @@ def exec_command(doit, logger, cmd, msg):
         logger.error("Error output: {}".format(cmd.geterroutput()))
         sys.exit(1)
 
+    logger.debug(cmd.geterroutputstr())
+
     return cmd.getoutput()
 
 
@@ -137,9 +139,10 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
         else:
             logger.info('Refreshing configuration '
                         '(merging with read-only config)')
+            configmerge_cmd = configmerge
+            configmerge_cmd.extend(['-a', jar_file, roconfig, fcur.name])
             merged_config = exec_command(doit, logger,
-                                         [configmerge, '-a', jar_file,
-                                          roconfig, fcur.name],
+                                         configmerge_cmd,
                                          "cannot merge configuration")
             with tempfile.NamedTemporaryFile() as fmerged:
                 logger.debug("Temporary file for merged config: {}".
@@ -276,6 +279,10 @@ if __name__ == '__main__':
                          "the config merge script")
             sys.exit(1)
 
+        configmerge = [configmerge_file]
+        if args.debug:
+            configmerge.append('-D')
+
         if args.jar is None:
             logger.error('jar file needed for config merge tool, '
                          'use --jar to specify one')
@@ -299,7 +306,7 @@ if __name__ == '__main__':
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
                                uri=uri,
-                               configmerge=configmerge_file,
+                               configmerge=configmerge,
                                jar_file=args.jar,
                                roconfig=args.roconfig)
             elif args.delete:
@@ -312,14 +319,14 @@ if __name__ == '__main__':
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
                                uri=uri,
-                               configmerge=configmerge_file,
+                               configmerge=configmerge,
                                jar_file=args.jar,
                                roconfig=args.roconfig)
             elif args.refresh:
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
                                uri=uri,
-                               configmerge=configmerge_file,
+                               configmerge=configmerge,
                                jar_file=args.jar,
                                roconfig=args.roconfig)
             else:

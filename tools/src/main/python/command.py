@@ -366,6 +366,9 @@ class Command:
     def geterroutput(self):
         return self.err
 
+    def geterroutputstr(self):
+        return "".join(self.err).strip()
+
     def getstate(self):
         return self.state
 
