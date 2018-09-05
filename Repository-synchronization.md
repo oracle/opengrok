@@ -66,8 +66,6 @@ Normal command execution can be also performed in the `cleanup` section.
 
 Some project can be notorious for producing spurious errors so their errors are ignored via the `"ignore_errors"` section.
 
-The `sync.conf` configuration can be also represented as YAML.
-
 In the above example it is assumed that `sync.py` is run as `root` and synchronization and reindexing are done under different users. This is done so that the web application cannot tamper with source code even if compromised.
 
 The commands got appended project name unless one of their arguments contains
