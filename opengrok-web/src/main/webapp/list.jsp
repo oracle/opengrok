@@ -358,7 +358,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         } else {
             if (!cfg.getEnv().isGenerateHtml()) {
                 // Economy mode is on and failed to get the last revision (presumably running with history turned off).
-                // Generate dummy revision string so that xref can be generated from the resource file directly.
+                // Use dummy revision string so that xref can be generated from the resource file directly.
                 location = cfg.getRevisionLocation(DUMMY_REVISION);
                 response.sendRedirect(location);
                 return;
