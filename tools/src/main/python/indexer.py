@@ -91,7 +91,7 @@ def FindCtags(logger):
     binary = None
     logger.debug("Trying to find ctags binary")
     for program in ['universal-ctags', 'ctags']:
-        executable = get_command(logger, None, program)
+        executable = get_command(logger, None, program, level=logging.DEBUG)
         if executable:
             # Verify that this executable is or is Universal Ctags
             # by matching the output when run with --version.
