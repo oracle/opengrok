@@ -248,7 +248,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             FileAnalyzerFactory a = AnalyzerGuru.find(basename);
             Genre g = AnalyzerGuru.getGenre(a);
             String error = null;
-            if (g == Genre.PLAIN|| g == Genre.HTML || g == null) {
+            if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
                 InputStream in = null;
                 try {
                     in = HistoryGuru.getInstance()
@@ -263,8 +263,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                             a = AnalyzerGuru.find(in);
                             g = AnalyzerGuru.getGenre(a);
                         }
-                        if (g == Genre.DATA || g == Genre.XREFABLE
-                            || g == null)
+                        if (g == Genre.DATA || g == Genre.XREFABLE || g == null)
                         {
     %>
     <div id="src">
