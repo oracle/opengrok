@@ -263,8 +263,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                             a = AnalyzerGuru.find(in);
                             g = AnalyzerGuru.getGenre(a);
                         }
-                        if (g == Genre.DATA || g == Genre.XREFABLE || g == null)
-                        {
+                        if (g == Genre.DATA || g == Genre.XREFABLE || g == null) {
     %>
     <div id="src">
     Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
