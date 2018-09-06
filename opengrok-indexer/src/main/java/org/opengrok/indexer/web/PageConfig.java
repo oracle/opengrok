@@ -1229,7 +1229,7 @@ public final class PageConfig {
         History hist;
         try {
             hist = HistoryGuru.getInstance().
-                    getHistory(new File(getEnv().getSourceRootFile(), getPath()));
+                    getHistory(new File(getEnv().getSourceRootFile(), getPath()), false, true);
         } catch (HistoryException ex) {
             return null;
         }
