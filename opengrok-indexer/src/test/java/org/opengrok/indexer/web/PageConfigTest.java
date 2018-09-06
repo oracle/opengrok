@@ -270,7 +270,7 @@ public class PageConfigTest {
         String rev = cfg.getLatestRevision();
         assertNull(rev);
 
-        String location = cfg.getLatestRevisionLocation();
+        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
         assertNull(location);
     }
 

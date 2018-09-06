@@ -1221,7 +1221,7 @@ public final class PageConfig {
                 path, env.isCompressXref());
     }
 
-    protected String getLatestRevision() {
+    public String getLatestRevision() {
         if (!getEnv().isHistoryEnabled()) {
             return null;
         }
@@ -1265,15 +1265,14 @@ public final class PageConfig {
     }
 
     /**
-     * Get the location of cross reference for given file containing the current
-     * revision.
-     * @return location to redirect to or null if failed
+     * Get the location of cross reference for given file containing the given revision.
+     * @param revStr revision string
+     * @return location to redirect to or null if revision string is empty
      */
-    public String getLatestRevisionLocation() {
+    public String getRevisionLocation(String revStr) {
         StringBuilder sb = new StringBuilder();
-        String revStr;
 
-        if ((revStr = getLatestRevision()) == null) {
+        if (revStr == null) {
             return null;
         }
 

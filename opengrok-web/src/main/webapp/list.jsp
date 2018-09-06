@@ -88,6 +88,7 @@ document.pageReady.push(function() { pageReadyList();});
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
     Project project = cfg.getProject();
+    final String DUMMY_REVISION = "dummy";
 
     String navigateWindowEnabled = project != null ? Boolean.toString(
             project.isNavigateWindowEnabled()) : "false";
@@ -251,8 +252,12 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
                 InputStream in = null;
                 try {
-                    in = HistoryGuru.getInstance()
-                        .getRevision(resourceFile.getParent(), basename, rev);
+                    if (rev.equals(DUMMY_REVISION)) {
+                        in = new FileInputStream(resourceFile);
+                    } else {
+                        in = HistoryGuru.getInstance()
+                                .getRevision(resourceFile.getParent(), basename, rev);
+                    }
                 } catch (Exception e) {
                     // fall through to error message
                     error = e.getMessage();
@@ -344,13 +349,21 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         // requesting cross referenced file
         File xrefFile = null;
 
-        // Get the latest revision and redirect so that the revision number
+        // Get the latest revision and redirect so that  the revision number
         // appears in the URL.
-        String location = cfg.getLatestRevisionLocation();
+        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
         if (location != null) {
             response.sendRedirect(location);
             return;
         } else {
+            if (!cfg.getEnv().isGenerateHtml()) {
+                // Economy mode is on and failed to get the last revision (presumably running with history turned off).
+                // Generate dummy revision string so that xref can be generated from the resource file directly.
+                location = cfg.getRevisionLocation(DUMMY_REVISION);
+                response.sendRedirect(location);
+                return;
+            }
+
             xrefFile = cfg.findDataFile();
         }
 
@@ -362,6 +375,10 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             Util.dumpXref(out, xrefFile, compressed, request.getContextPath());
     %></pre>
 </div><%
+        } else {
+            String error = "Failed to get xref file";
+%>
+<p class="error"><%= error %></p><%
         }
     }
 }
