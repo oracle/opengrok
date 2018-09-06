@@ -278,9 +278,9 @@ public final class HistoryGuru {
     public InputStream getRevision(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        Repository rep = getRepository(new File(parent));
-        if (rep != null) {
-            ret = rep.getHistoryGet(parent, basename, rev);
+        Repository repo = getRepository(new File(parent));
+        if (repo != null) {
+            ret = repo.getHistoryGet(parent, basename, rev);
         }
         return ret;
     }
