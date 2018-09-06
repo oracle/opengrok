@@ -440,8 +440,8 @@ public final class Indexer {
             );
 
             parser.on("-c", "--ctags","=/path/to/ctags",
-                "Path to Exuberant or Universal Ctags",
-                "By default takes the Exuberant Ctags in PATH.").
+                "Path to Universal Ctags",
+                "By default takes the Universal Ctags in PATH.").
                 Do( ctagsPath -> {
                     cfg.setCtags((String)ctagsPath);
                 }
@@ -878,7 +878,7 @@ public final class Indexer {
         }
 
         if (zapCache.isEmpty() && !env.validateUniversalCtags()) {
-            throw new IndexerException("Didn't find Exuberant Ctags");
+            throw new IndexerException("Didn't find Universal Ctags");
         }
         if (zapCache == null) {
             throw new IndexerException("Internal error, zapCache shouldn't be null");
