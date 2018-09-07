@@ -234,6 +234,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     doit = not args.noop
+    configmerge = None
 
     #
     # Setup logger as a first thing after parsing arguments so that it can be
