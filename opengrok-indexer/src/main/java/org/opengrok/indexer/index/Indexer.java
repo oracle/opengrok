@@ -98,7 +98,7 @@ public final class Indexer {
     private static String configFilename = null;
     private static int status = 0;
 
-    private static final ArrayList<String> repositories = new ArrayList<>();
+    private static final Set<String> repositories = new HashSet<>();
     private static final HashSet<String> allowedSymlinks = new HashSet<>();
     private static final Set<String> defaultProjects = new TreeSet<>();
     private static final ArrayList<String> zapCache = new ArrayList<>();
@@ -141,7 +141,9 @@ public final class Indexer {
                 }
                 System.exit(status);
             }
-            
+
+            checkConfiguration();
+
             if (awaitProfiler) {
                 pauseToAwaitProfiler();
             }
@@ -256,8 +258,11 @@ public final class Indexer {
                 path = path.substring(srcPath.length());
                 if (env.hasProjects()) {
                     // The paths need to correspond to a project.
-                    if (Project.getProject(path) != null) {
+                    Project project;
+                    if ((project = Project.getProject(path)) != null) {
                         subFiles.add(path);
+                        repositories.addAll(env.getProjectRepositoriesMap().get(project).
+                                stream().map(x -> x.getDirectoryNameRelative()).collect(Collectors.toSet()));
                     } else {
                         System.err.println("The path " + path
                                 + " does not correspond to a project");
@@ -292,7 +297,7 @@ public final class Indexer {
             // Get history first.
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
                     defaultProjects,
-                    listFiles, createDict, subFiles, repositories,
+                    listFiles, createDict, subFiles, new ArrayList(repositories),
                     zapCache, listRepos);
             if (listRepos || !zapCache.isEmpty()) {
                 return;
@@ -499,19 +504,9 @@ public final class Indexer {
                 cfg.setTagsEnabled(true);
             });
 
-            parser.on("-H", "--history", "=[/path/to/repository]",
-                "Get history for specific repositories (specified as",
-                "absolute path from source root), or ALL repositories",
-                "when none specified.").
-                Do( repo -> {
-                    String repository = (String) repo;
-                    if (repository.equals("")) {
-                        cfg.setHistoryEnabled(true);  // all repositories
-                    } else {
-                        repositories.add((String)repository);  // specific repository
-                    }
-                }
-            );
+            parser.on("-H", "--history", "Enable history.").Do( v -> {
+                cfg.setHistoryEnabled(true);
+            });
 
             parser.on("-I", "--include", "=pattern",
                 "Only files matching this pattern will be examined.",
@@ -643,6 +638,12 @@ public final class Indexer {
             parser.on("-q", "--quiet", "Run as quietly as possible.",
                     "Sets logging level to WARNING.").Do( v -> {
                 LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
+            });
+
+            parser.on("--repository", "=repository",
+                    "Generate history for specific repository specified as relative path to source root. ",
+                    "Can be used multiple times. Assumes history is on.").Do( repo -> {
+                repositories.add((String)repo);
             });
 
             parser.on("-R /path/to/configuration",
@@ -786,6 +787,13 @@ public final class Indexer {
         argv = optParser.parse(argv);
 
         return argv;
+    }
+
+    private static void checkConfiguration() {
+        if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
+            System.out.println("Repositories were specified however history is off");
+            System.exit(1);
+        }
     }
 
     private static void die(String message) {
