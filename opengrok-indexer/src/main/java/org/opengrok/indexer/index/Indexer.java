@@ -45,6 +45,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import org.apache.commons.validator.routines.UrlValidator;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
@@ -729,9 +731,14 @@ public final class Indexer {
 
             parser.on("-U", "--host", "=protocol://host:port/contextPath",
                 "Send the current configuration to the specified address").Do(webAddr -> {
-                    env = RuntimeEnvironment.getInstance();
-
                     host = (String) webAddr;
+                    String[] schemes = {"http", "https"};
+                    UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
+                    if (!urlValidator.isValid(host)) {
+                        die("URL '" + host + "' is not valid.");
+                    }
+
+                    env = RuntimeEnvironment.getInstance();
                     env.setConfigHost(host);
                 }
             );
@@ -790,6 +797,12 @@ public final class Indexer {
     }
 
     private static void checkConfiguration() {
+        env = RuntimeEnvironment.getInstance();
+
+        if (noindex && (env.getConfigHost() == null || env.getConfigHost().isEmpty())) {
+            die("Missing host URL");
+        }
+
         if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
             die("Repositories were specified however history is off");
         }
