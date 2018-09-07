@@ -397,7 +397,7 @@ public final class Indexer {
         }
 
         OptionParser configure = OptionParser.scan(parser -> {
-            parser.on("-R configPath").Do( cfgFile -> {
+            parser.on("-R configPath").Do(cfgFile -> {
                 try {
                     cfg = Configuration.read(new File((String)cfgFile));
                 } catch(IOException e) {
@@ -413,7 +413,7 @@ public final class Indexer {
             parser.setPrologue(
                 String.format("\nUsage: java -jar %s [options] [subDir1 [...]]\n", program));
 
-            parser.on("-?", "-h", "--help", "Display this usage summary.").Do( v -> {
+            parser.on("-?", "-h", "--help", "Display this usage summary.").Do(v -> {
                 help = true;
                 helpUsage = parser.getUsage();
             });
@@ -436,7 +436,7 @@ public final class Indexer {
                     "      with \"BAR\" (no full-stop)",
                     "  Ex: -A .c:-",
                     "      will disable specialized analyzers for all files ending with .c").
-                Do( analyzerSpec -> {
+                Do(analyzerSpec -> {
                     String[] arg = ((String)analyzerSpec).split(":");
                     String fileSpec = arg[0];
                     String analyzer = arg[1];
@@ -447,13 +447,13 @@ public final class Indexer {
             parser.on("-c", "--ctags","=/path/to/ctags",
                 "Path to Exuberant or Universal Ctags",
                 "By default takes the Exuberant Ctags in PATH.").
-                Do( ctagsPath -> {
+                Do(ctagsPath -> {
                     cfg.setCtags((String)ctagsPath);
                 }
             );
 
             parser.on("--checkIndexVersion", "=/path/to/conf",
-                    "Check if current Lucene version matches index version").Do( v -> {
+                    "Check if current Lucene version matches index version").Do(v -> {
                 try {
                     File cfgFile = new File((String)v);
                     checkIndexVersionCfg = Configuration.read(cfgFile);
@@ -464,7 +464,7 @@ public final class Indexer {
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root",
                 "The directory where OpenGrok stores the generated data.").
-                Do( drPath -> {
+                Do(drPath -> {
                     File dataRoot = new File((String)drPath);
                     if (!dataRoot.exists() && !dataRoot.mkdirs()) {
                         die("Cannot create data root: " + dataRoot);
@@ -482,49 +482,49 @@ public final class Indexer {
 
             parser.on("--deleteHistory", "=/path/to/repository",
                 "Delete the history cache for the given repository and exit.",
-                "Use '*' to delete the cache for all repositories.").Do( repo -> {
+                "Use '*' to delete the cache for all repositories.").Do(repo -> {
                 zapCache.add((String)repo);
             });
 
             parser.on("--depth", "=number", Integer.class,
                 "Scanning depth for repositories in directory structure relative to",
-                "source root. Default is " + Configuration.defaultScanningDepth + ".").Do( depth -> {
+                "source root. Default is " + Configuration.defaultScanningDepth + ".").Do(depth -> {
                 cfg.setScanningDepth((Integer)depth);
             });
 
             parser.on("-e", "--economical",
                 "Economical, consumes less disk space.",
                 "It does not generate hyper text cross reference files offline,",
-                "but will do so on demand, which could be sightly slow.").Do( v -> {
+                "but will do so on demand, which could be sightly slow.").Do(v -> {
                 cfg.setGenerateHtml(false);
             });
 
             parser.on("-G", "--assignTags",
-                "Assign commit tags to all entries in history for all repositories.").Do( v -> {
+                "Assign commit tags to all entries in history for all repositories.").Do(v -> {
                 cfg.setTagsEnabled(true);
             });
 
-            parser.on("-H", "--history", "Enable history.").Do( v -> {
+            parser.on("-H", "--history", "Enable history.").Do(v -> {
                 cfg.setHistoryEnabled(true);
             });
 
             parser.on("-I", "--include", "=pattern",
                 "Only files matching this pattern will be examined.",
-                "(supports wildcards, example: -I *.java -I *.c)").Do( pattern -> {
+                "(supports wildcards, example: -I *.java -I *.c)").Do(pattern -> {
                 cfg.getIncludedNames().add((String)pattern);
             });
 
             parser.on("-i", "--ignore", "=pattern",
                 "Ignore the named files (prefixed with 'f:')",
                 "or directories (prefixed with 'd:').",
-                "Supports wildcards (example: -i *.so -i *.dll)").Do( pattern -> {
+                "Supports wildcards (example: -i *.so -i *.dll)").Do(pattern -> {
                 cfg.getIgnoredNames().add((String)pattern);
             });
 
             parser.on("-l", "--lock", "=on|off|simple|native", LUCENE_LOCKS,
                 "Set OpenGrok/Lucene locking mode of the Lucene database",
                 "during index generation. \"on\" is an alias for \"simple\".",
-                "Default is off.").Do( v -> {
+                "Default is off.").Do(v -> {
                 try {
                     if (v != null) {
                         String vuc = v.toString().toUpperCase(Locale.ROOT);
@@ -537,22 +537,22 @@ public final class Indexer {
             });
 
             parser.on("--leadingWildCards", "=on|off", ON_OFF, Boolean.class,
-                "Allow or disallow leading wildcards in a search.").Do( v -> {
+                "Allow or disallow leading wildcards in a search.").Do(v -> {
                 cfg.setAllowLeadingWildcard((Boolean)v);
             });
 
-            parser.on("--listRepos", "List all repository paths and exit.").Do( v -> {
+            parser.on("--listRepos", "List all repository paths and exit.").Do(v -> {
                 listRepos = true;
             });
 
             parser.on("-m", "--memory", "=number", Double.class,
                 "Amount of memory that may be used for buffering added documents and",
                 "deletions before they are flushed to the directory (default "+Configuration.defaultRamBufferSize+"MB).",
-                "Please increase JVM heap accordingly, too.").Do( memSize -> {
+                "Please increase JVM heap accordingly, too.").Do(memSize -> {
                 cfg.setRamBufferSize((Double)memSize);
             });
 
-            parser.on("--man", "Generate OpenGrok XML manual page.").Do( v -> {
+            parser.on("--man", "Generate OpenGrok XML manual page.").Do(v -> {
                 try {
                     System.out.print(parser.getManPage());
                 } catch(IOException e) {
@@ -570,14 +570,14 @@ public final class Indexer {
             );
 
             parser.on("-n", "--noIndex",
-                "Do not generate indexes, but process all other command line options.").Do( v -> {
+                "Do not generate indexes, but process all other command line options.").Do(v -> {
                 runIndex = false;
             });
 
             parser.on("-O", "--optimize", "=on|off", ON_OFF, Boolean.class,
                 "Turn on/off the optimization of the index database",
                 "as part of the indexing step.").
-                Do( v -> {
+                Do(v -> {
                     boolean oldval = cfg.isOptimizeDatabase();
                     cfg.setOptimizeDatabase((Boolean)v);
                     if (oldval != cfg.isOptimizeDatabase()) {
@@ -588,7 +588,7 @@ public final class Indexer {
 
             parser.on("-o", "--ctagOpts", "=path",
                 "File with extra command line options for ctags.").
-                Do( path -> {
+                Do(path -> {
                     String CTagsExtraOptionsFile = (String)path;
                     File CTagsFile = new File(CTagsExtraOptionsFile);
                     if (!(CTagsFile.isFile() && CTagsFile.canRead())) {
@@ -601,7 +601,7 @@ public final class Indexer {
             );
 
             parser.on("-P", "--projects",
-                "Generate a project for each top-level directory in source root.").Do( v -> {
+                "Generate a project for each top-level directory in source root.").Do(v -> {
                 addProjects = true;
                 cfg.setProjectsEnabled(true);
             });
@@ -611,7 +611,7 @@ public final class Indexer {
                 "by default in the web application (when no other project",
                 "set either in cookie or in parameter). May be used multiple",
                 "times for several projects. Use \"__all__\" for all projects.",
-                "You should strip off the source root.").Do( v -> {
+                "You should strip off the source root.").Do(v -> {
                 defaultProjects.add((String)v);
             });
 
@@ -622,7 +622,7 @@ public final class Indexer {
                 "Print per project percentage progress information.",
                 "(I/O extensive, since one read through directory structure is",
                 "made before indexing, needs -v, otherwise it just goes to the log)").
-                Do( v -> {
+                Do(v -> {
                     cfg.setPrintProgress(true);
                 }
             );
@@ -631,23 +631,23 @@ public final class Indexer {
                 "Turn on/off quick context scan. By default, only the first",
                 "1024k of a file is scanned, and a '[..all..]' link is inserted",
                 "when the file is bigger. Activating this may slow the server down.",
-                "(Note: this is setting only affects the web application)").Do( v -> {
+                "(Note: this is setting only affects the web application)").Do(v -> {
                 cfg.setQuickContextScan((Boolean)v);
             });
 
             parser.on("-q", "--quiet", "Run as quietly as possible.",
-                    "Sets logging level to WARNING.").Do( v -> {
+                    "Sets logging level to WARNING.").Do(v -> {
                 LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
             });
 
             parser.on("--repository", "=repository",
                     "Generate history for specific repository specified as relative path to source root. ",
-                    "Can be used multiple times. Assumes history is on.").Do( repo -> {
+                    "Can be used multiple times. Assumes history is on.").Do(repo -> {
                 repositories.add((String)repo);
             });
 
             parser.on("-R /path/to/configuration",
-                "Read configuration from the specified file.").Do( v-> {
+                "Read configuration from the specified file.").Do(v-> {
                 // Already handled above. This populates usage.
             });
 
@@ -659,7 +659,7 @@ public final class Indexer {
                 "  uionly - support remote SCM for user interface only.",
                 "dirbased - allow retrieval during history index only for repositories",
                 "           which allow getting history for directories.").
-                Do( v -> {
+                Do(v -> {
                     String option = (String) v;
                     if (option.equalsIgnoreCase(ON)) {
                         cfg.setRemoteScmSupported(Configuration.RemoteSCM.ON);
@@ -676,18 +676,18 @@ public final class Indexer {
             parser.on("--renamedHistory", "=on|off", ON_OFF, Boolean.class,
                 "Enable or disable generating history for renamed files.",
                 "If set to on, makes history indexing slower for repositories",
-                "with lots of renamed files.").Do( v -> {
+                "with lots of renamed files.").Do(v -> {
                     cfg.setHandleHistoryOfRenamedFiles((Boolean)v);
             });
 
             parser.on("-S", "--search",
-                "Search for \"external\" source repositories and add them.").Do( v -> {
+                "Search for \"external\" source repositories and add them.").Do(v -> {
                 searchRepositories = true;
             });
 
             parser.on("-s", "--source", "=/path/to/source/root",
                 "The root directory of the source tree.").
-                Do( source -> {
+                Do(source -> {
                     File sourceRoot = new File((String)source);
                     if (!sourceRoot.isDirectory()) {
                         die("Source root " + sourceRoot + " must be a directory");
@@ -703,7 +703,7 @@ public final class Indexer {
             parser.on("--style", "=path",
                 "Path to the subdirectory in the web-application containing the",
                 "requested stylesheet. The factory-setting is: \"default\".").
-                Do( stylePath -> {
+                Do(stylePath -> {
                     cfg.setWebappLAF((String)stylePath);
                 }
             );
@@ -711,19 +711,19 @@ public final class Indexer {
             parser.on("--symlink", "=/path/to/symlink",
                 "Allow this symlink to be followed. Option may be repeated.",
                 "By default only symlinks directly under source root directory",
-                "are allowed.").Do( symlink -> {
+                "are allowed.").Do(symlink -> {
                 allowedSymlinks.add((String)symlink);
             });
 
             parser.on("-T", "--threads", "=number", Integer.class,
                 "The number of threads to use for index generation.",
                 "By default the number of threads will be set to the number",
-                "of available CPUs.").Do( threadCount -> {
+                "of available CPUs.").Do(threadCount -> {
                 cfg.setIndexingParallelism((Integer)threadCount);
             });
 
             parser.on("-t", "--tabSize", "=number", Integer.class,
-                "Default tab size to use (number of spaces per tab character).").Do( tabSize -> {
+                "Default tab size to use (number of spaces per tab character).").Do(tabSize -> {
                 cfg.setTabSize((Integer)tabSize);
             });
 
@@ -739,35 +739,35 @@ public final class Indexer {
             parser.on("---unitTest");  // For unit test only, will not appear in help
 
             parser.on("--updateConfig",
-                "Populate the webapp with bare configuration and exit.").Do( v -> {
+                "Populate the webapp with bare configuration and exit.").Do(v -> {
                 noindex = true;
             });
 
             parser.on("--userPage", "=URL",
                 "Base URL of the user Information provider.",
                 "Example: \"http://www.myserver.org/viewProfile.jspa?username=\".",
-                "Use \"none\" to disable link.").Do( v -> {
+                "Use \"none\" to disable link.").Do(v -> {
                 cfg.setUserPage((String)v);
             });
 
             parser.on("--userPageSuffix", "=URL-suffix",
-                "URL Suffix for the user Information provider. Default: \"\".").Do( suffix -> {
+                "URL Suffix for the user Information provider. Default: \"\".").Do(suffix -> {
                 cfg.setUserPageSuffix((String)suffix);
             });
 
-            parser.on("-V", "--version", "Print version and quit.").Do( v -> {
+            parser.on("-V", "--version", "Print version and quit.").Do(v -> {
                 System.out.println(Info.getFullVersion());
                 System.exit(0);
             });
 
-            parser.on("-v", "--verbose", "Set logging level to INFO.").Do( v -> {
+            parser.on("-v", "--verbose", "Set logging level to INFO.").Do(v -> {
                 verbose = true;
                 LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
             });
 
             parser.on("-W", "--writeConfig", "=/path/to/configuration",
                 "Write the current configuration to the specified file",
-                "(so that the web application can use the same configuration)").Do( configFile -> {
+                "(so that the web application can use the same configuration)").Do(configFile -> {
                 configFilename = (String)configFile;
             });
         });
