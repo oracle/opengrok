@@ -375,9 +375,8 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
     %></pre>
 </div><%
         } else {
-            String error = "Failed to get xref file";
 %>
-<p class="error"><%= error %></p><%
+<p class="error">Failed to get xref file</p><%
         }
     }
 }
