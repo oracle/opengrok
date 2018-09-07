@@ -791,8 +791,7 @@ public final class Indexer {
 
     private static void checkConfiguration() {
         if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
-            System.out.println("Repositories were specified however history is off");
-            System.exit(1);
+            die("Repositories were specified however history is off");
         }
     }
 
