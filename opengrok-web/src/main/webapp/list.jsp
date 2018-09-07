@@ -349,8 +349,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         // requesting cross referenced file
         File xrefFile = null;
 
-        // Get the latest revision and redirect so that  the revision number
-        // appears in the URL.
+        // Get the latest revision and redirect so that the revision number appears in the URL.
         String location = cfg.getRevisionLocation(cfg.getLatestRevision());
         if (location != null) {
             response.sendRedirect(location);
