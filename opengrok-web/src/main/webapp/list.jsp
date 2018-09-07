@@ -88,7 +88,7 @@ document.pageReady.push(function() { pageReadyList();});
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
     Project project = cfg.getProject();
-    final String DUMMY_REVISION = "dummy";
+    final String DUMMY_REVISION = "unknown";
 
     String navigateWindowEnabled = project != null ? Boolean.toString(
             project.isNavigateWindowEnabled()) : "false";
