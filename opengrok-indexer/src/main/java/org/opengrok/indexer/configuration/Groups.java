@@ -156,6 +156,7 @@ public final class Groups {
                 usage();
                 System.exit(1);
             }
+            out = prepareOutput(outFile);
             printOut(false, cfg, out);
         } else if (delete) {
             // perform delete
