@@ -57,3 +57,5 @@ if __name__ == '__main__':
         logger.error(cmd.getoutputstr())
         logger.error("command failed (return code {})".format(ret))
         sys.exit(1)
+    else:
+        print(cmd.getoutputstr())
