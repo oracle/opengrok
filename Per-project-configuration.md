@@ -24,7 +24,7 @@ The setting of per-project tunables is done in read-only configuration file (pas
   <void property="projects">
    <void method="put">
     <string>PROJECT_NAME</string>
-    <object class="org.opengrok.indeer.configuration.Project">
+    <object class="org.opengrok.indexer.configuration.Project">
      <void property="navigateWindowEnabled">
       <boolean>true</boolean>
      </void>
