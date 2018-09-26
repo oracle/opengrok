@@ -20,7 +20,7 @@ Or, make given IDE add the Java arguments and connect the debugger automatically
 
 ### Web application
 
-In IDEA, in order to debug JSPs, you need the IDEA Ultimate edition. In Netbeans it should work out of the box. We will describe how to debug in IDEA here.
+In IDEA, in order to debug JSPs, you need the IDEA Ultimate edition (if you don't have the tomcat plugin enabled, enable it, also enable jsp pages support, restart Idea and reimport project). In Netbeans it should work out of the box. We will describe how to debug in IDEA here.
 
 First, open the `opengrok-web` Maven project.
 
