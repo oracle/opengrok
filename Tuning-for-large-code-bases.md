@@ -1,5 +1,7 @@
 # JVM tuning
 
+In general it is recommended to run both the indexer and web application with `-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/some/sensible/place/to/store/jvm/dumps` in order to capture the JVM dumps in case of out-of-memory exception. It is then possible to analyze the dump with tools like `jhat` or http://www.eclipse.org/mat/
+
 ## Indexer
 
 The `indexer.py` script by default does not set Java heap size so it will use the default value.
