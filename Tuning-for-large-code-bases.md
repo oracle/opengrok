@@ -27,7 +27,7 @@ running a 8GB 64 bit server JDK indexer with tuned docs flushing:
   $ indexer.py -J=-Xmx8g -J=-d64 -J=-server -m 256 -s /source -d /data ...
   ```
 
-## Web application
+## Web application - Tomcat
 
 Tomcat by default also supports only small deployments. For bigger ones you
 **might** need to increase its heap which might necessitate the switch to 64-bit
@@ -48,12 +48,12 @@ JAVA_OPTS="$JAVA_OPTS -Xmx8g"
 export JAVA_OPTS
 ```
 
-### Tomcat/Apache tuning
+### Tomcat/Apache tuning for HTTP headers
 
-For tomcat you might also hit a limit for http header size (we use it to send
+For tomcat you might also hit a limit for HTTP header size (we use it to send
 the project list when requesting search results):
 
-* increase(add) in `conf/server.xml`, for example:
+For Tomcat increase(add) in `conf/server.xml`, for example:
 
   ```xml
     <Connector port="8888" protocol="HTTP/1.1"
@@ -66,7 +66,7 @@ Refer to docs of other containers for more info on how to achieve the same.
 
 Failure to do so will result in HTTP 400 errors after first query - with the error "Error parsing HTTP request header".
 
-The same tuning to Apache can be done with the `LimitRequestLine` directive:
+The same tuning to Apache (handy in case you are running Apache in reverse proxy mode to Tomcat) can be done with the `LimitRequestLine` directive:
 
 ```
 LimitRequestLine 65536
