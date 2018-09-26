@@ -2,10 +2,11 @@
 
 ## Indexer
 
-OpenGrok script by default uses 2GB of heap and 16MB per thread for flush size of
-Lucene docs indexing (when to flush to disk).
-It also uses default 32bit JRE.
-This **might not** be enough. You might need to consider this:
+The `indexer.py` script by default does not set Java heap size so it will use the default value.
+This **might not** be enough.
+
+### Lucene flush buffer size
+
 Lucene 4.x sets indexer defaults:
 
 ```
@@ -21,7 +22,7 @@ DEFAULT_RAM_BUFFER_SIZE_MB = 16.0;
 running a 8GB 64 bit server JDK indexer with tuned docs flushing:
 
   ```shell
-  $ indexer.py -J=-Xmx8192m -J=-server -m 256 -s /source -d /data ...
+  $ indexer.py -J=-Xmx8g -J=-d64 -J=-server -m 256 -s /source -d /data ...
   ```
 
 ## Web application
