@@ -10,8 +10,10 @@ minimal, sources+indexes are **always** in sync, users see the truth)
 
 # JVM tuning
 
+## Indexer
+
 OpenGrok script by default uses 2GB of heap and 16MB per thread for flush size of
-lucene docs indexing(when to flush to disk).
+Lucene docs indexing (when to flush to disk).
 It also uses default 32bit JRE.
 This **might not** be enough. You might need to consider this:
 Lucene 4.x sets indexer defaults:
@@ -25,15 +27,14 @@ DEFAULT_RAM_BUFFER_SIZE_MB = 16.0;
 * which might grow as big as 16GB (though `DEFAULT_RAM_BUFFER_SIZE_MB` shouldn't
  really allow it, but keep it around 1-2GB)
 
-* the lucenes `RAM_BUFFER_SIZE_MB` can be tuned now using the parameter `-m`, so
-running a 8GB 64 bit server JDK indexer with tuned docs flushing(on Solaris 11):
+* the Lucene `RAM_BUFFER_SIZE_MB` can be tuned now using the parameter `-m`, so
+running a 8GB 64 bit server JDK indexer with tuned docs flushing:
 
+  ```shell
+  $ indexer.py -J=-Xmx8192m -J=-server -m 256 -s /source -d /data ...
   ```
-  # export JAVA=/usr/java/bin/`isainfo -k`/java
-  (or use /usr/java/bin/amd64/java )
-  # export JAVA_OPTS="-Xmx8192m -server"
-  # OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 256" ./OpenGrok index /source
-  ```
+
+## Web application
 
 Tomcat by default also supports only small deployments. For bigger ones you
 **might** need to increase its heap which might necessitate the switch to 64-bit
@@ -54,7 +55,7 @@ JAVA_OPTS="$JAVA_OPTS -Xmx8g"
 export JAVA_OPTS
 ```
 
-# Tomcat/Apache tuning
+### Tomcat/Apache tuning
 
 For tomcat you might also hit a limit for http header size (we use it to send
 the project list when requesting search results):
@@ -79,7 +80,7 @@ LimitRequestLine 65536
 LimitRequestFieldSize 65536
 ```
 
-# Open File and processes hard and soft limits
+#### Open File and processes hard and soft limits
 
 The initial index creation process is resource intensive and often the error
 `java.io.IOException: error=24, Too many open files` appears in the logs. To
@@ -92,7 +93,7 @@ If you get a similar error, but for threads:
 `java.lang.OutOfMemoryError: unable to create new native thread `
 it might be due to strict security limits and you need to increase the limits.
 
-# Multi-project search speed tip
+#### Multi-project search speed tip
 
 If multi-project search is performed frequently, it might be good to warm
 up file system cache after each reindex. This can be done e.g. with
