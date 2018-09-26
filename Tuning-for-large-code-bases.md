@@ -27,7 +27,23 @@ running a 8GB 64 bit server JDK indexer with tuned docs flushing:
   $ indexer.py -J=-Xmx8g -J=-d64 -J=-server -m 256 -s /source -d /data ...
   ```
 
-## Web application - Tomcat
+### Open File and processes hard and soft limits
+
+The initial index creation process is resource intensive and often the error
+`java.io.IOException: error=24, Too many open files` appears in the logs. To
+avoid this increase the `ulimit` value to a higher number.
+
+It is noted that the hard and soft limit for open files of 10240 works for mid
+sized repositories and so the recommendation is to start with 10240.
+
+If you get a similar error, but for threads:
+`java.lang.OutOfMemoryError: unable to create new native thread `
+it might be due to strict security limits and you need to increase the limits.
+
+
+## Web application
+
+### Tomcat 
 
 Tomcat by default also supports only small deployments. For bigger ones you
 **might** need to increase its heap which might necessitate the switch to 64-bit
@@ -72,19 +88,6 @@ The same tuning to Apache (handy in case you are running Apache in reverse proxy
 LimitRequestLine 65536
 LimitRequestFieldSize 65536
 ```
-
-#### Open File and processes hard and soft limits
-
-The initial index creation process is resource intensive and often the error
-`java.io.IOException: error=24, Too many open files` appears in the logs. To
-avoid this increase the `ulimit` value to a higher number.
-
-It is noted that the hard and soft limit for open files of 10240 works for mid
-sized repositories and so the recommendation is to start with 10240.
-
-If you get a similar error, but for threads:
-`java.lang.OutOfMemoryError: unable to create new native thread `
-it might be due to strict security limits and you need to increase the limits.
 
 #### Multi-project search speed tip
 
