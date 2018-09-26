@@ -1,13 +1,3 @@
-# Almost atomic index flip using ZFS
-
-While indexing big source repos you might consider using ZFS filesystem to give
-you advantage of datasets which can be flipped over or cloned when needed.
-If the machine is strong enough it will also give you an option to
-incrementally index in parallel to having the current sources and index in sync.
-(So Tomcat sees certain zfs datasets, then you just stop it, flip datasets to
-the ones that were updated by SCM/index and start tomcat again - outage is
-minimal, sources+indexes are **always** in sync, users see the truth)
-
 # JVM tuning
 
 ## Indexer
@@ -98,3 +88,13 @@ it might be due to strict security limits and you need to increase the limits.
 If multi-project search is performed frequently, it might be good to warm
 up file system cache after each reindex. This can be done e.g. with
 <https://github.com/hoytech/vmtouch>
+
+# Almost atomic index flip using ZFS
+
+While indexing big source repos you might consider using ZFS filesystem to give
+you advantage of datasets which can be flipped over or cloned when needed.
+If the machine is strong enough it will also give you an option to
+incrementally index in parallel to having the current sources and index in sync.
+(So Tomcat sees certain zfs datasets, then you just stop it, flip datasets to
+the ones that were updated by SCM/index and start tomcat again - outage is
+minimal, sources+indexes are **always** in sync, users see the truth)
