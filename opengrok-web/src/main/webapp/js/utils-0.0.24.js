@@ -1499,12 +1499,10 @@ function init_markdown_converter() {
                     if (converter === null) {
                         converter = new showdown.Converter();
                         converter.setOption('tables', true);
-                        converter.setOption('simpleLineBreaks', true);
                         converter.setOption('strikethrough', true);
                         converter.setOption('tasklists', true);
                         converter.setOption('simplifiedAutoLink', true);
                         converter.setOption('parseImgDimension', true);
-                        converter.setOption('ghMentionsLink', true)
                     }
 
                     $.ajax({
