@@ -1,1 +1,1 @@
-Did we forget something?
+This information now lives at https://github.com/oracle/opengrok/wiki/How-to-setup-OpenGrok
