@@ -844,7 +844,7 @@ public final class Util {
      * @return the mangled path.
      */
     public static String path2uid(String path, String date) {
-        return path.replace('/', '\u0000') + "\u0000" + date;
+        return path.replace(File.separatorChar, '\u0000') + "\u0000" + date;
     }
 
     /**
