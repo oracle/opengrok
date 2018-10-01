@@ -28,6 +28,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -46,7 +49,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.validator.routines.UrlValidator;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
@@ -732,9 +734,13 @@ public final class Indexer {
             parser.on("-U", "--host", "=protocol://host:port/contextPath",
                 "Send the current configuration to the specified address").Do(webAddr -> {
                     host = (String) webAddr;
-                    String[] schemes = {"http", "https"};
-                    UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
-                    if (!urlValidator.isValid(host)) {
+                    try {
+                        URI uri = new URI(host);
+                        String scheme = uri.getScheme();
+                        if (!scheme.equals("http") && !scheme.equals("https")) {
+                            die("URI '" + host + "' does not have HTTP/HTTPS scheme");
+                        }
+                    } catch (URISyntaxException e) {
                         die("URL '" + host + "' is not valid.");
                     }
 

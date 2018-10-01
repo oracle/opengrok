@@ -153,11 +153,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <artifactId>org.suigeneris.jrcs.rcs</artifactId>
             <version>0.4.2</version>
         </dependency>
-        <dependency>
-            <groupId>commons-validator</groupId>
-            <artifactId>commons-validator</artifactId>
-            <version>1.4.0</version>
-        </dependency>
     </dependencies>
 
     <build>
