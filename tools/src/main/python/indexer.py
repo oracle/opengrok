@@ -99,8 +99,8 @@ def merge_properties(base, extra):
 
     ret = set(base)
     for item in extra:
-        name, _ = item.split("=")
-        if name not in extra_prop_names:
+        nv = item.split("=")
+        if nv[0] not in extra_prop_names:
             ret.add(item)
 
     return list(ret)
