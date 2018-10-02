@@ -32,16 +32,10 @@ sys.path.insert(0, os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..', '..',
                 'main', 'python')))
 
-from indexer import merge_properties, get_property
+from indexer import merge_properties
 
 
 class TestApp(unittest.TestCase):
-    def test_get_property(self):
-        self.assertEqual('foo=bar',
-                         get_property('foo', ['foo=bar', 'bar=bar']))
-        self.assertEqual(None,
-                         get_property('foo', ['bar=foo', 'bar=bar']))
-
     def test_merge_properties(self):
         merged = merge_properties(['foo', '-Dfoo=1'],
                                   ['-Dfoo=2', '-Dbar=bar'])

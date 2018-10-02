@@ -95,34 +95,18 @@ def merge_properties(base, extra):
     :return: merged list
     """
 
-    ret = set([])
-    for item in extra:
-        if item.find("=") != -1:
-            name, _ = item.split("=")
-            if get_property(name, base) is None:
-                ret.add(item)
-        else:
-            ret.add(item)
+    extra_prop_names = set(map(lambda x: x.split('=')[0], base))
 
+    ret = set([])
     for item in base:
         ret.add(item)
 
+    for item in extra:
+        name, _ = item.split("=")
+        if name not in extra_prop_names:
+            ret.add(item)
+
     return list(ret)
-
-
-def get_property(name_to_check, properties):
-    """
-    :param name_to_check: property name
-    :param properties: list of string properties (in the form of name=value)
-    :return: property or None
-    """
-    for prop in properties:
-        if prop.find("=") != -1:
-            prop_name, _ = prop.split("=")
-            if name_to_check == prop_name:
-                return prop
-
-    return None
 
 
 def FindCtags(logger):
