@@ -97,10 +97,7 @@ def merge_properties(base, extra):
 
     extra_prop_names = set(map(lambda x: x.split('=')[0], base))
 
-    ret = set([])
-    for item in base:
-        ret.add(item)
-
+    ret = set(base)
     for item in extra:
         name, _ = item.split("=")
         if name not in extra_prop_names:
