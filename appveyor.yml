@@ -17,8 +17,17 @@ install:
   - cmd: SET PATH=%M2_HOME%\bin;%JAVA_HOME%\bin;%PATH:C:\Ruby193\bin;=%;
   - cmd: mvn --version
   - cmd: java -version
+  - ps: |
+      Add-Type -AssemblyName System.IO.Compression.FileSystem
+      if (!(Test-Path -Path "C:\uctags" )) {
+        Write-Host "Downloading Universal Ctags"
+        # Project has not had a versioned release so far, but looks like these nightly builds are retained for at least a year
+        # so picked an arbitrary version to use for tests
+        (new-object System.Net.WebClient).DownloadFile("https://github.com/universal-ctags/ctags-win32/releases/download/2018-09-29%2Fd0807887/ctags-2018-09-29_d0807887-x86.zip", 'C:\uctags-bin.zip')
+        [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\uctags-bin.zip", "C:\uctags")
+      }
 build_script:
-  - mvn -B -V clean verify
+    - mvn -B -V -Dorg.opengrok.indexer.analysis.Ctags=c:\uctags\ctags.exe clean verify
 cache:
   - C:\maven\ -> appveyor.yml
   - C:\Users\appveyor\.m2\ -> pom.xml
