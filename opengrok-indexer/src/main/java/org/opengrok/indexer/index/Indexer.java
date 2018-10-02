@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
@@ -729,9 +732,18 @@ public final class Indexer {
 
             parser.on("-U", "--host", "=protocol://host:port/contextPath",
                 "Send the current configuration to the specified address").Do(webAddr -> {
-                    env = RuntimeEnvironment.getInstance();
-
                     host = (String) webAddr;
+                    try {
+                        URI uri = new URI(host);
+                        String scheme = uri.getScheme();
+                        if (!scheme.equals("http") && !scheme.equals("https")) {
+                            die("URI '" + host + "' does not have HTTP/HTTPS scheme");
+                        }
+                    } catch (URISyntaxException e) {
+                        die("URL '" + host + "' is not valid.");
+                    }
+
+                    env = RuntimeEnvironment.getInstance();
                     env.setConfigHost(host);
                 }
             );
@@ -790,6 +802,12 @@ public final class Indexer {
     }
 
     private static void checkConfiguration() {
+        env = RuntimeEnvironment.getInstance();
+
+        if (noindex && (env.getConfigHost() == null || env.getConfigHost().isEmpty())) {
+            die("Missing host URL");
+        }
+
         if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
             die("Repositories were specified however history is off");
         }

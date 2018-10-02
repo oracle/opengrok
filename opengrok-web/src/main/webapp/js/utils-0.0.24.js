@@ -1498,6 +1498,11 @@ function init_markdown_converter() {
                     var $dataMarkdownDownloadEl = $(this)
                     if (converter === null) {
                         converter = new showdown.Converter();
+                        converter.setOption('tables', true);
+                        converter.setOption('strikethrough', true);
+                        converter.setOption('tasklists', true);
+                        converter.setOption('simplifiedAutoLink', true);
+                        converter.setOption('parseImgDimension', true);
                     }
 
                     $.ajax({
