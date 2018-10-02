@@ -47,40 +47,63 @@ class Indexer(Java):
                  java_opts=None, env_vars=None):
 
         java_options = []
-        java_options.extend(self.get_SCM_properties(logger))
         if java_opts:
             java_options.extend(java_opts)
+        java_options = merge_properties(java_options,
+                                        get_SCM_properties(logger))
         logger.debug("Java options: {}".format(java_options))
 
         super().__init__(command, jar=jar, java=java, java_opts=java_options,
                          logger=logger, env_vars=env_vars)
 
-    def get_SCM_properties(self, logger):
-        """
-        Return list of Java System properties that contain valid paths to
-        SCM commands.
-        """
-        SCM_COMMANDS = {
-            'bk': '-Dorg.opengrok.indexer.history.BitKeeper',
-            'hg': '-Dorg.opengrok.indexer.history.Mercurial',
-            'cvs': '-Dorg.opengrok.indexer.history.cvs',
-            'svn': '-Dorg.opengrok.indexer.history.Subversion',
-            'sccs': '-Dorg.opengrok.indexer.history.SCCS',
-            'cleartool': '-Dorg.opengrok.indexer.history.ClearCase',
-            'git': '-Dorg.opengrok.indexer.history.git',
-            'p4': '-Dorg.opengrok.indexer.history.Perforce',
-            'mtn': '-Dorg.opengrok.indexer.history.Monotone',
-            'blame': '-Dorg.opengrok.indexer.history.RCS',
-            'bzr': '-Dorg.opengrok.indexer.history.Bazaar'}
 
-        properties = []
-        for cmd in SCM_COMMANDS.keys():
-            executable = get_command(logger, None, cmd, level=logging.INFO)
-            if executable:
-                properties.append("{}={}".
-                                  format(SCM_COMMANDS[cmd], executable))
+def get_SCM_properties(logger):
+    """
+    Return list of Java System properties that contain valid paths to
+    SCM commands.
+    """
+    SCM_COMMANDS = {
+        'bk': '-Dorg.opengrok.indexer.history.BitKeeper',
+        'hg': '-Dorg.opengrok.indexer.history.Mercurial',
+        'cvs': '-Dorg.opengrok.indexer.history.cvs',
+        'svn': '-Dorg.opengrok.indexer.history.Subversion',
+        'sccs': '-Dorg.opengrok.indexer.history.SCCS',
+        'cleartool': '-Dorg.opengrok.indexer.history.ClearCase',
+        'git': '-Dorg.opengrok.indexer.history.git',
+        'p4': '-Dorg.opengrok.indexer.history.Perforce',
+        'mtn': '-Dorg.opengrok.indexer.history.Monotone',
+        'blame': '-Dorg.opengrok.indexer.history.RCS',
+        'bzr': '-Dorg.opengrok.indexer.history.Bazaar'}
 
-        return properties
+    properties = []
+    for cmd in SCM_COMMANDS.keys():
+        executable = get_command(logger, None, cmd, level=logging.INFO)
+        if executable:
+            properties.append("{}={}".
+                              format(SCM_COMMANDS[cmd], executable))
+
+    return properties
+
+
+def merge_properties(base, extra):
+    """
+    Merge two lists of options (strings in the form of name=value).
+    Take everything from base and add properties from extra
+    (according to names) that are not present in the base.
+    :param base: list of properties
+    :param extra: list of properties
+    :return: merged list
+    """
+
+    extra_prop_names = set(map(lambda x: x.split('=')[0], base))
+
+    ret = set(base)
+    for item in extra:
+        nv = item.split("=")
+        if nv[0] not in extra_prop_names:
+            ret.add(item)
+
+    return list(ret)
 
 
 def FindCtags(logger):
