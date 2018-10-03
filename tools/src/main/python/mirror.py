@@ -124,7 +124,6 @@ if __name__ == '__main__':
 
     source_root = get_config_value(logger, 'sourceRoot', uri)
     if not source_root:
-        logger.error("Cannot get the sourceRoot config value")
         sys.exit(1)
 
     logger.debug("Source root = {}".format(source_root))

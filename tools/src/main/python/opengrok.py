@@ -100,7 +100,8 @@ def get_config_value(logger, name, uri):
                             urllib.parse.quote_plus(name)))
 
     if not r:
-        logger.error('could not get config value ' + name)
+        logger.error("Cannot get the '{}' config value from the web "
+                     "application on {}".format(name, uri))
         return None
 
     return r.text
@@ -117,7 +118,8 @@ def get_repo_type(logger, repository, uri):
     r = get(logger, get_uri(uri, 'api', 'v1', 'repositories', 'type'),
             params=payload)
     if not r:
-        logger.error('could not get repo type for ' + repository)
+        logger.error('could not get repository type for {} from web'
+                     'application on {}'.format(repository, uri))
         return None
 
     line = r.text
@@ -129,7 +131,8 @@ def get_repo_type(logger, repository, uri):
 def get_configuration(logger, uri):
     r = get(logger, get_uri(uri, 'api', 'v1', 'configuration'))
     if not r:
-        logger.error('could not get configuration')
+        logger.error('could not get configuration from web application on {}'.
+                     format(uri))
         return None
 
     return r.text
@@ -140,7 +143,8 @@ def set_configuration(logger, configuration, uri):
             data=configuration)
 
     if not r:
-        logger.error('could not set configuration')
+        logger.error('could not set configuration for web application on {}'.
+                     format(uri))
         return False
 
     return True
@@ -149,7 +153,8 @@ def set_configuration(logger, configuration, uri):
 def list_indexed_projects(logger, uri):
     r = get(logger, get_uri(uri, 'api', 'v1', 'projects', 'indexed'))
     if not r:
-        logger.error('could not list indexed projects')
+        logger.error('could not list indexed projects from web application '
+                     'on {}'.format(uri))
         return None
 
     return r.json()
@@ -159,7 +164,8 @@ def add_project(logger, project, uri):
     r = post(logger, get_uri(uri, 'api', 'v1', 'projects'), data=project)
 
     if not r:
-        logger.error('could not add project ' + project)
+        logger.error('could not add project {} for web application on {}'.
+                     format(project, uri))
         return False
 
     return True
@@ -170,7 +176,8 @@ def delete_project(logger, project, uri):
                                urllib.parse.quote_plus(project)))
 
     if not r:
-        logger.error('could not delete project ' + project)
+        logger.error('could not delete project in web application on {}'.
+                     format(project, uri))
         return False
 
     return True
