@@ -35,6 +35,7 @@ import org.opengrok.indexer.util.TestRepository;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -123,7 +124,7 @@ public class MercurialRepositoryTest {
 
         // Add a subdirectory with some history.
         runHgCommand(root, "import",
-            getClass().getResource("/history/hg-export-subdir.txt").getPath());
+            Paths.get(getClass().getResource("/history/hg-export-subdir.txt").toURI()).toString());
 
         MercurialRepository mr
                 = (MercurialRepository) RepositoryFactory.getRepository(root);
@@ -194,7 +195,7 @@ public class MercurialRepositoryTest {
 
         // Branch the repo and add one changeset.
         runHgCommand(root, "unbundle",
-                getClass().getResource("/history/hg-branch.bundle").getPath());
+                Paths.get(getClass().getResource("/history/hg-branch.bundle").toURI()).toString());
         // Switch to the branch.
         runHgCommand(root, "update", "mybranch");
 

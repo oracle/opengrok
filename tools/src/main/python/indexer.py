@@ -44,62 +44,86 @@ class Indexer(Java):
     """
 
     def __init__(self, command, logger=None, java=None, jar='opengrok.jar',
-                 java_opts=None):
+                 java_opts=None, env_vars=None):
 
         java_options = []
-        java_options.extend(self.get_SCM_properties(logger))
         if java_opts:
             java_options.extend(java_opts)
+        java_options = merge_properties(java_options,
+                                        get_SCM_properties(logger))
         logger.debug("Java options: {}".format(java_options))
 
         super().__init__(command, jar=jar, java=java, java_opts=java_options,
-                         logger=logger)
+                         logger=logger, env_vars=env_vars)
 
-    def get_SCM_properties(self, logger):
-        """
-        Return list of Java System properties that contain valid paths to
-        SCM commands.
-        """
-        SCM_COMMANDS = {
-            'bk': '-Dorg.opensolaris.opengrok.history.BitKeeper',
-            'hg': '-Dorg.opensolaris.opengrok.history.Mercurial',
-            'cvs': '-Dorg.opensolaris.opengrok.history.cvs',
-            'svn': '-Dorg.opensolaris.opengrok.history.Subversion',
-            'sccs': '-Dorg.opensolaris.opengrok.history.SCCS',
-            'cleartool': '-Dorg.opensolaris.opengrok.history.ClearCase',
-            'git': '-Dorg.opensolaris.opengrok.history.git',
-            'p4': '-Dorg.opensolaris.opengrok.history.Perforce',
-            'mtn': '-Dorg.opensolaris.opengrok.history.Monotone',
-            'bzr': '-Dorg.opensolaris.opengrok.history.Bazaar'}
 
-        properties = []
-        for cmd in SCM_COMMANDS.keys():
-            executable = get_command(logger, None, cmd, level=logging.INFO)
-            if executable:
-                properties.append("{}={}".
-                                  format(SCM_COMMANDS[cmd], executable))
+def get_SCM_properties(logger):
+    """
+    Return list of Java System properties that contain valid paths to
+    SCM commands.
+    """
+    SCM_COMMANDS = {
+        'bk': '-Dorg.opengrok.indexer.history.BitKeeper',
+        'hg': '-Dorg.opengrok.indexer.history.Mercurial',
+        'cvs': '-Dorg.opengrok.indexer.history.cvs',
+        'svn': '-Dorg.opengrok.indexer.history.Subversion',
+        'sccs': '-Dorg.opengrok.indexer.history.SCCS',
+        'cleartool': '-Dorg.opengrok.indexer.history.ClearCase',
+        'git': '-Dorg.opengrok.indexer.history.git',
+        'p4': '-Dorg.opengrok.indexer.history.Perforce',
+        'mtn': '-Dorg.opengrok.indexer.history.Monotone',
+        'blame': '-Dorg.opengrok.indexer.history.RCS',
+        'bzr': '-Dorg.opengrok.indexer.history.Bazaar'}
 
-        return properties
+    properties = []
+    for cmd in SCM_COMMANDS.keys():
+        executable = get_command(logger, None, cmd, level=logging.INFO)
+        if executable:
+            properties.append("{}={}".
+                              format(SCM_COMMANDS[cmd], executable))
+
+    return properties
+
+
+def merge_properties(base, extra):
+    """
+    Merge two lists of options (strings in the form of name=value).
+    Take everything from base and add properties from extra
+    (according to names) that are not present in the base.
+    :param base: list of properties
+    :param extra: list of properties
+    :return: merged list
+    """
+
+    extra_prop_names = set(map(lambda x: x.split('=')[0], base))
+
+    ret = set(base)
+    for item in extra:
+        nv = item.split("=")
+        if nv[0] not in extra_prop_names:
+            ret.add(item)
+
+    return list(ret)
 
 
 def FindCtags(logger):
     """
-    Search for Exuberant ctags intelligently, skipping over other ctags
+    Search for Universal ctags intelligently, skipping over other ctags
     implementations. Return path to the command or None if not found.
     """
     binary = None
     logger.debug("Trying to find ctags binary")
-    for program in ['ctags-exuberant', 'exctags', 'ctags']:
-        executable = get_command(logger, None, program)
+    for program in ['universal-ctags', 'ctags']:
+        executable = get_command(logger, None, program, level=logging.DEBUG)
         if executable:
-            # Verify that this executable is or is based on Exuberant Ctags
+            # Verify that this executable is or is Universal Ctags
             # by matching the output when run with --version.
             logger.debug("Checking ctags command {}".format(executable))
             cmd = Command([executable, '--version'], logger=logger)
             cmd.execute()
 
             output_str = cmd.getoutputstr()
-            if output_str and output_str.find("Exuberant Ctags") != -1:
+            if output_str and output_str.find("Universal Ctags") != -1:
                 logger.debug("Got valid ctags binary: {}".format(executable))
                 binary = executable
                 break
@@ -128,10 +152,11 @@ if __name__ == '__main__':
     # always check ctags presence unless told not to.
     #
     if not args.no_ctags_check and not FindCtags(logger):
-        logger.warning("Unable to determine Exuberant/Universal CTags command")
+        logger.warning("Unable to determine Universal CTags command")
 
     indexer = Indexer(args.options, logger=logger, java=args.java,
-                      jar=args.jar, java_opts=args.java_opts)
+                      jar=args.jar, java_opts=args.java_opts,
+                      env_vars=args.environment)
     indexer.execute()
     ret = indexer.getretcode()
     if ret is None or ret != 0:

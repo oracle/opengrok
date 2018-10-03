@@ -30,6 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -173,21 +174,9 @@ public class SSCMRepository extends Repository {
 
         File directory = new File(parent);
 
-        Process process = null;
         try {
-            final File tmp = File.createTempFile("opengrok", "tmp");
+            final File tmp = Files.createTempDirectory("opengrokSSCMtmp").toFile();
             String tmpName = tmp.getCanonicalPath();
-
-            // cleartool can't get to a previously existing file
-            if (tmp.exists() && !tmp.delete()) {
-                LOGGER.log(Level.WARNING,
-                        "Failed to remove temporary file used by history cache");
-            }
-
-            if (!tmp.mkdir()) {
-                LOGGER.log(Level.WARNING,
-                        "Failed to create temporary directory used by history cache");
-            }
 
             List<String> argv = new ArrayList<>();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -243,16 +232,6 @@ public class SSCMRepository extends Repository {
         } catch (IOException exp) {
             LOGGER.log(Level.SEVERE,
                     "Failed to get file: " + exp.getClass().toString(), exp);
-        } finally {
-            // Clean up zombie-processes...
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
         }
 
         return ret;

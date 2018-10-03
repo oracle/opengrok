@@ -54,56 +54,11 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <property name="git" value="git"/>
 
-    <!-- Get the id of the changeset we're building from using a
-         Mercurial command.
-      -->
-    <target name="-get-changeset-from-command"
-            depends="-check-is-git-repo" if="build.from.repo">
-        <exec executable="${git}"
-              failifexecutionfails="no"
-              outputproperty="changeset">
-            <arg value="rev-parse"/>
-            <arg value="HEAD"/>
-        </exec>
-    </target>
-
-    <!-- Check if we build from a checked out copy of the repository,
-         so that we have history information from git available.
-      -->
-    <target name="-check-is-git-repo">
-      <available property="build.from.repo" file=".git" filepath=".." type="dir"/>
-    </target>
-
-    <!-- Get the id of the changeset we're building from by reading
-         .git_archival.txt file created by git archive. This will only
-         be used when we're not building from a checked out copy of
-         the repository, for example the source distribution.
-      -->
-    <target name="-get-changeset-from-file"
-            depends="-check-is-git-repo" unless="build.from.repo">
-        <tempfile property="git.archival.temp" deleteonexit="true"/>
-        <copy file="../.git_archival.txt" tofile="${git.archival.temp}"/>
-        <replaceregexp file="${g.archival.temp}" flags="s"
-                     match=".*node: ([0-9a-f]{12}).*"
-                     replace="\1"/>
-        <loadfile srcFile="${git.archival.temp}" property="changeset"/>
-    </target>
-
     <target name="-collect-lex-lexh">
         <mkdir dir="${tgt.dir}"/>
         <copy todir="${tgt.dir}" flatten="true">
             <fileset dir="${src.dir}" includes="**/*.lex,**/*.lexh"/>
         </copy>
-    </target>
-
-    <target name="-update-build-info"
-            depends="-get-changeset-from-command,-get-changeset-from-file">
-        <mkdir dir="${build.classes.dir}/org/opengrok/indexer"/>
-        <propertyfile
-            file="${build.classes.dir}/org/opengrok/indexer/info.properties">
-            <entry  key="version" value="${version}"/>
-            <entry  key="changeset" value="${changeset}"/>
-        </propertyfile>
     </target>
 
     <target name="-post-compile-test">
@@ -164,7 +119,7 @@ Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
       
       <!-- need absolute path for svn url -->
       <pathconvert property="test.svn.url">
-        <map from="" to="file://"/>
+        <map from="" to="file:///"/>
         <path location="${build.test.reposroots}/svn"/>
       </pathconvert>
 

@@ -519,7 +519,7 @@ public class OptionParser {
      * will cause a parse exception. If this is a scan parser, unrecognized
      * options are ignored.
      * 
-     * @param args
+     * @param args argument vector
      * @return non-option parameters, or all arguments after "--" encountered.
      * @throws ParseException 
      */

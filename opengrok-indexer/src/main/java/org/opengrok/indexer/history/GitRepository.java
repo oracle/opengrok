@@ -277,13 +277,18 @@ public class GitRepository extends Repository {
         // platform's default encoding.
         return new InputStreamReader(input, "UTF-8");
     }
-    
+
+    private String getPathRelativeToRepositoryRoot(String fullpath) {
+        String repoPath = getDirectoryName() + File.separator;
+        return fullpath.replace(repoPath, "");
+    }
+
     /**
      * Get the name of file in given revision.
      *
      * @param fullpath file path
      * @param changeset changeset
-     * @return original filename
+     * @return original filename relative to the repository root
      * @throws java.io.IOException if I/O exception occurred
      */
     protected String findOriginalName(String fullpath, String changeset)
@@ -297,7 +302,7 @@ public class GitRepository extends Repository {
                     fullpath, changeset));
         }
 
-        String file = fullpath.replace(getDirectoryName() + File.separator, "");
+        String fileInRepo = getPathRelativeToRepositoryRoot(fullpath);
         /*
          * Get the list of file renames for given file to the specified
          * revision.
@@ -312,13 +317,14 @@ public class GitRepository extends Repository {
             "--name-status",
             "--pretty=format:commit %h%b",
             "--",
-            fullpath
+            fileInRepo
         };
 
         Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         int status = executor.exec();
-        
+
+        String originalFile = null;
         try (BufferedReader in = new BufferedReader(
                 new InputStreamReader(executor.getOutputStream()))) {
             String line;
@@ -332,23 +338,64 @@ public class GitRepository extends Repository {
                 }
 
                 if (changeset.equals(rev)) {
+                    if (originalFile == null) {
+                        originalFile = fileInRepo;
+                    }
                     break;
                 }
 
                 if ((m = pattern.matcher(line)).find()) {
-                    file = m.group(1);
+                    originalFile = m.group(1);
                 }
+            }
+        }
+
+        if (status != 0 || originalFile == null) {
+            LOGGER.log(Level.WARNING,
+                    "Failed to get original name in revision {2} for: \"{0}\" Exit code: {1}",
+                    new Object[]{fullpath, String.valueOf(status), changeset});
+            return null;
+        }
+        
+        return originalFile;
+    }
+
+    /**
+     * Get first revision of given file without following renames.
+     * @param file file to get first revision of
+     */
+    private String getFirstRevision(String fullpath) throws IOException {
+        String[] argv = {
+                ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK),
+                "rev-list",
+                "--reverse",
+                "--max-count=1",
+                "HEAD",
+                "--",
+                fullpath
+        };
+
+        Executor executor = new Executor(Arrays.asList(argv), new File(getDirectoryName()),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+        int status = executor.exec();
+
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(executor.getOutputStream()))) {
+            String line;
+
+            if ((line = in.readLine()) != null) {
+                return line.trim();
             }
         }
 
         if (status != 0) {
             LOGGER.log(Level.WARNING,
-                    "Failed to get original name in revision {3} for: \"{0}\" Exit code: {1}",
-                    new Object[]{fullpath, String.valueOf(status), changeset});
+                    "Failed to get first revision for: \"{0}\" Exit code: {1}",
+                    new Object[]{fullpath, String.valueOf(status)});
             return null;
         }
-        
-        return (fullpath.substring(0, getDirectoryName().length() + 1) + file);
+
+        return null;
     }
 
     /**
@@ -356,7 +403,7 @@ public class GitRepository extends Repository {
      *
      * @param file file to annotate
      * @param revision revision to annotate
-     * @return file annotation
+     * @return file annotation or {@code null}
      * @throws java.io.IOException if I/O exception occurred
      */
     @Override
@@ -369,16 +416,28 @@ public class GitRepository extends Repository {
         cmd.add(ABBREV_BLAME);
         if (revision != null) {
             cmd.add(revision);
+        } else {
+            // {@code git blame} follows renames by default. If renamed file handling is off, its output would
+            // contain invalid revisions. Therefore, the revision range needs to be constrained.
+            if (!isHandleRenamedFiles()) {
+                String firstRevision = getFirstRevision(file.getAbsolutePath());
+                if (firstRevision == null) {
+                    return null;
+                }
+                cmd.add(firstRevision + "..");
+            }
         }
-        cmd.add(file.getName());
+        cmd.add("--");
+        cmd.add(getPathRelativeToRepositoryRoot(file.getCanonicalPath()));
 
-        Executor exec = new Executor(cmd, file.getParentFile(),
+        Executor exec = new Executor(cmd, new File(getDirectoryName()),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
         GitAnnotationParser parser = new GitAnnotationParser(file.getName());
         int status = exec.exec(true, parser);
 
-        // File might have changed its location
-        if (status != 0) {
+        // File might have changed its location if it was renamed.
+        // Try to lookup its original name and get the annotation again.
+        if (status != 0 && isHandleRenamedFiles()) {
             cmd.clear();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             cmd.add(RepoCommand);
@@ -389,16 +448,18 @@ public class GitRepository extends Repository {
                 cmd.add(revision);
             }
             cmd.add("--");
-            cmd.add(findOriginalName(file.getAbsolutePath(), revision));
-            File directory = new File(getDirectoryName());
-            exec = new Executor(cmd, directory);
-            status = exec.exec();
+            cmd.add(findOriginalName(file.getCanonicalPath(), revision));
+            exec = new Executor(cmd, new File(getDirectoryName()),
+                    RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+            parser = new GitAnnotationParser(file.getName());
+            status = exec.exec(true, parser);
         }
 
         if (status != 0) {
             LOGGER.log(Level.WARNING,
                     "Failed to get annotations for: \"{0}\" Exit code: {1}",
                     new Object[]{file.getAbsolutePath(), String.valueOf(status)});
+            return null;
         }
 
         return parser.getAnnotation();
@@ -655,14 +716,13 @@ public class GitRepository extends Repository {
         int indexOf = StringUtils.nthIndexOf(output, delim, 1);
         if (indexOf < 0) {
             throw new IOException(
-                    String.format("Couldn't extract date from \"%s\".",
-                            new Object[]{output}));
+                    String.format("Couldn't extract date from \"%s\".", output));
         }
 
         try {
             Date date = getDateFormat().parse(output.substring(0, indexOf));
             return String.format("%s %s",
-                    new Object[]{outputDateFormat.format(date), output.substring(indexOf + 1)});
+                    outputDateFormat.format(date), output.substring(indexOf + 1));
         } catch (ParseException ex) {
             throw new IOException(ex);
         }

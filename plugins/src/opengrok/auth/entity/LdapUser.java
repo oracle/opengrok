@@ -22,6 +22,7 @@
  */
 package opengrok.auth.entity;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -31,12 +32,16 @@ import java.util.TreeSet;
  *
  * @author Krystof Tulinger
  */
-public class LdapUser {
+public class LdapUser implements Serializable {
 
     private String mail;
     private String uid;
     private Set<String> ou;
     private final Map<String, Set<String>> attrs = new HashMap<>();
+
+    // Use default serial ID value. If the serialized form of the object
+    // changes, feel free to start from 1L.
+    private static final long serialVersionUID = -8207597677599370334L;
 
     public LdapUser(String mail, String uid, Set<String> ou) {
         this.mail = mail;

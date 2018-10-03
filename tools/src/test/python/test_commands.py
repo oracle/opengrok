@@ -54,6 +54,14 @@ class TestApp(unittest.TestCase):
                           '/bin/false opengrok-master': 1}, cmds.retcodes)
 
     @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    def test_terminate_after_non_zero_code(self):
+        cmds = Commands(CommandsBase("opengrok-master",
+                                     [{"command": ["/bin/false"]},
+                                      {"command": ["/bin/true"]}]))
+        cmds.run()
+        self.assertEqual({'/bin/false opengrok-master': 1}, cmds.retcodes)
+
+    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
     def test_project_subst(self):
         cmds = Commands(CommandsBase("test-subst",
                         [{"command": ["/bin/echo", '%PROJECT%']}]))

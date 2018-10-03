@@ -26,6 +26,12 @@ import json
 import yaml
 import sys
 
+# The following is to make the json parsing work on Python 3.4.
+try:
+    from json.decoder import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
+
 
 def read_config(logger, inputfile):
     """
@@ -43,7 +49,7 @@ def read_config(logger, inputfile):
             try:
                 logger.debug("trying JSON")
                 cfg = json.loads(data)
-            except json.decoder.JSONDecodeError:
+            except JSONDecodeError:
                 # Not a valid JSON file.
                 logger.debug("got exception {}".format(sys.exc_info()[0]))
                 pass

@@ -28,8 +28,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.jrcs.rcs.InvalidVersionNumberException;
-import org.apache.commons.jrcs.rcs.Version;
+import org.suigeneris.jrcs.rcs.InvalidVersionNumberException;
+import org.suigeneris.jrcs.rcs.Version;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.Executor;

@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts,
-               main_class='org.opensolaris.opengrok.configuration.Groups',
+               main_class='org.opengrok.indexer.configuration.Groups',
                logger=logger)
     cmd.execute()
     ret = cmd.getretcode()
@@ -57,3 +57,5 @@ if __name__ == '__main__':
         logger.error(cmd.getoutputstr())
         logger.error("command failed (return code {})".format(ret))
         sys.exit(1)
+    else:
+        print(cmd.getoutputstr())

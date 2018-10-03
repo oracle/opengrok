@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +56,8 @@ public class SCCSRepository extends Repository {
      * The command to use to access the repository if none was given explicitly
      */
     public static final String CMD_FALLBACK = "sccs";
+
+    private static final String CODEMGR_WSDATA = "Codemgr_wsdata";
 
     public SCCSRepository() {
         type = "SCCS";
@@ -143,18 +146,18 @@ public class SCCSRepository extends Repository {
     public boolean fileHasHistory(File file) {
         String parentFile = file.getParent();
         String name = file.getName();
-        File f = new File(parentFile + "/SCCS/s." + name);
+        File f = Paths.get(parentFile, "SCCS", "s." + name).toFile();
         return f.exists();
     }
 
     @Override
     boolean isRepositoryFor(File file, boolean interactive) {
         if (file.isDirectory()) {
-            File f = new File(file, "codemgr_wsdata");
+            File f = new File(file, CODEMGR_WSDATA.toLowerCase());
             if (f.isDirectory()) {
                 return true;
             }
-            f = new File(file, "Codemgr_wsdata");
+            f = new File(file, CODEMGR_WSDATA);
             if (f.isDirectory()) {
                 return true;
             }
@@ -187,8 +190,7 @@ public class SCCSRepository extends Repository {
 
     @Override
     String determineParent(boolean interactive) throws IOException {
-        File parentFile = new File(getDirectoryName() + File.separator
-                + "Codemgr_wsdata" + File.separator + "parent");
+        File parentFile = Paths.get(getDirectoryName(), CODEMGR_WSDATA, "parent").toFile();
         String parent = null;
 
         if (parentFile.isFile()) {
@@ -196,8 +198,9 @@ public class SCCSRepository extends Repository {
             try (BufferedReader in = new BufferedReader(new FileReader(parentFile))) {
                 if ((line = in.readLine()) == null) {
                     LOGGER.log(Level.WARNING,
-                            "Failed to get parent for {0} (cannot read line)",
-                            getDirectoryName());
+                            "Failed to get parent for {0} (cannot read first line of {1})",
+                            new Object[]{getDirectoryName(), parentFile.getName()});
+                    return null;
                 }
                 if (!line.startsWith("VERSION")) {
                     LOGGER.log(Level.WARNING,
@@ -206,8 +209,8 @@ public class SCCSRepository extends Repository {
                 }
                 if ((parent = in.readLine()) == null) {
                     LOGGER.log(Level.WARNING,
-                            "Failed to get parent for {0} (cannot read second line)",
-                            getDirectoryName());
+                            "Failed to get parent for {0} (cannot read second line of {1})",
+                            new Object[]{getDirectoryName(), parentFile.getName()});
                 }
             }
         }

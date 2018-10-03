@@ -156,7 +156,9 @@ public class ProjectsController {
 
         // Now remove the repositories associated with this project.
         List<RepositoryInfo> repos = env.getProjectRepositoriesMap().get(proj);
-        env.getRepositories().removeAll(repos);
+        if (repos != null) {
+            env.getRepositories().removeAll(repos);
+        }
         env.getProjectRepositoriesMap().remove(proj);
 
         env.getProjects().remove(projectName, proj);
@@ -167,9 +169,12 @@ public class ProjectsController {
         // Lastly, remove data associated with the project.
         logger.log(Level.INFO, "deleting data for project {0}", projectName);
         for (String dirName: new String[]{IndexDatabase.INDEX_DIR, IndexDatabase.XREF_DIR}) {
-
-            IOUtils.removeRecursive(Paths.get(env.getDataRootPath() +
-                    File.separator + dirName + File.separator + projectName));
+            java.nio.file.Path path = Paths.get(env.getDataRootPath(), dirName, projectName);
+            try {
+                IOUtils.removeRecursive(path);
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Could not delete {0}", path.toString());
+            }
         }
         HistoryGuru guru = HistoryGuru.getInstance();
         guru.removeCache(repos.stream().

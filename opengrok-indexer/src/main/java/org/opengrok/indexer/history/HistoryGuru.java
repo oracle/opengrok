@@ -278,9 +278,9 @@ public final class HistoryGuru {
     public InputStream getRevision(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        Repository rep = getRepository(new File(parent));
-        if (rep != null) {
-            ret = rep.getHistoryGet(parent, basename, rev);
+        Repository repo = getRepository(new File(parent));
+        if (repo != null) {
+            ret = repo.getHistoryGet(parent, basename, rev);
         }
         return ret;
     }
@@ -413,10 +413,8 @@ public final class HistoryGuru {
                         }
                     }
                 } else {
-                    if (RuntimeEnvironment.getInstance().isVerbose()) {
-                        LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
-                                new Object[]{repository.getClass().getName(), path});
-                    }
+                    LOGGER.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
+                            new Object[]{repository.getClass().getName(), path});
 
                     repoList.add(new RepositoryInfo(repository));
                     putRepository(repository);
@@ -497,8 +495,6 @@ public final class HistoryGuru {
      * Update the source contents in all repositories.
      */
     public void updateRepositories() {
-        boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
-
         for (Map.Entry<String, Repository> entry : repositories.entrySet()) {
             Repository repository = entry.getValue();
 
@@ -506,10 +502,8 @@ public final class HistoryGuru {
             String type = repository.getClass().getSimpleName();
 
             if (repository.isWorking()) {
-                if (verbose) {
-                    LOGGER.info(String.format("Update %s repository in %s",
-                            type, path));
-                }
+                LOGGER.info(String.format("Update %s repository in %s",
+                        type, path));
 
                 try {
                     repository.update();
@@ -533,18 +527,14 @@ public final class HistoryGuru {
      * @param paths A list of files/directories to update
      */
     public void updateRepositories(Collection<String> paths) {
-        boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
-
         List<Repository> repos = getReposFromString(paths);
 
         for (Repository repository : repos) {
             String type = repository.getClass().getSimpleName();
 
             if (repository.isWorking()) {
-                if (verbose) {
-                    LOGGER.info(String.format("Update %s repository in %s", type,
-                            repository.getDirectoryName()));
-                }
+                LOGGER.info(String.format("Update %s repository in %s", type,
+                        repository.getDirectoryName()));
 
                 try {
                     repository.update();
@@ -575,13 +565,10 @@ public final class HistoryGuru {
         }
         
         if (repository.isWorking()) {
-            boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
             Statistics elapsed = new Statistics();
 
-            if (verbose) {
-                LOGGER.log(Level.INFO, "Creating historycache for {0} ({1})",
-                        new Object[]{path, type});
-            }
+            LOGGER.log(Level.INFO, "Creating historycache for {0} ({1}) {2} renamed file handling",
+                    new Object[]{path, type, repository.isHandleRenamedFiles() ? "with" : "without"});
 
             try {
                 repository.createCache(historyCache, sinceRevision);
@@ -591,9 +578,7 @@ public final class HistoryGuru {
                         + type + ")", e);
             }
 
-            if (verbose) {
-                elapsed.report(LOGGER, "Done historycache for " + path);
-            }
+            elapsed.report(LOGGER, "Done historycache for " + path);
         } else {
             LOGGER.log(Level.WARNING,
                     "Skipping creation of historycache of {0} repository in {1}: Missing SCM dependencies?",
@@ -935,11 +920,8 @@ public final class HistoryGuru {
         Map<String, Repository> newrepos =
             Collections.synchronizedMap(new HashMap<>(repos.size()));
         Statistics elapsed = new Statistics();
-        boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
 
-        if (verbose) {
-            LOGGER.log(Level.FINE, "invalidating {0} repositories", repos.size());
-        }
+        LOGGER.log(Level.FINE, "invalidating {0} repositories", repos.size());
 
         /*
          * getRepository() below does various checks of the repository
@@ -994,9 +976,7 @@ public final class HistoryGuru {
         repositories.clear();
         newrepos.forEach((_key, repo) -> { putRepository(repo); });
 
-        if (verbose) {
-            elapsed.report(LOGGER, "done invalidating repositories");
-        }
+        elapsed.report(LOGGER, "done invalidating repositories");
     }
 
     /**

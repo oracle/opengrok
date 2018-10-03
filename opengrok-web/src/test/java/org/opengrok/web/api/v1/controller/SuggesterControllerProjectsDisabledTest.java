@@ -74,7 +74,6 @@ public class SuggesterControllerProjectsDisabledTest extends JerseyTest {
 
         repository.create(SuggesterControllerTest.class.getResourceAsStream("/org/opengrok/indexer/index/source.zip"));
 
-        env.setVerbose(false);
         env.setHistoryEnabled(false);
         env.setProjectsEnabled(false);
         env.setSourceRoot(repository.getSourceRoot() + File.separator + "java");

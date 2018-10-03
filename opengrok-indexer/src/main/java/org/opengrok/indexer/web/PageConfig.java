@@ -51,8 +51,8 @@ import java.util.stream.Collectors;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.jrcs.diff.Diff;
-import org.apache.commons.jrcs.diff.DifferentiationFailedException;
+import org.suigeneris.jrcs.diff.Diff;
+import org.suigeneris.jrcs.diff.DifferentiationFailedException;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
 import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
@@ -1221,7 +1221,7 @@ public final class PageConfig {
                 path, env.isCompressXref());
     }
 
-    protected String getLatestRevision() {
+    public String getLatestRevision() {
         if (!getEnv().isHistoryEnabled()) {
             return null;
         }
@@ -1229,7 +1229,7 @@ public final class PageConfig {
         History hist;
         try {
             hist = HistoryGuru.getInstance().
-                    getHistory(new File(getEnv().getSourceRootFile(), getPath()));
+                    getHistory(new File(getEnv().getSourceRootFile(), getPath()), false, true);
         } catch (HistoryException ex) {
             return null;
         }
@@ -1265,15 +1265,14 @@ public final class PageConfig {
     }
 
     /**
-     * Get the location of cross reference for given file containing the current
-     * revision.
-     * @return location to redirect to or null if failed
+     * Get the location of cross reference for given file containing the given revision.
+     * @param revStr revision string
+     * @return location to redirect to or null if revision string is empty
      */
-    public String getLatestRevisionLocation() {
+    public String getRevisionLocation(String revStr) {
         StringBuilder sb = new StringBuilder();
-        String revStr;
 
-        if ((revStr = getLatestRevision()) == null) {
+        if (revStr == null) {
             return null;
         }
 

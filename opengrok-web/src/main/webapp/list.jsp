@@ -20,7 +20,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
-Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
 --%>
 <%@page errorPage="error.jsp" import="
@@ -88,6 +88,7 @@ document.pageReady.push(function() { pageReadyList();});
     PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
     Project project = cfg.getProject();
+    final String DUMMY_REVISION = "unknown";
 
     String navigateWindowEnabled = project != null ? Boolean.toString(
             project.isNavigateWindowEnabled()) : "false";
@@ -176,7 +177,9 @@ document.pageReady.push(function() { pageReadyList();});
         }
     } else if (rev.length() != 0) {
         // requesting a revision
-        if (cfg.isLatestRevision(rev)) {
+        File xrefFile = null;
+        if (cfg.isLatestRevision(rev) &&
+                (xrefFile = cfg.findDataFile()) != null) {
             if (cfg.annotate()) {
                 // annotate
                 BufferedInputStream bin =
@@ -232,8 +235,6 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                 }
 
             } else {
-                File xrefFile = cfg.findDataFile();
-                if (xrefFile != null) {
 %>
 <div id="src" data-navigate-window-enabled="<%= navigateWindowEnabled %>">
     <pre><%
@@ -242,18 +243,21 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                             request.getContextPath());
     %></pre>
 </div><%
-                }
             }
         } else {
-            // requesting a previous revision
+            // requesting a previous revision or needed to generate xref on the fly (economy mode).
             FileAnalyzerFactory a = AnalyzerGuru.find(basename);
             Genre g = AnalyzerGuru.getGenre(a);
             String error = null;
-            if (g == Genre.PLAIN|| g == Genre.HTML || g == null) {
+            if (g == Genre.PLAIN || g == Genre.HTML || g == null) {
                 InputStream in = null;
                 try {
-                    in = HistoryGuru.getInstance()
-                        .getRevision(resourceFile.getParent(), basename, rev);
+                    if (rev.equals(DUMMY_REVISION)) {
+                        in = new FileInputStream(resourceFile);
+                    } else {
+                        in = HistoryGuru.getInstance()
+                                .getRevision(resourceFile.getParent(), basename, rev);
+                    }
                 } catch (Exception e) {
                     // fall through to error message
                     error = e.getMessage();
@@ -264,9 +268,7 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
                             a = AnalyzerGuru.find(in);
                             g = AnalyzerGuru.getGenre(a);
                         }
-                        if (g == Genre.DATA || g == Genre.XREFABLE
-                            || g == null)
-                        {
+                        if (g == Genre.DATA || g == Genre.XREFABLE || g == null) {
     %>
     <div id="src">
     Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
@@ -347,13 +349,20 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
         // requesting cross referenced file
         File xrefFile = null;
 
-        // Get the latest revision and redirect so that the revision number
-        // appears in the URL.
-        String location = cfg.getLatestRevisionLocation();
+        // Get the latest revision and redirect so that the revision number appears in the URL.
+        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
         if (location != null) {
             response.sendRedirect(location);
             return;
         } else {
+            if (!cfg.getEnv().isGenerateHtml()) {
+                // Economy mode is on and failed to get the last revision (presumably running with history turned off).
+                // Use dummy revision string so that xref can be generated from the resource file directly.
+                location = cfg.getRevisionLocation(DUMMY_REVISION);
+                response.sendRedirect(location);
+                return;
+            }
+
             xrefFile = cfg.findDataFile();
         }
 
@@ -365,6 +374,9 @@ Click <a href="<%= rawPath %>">download <%= basename %></a><%
             Util.dumpXref(out, xrefFile, compressed, request.getContextPath());
     %></pre>
 </div><%
+        } else {
+%>
+<p class="error">Failed to get xref file</p><%
         }
     }
 }

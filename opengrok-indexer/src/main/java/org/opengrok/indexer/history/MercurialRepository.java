@@ -327,8 +327,7 @@ public class MercurialRepository extends Repository {
 
                 if (!content.isEmpty()) {
                     /*
-                     * Split string of 'newfile1 (oldfile1)newfile2
-                     * (oldfile2) ...' into pairs of renames.
+                     * Split string of 'newfile1 (oldfile1)newfile2 (oldfile2) ...' into pairs of renames.
                      */
                     String[] splitArray = content.split("\\)");
                     for (String s : splitArray) {
@@ -343,16 +342,12 @@ public class MercurialRepository extends Repository {
                         }
                     }
                 }
-
-                if (rev.equals(rev_to_find)) {
-                    break;
-                }
             }
         }
 
         if (status != 0) {
             LOGGER.log(Level.WARNING,
-                    "Failed to get original name in revision {3} for: \"{0}\" Exit code: {1}",
+                    "Failed to get original name in revision {2} for: \"{0}\" Exit code: {1}",
                     new Object[]{fullpath, String.valueOf(status), full_rev_to_find});
             return null;
         }
@@ -425,7 +420,6 @@ public class MercurialRepository extends Repository {
         argv.add(file.getName());
         Executor executor = new Executor(argv, file.getParentFile(),
                 RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
-        Annotation annotation = null;
         HashMap<String, HistoryEntry> revs = new HashMap<>();
 
         // Construct hash map for history entries from history cache. This is

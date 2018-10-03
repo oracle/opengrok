@@ -37,7 +37,8 @@ class Java(Command):
     """
 
     def __init__(self, command, logger=None, main_class=None, java=None,
-                 jar=None, java_opts=None, classpath=None):
+                 jar=None, java_opts=None, classpath=None, env_vars=None,
+                 redirect_stderr=True):
 
         if not java:
             java = self.FindJava(logger)
@@ -60,10 +61,19 @@ class Java(Command):
             java_command.append(jar)
         if main_class:
             java_command.append(main_class)
+        env = None
+        if env_vars:
+            env = {}
+            for spec in env_vars:
+                if spec.find('=') != -1:
+                    name, value = spec.split('=')
+                    env[name] = value
+
         java_command.extend(command)
         logger.debug("Java command: {}".format(java_command))
 
-        super().__init__(java_command, logger=logger)
+        super().__init__(java_command, logger=logger, env_vars=env,
+                         redirect_stderr=redirect_stderr)
 
     def FindJava(self, logger):
         """
@@ -99,6 +109,8 @@ def get_javaparser():
                         help='path to java binary')
     parser.add_argument('-J', '--java_opts',
                         help='java options', action='append')
+    parser.add_argument('-e', '--environment', action='append',
+                        help='Environment variables in the form of name=value')
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-a', '--jar',
@@ -129,7 +141,8 @@ if __name__ == '__main__':
 
     java = Java(args.options, logger=logger, java=args.java,
                 jar=args.jar, java_opts=args.java_opts,
-                classpath=args.classpath, main_class=args.mainclass)
+                classpath=args.classpath, main_class=args.mainclass,
+                env_vars=args.environment)
     java.execute()
     ret = java.getretcode()
     if ret is None or ret != 0:

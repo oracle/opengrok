@@ -223,6 +223,7 @@ class Command:
             if self.env_vars:
                 my_env = os.environ.copy()
                 my_env.update(self.env_vars)
+                self.logger.debug("environment variables: {}".format(my_env))
                 my_args['env'] = my_env
             if self.limits:
                 my_args['preexec_fn'] = \
@@ -364,6 +365,9 @@ class Command:
 
     def geterroutput(self):
         return self.err
+
+    def geterroutputstr(self):
+        return "".join(self.err).strip()
 
     def getstate(self):
         return self.state

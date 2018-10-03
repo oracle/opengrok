@@ -29,7 +29,7 @@ import logging
 
 
 """
- Script for merging OpenGrok configuration
+ Wrapper for Java program merging OpenGrok configuration.
 """
 
 if __name__ == '__main__':
@@ -48,12 +48,14 @@ if __name__ == '__main__':
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
-               java_opts=args.java_opts,
-               main_class='org.opensolaris.opengrok.configuration.ConfigMerge',
+               java_opts=args.java_opts, redirect_stderr=False,
+               main_class='org.opengrok.indexer.configuration.ConfigMerge',
                logger=logger)
     cmd.execute()
     ret = cmd.getretcode()
     if ret is None or ret != 0:
-        logger.error(cmd.getoutputstr())
+        logger.error(cmd.geterroutput())
         logger.error("command failed (return code {})".format(ret))
         sys.exit(1)
+
+    print(cmd.getoutputstr())

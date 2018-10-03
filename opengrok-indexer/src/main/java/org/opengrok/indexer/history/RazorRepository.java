@@ -258,7 +258,7 @@ public class RazorRepository extends Repository {
         // @TODO : Rename & Delete Support
         File rcsFile = getRazorArchiveRCSFileFor(file);
         if (rcsFile != null && rcsFile.exists()) {
-            return RCSRepository.annotate(file, revision, rcsFile);
+            return (new RCSRepository()).annotate(file, revision);
         }
 
         File sccsFile = getRazorArchiveSCCSFileFor(file);

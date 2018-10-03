@@ -26,15 +26,16 @@ package org.opengrok.indexer.web;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.StringReader;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.opengrok.indexer.logger.LoggerFactory;
@@ -200,12 +201,23 @@ public class EftarFile {
     }
     private Node root;
 
-    public void readInput(String tagsPath) throws IOException {
-        try (BufferedReader r = new BufferedReader(new FileReader(tagsPath))) {
+    public void readInput(File inputFile) throws IOException {
+        try (BufferedReader r = new BufferedReader(new FileReader(inputFile))) {
             readInput(r);
         }
     }
 
+    public void readInput(String input) throws IOException {
+        try (BufferedReader r = new BufferedReader(new StringReader(input))) {
+            readInput(r);
+        }
+    }
+
+    /**
+     * Reads the input into interim representation. Can be called multiple times.
+     * @param r reader
+     * @throws IOException
+     */
     private void readInput(BufferedReader r) throws IOException {
         if (root == null) {
             root = new Node(1, null);
@@ -240,32 +252,13 @@ public class EftarFile {
         }
     }
 
-    public void create(String[] args) throws IOException, FileNotFoundException {
-        for (int i = 0; i < args.length - 1; i++) {
-            readInput(args[i]);
-        }
-        write(args[args.length - 1]);
+    public void create(File inputFile, String outputPath) throws IOException {
+        readInput(inputFile);
+        write(outputPath);
     }
 
-    /**
-     * Main method is used to generate eftar file from the path description
-     * file in the run scripts.
-     *
-     * @param args Input files and output file
-     */
-    @SuppressWarnings("PMD.SystemPrintln")
-    public static void main(String[] args) {
-        if (args.length < 2) {
-            System.err.println("Usage inputFile [inputFile ...] outputFile");
-            System.exit(1);
-        }
-
-        try {
-            EftarFile ef = new EftarFile();
-            ef.create(args);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "EftarFile error", e);
-        }
+    public void create(String input, String outputPath) throws IOException, FileNotFoundException {
+        readInput(input);
+        write(outputPath);
     }
-
 }

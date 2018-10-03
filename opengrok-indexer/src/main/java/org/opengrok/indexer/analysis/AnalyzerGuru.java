@@ -523,6 +523,10 @@ public class AnalyzerGuru {
         FileAnalyzer fa, Writer xrefOut) throws IOException,
             InterruptedException, ForbiddenSymlinkException {
 
+        // Sanitize Windows path delimiters in order not to conflict with Lucene escape character
+        // and also so the path appears as correctly formed URI in the search results.
+        path = path.replace("\\", "/");
+
         String date = DateTools.timeToString(file.lastModified(),
                 DateTools.Resolution.MILLISECOND);
         doc.add(new Field(QueryBuilder.U, Util.path2uid(path, date),
@@ -694,6 +698,16 @@ public class AnalyzerGuru {
             return factory.getGenre();
         }
         return null;
+    }
+
+    /**
+     * Finds a {@code FileAnalyzerFactory} for the specified
+     * {@link FileAnalyzer#getFileTypeName()}.
+     * @param fileTypeName a defined instance
+     * @return a defined instance or {@code null}
+     */
+    public static FileAnalyzerFactory findByFileTypeName(String fileTypeName) {
+        return FILETYPE_FACTORIES.get(fileTypeName);
     }
 
     /**

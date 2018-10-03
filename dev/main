@@ -19,3 +19,4 @@ if [ "x$TRAVIS_REPO_SLUG" == "xoracle/opengrok" ]; then
 fi
 
 mvn -B -V verify $extra_args
+node dev/parse.js

@@ -56,6 +56,7 @@ public class ChronicleMapAdapterTest {
 
     @After
     public void tearDown() throws IOException {
+        map.close();
         Files.delete(tempFile);
     }
 

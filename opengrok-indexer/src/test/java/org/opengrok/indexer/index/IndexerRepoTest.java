@@ -216,7 +216,7 @@ public class IndexerRepoTest {
         List<RepositoryInfo> repos = env.getRepositories();
         assertEquals(repos.size(), 1);
         RepositoryInfo repo = repos.get(0);
-        assertEquals("/" + SYMLINK, repo.getDirectoryNameRelative());
+        assertEquals(File.separator + SYMLINK, repo.getDirectoryNameRelative());
         String epath = sourceRoot.toString() + File.separator + SYMLINK;
         String apath = repo.getDirectoryName();
         assertTrue("Should match (with macOS leeway):\n" + epath + "\nv.\n" +

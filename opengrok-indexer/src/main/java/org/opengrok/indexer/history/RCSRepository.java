@@ -27,15 +27,13 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.jrcs.diff.PatchFailedException;
-import org.apache.commons.jrcs.rcs.Archive;
-import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
-import org.apache.commons.jrcs.rcs.Node;
-import org.apache.commons.jrcs.rcs.ParseException;
-import org.apache.commons.jrcs.rcs.Version;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.util.Executor;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 /**
@@ -46,6 +44,16 @@ public class RCSRepository extends Repository {
     private static final Logger LOGGER = LoggerFactory.getLogger(RCSRepository.class);
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * This property name is used to obtain the command to get annotation for this repository.
+     */
+    private static final String CMD_BLAME_PROPERTY_KEY
+            = "org.opengrok.indexer.history.RCS.blame";
+    /**
+     * The command to use to get annotation if none was given explicitly.
+     */
+    private static final String CMD_BLAME_FALLBACK = "blame";
 
     public RCSRepository() {
         working = Boolean.TRUE;
@@ -79,37 +87,23 @@ public class RCSRepository extends Repository {
 
     @Override
     Annotation annotate(File file, String revision) throws IOException {
-        File rcsFile = getRCSFile(file);
-        return rcsFile == null ? null : annotate(file, revision, rcsFile);
-    }
+        List<String> argv = new ArrayList<>();
+        ensureCommand(CMD_BLAME_PROPERTY_KEY, CMD_BLAME_FALLBACK);
 
-    static Annotation annotate(File file, String revision, File rcsFile)
-            throws IOException {
-        try {
-            Archive archive = new Archive(rcsFile.getPath());
-            // If revision is null, use current revision
-            Version version = revision == null ? archive.getRevisionVersion() : archive.getRevisionVersion(revision);
-            // Get the revision with annotation
-            archive.getRevision(version, true);
-            Annotation a = new Annotation(file.getName());
-            // A comment in Archive.getRevisionNodes() says that it is not
-            // considered public API anymore, but it works.
-            for (Node n : archive.getRevisionNodes()) {
-                String rev = n.getVersion().toString();
-                String author = n.getAuthor();
-                a.addLine(rev, author, true);
-            }
-            return a;
-        } catch (ParseException pe) {
-            throw wrapInIOException(
-                    "Parse exception annotating RCS repository", pe);
-        } catch (InvalidFileFormatException iffe) {
-            throw wrapInIOException(
-                    "File format exception annotating RCS repository", iffe);
-        } catch (PatchFailedException pfe) {
-            throw wrapInIOException(
-                    "Patch failed exception annotating RCS repository", pfe);
+        argv.add(RepoCommand);
+        if (revision != null) {
+            argv.add("-r");
+            argv.add(revision);
         }
+        argv.add(file.getName());
+
+        Executor executor = new Executor(argv, file.getParentFile(),
+                RuntimeEnvironment.getInstance().getInteractiveCommandTimeout());
+
+        RCSAnnotationParser annotator = new RCSAnnotationParser(file);
+        executor.exec(true, annotator);
+
+        return annotator.getAnnotation();
     }
 
     /**

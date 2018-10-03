@@ -29,8 +29,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -181,22 +186,74 @@ public class GitRepositoryTest {
             {"moved2/renamed2.c", "ce4c98ec", "renamed.c"},
             {"moved2/renamed2.c", "bb74b7e8", "renamed.c"}
         };
+
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
+        gitrepo.setHandleRenamedFiles(true);
+
         int i = 0;
         for (String[] test : tests) {
-            String file = root.getCanonicalPath() + File.separator + test[0];
+            String file = Paths.get(root.getCanonicalPath(), test[0]).toString();
             String changeset = test[1];
-            String expected = root.getCanonicalPath() + File.separator + test[2];
+            String expectedName = test[2];
             try {
                 String originalName = gitrepo.findOriginalName(file, changeset);
-                Assert.assertEquals(expected, originalName);
+                Assert.assertEquals(expectedName, originalName);
             } catch (IOException ex) {
                 Assert.fail(String.format("Looking for original name of {} in {} shouldn't fail", file, changeset));
             }
             i++;
         }
+    }
+
+    private void testAnnotationOfFile(GitRepository gitrepo, File file, String revision, Set<String> revSet) throws Exception {
+        Annotation annotation = gitrepo.annotate(file, revision);
+
+        assertNotNull(annotation);
+        assertEquals(revSet, annotation.getRevisions());
+    }
+
+    @Test
+    public void testAnnotationOfRenamedFileWithHandlingOff() throws Exception {
+        String[] revisions = {"84599b3c"};
+        Set<String> revSet = new HashSet<>();
+        Collections.addAll(revSet, revisions);
+
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo
+                = (GitRepository) RepositoryFactory.getRepository(root);
+        gitrepo.setHandleRenamedFiles(false);
+        File renamedFile = Paths.get(root.getAbsolutePath(),"moved2", "renamed2.c").toFile();
+        testAnnotationOfFile(gitrepo, renamedFile, null, revSet);
+    }
+
+    @Test
+    public void testAnnotationOfRenamedFileWithHandlingOn() throws Exception {
+        String[] revisions = {"1086eaf5", "ce4c98ec"};
+        Set<String> revSet = new HashSet<>();
+        Collections.addAll(revSet, revisions);
+
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo
+                = (GitRepository) RepositoryFactory.getRepository(root);
+        gitrepo.setHandleRenamedFiles(true);
+        File renamedFile = Paths.get(root.getAbsolutePath(),"moved2", "renamed2.c").toFile();
+        testAnnotationOfFile(gitrepo, renamedFile, null, revSet);
+    }
+
+    @Test
+    public void testAnnotationOfRenamedFilePastWithHandlingOn() throws Exception {
+        String[] revisions = {"1086eaf5", "ce4c98ec"};
+        Set<String> revSet = new HashSet<>();
+        Collections.addAll(revSet, revisions);
+
+        File root = new File(repository.getSourceRoot(), "git");
+        GitRepository gitrepo
+                = (GitRepository) RepositoryFactory.getRepository(root);
+        gitrepo.setHandleRenamedFiles(true);
+        File renamedFile = Paths.get(root.getAbsolutePath(),"moved2", "renamed2.c").toFile();
+        testAnnotationOfFile(gitrepo, renamedFile, "1086eaf5", revSet);
     }
 
     @Test(expected = IOException.class)
@@ -255,8 +312,8 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        runRenamedTest("moved2/renamed2.c", "84599b3", exp_str);
-        runRenamedTest("moved/renamed2.c", "67dfbe2", exp_str);
+        runRenamedTest(Paths.get("moved2", "renamed2.c").toString(), "84599b3", exp_str);
+        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "67dfbe2", exp_str);
     }
 
     /**
@@ -294,8 +351,8 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        runRenamedTest("moved/renamed.c", "1086eaf", exp_str);
-        runRenamedTest("moved/renamed2.c", "67dfbe2", exp_str);
+        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "1086eaf", exp_str);
+        runRenamedTest(Paths.get("moved", "renamed2.c").toString(), "67dfbe2", exp_str);
     }
 
     /**
@@ -321,7 +378,7 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        runRenamedTest("moved/renamed.c", "b641394", exp_str);
+        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "b641394", exp_str);
         runRenamedTest("renamed.c", "ce4c98e", exp_str);
     }
 
@@ -333,7 +390,7 @@ public class GitRepositoryTest {
      */
     @Test
     public void testGetHistoryForNonExistentRenamed() throws Exception {
-        runRenamedTest("moved/renamed.c", "67dfbe2", null);
+        runRenamedTest(Paths.get("moved", "renamed.c").toString(), "67dfbe2", null);
         runRenamedTest("renamed.c", "67dfbe2", null);
     }
 

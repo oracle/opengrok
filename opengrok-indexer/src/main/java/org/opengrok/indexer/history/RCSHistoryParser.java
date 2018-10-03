@@ -33,10 +33,10 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.jrcs.rcs.Archive;
-import org.apache.commons.jrcs.rcs.Node;
-import org.apache.commons.jrcs.rcs.ParseException;
-import org.apache.commons.jrcs.rcs.Version;
+import org.suigeneris.jrcs.rcs.Archive;
+import org.suigeneris.jrcs.rcs.impl.Node;
+import org.suigeneris.jrcs.rcs.parse.ParseException;
+import org.suigeneris.jrcs.rcs.Version;
 import org.opengrok.indexer.logger.LoggerFactory;
 
 
@@ -80,8 +80,13 @@ class RCSHistoryParser {
     }
 
     private History parseFile(File file) throws IOException {
+        File rcsfile = getRCSFile(file);
+        if (rcsfile == null) {
+            return null;
+        }
+
         try {
-            Archive archive = new Archive(getRCSFile(file).getPath());
+            Archive archive = new Archive(rcsfile.getPath());
             Version ver = archive.getRevisionVersion();
             Node n = archive.findNode(ver);
             n = n.root();

@@ -50,15 +50,15 @@ public class EftarFileReader {
 
     public class FNode {
 
-        public long offset;
-        public long hash;
-        public int childOffset;
-        public int numChildren;
-        public int tagOffset;
+        private long offset;
+        private long hash;
+        private int childOffset;
+        private int numChildren;
+        private int tagOffset;
 
         public FNode() throws IOException {
             offset = f.getFilePointer();
-            //System.err.println("offset " + offset);
+
             try {
                 hash = f.readLong();
                 childOffset = f.readUnsignedShort();
@@ -68,7 +68,6 @@ public class EftarFileReader {
                 numChildren = 0;
                 tagOffset = 0;
             }
-            //System.err.println("offset " + offset + " num children " + numChildren + " tagOff " + tagOffset);
         }
 
         public FNode(long hash, long offset, int childOffset, int num, int tagOffset) {
@@ -87,7 +86,6 @@ public class EftarFileReader {
         }
 
         private FNode binarySearch(long start, int len, long hash) throws IOException {
-            //System.err.printf(" Searching [%x] in %5d elem from %x\n", hash, len, start);
             int b = 0;
             int e = len;
             while (b <= e) {
@@ -135,11 +133,16 @@ public class EftarFileReader {
             }
             return "H[" + hash + "] num = " + numChildren + " tag = " + tagString;
         }
+
+        public int getChildOffset() {
+            return childOffset;
+        }
     }
 
     public EftarFileReader(String file) throws FileNotFoundException {
         this(new File(file));
     }
+
     public EftarFileReader(File file) throws FileNotFoundException {
         f = new RandomAccessFile(file, "r");
         isOpen = true;
@@ -172,6 +175,12 @@ public class EftarFileReader {
         return null;
     }
 
+    /**
+     * Get description for path
+     * @param path path relative to source root
+     * @return path description string
+     * @throws IOException
+     */
     public String get(String path) throws IOException {
         StringTokenizer toks = new StringTokenizer(path, "/");
         f.seek(0);

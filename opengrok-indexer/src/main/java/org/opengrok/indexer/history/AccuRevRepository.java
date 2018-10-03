@@ -90,11 +90,11 @@ public class AccuRevRepository extends Repository {
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private String depotName = null;
-    private String parent = null;
+    private String parentInfo = null;
     private String wsRoot = null;
     private String relRoot = "";
     
-    /**  
+    /**
      * This will be /./ on Unix and \.\ on Windows 
      */
     private static final String depotRoot 
@@ -317,7 +317,7 @@ public class AccuRevRepository extends Repository {
                 else if (line.startsWith("Basis")) {
                     Matcher parentMatch = PARENT_PATTERN.matcher(line);
                     if (parentMatch.find()) {
-                        parent = parentMatch.group(1);
+                        parentInfo = parentMatch.group(1);
                     }
                 }
                 
@@ -480,7 +480,7 @@ public class AccuRevRepository extends Repository {
     @Override
     String determineParent(boolean interactive) throws IOException {
         getAccuRevInfo(new File(getDirectoryName()), interactive);
-        return parent;
+        return parentInfo;
     }
 
     @Override

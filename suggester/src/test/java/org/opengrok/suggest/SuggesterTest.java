@@ -46,6 +46,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -67,9 +68,13 @@ public class SuggesterTest {
         private Suggester s;
         private Path indexDir;
         private Path suggesterDir;
+        private List<Suggester.NamedIndexReader> namedIndexReaders = new ArrayList<>();
 
 
         private void close() throws IOException {
+            for (Suggester.NamedIndexReader ir: namedIndexReaders) {
+                ir.getReader().close();
+            }
             s.close();
             FileUtils.deleteDirectory(indexDir.toFile());
             FileUtils.deleteDirectory(suggesterDir.toFile());
@@ -84,7 +89,9 @@ public class SuggesterTest {
         }
 
         private Suggester.NamedIndexReader getNamedIndexReader() throws IOException {
-            return new Suggester.NamedIndexReader("test", DirectoryReader.open(getIndexDirectory()));
+            Suggester.NamedIndexReader ir = new Suggester.NamedIndexReader("test", DirectoryReader.open(getIndexDirectory()));
+            namedIndexReaders.add(ir);
+            return ir;
         }
 
     }

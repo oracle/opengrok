@@ -38,6 +38,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -148,15 +150,7 @@ public final class Configuration {
      */
     private String includeRoot;
     private List<RepositoryInfo> repositories;
-    /**
-     * @deprecated This is kept around so not to break object deserialization
-     * but it is ignored and cannot be truly set. This should mean that the
-     * configuration is written leaving out this deprecated property; so after
-     * some time it can be retired with the expectation that zero or a
-     * miniscule number of production configurations still have this deprecated
-     * property.
-     */
-    private String urlPrefix;
+
     private boolean generateHtml;
     /**
      * Default projects will be used, when no project is selected and no project
@@ -169,7 +163,6 @@ public final class Configuration {
      * Lucene 4.x uses 16MB and 8 threads, so below is a nice tunable.
      */
     private double ramBufferSize;
-    private boolean verbose;
     /**
      * If below is set, then we count how many files per project we need to
      * process and print percentage of completion per project.
@@ -187,17 +180,7 @@ public final class Configuration {
     private String webappLAF;
     private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
-    /**
-     * @deprecated This is kept around so not to break object de-serialization.
-     * <p>Anyone who is using `--lock on` will now be setting
-     * {@link #luceneLocking} and resetting this field back to its default
-     * value. This should mean that the configuration is written leaving out
-     * this deprecated property; so after some time it can be retired with the
-     * expectation that zero or a miniscule number of production configurations
-     * still have this deprecated property.
-     */
-    @Deprecated
-    private boolean usingLuceneLocking;
+
     private LuceneLockName luceneLocking = LuceneLockName.OFF;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
@@ -251,7 +234,7 @@ public final class Configuration {
      * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
      * contains definition tags.
      */
-    public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
+    public static final String EFTAR_DTAGS_NAME = "dtags.eftar";
     private transient File dtagsEftar = null;
 
     /**
@@ -477,13 +460,10 @@ public final class Configuration {
         setStatisticsFilePath(null);
         //setTabSize(4);
         setTagsEnabled(false);
-        //urlPrefix's constant value is moved to RuntimeEnvironment.
         //setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
         // Set to empty string so we can append it to the URL
         // unconditionally later.
         setUserPageSuffix("");
-        setUsingLuceneLocking(false);
-        setVerbose(false);
         setWebappLAF("default");
     }
 
@@ -811,7 +791,7 @@ public final class Configuration {
     }
 
     /**
-     * If {@link includeRoot} is not set, {@link dataRoot} will be returned.
+     * If {@link #includeRoot} is not set, {@link #dataRoot} will be returned.
      * @return web include root directory
      */
     public String getIncludeRoot() {
@@ -832,23 +812,6 @@ public final class Configuration {
 
     public void addRepositories(List<RepositoryInfo> repositories) {
         this.repositories.addAll(repositories);
-    }
-
-    public String getUrlPrefix() {
-        return urlPrefix;
-    }
-
-    /**
-     * Formerly this allowed setting the URL prefix to be used for the Java
-     * class analyzer and for language cross-referencing (xref) when they
-     * created HTML links. Now, a static value is used and transformed as
-     * necessary to the servlet {@code contextPath} so that users can deploy
-     * OpenGrok as they like.
-     * @param urlPrefix ignored
-     */
-    @Deprecated
-    public void setUrlPrefix(String urlPrefix) {
-        // ignore the value
     }
 
     public void setGenerateHtml(boolean generateHtml) {
@@ -880,14 +843,6 @@ public final class Configuration {
      */
     public void setRamBufferSize(double ramBufferSize) {
         this.ramBufferSize = ramBufferSize;
-    }
-
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     public boolean isPrintProgress() {
@@ -1026,23 +981,6 @@ public final class Configuration {
         this.optimizeDatabase = optimizeDatabase;
     }
 
-    @Deprecated
-    public boolean isUsingLuceneLocking() {
-        return LuceneLockName.SIMPLE.equals(luceneLocking) ||
-            LuceneLockName.ON.equals(luceneLocking);
-    }
-
-    @Deprecated
-    public boolean getUsingLuceneLocking() {
-        return isUsingLuceneLocking();
-    }
-
-    @Deprecated
-    public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        setLuceneLocking(useLuceneLocking ? LuceneLockName.ON :
-            LuceneLockName.OFF);
-    }
-
     public LuceneLockName getLuceneLocking() {
         return luceneLocking;
     }
@@ -1053,8 +991,6 @@ public final class Configuration {
      */
     public void setLuceneLocking(LuceneLockName value) {
         this.luceneLocking = value;
-        // Set the following to default(boolean) regardless of `value'.
-        this.usingLuceneLocking = false;
     }
 
     public void setCompressXref(boolean compressXref) {
@@ -1277,13 +1213,20 @@ public final class Configuration {
     }
 
     /**
-     * Get the eftar file, which contains definition tags.
+     * @return path to the file holding compiled path descriptions for the web application
+     */
+    public Path getDtagsEftarPath() {
+        return Paths.get(getDataRoot(), "index", EFTAR_DTAGS_NAME);
+    }
+
+    /**
+     * Get the eftar file, which contains definition tags for path descriptions.
      *
      * @return {@code null} if there is no such file, the file otherwise.
      */
     public File getDtagsEftar() {
         if (dtagsEftar == null) {
-            File tmp = new File(getDataRoot() + "/" + EFTAR_DTAGS_FILE);
+            File tmp = getDtagsEftarPath().toFile();
             if (tmp.canRead()) {
                 dtagsEftar = tmp;
             }
