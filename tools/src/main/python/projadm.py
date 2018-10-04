@@ -106,7 +106,7 @@ def install_config(doit, src, dst):
 
 
 def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
-                   roconfig):
+                   roconfig, java):
     """
     Refresh current configuration file with configuration retrieved
     from webapp. If roconfig is not None, the current config is merged with
@@ -141,6 +141,9 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
                         '(merging with read-only config)')
             configmerge_cmd = configmerge
             configmerge_cmd.extend(['-a', jar_file, roconfig, fcur.name])
+            if java:
+                configmerge_cmd.append('-j')
+                configmerge_cmd.append(java)
             merged_config = exec_command(doit, logger,
                                          configmerge_cmd,
                                          "cannot merge configuration")
@@ -211,6 +214,8 @@ if __name__ == '__main__':
                         help='URI of the webapp with context path')
     parser.add_argument('-c', '--configmerge',
                         help='path to the ConfigMerge binary')
+    parser.add_argument('--java', help='Path to java binary '
+                                       '(needed for config merge program)')
     parser.add_argument('--jar', help='Path to jar archive to run')
     parser.add_argument('-u', '--upload', action='store_true',
                         help='Upload configuration at the end')
@@ -309,7 +314,8 @@ if __name__ == '__main__':
                                uri=uri,
                                configmerge=configmerge,
                                jar_file=args.jar,
-                               roconfig=args.roconfig)
+                               roconfig=args.roconfig,
+                               java=args.java)
             elif args.delete:
                 for proj in args.delete:
                     project_delete(logger=logger,
@@ -322,14 +328,16 @@ if __name__ == '__main__':
                                uri=uri,
                                configmerge=configmerge,
                                jar_file=args.jar,
-                               roconfig=args.roconfig)
+                               roconfig=args.roconfig,
+                               java=args.java)
             elif args.refresh:
                 config_refresh(doit=doit, logger=logger,
                                basedir=args.base,
                                uri=uri,
                                configmerge=configmerge,
                                jar_file=args.jar,
-                               roconfig=args.roconfig)
+                               roconfig=args.roconfig,
+                               java=args.java)
             else:
                 parser.print_help()
                 sys.exit(1)
