@@ -947,10 +947,10 @@ public final class Indexer {
         
         if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
-            long start = System.currentTimeMillis();
+            Statistics stats = new Statistics();
             env.setRepositories(env.getSourceRootPath());
-            long time = (System.currentTimeMillis() - start) / 1000;
-            LOGGER.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
+            stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
+                    env.getRepositories().size()));
             
             if (listRepoPaths || !zapCache.isEmpty()) {
                 List<RepositoryInfo> repos = env.getRepositories();
@@ -963,7 +963,7 @@ public final class Indexer {
                     System.out.println("Repositories in " + prefix + ":");
                     for (RepositoryInfo info : env.getRepositories()) {
                         String dir = info.getDirectoryName();
-                        System.out.println(dir.substring(prefix.length()));
+                        System.out.println(String.format("%s (%s)", dir.substring(prefix.length()), info.getType()));
                     }
                 }
                 if (!zapCache.isEmpty()) {
