@@ -947,11 +947,10 @@ public final class Indexer {
         
         if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
-            long start = System.currentTimeMillis();
+            Statistics stats = new Statistics();
             env.setRepositories(env.getSourceRootPath());
-            long time = (System.currentTimeMillis() - start) / 1000;
-            LOGGER.log(Level.INFO, "Done scanning for repositories, found {1} repositories ({0}s)",
-                    new Object[]{time, env.getRepositories().size()});
+            stats.report(LOGGER, String.format("Done scanning for repositories, found %d repositories",
+                    env.getRepositories().size()));
             
             if (listRepoPaths || !zapCache.isEmpty()) {
                 List<RepositoryInfo> repos = env.getRepositories();
