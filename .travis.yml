@@ -47,7 +47,7 @@ deploy:
     on:
       repo: oracle/opengrok
       tags: true
-      condition: "$TRAVIS_TAG =~ rc[0-9]+$"
+      condition: $TRAVIS_TAG =~ rc[0-9]+$
       branch: master
   # Full release
   - provider: releases
@@ -62,5 +62,5 @@ deploy:
     on:
       repo: oracle/opengrok
       tags: true
-      condition: "! $TRAVIS_TAG =~ rc[0-9]+$"
+      condition: ! $TRAVIS_TAG =~ rc[0-9]+$
       branch: master
