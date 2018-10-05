@@ -369,9 +369,9 @@ public class IndexDatabase {
         // the project's isIndexed() is true because it triggers RepositoryInfo
         // refresh.
         if (project != null) {
-            if (env.getConfigHost() != null) {
+            if (env.getConfigURI() != null) {
                 Response r = ClientBuilder.newClient()
-                        .target(env.getConfigHost())
+                        .target(env.getConfigURI())
                         .path("api")
                         .path("v1")
                         .path("projects")

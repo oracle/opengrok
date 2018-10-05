@@ -106,7 +106,7 @@ public final class Indexer {
     private static final Set<String> defaultProjects = new TreeSet<>();
     private static final ArrayList<String> zapCache = new ArrayList<>();
     private static RuntimeEnvironment env = null;
-    private static String host = null;
+    private static String webappURI = null;
 
     private static OptionParser optParser = null;
     private static boolean verbose = false;
@@ -238,7 +238,7 @@ public final class Indexer {
             RepositoryFactory.initializeIgnoredNames(env);
 
             if (noindex) {
-                getInstance().sendToConfigHost(env, host);
+                getInstance().sendToConfigHost(env, webappURI);
                 writeConfigToFile(env, configFilename);
                 System.exit(0);
             }
@@ -285,11 +285,11 @@ public final class Indexer {
             // from project-less config to one with projects), set the property
             // so that the 'project/indexed' messages
             // emitted during indexing do not cause validation error.
-            if (addProjects && host != null) {
+            if (addProjects && webappURI != null) {
                 try {
-                    IndexerUtil.enableProjects(host);
+                    IndexerUtil.enableProjects(webappURI);
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp host", e);
+                    LOGGER.log(Level.SEVERE, "Mis-configuration of webapp webappURI", e);
                     System.err.println("Couldn't notify the webapp: " + e.getLocalizedMessage());
                 }
             }
@@ -316,11 +316,11 @@ public final class Indexer {
 
             // Finally ping webapp to refresh indexes in the case of partial reindex
             // or send new configuration to the web application in the case of full reindex.
-            if (host != null) {
+            if (webappURI != null) {
                 if (!subFiles.isEmpty()) {
-                    getInstance().refreshSearcherManagers(env, subFiles, host);
+                    getInstance().refreshSearcherManagers(env, subFiles, webappURI);
                 } else {
-                    getInstance().sendToConfigHost(env, host);
+                    getInstance().sendToConfigHost(env, webappURI);
                 }
             }
 
@@ -341,7 +341,7 @@ public final class Indexer {
     }
 
     /**
-     * Web address consisting of host and port of a web address
+     * Web address consisting of webappURI and port of a web address
      */
     public static class WebAddress {
         private String host;
@@ -360,10 +360,10 @@ public final class Indexer {
     }
 
      /**
-      * Parse a web address into its host and port components
+      * Parse a web address into its webappURI and port components
       * This method along with the WebAddress class is used by OptionParser
       * to validate user entry of a web address.
-      * @param webAddr expected to be in the form host:port
+      * @param webAddr expected to be in the form webappURI:port
       * @return WebAddress object
       * @throws NumberFormatException or IllegalArgumentException
       */
@@ -371,7 +371,7 @@ public final class Indexer {
         String[] hp = webAddr.split(":");
 
         if (hp.length != 2) {
-            throw new IllegalArgumentException("WebAddress syntax error (expecting host:port)");
+            throw new IllegalArgumentException("WebAddress syntax error (expecting webappURI:port)");
         }
 
         return new WebAddress(hp[0], hp[1]);
@@ -730,21 +730,21 @@ public final class Indexer {
                 cfg.setTabSize((Integer)tabSize);
             });
 
-            parser.on("-U", "--host", "=protocol://host:port/contextPath",
-                "Send the current configuration to the specified address").Do(webAddr -> {
-                    host = (String) webAddr;
+            parser.on("-U", "--uri", "=protocol://webappURI:port/contextPath",
+                "Send the current configuration to the specified webappURI").Do(webAddr -> {
+                    webappURI = (String) webAddr;
                     try {
-                        URI uri = new URI(host);
+                        URI uri = new URI(webappURI);
                         String scheme = uri.getScheme();
                         if (!scheme.equals("http") && !scheme.equals("https")) {
-                            die("URI '" + host + "' does not have HTTP/HTTPS scheme");
+                            die("webappURI '" + webappURI + "' does not have HTTP/HTTPS scheme");
                         }
                     } catch (URISyntaxException e) {
-                        die("URL '" + host + "' is not valid.");
+                        die("URL '" + webappURI + "' is not valid.");
                     }
 
                     env = RuntimeEnvironment.getInstance();
-                    env.setConfigHost(host);
+                    env.setConfigURI(webappURI);
                 }
             );
 
@@ -804,8 +804,8 @@ public final class Indexer {
     private static void checkConfiguration() {
         env = RuntimeEnvironment.getInstance();
 
-        if (noindex && (env.getConfigHost() == null || env.getConfigHost().isEmpty())) {
-            die("Missing host URL");
+        if (noindex && (env.getConfigURI() == null || env.getConfigURI().isEmpty())) {
+            die("Missing webappURI URL");
         }
 
         if (repositories.size() > 0 && !cfg.isHistoryEnabled()) {
