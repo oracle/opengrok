@@ -52,8 +52,8 @@ deploy:
   # Full release
   - provider: releases
     script:
-    - echo "$TRAVIS_TAG"
-    - echo "$TRAVIS_BRANCH"
+    - echo "TRAVIS_TAG: $TRAVIS_TAG"
+    - echo "TRAVIS_BRANCH: $TRAVIS_BRANCH"
     - mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
     api_key:
       secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
