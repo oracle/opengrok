@@ -18,12 +18,12 @@
 #
 
 #
-# Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 import logging
 from command import Command
-from opengrok import put, post, delete
+from webutil import put, post, delete
 from utils import is_web_uri
 import json
 
@@ -95,6 +95,8 @@ class Commands(CommandsBase):
         verb = command[1]
         data = command[2]
 
+        headers = None
+        json_data = None
         if len(data) > 0:
             headers = {'Content-Type': 'application/json'}
             json_data = json.dumps(data).replace(self.PROJECT_SUBST, self.name)
