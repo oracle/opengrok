@@ -115,7 +115,7 @@ public final class RuntimeEnvironment {
     private final Map<Project, List<RepositoryInfo>> repository_map = new ConcurrentHashMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
 
-    private String configHost;
+    private String configURI;
 
     private Statistics statistics = new Statistics();
 
@@ -1210,15 +1210,15 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getGroupsCollapseThreshold();
     }
 
-    // The config host/port are not necessary to be present in the configuration
+    // The URI is not necessary to be present in the configuration
     // (so that when -U option of the indexer is omitted, the config will not
-    // be sent to the webapp) so store them only in the RuntimeEnvironment.
-    public void setConfigHost(String host) {
-        configHost = host;
+    // be sent to the webapp) so store it only in the RuntimeEnvironment.
+    public void setConfigURI(String host) {
+        configURI = host;
     }
 
-    public String getConfigHost() {
-        return configHost;
+    public String getConfigURI() {
+        return configURI;
     }
 
     public boolean isHistoryEnabled() {
