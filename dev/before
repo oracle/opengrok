@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Environment variables:"
+env
+
+echo "SCM versions:"
 if `which bk`; then bk --version; fi
 if `which hg`; then hg --version; fi
 if `which git`; then git --version; fi
