@@ -34,6 +34,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.opengrok.indexer.configuration.Project;
+import org.opengrok.indexer.configuration.RuntimeEnvironment;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.web.api.v1.RestApp;
@@ -50,6 +51,10 @@ public class AuthorizationFilter implements Filter {
     public void doFilter(ServletRequest sr, ServletResponse sr1, FilterChain fc) throws IOException, ServletException {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
         HttpServletResponse httpRes = (HttpServletResponse) sr1;
+
+        // This way we trigger refresh for the current configuration value.
+        // Hotfix for #2382
+        RuntimeEnvironment.getInstance().register();
 
         // All RESTful API requests are allowed for now (also see LocalhostFilter).
         // The /search endpoint will go through authorization via SearchEngine.search()
@@ -73,7 +78,7 @@ public class AuthorizationFilter implements Filter {
             } else {
                 LOGGER.log(Level.INFO, "Access denied for URI: {0}", httpReq.getRequestURI());
             }
-            
+
             /**
              * Add the request to the statistics. This is called just once for a
              * single request otherwise the next filter will count the same
@@ -86,12 +91,12 @@ public class AuthorizationFilter implements Filter {
             config.getEnv().getStatistics().addRequest("requests_forbidden");
             config.getEnv().getStatistics().addRequestTime("requests_forbidden",
                     System.currentTimeMillis() - processTime);
-            
+
             if (!config.getEnv().getConfiguration().getForbiddenIncludeFileContent(false).isEmpty()) {
                 sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);
                 return;
             }
-            
+
             httpRes.sendError(HttpServletResponse.SC_FORBIDDEN, "Access forbidden");
             return;
         }
