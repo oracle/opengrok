@@ -21,8 +21,8 @@
 # Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-from command import Command
-from repository import Repository
+from ..utils.command import Command
+from .repository import Repository
 from shutil import which
 
 

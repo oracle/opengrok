@@ -25,8 +25,8 @@
 import os
 import sys
 import argparse
-from utils import get_command
-from command import Command
+from all.utils.utils import get_command
+from all.utils.command import Command
 import tempfile
 from shutil import copyfile
 import logging
@@ -149,7 +149,7 @@ def deploy_war(logger, sourceWar, targetWar, configFile=None):
         os.remove(tmpWar.name)
 
 
-if __name__ == '__main__':
+def main():
 
     parser = argparse.ArgumentParser(description='Manage parallel workers.')
 
@@ -176,3 +176,6 @@ if __name__ == '__main__':
     print("Start your application server (if it is not already running) "
           "or wait until it loads the just installed web application.\n"
           "OpenGrok should be available on <HOST>:<PORT>/{APP_CONTEXT}")
+
+if __name__ == '__main__':
+    main()

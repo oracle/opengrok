@@ -36,14 +36,13 @@ import argparse
 import os
 import sys
 from os import path
-import filelock
-from filelock import Timeout
+from all.utils.filelock import Timeout, FileLock
 import logging
 import tempfile
-from commands import Commands, CommandsBase
-from readconfig import read_config
+from all.utils.commands import Commands, CommandsBase
+from all.utils.readconfig import read_config
 import multiprocessing
-from opengrok import list_indexed_projects
+from all.utils.opengrok import list_indexed_projects
 
 major_version = sys.version_info[0]
 if (major_version < 3):
@@ -66,7 +65,7 @@ def worker(base):
     return base
 
 
-if __name__ == '__main__':
+def main():
     output = []
     dirs_to_process = []
 
@@ -142,7 +141,7 @@ if __name__ == '__main__':
                      exc_info=True)
         sys.exit(1)
 
-    lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
+    lock = FileLock(os.path.join(tempfile.gettempdir(),
                              "opengrok-sync.lock"))
     try:
         with lock.acquire(timeout=0):
@@ -190,3 +189,6 @@ if __name__ == '__main__':
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)
+
+if __name__ == '__main__':
+    main()

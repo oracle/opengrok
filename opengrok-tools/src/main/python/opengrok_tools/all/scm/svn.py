@@ -21,12 +21,12 @@
 # Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-from command import Command
-from repository import Repository
+from ..utils.command import Command
+from .repository import Repository
 from shutil import which
 
 
-class CVSRepository(Repository):
+class SubversionRepository(Repository):
     def __init__(self, logger, path, project, command, env, hooks, timeout):
 
         super().__init__(logger, path, project, command, env, hooks, timeout)
@@ -34,22 +34,45 @@ class CVSRepository(Repository):
         if command:
             self.command = command
         else:
-            self.command = which("cvs")
+            self.command = which("svn")
 
         if not self.command:
-            self.logger.error("Cannot get cvs command")
+            self.logger.error("Cannot get svn command")
             raise OSError
 
     def reposync(self):
-        hg_command = [self.command, "update", "-dP"]
-        cmd = self.getCommand(hg_command, work_dir=self.path,
+        svn_command = [self.command]
+
+        #
+        # The proxy configuration in SVN does not heed environment variables so
+        # they need to be converted to the options.
+        #
+        http_proxy = self.env.get('http_proxy')
+        if http_proxy:
+            data = http_proxy.split(':')
+            if len(data) != 2:
+                self.logger.error("Cannot split '{}' into two strings by ':'".
+                                  format(http_proxy))
+                return 1
+
+            svn_command.append("--config-option")
+            svn_command.append("servers:global:http-proxy-host=" + data[0])
+            svn_command.append("--config-option")
+            svn_command.append("servers:global:http-proxy-port=" + data[1])
+
+        no_proxy = self.env.get('no_proxy')
+        if no_proxy:
+            svn_command.append("--config-option")
+            svn_command.append("servers:global:http-proxy-exceptions=" +
+                               no_proxy)
+
+        svn_command.append("update")
+        cmd = self.getCommand(svn_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
         if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
-            self.logger.error("failed to perform update: command {}"
-                              "in directory {} exited with {}".
-                              format(hg_command, self.path, cmd.getretcode()))
+            cmd.log_error("failed to perform update")
             return 1
 
         return 0

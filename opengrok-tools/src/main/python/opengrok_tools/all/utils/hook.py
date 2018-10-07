@@ -21,7 +21,7 @@
 # Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-from command import Command
+from .command import Command
 
 
 def run_hook(logger, script, path, env, timeout):

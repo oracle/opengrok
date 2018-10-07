@@ -31,15 +31,14 @@ import os
 from os import path
 import sys
 import argparse
-import filelock
-from filelock import Timeout
-from command import Command
+from all.utils.filelock import Timeout, FileLock
+from all.utils.command import Command
 import logging
 import tempfile
 import shutil
 import io
-from utils import get_command
-from opengrok import get_configuration, set_configuration, add_project, \
+from all.utils.utils import get_command
+from all.utils.opengrok import get_configuration, set_configuration, add_project, \
     delete_project, get_config_value
 
 
@@ -200,7 +199,7 @@ def project_delete(logger, project, uri, doit=True, deletesource=False):
             shutil.rmtree(sourcedir)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='project management.',
                                      formatter_class=argparse.
                                      ArgumentDefaultsHelpFormatter)
@@ -299,8 +298,8 @@ if __name__ == '__main__':
         logger.error("URI of the webapp not specified")
         sys.exit(1)
 
-    lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
-                             os.path.basename(sys.argv[0]) + ".lock"))
+    lock = FileLock(os.path.join(tempfile.gettempdir(),
+                                          os.path.basename(sys.argv[0]) + ".lock"))
     try:
         with lock.acquire(timeout=0):
             if args.add:
@@ -358,3 +357,6 @@ if __name__ == '__main__':
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)
+
+if __name__ == '__main__':
+    main()

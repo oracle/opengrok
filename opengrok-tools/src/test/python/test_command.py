@@ -31,12 +31,10 @@ import time
 
 sys.path.insert(0, os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..', '..',
-                'main', 'python')))
+                'main', 'python', 'opengrok_tools')))
 
-import command
-from command import Command
+from all.utils.command import Command
 import tempfile
-
 
 class TestApp(unittest.TestCase):
     #def __init__(self):
@@ -99,7 +97,7 @@ class TestApp(unittest.TestCase):
         cmd.execute()
         self.assertTrue("FOO=BAR\n" in cmd.getoutput())
 
-    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/false'), "requires Unix")
     def test_retcode(self):
         cmd = Command(["/bin/false"])
         cmd.execute()
@@ -107,6 +105,18 @@ class TestApp(unittest.TestCase):
         self.assertEqual(Command.FINISHED, cmd.getstate())
 
         cmd = Command(["/bin/true"])
+        cmd.execute()
+        self.assertEqual(0, cmd.getretcode())
+        self.assertEqual(Command.FINISHED, cmd.getstate())
+
+    @unittest.skipUnless(os.path.exists('/usr/bin/true') and os.path.exists('/usr/bin/false'), "requires Unix")
+    def test_retcode_usr(self):
+        cmd = Command(["/usr/bin/false"])
+        cmd.execute()
+        self.assertNotEqual(0, cmd.getretcode())
+        self.assertEqual(Command.FINISHED, cmd.getstate())
+
+        cmd = Command(["/usr/bin/true"])
         cmd.execute()
         self.assertEqual(0, cmd.getretcode())
         self.assertEqual(Command.FINISHED, cmd.getstate())

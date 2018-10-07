@@ -22,9 +22,9 @@
 #
 
 import logging
-from command import Command
-from webutil import put, post, delete
-from utils import is_web_uri
+from .command import Command
+from .webutil import put, post, delete
+from .utils import is_web_uri
 import json
 
 

@@ -21,11 +21,11 @@
 # Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-from mercurial import MercurialRepository
-from teamware import TeamwareRepository
-from cvs import CVSRepository
-from svn import SubversionRepository
-from git import GitRepository
+from ..scm.mercurial import MercurialRepository
+from ..scm.teamware import TeamwareRepository
+from ..scm.cvs import CVSRepository
+from ..scm.svn import SubversionRepository
+from ..scm.git import GitRepository
 
 
 def get_repository(logger, path, repo_type, project, commands, env, hooks,

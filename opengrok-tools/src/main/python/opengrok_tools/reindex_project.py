@@ -25,9 +25,9 @@
 import argparse
 import os
 import tempfile
-from opengrok import get_configuration
-from indexer import Indexer
-from java import get_javaparser
+from all.utils.opengrok import get_configuration
+from all.utils.indexer import Indexer
+from all.utils.java import get_javaparser
 import logging
 import sys
 
@@ -68,7 +68,7 @@ def get_config_file(logger, uri):
     return tmpf.name
 
 
-if __name__ == '__main__':
+def main():
 
     parser = argparse.ArgumentParser(description='OpenGrok indexer wrapper '
                                      'for indexing single project',
@@ -125,3 +125,6 @@ if __name__ == '__main__':
         logger.error("Indexer command for project {} failed (return code {})".
                      format(args.project, ret))
         sys.exit(1)
+
+if __name__ == '__main__':
+    main()

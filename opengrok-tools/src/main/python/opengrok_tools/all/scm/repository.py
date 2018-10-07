@@ -22,7 +22,7 @@
 #
 
 import abc
-from command import Command
+from ..utils.command import Command
 
 
 class Repository:

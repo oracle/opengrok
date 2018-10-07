@@ -33,16 +33,15 @@
 import argparse
 import os
 import sys
-import filelock
-from filelock import Timeout
+from all.utils.filelock import Timeout, FileLock
 import logging
 from logging.handlers import RotatingFileHandler
 import tempfile
-from repofactory import get_repository
-from utils import is_exe, check_create_dir, get_int, diff_list
-from hook import run_hook
-from readconfig import read_config
-from opengrok import get_repos, get_config_value, get_repo_type
+from all.utils.repofactory import get_repository
+from all.utils.utils import is_exe, check_create_dir, get_int, diff_list
+from all.utils.hook import run_hook
+from all.utils.readconfig import read_config
+from all.utils.opengrok import get_repos, get_config_value, get_repo_type
 import re
 
 
@@ -54,7 +53,7 @@ if (major_version < 3):
 __version__ = "0.2"
 
 
-if __name__ == '__main__':
+def main():
     ret = 0
     output = []
     dirs_to_process = []
@@ -286,8 +285,8 @@ if __name__ == '__main__':
                         format(args.project))
             sys.exit(2)
 
-    lock = filelock.FileLock(os.path.join(tempfile.gettempdir(),
-                             args.project + "-mirror.lock"))
+    lock = FileLock(os.path.join(tempfile.gettempdir(),
+                                          args.project + "-mirror.lock"))
     try:
         with lock.acquire(timeout=0):
             proxy = config.get(PROXY_PROPERTY) if use_proxy else None
@@ -353,3 +352,6 @@ if __name__ == '__main__':
 
     logging.shutdown()
     sys.exit(ret)
+
+if __name__ == '__main__':
+    main()

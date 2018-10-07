@@ -23,12 +23,10 @@
 #
 
 import platform
-from command import Command
-from utils import is_exe
+from .command import Command
+from .utils import is_exe
 import os
 import argparse
-import sys
-import logging
 
 
 class Java(Command):
@@ -121,31 +119,3 @@ def get_javaparser():
     parser.add_argument('options', nargs='+', help='options')
 
     return parser
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='java wrapper',
-                                     parents=[get_javaparser()])
-    parser.add_argument('-m', '--mainclass', required=True,
-                        help='Main class')
-
-    args = parser.parse_args()
-
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
-
-    java = Java(args.options, logger=logger, java=args.java,
-                jar=args.jar, java_opts=args.java_opts,
-                classpath=args.classpath, main_class=args.mainclass,
-                env_vars=args.environment)
-    java.execute()
-    ret = java.getretcode()
-    if ret is None or ret != 0:
-        logger.error(java.getoutputstr())
-        logger.error("java command failed (return code {})".format(ret))
-        sys.exit(1)

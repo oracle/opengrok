@@ -22,12 +22,10 @@
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
-import os
-import sys
-import argparse
-from utils import get_command
-from command import Command
-from java import Java, get_javaparser
+
+from .utils import get_command
+from .command import Command
+from .java import Java
 import logging
 
 
@@ -129,37 +127,3 @@ def FindCtags(logger):
                 break
 
     return binary
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser(description='OpenGrok indexer wrapper',
-                                     parents=[get_javaparser()])
-    parser.add_argument('-C', '--no_ctags_check', action='store_true',
-                        default=False, help='Suppress checking for ctags')
-
-    args = parser.parse_args()
-
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
-
-    #
-    # Since it is not possible to tell what kind of action is performed,
-    # always check ctags presence unless told not to.
-    #
-    if not args.no_ctags_check and not FindCtags(logger):
-        logger.warning("Unable to determine Universal CTags command")
-
-    indexer = Indexer(args.options, logger=logger, java=args.java,
-                      jar=args.jar, java_opts=args.java_opts,
-                      env_vars=args.environment)
-    indexer.execute()
-    ret = indexer.getretcode()
-    if ret is None or ret != 0:
-        logger.error(indexer.getoutputstr())
-        logger.error("Indexer command failed (return code {})".format(ret))
-        sys.exit(1)

@@ -22,7 +22,8 @@ Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -48,26 +49,56 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <version>1.6.0</version>
                 <executions>
                     <execution>
+                        <configuration>
+                            <executable>flake8</executable>
+                            <arguments>
+                                <argument>-v</argument>
+                                <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>
+                                <argument>${project.build.sourceDirectory}</argument>
+                            </arguments>
+                        </configuration>
                         <phase>verify</phase>
-                            <goals>
-                                <goal>exec</goal>
-                            </goals>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <configuration>
+                            <executable>python</executable>
+                            <arguments>
+                                <argument>setup.py</argument>
+                                <argument>install</argument>
+                            </arguments>
+                        </configuration>
+                        <id>pre-python-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <configuration>
+                            <executable>python</executable>
+                            <arguments>
+                                <argument>setup.py</argument>
+                                <argument>test</argument>
+                            </arguments>
+                        </configuration>
+                        <id>python-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <executable>flake8</executable>
-                    <arguments>
-                        <argument>-v</argument>
-                        <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>
-                        <argument>${project.build.sourceDirectory}</argument>
-                    </arguments>
-                </configuration>
+
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
+
         </plugins>
     </build>
 

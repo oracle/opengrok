@@ -18,24 +18,25 @@
 # CDDL HEADER END
 
 #
-# Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
 import os
 import sys
 import argparse
-from java import Java, get_javaparser
+
+from all.utils.java import Java, get_javaparser
 import logging
 
 
 """
- Wrapper for Java program merging OpenGrok configuration.
+ Script for manipulating project groups
 """
 
-if __name__ == '__main__':
+def main():
 
     parser = argparse.ArgumentParser(description='Java wrapper for project '
-                                     'configuration merging',
+                                     'group manipulation',
                                      parents=[get_javaparser()])
 
     args = parser.parse_args()
@@ -48,14 +49,17 @@ if __name__ == '__main__':
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
-               java_opts=args.java_opts, redirect_stderr=False,
-               main_class='org.opengrok.indexer.configuration.ConfigMerge',
+               java_opts=args.java_opts,
+               main_class='org.opengrok.indexer.configuration.Groups',
                logger=logger)
     cmd.execute()
     ret = cmd.getretcode()
     if ret is None or ret != 0:
-        logger.error(cmd.geterroutput())
+        logger.error(cmd.getoutputstr())
         logger.error("command failed (return code {})".format(ret))
         sys.exit(1)
+    else:
+        print(cmd.getoutputstr())
 
-    print(cmd.getoutputstr())
+if __name__ == '__main__':
+    main()

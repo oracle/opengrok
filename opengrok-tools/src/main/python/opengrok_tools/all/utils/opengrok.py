@@ -22,7 +22,7 @@
 #
 
 import urllib.parse
-from webutil import put, get, post, delete, get_uri
+from .webutil import put, get, post, delete, get_uri
 
 
 def get_repos(logger, project, uri):

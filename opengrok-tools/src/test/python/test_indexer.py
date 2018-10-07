@@ -30,9 +30,9 @@ import os
 
 sys.path.insert(0, os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..', '..',
-                'main', 'python')))
+                'main', 'python', 'opengrok_tools')))
 
-from indexer import merge_properties
+from all.utils.indexer import merge_properties
 
 
 class TestApp(unittest.TestCase):
