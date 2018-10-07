@@ -1,18 +1,18 @@
 import unittest
+import os
 
 from setuptools import setup
 
 
 def readme():
-    with open('src/main/python/README.md', 'r') as readme:
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'src', 'main', 'python', 'README.md'), 'r') as readme:
         return readme.read()
 
 
 def my_test_suite():
     test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover('src/test/python', pattern='test_*.py')
+    test_suite = test_loader.discover(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'src', 'test', 'python'), pattern='test_*.py')
     return test_suite
-
 
 setup(
     name='opengrok-tools',

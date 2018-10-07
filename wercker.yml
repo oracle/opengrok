@@ -12,7 +12,7 @@ box: openjdk:8-jdk
 build:
   steps:
     - install-packages:
-      packages: sudo maven cvs git mercurial cssc bzr subversion monotone rcs pep8 flake8 autoconf build-essential pkg-config
+      packages: sudo maven cvs git mercurial cssc bzr subversion monotone rcs pep8 flake8 autoconf python3 python3-venv build-essential pkg-config
     - script:
       name: Install Universal ctags
       code: ./dev/install-universal_ctags.sh

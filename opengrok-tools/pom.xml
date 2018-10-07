@@ -64,7 +64,38 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     </execution>
                     <execution>
                         <configuration>
-                            <executable>python</executable>
+                            <executable>python3</executable>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>venv</argument>
+                                <argument>env</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>generate-package</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>env/bin/python</executable>
+                            <workingDirectory>${project.build.directory}/../</workingDirectory>
+                            <arguments>
+                                <argument>setup.py</argument>
+                                <argument>sdist</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>package</phase>
+                    </execution>
+                    <execution>
+                        <id>pre-python-test</id>
+                        <configuration>
+                            <executable>env/bin/python</executable>
+                            <workingDirectory>${project.build.directory}/../</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>
                                 <argument>install</argument>
@@ -77,14 +108,15 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
+                        <id>python-test</id>
                         <configuration>
-                            <executable>python</executable>
+                            <executable>env/bin/python</executable>
+                            <workingDirectory>${project.build.directory}/../</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>
                                 <argument>test</argument>
                             </arguments>
                         </configuration>
-                        <id>python-test</id>
                         <phase>test</phase>
                         <goals>
                             <goal>exec</goal>
