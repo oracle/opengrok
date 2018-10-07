@@ -22,15 +22,15 @@
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
+import argparse
+import logging
 import os
 import sys
-import argparse
-from all.utils.utils import get_command
-from all.utils.command import Command
 import tempfile
 from shutil import copyfile
-import logging
 
+from all.utils.command import Command
+from all.utils.utils import get_command
 
 """
  deploy war file
@@ -150,7 +150,6 @@ def deploy_war(logger, sourceWar, targetWar, configFile=None):
 
 
 def main():
-
     parser = argparse.ArgumentParser(description='Manage parallel workers.')
 
     parser.add_argument('-D', '--debug', action='store_true',
@@ -176,6 +175,7 @@ def main():
     print("Start your application server (if it is not already running) "
           "or wait until it loads the just installed web application.\n"
           "OpenGrok should be available on <HOST>:<PORT>/{APP_CONTEXT}")
+
 
 if __name__ == '__main__':
     main()

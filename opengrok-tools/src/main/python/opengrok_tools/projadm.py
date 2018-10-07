@@ -26,21 +26,20 @@
     configuration using read-only configuration.
 """
 
-
-import os
-from os import path
-import sys
 import argparse
-from all.utils.filelock import Timeout, FileLock
-from all.utils.command import Command
-import logging
-import tempfile
-import shutil
 import io
-from all.utils.utils import get_command
-from all.utils.opengrok import get_configuration, set_configuration, add_project, \
-    delete_project, get_config_value
+import logging
+import os
+import shutil
+import sys
+import tempfile
+from os import path
 
+from all.utils.command import Command
+from all.utils.filelock import Timeout, FileLock
+from all.utils.opengrok import get_configuration, set_configuration, \
+    add_project, delete_project, get_config_value
+from all.utils.utils import get_command
 
 MAJOR_VERSION = sys.version_info[0]
 if (MAJOR_VERSION < 3):
@@ -79,7 +78,7 @@ def get_config_file(basedir):
     return path.join(basedir, "etc", "configuration.xml")
 
 
-def install_config(doit, src, dst):
+def install_config(doit, logger, src, dst):
     """
     Copy the data of src to dst. Exit on failure.
     """
@@ -134,7 +133,7 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
 
         if not roconfig:
             logger.info('Refreshing configuration')
-            install_config(doit, fcur.name, main_config)
+            install_config(doit, logger, fcur.name, main_config)
         else:
             logger.info('Refreshing configuration '
                         '(merging with read-only config)')
@@ -151,7 +150,7 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
                              format(fmerged.name))
                 if doit:
                     fmerged.write(bytearray(''.join(merged_config), "UTF-8"))
-                    install_config(doit, fmerged.name, main_config)
+                    install_config(doit, logger, fmerged.name, main_config)
 
 
 def project_add(doit, logger, project, uri):
@@ -220,21 +219,23 @@ def main():
                         help='Upload configuration at the end')
     parser.add_argument('-n', '--noop', action='store_true', default=False,
                         help='Do not run any commands or modify any config'
-                        ', just report. Usually implies the --debug option.')
+                             ', just report. Usually implies '
+                             'the --debug option.')
     parser.add_argument('-N', '--nosourcedelete', action='store_true',
                         default=False, help='Do not delete source code when '
-                        'deleting a project')
+                                            'deleting a project')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-a', '--add', metavar='project', nargs='+',
                        help='Add project (assumes its source is available '
-                       'under source root')
+                            'under source root')
     group.add_argument('-d', '--delete', metavar='project', nargs='+',
                        help='Delete project and its data and source code')
     group.add_argument('-r', '--refresh', action='store_true',
                        help='Refresh configuration. If read-only '
-                       'configuration is supplied, it is merged with current '
-                       'configuration.')
+                            'configuration is supplied, it is merged '
+                            'with current '
+                            'configuration.')
 
     args = parser.parse_args()
     doit = not args.noop
@@ -299,7 +300,7 @@ def main():
         sys.exit(1)
 
     lock = FileLock(os.path.join(tempfile.gettempdir(),
-                                          os.path.basename(sys.argv[0]) + ".lock"))
+                                 os.path.basename(sys.argv[0]) + ".lock"))
     try:
         with lock.acquire(timeout=0):
             if args.add:
@@ -357,6 +358,7 @@ def main():
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

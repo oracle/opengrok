@@ -23,13 +23,13 @@
 #
 
 
+import argparse
+import logging
 import os
 import sys
-import argparse
+
 from all.utils.indexer import FindCtags, Indexer
 from all.utils.java import get_javaparser
-import logging
-
 
 """
   opengrok.jar wrapper
@@ -70,6 +70,7 @@ def main():
         logger.error(indexer.getoutputstr())
         logger.error("Indexer command failed (return code {})".format(ret))
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

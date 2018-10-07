@@ -21,22 +21,21 @@
 # Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
+import argparse
+import logging
 import os
 import sys
-import argparse
 
 from all.utils.java import Java, get_javaparser
-import logging
-
 
 """
  Script for manipulating project groups
 """
 
-def main():
 
+def main():
     parser = argparse.ArgumentParser(description='Java wrapper for project '
-                                     'group manipulation',
+                                                 'group manipulation',
                                      parents=[get_javaparser()])
 
     args = parser.parse_args()
@@ -60,6 +59,7 @@ def main():
         sys.exit(1)
     else:
         print(cmd.getoutputstr())
+
 
 if __name__ == '__main__':
     main()

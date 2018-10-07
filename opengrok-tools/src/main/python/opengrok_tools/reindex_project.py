@@ -23,14 +23,14 @@
 
 
 import argparse
+import logging
 import os
+import sys
 import tempfile
-from all.utils.opengrok import get_configuration
+
 from all.utils.indexer import Indexer
 from all.utils.java import get_javaparser
-import logging
-import sys
-
+from all.utils.opengrok import get_configuration
 
 """
  OpenGrok reindexing script for single project. Makes sure it uses
@@ -69,9 +69,8 @@ def get_config_file(logger, uri):
 
 
 def main():
-
     parser = argparse.ArgumentParser(description='OpenGrok indexer wrapper '
-                                     'for indexing single project',
+                                                 'for indexing single project',
                                      parents=[get_javaparser()])
     parser.add_argument('-t', '--template', required=True,
                         help='Logging template file')
@@ -125,6 +124,7 @@ def main():
         logger.error("Indexer command for project {} failed (return code {})".
                      format(args.project, ret))
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

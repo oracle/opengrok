@@ -30,19 +30,19 @@
 
 """
 
-
-from multiprocessing import Pool
 import argparse
+import logging
+import multiprocessing
 import os
 import sys
-from os import path
-from all.utils.filelock import Timeout, FileLock
-import logging
 import tempfile
+from multiprocessing import Pool
+from os import path
+
 from all.utils.commands import Commands, CommandsBase
-from all.utils.readconfig import read_config
-import multiprocessing
+from all.utils.filelock import Timeout, FileLock
 from all.utils.opengrok import list_indexed_projects
+from all.utils.readconfig import read_config
 
 major_version = sys.version_info[0]
 if (major_version < 3):
@@ -142,7 +142,7 @@ def main():
         sys.exit(1)
 
     lock = FileLock(os.path.join(tempfile.gettempdir(),
-                             "opengrok-sync.lock"))
+                                 "opengrok-sync.lock"))
     try:
         with lock.acquire(timeout=0):
             pool = Pool(processes=int(args.workers))
@@ -189,6 +189,7 @@ def main():
     except Timeout:
         logger.warning("Already running, exiting.")
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

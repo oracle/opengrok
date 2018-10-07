@@ -21,21 +21,21 @@
 # Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
+import argparse
+import logging
 import os
 import sys
-import argparse
-from all.utils.java import Java, get_javaparser
-import logging
 
+from all.utils.java import Java, get_javaparser
 
 """
  Wrapper for Java program merging OpenGrok configuration.
 """
 
-def main():
 
+def main():
     parser = argparse.ArgumentParser(description='Java wrapper for project '
-                                     'configuration merging',
+                                                 'configuration merging',
                                      parents=[get_javaparser()])
 
     args = parser.parse_args()
@@ -59,6 +59,7 @@ def main():
         sys.exit(1)
 
     print(cmd.getoutputstr())
+
 
 if __name__ == '__main__':
     main()

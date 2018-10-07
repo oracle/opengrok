@@ -22,16 +22,15 @@
 # Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 #
 
-import os
 import argparse
-import sys
 import logging
+import os
+import sys
 
 from all.utils.java import Java, get_javaparser
 
 
 def main():
-
     parser = argparse.ArgumentParser(description='java wrapper',
                                      parents=[get_javaparser()])
     parser.add_argument('-m', '--mainclass', required=True,
@@ -56,6 +55,7 @@ def main():
         logger.error(java.getoutputstr())
         logger.error("java command failed (return code {})".format(ret))
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
