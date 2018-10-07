@@ -63,6 +63,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
+                        <id>generate python env</id>
                         <configuration>
                             <executable>python3</executable>
                             <arguments>
@@ -101,7 +102,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>install</argument>
                             </arguments>
                         </configuration>
-                        <id>pre-python-test</id>
                         <phase>test</phase>
                         <goals>
                             <goal>exec</goal>
