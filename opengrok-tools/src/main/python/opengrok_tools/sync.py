@@ -58,7 +58,6 @@ def worker(base):
     """
 
     x = Commands(base)
-    logger.debug(str(os.getpid()) + " " + str(x))
     x.run()
     base.fill(x.retcodes, x.outputs, x.failed)
 
@@ -66,7 +65,6 @@ def worker(base):
 
 
 def main():
-    output = []
     dirs_to_process = []
 
     parser = argparse.ArgumentParser(description='Manage parallel workers.')

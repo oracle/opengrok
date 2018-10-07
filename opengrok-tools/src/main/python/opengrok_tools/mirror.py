@@ -54,8 +54,6 @@ __version__ = "0.2"
 
 def main():
     ret = 0
-    output = []
-    dirs_to_process = []
 
     # "constants"
     HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
