@@ -1,3 +1,4 @@
+language: java
 cache:
   directories:
   - '$HOME/.m2'
@@ -21,20 +22,21 @@ addons:
       secure: "ayjmifQPQgKt/ICGfKtLpa8LwBAXZlxKwaPyjvXDRHyf3lbXGKkOCspH/wSoersoV4ZLt5UfSGKeFh1MS0IXAwUOcPTcV3/DUmycJjxZ5z9KjgGKsu0Spo1xZWioS+p1bzN6cJcNlwihE97idLhVSvDProf6L+pn0dqw8Lfz2k0="
 jobs:
   include:
-    - stage: Tests
+    - stage: test
+      os: linux
+      dist: trusty
+      sudo: required
+      jdk: oraclejdk8
       script: dev/main
-      language: java
-      matrix:
-        include:
-          - os: linux
-            dist: trusty
-            sudo: required
-            jdk: oraclejdk8
-          - os: osx
-            osx_image: xcode8.3
       before_install: dev/before_install
       install: true
       before_script: dev/before
+    - stage: test
+      os: osx
+      osx_image: xcode8.3
+      script: dev/main
+      before_install: dev/before_install
+      install: true
     - stage: deploy
       name: Github Release
       script: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
