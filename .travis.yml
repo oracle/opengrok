@@ -35,31 +35,28 @@ addons:
 jobs:
   include:
     - stage: Github Release
-        script:
-        - echo "TRAVIS_TAG: $TRAVIS_TAG"
-        - echo "TRAVIS_BRANCH: $TRAVIS_BRANCH"
-        - mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
-	deploy:
-          # Pre-release
-          - provider: releases
-            prerelease: true
-            api_key:
-              secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
-            file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
-            skip_cleanup: true
-            on:
-              repo: oracle/opengrok
-              tags: true
-              condition: $TRAVIS_TAG =~ rc[0-9]+$
-              branch: master
-          # Full release
-          - provider: releases
-            api_key:
-              secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
-            file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
-            skip_cleanup: true
-            on:
-              repo: oracle/opengrok
-              tags: true
-              condition: ! $TRAVIS_TAG =~ rc[0-9]+$
-              branch: master
+      script: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
+      deploy:
+        # Pre-release
+        - provider: releases
+          prerelease: true
+          api_key:
+            secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
+          file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
+          skip_cleanup: true
+          on:
+            repo: oracle/opengrok
+            tags: true
+            condition: $TRAVIS_TAG =~ rc[0-9]+$
+            branch: master
+        # Full release
+        - provider: releases
+          api_key:
+            secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
+          file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
+          skip_cleanup: true
+          on:
+            repo: oracle/opengrok
+            tags: true
+            condition: ! $TRAVIS_TAG =~ rc[0-9]+$
+            branch: master
