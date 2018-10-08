@@ -72,7 +72,7 @@ ls -l dist/
 
 ### Installation on the target system
 
-Use the distribution tarball and run pip.
+Use the distribution tarball and run `pip`.
 
 ```bash
 python3 -m pip install opengrok_tools-{version}.tar.gz

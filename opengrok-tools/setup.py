@@ -2,16 +2,21 @@ import os
 import unittest
 from setuptools import setup
 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
 
 def readme():
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'src', 'main', 'python', 'README.md'), 'r') as readme:
+    with open(os.path.join(SCRIPT_DIR, 'src', 'main', 'python', 'README.md'),
+              'r') as readme:
         return readme.read()
 
 
 def my_test_suite():
     test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'src', 'test', 'python'), pattern='test_*.py')
+    test_suite = test_loader.discover(
+        os.path.join(SCRIPT_DIR, 'src', 'test', 'python'), pattern='test_*.py')
     return test_suite
+
 
 setup(
     name='opengrok-tools',
@@ -31,7 +36,7 @@ setup(
     url='https://github.com/OpenGrok/OpenGrok',
     license='CDDL',
     author='Oracle',
-    author_email='opengrok-users@yahoogroups.com',
+    author_email='opengrok-dev@yahoogroups.com',
     description='Tools for managing OpenGrok instance',
     long_description=readme(),
     test_suite='setup.my_test_suite',
