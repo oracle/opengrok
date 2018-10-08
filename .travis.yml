@@ -39,7 +39,7 @@ jobs:
       install: true
     - stage: deploy
       name: Github Release
-      if: branch = master AND repo = oracle/opengrok AND tag IS present
+      if: tag IS present
       before_install: dev/before_install
       script: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
       deploy:
