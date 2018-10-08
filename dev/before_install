@@ -10,7 +10,7 @@ elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
 	brew update
 	brew install ctags cvs node
 	brew upgrade python
-	pip3 install pep8 flake8
+	pip3 install pep8 flake8 virtualenv
 fi
 
 sudo ./dev/install-universal_ctags.sh
