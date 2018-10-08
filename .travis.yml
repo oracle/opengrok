@@ -52,7 +52,6 @@ jobs:
           skip_cleanup: true
           on:
             condition: $TRAVIS_TAG =~ rc[0-9]+$
-            branch: master
         # Full release
         - provider: releases
           api_key:
@@ -61,4 +60,3 @@ jobs:
           skip_cleanup: true
           on:
             condition: ! $TRAVIS_TAG =~ rc[0-9]+$
-            branch: master
