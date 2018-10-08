@@ -39,7 +39,7 @@ jobs:
       install: true
     - stage: deploy
       name: Github Release
-      if: tag IS present
+      if: branch = "master" AND repo = "oracle/opengrok" AND tag IS present
       before_install: dev/before_install
       script: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
       deploy:
@@ -51,10 +51,7 @@ jobs:
           file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
           skip_cleanup: true
           on:
-            repo: oracle/opengrok
-            tags: true
             condition: $TRAVIS_TAG =~ rc[0-9]+$
-            branch: master
         # Full release
         - provider: releases
           api_key:
@@ -62,7 +59,4 @@ jobs:
           file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
           skip_cleanup: true
           on:
-            repo: oracle/opengrok
-            tags: true
             condition: ! $TRAVIS_TAG =~ rc[0-9]+$
-            branch: master
