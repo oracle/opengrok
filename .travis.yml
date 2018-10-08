@@ -3,17 +3,6 @@ cache:
   directories:
   - '$HOME/.m2'
   - '$HOME/.sonar/cache'
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      sudo: required
-      jdk: oraclejdk8
-    - os: osx
-      osx_image: xcode8.3
-before_install: dev/before_install
-install: true
-before_script: dev/before
 env:
   global:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
@@ -35,6 +24,17 @@ jobs:
   include:
     - stage: Tests
       script: dev/main
+      matrix:
+        include:
+          - os: linux
+            dist: trusty
+            sudo: required
+            jdk: oraclejdk8
+          - os: osx
+            osx_image: xcode8.3
+      before_install: dev/before_install
+      install: true
+      before_script: dev/before
     - stage: deploy
       name: Github Release
       script: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
