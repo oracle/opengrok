@@ -1,6 +1,5 @@
-import unittest
 import os
-
+import unittest
 from setuptools import setup
 
 
@@ -16,7 +15,7 @@ def my_test_suite():
 
 setup(
     name='opengrok-tools',
-    version='0.0.1',
+    version='1.1rc58',
     packages=[
         'opengrok_tools',
         'all',
