@@ -269,7 +269,7 @@ A typical use of this configuration would be:
 
 **RequisitePlugin**
   1. Determine a user identity in the requisite plugin and store it in the request
-  2. Return true or false if such action was successfull
+  2. Return true or false if such action was successful
 
 **Plugin**
   1. Use the user identity determined in the requisite plugin which is stored in the request
@@ -318,10 +318,16 @@ Now we have to tell the application that it should use HTTP Basic authentication
 
 ```xml
 <security-constraint>
+    <web-resource-collection>                                               
+        <web-resource-name>API endpoints are checked separately by the web app</web-resource-name>
+        <url-pattern>/api/*</url-pattern>                                   
+    </web-resource-collection>                                              
+</security-constraint>
+
+<security-constraint>
     <web-resource-collection>
+        <web-resource-name>In general everything needs to be authenticated</web-resource-name>
         <url-pattern>/*</url-pattern> <!-- protect the whole application -->
-        <http-method>GET</http-method>
-        <http-method>POST</http-method>
     </web-resource-collection>
     <auth-constraint>
         <role-name>plugins</role-name> <!-- these are the roles from tomcat-users.xml -->
