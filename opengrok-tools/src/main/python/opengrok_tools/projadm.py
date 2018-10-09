@@ -130,6 +130,7 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
         logger.debug("Temporary file for current config: {}".format(fcur.name))
         if doit:
             fcur.write(bytearray(''.join(current_config), "UTF-8"))
+            fcur.flush()
 
         if not roconfig:
             logger.info('Refreshing configuration')
@@ -150,6 +151,7 @@ def config_refresh(doit, logger, basedir, uri, configmerge, jar_file,
                              format(fmerged.name))
                 if doit:
                     fmerged.write(bytearray(''.join(merged_config), "UTF-8"))
+                    fmerged.flush()
                     install_config(doit, logger, fmerged.name, main_config)
 
 
