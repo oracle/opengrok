@@ -130,10 +130,7 @@ Configuration for this structure could look like this:
 </java>
 ```
 
-Configuration is provided in the read only configuration (`-R` parameter for the opengrok.jar or
-`OPENGROK_READ_XML_CONFIGURATION` variable in the OpenGrok script). This configuration is merged with the
-instance configuration in `/var/opengrok/etc/configuration.xml` (default) so the groups are available
-for the webapp.
+Configuration is provided in the read only configuration (`-R` parameter of indexer). This configuration is merged by the indexer with the instance configuration in `/var/opengrok/etc/configuration.xml` (default) so the groups are available for the webapp.
 
 **NOTE:**
 There is no other way to persistently provide the group configuration than the `-R` option for each run of the indexer. If you run the indexer 
@@ -153,7 +150,7 @@ repository information.
 
 If no group matches the project the special section 'Other' is maintained with all such projects and repositories.
 
-All favourite groups are expanded. A group is considered as favourite when one of its projects is considered favourite.  Favourite project is a project which is contained in the `OpenGrokProject` cookie, i. e. it has been searched or viewed by the user recently. This applies also for subgroups of the given group.
+All favourite groups are expanded. A group is considered as favourite when one of its projects is considered favourite.  Favourite project is a project which is contained in the `OpenGrokProject` cookie (see https://github.com/oracle/opengrok/wiki/Cookies), i. e. it has been searched or viewed by the user recently. This applies also for subgroups of the given group.
 
 There is a tunable threshold to control if other than favourite groups should be expanded by default. The name of the configuration property is `groupsCollapseThreshold` and it controls the maximum number of projects contained in the group (without traversing the subgroups) when the group should be expanded or not. This threshold is by default equal to 4.
 
