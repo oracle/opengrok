@@ -71,7 +71,7 @@ public final class Groups {
             getopt.parse();
         } catch (ParseException ex) {
             System.err.println("Groups: " + ex.getMessage());
-            usage();
+            usage(System.err);
             System.exit(1);
         }
 
@@ -88,7 +88,7 @@ public final class Groups {
                         empty = true;
                         break;
                     case 'h':
-                        usage();
+                        usage(System.out);
                         System.exit(0);
                         break;
                     case 'i':
@@ -121,12 +121,12 @@ public final class Groups {
                         grouppattern = getopt.getOptarg();
                         break;
                     case '?':
-                        usage();
+                        usage(System.out);
                         System.exit(0);
                         break;
                     default:
                         System.err.println("Internal Error - Not implemented option: " + (char) cmd);
-                        usage();
+                        usage(System.err);
                         System.exit(1);
                         break;
                 }
@@ -145,7 +145,7 @@ public final class Groups {
             // perform matching
             if (parent != null || groupname != null || grouppattern != null) {
                 System.err.println("Match option should be used without parent|groupname|groupregex options");
-                usage();
+                usage(System.err);
                 System.exit(1);
             }
             matchGroups(System.out, cfg.getGroups(), match);
@@ -153,7 +153,7 @@ public final class Groups {
             // just list the groups
             if (parent != null || groupname != null || grouppattern != null) {
                 System.err.println("Match option should be used without parent|groupname|groupregex options");
-                usage();
+                usage(System.err);
                 System.exit(1);
             }
             out = prepareOutput(outFile);
@@ -162,12 +162,12 @@ public final class Groups {
             // perform delete
             if (parent != null || grouppattern != null) {
                 System.err.println("Delete option should be used without parent|groupregex options");
-                usage();
+                usage(System.err);
                 System.exit(1);
             }
             if (groupname == null) {
                 System.err.println("You must specify the group name");
-                usage();
+                usage(System.err);
                 System.exit(1);
             }
             deleteGroup(cfg.getGroups(), groupname);
@@ -188,13 +188,13 @@ public final class Groups {
             // just list the groups
             if (groupname != null) {
                 System.err.println("List option should be used without groupname options");
-                usage();
+                usage(System.err);
                 System.exit(1);
             }
             printOut(list, cfg, out);
         } else {
             System.err.println("Wrong combination of options. See usage.");
-            usage();
+            usage(System.err);
             System.exit(2);
         }
     }
@@ -416,40 +416,40 @@ public final class Groups {
         });
     }
 
-    private static final void usage() {
-        System.err.println("Usage:");
-        System.err.println("Groups.java" + " [OPTIONS]");
-        System.err.println();
-        System.err.println("OPTIONS:");
-        System.err.println("Help");
-        System.err.println("-?                   print this help message");
-        System.err.println("-h                   print this help message");
-        System.err.println("-v                   verbose/debug mode");
-        System.err.println();
-        System.err.println("Input/Output");
-        System.err.println("-i /path/to/file     input file|default is empty configuration");
-        System.err.println("-o /path/to/file     output file|default is stdout");
-        System.err.println();
-        System.err.println("Listing");
-        System.err.println("-m <project name>    performs matching based on given project name");
-        System.err.println("-l                   lists all available groups in input file");
-        System.err.println("-e                   creates an empty configuration or");
-        System.err.println("                     directly outputs the input file (if given)");
-        System.err.println();
-        System.err.println("Modification");
-        System.err.println("-n <group name>      specify group name which should be inserted|updated (requires either -r or -d option)");
-        System.err.println("-r <group regex>     specify group regex pattern (requires -n option)");
-        System.err.println("-p <parent group>    optional parameter for the parent group name (requires -n option)");
-        System.err.println("-d                   delete specified group (requires -n option)");
-        System.err.println();
-        System.err.println("NOTE: using modification options with -l forces the program to list all\n"
+    private static final void usage(PrintStream out) {
+        out.println("Usage:");
+        out.println("Groups.java" + " [OPTIONS]");
+        out.println();
+        out.println("OPTIONS:");
+        out.println("Help");
+        out.println("-?                   print this help message");
+        out.println("-h                   print this help message");
+        out.println("-v                   verbose/debug mode");
+        out.println();
+        out.println("Input/Output");
+        out.println("-i /path/to/file     input file|default is empty configuration");
+        out.println("-o /path/to/file     output file|default is stdout");
+        out.println();
+        out.println("Listing");
+        out.println("-m <project name>    performs matching based on given project name");
+        out.println("-l                   lists all available groups in input file");
+        out.println("-e                   creates an empty configuration or");
+        out.println("                     directly outputs the input file (if given)");
+        out.println();
+        out.println("Modification");
+        out.println("-n <group name>      specify group name which should be inserted|updated (requires either -r or -d option)");
+        out.println("-r <group regex>     specify group regex pattern (requires -n option)");
+        out.println("-p <parent group>    optional parameter for the parent group name (requires -n option)");
+        out.println("-d                   delete specified group (requires -n option)");
+        out.println();
+        out.println("NOTE: using modification options with -l forces the program to list all\n"
                 + "available groups after the modification. Output to a file can still be used.");
-        System.err.println();
-        System.err.println("Examples");
-        System.err.println("-i ~/c.xml -l                     # => list groups");
-        System.err.println("-n Abcd -r \"abcd.*\" -o ~/c.xml    # => add group and print to ~/c.xml");
-        System.err.println("-i ~/c.xml -m abcdefg             # => prints groups which would match this project description");
-        System.err.println("-i ~/c.xml -d -n Abcd             # => deletes group Abcd");
-        System.err.println("-n Bcde -r \".*bcde.*\" -l          # => add group and lists the result");
+        out.println();
+        out.println("Examples");
+        out.println("-i ~/c.xml -l                     # => list groups");
+        out.println("-n Abcd -r \"abcd.*\" -o ~/c.xml    # => add group and print to ~/c.xml");
+        out.println("-i ~/c.xml -m abcdefg             # => prints groups which would match this project description");
+        out.println("-i ~/c.xml -d -n Abcd             # => deletes group Abcd");
+        out.println("-n Bcde -r \".*bcde.*\" -l          # => add group and lists the result");
     }
 }

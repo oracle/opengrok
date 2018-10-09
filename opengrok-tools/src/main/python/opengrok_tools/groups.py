@@ -48,13 +48,13 @@ def main():
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
-               java_opts=args.java_opts,
+               java_opts=args.java_opts, redirect_stderr=False,
                main_class='org.opengrok.indexer.configuration.Groups',
                logger=logger)
     cmd.execute()
     ret = cmd.getretcode()
     if ret is None or ret != 0:
-        logger.error(cmd.getoutputstr())
+        logger.error(cmd.geterroutput())
         logger.error("command failed (return code {})".format(ret))
         sys.exit(1)
     else:
