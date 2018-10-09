@@ -65,9 +65,9 @@ Configuration for this structure could look like this:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_65" class="java.beans.XMLDecoder">
- <object class="org.opensolaris.opengrok.configuration.Configuration" id="Configuration0">
+ <object class="org.opengrok.indexer.configuration.Configuration" id="Configuration0">
     <void method="addGroup">
-        <object class="org.opensolaris.opengrok.configuration.Group">
+        <object class="org.opengrok.indexer.configuration.Group">
             <void property="name">
                 <string>ctags</string>
             </void>
@@ -75,7 +75,7 @@ Configuration for this structure could look like this:
                 <string></string>
             </void>
             <void method="addGroup">
-                <object class="org.opensolaris.opengrok.configuration.Group">
+                <object class="org.opengrok.indexer.configuration.Group">
                     <void property="name">
                         <string>ctags 5.6</string>
                     </void>
@@ -85,7 +85,7 @@ Configuration for this structure could look like this:
                 </object>
             </void>
             <void method="addGroup">
-                <object class="org.opensolaris.opengrok.configuration.Group">
+                <object class="org.opengrok.indexer.configuration.Group">
                     <void property="name">
                         <string>ctags 5.7</string>
                     </void>
@@ -95,7 +95,7 @@ Configuration for this structure could look like this:
                 </object>
             </void>
             <void method="addGroup">
-                <object class="org.opensolaris.opengrok.configuration.Group">
+                <object class="org.opengrok.indexer.configuration.Group">
                     <void property="name">
                         <string>ctags 5.8</string>
                     </void>
@@ -107,7 +107,7 @@ Configuration for this structure could look like this:
         </object>
     </void>
     <void method="addGroup">
-        <object class="org.opensolaris.opengrok.configuration.Group">
+        <object class="org.opengrok.indexer.configuration.Group">
             <void property="name">
                 <string>apache</string>
             </void>
@@ -117,7 +117,7 @@ Configuration for this structure could look like this:
         </object>
     </void>
     <void method="addGroup">
-        <object class="org.opensolaris.opengrok.configuration.Group">
+        <object class="org.opengrok.indexer.configuration.Group">
             <void property="name">
                 <string>opengrok</string>
             </void>
@@ -149,7 +149,7 @@ Groups, projects and repositories should be displayed in alphabetical order.
 ### Listing
 
 Groups are displayed in accordion on the main page, accordion can be expanded to see all subgroups and repositories
-in that group. It is neccessary to mention that in the accordion there are only repositories, i. e. projects with 
+in that group. It is necessary to mention that in the accordion there are only repositories, i. e. projects with 
 repository information.
 
 If no group matches the project the special section 'Other' is maintained with all such projects and repositories.
@@ -190,37 +190,15 @@ so that the whole structure can be traversed.
 
 ## Tools
 
-There is a tool in tools directory ([Groups](https://github.com/OpenGrok/OpenGrok/blob/master/tools/Groups)) which is suitable to create the group structure and for easy manipulation with the group tree.
+There is `groups.py` script which is suitable for creating the group structure and for easy manipulation with the group tree.
 
 The script has documented usage and all subcommands have their own usage.
-
-### Usage
-```
-
-Usage: Groups <add|delete|match|list|empty|help> [--help] [--verbose] [-d]
-       Groups add <name> <pattern>
-       Groups delete <name>
-       Groups match <project name>
-
-  The script searches for the configuration in
-    OPENGROK_READ_XML_CONFIGURATION files or
-    you can use the -i option.
-  When no such file exists it uses an empty configuration.
-
-  Optional environment variables:
-    OPENGROK_CONFIGURATION - location of your configuration
-      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf tools/Groups ... 
-
-    See the code for more information on configuration options / variables
-
-```
 
 ### Example
 
 This example is taken from the authorization tutorial - [setting up the groups](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Authorization#setting-up-the-groupings)
 
 ```
-$ export OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml
 $ ./tools/Groups empty > "$OPENGROK_READ_XML_CONFIGURATION"
 $ ./tools/Groups add admins  "test-project-1|test-project-2|test-project-3|test-project-4" -u
 $ ./tools/Groups add users   "test-project-5|test-project-6|test-project-7|test-project-8" -u
@@ -272,9 +250,9 @@ with configuration like this:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_65" class="java.beans.XMLDecoder">
- <object class="org.opensolaris.opengrok.configuration.Configuration" id="Configuration0">
+ <object class="org.opengrok.indexer.configuration.Configuration" id="Configuration0">
     <void method="addGroup">
-        <object class="org.opensolaris.opengrok.configuration.Group">
+        <object class="org.opengrok.indexer.configuration.Group">
             <void property="name">
                 <string>ctags</string>
             </void>
@@ -282,7 +260,7 @@ with configuration like this:
                 <string></string>
             </void>
             <void method="addGroup">
-                <object class="org.opensolaris.opengrok.configuration.Group">
+                <object class="org.opengrok.indexer.configuration.Group">
                     <void property="name">
                         <string>ctags 5.6</string>
                     </void>
@@ -292,7 +270,7 @@ with configuration like this:
                 </object>
             </void>
             <void method="addGroup">
-                <object class="org.opensolaris.opengrok.configuration.Group">
+                <object class="org.opengrok.indexer.configuration.Group">
                     <void property="name">
                         <string>ctags 5.7</string>
                     </void>
@@ -302,7 +280,7 @@ with configuration like this:
                 </object>
             </void>
             <void method="addGroup">
-                <object class="org.opensolaris.opengrok.configuration.Group">
+                <object class="org.indexer.opengrok.configuration.Group">
                     <void property="name">
                         <string>ctags 5.8</string>
                     </void>
@@ -314,7 +292,7 @@ with configuration like this:
         </object>
     </void>
     <void method="addGroup">
-        <object class="org.opensolaris.opengrok.configuration.Group">
+        <object class="org.opengrok.indexer.configuration.Group">
             <void property="name">
                 <string>apache</string>
             </void>
@@ -324,7 +302,7 @@ with configuration like this:
         </object>
     </void>
     <void method="addGroup">
-        <object class="org.opensolaris.opengrok.configuration.Group">
+        <object class="org.opengrok.indexer.configuration.Group">
             <void property="name">
                 <string>opengrok</string>
             </void>
@@ -334,7 +312,7 @@ with configuration like this:
         </object>
     </void>
     <void method="addGroup">
-        <object class="org.opensolaris.opengrok.configuration.Group">
+        <object class="org.opengrok.indexer.configuration.Group">
             <void property="name">
                 <string>java</string>
             </void>
@@ -344,7 +322,7 @@ with configuration like this:
         </object>
     </void>
     <void method="addGroup">
-        <object class="org.opensolaris.opengrok.configuration.Group">
+        <object class="org.opengrok.indexer.configuration.Group">
             <void property="name">
                 <string>C language</string>
             </void>
