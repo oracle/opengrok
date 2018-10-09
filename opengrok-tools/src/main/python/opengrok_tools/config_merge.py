@@ -57,8 +57,8 @@ def main():
         logger.error(cmd.geterroutput())
         logger.error("command failed (return code {})".format(ret))
         sys.exit(1)
-
-    print(cmd.getoutputstr())
+    else:
+        print(cmd.getoutputstr())
 
 
 if __name__ == '__main__':

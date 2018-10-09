@@ -27,6 +27,7 @@ import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -104,7 +105,7 @@ public class ConfigMerge {
             getopt.parse();
         } catch (ParseException ex) {
             System.err.println(name + ": " + ex.getMessage());
-            b_usage();
+            b_usage(System.err);
             System.exit(1);
         }
 
@@ -115,12 +116,12 @@ public class ConfigMerge {
             switch (cmd) {
                 case '?':
                 case 'h':
-                    a_usage();
+                    a_usage(System.out);
                     System.exit(0);
                     break;
                 default:
                     System.err.println("Internal Error - Not implemented option: " + (char) cmd);
-                    b_usage();
+                    b_usage(System.err);
                     System.exit(1);
                     break;
             }
@@ -128,7 +129,7 @@ public class ConfigMerge {
 
         int optind = getopt.getOptind();
         if (optind < 0 || argv.length - optind != 2) {
-            a_usage();
+            a_usage(System.err);
             System.exit(1);
         }
 
@@ -160,18 +161,18 @@ public class ConfigMerge {
         cfgNew.encodeObject(os);
     }
 
-    private static final void a_usage() {
-        System.err.println("Usage:");
-        System.err.println(name + " [-h] <config_file_base> <config_file_new>");
-        System.err.println();
-        System.err.println("OPTIONS:");
-        System.err.println("Help");
-        System.err.println("-?                   print this help message");
-        System.err.println("-h                   print this help message");
-        System.err.println();
+    private static final void a_usage(PrintStream out) {
+        out.println("Usage:");
+        out.println(name + " [-h] <config_file_base> <config_file_new>");
+        out.println();
+        out.println("OPTIONS:");
+        out.println("Help");
+        out.println("-?                   print this help message");
+        out.println("-h                   print this help message");
+        out.println();
     }
 
-    private static final void b_usage() {
-        System.err.println("Maybe try to run " + name + " -h");
+    private static final void b_usage(PrintStream out) {
+        out.println("Maybe try to run " + name + " -h");
     }
 }
