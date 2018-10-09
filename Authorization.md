@@ -368,21 +368,14 @@ $ for name in `seq 1 11`; do mkdir "test-project-$name"; cd "test-project-$name"
 This should create 10 repositories named "test-project-$number" in the source directory.
 
 ## Setting up the groupings
-In order to use the authorization feature really comfortably it is recommended to create groups of projects. In the authorization plugin you can then use the whole groups instead of single projects.
 
-We are going to use a [tool](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Groupings#tools) called `Groups` to create these.
-```
-$ export OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml
-$ ./tools/Groups empty > "$OPENGROK_READ_XML_CONFIGURATION"
-$ ./tools/Groups add admins  "test-project-1|test-project-2|test-project-3|test-project-4" -u
-$ ./tools/Groups add users   "test-project-5|test-project-6|test-project-7|test-project-8" -u
-$ ./tools/Groups add plugins "test-project-9|test-project-10" -p users -u
-```
+See https://github.com/oracle/opengrok/wiki/Project-groups
 
 The group names correspond to the roles defined in `tomcat-users.xml` earlier.
 The final group structure should look like this now:
+
 ```
-$ ./tools/Groups list
+$ groups.py -a opengrok.jar -- -l -i readonly_configuration.xml
 admins ~ "test-project-1|test-project-2|test-project-3|test-project-4"
 users ~ "test-project-5|test-project-6|test-project-7|test-project-8"
     plugins ~ "test-project-9|test-project-10"
