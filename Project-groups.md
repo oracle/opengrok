@@ -150,7 +150,7 @@ repository information.
 
 If no group matches the project the special section 'Other' is maintained with all such projects and repositories.
 
-All favourite groups are expanded. A group is considered as favourite when one of its projects is considered favourite.  Favourite project is a project which is contained in the `OpenGrokProject` cookie (see https://github.com/oracle/opengrok/wiki/Cookies), i. e. it has been searched or viewed by the user recently. This applies also for subgroups of the given group.
+All favourite groups are expanded. A group is considered as favourite when one of its projects is considered favourite.  Favourite project is a project which is contained in the `OpenGrokProject` cookie (see https://github.com/OpenGrok/OpenGrok/wiki/Cookies), i. e. it has been searched or viewed by the user recently. This applies also for subgroups of the given group.
 
 There is a tunable threshold to control if other than favourite groups should be expanded by default. The name of the configuration property is `groupsCollapseThreshold` and it controls the maximum number of projects contained in the group (without traversing the subgroups) when the group should be expanded or not. This threshold is by default equal to 4.
 
