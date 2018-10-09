@@ -66,7 +66,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * A flag if the navigate window should be opened by default when browsing
      * the source code of this project.
      */
-    private boolean navigateWindowEnabled = false;
+    private Boolean navigateWindowEnabled = null;
 
     /**
      * This flag sets per-project handling of renamed files.
@@ -227,7 +227,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      * @return true if yes; false otherwise
      */
     public boolean isNavigateWindowEnabled() {
-        return navigateWindowEnabled;
+        return navigateWindowEnabled != null && navigateWindowEnabled;
     }
 
     /**
@@ -325,6 +325,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         // Allow project to override global setting of history cache generation.
         if (historyEnabled == null) {
             setHistoryEnabled(cfg.isHistoryEnabled());
+        }
+
+        // Allow project to override global setting of navigate window.
+        if (navigateWindowEnabled == null) {
+            setNavigateWindowEnabled(cfg.isNavigateWindowEnabled());
         }
     }
 

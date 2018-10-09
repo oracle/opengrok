@@ -1182,6 +1182,14 @@ public final class RuntimeEnvironment {
         return threadConfig.get().isHandleHistoryOfRenamedFiles();
     }
 
+    public void setNavigateWindowEnabled(boolean enable) {
+        threadConfig.get().setNavigateWindowEnabled(enable);
+    }
+
+    public boolean isNavigateWindowEnabled() {
+        return threadConfig.get().isNavigateWindowEnabled();
+    }
+
     public void setRevisionMessageCollapseThreshold(int threshold) {
         threadConfig.get().setRevisionMessageCollapseThreshold(threshold);
     }
