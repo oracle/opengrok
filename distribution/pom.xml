@@ -36,7 +36,7 @@
 
     <dependency>
       <groupId>org.opengrok</groupId>
-      <artifactId>tools</artifactId>
+      <artifactId>opengrok-tools</artifactId>
       <version>1.1-rc58</version>
       <type>pom</type>
     </dependency>
@@ -61,6 +61,19 @@
                   <overWriteSnapshots>false</overWriteSnapshots>
                   <overWriteIfNewer>true</overWriteIfNewer>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+              <execution>
+                <id>parse-version</id>
+                <goals>
+                  <goal>parse-version</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

@@ -19,6 +19,11 @@
         <outputDirectory>lib</outputDirectory>
         <destName>source.war</destName>
       </file>
+      <file>
+        <source>${project.basedir}/../opengrok-tools/dist/opengrok-tools-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}${parsedVersion.qualifier}.tar.gz</source>
+        <outputDirectory>tools</outputDirectory>
+        <destName>opengrok-tools.tar.gz</destName>
+      </file>
     </files>
     <fileSets>
         <fileSet>
@@ -37,13 +42,6 @@
           <outputDirectory>man/man1</outputDirectory>
           <includes>
             <include>opengrok.1</include>
-          </includes>
-        </fileSet>
-        <fileSet>
-          <directory>${project.basedir}/../tools/src/main/python</directory>
-          <outputDirectory>bin</outputDirectory>
-          <includes>
-            <include>*.py</include>
           </includes>
         </fileSet>
         <fileSet>
