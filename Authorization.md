@@ -23,7 +23,6 @@
   * [Watch dog service](#watch-dog-service)
   * [Setting up the repositories](#setting-up-the-repositories)
   * [Setting up the groupings](#setting-up-the-groupings)
-    + [`OPENGROK_READ_XML_CONFIGURATION`](#opengrok_read_xml_configuration)
   * [Index](#index)
   * [The plugin](#the-plugin)
     + [Permission policy](#permission-policy)
