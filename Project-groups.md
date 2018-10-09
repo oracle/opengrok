@@ -136,8 +136,7 @@ instance configuration in `/var/opengrok/etc/configuration.xml` (default) so the
 for the webapp.
 
 **NOTE:**
-There is no other way to persistently provide the group configuration than using
-`OPENGROK_READ_XML_CONFIGURATION` variable for each run of the indexer. If you run the indexer 
+There is no other way to persistently provide the group configuration than the `-R` option for each run of the indexer. If you run the indexer 
 without the read only configuration, your groups will vanish from the `configuration.xml`.
 For more information see [#1065](https://github.com/OpenGrok/OpenGrok/issues/1065). More about this process how the get the persistent group configuration is in the [Advanced Configuration](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Advanced-Configuration)
 
