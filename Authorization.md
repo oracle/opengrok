@@ -313,6 +313,7 @@ With these lines we tell Tomcat to set up 4 roles and 6 users with their roles a
 we will use those in this example.
 
 ### Application deployment descriptor
+
 Now we have to tell the application that it should use HTTP Basic authentication to protect its sources. We can do this by modifying a `web.xml` file which is usually placed in the `WEB-INF` directory in your application. Following lines are necessary to get it work.
 
 ```xml
@@ -358,6 +359,7 @@ We would strongly recommend you to turn on the [watchdog service](#configuration
 This forces the application to reload all plugins in the plugin directory when a modification of any file inside it occurs.
 
 ## Setting up the repositories
+
 We need to create a couple of test repositories to show the authorization features.
 ```
 $ cd "$OPENGROK_SRC_ROOT" # navigate to the source folder
@@ -368,7 +370,7 @@ This should create 10 repositories named "test-project-$number" in the source di
 
 ## Setting up the groupings
 
-See https://github.com/oracle/opengrok/wiki/Project-groups
+See https://github.com/OpenGrok/OpenGrok/wiki/Project-groups
 
 The group names correspond to the roles defined in `tomcat-users.xml` earlier.
 The final group structure should look like this now:
@@ -380,25 +382,13 @@ users ~ "test-project-5|test-project-6|test-project-7|test-project-8"
     plugins ~ "test-project-9|test-project-10"
 ```
 
-### `OPENGROK_READ_XML_CONFIGURATION`
-
-This variable contains a path to an xml file which eventually gets merged with the main configuration (usually `/var/opengrok/configuration.xml`) before index/reindex. If you have not used this before you can generate a new one with this (for example):
-
-```
-$ export OPENGROK_READ_XML_CONFIGURATION=/var/opengrok/opt/myconf.xml
-$ ./tools/Groups add admins "test-project-1|test-project-2|test-project-3|test-project-4" > "$OPENGROK_READ_XML_CONFIGURATION"
-```
-
-This command generates a configuration with one group "admins" and saves that into "`$OPENGROK_READ_XML_CONFIGURATION`" file.
-
-More about this process is described in the [Advanced Configuration](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Advanced-Configuration)
-
 ## Index
 
 Now run the index as usual. Do not forget to use the `OPENGROK_READ_XML_CONFIGURATION` variable used in previous step as that will pass the groups into the main configuration file.
 **This is the only option how to preserve groups on reindex - use a `OPENGROK_READ_XML_CONFIGURATION` variable!**
 
 ## The plugin
+
 Now comes the main part - the plugin itself.
 
 It consists of three parts:
