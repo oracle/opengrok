@@ -329,6 +329,7 @@ Now we have to tell the application that it should use HTTP Basic authentication
         <web-resource-name>In general everything needs to be authenticated</web-resource-name>
         <url-pattern>/*</url-pattern> <!-- protect the whole application -->
     </web-resource-collection>
+
     <auth-constraint>
         <role-name>plugins</role-name> <!-- these are the roles from tomcat-users.xml -->
         <role-name>users</role-name> <!-- these are the roles from tomcat-users.xml -->
@@ -384,8 +385,7 @@ users ~ "test-project-5|test-project-6|test-project-7|test-project-8"
 
 ## Index
 
-Now run the index as usual. Do not forget to use the `OPENGROK_READ_XML_CONFIGURATION` variable used in previous step as that will pass the groups into the main configuration file.
-**This is the only option how to preserve groups on reindex - use a `OPENGROK_READ_XML_CONFIGURATION` variable!**
+Now run the index as usual. Do not forget to use the `-R` option with group configuration as that will pass the groups into the main configuration. **This is the only option how to preserve groups on reindex.**
 
 ## The plugin
 
