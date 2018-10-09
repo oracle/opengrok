@@ -274,6 +274,12 @@ public final class Configuration {
      */
     private boolean listDirsFirst = true;
 
+    /**
+     * A flag if the navigate window should be opened by default when browsing
+     * the source code of projects.
+     */
+    private boolean navigateWindowEnabled;
+
     private SuggesterConfig suggesterConfig = new SuggesterConfig();
 
     /*
@@ -441,6 +447,7 @@ public final class Configuration {
         //mandoc is default(String)
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setMessageLimit(500);
+        setNavigateWindowEnabled(false);
         setOptimizeDatabase(true);
         setPluginDirectory(null);
         setPluginStack(new AuthorizationStack(AuthControlFlag.REQUIRED, "default stack"));
@@ -725,6 +732,14 @@ public final class Configuration {
 
     public void setHandleHistoryOfRenamedFiles(boolean enable) {
         this.handleHistoryOfRenamedFiles = enable;
+    }
+
+    public boolean isNavigateWindowEnabled() {
+        return navigateWindowEnabled;
+    }
+
+    public void setNavigateWindowEnabled(boolean navigateWindowEnabled) {
+        this.navigateWindowEnabled = navigateWindowEnabled;
     }
 
     public Map<String,Project> getProjects() {
