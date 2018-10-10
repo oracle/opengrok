@@ -35,7 +35,7 @@ commands:
     -t, /opengrok/etc/logging.properties.template, -p, '%PROJ%', -d, /opengrok/log/%PROJECT%,
     -P, '%PROJECT%', --, --renamedHistory, 'on', -r, dirbased, -G, -m, '256', -c,
     /usr/local/bin/ctags, -U, 'http://localhost:8080/source', -o, /opengrok/etc/ctags.config,
-    -H, '%PROJECT%', '%PROJECT%']
+    -H, '%PROJECT%']
   env: {LC_ALL: en_US.UTF-8}
   limits: {RLIMIT_NOFILE: 1024}
 - command: ['http://localhost:8080/source/api/v1/messages?tag=%PROJECT%', DELETE,
