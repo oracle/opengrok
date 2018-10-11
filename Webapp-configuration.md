@@ -7,6 +7,7 @@
   * [Changing webapp name](#changing-webapp-name)
 - [Default projects](#default-projects)
 - [Path Descriptions](#path-descriptions)
+- [Configuration tunables](#configuration-tunables)
 <!-- tocstop -->
 
 # Include files
@@ -181,3 +182,6 @@ curl -i -X POST -H "Content-Type: text/plain" \
 ```
 
 where `/opengrok/etc/paths.tsv` is path to the plain text file with path descriptions.
+
+# Configuration tunables
+
