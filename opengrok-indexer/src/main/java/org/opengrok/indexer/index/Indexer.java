@@ -264,8 +264,11 @@ public final class Indexer {
                     Project project;
                     if ((project = Project.getProject(path)) != null) {
                         subFiles.add(path);
-                        repositories.addAll(env.getProjectRepositoriesMap().get(project).
-                                stream().map(x -> x.getDirectoryNameRelative()).collect(Collectors.toSet()));
+                        List<RepositoryInfo> repoList = env.getProjectRepositoriesMap().get(project);
+                        if (repoList != null) {
+                            repositories.addAll(repoList.
+                                    stream().map(x -> x.getDirectoryNameRelative()).collect(Collectors.toSet()));
+                        }
                     } else {
                         System.err.println("The path " + path
                                 + " does not correspond to a project");
