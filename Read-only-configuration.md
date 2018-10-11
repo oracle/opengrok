@@ -150,5 +150,7 @@ This call only works for primitive java types and has only meaning for the optio
 Via the [Web Services](https://github.com/oracle/opengrok/wiki/Web-services) interface you can send a brand new configuration to the web application.
 
 ```bash
-$ curl -d "@/var/opengrok/etc/configuration.xml" -H "Content-Type: application/xml" -X PUT "${webapp_uri}/api/v1/configuration"
+$ curl -d "@/var/opengrok/etc/configuration.xml" \
+    -H "Content-Type: application/xml" \
+    -X PUT "${webapp_uri}/api/v1/configuration"
 ```
