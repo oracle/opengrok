@@ -2,7 +2,7 @@
 
 if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 	sudo apt-get update -qq
-	sudo apt-get install -qq cvs git mercurial cssc bzr subversion monotone rcs rcs-blame python3 python3-venv python3-pip pep8 nodejs;
+	sudo apt-get install -qq cvs git mercurial cssc bzr subversion monotone rcs rcs-blame python3 python3.4-venv python3-pip pep8 nodejs;
 	sudo ./dev/install-bitkeeper.sh
 	sudo pip3 install --upgrade pip
 	sudo pip3 install flake8
