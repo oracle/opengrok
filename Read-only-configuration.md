@@ -58,11 +58,11 @@ Therefore we substitute the persistent storage with another configuration file `
 
 ## List of most common configuration options
 
-see https://github.com/oracle/opengrok/wiki/Indexer-configuration and https://github.com/oracle/opengrok/wiki/Webapp-configuration
+see https://github.com/oracle/opengrok/wiki/Indexer-configuration and https://github.com/OpenGrok/OpenGrok/wiki/Webapp-configuration
 
 # Generating the read only configuration
 
-At this point it might be quite difficult to guess the syntax of the xml file for the configuration. That is where the `Groups` tool is quite handy.
+At this point it might be quite difficult to guess the syntax of the XML file for the configuration. That is where the `Groups` tool is quite handy.
 
 You can generate an empty configuration object with the `empty` subcommand:
 
@@ -70,7 +70,7 @@ You can generate an empty configuration object with the `empty` subcommand:
 $ Groups empty
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_121" class="java.beans.XMLDecoder">
- <object class="org.opensolaris.opengrok.configuration.Configuration"/>
+ <object class="org.opengrok.indexer.configuration.Configuration"/>
 </java>
 ```
 
@@ -80,7 +80,7 @@ About how to add some options please refer to the main configuration `/var/openg
 $ Groups empty
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_121" class="java.beans.XMLDecoder">
- <object class="org.opensolaris.opengrok.configuration.Configuration">
+ <object class="org.opengrok.indexer.configuration.Configuration">
 
   <void property="sourceRoot"> <!-- name of the property in configuration -->
    <string>/var/opengrok/src</string> <!-- java type and value -->
@@ -106,22 +106,21 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
 
 - backup current config
 - make any necessary changes to `/opengrok/etc/readonly_configuration.xml`
-- perform sanity check, e.g.:
+- perform sanity check, e.g. when modifying project groups (https://github.com/OpenGrok/OpenGrok/wiki/Project-groups):
 ```
-  OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml \
-     Groups list
+  groups.py -a opengrok.jar -- -i /opengrok/etc/readonly_configuration.xml -l
 ```
 - if you are adding project and changing regular expression of project group, try matching it: 
 ```
-  OPENGROK_READ_XML_CONFIGURATION=/opengrok/etc/readonly_configuration.xml \
-      Groups match PROJECT_TO_BE_ADDED
+  groups.py -a opengrok.jar -- -i /opengrok/etc/readonly_configuration.xml \
+      -m PROJECT_TO_BE_ADDED
 ```
 - get current config from the webapp, merge it with read-only configuration and upload the new config to the webapp
 ```
    projadm -b /opengrok -R /opengrok/etc/readonly_configuration.xml -r -u
 ```
 
-This is particularly handy when using [per-project management ](https://github.com/oracle/opengrok/wiki/Per-project-management)
+This is particularly handy when using [per-project management ](https://github.com/OpenGrok/OpenGrok/wiki/Per-project-management)
 
 # Real time web application change
 
