@@ -185,3 +185,8 @@ where `/opengrok/etc/paths.tsv` is path to the plain text file with path descrip
 
 # Configuration tunables
 
+These can be set in https://github.com/OpenGrok/OpenGrok/wiki/Read-only-configuration
+
+Tunable | Type | Since version | Meaning
+--------|------|---------------|--------
+`navigateWindowEnabled` | boolean | 1.1 | display navigate window automatically when browsing xrefs, can be overridden on project level (see https://github.com/oracle/opengrok/wiki/Per-project-configuration)
