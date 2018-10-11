@@ -39,6 +39,8 @@ The below steps are common for both pre-release and final release:
 
    `mvn versions:set -DgenerateBackupPoms=false -DnewVersion=1.1-rcXYZ`
 
+   and bump the version in `opengrok-tools/setup.py` (until #2393 is resolved)
+
    Then commit and push the change:
 
      `git commit --all`
