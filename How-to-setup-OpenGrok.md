@@ -37,6 +37,11 @@ Source base should be available locally for OpenGrok to work efficiently. No cha
 This step is optional, the python package contains wrappers for OpenGrok's indexer and other commands.
 In the release tarball navigate to `tools` subdirectory and install the `opengrok-tools.tar.gz` as a python package. Then you can use [defined commands](https://github.com/oracle/opengrok/tree/master/opengrok-tools/src/main/python#content). You can of course run the plain java yourself, without these wrappers.
 
+In bash, you can install the package simply by:
+```bash
+$ python3 -m pip install opengrok-tools.tar.gz
+```
+
 ## <u>Step.2</u> - Deploy the web application
 
 Install web application container of your choice (e.g. [Tomcat](http://tomcat.apache.org/), [Glassfish](https://glassfish.dev.java.net/)).
