@@ -108,16 +108,16 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
 - make any necessary changes to `/opengrok/etc/readonly_configuration.xml`
 - perform sanity check, e.g. when modifying project groups (https://github.com/OpenGrok/OpenGrok/wiki/Project-groups):
 ```
-  groups.py -a opengrok.jar -- -i /opengrok/etc/readonly_configuration.xml -l
+  opengrok-groups -a opengrok.jar -- -i /opengrok/etc/readonly_configuration.xml -l
 ```
 - if you are adding project and changing regular expression of project group, try matching it: 
 ```
-  groups.py -a opengrok.jar -- -i /opengrok/etc/readonly_configuration.xml \
+  opengrok-groups -a opengrok.jar -- -i /opengrok/etc/readonly_configuration.xml \
       -m PROJECT_TO_BE_ADDED
 ```
 - get current config from the webapp, merge it with read-only configuration and upload the new config to the webapp
 ```
-   projadm -b /opengrok -R /opengrok/etc/readonly_configuration.xml -r -u
+   opengrok-projadm -b /opengrok -R /opengrok/etc/readonly_configuration.xml -r -u
 ```
 
 This is particularly handy when using [per-project management ](https://github.com/OpenGrok/OpenGrok/wiki/Per-project-management)
