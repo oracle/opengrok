@@ -3,19 +3,19 @@ While by itself OpenGrok does not provide a way how to synchronize repositories 
 These scripts assume that OpenGrok is setup with projects. See https://github.com/OpenGrok/OpenGrok/wiki/Per-project-management for more details on per-project management.
 
 There are 2 main scripts:
-  - `sync.py` - provides a way how to run a sequence of commands for a set of projects (in parallel).
-  - `mirror.py` - performs synchronization of given Source Code Management repository with its upstream.
+  - `opengrok-sync` - provides a way how to run a sequence of commands for a set of projects (in parallel).
+  - `opengrok-mirror` - performs synchronization of given Source Code Management repository with its upstream.
 
 In the source these scripts live under the [tools](https://github.com/OpenGrok/OpenGrok/tree/master/tools) directory.
 
 Both scripts take configuration either in JSON or YAML.
 
-# sync.py
+# opengrok-sync
 
 Use e.g. like this:
 
 ```bash
-  $ sync.py -c /scripts/sync.conf -d /ws-local/ -p
+  $ opengrok-sync -c /scripts/sync.conf -d /ws-local/ -p
 ```
 
 where the `sync.conf` file contents might look like this:
@@ -29,8 +29,8 @@ commands:
     duration: PT1H
     tags: ['%PROJECT%']
     text: resync + reindex in progress
-- command: [sudo, -u, wsmirror, /opengrok/dist/bin/mirror.py, -c, /opengrok/etc/mirror-config.yml]
-- command: [sudo, -u, webservd, /opengrok/dist/bin/reindex-project.py, -D, -J=-d64,
+- command: [sudo, -u, wsmirror, /opengrok/dist/bin/opengrok-mirror, -c, /opengrok/etc/mirror-config.yml]
+- command: [sudo, -u, webservd, /opengrok/dist/bin/opengrok-reindex-project, -D, -J=-d64,
     '-J=-XX:-UseGCOverheadLimit', -J=-Xmx16g, -J=-server, --jar, /opengrok/dist/lib/opengrok.jar,
     -t, /opengrok/etc/logging.properties.template, -p, '%PROJ%', -d, /opengrok/log/%PROJECT%,
     -P, '%PROJECT%', --, --renamedHistory, 'on', -r, dirbased, -G, -m, '256', -c,
@@ -45,14 +45,14 @@ cleanup:
   command: ['http://localhost:8080/source/api/v1/messages?tag=%PROJECT%', DELETE, '']
 ```
 
-The above `sync.py` command will basically take all directories under `/ws-local` and for each it will run the sequence of commands specified in the `sync.conf` file. This will be done in parallel - on project level. The level of parallelism can be specified using the the `--workers` option (by default it will use as many workers as there are CPUs in the system).
+The above `opengrok-sync` command will basically take all directories under `/ws-local` and for each it will run the sequence of commands specified in the `sync.conf` file. This will be done in parallel - on project level. The level of parallelism can be specified using the the `--workers` option (by default it will use as many workers as there are CPUs in the system).
 
-Another variant of how to specify the list of projects to be synchronized is to use the `--indexed` option of `sync.py` that will query the webapp configuration for list of indexed projects and will use that list. Otherwise, the `--projects` option can be specified to process just specified projects.
+Another variant of how to specify the list of projects to be synchronized is to use the `--indexed` option of `opengrok-sync` that will query the webapp configuration for list of indexed projects and will use that list. Otherwise, the `--projects` option can be specified to process just specified projects.
 
 The commands above will basically:
   - mark the project with alert (to let the users know it is being synchronized/indexed) using the [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call (the `%PROJECT%` string is replaced with current project name)
-  - pull the changes from all the upstream repositories that belong to the project using the `mirror.py` command
-  - reindex the project using `reindex-project.py`
+  - pull the changes from all the upstream repositories that belong to the project using the `opengrok-mirror` command
+  - reindex the project using `opengrok-reindex-project`
   - clear the alert using the second [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call
   - execute the `/scripts/check-indexer-logs.ksh` script to perform some pattern matching in the indexer logs to see if there were any serious failures there. The script can look e.g. like this:
 ```shell
@@ -81,7 +81,7 @@ if grep SEVERE "$log_dir/opengrok0.0.log"; then
 fi
 ```
 
-The `sync.py` script will print any errors to the console and uses file level locking to provide exclusivity of run so it is handy to run from `crontab` periodically.
+The `opengrok-sync` script will print any errors to the console and uses file level locking to provide exclusivity of run so it is handy to run from `crontab` periodically.
 
 Each "command" can be either normal command execution (supplying the list of program arguments) or RESTful API call (supplying the HTTP verb and optional payload).
 
@@ -91,13 +91,13 @@ Normal command execution can be also performed in the `cleanup` section.
 
 Some project can be notorious for producing spurious errors so their errors are ignored via the `"ignore_errors"` section.
 
-In the above example it is assumed that `sync.py` is run as `root` and synchronization and reindexing are done under different users. This is done so that the web application cannot tamper with source code even if compromised.
+In the above example it is assumed that `opengrok-sync` is run as `root` and synchronization and reindexing are done under different users. This is done so that the web application cannot tamper with source code even if compromised.
 
 The commands got appended project name unless one of their arguments contains
 `%PROJECT%`, in which case it is substituted with project name and no append is
 done.
 
-For per-project reindexing to work properly, `reindex-project.py` uses
+For per-project reindexing to work properly, `opengrok-reindex-project` uses
 the `logging.properties.template` to make sure each project has its own
 log directory. The file can look e.g. like this:
 
@@ -122,9 +122,9 @@ logging template. This pattern must differ from the `%PROJECT%` pattern, otherwi
 script would substitute it in the command arguments and the substitution in the template file
 would not happen.
 
-# mirror.py
+# opengrok-mirror
 
-The script synchronized the repositories of projects by running appropriate commands (e.g. `git pull` for Git). While it can run perfectly fine standalone, it is meant to be run from within `sync.py` (see above).
+The script synchronized the repositories of projects by running appropriate commands (e.g. `git pull` for Git). While it can run perfectly fine standalone, it is meant to be run from within `opengrok-sync` (see above).
 
 ## Configuration example
 
@@ -177,7 +177,7 @@ projects:
 
 In the above config, the `userland` project will be run with environment variables in the `proxy` section, plus it will also run scripts specified in the `hook` section before and after all its repositories are synchronized. The hook scripts will be run with the current working directory set to that of the project.
 
-The `opengrok-master` project contains a RCS repository that would make the mirroring fail (since `mirror.py` does not support RCS yet) so it is marked as ignored.
+The `opengrok-master` project contains a RCS repository that would make the mirroring fail (since `opengrok-mirror` does not support RCS yet) so it is marked as ignored.
 
 ## Project matching
 
@@ -185,7 +185,7 @@ Multiple projects can share the same configuration using regular expressions as 
 
 ## Disabling project mirroring
 
-The `history` project is marked as disabled. This means that the `mirror.py` script will exit with special value of 2 that is interpreted by the `sync.py` script to avoid any reindex. It is not treated as an error.
+The `history` project is marked as disabled. This means that the `opengrok-mirror` script will exit with special value of 2 that is interpreted by the `opengrok-sync` script to avoid any reindex. It is not treated as an error.
 
 ## Batch mode
 
