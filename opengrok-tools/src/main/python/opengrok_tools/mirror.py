@@ -51,21 +51,74 @@ if (major_version < 3):
 
 __version__ = "0.2"
 
+# "constants"
+HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
+CMD_TIMEOUT_PROPERTY = 'command_timeout'
+IGNORED_REPOS_PROPERTY = 'ignored_repos'
+PROXY_PROPERTY = 'proxy'
+COMMANDS_PROPERTY = 'commands'
+DISABLED_PROPERTY = 'disabled'
+HOOKDIR_PROPERTY = 'hookdir'
+HOOKS_PROPERTY = 'hooks'
+LOGDIR_PROPERTY = 'logdir'
+PROJECTS_PROPERTY = 'projects'
+
+# This is a special exit code that is recognized by sync.py to terminate
+# the processing of the command sequence.
+CONTINUE_EXITVAL = 2
+
+
+def get_repos_for_project(logger, project, source_root, config, proxy,
+                          command_timeout, ignored_repos, uri):
+    """
+    :param logger: logger
+    :param project: project name
+    :param source_root: source root path
+    :param config: configuration dictionary
+    :param proxy: proxy
+    :param command_timeout: command timeout
+    :param ignored_repos: list of ignored repositories
+    :param uri: URI for the web application
+    :return: tuple of lists of Repository objects and return value
+    (1 on failure, 0 on success)
+    """
+    repos = []
+    ret = 0
+    for repo_path in get_repos(logger, project, uri):
+        logger.debug("Repository path = {}".format(repo_path))
+
+        if repo_path in ignored_repos:
+            logger.info("repository {} ignored".format(repo_path))
+            continue
+
+        repo_type = get_repo_type(logger, repo_path, uri)
+        if not repo_type:
+            logger.error("cannot determine type of {}".
+                         format(repo_path))
+            continue
+
+        logger.debug("Repository type = {}".format(repo_type))
+
+        repo = get_repository(logger,
+                              source_root + repo_path,
+                              repo_type,
+                              project,
+                              config.get(COMMANDS_PROPERTY),
+                              proxy,
+                              None,
+                              command_timeout)
+        if not repo:
+            logger.error("Cannot get repository for {}".
+                         format(repo_path))
+            ret = 1
+        else:
+            repos.add(repo)
+
+    return repos, ret
+
 
 def main():
     ret = 0
-
-    # "constants"
-    HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
-    CMD_TIMEOUT_PROPERTY = 'command_timeout'
-    IGNORED_REPOS_PROPERTY = 'ignored_repos'
-    PROXY_PROPERTY = 'proxy'
-    COMMANDS_PROPERTY = 'commands'
-    DISABLED_PROPERTY = 'disabled'
-    HOOKDIR_PROPERTY = 'hookdir'
-    HOOKS_PROPERTY = 'hooks'
-    LOGDIR_PROPERTY = 'logdir'
-    PROJECTS_PROPERTY = 'projects'
 
     parser = argparse.ArgumentParser(description='project mirroring')
 
@@ -282,19 +335,37 @@ def main():
         if project_config.get(DISABLED_PROPERTY):
             logger.info("Project {} disabled, exiting".
                         format(args.project))
-            sys.exit(2)
+            sys.exit(CONTINUE_EXITVAL)
 
     lock = FileLock(os.path.join(tempfile.gettempdir(),
                                  args.project + "-mirror.lock"))
     try:
         with lock.acquire(timeout=0):
             proxy = config.get(PROXY_PROPERTY) if use_proxy else None
+
+            #
+            # Cache the repositories first. This way it will be known that
+            # something is not right, avoiding any needless pre-hook run.
+            #
+            repos, ret = get_repos_for_project(logger, args.project,
+                                               source_root, config, proxy,
+                                               command_timeout, ignored_repos,
+                                               uri)
+            if ret == 1:
+                # The error was already logged in get_repos_for_project()
+                sys.exit(1)
+            if len(repos) == 0:
+                logger.info("No repositories for project {}".
+                            format(args.project))
+                sys.exit(CONTINUE_EXITVAL)
+
             if prehook:
                 logger.info("Running pre hook")
                 if run_hook(logger, prehook,
                             os.path.join(source_root, args.project), proxy,
                             hook_timeout) != 0:
-                    logger.error("pre hook failed")
+                    logger.error("pre hook failed for project {}".
+                                 format(args.project))
                     logging.shutdown()
                     sys.exit(1)
 
@@ -302,39 +373,12 @@ def main():
             # If one of the repositories fails to sync, the whole project sync
             # is treated as failed, i.e. the program will return 1.
             #
-            for repo_path in get_repos(logger, args.project, uri):
-                logger.debug("Repository path = {}".format(repo_path))
-
-                if repo_path in ignored_repos:
-                    logger.info("repository {} ignored".format(repo_path))
-                    continue
-
-                repo_type = get_repo_type(logger, repo_path, uri)
-                if not repo_type:
-                    logger.error("cannot determine type of {}".
-                                 format(repo_path))
-                    continue
-
-                logger.debug("Repository type = {}".format(repo_type))
-
-                repo = get_repository(logger,
-                                      source_root + repo_path,
-                                      repo_type,
-                                      args.project,
-                                      config.get(COMMANDS_PROPERTY),
-                                      proxy,
-                                      None,
-                                      command_timeout)
-                if not repo:
-                    logger.error("Cannot get repository for {}".
-                                 format(repo_path))
-                    ret = 1
-                else:
+            for repo in repos:
                     logger.info("Synchronizing repository {}".
-                                format(repo_path))
+                                format(repo.path))
                     if repo.sync() != 0:
                         logger.error("failed to sync repository {}".
-                                     format(repo_path))
+                                     format(repo.path))
                         ret = 1
 
             if posthook:
@@ -342,7 +386,8 @@ def main():
                 if run_hook(logger, posthook,
                             os.path.join(source_root, args.project), proxy,
                             hook_timeout) != 0:
-                    logger.error("post hook failed")
+                    logger.error("post hook failed for project {}".
+                                 format(args.project))
                     logging.shutdown()
                     sys.exit(1)
     except Timeout:
