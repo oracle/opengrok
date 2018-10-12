@@ -7,7 +7,7 @@ Starting with OpenGrok 1.1, using the `opengrok-projadm` tool (that utilizes the
 As a result, the indexing of complete source root is only necessary when upgrading across OpenGrok version
 with incompatible Lucene indexes.
 
-The following is assuming that the commands `opengrok-projadm`, `Groups` and `opengrok-config-merge` tools are in `PATH`.
+The following is assuming that the commands `opengrok-projadm`, `Groups` and `opengrok-config-merge` tools are in `PATH`. You can install these from the opengrok-tools python package available in the [release tarball](https://github.com/oracle/opengrok/wiki/How-to-setup-OpenGrok#step1---install-management-tools-optional).
 
 Combine these procedures with the parallel processing tools and you have per-project management with parallel processing.
 
