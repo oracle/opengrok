@@ -32,13 +32,18 @@ The index data will be created under directory called **data root**.
 
 Source base should be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the '''checked out source''' tree under source root.
 
-## <u>Step.1</u> - Deploy the web application
+## <u>Step.1</u> - Install management tools (optional)
+
+This step is optional, the python package contains wrappers for OpenGrok's indexer and other commands.
+In the release tarball navigate to `tools` subdirectory and install the `opengrok-tools.tar.gz` as a python package. Then you can use [defined commands](https://github.com/oracle/opengrok/tree/master/opengrok-tools/src/main/python#content). You can of course run the plain java yourself, without these wrappers.
+
+## <u>Step.2</u> - Deploy the web application
 
 Install web application container of your choice (e.g. [Tomcat](http://tomcat.apache.org/), [Glassfish](https://glassfish.dev.java.net/)).
 
-Use the `deploy.py` script to copy the `.war` file to the location where the application container will detect it and deploy the web application.
+Use the `opengrok-deploy` script to copy the `.war` file to the location where the application container will detect it and deploy the web application.
 
-## <u>Step.2</u> - Indexing
+## <u>Step.3</u> - Indexing
 
 This steps basically performs these steps:
   - create index
@@ -47,10 +52,10 @@ This steps basically performs these steps:
 
 The indexing can take a lot of time - for large code bases (meaning both amount of source code and history) it can take many hours. After this is done, indexer automatically attempts to upload newly generated configuration to the web application. Until this is done, the web application will display the old state.
 
-The indexer can be run either using `opengrok.jar` directly or using the `indexer.py` wrapper like so:
+The indexer can be run either using `opengrok.jar` directly or using the `opengrok-indexer` wrapper like so:
 
 ```
-indexer.py -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
+opengrok-indexer -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
     -a /opengrok/dist/lib/opengrok.jar -- \
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
     -W /var/opengrok/etc/configuration.xml -U http://localhost:8080
@@ -61,7 +66,7 @@ The above will use `/var/opengrok/src` as source root, `/var/opengrok/data` as d
 Run the command with `-h` to get more information about the options, i.e.:
 
 ```
-indexer.py -a /opengrok/dist/lib/opengrok.jar -- -h
+opengrok-indexer -a /opengrok/dist/lib/opengrok.jar -- -h
 ```
 
 Optionally use `--detailed` together with `-h` to get extra detailed help, including examples.
@@ -106,7 +111,7 @@ This will map extension `.cs` to `PlainAnalyzer`. You should even be able to ove
 
 ## Optional need to change web application properties or name
 
-You might need to modify the web application if you don't store the configuration file in the default location (<code>/var/opengrok/etc/configuration.xml</code>). This can be conveniently done using the `deploy.py` script by supplying the path to the configuration.
+You might need to modify the web application if you don't store the configuration file in the default location (<code>/var/opengrok/etc/configuration.xml</code>). This can be conveniently done using the `opengrok-deploy` script by supplying the path to the configuration.
 
 If you need to change name of the web application from `source` to something else, just deploy `source.war` as `new_name.war`.
 
