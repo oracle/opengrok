@@ -22,7 +22,7 @@
 #
 
 from ..utils.command import Command
-from .repository import Repository
+from .repository import Repository, RepositoryException
 from shutil import which
 
 
@@ -41,8 +41,8 @@ class GitRepository(Repository):
             raise OSError
 
     def reposync(self):
-        hg_command = [self.command, "pull", "--ff-only"]
-        cmd = self.getCommand(hg_command, work_dir=self.path,
+        git_command = [self.command, "pull", "--ff-only"]
+        cmd = self.getCommand(git_command, work_dir=self.path,
                               env_vars=self.env, logger=self.logger)
         cmd.execute()
         self.logger.info(cmd.getoutputstr())
@@ -51,3 +51,18 @@ class GitRepository(Repository):
             return 1
 
         return 0
+
+    def incoming(self):
+        git_command = [self.command, "pull", "--dry-run"]
+        cmd = self.getCommand(git_command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
+        cmd.execute()
+        if cmd.getretcode() != 0 or cmd.getstate() != Command.FINISHED:
+            cmd.log_error("failed to perform pull")
+            raise RepositoryException('failed to check for incoming in '
+                                      'repository {}'.format(self))
+
+        if len(cmd.getoutput()) == 0:
+            return False
+        else:
+            return True

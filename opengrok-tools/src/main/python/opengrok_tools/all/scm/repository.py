@@ -25,6 +25,13 @@ import abc
 from ..utils.command import Command
 
 
+class RepositoryException(Exception):
+    """
+    Exception returned when repository operation failed.
+    """
+    pass
+
+
 class Repository:
     """
     abstract class wrapper for Source Code Management repository
@@ -63,3 +70,11 @@ class Repository:
         Return 1 on failure, 0 on success.
         """
         raise NotImplementedError()
+
+    def incoming(self):
+        """
+        Check if there are any incoming changes.
+
+        Return True if so, False otherwise.
+        """
+        return True
