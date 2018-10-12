@@ -43,13 +43,15 @@ from all.utils.opengrok import get_repos, get_config_value, get_repo_type
 from all.utils.readconfig import read_config
 from all.utils.repofactory import get_repository
 from all.utils.utils import is_exe, check_create_dir, get_int, diff_list
+from all.scm.repository import RepositoryException
+
 
 major_version = sys.version_info[0]
-if (major_version < 3):
+if major_version < 3:
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 # "constants"
 HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
@@ -68,53 +70,46 @@ PROJECTS_PROPERTY = 'projects'
 CONTINUE_EXITVAL = 2
 
 
-def get_repos_for_project(logger, project, source_root, config, proxy,
-                          command_timeout, ignored_repos, uri):
+def get_repos_for_project(logger, project, ignored_repos, **kwargs):
     """
     :param logger: logger
     :param project: project name
-    :param source_root: source root path
-    :param config: configuration dictionary
-    :param proxy: proxy
-    :param command_timeout: command timeout
     :param ignored_repos: list of ignored repositories
-    :param uri: URI for the web application
-    :return: tuple of lists of Repository objects and return value
-    (1 on failure, 0 on success)
+    :param kwargs: argument dictionary
+    :return: list of Repository objects
     """
     repos = []
-    ret = 0
-    for repo_path in get_repos(logger, project, uri):
+    for repo_path in get_repos(logger, project, kwargs['uri']):
         logger.debug("Repository path = {}".format(repo_path))
 
         if repo_path in ignored_repos:
             logger.info("repository {} ignored".format(repo_path))
             continue
 
-        repo_type = get_repo_type(logger, repo_path, uri)
+        repo_type = get_repo_type(logger, repo_path, kwargs['uri'])
         if not repo_type:
-            logger.error("cannot determine type of {}".
-                         format(repo_path))
-            continue
+            raise RepositoryException("cannot determine type of repository {}".
+                                      format(repo_path))
 
         logger.debug("Repository type = {}".format(repo_type))
 
         repo = get_repository(logger,
-                              source_root + repo_path,
+                              # Not joining the path since the form
+                              # of repo_path is absolute path.
+                              kwargs['source_root'] + repo_path,
                               repo_type,
                               project,
-                              config.get(COMMANDS_PROPERTY),
-                              proxy,
+                              kwargs['commands'],
+                              kwargs['proxy'],
                               None,
-                              command_timeout)
+                              kwargs['command_timeout'])
         if not repo:
-            logger.error("Cannot get repository for {}".
-                         format(repo_path))
-            ret = 1
+            raise RepositoryException("Cannot get repository for {}".
+                                      format(repo_path))
         else:
-            repos.add(repo)
+            repos.append(repo)
 
-    return repos, ret
+    return repos
 
 
 def main():
@@ -133,6 +128,9 @@ def main():
                         help='batch mode - will log into a file')
     parser.add_argument('-B', '--backupcount', default=8,
                         help='how many log files to keep around in batch mode')
+    parser.add_argument('-I', '--incoming', action='store_true',
+                        help='Check for incoming changes, terminate the '
+                             'processing if not found.')
     args = parser.parse_args()
 
     if args.debug:
@@ -166,10 +164,10 @@ def main():
 
     uri = args.uri
     if not uri:
-        logger.error("uri of the webapp not specified")
+        logger.error("URI of the web application not specified")
         sys.exit(1)
 
-    logger.debug("Uri = {}".format(uri))
+    logger.debug("URI = {}".format(uri))
 
     source_root = get_config_value(logger, 'sourceRoot', uri)
     if not source_root:
@@ -251,7 +249,7 @@ def main():
 
         ignored_repos = project_config.get(IGNORED_REPOS_PROPERTY)
         if ignored_repos:
-            if type(ignored_repos) is not list:
+            if not isinstance(ignored_repos, list):
                 logger.error("{} for project {} is not a list".
                              format(IGNORED_REPOS_PROPERTY, args.project))
                 sys.exit(1)
@@ -347,17 +345,45 @@ def main():
             # Cache the repositories first. This way it will be known that
             # something is not right, avoiding any needless pre-hook run.
             #
-            repos, ret = get_repos_for_project(logger, args.project,
-                                               source_root, config, proxy,
-                                               command_timeout, ignored_repos,
-                                               uri)
-            if ret == 1:
-                # The error was already logged in get_repos_for_project()
+            repos = []
+            try:
+                repos = get_repos_for_project(logger, args.project,
+                                              ignored_repos,
+                                              commands=config.
+                                              get(COMMANDS_PROPERTY),
+                                              proxy=proxy,
+                                              command_timeout=command_timeout,
+                                              source_root=source_root,
+                                              uri=uri)
+            except RepositoryException:
+                logger.error('failed to get repositories for project {}'.
+                             format(args.project))
                 sys.exit(1)
-            if len(repos) == 0:
+
+            if not repos:
                 logger.info("No repositories for project {}".
                             format(args.project))
                 sys.exit(CONTINUE_EXITVAL)
+
+            # Check if any of the repositories contains incoming changes.
+            if args.incoming:
+                got_incoming = False
+                for repo in repos:
+                    try:
+                        if repo.incoming():
+                            logger.debug('Repository {} has incoming changes'.
+                                         format(repo))
+                            got_incoming = True
+                            break
+                    except RepositoryException:
+                        logger.error('Cannot determine incoming changes for '
+                                     'repository {}, driving on'.format(repo))
+
+                if not got_incoming:
+                    logger.info('No incoming changes for repositories in '
+                                'project {}'.
+                                format(args.project))
+                    sys.exit(CONTINUE_EXITVAL)
 
             if prehook:
                 logger.info("Running pre hook")
@@ -374,12 +400,12 @@ def main():
             # is treated as failed, i.e. the program will return 1.
             #
             for repo in repos:
-                    logger.info("Synchronizing repository {}".
-                                format(repo.path))
-                    if repo.sync() != 0:
-                        logger.error("failed to sync repository {}".
-                                     format(repo.path))
-                        ret = 1
+                logger.info("Synchronizing repository {}".
+                            format(repo.path))
+                if repo.sync() != 0:
+                    logger.error("failed to sync repository {}".
+                                 format(repo.path))
+                    ret = 1
 
             if posthook:
                 logger.info("Running post hook")

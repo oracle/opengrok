@@ -22,7 +22,7 @@
 #
 
 from ..utils.command import Command
-from .repository import Repository
+from .repository import Repository, RepositoryException
 from shutil import which
 
 
@@ -63,7 +63,7 @@ class MercurialRepository(Repository):
     def reposync(self):
         branch = self.get_branch()
         if not branch:
-            # Error logged allready in get_branch().
+            # Error logged already in get_branch().
             return 1
 
         hg_command = [self.command, "pull"]
@@ -92,3 +92,28 @@ class MercurialRepository(Repository):
             return 1
 
         return 0
+
+    def incoming(self):
+        branch = self.get_branch()
+        if not branch:
+            # Error logged already in get_branch().
+            raise RepositoryException('cannot get branch for repository {}'.
+                                      format(self))
+
+        hg_command = [self.command, 'incoming']
+        if branch != "default":
+            hg_command.append("-b")
+            hg_command.append(branch)
+        cmd = self.getCommand(hg_command, work_dir=self.path,
+                              env_vars=self.env, logger=self.logger)
+        cmd.execute()
+        self.logger.debug(cmd.getoutputstr())
+        if cmd.getstate() != Command.FINISHED:
+            cmd.log_error("failed to perform incoming")
+            raise RepositoryException('failed to perform incoming command '
+                                      'for repository {}'.format(self))
+
+        if cmd.getretcode() == 0:
+            return True
+        else:
+            return False
