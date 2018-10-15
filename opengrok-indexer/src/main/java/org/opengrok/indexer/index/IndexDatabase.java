@@ -369,6 +369,10 @@ public class IndexDatabase {
         // the project's isIndexed() is true because it triggers RepositoryInfo
         // refresh.
         if (project != null) {
+            // Also need to store the correct value in configuration
+            // when indexer writes it to a file.
+            project.setIndexed(true);
+
             if (env.getConfigURI() != null) {
                 Response r = ClientBuilder.newClient()
                         .target(env.getConfigURI())
@@ -385,10 +389,6 @@ public class IndexDatabase {
                             new Object[] {project, r});
                 }
             }
-
-            // Also need to store the correct value in configuration
-            // when indexer writes it to a file.
-            project.setIndexed(true);
         }
     }
 
