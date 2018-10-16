@@ -63,11 +63,11 @@ def main():
 
     indexer = Indexer(args.options, logger=logger, java=args.java,
                       jar=args.jar, java_opts=args.java_opts,
-                      env_vars=args.environment)
+                      env_vars=args.environment, doprint=True)
     indexer.execute()
     ret = indexer.getretcode()
     if ret is None or ret != 0:
-        logger.error(indexer.getoutputstr())
+        # The output is already printed thanks to 'doprint' above.
         logger.error("Indexer command failed (return code {})".format(ret))
         sys.exit(1)
 

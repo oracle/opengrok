@@ -40,7 +40,8 @@ class TimeoutException(Exception):
 class Command:
     """
     wrapper for synchronous execution of commands via subprocess.Popen()
-    and getting their output (stderr is redirected to stdout) and return value
+    and getting their output (stderr is redirected to stdout by default)
+    and exit value
     """
 
     # state definitions
@@ -51,7 +52,7 @@ class Command:
 
     def __init__(self, cmd, args_subst=None, args_append=None, logger=None,
                  excl_subst=False, work_dir=None, env_vars=None, timeout=None,
-                 redirect_stderr=True, resource_limits=None):
+                 redirect_stderr=True, resource_limits=None, doprint=False):
         self.cmd = cmd
         self.state = "notrun"
         self.excl_subst = excl_subst
@@ -61,6 +62,7 @@ class Command:
         self.pid = None
         self.redirect_stderr = redirect_stderr
         self.limits = resource_limits
+        self.doprint = doprint
 
         self.logger = logger or logging.getLogger(__name__)
         logging.basicConfig()
@@ -144,13 +146,16 @@ class Command:
             stdout/stderr buffers fill up.
             """
 
-            def __init__(self, event, logger):
+            def __init__(self, event, logger, doprint=False):
                 super(OutputThread, self).__init__()
                 self.read_fd, self.write_fd = os.pipe()
                 self.pipe_fobj = os.fdopen(self.read_fd, encoding='utf8')
                 self.out = []
                 self.event = event
                 self.logger = logger
+                self.doprint = doprint
+
+                # Start the thread now.
                 self.start()
 
             def run(self):
@@ -168,6 +173,9 @@ class Command:
                         return
 
                     self.out.append(line)
+
+                    if self.doprint:
+                        print(line.strip())
 
             def getoutput(self):
                 return self.out
@@ -199,7 +207,8 @@ class Command:
 
         timeout_thread = None
         output_event = threading.Event()
-        output_thread = OutputThread(output_event, self.logger)
+        output_thread = OutputThread(output_event, self.logger,
+                                     doprint=self.doprint)
 
         # If stderr redirection is off, setup a thread that will capture
         # stderr data.
@@ -207,7 +216,8 @@ class Command:
             stderr_dest = subprocess.STDOUT
         else:
             stderr_event = threading.Event()
-            stderr_thread = OutputThread(stderr_event, self.logger)
+            stderr_thread = OutputThread(stderr_event, self.logger,
+                                         doprint=self.doprint)
             stderr_dest = stderr_thread
 
         try:
@@ -217,9 +227,8 @@ class Command:
             except PermissionError:
                 pass
             self.logger.debug("command = {}".format(self.cmd))
-            my_args = {}
-            my_args['stderr'] = stderr_dest
-            my_args['stdout'] = output_thread
+            my_args = {'stderr': stderr_dest,
+                       'stdout': output_thread}
             if self.env_vars:
                 my_env = os.environ.copy()
                 my_env.update(self.env_vars)
