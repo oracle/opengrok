@@ -42,7 +42,7 @@ class Indexer(Java):
     """
 
     def __init__(self, command, logger=None, java=None, jar='opengrok.jar',
-                 java_opts=None, env_vars=None):
+                 java_opts=None, env_vars=None, doprint=False):
 
         java_options = []
         if java_opts:
@@ -52,7 +52,7 @@ class Indexer(Java):
         logger.debug("Java options: {}".format(java_options))
 
         super().__init__(command, jar=jar, java=java, java_opts=java_options,
-                         logger=logger, env_vars=env_vars)
+                         logger=logger, env_vars=env_vars, doprint=doprint)
 
 
 def get_SCM_properties(logger):
