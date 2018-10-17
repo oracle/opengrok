@@ -810,7 +810,7 @@ public final class RuntimeEnvironment {
      * @return the default projects (may be null if not specified)
      */
     public Set<Project> getDefaultProjects() {
-        return threadConfig.get().getDefaultProjects();
+        return (Set<Project>)getConfigurationValue("defaultProjects");
     }
 
     /**
@@ -818,7 +818,7 @@ public final class RuntimeEnvironment {
      * @return at what size (in MB) we should flush the buffer
      */
     public double getRamBufferSize() {
-        return threadConfig.get().getRamBufferSize();
+        return (double)getConfigurationValue("ramBufferSize");
     }
 
     /**
@@ -829,31 +829,31 @@ public final class RuntimeEnvironment {
      * @param ramBufferSize the size(in MB) when we should flush the docs
      */
     public void setRamBufferSize(double ramBufferSize) {
-        threadConfig.get().setRamBufferSize(ramBufferSize);
+        setConfigurationValue("ramBufferSize", ramBufferSize);
     }
 
     public void setPluginDirectory(String pluginDirectory) {
-        threadConfig.get().setPluginDirectory(pluginDirectory);
+        setConfigurationValue("pluginDirectory", pluginDirectory);
     }
 
     public String getPluginDirectory() {
-        return threadConfig.get().getPluginDirectory();
+        return (String)getConfigurationValue("pluginDirectory");
     }
 
     public boolean isAuthorizationWatchdog() {
-        return threadConfig.get().isAuthorizationWatchdogEnabled();
+        return (boolean)getConfigurationValue("authorizationWatchdogEnabled");
     }
 
     public void setAuthorizationWatchdog(boolean authorizationWatchdogEnabled) {
-        threadConfig.get().setAuthorizationWatchdogEnabled(authorizationWatchdogEnabled);
+        setConfigurationValue("authorizationWatchdogEnabled", authorizationWatchdogEnabled);
     }
 
     public AuthorizationStack getPluginStack() {
-        return threadConfig.get().getPluginStack();
+        return (AuthorizationStack)getConfigurationValue("pluginStack");
     }
 
     public void setPluginStack(AuthorizationStack pluginStack) {
-        threadConfig.get().setPluginStack(pluginStack);
+        setConfigurationValue("pluginStack", pluginStack);
     }
 
     /**
@@ -862,7 +862,7 @@ public final class RuntimeEnvironment {
      * @return true if we can print per project progress %
      */
     public boolean isPrintProgress() {
-        return threadConfig.get().isPrintProgress();
+        return (boolean)getConfigurationValue("printProgress");
     }
 
     /**
@@ -870,8 +870,8 @@ public final class RuntimeEnvironment {
      *
      * @param printP new value
      */
-    public void setPrintProgress(boolean printP) {
-        threadConfig.get().setPrintProgress(printP);
+    public void setPrintProgress(boolean printProgress) {
+        setConfigurationValue("printProgress", printProgress);
     }
 
     /**
@@ -882,7 +882,7 @@ public final class RuntimeEnvironment {
      * @param allowLeadingWildcard set to true to activate (disabled by default)
      */
     public void setAllowLeadingWildcard(boolean allowLeadingWildcard) {
-        threadConfig.get().setAllowLeadingWildcard(allowLeadingWildcard);
+        setConfigurationValue("allowLeadingWildcard", allowLeadingWildcard);
     }
 
     /**
@@ -891,23 +891,23 @@ public final class RuntimeEnvironment {
      * @return true if a search may start with a wildcard
      */
     public boolean isAllowLeadingWildcard() {
-        return threadConfig.get().isAllowLeadingWildcard();
+        return (boolean)getConfigurationValue("allowLeadingWildcard");
     }
 
     public IgnoredNames getIgnoredNames() {
-        return threadConfig.get().getIgnoredNames();
+        return (IgnoredNames)getConfigurationValue("ignoredNames");
     }
 
     public void setIgnoredNames(IgnoredNames ignoredNames) {
-        threadConfig.get().setIgnoredNames(ignoredNames);
+        setConfigurationValue("ignoredNames", ignoredNames);
     }
 
     public Filter getIncludedNames() {
-        return threadConfig.get().getIncludedNames();
+        return (Filter)getConfigurationValue("includedNames");
     }
 
     public void setIncludedNames(Filter includedNames) {
-        threadConfig.get().setIncludedNames(includedNames);
+        setConfigurationValue("includedNames", includedNames);
     }
 
     /**
@@ -916,7 +916,7 @@ public final class RuntimeEnvironment {
      * @return the URL string fragment preceeding the username
      */
     public String getUserPage() {
-        return threadConfig.get().getUserPage();
+        return (String)getConfigurationValue("userPage");
     }
 
     /**
@@ -927,7 +927,17 @@ public final class RuntimeEnvironment {
      * @return {@code null} if not yet set, the client command otherwise.
      */
     public String getRepoCmd(String clazzName) {
-        return threadConfig.get().getRepoCmd(clazzName);
+        Lock readLock = configLock.readLock();
+        String cmd = null;
+        try {
+            readLock.lock();
+
+            cmd = configuration.getRepoCmd(clazzName);
+        } finally {
+            readLock.unlock();
+        }
+
+        return cmd;
     }
 
     /**
@@ -941,7 +951,16 @@ public final class RuntimeEnvironment {
      * @return the client command previously set, which might be {@code null}.
      */
     public String setRepoCmd(String clazzName, String cmd) {
-        return threadConfig.get().setRepoCmd(clazzName, cmd);
+        Lock writeLock = configLock.writeLock();
+        try {
+            writeLock.lock();
+
+            configuration.setRepoCmd(clazzName, cmd);
+        } finally {
+            writeLock.unlock();
+        }
+
+        return cmd;
     }
 
     /**
@@ -950,7 +969,7 @@ public final class RuntimeEnvironment {
      * @param userPage the URL fragment preceeding the username from history
      */
     public void setUserPage(String userPage) {
-        threadConfig.get().setUserPage(userPage);
+        setConfigurationValue("userPage", userPage);
     }
 
     /**
@@ -959,7 +978,7 @@ public final class RuntimeEnvironment {
      * @return the URL string fragment following the username
      */
     public String getUserPageSuffix() {
-        return threadConfig.get().getUserPageSuffix();
+        return (String)getConfigurationValue("userPageSuffix");
     }
 
     /**
@@ -969,7 +988,7 @@ public final class RuntimeEnvironment {
      * history
      */
     public void setUserPageSuffix(String userPageSuffix) {
-        threadConfig.get().setUserPageSuffix(userPageSuffix);
+        setConfigurationValue("userPageSuffix", userPageSuffix);
     }
 
     /**
