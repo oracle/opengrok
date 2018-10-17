@@ -186,17 +186,18 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testRegister() throws InterruptedException {
+    public void testPerThreadConsistency() throws InterruptedException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String path = "/tmp/dataroot";
+        String path = "/tmp/dataroot1";
         instance.setDataRoot(path);
         Thread t = new Thread(() -> {
             Configuration c = new Configuration();
+            c.setDataRoot("/tmp/dataroot2");
             RuntimeEnvironment.getInstance().setConfiguration(c);
         });
         t.start();
         t.join();
-        assertEquals(new File(path), new File(instance.getDataRootPath()));
+        assertEquals("/tmp/dataroot2", instance.getDataRootPath());
     }
 
     @Test
