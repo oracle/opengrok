@@ -62,6 +62,8 @@ import org.opengrok.indexer.index.Filter;
 import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 
+import static org.opengrok.indexer.util.IOUtils.getFileContent;
+
 /**
  * Placeholder class for all configuration variables. Due to the multithreaded
  * nature of the web application, each thread will use the same instance of the
@@ -1089,51 +1091,6 @@ public final class Configuration {
     }
 
     /**
-     * Get the contents of a file or empty string if the file cannot be read.
-     */
-    private static String getFileContent(File file) {
-        if (file == null || !file.canRead()) {
-            return "";
-        }
-        FileReader fin = null;
-        BufferedReader input = null;
-        try {
-            fin = new FileReader(file);
-            input = new BufferedReader(fin);
-            String line;
-            StringBuilder contents = new StringBuilder();
-            String EOL = System.getProperty("line.separator");
-            while ((line = input.readLine()) != null) {
-                contents.append(line).append(EOL);
-            }
-            return contents.toString();
-        } catch (java.io.FileNotFoundException e) {
-            LOGGER.log(Level.WARNING, "failed to find file: {0}",
-                e.getMessage());
-        } catch (java.io.IOException e) {
-            LOGGER.log(Level.WARNING, "failed to read file: {0}",
-                e.getMessage());
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (Exception e) {
-                    /*
-                     * nothing we can do about it
-                     */ }
-            } else if (fin != null) {
-                try {
-                    fin.close();
-                } catch (Exception e) {
-                    /*
-                     * nothing we can do about it
-                     */ }
-            }
-        }
-        return "";
-    }
-
-    /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the footer of generated web pages.
      */
@@ -1428,5 +1385,4 @@ public final class Configuration {
 
         return conf;
     }
-
 }
