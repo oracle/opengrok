@@ -1057,7 +1057,7 @@ public final class Indexer {
         IndexChangedListener progress)
             throws IOException {
         Statistics elapsed = new Statistics();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         LOGGER.info("Starting indexing");
 
         IndexerParallelizer parallelizer = new IndexerParallelizer(env);

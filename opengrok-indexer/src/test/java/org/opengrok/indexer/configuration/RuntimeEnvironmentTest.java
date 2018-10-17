@@ -85,7 +85,6 @@ public class RuntimeEnvironmentTest {
     public static void tearDownClass() throws Exception {
         // restore the configuration
         RuntimeEnvironment.getInstance().readConfiguration(originalConfig);
-        RuntimeEnvironment.getInstance().register();
         originalConfig.delete();
     }
 
@@ -191,7 +190,6 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String path = "/tmp/dataroot";
         instance.setDataRoot(path);
-        instance.register();
         Thread t = new Thread(() -> {
             Configuration c = new Configuration();
             RuntimeEnvironment.getInstance().setConfiguration(c);

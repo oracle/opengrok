@@ -295,19 +295,19 @@ public final class RuntimeEnvironment {
     }
 
     public int getCommandTimeout() {
-        return threadConfig.get().getCommandTimeout();
+        return (int)getConfigurationValue("commandTimeout");
     }
 
     public void setCommandTimeout(int timeout) {
-        threadConfig.get().setCommandTimeout(timeout);
+        setConfigurationValue("commandTimeout", timeout);
     }
 
     public int getInteractiveCommandTimeout() {
-        return threadConfig.get().getInteractiveCommandTimeout();
+        return (int)getConfigurationValue("interactiveCommandTimeout");
     }
 
     public void setInteractiveCommandTimeout(int timeout) {
-        threadConfig.get().setInteractiveCommandTimeout(timeout);
+        setConfigurationValue("interactiveCommandTimeout", timeout);
     }
     
     public Statistics getStatistics() {
@@ -479,7 +479,7 @@ public final class RuntimeEnvironment {
      * @return a list containing all of the projects
      */
     public List<Project> getProjectList() {
-        return new ArrayList<Project>(getProjects().values());
+        return new ArrayList<>(getProjects().values());
     }
 
     /**
@@ -543,18 +543,6 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Register this thread in the thread/configuration map (so that all
-     * subsequent calls to the RuntimeEnvironment from this thread will use the
-     * same configuration
-     *
-     * @return this instance
-     */
-    public RuntimeEnvironment register() {
-        threadConfig.set(configuration);
-        return this;
-    }
-
-    /**
      * Returns constructed project - repositories map.
      *
      * @return the map
@@ -613,7 +601,7 @@ public final class RuntimeEnvironment {
     public String getMandoc() {
         String value;
         return mandoc != null ? mandoc : (value =
-            threadConfig.get().getMandoc()) != null ? value :
+                (String)getConfigurationValue("mandoc")) != null ? value :
             System.getProperty("org.opengrok.indexer.analysis.Mandoc");
     }
 
@@ -632,19 +620,19 @@ public final class RuntimeEnvironment {
     }
 
     public int getCachePages() {
-        return threadConfig.get().getCachePages();
+        return (int)getConfigurationValue("cachePages");
     }
 
     public void setCachePages(int cachePages) {
-        threadConfig.get().setCachePages(cachePages);
+        setConfigurationValue("cachePages", cachePages);
     }
 
     public int getHitsPerPage() {
-        return threadConfig.get().getHitsPerPage();
+        return (int)getConfigurationValue("hitsPerPage");
     }
 
     public void setHitsPerPage(int hitsPerPage) {
-        threadConfig.get().setHitsPerPage(hitsPerPage);
+        setConfigurationValue("hitsPerPage", hitsPerPage);
     }
 
     private transient Boolean ctagsFound;
@@ -682,7 +670,7 @@ public final class RuntimeEnvironment {
      * @return the max time
      */
     public int getHistoryReaderTimeLimit() {
-        return threadConfig.get().getHistoryCacheTime();
+        return (int)getConfigurationValue("historyCacheTime");
     }
 
     /**
@@ -692,7 +680,7 @@ public final class RuntimeEnvironment {
      * @param historyReaderTimeLimit the max time in ms before it is cached
      */
     public void setHistoryReaderTimeLimit(int historyReaderTimeLimit) {
-        threadConfig.get().setHistoryCacheTime(historyReaderTimeLimit);
+        setConfigurationValue("historyCacheTime", historyReaderTimeLimit);
     }
 
     /**
@@ -701,7 +689,7 @@ public final class RuntimeEnvironment {
      * @return true if history cache is enabled
      */
     public boolean useHistoryCache() {
-        return threadConfig.get().isHistoryCache();
+        return (boolean)getConfigurationValue("historyCache");
     }
 
     /**
@@ -710,7 +698,7 @@ public final class RuntimeEnvironment {
      * @param useHistoryCache set false if you do not want to use history cache
      */
     public void setUseHistoryCache(boolean useHistoryCache) {
-        threadConfig.get().setHistoryCache(useHistoryCache);
+        setConfigurationValue("historyCache", useHistoryCache);
     }
 
     /**
@@ -719,7 +707,7 @@ public final class RuntimeEnvironment {
      * @return true if HTML should be generated during the indexing phase
      */
     public boolean isGenerateHtml() {
-        return threadConfig.get().isGenerateHtml();
+        return (boolean)getConfigurationValue("generateHtml");
     }
 
     /**
@@ -728,7 +716,7 @@ public final class RuntimeEnvironment {
      * @param generateHtml set this to true to pregenerate HTML
      */
     public void setGenerateHtml(boolean generateHtml) {
-        threadConfig.get().setGenerateHtml(generateHtml);
+        setConfigurationValue("generateHtml", generateHtml);
     }
 
     /**
@@ -738,7 +726,7 @@ public final class RuntimeEnvironment {
      * compressed
      */
     public void setCompressXref(boolean compressXref) {
-        threadConfig.get().setCompressXref(compressXref);
+        setConfigurationValue("compressXref", compressXref);
     }
 
     /**
@@ -747,19 +735,19 @@ public final class RuntimeEnvironment {
      * @return {@code true} if the html-files should be compressed.
      */
     public boolean isCompressXref() {
-        return threadConfig.get().isCompressXref();
+        return (boolean)getConfigurationValue("compressXref");
     }
 
     public boolean isQuickContextScan() {
-        return threadConfig.get().isQuickContextScan();
+        return (boolean)getConfigurationValue("quickContextScan");
     }
 
     public void setQuickContextScan(boolean quickContextScan) {
-        threadConfig.get().setQuickContextScan(quickContextScan);
+        setConfigurationValue("quickContextScan", quickContextScan);
     }
 
     public List<RepositoryInfo> getRepositories() {
-        return threadConfig.get().getRepositories();
+        return (List<RepositoryInfo>)getConfigurationValue("repositories");
     }
 
     /**
@@ -768,11 +756,11 @@ public final class RuntimeEnvironment {
      * @param repositories the repositories to use
      */
     public void setRepositories(List<RepositoryInfo> repositories) {
-        threadConfig.get().setRepositories(repositories);
+        setConfigurationValue("repositories", repositories);
     }
     
     public void removeRepositories() {
-        threadConfig.get().setRepositories(null);
+        setConfigurationValue("repositories", null);
     }
     
     /**
@@ -793,7 +781,14 @@ public final class RuntimeEnvironment {
      * @param repositories list of repositories
      */
     public void addRepositories(List<RepositoryInfo> repositories) {
-        threadConfig.get().addRepositories(repositories);
+        Lock writeLock = configLock.writeLock();
+        try {
+            writeLock.lock();
+
+            configuration.addRepositories(repositories);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -801,10 +796,10 @@ public final class RuntimeEnvironment {
      * The default projects are the projects you will search (from the web
      * application) if the page request didn't contain the cookie..
      *
-     * @param defaultProject The default project to use
+     * @param defaultProjects The default project to use
      */
-    public void setDefaultProjects(Set<Project> defaultProject) {
-        threadConfig.get().setDefaultProjects(defaultProject);
+    public void setDefaultProjects(Set<Project> defaultProjects) {
+        setConfigurationValue("defaultProjects", defaultProjects);
     }
 
     /**
@@ -1526,37 +1521,34 @@ public final class RuntimeEnvironment {
             writeLock.lock();
 
             this.configuration = configuration;
-            // HistoryGuru constructor uses environment properties so register()
-            // needs to be called first.
-            // Another case where the singleton anti-pattern bites us in the back.
-            register();
-
-            HistoryGuru histGuru = HistoryGuru.getInstance();
-
-            try {
-                generateProjectRepositoriesMap();
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
-            }
-
-            populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
-
-            // Set the working repositories in HistoryGuru.
-            if (subFileList != null) {
-                histGuru.invalidateRepositories(
-                        configuration.getRepositories(), subFileList, interactive);
-            } else {
-                histGuru.invalidateRepositories(configuration.getRepositories(),
-                        interactive);
-            }
-            // The invalidation of repositories above might have excluded some
-            // repositories in HistoryGuru so the configuration needs to reflect that.
-            configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
-
-            reloadIncludeFiles(configuration);
         } finally {
             writeLock.unlock();
         }
+
+        // HistoryGuru constructor needs environment properties so no locking is done here.
+        HistoryGuru histGuru = HistoryGuru.getInstance();
+
+        try {
+            generateProjectRepositoriesMap();
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
+        }
+
+        populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
+
+        // Set the working repositories in HistoryGuru.
+        if (subFileList != null) {
+            histGuru.invalidateRepositories(
+                    configuration.getRepositories(), subFileList, interactive);
+        } else {
+            histGuru.invalidateRepositories(configuration.getRepositories(),
+                    interactive);
+        }
+        // The invalidation of repositories above might have excluded some
+        // repositories in HistoryGuru so the configuration needs to reflect that.
+        configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
+
+        reloadIncludeFiles(configuration);
     }
 
     /**

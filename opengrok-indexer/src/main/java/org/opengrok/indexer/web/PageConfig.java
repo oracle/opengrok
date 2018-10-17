@@ -979,11 +979,10 @@ public final class PageConfig {
      *
      * @return the runtime env.
      * @see RuntimeEnvironment#getInstance()
-     * @see RuntimeEnvironment#register()
      */
     public RuntimeEnvironment getEnv() {
         if (env == null) {
-            env = RuntimeEnvironment.getInstance().register();
+            env = RuntimeEnvironment.getInstance();
         }
         return env;
     }
