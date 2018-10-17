@@ -111,7 +111,7 @@ public final class WebappListener
         RuntimeEnvironment.getInstance().watchDog.stop();
         RuntimeEnvironment.getInstance().stopExpirationTimer();
         try {
-            RuntimeEnvironment.getInstance().saveStatistigdcs();
+            RuntimeEnvironment.getInstance().saveStatistics();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
         }
