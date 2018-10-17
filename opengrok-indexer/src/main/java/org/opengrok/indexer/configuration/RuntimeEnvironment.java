@@ -262,8 +262,20 @@ public final class RuntimeEnvironment {
             writeLock.lock();
             invokeSetter(configuration, fieldName, value);
         } catch (IOException e) {
-            // TODO log something ?
-            return;
+            LOGGER.log(Level.WARNING, "failed to set value of field {}: {}", new Object[]{fieldName, e});
+        } finally {
+            if (writeLock != null) {
+                writeLock.unlock();
+            }
+        }
+    }
+
+    private void setConfigurationValueException(String fieldName, Object value) throws IOException {
+        Lock writeLock = null;
+        try {
+            writeLock = configLock.writeLock();
+            writeLock.lock();
+            invokeSetter(configuration, fieldName, value);
         } finally {
             if (writeLock != null) {
                 writeLock.unlock();
@@ -1008,8 +1020,8 @@ public final class RuntimeEnvironment {
      *
      * @param bugPattern the regex to search history comments
      */
-    public void setBugPattern(String bugPattern) {
-        setConfigurationValue("bugPattern", bugPattern);
+    public void setBugPattern(String bugPattern) throws IOException {
+        setConfigurationValueException("bugPattern", bugPattern);
     }
 
     /**
@@ -1044,8 +1056,8 @@ public final class RuntimeEnvironment {
      *
      * @param reviewPattern the regex to search history comments
      */
-    public void setReviewPattern(String reviewPattern) {
-        setConfigurationValue("reviewPattern", reviewPattern);
+    public void setReviewPattern(String reviewPattern) throws IOException {
+        setConfigurationValueException("reviewPattern", reviewPattern);
     }
 
     public String getWebappLAF() {

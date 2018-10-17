@@ -339,7 +339,7 @@ public class RuntimeEnvironmentTest {
             try {
                 instance.setBugPattern(test);
                 assertEquals(test, instance.getBugPattern());
-            } catch (PatternSyntaxException ex) {
+            } catch (IOException ex) {
                 fail("The pattern '" + test + "' should not throw an exception");
 
             }
@@ -361,7 +361,7 @@ public class RuntimeEnvironmentTest {
             try {
                 instance.setBugPattern(test);
                 fail("The pattern '" + test + "' should throw an exception");
-            } catch (PatternSyntaxException ex) {
+            } catch (IOException ex) {
             }
         }
     }
@@ -386,9 +386,9 @@ public class RuntimeEnvironmentTest {
         };
         for (String test : tests) {
             try {
-                instance.setBugPattern(test);
-                assertEquals(test, instance.getBugPattern());
-            } catch (PatternSyntaxException ex) {
+                instance.setReviewPattern(test);
+                assertEquals(test, instance.getReviewPattern());
+            } catch (IOException ex) {
                 fail("The pattern '" + test + "' should not throw an exception");
 
             }
@@ -408,9 +408,9 @@ public class RuntimeEnvironmentTest {
         };
         for (String test : tests) {
             try {
-                instance.setBugPattern(test);
+                instance.setReviewPattern(test);
                 fail("The pattern '" + test + "' should throw an exception");
-            } catch (PatternSyntaxException ex) {
+            } catch (IOException ex) {
             }
         }
     }
