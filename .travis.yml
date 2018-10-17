@@ -45,6 +45,7 @@ jobs:
       deploy:
         # Pre-release
         - provider: releases
+          name: $TRAVIS_TAG
           prerelease: true
           api_key:
             secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
@@ -55,6 +56,7 @@ jobs:
             condition: $TRAVIS_TAG =~ rc[0-9]+$
         # Full release
         - provider: releases
+          name: $TRAVIS_TAG
           api_key:
             secure: bCywC9GdBIzLvLG3cgM9SgOAdMRQchmqEyKQZtIfK4iNzH3GjZwLMH91Oha0X3XU/n+nxGKw2E9qpYRzWlcbxHXqIgjFTt+hkt7zAldjjyWJnOcAYqdUDfsH3NqNQBqMBg8q7Bjc0LVS6PfpTpZliZISrL6KSyDprRg7C0S+HAk=
           file: distribution/target/opengrok-$TRAVIS_TAG.tar.gz
