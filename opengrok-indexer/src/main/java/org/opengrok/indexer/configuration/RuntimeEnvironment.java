@@ -31,17 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.file.ClosedWatchServiceException;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -83,10 +73,6 @@ import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import org.opengrok.indexer.web.Statistics;
 import org.opengrok.indexer.web.Util;
 
-import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
 import static org.opengrok.indexer.util.ClassUtil.invokeGetter;
 import static org.opengrok.indexer.util.ClassUtil.invokeSetter;
@@ -229,6 +215,8 @@ public final class RuntimeEnvironment {
         return instance;
     }
 
+    public WatchDogService watchDog;
+
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
      * singleton anti-pattern.
@@ -236,6 +224,7 @@ public final class RuntimeEnvironment {
     private RuntimeEnvironment() {
         configuration = new Configuration();
         configLock = new ReentrantReadWriteLock();
+        watchDog = new WatchDogService();
     }
 
     private String getCanonicalPath(String s) {
@@ -1578,6 +1567,7 @@ public final class RuntimeEnvironment {
     }
 
     public Configuration getConfiguration() {
+        // TODO lock/clone ?
         return configuration;
     }
 
@@ -1691,7 +1681,7 @@ public final class RuntimeEnvironment {
      * Indexer (in which case some extra work is needed) or is it just a request
      * to set new configuration in place.
      *
-     * @param configuration xml configuration
+     * @param configuration XML configuration
      * @param reindex is the message result of reindex
      * @param interactive true if in interactive mode
      * @see #applyConfig(org.opengrok.indexer.configuration.Configuration,
@@ -1737,11 +1727,11 @@ public final class RuntimeEnvironment {
             refreshDateForLastIndexRun();
         }
 
-        // start/stop the watchdog if necessarry
+        // start/stop the watchdog if necessary
         if (isAuthorizationWatchdog() && config.getPluginDirectory() != null) {
-            startWatchDogService(new File(config.getPluginDirectory()));
+            watchDog.start(new File(config.getPluginDirectory()));
         } else {
-            stopWatchDogService();
+            watchDog.stop();
         }
 
         // set the new plugin directory and reload the authorization framework
@@ -1758,97 +1748,6 @@ public final class RuntimeEnvironment {
 
     public void refreshDateForLastIndexRun() {
         indexTime.refreshDateForLastIndexRun();
-    }
-
-    private Thread watchDogThread;
-    private WatchService watchDogWatcher;
-    public static final int THREAD_SLEEP_TIME = 2000;
-
-    /**
-     * Starts a watch dog service for a directory. It automatically reloads the
-     * AuthorizationFramework if there was a change in <b>real-time</b>.
-     * Suitable for plugin development.
-     *
-     * You can control start of this service by a configuration parameter
-     * {@link Configuration#authorizationWatchdogEnabled}
-     *
-     * @param directory root directory for plugins
-     */
-    public void startWatchDogService(File directory) {
-        stopWatchDogService();
-        if (directory == null || !directory.isDirectory() || !directory.canRead()) {
-            LOGGER.log(Level.INFO, "Watch dog cannot be started - invalid directory: {0}", directory);
-            return;
-        }
-        LOGGER.log(Level.INFO, "Starting watchdog in: {0}", directory);
-        watchDogThread = new Thread(() -> {
-            try {
-                watchDogWatcher = FileSystems.getDefault().newWatchService();
-                Path dir = Paths.get(directory.getAbsolutePath());
-
-                Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
-                        // attach monitor
-                        LOGGER.log(Level.FINEST, "Watchdog registering {0}", d);
-                        d.register(watchDogWatcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-                        return CONTINUE;
-                    }
-                });
-
-                LOGGER.log(Level.INFO, "Watch dog started {0}", directory);
-                while (!Thread.currentThread().isInterrupted()) {
-                    final WatchKey key;
-                    try {
-                        key = watchDogWatcher.take();
-                    } catch (ClosedWatchServiceException x) {
-                        break;
-                    }
-                    boolean reload = false;
-                    for (WatchEvent<?> event : key.pollEvents()) {
-                        final WatchEvent.Kind<?> kind = event.kind();
-
-                        if (kind == ENTRY_CREATE || kind == ENTRY_DELETE || kind == ENTRY_MODIFY) {
-                            reload = true;
-                        }
-                    }
-                    if (reload) {
-                        Thread.sleep(THREAD_SLEEP_TIME); // experimental wait if file is being written right now
-                        getAuthorizationFramework().reload();
-                    }
-                    if (!key.reset()) {
-                        break;
-                    }
-                }
-            } catch (InterruptedException | IOException ex) {
-                LOGGER.log(Level.FINEST, "Watchdog finishing (exiting)", ex);
-                Thread.currentThread().interrupt();
-            }
-            LOGGER.log(Level.FINER, "Watchdog finishing (exiting)");
-        }, "watchDogService");
-        watchDogThread.start();
-    }
-
-    /**
-     * Stops the watch dog service.
-     */
-    public void stopWatchDogService() {
-        if (watchDogWatcher != null) {
-            try {
-                watchDogWatcher.close();
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Cannot close WatchDogService: ", ex);
-            }
-        }
-        if (watchDogThread != null) {
-            watchDogThread.interrupt();
-            try {
-                watchDogThread.join();
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.WARNING, "Cannot join WatchDogService thread: ", ex);
-            }
-        }
-        LOGGER.log(Level.INFO, "Watchdog stoped");
     }
 
     private void maybeRefreshSearcherManager(SearcherManager sm) {
@@ -1962,8 +1861,7 @@ public final class RuntimeEnvironment {
         IndexReader[] subreaders = new IndexReader[projects.size()];
         int ii = 0;
 
-        // TODO might need to rewrite to Project instead of
-        // String , need changes in projects.jspf too
+        // TODO might need to rewrite to Project instead of String, need changes in projects.jspf too.
         for (String proj : projects) {
             try {
                 SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
