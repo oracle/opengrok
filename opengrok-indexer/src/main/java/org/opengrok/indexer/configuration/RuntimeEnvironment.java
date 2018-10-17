@@ -319,11 +319,11 @@ public final class RuntimeEnvironment {
     }
 
     public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
-        threadConfig.get().setLastEditedDisplayMode(lastEditedDisplayMode);
+        setConfigurationValue("lastEditedDisplayMode", lastEditedDisplayMode);
     }
 
     public boolean isLastEditedDisplayMode() {
-        return threadConfig.get().isLastEditedDisplayMode();
+        return (boolean)getConfigurationValue("lastEditedDisplayMode");
     }
 
     /**
@@ -332,7 +332,7 @@ public final class RuntimeEnvironment {
      * @return the path to the web application include files
      */
     public String getIncludeRootPath() {
-        return threadConfig.get().getIncludeRoot();
+        return (String)getConfigurationValue("includeRoot");
     }
 
     /**
@@ -340,7 +340,7 @@ public final class RuntimeEnvironment {
      * @param includeRoot path
      */
     public void setIncludeRoot(String includeRoot) {
-        threadConfig.get().setIncludeRoot(getCanonicalPath(includeRoot));
+        setConfigurationValue("includeRoot", getCanonicalPath(includeRoot));
     }
 
     /**
@@ -349,7 +349,7 @@ public final class RuntimeEnvironment {
      * @return the path to the index database
      */
     public String getDataRootPath() {
-        return threadConfig.get().getDataRoot();
+        return (String)getConfigurationValue("dataRoot");
     }
 
     /**
@@ -373,7 +373,7 @@ public final class RuntimeEnvironment {
      * @param dataRoot the index database
      */
     public void setDataRoot(String dataRoot) {
-        threadConfig.get().setDataRoot(getCanonicalPath(dataRoot));
+        setConfigurationValue("dataRoot", getCanonicalPath(dataRoot));
     }
 
     /**
@@ -382,7 +382,7 @@ public final class RuntimeEnvironment {
      * @return path to where the sources are located
      */
     public String getSourceRootPath() {
-        return configuration.getSourceRoot();
+        return (String)getConfigurationValue("sourceRoot");
     }
 
     /**
@@ -406,7 +406,7 @@ public final class RuntimeEnvironment {
      * @param sourceRoot the location of the sources
      */
     public void setSourceRoot(String sourceRoot) {
-        configuration.setSourceRoot(getCanonicalPath(sourceRoot));
+        setConfigurationValue("sourceRoot", getCanonicalPath(sourceRoot));
     }
 
     /**
@@ -479,7 +479,7 @@ public final class RuntimeEnvironment {
      * @return a list containing all of the projects
      */
     public List<Project> getProjectList() {
-        return new ArrayList<Project>(threadConfig.get().getProjects().values());
+        return new ArrayList<Project>(getProjects().values());
     }
 
     /**
@@ -488,7 +488,8 @@ public final class RuntimeEnvironment {
      * @return a Map with all of the projects
      */
     public Map<String,Project> getProjects() {
-        return threadConfig.get().getProjects();
+        Map<String,Project> projects = (Map<String,Project>)getConfigurationValue("projects");
+        return projects;
     }
 
     /**
@@ -508,9 +509,9 @@ public final class RuntimeEnvironment {
      */
     public void setProjects(Map<String,Project> projects) {
         if (projects != null) {
-            populateGroups(getGroups(), new TreeSet<Project>(projects.values()));
+            populateGroups(getGroups(), new TreeSet<>(projects.values()));
         }
-        threadConfig.get().setProjects(projects);
+        setConfigurationValue("projects", projects);
     }
 
     /**
@@ -1507,35 +1508,42 @@ public final class RuntimeEnvironment {
      * @param interactive true if in interactive mode
      */
     public void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
-        this.configuration = configuration;
-        // HistoryGuru constructor uses environment properties so register()
-        // needs to be called first.
-        // Another case where the singleton anti-pattern bites us in the back.
-        register();
-        
-        HistoryGuru histGuru = HistoryGuru.getInstance();
-        
+        Lock writeLock = configLock.writeLock();
         try {
-            generateProjectRepositoriesMap();
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
+            writeLock.lock();
+
+            this.configuration = configuration;
+            // HistoryGuru constructor uses environment properties so register()
+            // needs to be called first.
+            // Another case where the singleton anti-pattern bites us in the back.
+            register();
+
+            HistoryGuru histGuru = HistoryGuru.getInstance();
+
+            try {
+                generateProjectRepositoriesMap();
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
+            }
+
+            populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
+
+            // Set the working repositories in HistoryGuru.
+            if (subFileList != null) {
+                histGuru.invalidateRepositories(
+                        configuration.getRepositories(), subFileList, interactive);
+            } else {
+                histGuru.invalidateRepositories(configuration.getRepositories(),
+                        interactive);
+            }
+            // The invalidation of repositories above might have excluded some
+            // repositories in HistoryGuru so the configuration needs to reflect that.
+            configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
+
+            reloadIncludeFiles(configuration);
+        } finally {
+            writeLock.unlock();
         }
-        
-        populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
-        
-        // Set the working repositories in HistoryGuru.
-        if (subFileList != null) {
-            histGuru.invalidateRepositories(
-                configuration.getRepositories(), subFileList, interactive);
-        } else {
-            histGuru.invalidateRepositories(configuration.getRepositories(),
-                    interactive);
-        }
-        // The invalidation of repositories above might have excluded some
-        // repositories in HistoryGuru so the configuration needs to reflect that.
-        configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
-        
-        reloadIncludeFiles(configuration);
     }
 
     /**
