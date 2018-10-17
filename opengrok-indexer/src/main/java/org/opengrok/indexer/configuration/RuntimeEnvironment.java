@@ -54,6 +54,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -86,6 +89,10 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
+import static org.opengrok.indexer.configuration.Configuration.read;
+import static org.opengrok.indexer.util.ClassUtil.invokeGetter;
+import static org.opengrok.indexer.util.ClassUtil.invokeSetter;
+
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
 import org.opengrok.indexer.web.Prefix;
@@ -106,6 +113,7 @@ public final class RuntimeEnvironment {
     private static final String URL_PREFIX = "/source" + Prefix.SEARCH_R + "?";
 
     private Configuration configuration;
+    private ReentrantReadWriteLock configLock;
     private final ThreadLocal<Configuration> threadConfig;
     private static final RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
@@ -230,6 +238,7 @@ public final class RuntimeEnvironment {
      */
     private RuntimeEnvironment() {
         configuration = new Configuration();
+        configLock = new ReentrantReadWriteLock();
         threadConfig = ThreadLocal.withInitial(() -> configuration);
     }
 
@@ -246,12 +255,43 @@ public final class RuntimeEnvironment {
         }
     }
 
+    private Object getConfigurationValue(String fieldName) {
+        Lock readLock = null;
+        try {
+            readLock = configLock.readLock();
+            readLock.lock();
+            return invokeGetter(configuration, fieldName);
+        } catch (IOException e) {
+            return null;
+        } finally {
+            if (readLock != null) {
+                readLock.unlock();
+            }
+        }
+    }
+
+    private void setConfigurationValue(String fieldName, Object value) {
+        Lock writeLock = null;
+        try {
+            writeLock = configLock.writeLock();
+            writeLock.lock();
+            invokeSetter(configuration, fieldName, value);
+        } catch (IOException e) {
+            // TODO log something ?
+            return;
+        } finally {
+            if (writeLock != null) {
+                writeLock.unlock();
+            }
+        }
+    }
+
     public int getScanningDepth() {
-        return threadConfig.get().getScanningDepth();
+        return (int)getConfigurationValue("scanningDepth");
     }
 
     public void setScanningDepth(int scanningDepth) {
-        threadConfig.get().setScanningDepth(scanningDepth);
+        setConfigurationValue("scanningDepth", scanningDepth);
     }
 
     public int getCommandTimeout() {
@@ -943,7 +983,7 @@ public final class RuntimeEnvironment {
      * @return the URL string fragment preceeding the bug ID
      */
     public String getBugPage() {
-        return threadConfig.get().getBugPage();
+        return (String)getConfigurationValue("bugPage");
     }
 
     /**
@@ -952,7 +992,7 @@ public final class RuntimeEnvironment {
      * @param bugPage the URL fragment preceeding the bug ID
      */
     public void setBugPage(String bugPage) {
-        threadConfig.get().setBugPage(bugPage);
+        setConfigurationValue("bugPage", bugPage);
     }
 
     /**
