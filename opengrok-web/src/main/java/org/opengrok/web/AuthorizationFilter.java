@@ -52,10 +52,6 @@ public class AuthorizationFilter implements Filter {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
         HttpServletResponse httpRes = (HttpServletResponse) sr1;
 
-        // This way we trigger refresh for the current configuration value.
-        // Hotfix for #2382
-        RuntimeEnvironment.getInstance().register();
-
         // All RESTful API requests are allowed for now (also see LocalhostFilter).
         // The /search endpoint will go through authorization via SearchEngine.search()
         // so does not have to be exempted here.
