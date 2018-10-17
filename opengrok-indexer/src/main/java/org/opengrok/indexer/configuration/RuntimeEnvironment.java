@@ -864,7 +864,7 @@ public final class RuntimeEnvironment {
     /**
      * Set the printing of progress % flag (user convenience)
      *
-     * @param printP new value
+     * @param printProgress new value
      */
     public void setPrintProgress(boolean printProgress) {
         setConfigurationValue("printProgress", printProgress);
