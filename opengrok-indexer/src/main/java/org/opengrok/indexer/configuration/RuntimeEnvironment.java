@@ -1015,7 +1015,7 @@ public final class RuntimeEnvironment {
      * @return the regex that is looked for in history comments
      */
     public String getBugPattern() {
-        return threadConfig.get().getBugPattern();
+        return (String)getConfigurationValue("bugPattern");
     }
 
     /**
@@ -1024,7 +1024,7 @@ public final class RuntimeEnvironment {
      * @param bugPattern the regex to search history comments
      */
     public void setBugPattern(String bugPattern) {
-        threadConfig.get().setBugPattern(bugPattern);
+        setConfigurationValue("bugPattern", bugPattern);
     }
 
     /**
@@ -1033,7 +1033,7 @@ public final class RuntimeEnvironment {
      * @return the URL string fragment preceeding the review page ID
      */
     public String getReviewPage() {
-        return threadConfig.get().getReviewPage();
+        return (String)getConfigurationValue("reviewPage");
     }
 
     /**
@@ -1042,7 +1042,7 @@ public final class RuntimeEnvironment {
      * @param reviewPage the URL fragment preceeding the review page ID
      */
     public void setReviewPage(String reviewPage) {
-        threadConfig.get().setReviewPage(reviewPage);
+        setConfigurationValue("reviewPage", reviewPage);
     }
 
     /**
@@ -1051,7 +1051,7 @@ public final class RuntimeEnvironment {
      * @return the regex that is looked for in history comments
      */
     public String getReviewPattern() {
-        return threadConfig.get().getReviewPattern();
+        return (String)getConfigurationValue("reviewPattern");
     }
 
     /**
@@ -1060,43 +1060,43 @@ public final class RuntimeEnvironment {
      * @param reviewPattern the regex to search history comments
      */
     public void setReviewPattern(String reviewPattern) {
-        threadConfig.get().setReviewPattern(reviewPattern);
+        setConfigurationValue("reviewPattern", reviewPattern);
     }
 
     public String getWebappLAF() {
-        return threadConfig.get().getWebappLAF();
+        return (String)getConfigurationValue("webappLAF");
     }
 
     public void setWebappLAF(String laf) {
-        threadConfig.get().setWebappLAF(laf);
+        setConfigurationValue("webappLAF", laf);
     }
 
     public Configuration.RemoteSCM getRemoteScmSupported() {
-        return threadConfig.get().getRemoteScmSupported();
+        return (Configuration.RemoteSCM)getConfigurationValue("remoteScmSupported");
     }
 
     public void setRemoteScmSupported(Configuration.RemoteSCM supported) {
-        threadConfig.get().setRemoteScmSupported(supported);
+        setConfigurationValue("remoteScmSupported", supported);
     }
 
     public boolean isOptimizeDatabase() {
-        return threadConfig.get().isOptimizeDatabase();
+        return (boolean)getConfigurationValue("optimizeDatabase");
     }
 
     public void setOptimizeDatabase(boolean optimizeDatabase) {
-        threadConfig.get().setOptimizeDatabase(optimizeDatabase);
+        setConfigurationValue("optimizeDatabase", optimizeDatabase);
     }
 
     public LuceneLockName getLuceneLocking() {
-        return threadConfig.get().getLuceneLocking();
+        return (LuceneLockName)getConfigurationValue("luceneLocking");
     }
 
     public boolean isIndexVersionedFilesOnly() {
-        return threadConfig.get().isIndexVersionedFilesOnly();
+        return (boolean)getConfigurationValue("indexVersionedFilesOnly");
     }
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
-        threadConfig.get().setIndexVersionedFilesOnly(indexVersionedFilesOnly);
+        setConfigurationValue("indexVersionedFilesOnly", indexVersionedFilesOnly);
     }
 
     /**
@@ -1105,7 +1105,7 @@ public final class RuntimeEnvironment {
      * @return a natural number &gt;= 1
      */
     public int getIndexingParallelism() {
-        int parallelism = threadConfig.get().getIndexingParallelism();
+        int parallelism = (int)getConfigurationValue("indexingParallelism");
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
             parallelism;
     }
@@ -1116,7 +1116,7 @@ public final class RuntimeEnvironment {
      * @return a natural number &gt;= 1
      */
     public int getHistoryParallelism() {
-        int parallelism = threadConfig.get().getHistoryParallelism();
+        int parallelism = (int)getConfigurationValue("historyParallelism");
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
             parallelism;
     }
@@ -1127,41 +1127,41 @@ public final class RuntimeEnvironment {
      * @return a natural number &gt;= 1
      */
     public int getHistoryRenamedParallelism() {
-        int parallelism = threadConfig.get().getHistoryRenamedParallelism();
+        int parallelism = (int)getConfigurationValue("historyRenamedParallelism");
         return parallelism < 1 ? Runtime.getRuntime().availableProcessors() :
             parallelism;
     }
 
     public boolean isTagsEnabled() {
-        return threadConfig.get().isTagsEnabled();
+        return (boolean)getConfigurationValue("tagsEnabled");
     }
 
     public void setTagsEnabled(boolean tagsEnabled) {
-        threadConfig.get().setTagsEnabled(tagsEnabled);
+        setConfigurationValue("tagsEnabled", tagsEnabled);
     }
 
     public boolean isScopesEnabled() {
-        return threadConfig.get().isScopesEnabled();
+        return (boolean)getConfigurationValue("scopesEnabled");
     }
 
     public void setScopesEnabled(boolean scopesEnabled) {
-        threadConfig.get().setScopesEnabled(scopesEnabled);
+        setConfigurationValue("scopesEnabled", scopesEnabled);
     }
 
     public boolean isProjectsEnabled() {
-        return threadConfig.get().isProjectsEnabled();
+        return (boolean)getConfigurationValue("projectsEnabled");
     }
 
     public void setProjectsEnabled(boolean projectsEnabled) {
-        threadConfig.get().setProjectsEnabled(projectsEnabled);
+        setConfigurationValue("projectsEnabled", projectsEnabled);
     }
 
     public boolean isFoldingEnabled() {
-        return threadConfig.get().isFoldingEnabled();
+        return (boolean)getConfigurationValue("foldingEnabled");
     }
 
     public void setFoldingEnabled(boolean foldingEnabled) {
-        threadConfig.get().setFoldingEnabled(foldingEnabled);
+        setConfigurationValue("foldingEnabled", foldingEnabled);
     }
 
     public Date getDateForLastIndexRun() {
@@ -1169,19 +1169,19 @@ public final class RuntimeEnvironment {
     }
 
     public String getCTagsExtraOptionsFile() {
-        return threadConfig.get().getCTagsExtraOptionsFile();
+        return (String)getConfigurationValue("CTagsExtraOptionsFile");
     }
 
     public void setCTagsExtraOptionsFile(String filename) {
-        threadConfig.get().setCTagsExtraOptionsFile(filename);
+        setConfigurationValue("CTagsExtraOptionsFile", filename);
     }
 
     public Set<String> getAllowedSymlinks() {
-        return threadConfig.get().getAllowedSymlinks();
+        return (Set<String>)getConfigurationValue("allowedSymlinks");
     }
 
     public void setAllowedSymlinks(Set<String> allowedSymlinks) {
-        threadConfig.get().setAllowedSymlinks(allowedSymlinks);
+        setConfigurationValue("allowedSymlinks", allowedSymlinks);
     }
 
     /**
@@ -1189,7 +1189,7 @@ public final class RuntimeEnvironment {
      * @return if we obfuscate emails
      */
     public boolean isObfuscatingEMailAddresses() {
-        return threadConfig.get().isObfuscatingEMailAddresses();
+        return (boolean)getConfigurationValue("obfuscatingEMailAddresses");
     }
 
     /**
@@ -1197,7 +1197,7 @@ public final class RuntimeEnvironment {
      * @param obfuscate should we obfuscate emails?
      */
     public void setObfuscatingEMailAddresses(boolean obfuscate) {
-        threadConfig.get().setObfuscatingEMailAddresses(obfuscate);
+        setConfigurationValue("obfuscatingEMailAddresses", obfuscate);
     }
 
     /**
@@ -1207,7 +1207,7 @@ public final class RuntimeEnvironment {
      * {@code false} otherwise
      */
     public boolean isChattyStatusPage() {
-        return threadConfig.get().isChattyStatusPage();
+        return (boolean)getConfigurationValue("chattyStatusPage");
     }
 
     /**
@@ -1217,59 +1217,59 @@ public final class RuntimeEnvironment {
      * {@code false} otherwise
      */
     public void setChattyStatusPage(boolean chatty) {
-        threadConfig.get().setChattyStatusPage(chatty);
+        setConfigurationValue("chattyStatusPage", chatty);
     }
 
     public void setFetchHistoryWhenNotInCache(boolean nofetch) {
-        threadConfig.get().setFetchHistoryWhenNotInCache(nofetch);
+        setConfigurationValue("fetchHistoryWhenNotInCache", nofetch);
     }
 
     public boolean isFetchHistoryWhenNotInCache() {
-        return threadConfig.get().isFetchHistoryWhenNotInCache();
+        return (boolean)getConfigurationValue("fetchHistoryWhenNotInCache");
     }
 
     public void setHandleHistoryOfRenamedFiles(boolean enable) {
-        threadConfig.get().setHandleHistoryOfRenamedFiles(enable);
+        setConfigurationValue("handleHistoryOfRenamedFiles", enable);
     }
 
     public boolean isHandleHistoryOfRenamedFiles() {
-        return threadConfig.get().isHandleHistoryOfRenamedFiles();
+        return (boolean)getConfigurationValue("handleHistoryOfRenamedFiles");
     }
 
     public void setNavigateWindowEnabled(boolean enable) {
-        threadConfig.get().setNavigateWindowEnabled(enable);
+        setConfigurationValue("navigateWindowEnabled", enable);
     }
 
     public boolean isNavigateWindowEnabled() {
-        return threadConfig.get().isNavigateWindowEnabled();
+        return (boolean)getConfigurationValue("navigateWindowEnabled");
     }
 
     public void setRevisionMessageCollapseThreshold(int threshold) {
-        threadConfig.get().setRevisionMessageCollapseThreshold(threshold);
+        setConfigurationValue("revisionMessageCollapseThreshold", threshold);
     }
 
     public int getRevisionMessageCollapseThreshold() {
-        return threadConfig.get().getRevisionMessageCollapseThreshold();
+        return (int)getConfigurationValue("revisionMessageCollapseThreshold");
     }
 
     public void setMaxSearchThreadCount(int count) {
-        threadConfig.get().setMaxSearchThreadCount(count);
+        setConfigurationValue("maxSearchThreadCount", count);
     }
 
     public int getMaxSearchThreadCount() {
-        return threadConfig.get().getMaxSearchThreadCount();
+        return (int)getConfigurationValue("maxSearchThreadCount");
     }
 
     public int getCurrentIndexedCollapseThreshold() {
-        return threadConfig.get().getCurrentIndexedCollapseThreshold();
+        return (int)getConfigurationValue("currentIndexedCollapseThreshold");
     }
 
     public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
-        threadConfig.get().getCurrentIndexedCollapseThreshold();
+        setConfigurationValue("currentIndexedCollapseThreshold", currentIndexedCollapseThreshold);
     }
 
     public int getGroupsCollapseThreshold() {
-        return threadConfig.get().getGroupsCollapseThreshold();
+        return (int)getConfigurationValue("groupsCollapseThreshold");
     }
 
     // The URI is not necessary to be present in the configuration
