@@ -89,7 +89,7 @@ public final class WebappListener
         }
 
         if (env.getConfiguration().getPluginDirectory() != null && env.isAuthorizationWatchdog()) {
-            RuntimeEnvironment.getInstance().startWatchDogService(new File(env.getConfiguration().getPluginDirectory()));
+            RuntimeEnvironment.getInstance().watchDog.start(new File(env.getConfiguration().getPluginDirectory()));
         }
 
         env.startExpirationTimer();
@@ -108,10 +108,10 @@ public final class WebappListener
      */
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
-        RuntimeEnvironment.getInstance().stopWatchDogService();
+        RuntimeEnvironment.getInstance().watchDog.stop();
         RuntimeEnvironment.getInstance().stopExpirationTimer();
         try {
-            RuntimeEnvironment.getInstance().saveStatistics();
+            RuntimeEnvironment.getInstance().saveStatistigdcs();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
         }
