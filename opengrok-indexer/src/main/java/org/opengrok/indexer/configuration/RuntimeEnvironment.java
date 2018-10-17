@@ -55,7 +55,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,7 +88,6 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
-import static org.opengrok.indexer.configuration.Configuration.read;
 import static org.opengrok.indexer.util.ClassUtil.invokeGetter;
 import static org.opengrok.indexer.util.ClassUtil.invokeSetter;
 
@@ -114,7 +112,6 @@ public final class RuntimeEnvironment {
 
     private Configuration configuration;
     private ReentrantReadWriteLock configLock;
-    private final ThreadLocal<Configuration> threadConfig;
     private static final RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
     private static ExecutorService historyRenamedExecutor = null;
@@ -239,7 +236,6 @@ public final class RuntimeEnvironment {
     private RuntimeEnvironment() {
         configuration = new Configuration();
         configLock = new ReentrantReadWriteLock();
-        threadConfig = ThreadLocal.withInitial(() -> configuration);
     }
 
     private String getCanonicalPath(String s) {
@@ -1990,7 +1986,7 @@ public final class RuntimeEnvironment {
     }
 
     public void startExpirationTimer() {
-        messagesContainer.setMessageLimit(threadConfig.get().getMessageLimit());
+        messagesContainer.setMessageLimit((int)getConfigurationValue("messageLimit"));
         messagesContainer.startExpirationTimer();
     }
 
