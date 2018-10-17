@@ -128,6 +128,34 @@ public class ClassUtil {
         return v;
     }
 
+    private static Method getSetter(Object obj, String fieldName) throws IOException {
+        PropertyDescriptor desc;
+        try {
+            desc = new PropertyDescriptor(fieldName, obj.getClass());
+        } catch (IntrospectionException e) {
+            throw new IOException(e);
+        }
+        Method setter = desc.getWriteMethod();
+
+        if (setter == null) {
+            throw new IOException(
+                    String.format("No setter for the name \"%s\".", fieldName));
+        }
+
+        if (setter.getParameterCount() != 1) {
+            // not a setter
+            /*
+             * Actually should not happen as it is not considered as a
+             * writer method so an exception would be thrown earlier.
+             */
+            throw new IOException(
+                    String.format("The setter \"%s\" for the name \"%s\" does not take exactly 1 parameter.",
+                            setter.getName(), fieldName));
+        }
+
+        return setter;
+    }
+
     /**
      * Invokes a setter on an object and passes a value to that setter.
      *
@@ -156,41 +184,26 @@ public class ClassUtil {
      * @throws IOException if any error occurs (no suitable method, bad
      * conversion, ...)
      */
-    public static void invokeSetter(Object obj, String field, String value) throws IOException {
+    public static void invokeSetter(Object obj, String fieldName, String value) throws IOException {
+        Method setter = getSetter(obj, fieldName);
+        Class<?> c = setter.getParameterTypes()[0];
+        Object objValue = getObjectValue(c, value);
+        invokeSetter(obj, fieldName, objValue);
+    }
+
+    public static void invokeSetter(Object obj, String fieldName, Object value) throws IOException {
         try {
-            PropertyDescriptor desc = new PropertyDescriptor(field, obj.getClass());
-            Method setter = desc.getWriteMethod();
-
-            if (setter == null) {
-                throw new IOException(
-                        String.format("No setter for the name \"%s\".",
-                                field));
-            }
-
-            if (setter.getParameterCount() != 1) {
-                // not a setter
-                /*
-                 * Actually should not happen as it is not considered as a
-                 * writer method so an exception would be thrown earlier.
-                 */
-                throw new IOException(
-                        String.format("The setter \"%s\" for the name \"%s\" does not take exactly 1 parameter.",
-                                setter.getName(), field));
-            }
-
-            Class<?> c = setter.getParameterTypes()[0];
-            Object objValue = getObjectValue(c, value);
-            setter.invoke(obj, objValue);
+            Method setter = getSetter(obj, fieldName);
+            setter.invoke(obj, value);
         } catch (NumberFormatException ex) {
             throw new IOException(
                     String.format("Unsupported type conversion from String to a number for name \"%s\" - %s.",
-                            field, ex.getLocalizedMessage()), ex);
+                            fieldName, ex.getLocalizedMessage()), ex);
         } catch (IndexOutOfBoundsException ex) {
             throw new IOException(
                     String.format("The string is not long enough to extract 1 character for name \"%s\" - %s.",
-                            field, ex.getLocalizedMessage()), ex);
-        } catch (IntrospectionException
-                | IllegalAccessException
+                            fieldName, ex.getLocalizedMessage()), ex);
+        } catch (IllegalAccessException
                 | IllegalArgumentException
                 /*
                  * This the case when the invocation failed because the invoked
@@ -201,11 +214,10 @@ public class ClassUtil {
             throw new IOException(
                     String.format("Unsupported operation with object of class %s for name \"%s\" - %s.",
                             obj.getClass().toString(),
-                            field,
+                            fieldName,
                             ex.getCause() == null
                             ? ex.getLocalizedMessage()
-                            : ex.getCause().getLocalizedMessage()),
-                    ex);
+                            : ex.getCause().getLocalizedMessage()), ex);
         }
     }
 
