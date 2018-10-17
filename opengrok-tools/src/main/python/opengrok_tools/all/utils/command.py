@@ -175,7 +175,7 @@ class Command:
                     self.out.append(line)
 
                     if self.doprint:
-                        print(line.strip())
+                        print(line.rstrip())
 
             def getoutput(self):
                 return self.out
