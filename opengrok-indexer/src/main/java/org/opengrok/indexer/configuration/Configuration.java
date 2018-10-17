@@ -104,6 +104,9 @@ public final class Configuration {
     private static final String NONPOSITIVE_NUMBER_ERROR =
         "Invalid value for \"%s\" - \"%s\". Expected value greater than 0";
 
+    /**
+     * Path to {@code ctags} binary.
+     */
     private String ctags;
 
     /**
