@@ -1284,27 +1284,27 @@ public final class RuntimeEnvironment {
     }
 
     public boolean isHistoryEnabled() {
-        return threadConfig.get().isHistoryEnabled();
+        return (boolean)getConfigurationValue("historyEnabled");
     }
 
     public void setHistoryEnabled(boolean flag) {
-        threadConfig.get().setHistoryEnabled(flag);
+        setConfigurationValue("historyEnabled", flag);
     }
 
     public boolean getDisplayRepositories() {
-        return threadConfig.get().getDisplayRepositories();
+        return (boolean)getConfigurationValue("displayRepositories");
     }
 
     public void setDisplayRepositories(boolean flag) {
-        threadConfig.get().setDisplayRepositories(flag);
+        setConfigurationValue("displayRepositories", flag);
     }
 
     public boolean getListDirsFirst() {
-        return threadConfig.get().getListDirsFirst();
+        return (boolean)getConfigurationValue("listDirsFirst");
     }
 
     public void setListDirsFirst(boolean flag) {
-        threadConfig.get().setListDirsFirst(flag);
+        setConfigurationValue("listDirsFirst", flag);
     }
 
     /**
@@ -1344,7 +1344,7 @@ public final class RuntimeEnvironment {
      */
     public short getContextSurround() {
         return contextSurround != null ? contextSurround :
-            threadConfig.get().getContextSurround();
+                (short)getConfigurationValue("contextSurround");
     }
 
     /**
