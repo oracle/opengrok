@@ -529,7 +529,7 @@ public final class RuntimeEnvironment {
      * @return a set containing all of the groups (may be null)
      */
     public Set<Group> getGroups() {
-        return threadConfig.get().getGroups();
+        return (Set<Group>)getConfigurationValue("groups");
     }
 
     /**
@@ -538,8 +538,8 @@ public final class RuntimeEnvironment {
      * @param groups the set of groups to use
      */
     public void setGroups(Set<Group> groups) {
-        populateGroups(groups, new TreeSet<Project>(getProjects().values()));
-        threadConfig.get().setGroups(groups);
+        populateGroups(groups, new TreeSet<>(getProjects().values()));
+        setConfigurationValue("groups", groups);
     }
 
     /**
@@ -583,10 +583,9 @@ public final class RuntimeEnvironment {
      */
     public String getCtags() {
         String value;
-        return ctags != null ? ctags : (value =
-            threadConfig.get().getCtags()) != null ? value :
-            System.getProperty(SYSTEM_CTAGS_PROPERTY,
-            "ctags");
+        return ctags != null ? ctags :
+                (value = (String)getConfigurationValue("ctags")) != null ? value :
+                System.getProperty(SYSTEM_CTAGS_PROPERTY,"ctags");
     }
 
     /**
@@ -1302,7 +1301,7 @@ public final class RuntimeEnvironment {
      */
     public short getContextLimit() {
         return contextLimit != null ? contextLimit :
-            threadConfig.get().getContextLimit();
+                (short)getConfigurationValue("contextLimit");
     }
 
     /**
@@ -1378,7 +1377,14 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void writeConfiguration(File file) throws IOException {
-        threadConfig.get().write(file);
+        Lock readLock = configLock.readLock();
+        try {
+            readLock.lock();
+
+            configuration.write(file);
+        } finally {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -1388,17 +1394,24 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void writeConfiguration(String host) throws IOException {
-        Response r = ClientBuilder.newClient()
-                .target(host)
-                .path("api")
-                .path("v1")
-                .path("configuration")
-                .queryParam("reindex", true)
-                .request()
-                .put(Entity.xml(configuration.getXMLRepresentationAsString()));
+        Lock readLock = configLock.readLock();
+        try {
+            readLock.lock();
 
-        if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            throw new IOException(r.toString());
+            Response r = ClientBuilder.newClient()
+                    .target(host)
+                    .path("api")
+                    .path("v1")
+                    .path("configuration")
+                    .queryParam("reindex", true)
+                    .request()
+                    .put(Entity.xml(configuration.getXMLRepresentationAsString()));
+
+            if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+                throw new IOException(r.toString());
+            }
+        } finally {
+            readLock.unlock();
         }
     }
 
@@ -1558,7 +1571,7 @@ public final class RuntimeEnvironment {
     }
 
     public Configuration getConfiguration() {
-        return this.threadConfig.get();
+        return configuration;
     }
 
     /**
@@ -1703,7 +1716,7 @@ public final class RuntimeEnvironment {
 
         setConfiguration(config, interactive);
         LOGGER.log(Level.INFO, "Configuration updated: {0}",
-                configuration.getSourceRoot());
+                getConfigurationValue("sourceRoot"));
 
         if (reindex) {
             // We are assuming that each update of configuration
@@ -2018,5 +2031,4 @@ public final class RuntimeEnvironment {
     public Set<AcceptedMessage> getAllMessages() {
         return messagesContainer.getAllMessages();
     }
-
 }
