@@ -76,7 +76,58 @@ public class ClassUtil {
             LOGGER.log(Level.WARNING, "An exception ocurred during remarking transient fields:", ex);
         }
     }
-    
+
+    private static Object getObjectValue(Class c, String value) throws IOException {
+        Object v;
+        String paramClass = c.getName();
+
+        /*
+         * Java primitive types as per
+         * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">java
+         * datatypes</a>.
+         */
+        if (paramClass.equals("boolean") || paramClass.equals(Boolean.class.getName())) {
+            if (!BooleanUtil.isBoolean(value)) {
+                throw new IOException(String.format("Unsupported type conversion from String to a boolean for name \"%s\" -"
+                                + " got \"%s\" - allowed values are [false, off, 0, true, on, 1].",
+                        paramClass, value));
+            }
+            Boolean boolValue = Boolean.valueOf(value);
+            if (!boolValue) {
+                /*
+                 * The Boolean.valueOf() returns true only for "true" case
+                 * insensitive so now we have either the false values or
+                 * "on" or "1". These are convenient shortcuts for "on", "1"
+                 * to be interpreted as booleans.
+                 */
+                boolValue = boolValue || value.equalsIgnoreCase("on");
+                boolValue = boolValue || value.equals("1");
+            }
+            v = boolValue;
+        } else if (paramClass.equals("short") || paramClass.equals(Short.class.getName())) {
+            v = Short.valueOf(value);
+        } else if (paramClass.equals("int") || paramClass.equals(Integer.class.getName())) {
+            v = Integer.valueOf(value);
+        } else if (paramClass.equals("long") || paramClass.equals(Long.class.getName())) {
+            v = Long.valueOf(value);
+        } else if (paramClass.equals("float") || paramClass.equals(Float.class.getName())) {
+            v = Float.valueOf(value);
+        } else if (paramClass.equals("double") || paramClass.equals(Double.class.getName())) {
+            v = Double.valueOf(value);
+        } else if (paramClass.equals("byte") || paramClass.equals(Byte.class.getName())) {
+            v = Byte.valueOf(value);
+        } else if (paramClass.equals("char") || paramClass.equals(Character.class.getName())) {
+            v = value.charAt(0);
+        } else if (paramClass.equals(String.class.getName())) {
+            v = value;
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            v = mapper.readValue(value, c);
+        }
+
+        return v;
+    }
+
     /**
      * Invokes a setter on an object and passes a value to that setter.
      *
@@ -118,7 +169,7 @@ public class ClassUtil {
 
             if (setter.getParameterCount() != 1) {
                 // not a setter
-                /**
+                /*
                  * Actually should not happen as it is not considered as a
                  * writer method so an exception would be thrown earlier.
                  */
@@ -128,52 +179,8 @@ public class ClassUtil {
             }
 
             Class<?> c = setter.getParameterTypes()[0];
-            String paramClass = c.getName();
-
-            /**
-             * Java primitive types as per
-             * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">java
-             * datatypes</a>.
-             */
-            if (paramClass.equals("boolean") || paramClass.equals(Boolean.class.getName())) {
-                if (!BooleanUtil.isBoolean(value)) {
-                    throw new IOException(String.format("Unsupported type conversion from String to a boolean for name \"%s\" -"
-                            + " got \"%s\" - allowed values are [false, off, 0, true, on, 1].",
-                            field, value));
-                }
-                Boolean v = Boolean.valueOf(value);
-                if (!v) {
-                    /**
-                     * The Boolean.valueOf() returns true only for "true" case
-                     * insensitive so now we have either the false values or
-                     * "on" or "1". These are convenient shortcuts for "on", "1"
-                     * to be interpreted as booleans.
-                     */
-                    v = v || value.equalsIgnoreCase("on");
-                    v = v || value.equals("1");
-                }
-                setter.invoke(obj, v);
-            } else if (paramClass.equals("short") || paramClass.equals(Short.class.getName())) {
-                setter.invoke(obj, Short.valueOf(value));
-            } else if (paramClass.equals("int") || paramClass.equals(Integer.class.getName())) {
-                setter.invoke(obj, Integer.valueOf(value));
-            } else if (paramClass.equals("long") || paramClass.equals(Long.class.getName())) {
-                setter.invoke(obj, Long.valueOf(value));
-            } else if (paramClass.equals("float") || paramClass.equals(Float.class.getName())) {
-                setter.invoke(obj, Float.valueOf(value));
-            } else if (paramClass.equals("double") || paramClass.equals(Double.class.getName())) {
-                setter.invoke(obj, Double.valueOf(value));
-            } else if (paramClass.equals("byte") || paramClass.equals(Byte.class.getName())) {
-                setter.invoke(obj, Byte.valueOf(value));
-            } else if (paramClass.equals("char") || paramClass.equals(Character.class.getName())) {
-                setter.invoke(obj, value.charAt(0));
-            } else if (paramClass.equals(String.class.getName())) {
-                setter.invoke(obj, value);
-            } else {
-                ObjectMapper mapper = new ObjectMapper();
-                Object objValue = mapper.readValue(value, c);
-                setter.invoke(obj, objValue);
-            }
+            Object objValue = getObjectValue(c, value);
+            setter.invoke(obj, objValue);
         } catch (NumberFormatException ex) {
             throw new IOException(
                     String.format("Unsupported type conversion from String to a number for name \"%s\" - %s.",
@@ -185,7 +192,7 @@ public class ClassUtil {
         } catch (IntrospectionException
                 | IllegalAccessException
                 | IllegalArgumentException
-                /**
+                /*
                  * This the case when the invocation failed because the invoked
                  * method failed with an exception. All exceptions are
                  * propagated through this exception.
@@ -222,7 +229,7 @@ public class ClassUtil {
             }
 
             if (getter.getParameterCount() != 0) {
-                /**
+                /*
                  * Actually should not happen as it is not considered as a
                  * read method so an exception would be thrown earlier.
                  */
