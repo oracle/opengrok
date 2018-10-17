@@ -298,7 +298,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
             <plugin>
                 <groupId>de.jflex</groupId>
                 <artifactId>jflex-maven-plugin</artifactId>
-                <version>1.6.1</version>
+                <version>1.7.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -308,7 +308,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                             <lexDefinitions>
                                 <lexDefinition>${basedir}/target/jflex-sources</lexDefinition>
                             </lexDefinitions>
-                            <inputStreamCtor>false</inputStreamCtor>
                         </configuration>
                     </execution>
                 </executions>
