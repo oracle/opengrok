@@ -178,11 +178,10 @@ public class ClassUtil {
      * Any other parameter type will cause an exception.
      *
      * @param obj the object
-     * @param field name of the field which will be changed
+     * @param fieldName name of the field which will be changed
      * @param value desired value
      *
-     * @throws IOException if any error occurs (no suitable method, bad
-     * conversion, ...)
+     * @throws IOException if any error occurs (no suitable method, bad conversion, ...)
      */
     public static void invokeSetter(Object obj, String fieldName, String value) throws IOException {
         Method setter = getSetter(obj, fieldName);
