@@ -344,7 +344,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         // Try to match each project path as prefix of the given path.
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            final String lpath = path.replace(File.separatorChar, '/');
+            final String lpath = path;
             for (Project p : env.getProjectList()) {
                 String projectPath = p.getPath();
                 if (projectPath == null) {
@@ -358,7 +358,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
                 // a prefix for "/foo" and "/foo/bar", but not for "/foof".
                 if (lpath.startsWith(projectPath)
                         && (projectPath.length() == lpath.length()
-                        || lpath.charAt(projectPath.length()) == '/')) {
+                        || lpath.charAt(projectPath.length()) == File.separatorChar)) {
                     return p;
                 }
             }
