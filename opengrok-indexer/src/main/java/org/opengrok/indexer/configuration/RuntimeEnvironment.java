@@ -1019,6 +1019,7 @@ public final class RuntimeEnvironment {
      * Sets the bug regex for the history listing
      *
      * @param bugPattern the regex to search history comments
+     * @throws IOException
      */
     public void setBugPattern(String bugPattern) throws IOException {
         setConfigurationValueException("bugPattern", bugPattern);
@@ -1055,6 +1056,7 @@ public final class RuntimeEnvironment {
      * Sets the review(ARC) regex for the history listing
      *
      * @param reviewPattern the regex to search history comments
+     * @throws IOException
      */
     public void setReviewPattern(String reviewPattern) throws IOException {
         setConfigurationValueException("reviewPattern", reviewPattern);
