@@ -110,7 +110,7 @@ public final class RuntimeEnvironment {
 
     private Statistics statistics = new Statistics();
 
-    public IncludeFiles includeFiles;
+    public IncludeFiles includeFiles = new IncludeFiles();
 
     private final MessagesContainer messagesContainer = new MessagesContainer();
 
