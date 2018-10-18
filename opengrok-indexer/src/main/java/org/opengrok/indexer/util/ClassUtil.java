@@ -81,48 +81,52 @@ public class ClassUtil {
         Object v;
         String paramClass = c.getName();
 
-        /*
-         * Java primitive types as per
-         * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">java
-         * datatypes</a>.
-         */
-        if (paramClass.equals("boolean") || paramClass.equals(Boolean.class.getName())) {
-            if (!BooleanUtil.isBoolean(value)) {
-                throw new IOException(String.format("Unsupported type conversion from String to a boolean for name \"%s\" -"
-                                + " got \"%s\" - allowed values are [false, off, 0, true, on, 1].",
-                        paramClass, value));
+        try {
+            /*
+             * Java primitive types as per
+             * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">java
+             * datatypes</a>.
+             */
+            if (paramClass.equals("boolean") || paramClass.equals(Boolean.class.getName())) {
+                if (!BooleanUtil.isBoolean(value)) {
+                    throw new IOException(String.format("Unsupported type conversion from String to a boolean for name \"%s\" -"
+                                    + " got \"%s\" - allowed values are [false, off, 0, true, on, 1].",
+                            paramClass, value));
+                }
+                Boolean boolValue = Boolean.valueOf(value);
+                if (!boolValue) {
+                    /*
+                     * The Boolean.valueOf() returns true only for "true" case
+                     * insensitive so now we have either the false values or
+                     * "on" or "1". These are convenient shortcuts for "on", "1"
+                     * to be interpreted as booleans.
+                     */
+                    boolValue = boolValue || value.equalsIgnoreCase("on");
+                    boolValue = boolValue || value.equals("1");
+                }
+                v = boolValue;
+            } else if (paramClass.equals("short") || paramClass.equals(Short.class.getName())) {
+                v = Short.valueOf(value);
+            } else if (paramClass.equals("int") || paramClass.equals(Integer.class.getName())) {
+                v = Integer.valueOf(value);
+            } else if (paramClass.equals("long") || paramClass.equals(Long.class.getName())) {
+                v = Long.valueOf(value);
+            } else if (paramClass.equals("float") || paramClass.equals(Float.class.getName())) {
+                v = Float.valueOf(value);
+            } else if (paramClass.equals("double") || paramClass.equals(Double.class.getName())) {
+                v = Double.valueOf(value);
+            } else if (paramClass.equals("byte") || paramClass.equals(Byte.class.getName())) {
+                v = Byte.valueOf(value);
+            } else if (paramClass.equals("char") || paramClass.equals(Character.class.getName())) {
+                v = value.charAt(0);
+            } else if (paramClass.equals(String.class.getName())) {
+                v = value;
+            } else {
+                ObjectMapper mapper = new ObjectMapper();
+                v = mapper.readValue(value, c);
             }
-            Boolean boolValue = Boolean.valueOf(value);
-            if (!boolValue) {
-                /*
-                 * The Boolean.valueOf() returns true only for "true" case
-                 * insensitive so now we have either the false values or
-                 * "on" or "1". These are convenient shortcuts for "on", "1"
-                 * to be interpreted as booleans.
-                 */
-                boolValue = boolValue || value.equalsIgnoreCase("on");
-                boolValue = boolValue || value.equals("1");
-            }
-            v = boolValue;
-        } else if (paramClass.equals("short") || paramClass.equals(Short.class.getName())) {
-            v = Short.valueOf(value);
-        } else if (paramClass.equals("int") || paramClass.equals(Integer.class.getName())) {
-            v = Integer.valueOf(value);
-        } else if (paramClass.equals("long") || paramClass.equals(Long.class.getName())) {
-            v = Long.valueOf(value);
-        } else if (paramClass.equals("float") || paramClass.equals(Float.class.getName())) {
-            v = Float.valueOf(value);
-        } else if (paramClass.equals("double") || paramClass.equals(Double.class.getName())) {
-            v = Double.valueOf(value);
-        } else if (paramClass.equals("byte") || paramClass.equals(Byte.class.getName())) {
-            v = Byte.valueOf(value);
-        } else if (paramClass.equals("char") || paramClass.equals(Character.class.getName())) {
-            v = value.charAt(0);
-        } else if (paramClass.equals(String.class.getName())) {
-            v = value;
-        } else {
-            ObjectMapper mapper = new ObjectMapper();
-            v = mapper.readValue(value, c);
+        } catch (Exception e) {
+            throw new IOException("value conversion failed", e);
         }
 
         return v;
@@ -187,6 +191,7 @@ public class ClassUtil {
         Method setter = getSetter(obj, fieldName);
         Class<?> c = setter.getParameterTypes()[0];
         Object objValue = getObjectValue(c, value);
+        // TODO this will get the setter again => refactor
         invokeSetter(obj, fieldName, objValue);
     }
 
