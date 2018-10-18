@@ -20,7 +20,7 @@ def my_test_suite():
 
 setup(
     name='opengrok-tools',
-    version='1.1rc62',
+    version='1.1rc63',
     packages=[
         'opengrok_tools',
         'all',
