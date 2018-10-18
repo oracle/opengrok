@@ -81,6 +81,25 @@ python3 -m pip install opengrok_tools-{version}.tar.gz
 This will download all dependencies and install the package to your local python3 modules.
 You can use console scripts to run the package binaries.
 
+#### Installing to a specified directory
+
+You can also install the tools to a specified directory, we suggest you to use the python virtual environment for it.
+
+```bash
+cd /opt/opengrok
+python3 -m venv opengrok-tools
+opengrok-tools/bin/python -m pip install opengrok_tools-{version}.tar.gz
+```
+
+This will install the package and all the dependencies under the `/opt/opengrok/opengrok-tools` directory.
+You can then call the scripts with
+
+```bash
+/opt/opengrok/opengrok-tools/bin/opengrok-indexer
+/opt/opengrok/opengrok-tools/bin/opengrok-groups
+...
+```
+
 #### Uninstalling
 
 ```bash
