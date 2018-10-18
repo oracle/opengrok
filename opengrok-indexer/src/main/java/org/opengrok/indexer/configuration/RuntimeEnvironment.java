@@ -1395,24 +1395,25 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void writeConfiguration(String host) throws IOException {
-        Lock readLock = configLock.readLock();
+        String configXML;
         try {
-            readLock.lock();
-
-            Response r = ClientBuilder.newClient()
-                    .target(host)
-                    .path("api")
-                    .path("v1")
-                    .path("configuration")
-                    .queryParam("reindex", true)
-                    .request()
-                    .put(Entity.xml(configuration.getXMLRepresentationAsString()));
-
-            if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-                throw new IOException(r.toString());
-            }
+            configLock.readLock().lock();
+            configXML = configuration.getXMLRepresentationAsString();
         } finally {
-            readLock.unlock();
+            configLock.readLock().unlock();
+        }
+
+        Response r = ClientBuilder.newClient()
+                .target(host)
+                .path("api")
+                .path("v1")
+                .path("configuration")
+                .queryParam("reindex", true)
+                .request()
+                .put(Entity.xml(configXML));
+
+        if (r.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+            throw new IOException(r.toString());
         }
     }
 
