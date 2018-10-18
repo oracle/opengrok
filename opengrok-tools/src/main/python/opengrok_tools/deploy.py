@@ -29,8 +29,8 @@ import sys
 import tempfile
 from shutil import copyfile
 
-from all.utils.command import Command
-from all.utils.utils import get_command
+from .all.utils.command import Command
+from .all.utils.utils import get_command
 
 """
  deploy war file
