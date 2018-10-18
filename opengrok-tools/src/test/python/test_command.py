@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..', '..',
                 'main', 'python', 'opengrok_tools')))
 
-from all.utils.command import Command
+from opengrok_tools.utils.command import Command
 import tempfile
 
 class TestApp(unittest.TestCase):
