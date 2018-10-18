@@ -76,6 +76,7 @@ import org.opengrok.indexer.web.Util;
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
 import static org.opengrok.indexer.util.ClassUtil.invokeGetter;
 import static org.opengrok.indexer.util.ClassUtil.invokeSetter;
+import static org.opengrok.indexer.util.IOUtils.getFileContent;
 
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
@@ -109,6 +110,8 @@ public final class RuntimeEnvironment {
     private String configURI;
 
     private Statistics statistics = new Statistics();
+
+    public IncludeFiles includeFiles;
 
     private final MessagesContainer messagesContainer = new MessagesContainer();
 
@@ -1555,18 +1558,7 @@ public final class RuntimeEnvironment {
         // repositories in HistoryGuru so the configuration needs to reflect that.
         configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
 
-        reloadIncludeFiles(configuration);
-    }
-
-    /**
-     * Reload the content of all include files.
-     * @param configuration configuration
-     */
-    public void reloadIncludeFiles(Configuration configuration) {
-        configuration.getBodyIncludeFileContent(true);
-        configuration.getHeaderIncludeFileContent(true);
-        configuration.getFooterIncludeFileContent(true);
-        configuration.getForbiddenIncludeFileContent(true);
+        includeFiles.reloadIncludeFiles(configuration);
     }
 
     public Configuration getConfiguration() {

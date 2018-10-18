@@ -1097,68 +1097,17 @@ public final class Configuration {
      */
     public static final String FOOTER_INCLUDE_FILE = "footer_include";
 
-    private transient String footer = null;
-
-    /**
-     * Get the contents of the footer include file.
-     *
-     * @param force if true, reload even if already set
-     * @return an empty string if it could not be read successfully, the
-     * contents of the file otherwise.
-     * @see #FOOTER_INCLUDE_FILE
-     */
-    public String getFooterIncludeFileContent(boolean force) {
-        if (footer == null || force) {
-            footer = getFileContent(new File(getIncludeRoot(), FOOTER_INCLUDE_FILE));
-        }
-        return footer;
-    }
-
     /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the header of generated web pages.
      */
     public static final String HEADER_INCLUDE_FILE = "header_include";
 
-    private transient String header = null;
-
-    /**
-     * Get the contents of the header include file.
-     *
-     * @param force if true, reload even if already set
-     * @return an empty string if it could not be read successfully, the
-     * contents of the file otherwise.
-     * @see #HEADER_INCLUDE_FILE
-     */
-    public String getHeaderIncludeFileContent(boolean force) {
-        if (header == null || force) {
-            header = getFileContent(new File(getIncludeRoot(), HEADER_INCLUDE_FILE));
-        }
-        return header;
-    }
-    
     /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the body of web app's "Home" page.
      */
     public static final String BODY_INCLUDE_FILE = "body_include";
-
-    private transient String body = null;
-
-    /**
-     * Get the contents of the body include file.
-     *
-     * @param force if true, reload even if already set
-     * @return an empty string if it could not be read successfully, the
-     * contents of the file otherwise.
-     * @see Configuration#BODY_INCLUDE_FILE
-     */
-    public String getBodyIncludeFileContent(boolean force) {
-        if (body == null || force) {
-            body = getFileContent(new File(getIncludeRoot(), BODY_INCLUDE_FILE));
-        }
-        return body;
-    }
 
     /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
@@ -1166,24 +1115,6 @@ public final class Configuration {
      * code 403 Forbidden.
      */
     public static final String E_FORBIDDEN_INCLUDE_FILE = "error_forbidden_include";
-
-    private transient String eforbidden_content = null;
-
-    /**
-     * Get the contents of the page for forbidden error page (403 Forbidden)
-     * include file.
-     *
-     * @param force if true, reload even if already set
-     * @return an empty string if it could not be read successfully, the
-     * contents of the file otherwise.
-     * @see Configuration#E_FORBIDDEN_INCLUDE_FILE
-     */
-    public String getForbiddenIncludeFileContent(boolean force) {
-        if (eforbidden_content == null || force) {
-            eforbidden_content = getFileContent(new File(getIncludeRoot(), E_FORBIDDEN_INCLUDE_FILE));
-        }
-        return eforbidden_content;
-    }
 
     /**
      * @return path to the file holding compiled path descriptions for the web application
