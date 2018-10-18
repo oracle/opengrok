@@ -241,45 +241,33 @@ public final class RuntimeEnvironment {
     }
 
     private Object getConfigurationValue(String fieldName) {
-        Lock readLock = null;
         try {
-            readLock = configLock.readLock();
-            readLock.lock();
+            configLock.readLock().lock();
             return invokeGetter(configuration, fieldName);
         } catch (IOException e) {
             return null;
         } finally {
-            if (readLock != null) {
-                readLock.unlock();
-            }
+            configLock.readLock().unlock();
         }
     }
 
     private void setConfigurationValue(String fieldName, Object value) {
-        Lock writeLock = null;
         try {
-            writeLock = configLock.writeLock();
-            writeLock.lock();
+            configLock.writeLock().lock();
             invokeSetter(configuration, fieldName, value);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "failed to set value of field {}: {}", new Object[]{fieldName, e});
         } finally {
-            if (writeLock != null) {
-                writeLock.unlock();
-            }
+            configLock.writeLock().unlock();
         }
     }
 
     private void setConfigurationValueException(String fieldName, Object value) throws IOException {
-        Lock writeLock = null;
         try {
-            writeLock = configLock.writeLock();
-            writeLock.lock();
+            configLock.writeLock().lock();
             invokeSetter(configuration, fieldName, value);
         } finally {
-            if (writeLock != null) {
-                writeLock.unlock();
-            }
+            configLock.writeLock().unlock();
         }
     }
 
