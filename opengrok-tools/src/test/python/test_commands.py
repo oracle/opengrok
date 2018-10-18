@@ -46,40 +46,40 @@ class TestApp(unittest.TestCase):
         cmds = Commands(CommandsBase("opengrok-master",
                         [{"command": ["/bin/echo"]},
                          {"command": ["/bin/true"]},
-                         {"command": ["/bin/cp"]}]))
+                         {"command": ["/bin/ls"]}]))
         cmds.run()
         # print(p.retcodes)
         self.assertEqual({'/bin/echo opengrok-master': 0,
                           '/bin/true opengrok-master': 0,
-                          '/bin/cp opengrok-master': 1}, cmds.retcodes)
+                          '/bin/ls opengrok-master': 2}, cmds.retcodes)
 
-    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/cp'), "requires Unix")
+    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/ls') and os.path.exists('/bin/echo'), "requires Unix")
     def test_run_retcodes_usr(self):
         cmds = Commands(CommandsBase("opengrok-master",
                         [{"command": ["/bin/echo"]},
                          {"command": ["/bin/true"]},
-                         {"command": ["/bin/cp"]}]))
+                         {"command": ["/bin/ls"]}]))
         cmds.run()
         # print(p.retcodes)
         self.assertEqual({'/bin/echo opengrok-master': 0,
                           '/bin/true opengrok-master': 0,
-                          '/bin/cp opengrok-master': 1}, cmds.retcodes)
+                          '/bin/ls opengrok-master': 2}, cmds.retcodes)
 
-    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/cp'), "requires Unix")
+    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/ls'), "requires Unix")
     def test_terminate_after_non_zero_code(self):
         cmds = Commands(CommandsBase("opengrok-master",
-                                     [{"command": ["/bin/cp"]},
+                                     [{"command": ["/bin/ls"]},
                                       {"command": ["/bin/true"]}]))
         cmds.run()
-        self.assertEqual({'/bin/cp opengrok-master': 1}, cmds.retcodes)
+        self.assertEqual({'/bin/ls opengrok-master': 2}, cmds.retcodes)
 
-    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/cp'), "requires Unix")
+    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/ls'), "requires Unix")
     def test_terminate_after_non_zero_code_usr(self):
         cmds = Commands(CommandsBase("opengrok-master",
-                                     [{"command": ["/bin/cp"]},
+                                     [{"command": ["/bin/ls"]},
                                       {"command": ["/bin/true"]}]))
         cmds.run()
-        self.assertEqual({'/bin/cp opengrok-master': 1}, cmds.retcodes)
+        self.assertEqual({'/bin/ls opengrok-master': 2}, cmds.retcodes)
 
     @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
     def test_project_subst(self):
