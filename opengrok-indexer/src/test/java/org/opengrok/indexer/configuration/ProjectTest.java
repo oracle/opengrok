@@ -177,11 +177,11 @@ public class ProjectTest {
      */
     @Test
     public void testCreateProjectWithConfiguration() {
-        Configuration cfg = new Configuration();
-        cfg.setTabSize(4);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setTabSize(4);
 
-        Project p1 = new Project("a", "/a", cfg);
+        Project p1 = new Project("a", "/a");
 
-        assertEquals(cfg.getTabSize(), p1.getTabSize());
+        assertEquals(env.getTabSize(), p1.getTabSize());
     }
 }

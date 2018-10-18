@@ -104,7 +104,8 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Create a project with given name and path
+     * Create a project with given name and path and default configuration
+     * values.
      *
      * @param name the name of the project
      * @param path the path of the project relative to the source root
@@ -112,19 +113,6 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     public Project(String name, String path) {
         this.name = name;
         this.path = path;
-    }
-
-    /**
-     * Create a project with given name and path and default configuration
-     * values.
-     *
-     * @param name the name of the project
-     * @param path the path of the project relative to the source root
-     * @param cfg configuration containing the default values for project
-     * properties
-     */
-    public Project(String name, String path, Configuration cfg) {
-        this(name, path);
         completeWithDefaults();
     }
 

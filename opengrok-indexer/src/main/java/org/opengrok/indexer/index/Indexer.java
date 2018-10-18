@@ -943,7 +943,7 @@ public final class Indexer {
                 } else if (!name.startsWith(".") && file.isDirectory()) {
                     // Found a new directory with no matching project, so
                     // create a new project with default properties.
-                    projects.put(name, new Project(name, path, env.getConfiguration()));
+                    projects.put(name, new Project(name, path));
                 }
             }
         }
