@@ -129,7 +129,7 @@ public class RuntimeEnvironmentTest {
         // set include root
         f = File.createTempFile("includeroot", null);
         path = f.getCanonicalPath();
-        instance.getConfiguration().setIncludeRoot(path);
+        instance.setIncludeRoot(path);
         assertEquals(path, instance.getIncludeRootPath());
     }
     
@@ -984,7 +984,7 @@ public class RuntimeEnvironmentTest {
 
     @Test(expected = IOException.class)
     public void testSaveNullStatistics() throws IOException {
-        RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
+        RuntimeEnvironment.getInstance().setStatisticsFilePath(null);
         RuntimeEnvironment.getInstance().saveStatistics();
     }
 
@@ -995,7 +995,7 @@ public class RuntimeEnvironmentTest {
 
     @Test(expected = IOException.class)
     public void testLoadNullStatistics() throws IOException, ParseException {
-        RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
+        RuntimeEnvironment.getInstance().setStatisticsFilePath(null);
         RuntimeEnvironment.getInstance().loadStatistics();
     }
 

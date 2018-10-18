@@ -1574,16 +1574,25 @@ public final class RuntimeEnvironment {
         return configuration;
     }
 
+    public String getStatisticsFilePath() {
+        return (String)getConfigurationValue("statisticsFilePath");
+    }
+
+    public void setStatisticsFilePath(String path) {
+        setConfigurationValue("statisticsFilePath", path);
+    }
+
     /**
      * Dump statistics in JSON format into the file specified in configuration.
      *
      * @throws IOException
      */
     public void saveStatistics() throws IOException {
-        if (getConfiguration().getStatisticsFilePath() == null) {
+        String path = getStatisticsFilePath();
+        if (path == null) {
             throw new FileNotFoundException("Statistics file is not set (null)");
         }
-        saveStatistics(new File(getConfiguration().getStatisticsFilePath()));
+        saveStatistics(new File(path));
     }
 
     /**
@@ -1618,10 +1627,11 @@ public final class RuntimeEnvironment {
      * @throws ParseException
      */
     public void loadStatistics() throws IOException, ParseException {
-        if (getConfiguration().getStatisticsFilePath() == null) {
+        String path = getStatisticsFilePath();
+        if (path == null) {
             throw new FileNotFoundException("Statistics file is not set (null)");
         }
-        loadStatistics(new File(getConfiguration().getStatisticsFilePath()));
+        loadStatistics(new File(path));
     }
 
     /**
