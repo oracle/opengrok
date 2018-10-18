@@ -48,7 +48,7 @@ public class IncludeFilesTest {
     @BeforeClass
     public static void setUpClass() throws IOException {
         includeRoot = Files.createTempDirectory("include_root");
-        env.getConfiguration().setIncludeRoot(includeRoot.toString());
+        env.setIncludeRoot(includeRoot.toString());
     }
     
     private void writeStringToFile(File file, String str) throws IOException {
