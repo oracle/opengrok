@@ -1296,6 +1296,14 @@ public final class RuntimeEnvironment {
         setConfigurationValue("listDirsFirst", flag);
     }
 
+    public void setTabSize(int size) {
+        setConfigurationValue("tabSize", size);
+    }
+
+    public int getTabSize() {
+        return (int)getConfigurationValue("tabSize");
+    }
+
     /**
      * Gets the total number of context lines per file to show: either the last
      * value passed successfully to {@link #setContextLimit(java.lang.Short)}

@@ -938,7 +938,7 @@ public final class Indexer {
                     Project p = oldProjects.get(name);
                     p.setPath(path);
                     p.setName(name);
-                    p.completeWithDefaults(env.getConfiguration());
+                    p.completeWithDefaults();
                     projects.put(name, p);
                 } else if (!name.startsWith(".") && file.isDirectory()) {
                     // Found a new directory with no matching project, so
