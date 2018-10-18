@@ -45,12 +45,28 @@ python -m pip install -r requirements.txt
 
 ## Developing
 
-Start developing, making changes in files. Test your changes with usual python commands.
+When you start developing, install the package in a development mode.
 
 ```bash
-python src/main/python/opengrok_tools/groups.py
-python src/main/python/opengrok_tools/sync.py
+python setup.py develop
 ```
+
+This installs the package however keeping the links directly to your source,
+so you can edit the files and see the immediate results.
+
+Start developing, making changes in files. Test your changes with calling the entry points.
+
+```bash
+export PYTHONPATH=`pwd`/src/main/python:$PYTHONPATH
+opengrok-groups
+opengrok-sync
+```
+
+It is necessary to set the python path as the python interpreter is not able to find the packages
+in our provided structure on its own.
+
+Also you call the opengrok tools scripts by the entry points then (`opengrok-groups`, ...).
+Calling directly the python script `groups.py` would lead to error related to relative imports.
 
 ## Installation
 

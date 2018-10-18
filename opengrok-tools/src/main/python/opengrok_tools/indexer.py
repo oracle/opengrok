@@ -28,8 +28,8 @@ import logging
 import os
 import sys
 
-from all.utils.indexer import FindCtags, Indexer
-from all.utils.java import get_javaparser
+from .all.utils.indexer import FindCtags, Indexer
+from .all.utils.java import get_javaparser
 
 """
   opengrok.jar wrapper
@@ -39,7 +39,6 @@ from all.utils.java import get_javaparser
 
 
 def main():
-
     parser = argparse.ArgumentParser(description='OpenGrok indexer wrapper',
                                      parents=[get_javaparser()])
     parser.add_argument('-C', '--no_ctags_check', action='store_true',

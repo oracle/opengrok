@@ -27,7 +27,7 @@ import logging
 import os
 import sys
 
-from all.utils.java import Java, get_javaparser
+from .all.utils.java import Java, get_javaparser
 
 
 def main():

@@ -35,11 +35,11 @@ import sys
 import tempfile
 from os import path
 
-from all.utils.command import Command
-from all.utils.filelock import Timeout, FileLock
-from all.utils.opengrok import get_configuration, set_configuration, \
+from .all.utils.command import Command
+from .all.utils.filelock import Timeout, FileLock
+from .all.utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value
-from all.utils.utils import get_command
+from .all.utils.utils import get_command
 
 MAJOR_VERSION = sys.version_info[0]
 if (MAJOR_VERSION < 3):

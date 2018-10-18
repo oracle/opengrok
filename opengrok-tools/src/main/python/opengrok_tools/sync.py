@@ -39,10 +39,10 @@ import tempfile
 from multiprocessing import Pool
 from os import path
 
-from all.utils.commands import Commands, CommandsBase
-from all.utils.filelock import Timeout, FileLock
-from all.utils.opengrok import list_indexed_projects
-from all.utils.readconfig import read_config
+from .all.utils.commands import Commands, CommandsBase
+from .all.utils.filelock import Timeout, FileLock
+from .all.utils.opengrok import list_indexed_projects
+from .all.utils.readconfig import read_config
 
 major_version = sys.version_info[0]
 if (major_version < 3):
