@@ -60,7 +60,6 @@ import org.opengrok.indexer.index.Filter;
 import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.logger.LoggerFactory;
 
-import static org.opengrok.indexer.util.IOUtils.getFileContent;
 
 /**
  * Placeholder class for all configuration variables. Due to the multithreaded

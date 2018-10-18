@@ -76,7 +76,6 @@ import org.opengrok.indexer.web.Util;
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
 import static org.opengrok.indexer.util.ClassUtil.invokeGetter;
 import static org.opengrok.indexer.util.ClassUtil.invokeSetter;
-import static org.opengrok.indexer.util.IOUtils.getFileContent;
 
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
