@@ -43,6 +43,50 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <testSourceDirectory>src/test/python</testSourceDirectory>
 
         <plugins>
+
+            <plugin>
+                <!-- copy all the python files to the target directory
+                     so we produce the dist and build directories there -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources-python</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/src</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources-setup.py</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}</directory>
+                                    <includes>
+                                        <include>setup.py</include>
+                                        <include>MANIFEST.in</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -67,7 +111,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <id>generate python env</id>
                         <configuration>
                             <executable>python3</executable>
-                            <workingDirectory>${project.build.directory}/../</workingDirectory>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>-m</argument>
                                 <argument>venv</argument>
@@ -86,7 +130,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                         <configuration>
                             <executable>env/bin/python</executable>
-                            <workingDirectory>${project.build.directory}/../</workingDirectory>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>
                                 <argument>sdist</argument>
@@ -98,7 +142,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <id>python-test</id>
                         <configuration>
                             <executable>env/bin/python</executable>
-                            <workingDirectory>${project.build.directory}/../</workingDirectory>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>
                                 <argument>install</argument>
@@ -112,15 +156,11 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                 </executions>
-
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
-
         </plugins>
     </build>
-
 </project>
