@@ -1,5 +1,6 @@
 import os
 import unittest
+
 from setuptools import setup
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -20,7 +21,10 @@ def my_test_suite():
 
 setup(
     name='opengrok-tools',
-    version='1.1rc63',
+    # The package version is taken from maven.
+    # this "variable" is replaced by maven on the fly so don't change it here
+    # see pom.xml for this module
+    version='${project.python.package.version}',
     packages=[
         'opengrok_tools',
         'opengrok_tools.utils',

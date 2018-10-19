@@ -43,7 +43,31 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
         <testSourceDirectory>src/test/python</testSourceDirectory>
 
         <plugins>
-
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>generate-python-package-version</id>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <!--
+                                Use property ${project.version} but delete the "-" (dash) from it
+                                and place it into the property ${project.python.package.version}
+                             -->
+                            <name>project.python.package.version</name>
+                            <regex>-rc</regex>
+                            <value>${project.version}</value>
+                            <replacement>rc</replacement>
+                            <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <!-- copy all the python files to the target directory
                      so we produce the dist and build directories there -->
@@ -78,9 +102,16 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <resource>
                                     <directory>${basedir}</directory>
                                     <includes>
-                                        <include>setup.py</include>
                                         <include>MANIFEST.in</include>
                                     </includes>
+                                </resource>
+                                <!-- replace ${project.python.package.version} in setup.py -->
+                                <resource>
+                                    <directory>${basedir}</directory>
+                                    <includes>
+                                        <include>setup.py</include>
+                                    </includes>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                         </configuration>

@@ -20,9 +20,9 @@
         <destName>source.war</destName>
       </file>
       <file>
-        <source>${project.basedir}/../opengrok-tools/${project.build.directory}/dist/opengrok-tools-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}${parsedVersion.qualifier}.tar.gz</source>
+        <source>${project.basedir}/../opengrok-tools/${project.build.directory}/dist/opengrok-tools-${project.python.package.version}.tar.gz</source>
         <outputDirectory>tools</outputDirectory>
-        <destName>opengrok-tools.tar.gz</destName>
+        <destName>opengrok-tools-${project.python.package.version}.tar.gz</destName>
       </file>
     </files>
     <fileSets>
