@@ -103,6 +103,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                     <directory>${basedir}</directory>
                                     <includes>
                                         <include>MANIFEST.in</include>
+                                        <include>README.md</include>
                                     </includes>
                                 </resource>
                                 <!-- replace ${project.python.package.version} in setup.py -->
