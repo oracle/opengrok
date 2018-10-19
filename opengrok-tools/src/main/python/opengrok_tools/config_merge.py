@@ -26,7 +26,7 @@ import logging
 import os
 import sys
 
-from .all.utils.java import Java, get_javaparser
+from .utils.java import Java, get_javaparser
 
 """
  Wrapper for Java program merging OpenGrok configuration.

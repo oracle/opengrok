@@ -28,9 +28,9 @@ import os
 import sys
 import tempfile
 
-from .all.utils.indexer import Indexer
-from .all.utils.java import get_javaparser
-from .all.utils.opengrok import get_configuration
+from .utils.indexer import Indexer
+from .utils.java import get_javaparser
+from .utils.opengrok import get_configuration
 
 """
  OpenGrok reindexing script for single project. Makes sure it uses

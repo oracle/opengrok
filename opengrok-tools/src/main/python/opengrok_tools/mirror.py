@@ -37,13 +37,13 @@ import sys
 import tempfile
 from logging.handlers import RotatingFileHandler
 
-from .all.utils.filelock import Timeout, FileLock
-from .all.utils.hook import run_hook
-from .all.utils.opengrok import get_repos, get_config_value, get_repo_type
-from .all.utils.readconfig import read_config
-from .all.utils.repofactory import get_repository
-from .all.utils.utils import is_exe, check_create_dir, get_int, diff_list
-from .all.scm.repository import RepositoryException
+from .utils.filelock import Timeout, FileLock
+from .utils.hook import run_hook
+from .utils.opengrok import get_repos, get_config_value, get_repo_type
+from .utils.readconfig import read_config
+from .utils.repofactory import get_repository
+from .utils.utils import is_exe, check_create_dir, get_int, diff_list
+from .scm.repository import RepositoryException
 
 
 major_version = sys.version_info[0]

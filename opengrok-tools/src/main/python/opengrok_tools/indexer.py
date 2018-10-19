@@ -28,8 +28,8 @@ import logging
 import os
 import sys
 
-from .all.utils.indexer import FindCtags, Indexer
-from .all.utils.java import get_javaparser
+from .utils.indexer import FindCtags, Indexer
+from .utils.java import get_javaparser
 
 """
   opengrok.jar wrapper
