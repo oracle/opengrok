@@ -30,7 +30,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..', '..',
-                'main', 'python', 'opengrok_tools')))
+                'main', 'python')))
 
 from opengrok_tools.utils.commands import Commands, CommandsBase
 
@@ -41,50 +41,38 @@ class TestApp(unittest.TestCase):
                         [{"command": ['foo']}, {"command": ["bar"]}]))
         self.assertEqual("opengrok-master", str(cmds))
 
-    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/cp'), "requires Unix")
+    @unittest.skipUnless(os.path.exists('/bin/sh') and os.path.exists('/bin/echo'), "requires Unix")
     def test_run_retcodes(self):
         cmds = Commands(CommandsBase("opengrok-master",
                         [{"command": ["/bin/echo"]},
-                         {"command": ["/bin/true"]},
-                         {"command": ["/bin/ls"]}]))
+                         {"command": ["/bin/sh", "-c", "echo " + Commands.PROJECT_SUBST + "; exit 0"]},
+                         {"command": ["/bin/sh", "-c", "echo " + Commands.PROJECT_SUBST + "; exit 1"]}]))
         cmds.run()
-        # print(p.retcodes)
         self.assertEqual({'/bin/echo opengrok-master': 0,
-                          '/bin/true opengrok-master': 0,
-                          '/bin/ls opengrok-master': 2}, cmds.retcodes)
+                          '/bin/sh -c echo opengrok-master; exit 0': 0,
+                          '/bin/sh -c echo opengrok-master; exit 1': 1}, cmds.retcodes)
 
-    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/ls') and os.path.exists('/bin/echo'), "requires Unix")
-    def test_run_retcodes_usr(self):
-        cmds = Commands(CommandsBase("opengrok-master",
-                        [{"command": ["/bin/echo"]},
-                         {"command": ["/bin/true"]},
-                         {"command": ["/bin/ls"]}]))
-        cmds.run()
-        # print(p.retcodes)
-        self.assertEqual({'/bin/echo opengrok-master': 0,
-                          '/bin/true opengrok-master': 0,
-                          '/bin/ls opengrok-master': 2}, cmds.retcodes)
-
-    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/ls'), "requires Unix")
+    @unittest.skipUnless(os.path.exists('/bin/sh') and os.path.exists('/bin/echo'), "requires Unix")
     def test_terminate_after_non_zero_code(self):
         cmds = Commands(CommandsBase("opengrok-master",
-                                     [{"command": ["/bin/ls"]},
-                                      {"command": ["/bin/true"]}]))
+                                     [{"command": ["/bin/sh", "-c", "echo " + Commands.PROJECT_SUBST + "; exit 255"]},
+                                      {"command": ["/bin/echo"]}]))
         cmds.run()
-        self.assertEqual({'/bin/ls opengrok-master': 2}, cmds.retcodes)
+        self.assertEqual({'/bin/sh -c echo opengrok-master; exit 255': 255}, cmds.retcodes)
 
-    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/ls'), "requires Unix")
-    def test_terminate_after_non_zero_code_usr(self):
+    @unittest.skipUnless(os.path.exists('/bin/sh') and os.path.exists('/bin/echo'), "requires Unix")
+    def test_exit_2_handling(self):
         cmds = Commands(CommandsBase("opengrok-master",
-                                     [{"command": ["/bin/ls"]},
-                                      {"command": ["/bin/true"]}]))
+                                     [{"command": ["/bin/sh", "-c", "echo " + Commands.PROJECT_SUBST + "; exit 2"]},
+                                      {"command": ["/bin/echo"]}]))
         cmds.run()
-        self.assertEqual({'/bin/ls opengrok-master': 2}, cmds.retcodes)
+        self.assertEqual({'/bin/sh -c echo opengrok-master; exit 2': 2}, cmds.retcodes)
+        self.assertFalse(cmds.failed)
 
-    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
+    @unittest.skipUnless(os.path.exists('/bin/echo'), "requires Unix")
     def test_project_subst(self):
         cmds = Commands(CommandsBase("test-subst",
-                        [{"command": ["/bin/echo", '%PROJECT%']}]))
+                        [{"command": ["/bin/echo", Commands.PROJECT_SUBST]}]))
         cmds.run()
         self.assertEqual(['test-subst\n'],
                          cmds.outputs['/bin/echo test-subst'])
