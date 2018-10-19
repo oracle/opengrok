@@ -139,13 +139,28 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <phase>package</phase>
                     </execution>
                     <execution>
-                        <id>python-test</id>
+                        <id>python-test-install</id>
                         <configuration>
                             <executable>env/bin/python</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>
                                 <argument>install</argument>
+                            </arguments>
+                            <skip>${skipTests}</skip>
+                        </configuration>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>python-test</id>
+                        <configuration>
+                            <executable>env/bin/python</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>setup.py</argument>
                                 <argument>test</argument>
                             </arguments>
                             <skip>${skipTests}</skip>
