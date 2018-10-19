@@ -88,7 +88,8 @@ class Commands(CommandsBase):
 
     def call_rest_api(self, command):
         """
-        Make RESTful API call.
+        Make RESTful API call. Occurrence of PROJECT_SUBST in the URI will be
+        replaced by project name.
         """
         command = command.get("command")
         uri = command[0].replace(self.PROJECT_SUBST, self.name)
@@ -97,7 +98,7 @@ class Commands(CommandsBase):
 
         headers = None
         json_data = None
-        if len(data) > 0:
+        if data:
             headers = {'Content-Type': 'application/json'}
             json_data = json.dumps(data).replace(self.PROJECT_SUBST, self.name)
             self.logger.debug("JSON data: {}".format(json_data))
@@ -109,7 +110,7 @@ class Commands(CommandsBase):
         elif verb == 'DELETE':
             delete(self.logger, uri, data)
         else:
-            self.logger.error('Unknown verb in command {}'.
+            self.logger.error('Unknown HTTP verb in command {}'.
                               format(command))
 
     def run(self):
@@ -118,6 +119,10 @@ class Commands(CommandsBase):
         First command that returns code other than 0 terminates the sequence.
         If the command has return code 2, the sequence will be terminated
         however it will not be treated as error.
+
+        If a command contains PROJECT_SUBST pattern, it will be replaced
+        by project name, otherwise project name will be appended to the
+        argument list of the command.
 
         Any command entry that is a URI, will be used to submit RESTful API
         request. Return codes for these requests are not checked.
