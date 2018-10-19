@@ -12,12 +12,9 @@ final (i.e. non-prerelease) version is released:
 
 The below steps are common for both pre-release and final release:
 
-1. build must be clean
+1. check that latest build passes tests, test code coverage is above given threshold
 
-   `mvn clean package`
-
-1. sanity check:
-
+   If extra care is needed (final release, significant changes since the last release, etc.), consider checking the following:
    - index fairly large code base, ideally multiple projects
    - deploy webapp
    - check UI:
@@ -28,10 +25,6 @@ The below steps are common for both pre-release and final release:
      - directory listing
        - check sorting using multiple criteria
      - perform search using multiple fields across multiple projects
-
-1. check all tests pass, test code coverage is above given threshold
-
-   Additional tools to use: pmd, findbugs, checkstyle, jdepend
 
    The release is OK, once above is fulfilled to our satisfaction.
 
