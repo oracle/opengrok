@@ -783,7 +783,11 @@ public final class RuntimeEnvironment {
      * @return the default projects (may be null if not specified)
      */
     public Set<Project> getDefaultProjects() {
-        return Collections.unmodifiableSet((Set<Project>)getConfigurationValue("defaultProjects"));
+        Set<Project> projects = (Set<Project>)getConfigurationValue("defaultProjects");
+        if (projects == null) {
+            return null;
+        }
+        return Collections.unmodifiableSet(projects);
     }
 
     /**
