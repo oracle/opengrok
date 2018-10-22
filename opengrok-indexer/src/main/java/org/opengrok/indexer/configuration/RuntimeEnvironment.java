@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,7 +66,7 @@ import org.opengrok.indexer.index.Filter;
 import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.Executor;
+import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.web.messages.Message;
 import org.opengrok.indexer.web.messages.MessagesContainer;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
@@ -108,11 +107,8 @@ public final class RuntimeEnvironment {
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
 
     private String configURI;
-
     private Statistics statistics = new Statistics();
-
     public IncludeFiles includeFiles = new IncludeFiles();
-
     private final MessagesContainer messagesContainer = new MessagesContainer();
 
     /**
@@ -136,7 +132,6 @@ public final class RuntimeEnvironment {
      * value is not mediated to {@link Configuration}.
      */
     private String ctags;
-    private static final String SYSTEM_CTAGS_PROPERTY = "org.opengrok.indexer.analysis.Ctags";
     /**
      * Stores a transient value when
      * {@link #setMandoc(java.lang.String)} is called -- i.e. the
@@ -156,9 +151,7 @@ public final class RuntimeEnvironment {
         watchDog = new WatchDogService();
     }
 
-    /**
-     * Instance of authorization framework.
-     */
+    /** Instance of authorization framework.*/
     private AuthorizationFramework authFramework;
 
     /* Get thread pool used for top-level repository history generation. */
@@ -233,9 +226,7 @@ public final class RuntimeEnvironment {
     public WatchDogService watchDog;
 
     private String getCanonicalPath(String s) {
-        if (s == null) {
-            return null;
-        }
+        if (s == null) { return null; }
         try {
             File file = new File(s);
             if (!file.exists()) {
@@ -248,7 +239,12 @@ public final class RuntimeEnvironment {
         }
     }
 
-    private Object getConfigurationValue(String fieldName) {
+    /**
+     * Get value of configuration field
+     * @param fieldName name of the field
+     * @return object value
+     */
+    public Object getConfigurationValue(String fieldName) {
         try {
             configLock.readLock().lock();
             return invokeGetter(configuration, fieldName);
@@ -259,7 +255,29 @@ public final class RuntimeEnvironment {
         }
     }
 
-    private void setConfigurationValue(String fieldName, Object value) {
+    /**
+     * Get value of configuration field
+     * @param fieldName name of the field
+     * @return object value
+     * @throws IOException
+     */
+    public Object getConfigurationValueException(String fieldName) throws IOException {
+        try {
+            configLock.readLock().lock();
+            return invokeGetter(configuration, fieldName);
+        } catch (IOException e) {
+            throw new IOException("getter", e);
+        } finally {
+            configLock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Set configuration value
+     * @param fieldName name of the field
+     * @param value string value
+     */
+    public void setConfigurationValue(String fieldName, String value) {
         try {
             configLock.writeLock().lock();
             invokeSetter(configuration, fieldName, value);
@@ -270,7 +288,28 @@ public final class RuntimeEnvironment {
         }
     }
 
-    private void setConfigurationValueException(String fieldName, Object value) throws IOException {
+    /**
+     * Set configuration value
+     * @param fieldName name of the field
+     * @param value value
+     */
+    public void setConfigurationValue(String fieldName, Object value) {
+        try {
+            configLock.writeLock().lock();
+            invokeSetter(configuration, fieldName, value);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "failed to set value of field {}: {}", new Object[]{fieldName, e});
+        } finally {
+            configLock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Set configuration value
+     * @param fieldName name of the field
+     * @param value value
+     */
+    public void setConfigurationValueException(String fieldName, Object value) throws IOException {
         try {
             configLock.writeLock().lock();
             invokeSetter(configuration, fieldName, value);
@@ -416,45 +455,7 @@ public final class RuntimeEnvironment {
      */
     public String getPathRelativeToSourceRoot(File file)
             throws IOException, ForbiddenSymlinkException {
-        return getPathRelativeToSourceRoot(file, 0);
-    }
-
-    /**
-     * Returns a path relative to source root. This would just be a simple
-     * substring operation, except we need to support symlinks outside the
-     * source root.
-     *
-     * @param file A file to resolve
-     * @param stripCount Number of characters past source root to strip
-     * @return Path relative to source root
-     * @throws IOException if an IO error occurs
-     * @throws FileNotFoundException if the file is not relative to source root
-     * @throws ForbiddenSymlinkException if symbolic-link checking encounters
-     * an ineligible link
-     * @throws InvalidPathException if the path cannot be decoded
-     */
-    public String getPathRelativeToSourceRoot(File file, int stripCount)
-            throws IOException, ForbiddenSymlinkException, FileNotFoundException,
-            InvalidPathException {
-        String sourceRoot = getSourceRootPath();
-        if (sourceRoot == null) {
-            throw new FileNotFoundException("Source Root Not Found");
-        }
-
-        String maybeRelPath = PathUtils.getRelativeToCanonical(file.getPath(),
-            sourceRoot, getAllowedSymlinks());
-        File maybeRelFile = new File(maybeRelPath);
-        if (!maybeRelFile.isAbsolute()) {
-            // N.b. OpenGrok has a weird convention that
-            // source-root "relative" paths must start with a '/' as they are
-            // elsewhere directly appended to env.getSourceRootPath() and also
-            // stored as such.
-            maybeRelPath = File.separator + maybeRelPath;
-            return maybeRelPath.substring(stripCount);
-        }
-
-        throw new FileNotFoundException("Failed to resolve [" + file.getPath()
-                + "] relative to source root [" + sourceRoot + "]");
+        return PathUtils.getPathRelativeToSourceRoot(file, 0);
     }
 
     /**
@@ -481,8 +482,7 @@ public final class RuntimeEnvironment {
      * @return a Map with all of the projects
      */
     public Map<String,Project> getProjects() {
-        Map<String,Project> projects = (Map<String,Project>)getConfigurationValue("projects");
-        return projects;
+        return (Map<String,Project>)getConfigurationValue("projects");
     }
 
     /**
@@ -491,8 +491,7 @@ public final class RuntimeEnvironment {
      * @return a list containing names of all projects.
      */
     public List<String> getProjectNames() {
-        return getProjectList().stream().
-            map(Project::getName).collect(Collectors.toList());
+        return getProjectList().stream().map(Project::getName).collect(Collectors.toList());
     }
 
     /**
@@ -566,7 +565,7 @@ public final class RuntimeEnvironment {
         String value;
         return ctags != null ? ctags :
                 (value = (String)getConfigurationValue("ctags")) != null ? value :
-                System.getProperty(SYSTEM_CTAGS_PROPERTY,"ctags");
+                System.getProperty(CtagsUtil.SYSTEM_CTAGS_PROPERTY,"ctags");
     }
 
     /**
@@ -637,20 +636,9 @@ public final class RuntimeEnvironment {
      */
     public boolean validateUniversalCtags() {
         if (ctagsFound == null) {
-            Executor executor = new Executor(new String[]{getCtags(), "--version"});
-            executor.exec(false);
-            String output = executor.getOutputString();
-            boolean isUnivCtags = output != null && output.contains("Universal Ctags");
-            if (output == null || !isUnivCtags) {
-                LOGGER.log(Level.SEVERE, "Error: No Universal Ctags found !\n"
-                        + "(tried running " + "{0}" + ")\n"
-                        + "Please use the -c option to specify path to a "
-                        + "Universal Ctags program.\n"
-                        + "Or set it in Java system property {1}",
-                        new Object[]{getCtags(), SYSTEM_CTAGS_PROPERTY});
+            if (!CtagsUtil.validate(getCtags())) {
                 ctagsFound = false;
             } else {
-                LOGGER.log(Level.INFO, "Using ctags: {0}", output.trim());
                 ctagsFound = true;
             }
         }
@@ -658,7 +646,7 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Get the max time a SMC operation may use to avoid being cached
+     * Get the max time a SCM operation may use to avoid being cached
      *
      * @return the max time
      */
@@ -777,7 +765,6 @@ public final class RuntimeEnvironment {
         Lock writeLock = configLock.writeLock();
         try {
             writeLock.lock();
-
             configuration.addRepositories(repositories);
         } finally {
             writeLock.unlock();
@@ -924,7 +911,6 @@ public final class RuntimeEnvironment {
         String cmd = null;
         try {
             readLock.lock();
-
             cmd = configuration.getRepoCmd(clazzName);
         } finally {
             readLock.unlock();
@@ -947,7 +933,6 @@ public final class RuntimeEnvironment {
         Lock writeLock = configLock.writeLock();
         try {
             writeLock.lock();
-
             configuration.setRepoCmd(clazzName, cmd);
         } finally {
             writeLock.unlock();
@@ -1223,6 +1208,10 @@ public final class RuntimeEnvironment {
         return (boolean)getConfigurationValue("fetchHistoryWhenNotInCache");
     }
 
+    public boolean isHistoryCache() {
+        return (boolean)getConfigurationValue("historyCache");
+    }
+
     public void setHandleHistoryOfRenamedFiles(boolean enable) {
         setConfigurationValue("handleHistoryOfRenamedFiles", enable);
     }
@@ -1404,6 +1393,17 @@ public final class RuntimeEnvironment {
         }
     }
 
+    public String getConfigurationXML() {
+        String configXML;
+        try {
+            configLock.readLock().lock();
+            configXML = configuration.getXMLRepresentationAsString();
+        } finally {
+            configLock.readLock().unlock();
+        }
+        return configXML;
+    }
+
     /**
      * Write the current configuration to a socket
      *
@@ -1472,7 +1472,7 @@ public final class RuntimeEnvironment {
             Project proj;
             String repoPath;
             try {
-                repoPath = getPathRelativeToSourceRoot(
+                repoPath = PathUtils.getPathRelativeToSourceRoot(
                     new File(r.getDirectoryName()), 0);
             } catch (ForbiddenSymlinkException e) {
                 LOGGER.log(Level.FINER, e.getMessage());
@@ -1542,7 +1542,6 @@ public final class RuntimeEnvironment {
         Lock writeLock = configLock.writeLock();
         try {
             writeLock.lock();
-
             this.configuration = configuration;
         } finally {
             writeLock.unlock();
@@ -1694,6 +1693,20 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Re-apply the configuration.
+     * @param reindex is the message result of reindex
+     * @param interactive true if in interactive mode
+     */
+    public void applyConfig(boolean reindex, boolean interactive) {
+        try {
+            configLock.readLock().lock();
+            applyConfig(configuration, reindex, interactive);
+        } finally {
+            configLock.readLock().unlock();
+        }
+    }
+
+    /**
      * Set configuration from a message. The message could have come from the
      * Indexer (in which case some extra work is needed) or is it just a request
      * to set new configuration in place.
@@ -1771,8 +1784,7 @@ public final class RuntimeEnvironment {
         try {
             sm.maybeRefresh();
         }  catch (AlreadyClosedException ex) {
-            // This is a case of removed project.
-            // See refreshSearcherManagerMap() for details.
+            // This is a case of removed project. See refreshSearcherManagerMap() for details.
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "maybeRefresh failed", ex);
         }
@@ -1794,15 +1806,12 @@ public final class RuntimeEnvironment {
 
     /**
      * Get IndexSearcher for given project.
-     * Each IndexSearcher is born from a SearcherManager object. There is
-     * one SearcherManager for every project.
-     * This schema makes it possible to reuse IndexSearcher/IndexReader objects
-     * so the heavy lifting (esp. system calls) performed in FSDirectory
-     * and DirectoryReader happens only once for a project.
+     * Each IndexSearcher is born from a SearcherManager object. There is one SearcherManager for every project.
+     * This schema makes it possible to reuse IndexSearcher/IndexReader objects so the heavy lifting
+     * (esp. system calls) performed in FSDirectory and DirectoryReader happens only once for a project.
      * The caller has to make sure that the IndexSearcher is returned back
      * to the SearcherManager. This is done with returnIndexSearcher().
-     * The return of the IndexSearcher should happen only after the search
-     * result data are read fully.
+     * The return of the IndexSearcher should happen only after the search result data are read fully.
      *
      * @param proj project
      * @return SearcherManager for given project
@@ -1978,5 +1987,13 @@ public final class RuntimeEnvironment {
             }
         }
         return dtagsEftar;
+    }
+
+    public SuggesterConfig getSuggesterConfig() {
+        return (SuggesterConfig)getConfigurationValue("suggesterConfig");
+    }
+
+    public void setSuggesterConfig(SuggesterConfig config) {
+        setConfigurationValue("suggesterConfig", config);
     }
 }

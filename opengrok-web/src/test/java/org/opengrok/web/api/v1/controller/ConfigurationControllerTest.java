@@ -197,7 +197,7 @@ public class ConfigurationControllerTest extends JerseyTest {
                 .request()
                 .get(String.class);
 
-        assertEquals(response, env.getConfiguration().getSourceRoot());
+        assertEquals(response, env.getSourceRootPath());
     }
 
     @Test
@@ -217,7 +217,7 @@ public class ConfigurationControllerTest extends JerseyTest {
                 .request()
                 .get(boolean.class);
 
-        assertEquals(env.getConfiguration().isHistoryCache(), response);
+        assertEquals(env.isHistoryCache(), response);
     }
 
     @Test

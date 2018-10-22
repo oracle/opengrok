@@ -88,8 +88,9 @@ public final class WebappListener
             LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
         }
 
-        if (env.getConfiguration().getPluginDirectory() != null && env.isAuthorizationWatchdog()) {
-            RuntimeEnvironment.getInstance().watchDog.start(new File(env.getConfiguration().getPluginDirectory()));
+        String pluginDirectory = env.getPluginDirectory();
+        if (pluginDirectory != null && env.isAuthorizationWatchdog()) {
+            RuntimeEnvironment.getInstance().watchDog.start(new File(pluginDirectory));
         }
 
         env.startExpirationTimer();
