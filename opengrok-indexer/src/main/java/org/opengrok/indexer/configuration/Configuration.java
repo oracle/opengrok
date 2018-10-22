@@ -237,7 +237,6 @@ public final class Configuration {
      * contains definition tags.
      */
     public static final String EFTAR_DTAGS_NAME = "dtags.eftar";
-    private transient File dtagsEftar = null;
 
     /**
      * Revision messages will be collapsible if they exceed this many number of
@@ -1120,21 +1119,6 @@ public final class Configuration {
      */
     public Path getDtagsEftarPath() {
         return Paths.get(getDataRoot(), "index", EFTAR_DTAGS_NAME);
-    }
-
-    /**
-     * Get the eftar file, which contains definition tags for path descriptions.
-     *
-     * @return {@code null} if there is no such file, the file otherwise.
-     */
-    public File getDtagsEftar() {
-        if (dtagsEftar == null) {
-            File tmp = getDtagsEftarPath().toFile();
-            if (tmp.canRead()) {
-                dtagsEftar = tmp;
-            }
-        }
-        return dtagsEftar;
     }
 
     public String getCTagsExtraOptionsFile() {

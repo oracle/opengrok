@@ -80,7 +80,7 @@ public class ProjectsController {
         File projDir = new File(srcRoot, projectName);
 
         if (!env.getProjects().containsKey(projectName)) {
-            Project project = new Project(projectName, "/" + projectName, env.getConfiguration());
+            Project project = new Project(projectName, "/" + projectName);
 
             // Add repositories in this project.
             List<RepositoryInfo> repos = getRepositoriesInDir(projDir);

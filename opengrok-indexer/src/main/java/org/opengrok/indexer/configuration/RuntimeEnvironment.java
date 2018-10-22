@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -142,6 +143,8 @@ public final class RuntimeEnvironment {
      * value is not mediated to {@link Configuration}.
      */
     private String mandoc;
+
+    private transient File dtagsEftar = null;
 
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
@@ -1568,6 +1571,10 @@ public final class RuntimeEnvironment {
         includeFiles.reloadIncludeFiles();
     }
 
+    public IncludeFiles getIncludeFiles() {
+        return includeFiles;
+    }
+
     public Configuration getConfiguration() {
         // TODO lock/clone ?
         return configuration;
@@ -1947,5 +1954,31 @@ public final class RuntimeEnvironment {
      */
     public Set<AcceptedMessage> getAllMessages() {
         return messagesContainer.getAllMessages();
+    }
+
+    public Path getDtagsEftarPath() {
+        Path path;
+        try {
+            configLock.readLock().lock();
+            path = configuration.getDtagsEftarPath();
+        } finally {
+            configLock.readLock().unlock();
+        }
+        return path;
+    }
+
+    /**
+     * Get the eftar file, which contains definition tags for path descriptions.
+     *
+     * @return {@code null} if there is no such file, the file otherwise.
+     */
+    public File getDtagsEftar() {
+        if (dtagsEftar == null) {
+            File tmp = getDtagsEftarPath().toFile();
+            if (tmp.canRead()) {
+                dtagsEftar = tmp;
+            }
+        }
+        return dtagsEftar;
     }
 }
