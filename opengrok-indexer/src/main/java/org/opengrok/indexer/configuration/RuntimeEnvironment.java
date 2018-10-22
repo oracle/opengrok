@@ -111,19 +111,6 @@ public final class RuntimeEnvironment {
     public IncludeFiles includeFiles = new IncludeFiles();
     private final MessagesContainer messagesContainer = new MessagesContainer();
 
-    /**
-     * Stores a transient value when
-     * {@link #setContextLimit(java.lang.Short)} is called -- i.e. the
-     * value is not mediated to {@link Configuration}.
-     */
-    private Short contextLimit;
-    /**
-     * Stores a transient value when
-     * {@link #setContextSurround(java.lang.Short)} is called -- i.e. the
-     * value is not mediated to {@link Configuration}.
-     */
-    private Short contextSurround;
-
     private static final IndexTimestamp indexTime = new IndexTimestamp();
 
     /**
@@ -1300,60 +1287,19 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Gets the total number of context lines per file to show: either the last
-     * value passed successfully to {@link #setContextLimit(java.lang.Short)}
-     * or {@link Configuration#getContextLimit()} as a default.
+     * Gets the total number of context lines per file to show
      * @return a value greater than zero
      */
     public short getContextLimit() {
-        return contextLimit != null ? contextLimit :
-                (short)getConfigurationValue("contextLimit");
-    }
-
-    /**
-     * Sets the total number of context lines per file to show, or resets to use
-     * {@link Configuration#getContextLimit()}.
-     * <p>
-     * N.b. the value is not mediated to {@link Configuration}.
-     * @param value a defined value or {@code null} to reset to use the
-     * {@link Configuration#getContextSurround()}
-     * @throws IllegalArgumentException if {@code value} is not positive
-     */
-    public void setContextLimit(Short value)
-            throws IllegalArgumentException {
-        if (value < 1) {
-            throw new IllegalArgumentException("value is not positive");
-        }
-        contextLimit = value;
+        return (short)getConfigurationValue("contextLimit");
     }
 
     /**
      * Gets the number of context lines to show before or after any match:
-     * either the last value passed successfully to
-     * {@link #setContextSurround(java.lang.Short)} or
-     * {@link Configuration#getContextSurround()} as a default.
      * @return a value greater than or equal to zero
      */
     public short getContextSurround() {
-        return contextSurround != null ? contextSurround :
-                (short)getConfigurationValue("contextSurround");
-    }
-
-    /**
-     * Sets the number of context lines to show before or after any match, or
-     * resets to use {@link Configuration#getContextSurround()}.
-     * <p>
-     * N.b. the value is not mediated to {@link Configuration}.
-     * @param value a defined value or {@code null} to reset to use the
-     * {@link Configuration#getContextSurround()}
-     * @throws IllegalArgumentException if {@code value} is negative
-     */
-    public void setContextSurround(Short value)
-            throws IllegalArgumentException {
-        if (value < 0) {
-            throw new IllegalArgumentException("value is negative");
-        }
-        contextSurround = value;
+        return (short)getConfigurationValue("contextSurround");
     }
 
     /**
