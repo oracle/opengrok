@@ -189,6 +189,10 @@ In the above config, the `userland` project will be run with environment variabl
 
 The `opengrok-master` project contains a RCS repository that would make the mirroring fail (since `opengrok-mirror` does not support RCS yet) so it is marked as ignored.
 
+## URI specifications
+
+Just like `opengrok-sync`, `opengrok-mirror` also queries the web app for various properties, so if the web application is not listening on default host/port, the URI location has to be specified using the -U option.
+
 ## Project matching
 
 Multiple projects can share the same configuration using regular expressions as demonstrated with the `jdk.*` pattern in the above configuration. The patterns are matched from top to the bottom of the configuration file, first match wins.
