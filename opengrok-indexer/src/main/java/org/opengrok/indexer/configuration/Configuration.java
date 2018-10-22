@@ -62,10 +62,12 @@ import org.opengrok.indexer.logger.LoggerFactory;
 
 
 /**
- * Placeholder class for all configuration variables. Due to the multithreaded
+ * Placeholder class for all configuration variables. Due to the multi-threaded
  * nature of the web application, each thread will use the same instance of the
  * configuration object for each page request. Class and methods should have
  * package scope, but that didn't work with the XMLDecoder/XMLEncoder.
+ *
+ * This should be as close to POJO (https://en.wikipedia.org/wiki/Plain_old_Java_object) as possible.
  */
 public final class Configuration {
 

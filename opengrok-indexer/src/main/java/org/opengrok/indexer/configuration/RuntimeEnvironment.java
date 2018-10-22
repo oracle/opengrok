@@ -233,6 +233,9 @@ public final class RuntimeEnvironment {
     public WatchDogService watchDog;
 
     private String getCanonicalPath(String s) {
+        if (s == null) {
+            return null;
+        }
         try {
             File file = new File(s);
             if (!file.exists()) {
