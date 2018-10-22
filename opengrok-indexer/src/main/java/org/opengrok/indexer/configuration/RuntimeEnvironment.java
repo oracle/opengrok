@@ -734,7 +734,12 @@ public final class RuntimeEnvironment {
     }
     
     public void removeRepositories() {
-        setConfigurationValue("repositories", null);
+        try {
+            configLock.writeLock().lock();
+            configuration.repositories =  null;
+        } finally {
+            configLock.writeLock().unlock();
+        }
     }
     
     /**
