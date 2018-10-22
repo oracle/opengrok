@@ -144,6 +144,16 @@ public final class RuntimeEnvironment {
     private String mandoc;
 
     /**
+     * Creates a new instance of RuntimeEnvironment. Private to ensure a
+     * singleton anti-pattern.
+     */
+    private RuntimeEnvironment() {
+        configuration = new Configuration();
+        configLock = new ReentrantReadWriteLock();
+        watchDog = new WatchDogService();
+    }
+
+    /**
      * Instance of authorization framework.
      */
     private AuthorizationFramework authFramework;
@@ -218,16 +228,6 @@ public final class RuntimeEnvironment {
     }
 
     public WatchDogService watchDog;
-
-    /**
-     * Creates a new instance of RuntimeEnvironment. Private to ensure a
-     * singleton anti-pattern.
-     */
-    private RuntimeEnvironment() {
-        configuration = new Configuration();
-        configLock = new ReentrantReadWriteLock();
-        watchDog = new WatchDogService();
-    }
 
     private String getCanonicalPath(String s) {
         try {
@@ -1565,7 +1565,7 @@ public final class RuntimeEnvironment {
         // repositories in HistoryGuru so the configuration needs to reflect that.
         configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
 
-        includeFiles.reloadIncludeFiles(configuration);
+        includeFiles.reloadIncludeFiles();
     }
 
     public Configuration getConfiguration() {

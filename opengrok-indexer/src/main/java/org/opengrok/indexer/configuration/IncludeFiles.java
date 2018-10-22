@@ -28,13 +28,10 @@ import java.io.File;
 import static org.opengrok.indexer.util.IOUtils.getFileContent;
 
 public class IncludeFiles {
-    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
     /**
      * Reload the content of all include files.
-     * @param configuration configuration
      */
-    public void reloadIncludeFiles(Configuration configuration) {
+    public void reloadIncludeFiles() {
         getBodyIncludeFileContent(true);
         getHeaderIncludeFileContent(true);
         getFooterIncludeFileContent(true);
@@ -53,7 +50,8 @@ public class IncludeFiles {
      */
     public String getFooterIncludeFileContent(boolean force) {
         if (footer == null || force) {
-            footer = getFileContent(new File(env.getIncludeRootPath(), Configuration.FOOTER_INCLUDE_FILE));
+            footer = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
+                    Configuration.FOOTER_INCLUDE_FILE));
         }
         return footer;
     }
@@ -70,7 +68,8 @@ public class IncludeFiles {
      */
     public String getHeaderIncludeFileContent(boolean force) {
         if (header == null || force) {
-            header = getFileContent(new File(env.getIncludeRootPath(), Configuration.HEADER_INCLUDE_FILE));
+            header = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
+                    Configuration.HEADER_INCLUDE_FILE));
         }
         return header;
     }
@@ -87,7 +86,8 @@ public class IncludeFiles {
      */
     public String getBodyIncludeFileContent(boolean force) {
         if (body == null || force) {
-            body = getFileContent(new File(env.getIncludeRootPath(), Configuration.BODY_INCLUDE_FILE));
+            body = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
+                    Configuration.BODY_INCLUDE_FILE));
         }
         return body;
     }
@@ -105,7 +105,8 @@ public class IncludeFiles {
      */
     public String getForbiddenIncludeFileContent(boolean force) {
         if (eforbidden_content == null || force) {
-            eforbidden_content = getFileContent(new File(env.getIncludeRootPath(), Configuration.E_FORBIDDEN_INCLUDE_FILE));
+            eforbidden_content = getFileContent(new File(RuntimeEnvironment.getInstance().getIncludeRootPath(),
+                    Configuration.E_FORBIDDEN_INCLUDE_FILE));
         }
         return eforbidden_content;
     }
