@@ -56,11 +56,8 @@
     <filter-mapping>
         <filter-name>ExpiresHalfHourFilter</filter-name>
         <url-pattern>/history/*</url-pattern>
-        <url-pattern>/xref/*</url-pattern>
         <url-pattern>/raw/*</url-pattern>
         <url-pattern>/download/*</url-pattern>
-        <url-pattern>/diff/*</url-pattern>
-        <url-pattern>/more/*</url-pattern>
         <url-pattern>/rss/*</url-pattern>
         <url-pattern>/error</url-pattern>
         <url-pattern>/enoent</url-pattern>
