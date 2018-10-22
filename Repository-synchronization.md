@@ -85,13 +85,21 @@ The `opengrok-sync` script will print any errors to the console and uses file le
 
 Each "command" can be either normal command execution (supplying the list of program arguments) or RESTful API call (supplying the HTTP verb and optional payload).
 
+## Cleanup
+
 If any of the commands in `"commands"` fail, the `"cleanup"` command will be executed. This is handy in this case since the first [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) call will mark the project with alert in the WEB UI so if any of the commands that follow fails, the cleanup call will be made to clear the alert.
 
 Normal command execution can be also performed in the `cleanup` section.
 
+## Ignoring repositories
+
 Some project can be notorious for producing spurious errors so their errors are ignored via the `"ignore_errors"` section.
 
+## Run
+
 In the above example it is assumed that `opengrok-sync` is run as `root` and synchronization and reindexing are done under different users. This is done so that the web application cannot tamper with source code even if compromised.
+
+## Pattern replacement and logging
 
 The commands got appended project name unless one of their arguments contains
 `%PROJECT%`, in which case it is substituted with project name and no append is
