@@ -85,7 +85,7 @@ public final class Indexer {
 
     private static final Indexer index = new Indexer();
     private static Configuration cfg = null;
-    private static Configuration checkIndexVersionCfg;
+    private static boolean checkIndexVersion = false;
     private static boolean listRepos = false;
     private static boolean runIndex = true;
     private static boolean optimizedChanged = false;
@@ -203,22 +203,6 @@ public final class Indexer {
                 subFilesList.add(path);
             }
 
-            // Check version of index(es) versus current Lucene version and exit
-            // with return code upon failure.
-            if (checkIndexVersionCfg != null) {
-                try {
-                    IndexVersion.check(checkIndexVersionCfg, subFilesList);
-                } catch (IndexVersionException e) {
-                    System.err.printf("Index version check failed: %s\n", e);
-                    System.err.printf("You might want to remove " +
-                            (subFilesList.size() > 0 ?
-                            "data for projects " + String.join(",", subFilesList) : "all data") +
-                            " under the DATA_ROOT and to reindex\n");
-                    status = 1;
-                    System.exit(status);
-                }
-            }
-
             // If an user used customizations for projects he perhaps just
             // used the key value for project without a name but the code
             // expects a name for the project. Therefore we fill the name
@@ -231,6 +215,27 @@ public final class Indexer {
 
             // Set updated configuration in RuntimeEnvironment.
             env.setConfiguration(cfg, subFilesList, false);
+
+            // Check version of index(es) versus current Lucene version and exit
+            // with return code upon failure.
+            if (checkIndexVersion) {
+                if (cfg == null) {
+                    System.err.println("Need configuration to check index version (use -R)");
+                    System.exit(1);
+                }
+
+                try {
+                    IndexVersion.check(subFilesList);
+                } catch (IndexVersionException e) {
+                    System.err.printf("Index version check failed: %s\n", e);
+                    System.err.printf("You might want to remove " +
+                            (subFilesList.size() > 0 ?
+                                    "data for projects " + String.join(",", subFilesList) : "all data") +
+                            " under the DATA_ROOT and to reindex\n");
+                    status = 1;
+                    System.exit(status);
+                }
+            }
 
             // Let repository types to add items to ignoredNames.
             // This changes env so is called after the setConfiguration()
@@ -458,14 +463,9 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--checkIndexVersion", "=/path/to/conf",
+            parser.on("--checkIndexVersion",
                     "Check if current Lucene version matches index version").Do(v -> {
-                try {
-                    File cfgFile = new File((String)v);
-                    checkIndexVersionCfg = Configuration.read(cfgFile);
-                } catch(IOException|NullPointerException e) {
-                    die(e.getMessage());
-                }
+                checkIndexVersion = true;
             });
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root",

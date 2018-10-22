@@ -1575,11 +1575,6 @@ public final class RuntimeEnvironment {
         return includeFiles;
     }
 
-    public Configuration getConfiguration() {
-        // TODO lock/clone ?
-        return configuration;
-    }
-
     public String getStatisticsFilePath() {
         return (String)getConfigurationValue("statisticsFilePath");
     }
