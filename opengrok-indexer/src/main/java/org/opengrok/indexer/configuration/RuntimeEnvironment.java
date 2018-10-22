@@ -488,10 +488,15 @@ public final class RuntimeEnvironment {
      * @param projects the map of projects to use
      */
     public void setProjects(Map<String,Project> projects) {
-        if (projects != null) {
-            populateGroups(getGroups(), new TreeSet<>(projects.values()));
+        try {
+            configLock.writeLock().lock();
+            if (projects != null) {
+                populateGroups(getGroups(), new TreeSet<>(projects.values()));
+            }
+            setConfigurationValue("projects", projects);
+        } finally {
+            configLock.writeLock().unlock();
         }
-        setConfigurationValue("projects", projects);
     }
 
     /**
