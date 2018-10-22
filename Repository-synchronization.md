@@ -85,6 +85,8 @@ The `opengrok-sync` script will print any errors to the console and uses file le
 
 Each "command" can be either normal command execution (supplying the list of program arguments) or RESTful API call (supplying the HTTP verb and optional payload).
 
+## URI specification
+
 Note that if the web application is listening on non-standard host or port (`localhost` and 8080 is the default), the URI has to be used everywhere where it matters. Given that `opengrok-sync` performs RESTful API queries itself, one has to specify the location using the -U option of this script and then again it is necessary to specify it in the configuration file - for any RESTful API calls or for `opengrok-indexer` command (which also uses the -U option).
 
 ## Cleanup
