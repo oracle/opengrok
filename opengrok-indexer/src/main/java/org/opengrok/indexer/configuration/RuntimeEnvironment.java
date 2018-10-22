@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -777,7 +778,7 @@ public final class RuntimeEnvironment {
      * @return the default projects (may be null if not specified)
      */
     public Set<Project> getDefaultProjects() {
-        return (Set<Project>)getConfigurationValue("defaultProjects");
+        return Collections.unmodifiableSet((Set<Project>)getConfigurationValue("defaultProjects"));
     }
 
     /**
