@@ -206,7 +206,7 @@ public class ClassUtil {
      * @param obj the object
      * @param fieldName name of the field which will be changed
      * @param value desired value
-     * @throws IOException
+     * @throws IOException all exceptions from the reflection
      */
     public static void setFieldValue(Object obj, String fieldName, Object value) throws IOException {
         Method setter = getSetter(obj, fieldName);
