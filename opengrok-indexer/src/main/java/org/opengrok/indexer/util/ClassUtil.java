@@ -77,7 +77,7 @@ public class ClassUtil {
         }
     }
 
-    private static Object getObjectValue(String fieldName, Class c, String value) throws IOException {
+    private static Object stringToObject(String fieldName, Class c, String value) throws IOException {
         Object v;
         String paramClass = c.getName();
 
@@ -196,7 +196,7 @@ public class ClassUtil {
     public static void setFieldValue(Object obj, String fieldName, String value) throws IOException {
         Method setter = getSetter(obj, fieldName);
         Class<?> c = setter.getParameterTypes()[0];
-        Object objValue = getObjectValue(fieldName, c, value);
+        Object objValue = stringToObject(fieldName, c, value);
         invokeSetter(setter, obj, fieldName, objValue);
     }
 
