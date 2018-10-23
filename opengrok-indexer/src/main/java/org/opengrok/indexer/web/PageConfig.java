@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -51,8 +52,9 @@ import java.util.stream.Collectors;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import org.suigeneris.jrcs.diff.Diff;
-import org.suigeneris.jrcs.diff.DifferentiationFailedException;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
+import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
 import org.opengrok.indexer.analysis.FileAnalyzer.Genre;
@@ -70,6 +72,8 @@ import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.search.QueryBuilder;
 import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
+import org.suigeneris.jrcs.diff.Diff;
+import org.suigeneris.jrcs.diff.DifferentiationFailedException;
 
 /**
  * A simple container to lazy initialize common vars wrt. a single request. It
@@ -1618,5 +1622,77 @@ public final class PageConfig {
         if (!sourceRootPathFile.canRead()) {
             throw new IOException(String.format("Source root path \"%s\" is not readable", sourceRootPathFile.getAbsolutePath()));
         }
+    }
+
+    /**
+     * Get all project related messages. These include
+     * <ol>
+     * <li>Main messages</li>
+     * <li>Messages with tag = project name</li>
+     * <li>Messages with tag = project's groups names</li>
+     * </ol>
+     *
+     * @return the sorted set of messages according to the accept time
+     * @see org.opengrok.indexer.web.messages.MessagesContainer#MESSAGES_MAIN_PAGE_TAG
+     */
+    private SortedSet<AcceptedMessage> getProjectMessages() {
+        SortedSet<AcceptedMessage> messages = getMessages();
+
+        if (getProject() != null) {
+            messages.addAll(getMessages(getProject().getName()));
+            getProject().getGroups().forEach(group -> {
+                messages.addAll(getMessages(group.getName()));
+            });
+        }
+
+        return messages;
+    }
+
+    /**
+     * Decide if this resource has been modified since the header value in the request.
+     * <p>
+     * The resource is modified since the weak ETag value in the request, the ETag is
+     * computed using:
+     * <ul>
+     * <li>the source file modification</li>
+     * <li>project messages</li>
+     * <li>last timestamp for index</li>
+     * <li>OpenGrok current deployed version</li>
+     * </ul>
+     * <p>
+     * <p>
+     * If the resource was modified, appropriate headers in the response are filled.
+     *
+     * @param request the http request containing the headers
+     * @param response the http response for setting the headers
+     * @return true if resource was not modified; false otherwise
+     * @see <a href="https://tools.ietf.org/html/rfc7232#section-2.3">HTTP ETag</a>
+     * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html">HTTP Caching</a>
+     */
+    public boolean isNotModified(HttpServletRequest request, HttpServletResponse response) {
+        String currentEtag = String.format("W/\"%s\"",
+                Objects.hash(
+                        // last modified time as UTC timestamp in millis
+                        getLastModified(),
+                        // all project related messages which changes the view
+                        getProjectMessages(),
+                        // last timestamp value
+                        getEnv().getDateForLastIndexRun().getTime(),
+                        // OpenGrok version has changed since the last time
+                        Info.getVersion()
+                )
+        );
+
+        String headerEtag = request.getHeader(HttpHeaders.IF_NONE_MATCH);
+
+        if (headerEtag != null && headerEtag.equals(currentEtag)) {
+            // weak ETag has not changed, return 304 NOT MODIFIED
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            return true;
+        }
+
+        // return 200 OK
+        response.setHeader(HttpHeaders.ETAG, currentEtag);
+        return false;
     }
 }
