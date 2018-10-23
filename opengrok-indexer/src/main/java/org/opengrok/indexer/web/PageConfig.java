@@ -1691,7 +1691,7 @@ public final class PageConfig {
         }
 
         // return 200 OK
-        response.setHeader("ETag", currentEtag);
+        response.setHeader(HttpHeaders.ETAG, currentEtag);
         return false;
     }
 }
