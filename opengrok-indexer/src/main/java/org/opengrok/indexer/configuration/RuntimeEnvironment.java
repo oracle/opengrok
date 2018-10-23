@@ -1504,12 +1504,11 @@ public final class RuntimeEnvironment {
      * @param interactive true if in interactive mode
      */
     public void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
-        Lock writeLock = configLock.writeLock();
         try {
-            writeLock.lock();
+            configLock.writeLock().lock();
             this.configuration = configuration;
         } finally {
-            writeLock.unlock();
+            configLock.writeLock().unlock();
         }
 
         // HistoryGuru constructor needs environment properties so no locking is done here.
@@ -1531,9 +1530,15 @@ public final class RuntimeEnvironment {
             histGuru.invalidateRepositories(configuration.getRepositories(),
                     interactive);
         }
-        // The invalidation of repositories above might have excluded some
-        // repositories in HistoryGuru so the configuration needs to reflect that.
-        configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
+
+        try {
+            configLock.writeLock().lock();
+            // The invalidation of repositories above might have excluded some
+            // repositories in HistoryGuru so the configuration needs to reflect that.
+            configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
+        } finally {
+            configLock.writeLock().unlock();
+        }
 
         includeFiles.reloadIncludeFiles();
     }
@@ -1581,12 +1586,7 @@ public final class RuntimeEnvironment {
      * @param interactive true if in interactive mode
      */
     public void applyConfig(boolean reindex, boolean interactive) {
-        try {
-            configLock.writeLock().lock();
-            applyConfig(configuration, reindex, interactive);
-        } finally {
-            configLock.writeLock().unlock();
-        }
+        applyConfig(configuration, reindex, interactive);
     }
 
     /**
@@ -1609,12 +1609,7 @@ public final class RuntimeEnvironment {
             return;
         }
 
-        try {
-            configLock.writeLock().lock();
-            applyConfig(config, reindex, interactive);
-        } finally {
-            configLock.writeLock().unlock();
-        }
+        applyConfig(config, reindex, interactive);
     }
 
     /**
@@ -1625,44 +1620,34 @@ public final class RuntimeEnvironment {
      * @param config the incoming configuration
      * @param reindex is the message result of reindex
      * @param interactive true if in interactive mode
-     *
      */
     public void applyConfig(Configuration config, boolean reindex, boolean interactive) {
-        try {
-            configLock.writeLock().lock();
+        setConfiguration(config, interactive);
+        LOGGER.log(Level.INFO, "Configuration updated");
 
-            setConfiguration(config, interactive);
-            LOGGER.log(Level.INFO, "Configuration updated: {0}",
-                    getConfigurationValue("sourceRoot"));
-
-            if (reindex) {
-                // We are assuming that each update of configuration
-                // means reindex. If dedicated thread is introduced
-                // in the future solely for the purpose of getting
-                // the event of reindex, the 2 calls below should
-                // be moved there.
-                refreshSearcherManagerMap();
-                maybeRefreshIndexSearchers();
-                // Force timestamp to update itself upon new config arrival.
-                refreshDateForLastIndexRun();
-            }
-
-            // start/stop the watchdog if necessary
-            if (isAuthorizationWatchdog() && config.getPluginDirectory() != null) {
-                watchDog.start(new File(config.getPluginDirectory()));
-            } else {
-                watchDog.stop();
-            }
-
-            // set the new plugin directory and reload the authorization framework
-            getAuthorizationFramework().setPluginDirectory(config.getPluginDirectory());
-            getAuthorizationFramework().setStack(config.getPluginStack());
-            getAuthorizationFramework().reload();
-
-            messagesContainer.setMessageLimit(config.getMessageLimit());
-        } finally {
-            configLock.writeLock().unlock();
+        if (reindex) {
+            // We are assuming that each update of configuration means reindex. If dedicated thread is introduced
+            // in the future solely for the purpose of getting the event of reindex, the 2 calls below should
+            // be moved there.
+            refreshSearcherManagerMap();
+            maybeRefreshIndexSearchers();
+            // Force timestamp to update itself upon new config arrival.
+            refreshDateForLastIndexRun();
         }
+
+        // start/stop the watchdog if necessary
+        if (isAuthorizationWatchdog() && config.getPluginDirectory() != null) {
+            watchDog.start(new File(config.getPluginDirectory()));
+        } else {
+            watchDog.stop();
+        }
+
+        // set the new plugin directory and reload the authorization framework
+        getAuthorizationFramework().setPluginDirectory(config.getPluginDirectory());
+        getAuthorizationFramework().setStack(config.getPluginStack());
+        getAuthorizationFramework().reload();
+
+        messagesContainer.setMessageLimit(config.getMessageLimit());
     }
 
     public void setIndexTimestamp() throws IOException {
