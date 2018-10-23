@@ -153,7 +153,7 @@ public final class Configuration {
      * directory with include files for web application (header, footer, etc.)
      */
     private String includeRoot;
-    protected List<RepositoryInfo> repositories;
+    private List<RepositoryInfo> repositories;
 
     private boolean generateHtml;
     /**
