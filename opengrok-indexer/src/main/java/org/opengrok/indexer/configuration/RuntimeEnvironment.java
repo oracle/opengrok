@@ -1660,10 +1660,10 @@ public final class RuntimeEnvironment {
      */
     public void applyConfig(boolean reindex, boolean interactive) {
         try {
-            configLock.readLock().lock();
+            configLock.writeLock().lock();
             applyConfig(configuration, reindex, interactive);
         } finally {
-            configLock.readLock().unlock();
+            configLock.writeLock().unlock();
         }
     }
 
@@ -1687,7 +1687,12 @@ public final class RuntimeEnvironment {
             return;
         }
 
-        applyConfig(config, reindex, interactive);
+        try {
+            configLock.writeLock().lock();
+            applyConfig(config, reindex, interactive);
+        } finally {
+            configLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -1699,6 +1704,7 @@ public final class RuntimeEnvironment {
      * @param reindex is the message result of reindex
      * @param interactive true if in interactive mode
      *
+     * Assumes it is called with the {@code configLock} held in write mode.
      */
     public void applyConfig(Configuration config, boolean reindex, boolean interactive) {
 
