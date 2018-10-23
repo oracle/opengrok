@@ -269,7 +269,7 @@ public final class RuntimeEnvironment {
     public void setConfigurationValue(String fieldName, String value) {
         try {
             configLock.writeLock().lock();
-            ClassUtil.setFieldValue(configuration, fieldName, value);
+            setFieldValue(configuration, fieldName, value);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "failed to set value of field {}: {}", new Object[]{fieldName, e});
         } finally {
@@ -315,7 +315,7 @@ public final class RuntimeEnvironment {
     public void setConfigurationValueException(String fieldName, String value) throws IOException {
         try {
             configLock.writeLock().lock();
-            ClassUtil.setFieldValue(configuration, fieldName, value);
+            setFieldValue(configuration, fieldName, value);
         } finally {
             configLock.writeLock().unlock();
         }
