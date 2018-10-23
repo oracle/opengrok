@@ -53,6 +53,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.ExpandTabsReader;
@@ -1650,7 +1651,7 @@ public final class PageConfig {
     /**
      * Decide if this resource has been modified since the header value in the request.
      * <p>
-     * The resource is modified since the weak etag value in the reuqest, the etag is
+     * The resource is modified since the weak ETag value in the request, the ETag is
      * computed using:
      * <ul>
      * <li>the source file modification</li>
@@ -1664,6 +1665,8 @@ public final class PageConfig {
      *
      * @param response the http response for setting the headers
      * @return true if resource was not modified; false otherwise
+     * @see <a href="https://tools.ietf.org/html/rfc7232#section-2.3>HTTP ETag</a>
+     * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html>HTTP Caching</a>
      */
     public boolean isNotModified(HttpServletRequest request, HttpServletResponse response) {
         String currentEtag = String.format("W/\"%s\"",
@@ -1679,7 +1682,7 @@ public final class PageConfig {
                 )
         );
 
-        String headerEtag = request.getHeader("If-None-Match");
+        String headerEtag = request.getHeader(HttpHeaders.IF_NONE_MATCH);
 
         if (headerEtag != null && headerEtag.equals(currentEtag)) {
             // weak ETag has not changed, return 304 NOT MODIFIED
