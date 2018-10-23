@@ -1677,7 +1677,7 @@ public final class PageConfig {
                         // all project related messages which changes the view
                         getProjectMessages(),
                         // last timestamp value
-                        getEnv().getDateForLastIndexRun().getTime(),
+                        getEnv().getDateForLastIndexRun() != null ? getEnv().getDateForLastIndexRun().getTime() : 0,
                         // OpenGrok version has changed since the last time
                         Info.getVersion()
                 )
