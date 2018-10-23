@@ -1631,7 +1631,7 @@ public final class PageConfig {
      * <li>Messages with tag = project's groups names</li>
      * </ol>
      *
-     * @return the sorted set of messages according the accept time
+     * @return the sorted set of messages according to the accept time
      * @see org.opengrok.indexer.web.messages.MessagesContainer#MESSAGES_MAIN_PAGE_TAG
      */
     private SortedSet<AcceptedMessage> getProjectMessages() {
@@ -1668,7 +1668,7 @@ public final class PageConfig {
     public boolean isNotModified(HttpServletRequest request, HttpServletResponse response) {
         String currentEtag = String.format("W/\"%s\"",
                 Objects.hash(
-                        // last modified time as utc timestamp in millis
+                        // last modified time as UTC timestamp in millis
                         getLastModified(),
                         // all project related messages which changes the view
                         getProjectMessages(),
