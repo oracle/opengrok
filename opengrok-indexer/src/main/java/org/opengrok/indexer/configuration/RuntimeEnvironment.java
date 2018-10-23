@@ -23,14 +23,35 @@
   */
 package org.opengrok.indexer.configuration;
 
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.authorization.AuthorizationStack;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.index.Filter;
+import org.opengrok.indexer.index.IgnoredNames;
+import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.CtagsUtil;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.PathUtils;
+import org.opengrok.indexer.web.Prefix;
+import org.opengrok.indexer.web.Statistics;
+import org.opengrok.indexer.web.messages.Message;
+import org.opengrok.indexer.web.messages.MessagesContainer;
+import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
+
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,41 +71,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.MultiReader;
-import org.apache.lucene.search.SearcherManager;
-import org.apache.lucene.store.AlreadyClosedException;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.opengrok.indexer.authorization.AuthorizationFramework;
-import org.opengrok.indexer.authorization.AuthorizationStack;
-import org.opengrok.indexer.history.HistoryGuru;
-import org.opengrok.indexer.history.RepositoryInfo;
-import org.opengrok.indexer.index.Filter;
-import org.opengrok.indexer.index.IgnoredNames;
-import org.opengrok.indexer.index.IndexDatabase;
-import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.CtagsUtil;
-import org.opengrok.indexer.web.messages.Message;
-import org.opengrok.indexer.web.messages.MessagesContainer;
-import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
-import org.opengrok.indexer.web.Statistics;
-import org.opengrok.indexer.web.Util;
 
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
 import static org.opengrok.indexer.util.ClassUtil.getFieldValue;
 import static org.opengrok.indexer.util.ClassUtil.setFieldValue;
-
-import org.opengrok.indexer.util.ForbiddenSymlinkException;
-import org.opengrok.indexer.util.PathUtils;
-import org.opengrok.indexer.web.Prefix;
-
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Response;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -1558,88 +1548,6 @@ public final class RuntimeEnvironment {
 
     public void setStatisticsFilePath(String path) {
         setConfigurationValue("statisticsFilePath", path);
-    }
-
-    /**
-     * Dump statistics in JSON format into the file specified in configuration.
-     *
-     * @throws IOException
-     */
-    public void saveStatistics() throws IOException {
-        String path = getStatisticsFilePath();
-        if (path == null) {
-            throw new FileNotFoundException("Statistics file is not set (null)");
-        }
-        saveStatistics(new File(path));
-    }
-
-    /**
-     * Dump statistics in JSON format into a file.
-     *
-     * @param out the output file
-     * @throws IOException
-     */
-    public void saveStatistics(File out) throws IOException {
-        if (out == null) {
-            throw new FileNotFoundException("Statistics file is not set (null)");
-        }
-        try (FileOutputStream ofstream = new FileOutputStream(out)) {
-            saveStatistics(ofstream);
-        }
-    }
-
-    /**
-     * Dump statistics in JSON format into an output stream.
-     *
-     * @param out the output stream
-     * @throws IOException
-     */
-    public void saveStatistics(OutputStream out) throws IOException {
-        out.write(Util.statisticToJson(getStatistics()).toJSONString().getBytes());
-    }
-
-    /**
-     * Load statistics from JSON file specified in configuration.
-     *
-     * @throws IOException
-     * @throws ParseException
-     */
-    public void loadStatistics() throws IOException, ParseException {
-        String path = getStatisticsFilePath();
-        if (path == null) {
-            throw new FileNotFoundException("Statistics file is not set (null)");
-        }
-        loadStatistics(new File(path));
-    }
-
-    /**
-     * Load statistics from JSON file.
-     *
-     * @param in the file with json
-     * @throws IOException
-     * @throws ParseException
-     */
-    public void loadStatistics(File in) throws IOException, ParseException {
-        if (in == null) {
-            throw new FileNotFoundException("Statistics file is not set (null)");
-        }
-        try (FileInputStream ifstream = new FileInputStream(in)) {
-            loadStatistics(ifstream);
-        }
-    }
-
-    /**
-     * Load statistics from an input stream.
-     *
-     * @param in the file with json
-     * @throws IOException
-     * @throws ParseException
-     */
-    public void loadStatistics(InputStream in) throws IOException, ParseException {
-        try (InputStreamReader iReader = new InputStreamReader(in)) {
-            JSONParser jsonParser = new JSONParser();
-            setStatistics(Util.jsonToStatistics((JSONObject) jsonParser.parse(iReader)));
-        }
     }
 
     /**

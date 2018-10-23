@@ -59,6 +59,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.opengrok.indexer.util.StatUtil.loadStatistics;
+import static org.opengrok.indexer.util.StatUtil.saveStatistics;
+
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 
@@ -878,7 +881,7 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{}";
         try (InputStream in = new StringInputStream(json)) {
-            env.loadStatistics(in);
+            loadStatistics(in);
         }
         Assert.assertEquals(new Statistics().toJson(), env.getStatistics().toJson());
     }
@@ -922,7 +925,7 @@ public class RuntimeEnvironmentTest {
             + "}"
         + "}";
         try (InputStream in = new StringInputStream(json)) {
-            env.loadStatistics(in);
+            loadStatistics(in);
         }
         Statistics stats = env.getStatistics();
         Assert.assertNotNull(stats);
@@ -953,7 +956,7 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{ malformed json with missing bracket";
         try (InputStream in = new StringInputStream(json)) {
-            env.loadStatistics(in);
+            loadStatistics(in);
         }
     }
 
@@ -962,7 +965,7 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setStatistics(new Statistics());
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            env.saveStatistics(out);
+            saveStatistics(out);
             Assert.assertEquals("{}", out.toString());
         }
     }
@@ -976,7 +979,7 @@ public class RuntimeEnvironmentTest {
         env.getStatistics().addRequestTime("root", 10L);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            env.saveStatistics(out);
+            saveStatistics(out);
             Assert.assertNotEquals("{}", out.toString());
             Assert.assertEquals(env.getStatistics().toJson().toJSONString(), out.toString());
         }
@@ -985,23 +988,23 @@ public class RuntimeEnvironmentTest {
     @Test(expected = IOException.class)
     public void testSaveNullStatistics() throws IOException {
         RuntimeEnvironment.getInstance().setStatisticsFilePath(null);
-        RuntimeEnvironment.getInstance().saveStatistics();
+        saveStatistics();
     }
 
     @Test(expected = IOException.class)
     public void testSaveNullStatisticsFile() throws IOException {
-        RuntimeEnvironment.getInstance().saveStatistics((File) null);
+        saveStatistics((File) null);
     }
 
     @Test(expected = IOException.class)
     public void testLoadNullStatistics() throws IOException, ParseException {
         RuntimeEnvironment.getInstance().setStatisticsFilePath(null);
-        RuntimeEnvironment.getInstance().loadStatistics();
+        loadStatistics();
     }
 
     @Test(expected = IOException.class)
     public void testLoadNullStatisticsFile() throws IOException, ParseException {
-        RuntimeEnvironment.getInstance().loadStatistics((File) null);
+        loadStatistics((File) null);
     }
 
     /**

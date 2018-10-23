@@ -40,6 +40,9 @@ import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
+import static org.opengrok.indexer.util.StatUtil.loadStatistics;
+import static org.opengrok.indexer.util.StatUtil.saveStatistics;
+
 /**
  * Initialize webapp context
  *
@@ -81,7 +84,7 @@ public final class WebappListener
         env.getAuthorizationFramework().reload();
 
         try {
-            RuntimeEnvironment.getInstance().loadStatistics();
+            loadStatistics();
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
         } catch (ParseException ex) {
@@ -96,7 +99,7 @@ public final class WebappListener
         env.startExpirationTimer();
 
         try {
-            RuntimeEnvironment.getInstance().loadStatistics();
+            loadStatistics();
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
         } catch (ParseException ex) {
@@ -112,7 +115,7 @@ public final class WebappListener
         RuntimeEnvironment.getInstance().watchDog.stop();
         RuntimeEnvironment.getInstance().stopExpirationTimer();
         try {
-            RuntimeEnvironment.getInstance().saveStatistics();
+            saveStatistics();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
         }
