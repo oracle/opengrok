@@ -1663,10 +1663,11 @@ public final class PageConfig {
      * <p>
      * If the resource was modified, appropriate headers in the response are filled.
      *
+     * @param request the http request containing the headers
      * @param response the http response for setting the headers
      * @return true if resource was not modified; false otherwise
-     * @see <a href="https://tools.ietf.org/html/rfc7232#section-2.3>HTTP ETag</a>
-     * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html>HTTP Caching</a>
+     * @see <a href="https://tools.ietf.org/html/rfc7232#section-2.3">HTTP ETag</a>
+     * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html">HTTP Caching</a>
      */
     public boolean isNotModified(HttpServletRequest request, HttpServletResponse response) {
         String currentEtag = String.format("W/\"%s\"",
