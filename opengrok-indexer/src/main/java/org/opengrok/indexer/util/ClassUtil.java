@@ -77,7 +77,7 @@ public class ClassUtil {
         }
     }
 
-    private static Object getObjectValue(Class c, String value) throws IOException {
+    private static Object getObjectValue(String fieldName, Class c, String value) throws IOException {
         Object v;
         String paramClass = c.getName();
 
@@ -125,8 +125,14 @@ public class ClassUtil {
                 ObjectMapper mapper = new ObjectMapper();
                 v = mapper.readValue(value, c);
             }
-        } catch (Exception e) {
-            throw new IOException("value conversion failed", e);
+        }  catch (NumberFormatException ex) {
+            throw new IOException(
+                    String.format("Unsupported type conversion from String to a number for name \"%s\" - %s.",
+                            fieldName, ex.getLocalizedMessage()), ex);
+        } catch (IndexOutOfBoundsException ex) {
+            throw new IOException(
+                    String.format("The string is not long enough to extract 1 character for name \"%s\" - %s.",
+                            fieldName, ex.getLocalizedMessage()), ex);
         }
 
         return v;
@@ -183,30 +189,29 @@ public class ClassUtil {
      *
      * @param obj the object
      * @param fieldName name of the field which will be changed
-     * @param value desired value
+     * @param value desired value represented as string
      *
      * @throws IOException if any error occurs (no suitable method, bad conversion, ...)
      */
     public static void invokeSetter(Object obj, String fieldName, String value) throws IOException {
         Method setter = getSetter(obj, fieldName);
         Class<?> c = setter.getParameterTypes()[0];
-        Object objValue = getObjectValue(c, value);
+        Object objValue = getObjectValue(fieldName, c, value);
         // TODO this will get the setter again => refactor
         invokeSetter(obj, fieldName, objValue);
     }
 
+    /**
+     *
+     * @param obj the object
+     * @param fieldName name of the field which will be changed
+     * @param value desired value
+     * @throws IOException
+     */
     public static void invokeSetter(Object obj, String fieldName, Object value) throws IOException {
         try {
             Method setter = getSetter(obj, fieldName);
             setter.invoke(obj, value);
-        } catch (NumberFormatException ex) {
-            throw new IOException(
-                    String.format("Unsupported type conversion from String to a number for name \"%s\" - %s.",
-                            fieldName, ex.getLocalizedMessage()), ex);
-        } catch (IndexOutOfBoundsException ex) {
-            throw new IOException(
-                    String.format("The string is not long enough to extract 1 character for name \"%s\" - %s.",
-                            fieldName, ex.getLocalizedMessage()), ex);
         } catch (IllegalAccessException
                 | IllegalArgumentException
                 /*
