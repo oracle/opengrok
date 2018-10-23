@@ -40,8 +40,8 @@ import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.indexer.web.SearchHelper;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterServiceFactory;
 
-import static org.opengrok.indexer.util.StatUtil.loadStatistics;
-import static org.opengrok.indexer.util.StatUtil.saveStatistics;
+import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
+import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
 
 /**
  * Initialize webapp context

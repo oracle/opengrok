@@ -37,7 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.regex.PatternSyntaxException;
+
 import org.apache.tools.ant.filters.StringInputStream;
 import org.json.simple.parser.ParseException;
 import org.junit.AfterClass;
@@ -59,8 +59,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.opengrok.indexer.util.StatUtil.loadStatistics;
-import static org.opengrok.indexer.util.StatUtil.saveStatistics;
+import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
+import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
 
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;

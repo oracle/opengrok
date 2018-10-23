@@ -38,7 +38,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
-public class StatUtil {
+public class StatisticsUtils {
     /**
      * Dump statistics in JSON format into the file specified in configuration.
      *
@@ -121,7 +121,7 @@ public class StatUtil {
         }
     }
 
-    private StatUtil() {
+    private StatisticsUtils() {
         // private to ensure static
     }
 }

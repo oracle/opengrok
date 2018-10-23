@@ -35,7 +35,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 
-import static org.opengrok.indexer.util.StatUtil.loadStatistics;
+import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
 
 @Path("/stats")
 public class StatsController {
