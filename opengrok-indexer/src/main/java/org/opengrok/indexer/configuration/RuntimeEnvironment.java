@@ -306,6 +306,20 @@ public final class RuntimeEnvironment {
         }
     }
 
+    /**
+     * Set configuration value
+     * @param fieldName name of the field
+     * @param value string value
+     */
+    public void setConfigurationValueException(String fieldName, String value) throws IOException {
+        try {
+            configLock.writeLock().lock();
+            invokeSetter(configuration, fieldName, value);
+        } finally {
+            configLock.writeLock().unlock();
+        }
+    }
+
     public int getScanningDepth() {
         return (int)getConfigurationValue("scanningDepth");
     }
