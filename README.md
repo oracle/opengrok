@@ -51,6 +51,8 @@ Feel free to participate in discussion on the mailing lists:
 
 To subscribe, send email to `<mailing_list_name>-subscribe@yahoogroups.com`
 
+There are also Slack channels on https://opengrok.slack.com/
+
 ## 6. Demo
 
 Visit <http://demo.opengrok.org>
