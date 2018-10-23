@@ -185,7 +185,7 @@ public class ClassUtil {
      * <li>Character or char</li>
      * <li>String</li>
      * </ul>
-     * Any other parameter type will cause an exception.
+     * Any other parameter type will cause an exception. The size/value itself is checked elsewhere.
      *
      * @param obj the object
      * @param fieldName name of the field which will be changed
