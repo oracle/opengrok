@@ -67,6 +67,7 @@ import org.opengrok.indexer.index.Filter;
 import org.opengrok.indexer.index.IgnoredNames;
 import org.opengrok.indexer.index.IndexDatabase;
 import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.CtagsUtil;
 import org.opengrok.indexer.web.messages.Message;
 import org.opengrok.indexer.web.messages.MessagesContainer;
@@ -75,8 +76,8 @@ import org.opengrok.indexer.web.Statistics;
 import org.opengrok.indexer.web.Util;
 
 import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
-import static org.opengrok.indexer.util.ClassUtil.invokeGetter;
-import static org.opengrok.indexer.util.ClassUtil.invokeSetter;
+import static org.opengrok.indexer.util.ClassUtil.getFieldValue;
+import static org.opengrok.indexer.util.ClassUtil.setFieldValue;
 
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.PathUtils;
@@ -235,7 +236,7 @@ public final class RuntimeEnvironment {
     public Object getConfigurationValue(String fieldName) {
         try {
             configLock.readLock().lock();
-            return invokeGetter(configuration, fieldName);
+            return getFieldValue(configuration, fieldName);
         } catch (IOException e) {
             return null;
         } finally {
@@ -252,7 +253,7 @@ public final class RuntimeEnvironment {
     public Object getConfigurationValueException(String fieldName) throws IOException {
         try {
             configLock.readLock().lock();
-            return invokeGetter(configuration, fieldName);
+            return getFieldValue(configuration, fieldName);
         } catch (IOException e) {
             throw new IOException("getter", e);
         } finally {
@@ -268,7 +269,7 @@ public final class RuntimeEnvironment {
     public void setConfigurationValue(String fieldName, String value) {
         try {
             configLock.writeLock().lock();
-            invokeSetter(configuration, fieldName, value);
+            ClassUtil.setFieldValue(configuration, fieldName, value);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "failed to set value of field {}: {}", new Object[]{fieldName, e});
         } finally {
@@ -284,7 +285,7 @@ public final class RuntimeEnvironment {
     public void setConfigurationValue(String fieldName, Object value) {
         try {
             configLock.writeLock().lock();
-            invokeSetter(configuration, fieldName, value);
+            setFieldValue(configuration, fieldName, value);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "failed to set value of field {}: {}", new Object[]{fieldName, e});
         } finally {
@@ -300,7 +301,7 @@ public final class RuntimeEnvironment {
     public void setConfigurationValueException(String fieldName, Object value) throws IOException {
         try {
             configLock.writeLock().lock();
-            invokeSetter(configuration, fieldName, value);
+            setFieldValue(configuration, fieldName, value);
         } finally {
             configLock.writeLock().unlock();
         }
@@ -314,7 +315,7 @@ public final class RuntimeEnvironment {
     public void setConfigurationValueException(String fieldName, String value) throws IOException {
         try {
             configLock.writeLock().lock();
-            invokeSetter(configuration, fieldName, value);
+            ClassUtil.setFieldValue(configuration, fieldName, value);
         } finally {
             configLock.writeLock().unlock();
         }

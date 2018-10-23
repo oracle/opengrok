@@ -193,24 +193,28 @@ public class ClassUtil {
      *
      * @throws IOException if any error occurs (no suitable method, bad conversion, ...)
      */
-    public static void invokeSetter(Object obj, String fieldName, String value) throws IOException {
+    public static void setFieldValue(Object obj, String fieldName, String value) throws IOException {
         Method setter = getSetter(obj, fieldName);
         Class<?> c = setter.getParameterTypes()[0];
         Object objValue = getObjectValue(fieldName, c, value);
-        // TODO this will get the setter again => refactor
-        invokeSetter(obj, fieldName, objValue);
+        invokeSetter(setter, obj, fieldName, objValue);
     }
 
     /**
+     * Invokes a setter on an object and passes a value to that setter.
      *
      * @param obj the object
      * @param fieldName name of the field which will be changed
      * @param value desired value
      * @throws IOException
      */
-    public static void invokeSetter(Object obj, String fieldName, Object value) throws IOException {
+    public static void setFieldValue(Object obj, String fieldName, Object value) throws IOException {
+        Method setter = getSetter(obj, fieldName);
+        invokeSetter(setter, obj, fieldName, value);
+    }
+
+    private static void invokeSetter(Method setter, Object obj, String fieldName, Object value) throws IOException {
         try {
-            Method setter = getSetter(obj, fieldName);
             setter.invoke(obj, value);
         } catch (IllegalAccessException
                 | IllegalArgumentException
@@ -225,8 +229,8 @@ public class ClassUtil {
                             obj.getClass().toString(),
                             fieldName,
                             ex.getCause() == null
-                            ? ex.getLocalizedMessage()
-                            : ex.getCause().getLocalizedMessage()), ex);
+                                    ? ex.getLocalizedMessage()
+                                    : ex.getCause().getLocalizedMessage()), ex);
         }
     }
 
@@ -238,7 +242,7 @@ public class ClassUtil {
      * @return string representation of the field value
      * @throws java.io.IOException exception
      */
-    public static Object invokeGetter(Object obj, String field) throws IOException {
+    public static Object getFieldValue(Object obj, String field) throws IOException {
 
         try {
             PropertyDescriptor desc = new PropertyDescriptor(field, obj.getClass());
