@@ -146,6 +146,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                             <arguments>
                                 <argument>-E</argument>
                                 <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
+                                <argument>${project.build.directory}/setup.py</argument>
                             </arguments>
                         </configuration>
                         <phase>verify</phase>
