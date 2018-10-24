@@ -40,6 +40,10 @@ elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
 fi
 
 sudo ./dev/install-universal_ctags.sh
+if [[ $? != 0 ]]; then
+	echo "cannot install Universal ctags"
+	exit 1
+fi
 
 # for API blueprint verification
 npm install drafter
