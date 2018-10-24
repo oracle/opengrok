@@ -140,21 +140,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <id>Python lint</id>
-                        <configuration>
-                            <executable>pylint</executable>
-                            <arguments>
-                                <argument>-E</argument>
-                                <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
-                                <argument>${project.build.directory}/setup.py</argument>
-                            </arguments>
-                        </configuration>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                    <execution>
                         <id>generate python env</id>
                         <configuration>
                             <executable>python3</executable>
@@ -163,6 +148,21 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>-m</argument>
                                 <argument>venv</argument>
                                 <argument>env</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Upgrade pip</id>
+                        <configuration>
+                            <executable>${project.build.directory}/env/bin/pip3</executable>
+                            <arguments>
+                                <argument>install</argument>
+                                <argument>--upgrade</argument>
+                                <argument>pip</argument>
                             </arguments>
                         </configuration>
                         <phase>test</phase>
@@ -197,6 +197,36 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                             <skip>${skipTests}</skip>
                         </configuration>
                         <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Install Python lint</id>
+                        <configuration>
+                            <executable>${project.build.directory}/env/bin/pip3</executable>
+                            <arguments>
+                                <argument>install</argument>
+                                <argument>pylint</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Python lint</id>
+                        <configuration>
+                            <executable>${project.build.directory}/env/bin/pylint</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-E</argument>
+                                <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
+                                <argument>${project.build.directory}/setup.py</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>verify</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
