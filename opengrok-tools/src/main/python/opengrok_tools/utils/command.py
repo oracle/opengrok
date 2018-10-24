@@ -191,7 +191,7 @@ class Command:
         if self.work_dir:
             try:
                 orig_work_dir = os.getcwd()
-            except OSError as e:
+            except OSError:
                 self.state = Command.ERRORED
                 self.logger.error("Cannot get working directory",
                                   exc_info=True)
@@ -199,7 +199,7 @@ class Command:
 
             try:
                 os.chdir(self.work_dir)
-            except OSError as e:
+            except OSError:
                 self.state = Command.ERRORED
                 self.logger.error("Cannot change working directory to {}".
                                   format(self.work_dir), exc_info=True)
@@ -259,14 +259,14 @@ class Command:
                 if e:
                     raise e
 
-        except KeyboardInterrupt as e:
+        except KeyboardInterrupt:
             self.logger.info("Got KeyboardException while processing ",
                              exc_info=True)
             self.state = Command.INTERRUPTED
-        except OSError as e:
+        except OSError:
             self.logger.error("Got OS error", exc_info=True)
             self.state = Command.ERRORED
-        except TimeoutException as e:
+        except TimeoutException:
             self.logger.error("Timed out")
             self.state = Command.TIMEDOUT
         else:
@@ -299,10 +299,10 @@ class Command:
         if orig_work_dir:
             try:
                 os.chdir(orig_work_dir)
-            except OSError as e:
+            except OSError:
                 self.state = Command.ERRORED
                 self.logger.error("Cannot change working directory back to {}".
-                                  format(orig_work_dir))
+                                  format(orig_work_dir), exc_info=True)
                 return
 
     def fill_arg(self, args_append=None, args_subst=None):

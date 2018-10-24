@@ -134,7 +134,7 @@ def main():
 
     try:
         os.chdir("/")
-    except OSError as e:
+    except OSError:
         logger.error("cannot change working directory to /",
                      exc_info=True)
         sys.exit(1)
