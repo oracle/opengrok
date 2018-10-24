@@ -13,13 +13,30 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 		exit 1
 	fi
 
+	# Bitkeeper install failure is not critical, so exit code is not checked.
 	sudo ./dev/install-bitkeeper.sh
-	sudo ./dev/install-python-packages
+
+	sudo ./dev/install-python-packages.sh
+	if [[ $? != 0 ]]; then
+		echo "cannot install Python packages"
+		exit 1
+	fi
 elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
 	brew update
+
 	brew install ctags cvs node
+	if [[ $? != 0 ]]; then
+		echo "cannot install extra packages"
+		exit 1
+	fi
+
 	brew upgrade python
+
 	./dev/install-python-packages.sh
+	if [[ $? != 0 ]]; then
+		echo "cannot install Python packages"
+		exit 1
+	fi
 fi
 
 sudo ./dev/install-universal_ctags.sh
