@@ -257,7 +257,7 @@ class Command:
             if self.timeout:
                 e = timeout_thread.get_exception()
                 if e:
-                    raise e
+                    raise e # pylint: disable=E0702
 
         except KeyboardInterrupt:
             self.logger.info("Got KeyboardException while processing ",
@@ -391,5 +391,5 @@ class Command:
                                      self.getretcode()))
         else:
             self.logger.error("{}: command {} in directory {} ended with "
-                              "invalid state".
+                              "invalid state {}".
                               format(msg, self.cmd, self.work_dir, self.state))
