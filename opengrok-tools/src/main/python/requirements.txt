@@ -4,7 +4,6 @@ idna==2.7
 JsonForm==0.0.2
 jsonschema==2.6.0
 JsonSir==0.0.2
-opengrok-tools==0.0.1
 Python-EasyConfig==0.1.7
 PyYAML==3.13
 requests==2.19.1
