@@ -24,7 +24,7 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
 	brew update
 
-	brew install ctags cvs node
+	brew install cvs node
 	if [[ $? != 0 ]]; then
 		echo "cannot install extra packages"
 		exit 1
