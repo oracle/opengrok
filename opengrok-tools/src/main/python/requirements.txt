@@ -8,5 +8,5 @@ Python-EasyConfig==0.1.7
 PyYAML==3.13
 requests==2.19.1
 Resource==0.2.1
-six==1.11.0
+six>=1.5.0
 urllib3==1.23
