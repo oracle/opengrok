@@ -132,7 +132,7 @@ def delete_project(logger, project, uri):
                                urllib.parse.quote_plus(project)))
 
     if not r:
-        logger.error('could not delete project in web application on {}'.
+        logger.error('could not delete project {} in web application on {}'.
                      format(project, uri))
         return False
 
