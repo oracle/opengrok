@@ -257,7 +257,7 @@ class Command:
             if self.timeout:
                 e = timeout_thread.get_exception()
                 if e:
-                    raise e # pylint: disable=E0702
+                    raise e  # pylint: disable=E0702
 
         except KeyboardInterrupt:
             self.logger.info("Got KeyboardException while processing ",
