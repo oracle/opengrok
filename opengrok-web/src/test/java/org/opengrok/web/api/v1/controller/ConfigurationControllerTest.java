@@ -31,8 +31,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.web.DummyHttpServletRequest;
+import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
@@ -242,49 +245,50 @@ public class ConfigurationControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testConfigValueSetVsMultiThread() throws InterruptedException {
+    public void testConfigValueSetVsThread() throws InterruptedException {
         int origValue = env.getHitsPerPage();
-        int nThreads = 128;
-        int values[] = new int[nThreads];
+        final int threadValue[] = new int[1];
+        final CountDownLatch startLatch = new CountDownLatch(1);
+        final CountDownLatch endLatch = new CountDownLatch(1);
 
-        // Create a thread pool.
-        final CountDownLatch startLatch = new CountDownLatch(nThreads);
-        ExecutorService executor = Executors.newFixedThreadPool(nThreads);
-        for (int i = 0; i < nThreads; i++) {
-            final int ii = i;
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    // Wait for hint for termination, save the value and exit.
-                    try {
-                        startLatch.await();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    values[ii] = env.getHitsPerPage();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpServletRequest req = new DummyHttpServletRequest();
+                PageConfig pageConfig = PageConfig.get(req);
+                RuntimeEnvironment e = pageConfig.getEnv();
+                startLatch.countDown();
+                // Wait for hint of termination, save the value and exit.
+                try {
+                    endLatch.await();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
                 }
-            });
-        }
+                threadValue[0] = e.getHitsPerPage();
+            }
+        });
 
-        // Set a configuration variable.
-        int newValue = 42;
-        setValue("hitsPerPage", String.valueOf(newValue));
+        thread.start();
+        startLatch.await();
 
-        // Unblock the threads.
-        for (int i = 0; i < nThreads; i++) {
-            startLatch.countDown();
-        }
+        // Set brand new configuration.
+        int newValue = origValue + 42;
+        Configuration config = new Configuration();
+        config.setHitsPerPage(newValue);
+        String configStr = config.getXMLRepresentationAsString();
+        Response res = target("configuration")
+                .request()
+                .put(Entity.xml(configStr));
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
 
-        // Terminate the threads
-        executor.awaitTermination(10, TimeUnit.SECONDS);
-        executor.shutdown();
+        // Unblock the thread.
+        endLatch.countDown();
+        thread.join();
 
         // Check thread's view of the variable.
-        for (int j = 0; j < values.length; j++) {
-            assertEquals(newValue, values[j]);
-        }
+        assertEquals(newValue, threadValue[0]);
 
-        // Revert back to default.
+        // Revert the value back to the default.
         env.setHitsPerPage(origValue);
     }
 }
