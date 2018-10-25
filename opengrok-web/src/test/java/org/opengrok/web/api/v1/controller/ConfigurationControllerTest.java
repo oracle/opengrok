@@ -37,6 +37,11 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -236,4 +241,50 @@ public class ConfigurationControllerTest extends JerseyTest {
         verify(suggesterService).refresh();
     }
 
+    @Test
+    public void testConfigValueSetVsMultiThread() throws InterruptedException {
+        int origValue = env.getHitsPerPage();
+        int nThreads = 128;
+        int values[] = new int[nThreads];
+
+        // Create a thread pool.
+        final CountDownLatch startLatch = new CountDownLatch(nThreads);
+        ExecutorService executor = Executors.newFixedThreadPool(nThreads);
+        for (int i = 0; i < nThreads; i++) {
+            final int ii = i;
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    // Wait for hint for termination, save the value and exit.
+                    try {
+                        startLatch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    values[ii] = env.getHitsPerPage();
+                }
+            });
+        }
+
+        // Set a configuration variable.
+        int newValue = 42;
+        setValue("hitsPerPage", String.valueOf(newValue));
+
+        // Unblock the threads.
+        for (int i = 0; i < nThreads; i++) {
+            startLatch.countDown();
+        }
+
+        // Terminate the threads
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+        executor.shutdown();
+
+        // Check thread's view of the variable.
+        for (int j = 0; j < values.length; j++) {
+            assertEquals(newValue, values[j]);
+        }
+
+        // Revert back to default.
+        env.setHitsPerPage(origValue);
+    }
 }
