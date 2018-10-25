@@ -158,7 +158,8 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     <execution>
                         <id>Upgrade pip</id>
                         <configuration>
-                            <executable>${project.build.directory}/env/bin/pip3</executable>
+                            <executable>env/bin/pip3</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory> 
                             <arguments>
                                 <argument>install</argument>
                                 <argument>--upgrade</argument>
