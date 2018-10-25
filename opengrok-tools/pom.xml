@@ -218,7 +218,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     <execution>
                         <id>Python lint</id>
                         <configuration>
-                            <executable>${project.build.directory}/env/bin/pylint</executable>
+                            <executable>env/bin/pylint</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>-E</argument>
