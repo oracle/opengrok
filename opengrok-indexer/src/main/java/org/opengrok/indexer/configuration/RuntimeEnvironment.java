@@ -1636,18 +1636,18 @@ public final class RuntimeEnvironment {
         }
 
         // start/stop the watchdog if necessary
-        if (isAuthorizationWatchdog() && config.getPluginDirectory() != null) {
-            watchDog.start(new File(config.getPluginDirectory()));
+        if (isAuthorizationWatchdog() && getPluginDirectory() != null) {
+            watchDog.start(new File(getPluginDirectory()));
         } else {
             watchDog.stop();
         }
 
         // set the new plugin directory and reload the authorization framework
-        getAuthorizationFramework().setPluginDirectory(config.getPluginDirectory());
-        getAuthorizationFramework().setStack(config.getPluginStack());
+        getAuthorizationFramework().setPluginDirectory(getPluginDirectory());
+        getAuthorizationFramework().setStack(getPluginStack());
         getAuthorizationFramework().reload();
 
-        messagesContainer.setMessageLimit(config.getMessageLimit());
+        messagesContainer.setMessageLimit(getMessageLimit());
     }
 
     public void setIndexTimestamp() throws IOException {
@@ -1874,4 +1874,6 @@ public final class RuntimeEnvironment {
     public void setSuggesterConfig(SuggesterConfig config) {
         setConfigurationValue("suggesterConfig", config);
     }
+
+    public int getMessageLimit() { return (int)getConfigurationValue("messageLimit"); }
 }
