@@ -108,7 +108,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
         }
 
         @Override
-        public Enumeration getAttributeNames() {
+        public Enumeration<String> getAttributeNames() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -169,12 +169,12 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     }
 
     @Override
-    public Enumeration getHeaders(String string) {
+    public Enumeration<String> getHeaders(String string) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Enumeration getHeaderNames() {
+    public Enumeration<String> getHeaderNames() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -315,7 +315,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     }
 
     @Override
-    public Enumeration getAttributeNames() {
+    public Enumeration<String> getAttributeNames() {
         return Collections.enumeration(attrs.keySet());
     }
 
@@ -355,7 +355,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     }
 
     @Override
-    public Enumeration getParameterNames() {
+    public Enumeration<String> getParameterNames() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -365,7 +365,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     }
 
     @Override
-    public Map getParameterMap() {
+    public Map<String,String[]> getParameterMap() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -420,7 +420,7 @@ public class DummyHttpServletRequestLdap implements HttpServletRequest {
     }
 
     @Override
-    public Enumeration getLocales() {
+    public Enumeration<Locale> getLocales() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
