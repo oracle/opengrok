@@ -49,6 +49,7 @@ import static org.junit.Assert.assertThat;
 
 public class CustomSloppyPhraseScorerTest {
 
+    @SuppressWarnings("deprecation") // for RAMDirectory
     public static void test(
             final int slop,
             final int offset,

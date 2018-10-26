@@ -59,6 +59,7 @@ public class SuggesterSearcherTest {
     private static SuggesterSearcher searcher;
 
     @BeforeClass
+    @SuppressWarnings("deprecation") // for RAMDirectory
     public static void setUpClass() throws IOException {
         dir = new RAMDirectory();
 
