@@ -137,6 +137,7 @@ public class AuthorizationPluginClassLoaderTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testNonExistingPlugin() {
         AuthorizationPluginClassLoader instance
                 = new AuthorizationPluginClassLoader(pluginDirectory);
@@ -145,6 +146,7 @@ public class AuthorizationPluginClassLoaderTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testFalsePlugin() {
         AuthorizationPluginClassLoader instance
                 = new AuthorizationPluginClassLoader(pluginDirectory);
@@ -165,6 +167,7 @@ public class AuthorizationPluginClassLoaderTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testTruePlugin() {
         AuthorizationPluginClassLoader instance
                 = new AuthorizationPluginClassLoader(pluginDirectory);
@@ -184,6 +187,7 @@ public class AuthorizationPluginClassLoaderTest {
         );
     }
 
+    @SuppressWarnings("rawtypes")
     private IAuthorizationPlugin getNewInstance(Class c) {
         IAuthorizationPlugin plugin = null;
         try {
@@ -198,10 +202,12 @@ public class AuthorizationPluginClassLoaderTest {
         return plugin;
     }
 
+    @SuppressWarnings("rawtypes")
     private Class loadClass(AuthorizationPluginClassLoader loader, String name) {
         return loadClass(loader, name, false);
     }
 
+    @SuppressWarnings("rawtypes")
     private Class loadClass(AuthorizationPluginClassLoader loader, String name, boolean shouldFail) {
         Class clazz = null;
         try {
