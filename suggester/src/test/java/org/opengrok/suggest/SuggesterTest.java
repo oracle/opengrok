@@ -247,6 +247,7 @@ public class SuggesterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains()
     public void testOnSearch() throws IOException {
         SuggesterTestData t = initSuggester();
 
@@ -275,6 +276,7 @@ public class SuggesterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains()
     public void testIncreaseSearchCount() throws IOException {
         SuggesterTestData t = initSuggester();
 
