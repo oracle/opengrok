@@ -77,6 +77,7 @@ public class ClassUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static Object stringToObject(String fieldName, Class c, String value) throws IOException {
         Object v;
         String paramClass = c.getName();

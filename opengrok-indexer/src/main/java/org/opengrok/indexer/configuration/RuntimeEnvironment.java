@@ -472,6 +472,7 @@ public final class RuntimeEnvironment {
      *
      * @return a Map with all of the projects
      */
+    @SuppressWarnings("unchecked")
     public Map<String,Project> getProjects() {
         return (Map<String,Project>)getConfigurationValue("projects");
     }
@@ -516,6 +517,7 @@ public final class RuntimeEnvironment {
      *
      * @return a set containing all of the groups (may be null)
      */
+    @SuppressWarnings("unchecked")
     public Set<Group> getGroups() {
         return (Set<Group>)getConfigurationValue("groups");
     }
@@ -723,6 +725,7 @@ public final class RuntimeEnvironment {
         setConfigurationValue("quickContextScan", quickContextScan);
     }
 
+    @SuppressWarnings("unchecked")
     public List<RepositoryInfo> getRepositories() {
         return (List<RepositoryInfo>)getConfigurationValue("repositories");
     }
@@ -790,6 +793,7 @@ public final class RuntimeEnvironment {
      *
      * @return the default projects (may be null if not specified)
      */
+    @SuppressWarnings("unchecked")
     public Set<Project> getDefaultProjects() {
         Set<Project> projects = (Set<Project>)getConfigurationValue("defaultProjects");
         if (projects == null) {
@@ -1161,6 +1165,7 @@ public final class RuntimeEnvironment {
         setConfigurationValue("CTagsExtraOptionsFile", filename);
     }
 
+    @SuppressWarnings("unchecked")
     public Set<String> getAllowedSymlinks() {
         return (Set<String>)getConfigurationValue("allowedSymlinks");
     }

@@ -198,6 +198,10 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                     <source>${compileSource}</source>
                     <target>${compileTarget}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <compilerArgs>
+                      <arg>-Xlint:all</arg>
+                      <arg>-Werror</arg>
+                    </compilerArgs>
                 </configuration>
                 <version>3.6.1</version>
             </plugin>

@@ -318,7 +318,7 @@ public final class Indexer {
             // Get history first.
             getInstance().prepareIndexer(env, searchRepositories, addProjects,
                     defaultProjects,
-                    listFiles, createDict, subFiles, new ArrayList(repositories),
+                    listFiles, createDict, subFiles, new ArrayList<>(repositories),
                     zapCache, listRepos);
             if (listRepos || !zapCache.isEmpty()) {
                 return;
