@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
+@SuppressWarnings("deprecation") // for RAMDirectory
 public class SuggesterSearcherTest {
 
     private static Directory dir;
@@ -59,7 +60,6 @@ public class SuggesterSearcherTest {
     private static SuggesterSearcher searcher;
 
     @BeforeClass
-    @SuppressWarnings("deprecation") // for RAMDirectory
     public static void setUpClass() throws IOException {
         dir = new RAMDirectory();
 
