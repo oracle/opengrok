@@ -32,7 +32,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -52,7 +51,6 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-@SuppressWarnings("deprecation") // for RAMDirectory
 public class SuggesterSearcherTest {
 
     private static Directory dir;
@@ -60,8 +58,9 @@ public class SuggesterSearcherTest {
     private static SuggesterSearcher searcher;
 
     @BeforeClass
+    @SuppressWarnings("deprecation") // for RAMDirectory
     public static void setUpClass() throws IOException {
-        dir = new RAMDirectory();
+        dir = new org.apache.lucene.store.RAMDirectory();
 
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
             Document doc1 = new Document();

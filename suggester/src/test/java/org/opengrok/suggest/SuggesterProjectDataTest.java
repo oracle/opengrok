@@ -31,7 +31,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.suggest.Lookup;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.BytesRef;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -69,7 +68,7 @@ public class SuggesterProjectDataTest {
     @Before
     @SuppressWarnings("deprecation") // for RAMDirectory
     public void setUp() throws IOException {
-        dir = new RAMDirectory();
+        dir = new org.apache.lucene.store.RAMDirectory();
         tempDir = Files.createTempDirectory("test");
     }
 
@@ -265,7 +264,7 @@ public class SuggesterProjectDataTest {
     @Test
     @SuppressWarnings("deprecation") // for RAMDirectory
     public void testRemove() throws IOException {
-        Directory dir = new RAMDirectory();
+        Directory dir = new org.apache.lucene.store.RAMDirectory();
         Path tempDir = Files.createTempDirectory("test");
 
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
