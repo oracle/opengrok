@@ -58,6 +58,7 @@ public class ClassUtil {
      *
      * @param targetClass the class
      */
+    @SuppressWarnings("rawtypes")
     public static void remarkTransientFields(Class targetClass) {
         try {
             BeanInfo info;
@@ -77,7 +78,7 @@ public class ClassUtil {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private static Object stringToObject(String fieldName, Class c, String value) throws IOException {
         Object v;
         String paramClass = c.getName();

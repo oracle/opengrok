@@ -449,6 +449,7 @@ public final class AuthorizationFramework {
      * @throws NoSuchMethodException when the class does not have no-argument constructor
      * @throws InvocationTargetException if the underlying constructor of the class throws an exception
      */
+    @SuppressWarnings("rawtypes")
     private IAuthorizationPlugin loadClass(String classname) throws ClassNotFoundException,
             SecurityException,
             InstantiationException,
@@ -476,6 +477,7 @@ public final class AuthorizationFramework {
      * @param c class
      * @return array of interfaces of the class c
      */
+    @SuppressWarnings("rawtypes")
     protected List<Class> getInterfaces(Class c) {
         List<Class> interfaces = new LinkedList<>();
         Class self = c;
@@ -593,7 +595,7 @@ public final class AuthorizationFramework {
      * @see IAuthorizationPlugin#unload()
      * @see Configuration#getPluginDirectory()
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void reload() {
         if (pluginDirectory == null || !pluginDirectory.isDirectory() || !pluginDirectory.canRead()) {
             LOGGER.log(Level.WARNING, "Plugin directory not found or not readable: {0}. "
