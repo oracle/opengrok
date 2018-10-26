@@ -41,7 +41,7 @@ from os import path
 
 from .utils.commands import Commands, CommandsBase
 from .utils.filelock import Timeout, FileLock
-from .utils.opengrok import list_indexed_projects
+from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.readconfig import read_config
 
 major_version = sys.version_info[0]
@@ -49,7 +49,7 @@ if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.4"
+__version__ = "0.5"
 
 
 def worker(base):
@@ -73,10 +73,12 @@ def main():
 
     # There can be only one way how to supply list of projects to process.
     group1 = parser.add_mutually_exclusive_group()
-    group1.add_argument('-d', '--directory', default="/var/opengrok/src",
+    group1.add_argument('-d', '--directory',
                         help='Directory to process')
     group1.add_argument('-P', '--projects', nargs='*',
                         help='List of projects to process')
+    parser.add_argument('-I', '--indexed', action='store_true',
+                        help='Sync indexed projects only')
 
     group2 = parser.add_mutually_exclusive_group()
     group2.add_argument('-D', '--debug', action='store_true',
@@ -88,8 +90,6 @@ def main():
                         help='ignore errors from these projects')
     parser.add_argument('-c', '--config', required=True,
                         help='config file in JSON format')
-    parser.add_argument('-I', '--indexed', action='store_true',
-                        help='Sync indexed projects only')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
     args = parser.parse_args()
@@ -105,12 +105,18 @@ def main():
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
     uri = args.uri
-    if not uri:
-        logger.error("uri of the webapp not specified")
+    logger.debug("web application URI = {}".format(uri))
+
+    # Changing working directory to root will avoid problems when running
+    # via sudo/su.
+    try:
+        os.chdir("/")
+    except OSError:
+        logger.error("cannot change working directory to /",
+                     exc_info=True)
         sys.exit(1)
 
-    logger.debug("Uri = {}".format(uri))
-
+    # First read and validate configuration file as it is mandatory argument.
     config = read_config(logger, args.config)
     if config is None:
         logger.error("Cannot read config file from {}".format(args.config))
@@ -122,6 +128,17 @@ def main():
         logger.error("The config file has to contain key \"commands\"")
         sys.exit(1)
 
+    directory = args.directory
+    if not args.directory and not args.projects and not args.indexed:
+        # Assume directory, get the source root value from the webapp.
+        directory = get_config_value(logger, 'sourceRoot', uri)
+        if not directory:
+            logger.error("Neither -d or -P or -I specified and cannot get "
+                         "source root from the webapp")
+            sys.exit(1)
+        else:
+            logger.info("Assuming directory: {}".format(directory))
+
     ignore_errors = []
     if args.ignore_errors:
         ignore_errors = args.ignore_errors
@@ -132,13 +149,6 @@ def main():
             pass
     logger.debug("Ignored projects: {}".format(ignore_errors))
 
-    try:
-        os.chdir("/")
-    except OSError:
-        logger.error("cannot change working directory to /",
-                     exc_info=True)
-        sys.exit(1)
-
     lock = FileLock(os.path.join(tempfile.gettempdir(),
                                  "opengrok-sync.lock"))
     try:
@@ -147,8 +157,12 @@ def main():
 
             if args.projects:
                 dirs_to_process = args.projects
+                logger.debug("Processing directories: {}".
+                             format(dirs_to_process))
             elif args.indexed:
                 indexed_projects = list_indexed_projects(logger, uri)
+                logger.debug("Processing indexed projects: {}".
+                             format(indexed_projects))
 
                 if indexed_projects:
                     for line in indexed_projects:
@@ -157,7 +171,7 @@ def main():
                     logger.error("cannot get list of projects")
                     sys.exit(1)
             else:
-                directory = args.directory
+                logger.debug("Processing directory {}".format(directory))
                 for entry in os.listdir(directory):
                     if path.isdir(path.join(directory, entry)):
                         dirs_to_process.append(entry)
