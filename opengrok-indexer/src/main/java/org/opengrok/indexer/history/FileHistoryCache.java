@@ -303,9 +303,9 @@ class FileHistoryCache implements HistoryCache {
             if (!listOld.isEmpty()) {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 List<HistoryEntry> listNew = histNew.getHistoryEntries();
-                ListIterator li = listNew.listIterator(listNew.size());
+                ListIterator<HistoryEntry> li = listNew.listIterator(listNew.size());
                 while (li.hasPrevious()) {
-                    listOld.add(0, (HistoryEntry) li.previous());
+                    listOld.add(0, li.previous());
                 }
                 history = new History(listOld);
 
