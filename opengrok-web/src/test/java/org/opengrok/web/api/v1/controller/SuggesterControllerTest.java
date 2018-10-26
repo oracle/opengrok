@@ -579,6 +579,7 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataSimple() {
         SuggesterServiceImpl.getInstance().increaseSearchCount("rust", new Term(QueryBuilder.FULL, "main"), 10);
 
@@ -593,6 +594,7 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataAll() {
         SuggesterServiceImpl.getInstance().increaseSearchCount("csharp",
                 new Term(QueryBuilder.FULL, "mynamespace"), 10);
@@ -611,6 +613,7 @@ public class SuggesterControllerTest extends JerseyTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains
     public void testGetPopularityDataDifferentField() {
         SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.FULL, "print"), 10);
         SuggesterServiceImpl.getInstance().increaseSearchCount("swift", new Term(QueryBuilder.DEFS, "greet"), 4);
