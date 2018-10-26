@@ -381,7 +381,7 @@ public class Executor {
     
     public static void registerErrorHandler() {
         UncaughtExceptionHandler dueh =
-            Thread.currentThread().getDefaultUncaughtExceptionHandler();
+            Thread.getDefaultUncaughtExceptionHandler();
         if (dueh == null) {
             LOGGER.log(Level.FINE, "Installing default uncaught exception handler");
             Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
