@@ -336,7 +336,7 @@ public class Summarizer {
     }
 
     private void getBooleans(BooleanQuery query) {
-        for (BooleanClause clause : (BooleanQuery) query) {
+        for (BooleanClause clause : query) {
             if (!clause.isProhibited()) {
                 getTerms(clause.getQuery());
             }
