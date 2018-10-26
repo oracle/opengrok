@@ -25,7 +25,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
 {
     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 %>
-<%= PageConfig.get(request).getEnv().getConfiguration().getForbiddenIncludeFileContent(false) %>
+<%= PageConfig.get(request).getEnv().getIncludeFiles().getForbiddenIncludeFileContent(false) %>
 <%
 }
 /* ---------------------- eforbidden.jspf end --------------------- */

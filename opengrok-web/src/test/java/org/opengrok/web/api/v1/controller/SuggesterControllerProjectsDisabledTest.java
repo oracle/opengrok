@@ -83,7 +83,7 @@ public class SuggesterControllerProjectsDisabledTest extends JerseyTest {
                 false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
-        env.getConfiguration().getSuggesterConfig().setRebuildCronConfig(null);
+        env.getSuggesterConfig().setRebuildCronConfig(null);
     }
 
     @AfterClass
@@ -95,7 +95,7 @@ public class SuggesterControllerProjectsDisabledTest extends JerseyTest {
     public void before() {
         await().atMost(15, TimeUnit.SECONDS).until(() -> getSuggesterProjectDataSize() == 1);
 
-        env.getConfiguration().setSuggesterConfig(new SuggesterConfig());
+        env.setSuggesterConfig(new SuggesterConfig());
     }
 
     private static int getSuggesterProjectDataSize() throws Exception {

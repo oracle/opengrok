@@ -609,7 +609,7 @@ public final class PageConfig {
      */
     public EftarFileReader getEftarReader() {
         if (eftarReader == null || eftarReader.isClosed()) {
-            File f = getEnv().getConfiguration().getDtagsEftar();
+            File f = getEnv().getDtagsEftar();
             if (f == null) {
                 eftarReader = null;
             } else {
@@ -979,11 +979,10 @@ public final class PageConfig {
      *
      * @return the runtime env.
      * @see RuntimeEnvironment#getInstance()
-     * @see RuntimeEnvironment#register()
      */
     public RuntimeEnvironment getEnv() {
         if (env == null) {
-            env = RuntimeEnvironment.getInstance().register();
+            env = RuntimeEnvironment.getInstance();
         }
         return env;
     }

@@ -80,7 +80,7 @@ public class ProjectsController {
         File projDir = new File(srcRoot, projectName);
 
         if (!env.getProjects().containsKey(projectName)) {
-            Project project = new Project(projectName, "/" + projectName, env.getConfiguration());
+            Project project = new Project(projectName, "/" + projectName);
 
             // Add repositories in this project.
             List<RepositoryInfo> repos = getRepositoriesInDir(projDir);
@@ -241,7 +241,7 @@ public class ProjectsController {
         Project project = env.getProjects().get(projectName);
         if (project != null) {
             // Set the property.
-            ClassUtil.invokeSetter(project, field, value);
+            ClassUtil.setFieldValue(project, field, value);
 
             // Refresh repositories for this project as well.
             List<RepositoryInfo> riList = env.getProjectRepositoriesMap().get(project);
@@ -250,7 +250,7 @@ public class ProjectsController {
                     Repository repo = getRepository(ri, false);
 
                     // set the property
-                    ClassUtil.invokeSetter(repo, field, value);
+                    ClassUtil.setFieldValue(repo, field, value);
                 }
             }
         } else {
@@ -269,7 +269,7 @@ public class ProjectsController {
             throw new WebApplicationException(
                     "cannot find project " + projectName + " to get a property", Response.Status.BAD_REQUEST);
         }
-        return ClassUtil.invokeGetter(project, field);
+        return ClassUtil.getFieldValue(project, field);
     }
 
     @GET

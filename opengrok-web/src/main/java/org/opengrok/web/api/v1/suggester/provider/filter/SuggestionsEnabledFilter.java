@@ -40,9 +40,8 @@ public class SuggestionsEnabledFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext context) {
-        if (!env.getConfiguration().getSuggesterConfig().isEnabled()) {
+        if (!env.getSuggesterConfig().isEnabled()) {
             context.abortWith(Response.status(Response.Status.NOT_FOUND).build());
         }
     }
-
 }

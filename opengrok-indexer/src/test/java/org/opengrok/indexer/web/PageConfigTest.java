@@ -367,11 +367,11 @@ public class PageConfigTest {
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
         System.out.println(path);
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(null);
+        RuntimeEnvironment.getInstance().setSourceRoot(null);
         try {
             cfg.checkSourceRootExistence();
         } finally {
-            RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+            RuntimeEnvironment.getInstance().setSourceRoot(path);
             PageConfig.cleanup(req);
         }
     }
@@ -386,11 +386,11 @@ public class PageConfigTest {
         HttpServletRequest req = new DummyHttpServletRequest();
         PageConfig cfg = PageConfig.get(req);
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot("");
+        RuntimeEnvironment.getInstance().setSourceRoot("");
         try {
             cfg.checkSourceRootExistence();
         } finally {
-            RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+            RuntimeEnvironment.getInstance().setSourceRoot(path);
             PageConfig.cleanup(req);
         }
     }
@@ -407,13 +407,13 @@ public class PageConfigTest {
         String path = RuntimeEnvironment.getInstance().getSourceRootPath();
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
         Files.delete(temp.toPath());
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
+        RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();
             fail("This should throw an exception when the file does not exist");
         } catch (IOException ex) {
         }
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+        RuntimeEnvironment.getInstance().setSourceRoot(path);
         PageConfig.cleanup(req);
     }
 
@@ -431,13 +431,13 @@ public class PageConfigTest {
         Files.delete(temp.toPath());
         Files.createDirectories(temp.toPath());
         temp.setReadable(false);
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
+        RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
         try {
             cfg.checkSourceRootExistence();
             fail("This should throw an exception when the file is not readable");
         } catch (IOException ex) {
         }
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+        RuntimeEnvironment.getInstance().setSourceRoot(path);
 
         PageConfig.cleanup(req);
         temp.deleteOnExit();
@@ -456,9 +456,9 @@ public class PageConfigTest {
         File temp = File.createTempFile("opengrok", "-test-file.tmp");
         temp.delete();
         temp.mkdirs();
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(temp.getAbsolutePath());
+        RuntimeEnvironment.getInstance().setSourceRoot(temp.getAbsolutePath());
         cfg.checkSourceRootExistence();
-        RuntimeEnvironment.getInstance().getConfiguration().setSourceRoot(path);
+        RuntimeEnvironment.getInstance().setSourceRoot(path);
         temp.deleteOnExit();
         PageConfig.cleanup(req);
     }

@@ -64,7 +64,6 @@ public class ProjectHelperExtendedTest extends ProjectHelperTestBase {
         env.setProjects(projects);
         env.setGroups(new TreeSet<>(grps));
         env.setRepositories(rps);
-        env.register();
     }
 
     private void setupPageConfigRequest(final String cookie) {

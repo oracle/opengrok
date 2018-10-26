@@ -52,10 +52,6 @@ public class AuthorizationFilter implements Filter {
         HttpServletRequest httpReq = (HttpServletRequest) sr;
         HttpServletResponse httpRes = (HttpServletResponse) sr1;
 
-        // This way we trigger refresh for the current configuration value.
-        // Hotfix for #2382
-        RuntimeEnvironment.getInstance().register();
-
         // All RESTful API requests are allowed for now (also see LocalhostFilter).
         // The /search endpoint will go through authorization via SearchEngine.search()
         // so does not have to be exempted here.
@@ -79,7 +75,7 @@ public class AuthorizationFilter implements Filter {
                 LOGGER.log(Level.INFO, "Access denied for URI: {0}", httpReq.getRequestURI());
             }
 
-            /**
+            /*
              * Add the request to the statistics. This is called just once for a
              * single request otherwise the next filter will count the same
              * request twice ({@link StatisticsFilter#collectStats}).
@@ -92,7 +88,7 @@ public class AuthorizationFilter implements Filter {
             config.getEnv().getStatistics().addRequestTime("requests_forbidden",
                     System.currentTimeMillis() - processTime);
 
-            if (!config.getEnv().getConfiguration().getForbiddenIncludeFileContent(false).isEmpty()) {
+            if (!config.getEnv().getIncludeFiles().getForbiddenIncludeFileContent(false).isEmpty()) {
                 sr.getRequestDispatcher("/eforbidden").forward(sr, sr1);
                 return;
             }

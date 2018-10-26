@@ -31,11 +31,19 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.web.DummyHttpServletRequest;
+import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.reset;
@@ -197,7 +205,7 @@ public class ConfigurationControllerTest extends JerseyTest {
                 .request()
                 .get(String.class);
 
-        assertEquals(response, env.getConfiguration().getSourceRoot());
+        assertEquals(response, env.getSourceRootPath());
     }
 
     @Test
@@ -217,7 +225,7 @@ public class ConfigurationControllerTest extends JerseyTest {
                 .request()
                 .get(boolean.class);
 
-        assertEquals(env.getConfiguration().isHistoryCache(), response);
+        assertEquals(env.isHistoryCache(), response);
     }
 
     @Test
@@ -236,4 +244,51 @@ public class ConfigurationControllerTest extends JerseyTest {
         verify(suggesterService).refresh();
     }
 
+    @Test
+    public void testConfigValueSetVsThread() throws InterruptedException {
+        int origValue = env.getHitsPerPage();
+        final int threadValue[] = new int[1];
+        final CountDownLatch startLatch = new CountDownLatch(1);
+        final CountDownLatch endLatch = new CountDownLatch(1);
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpServletRequest req = new DummyHttpServletRequest();
+                PageConfig pageConfig = PageConfig.get(req);
+                RuntimeEnvironment e = pageConfig.getEnv();
+                startLatch.countDown();
+                // Wait for hint of termination, save the value and exit.
+                try {
+                    endLatch.await();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+                threadValue[0] = e.getHitsPerPage();
+            }
+        });
+
+        thread.start();
+        startLatch.await();
+
+        // Set brand new configuration.
+        int newValue = origValue + 42;
+        Configuration config = new Configuration();
+        config.setHitsPerPage(newValue);
+        String configStr = config.getXMLRepresentationAsString();
+        Response res = target("configuration")
+                .request()
+                .put(Entity.xml(configStr));
+        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), res.getStatus());
+
+        // Unblock the thread.
+        endLatch.countDown();
+        thread.join();
+
+        // Check thread's view of the variable.
+        assertEquals(newValue, threadValue[0]);
+
+        // Revert the value back to the default.
+        env.setHitsPerPage(origValue);
+    }
 }

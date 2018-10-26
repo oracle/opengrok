@@ -104,7 +104,8 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     }
 
     /**
-     * Create a project with given name and path
+     * Create a project with given name and path and default configuration
+     * values.
      *
      * @param name the name of the project
      * @param path the path of the project relative to the source root
@@ -112,20 +113,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     public Project(String name, String path) {
         this.name = name;
         this.path = path;
-    }
-
-    /**
-     * Create a project with given name and path and default configuration
-     * values.
-     *
-     * @param name the name of the project
-     * @param path the path of the project relative to the source root
-     * @param cfg configuration containing the default values for project
-     * properties
-     */
-    public Project(String name, String path, Configuration cfg) {
-        this(name, path);
-        completeWithDefaults(cfg);
+        completeWithDefaults();
     }
 
     /**
@@ -295,11 +283,11 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
     /**
      * Fill the project with the current configuration where the applicable
      * project property has a default value.
-     *
-     * @param cfg configuration with default values if applicable
      */
-    final public void completeWithDefaults(Configuration cfg) {
+    final public void completeWithDefaults() {
         Configuration defaultCfg = new Configuration();
+        final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
         /**
          * Choosing strategy for properties (tabSize used as example here):
          * <pre>
@@ -314,22 +302,22 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
          * 2) if the project has a default value; use the provided configuration
          */
         if (getTabSize() == defaultCfg.getTabSize()) {
-            setTabSize(cfg.getTabSize());
+            setTabSize(env.getTabSize());
         }
 
         // Allow project to override global setting of renamed file handling.
         if (handleRenamedFiles == null) {
-            setHandleRenamedFiles(cfg.isHandleHistoryOfRenamedFiles());
+            setHandleRenamedFiles(env.isHandleHistoryOfRenamedFiles());
         }
 
         // Allow project to override global setting of history cache generation.
         if (historyEnabled == null) {
-            setHistoryEnabled(cfg.isHistoryEnabled());
+            setHistoryEnabled(env.isHistoryEnabled());
         }
 
         // Allow project to override global setting of navigate window.
         if (navigateWindowEnabled == null) {
-            setNavigateWindowEnabled(cfg.isNavigateWindowEnabled());
+            setNavigateWindowEnabled(env.isNavigateWindowEnabled());
         }
     }
 

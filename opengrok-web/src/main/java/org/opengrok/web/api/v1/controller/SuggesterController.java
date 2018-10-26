@@ -104,7 +104,7 @@ public final class SuggesterController {
             throw new ParseException("Could not determine suggester query");
         }
 
-        SuggesterConfig config = env.getConfiguration().getSuggesterConfig();
+        SuggesterConfig config = env.getSuggesterConfig();
 
         modifyDataBasedOnConfiguration(suggesterData, config);
 
@@ -161,7 +161,7 @@ public final class SuggesterController {
     @Path("/config")
     @Produces(MediaType.APPLICATION_JSON)
     public SuggesterConfig getConfig() {
-        return env.getConfiguration().getSuggesterConfig();
+        return env.getSuggesterConfig();
     }
 
     /**
