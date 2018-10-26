@@ -49,12 +49,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.junit.Assert.assertTrue;
 
 public class SuggesterProjectDataTest {
 
@@ -67,6 +67,7 @@ public class SuggesterProjectDataTest {
     private SuggesterProjectData data;
 
     @Before
+    @SuppressWarnings("deprecation") // for RAMDirectory
     public void setUp() throws IOException {
         dir = new RAMDirectory();
         tempDir = Files.createTempDirectory("test");
@@ -262,6 +263,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation") // for RAMDirectory
     public void testRemove() throws IOException {
         Directory dir = new RAMDirectory();
         Path tempDir = Files.createTempDirectory("test");
