@@ -42,7 +42,8 @@ from .utils.hook import run_hook
 from .utils.opengrok import get_repos, get_config_value, get_repo_type
 from .utils.readconfig import read_config
 from .utils.repofactory import get_repository
-from .utils.utils import is_exe, check_create_dir, get_int, diff_list
+from .utils.utils import is_exe, check_create_dir, get_int, diff_list,\
+    is_web_uri
 from .scm.repository import RepositoryException
 
 
@@ -51,7 +52,7 @@ if major_version < 3:
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.3"
+__version__ = "0.4"
 
 # "constants"
 HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
@@ -163,11 +164,10 @@ def main():
         check_create_dir(logger, logdir)
 
     uri = args.uri
-    if not uri:
-        logger.error("URI of the web application not specified")
+    if not is_web_uri(uri):
+        logger.error("Not a URI: {}".format(uri))
         sys.exit(1)
-
-    logger.debug("URI = {}".format(uri))
+    logger.debug("web application URI = {}".format(uri))
 
     source_root = get_config_value(logger, 'sourceRoot', uri)
     if not source_root:

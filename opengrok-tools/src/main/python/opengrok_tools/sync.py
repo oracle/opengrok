@@ -43,6 +43,7 @@ from .utils.commands import Commands, CommandsBase
 from .utils.filelock import Timeout, FileLock
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.readconfig import read_config
+from .utils.utils import is_web_uri
 
 major_version = sys.version_info[0]
 if (major_version < 3):
@@ -105,6 +106,9 @@ def main():
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
     uri = args.uri
+    if not is_web_uri(uri):
+        logger.error("Not a URI: {}".format(uri))
+        sys.exit(1)
     logger.debug("web application URI = {}".format(uri))
 
     # Changing working directory to root will avoid problems when running

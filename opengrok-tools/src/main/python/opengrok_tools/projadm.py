@@ -39,7 +39,7 @@ from .utils.command import Command
 from .utils.filelock import Timeout, FileLock
 from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value
-from .utils.utils import get_command
+from .utils.utils import get_command, is_web_uri
 
 MAJOR_VERSION = sys.version_info[0]
 if (MAJOR_VERSION < 3):
@@ -297,9 +297,10 @@ def main():
             sys.exit(1)
 
     uri = args.uri
-    if not uri:
-        logger.error("URI of the webapp not specified")
+    if not is_web_uri(uri):
+        logger.error("Not a URI: {}".format(uri))
         sys.exit(1)
+    logger.debug("web application URI = {}".format(uri))
 
     lock = FileLock(os.path.join(tempfile.gettempdir(),
                                  os.path.basename(sys.argv[0]) + ".lock"))
