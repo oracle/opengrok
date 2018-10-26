@@ -157,6 +157,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
+                        <!-- needed for 'pip install pylint' to work -->
                         <id>Upgrade pip</id>
                         <configuration>
                             <executable>env/bin/pip3</executable>
@@ -166,6 +167,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>--upgrade</argument>
                                 <argument>pip</argument>
                             </arguments>
+                            <skip>${skipTests}</skip>
                         </configuration>
                         <phase>test</phase>
                         <goals>
