@@ -201,6 +201,7 @@ Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
                     <compilerArgs>
                       <arg>-Xlint:all</arg>
                       <arg>-Werror</arg>
+                      <arg>-Xlint:-serial</arg>
                     </compilerArgs>
                 </configuration>
                 <version>3.6.1</version>
