@@ -413,6 +413,7 @@ public class QueryBuilder {
      * @param query the query string to escape
      * @return the escaped query string
      */
+    @SuppressWarnings("fallthrough")
     private String escapeQueryString(String field, String query) {
         switch (field) {
             case FULL:
