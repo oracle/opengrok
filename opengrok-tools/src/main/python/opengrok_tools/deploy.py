@@ -96,7 +96,7 @@ def deploy_war(logger, sourceWar, targetWar, configFile=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Manage parallel workers.')
+    parser = argparse.ArgumentParser(description='Deploy WAR file')
 
     parser.add_argument('-D', '--debug', action='store_true',
                         help='Enable debug prints')
