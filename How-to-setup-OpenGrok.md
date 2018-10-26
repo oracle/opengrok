@@ -13,6 +13,7 @@ You need the following:
 - 2GB of memory for the indexing process (bigger deployments will need more)
 - a recent browser for clients - IE, Firefox, recent Chrome or Safari
 - Optional tuning (see https://github.com/oracle/opengrok/wiki/Tuning-for-large-code-bases)
+- GIT version 2.6 or higher for GIT repositories (see PR [#1314](https://github.com/oracle/opengrok/pull/1314) for more info)
 
 After unpacking the binaries to your target directory, the index needs to be created and the web application deployed.
 
