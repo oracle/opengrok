@@ -51,3 +51,4 @@ pmd.bat
 .idea
 *.pyc
 .wercker
+.DS_Store
