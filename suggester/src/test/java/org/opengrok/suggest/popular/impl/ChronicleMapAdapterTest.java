@@ -93,6 +93,7 @@ public class ChronicleMapAdapterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains()
     public void testGetPopularityData() {
         Entry<BytesRef, Integer> e1 = new SimpleEntry<>(new BytesRef("test"), 1);
         Entry<BytesRef, Integer> e2 = new SimpleEntry<>(new BytesRef("test2"), 2);
@@ -106,6 +107,7 @@ public class ChronicleMapAdapterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains()
     public void testGetPopularityPaging() {
         Entry<BytesRef, Integer> e1 = new SimpleEntry<>(new BytesRef("test"), 1);
         Entry<BytesRef, Integer> e2 = new SimpleEntry<>(new BytesRef("test2"), 2);

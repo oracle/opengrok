@@ -294,6 +294,7 @@ public class SuggesterProjectDataTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked") // for contains()
     public void testGetSearchCountMapSorted() throws IOException {
         addText(FIELD, "test1 test2");
         init(true);
