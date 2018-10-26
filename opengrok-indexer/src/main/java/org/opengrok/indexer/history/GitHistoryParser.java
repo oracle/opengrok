@@ -73,7 +73,7 @@ class GitHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        try (BufferedReader in = new BufferedReader(repository.newLogReader(input))) {
+        try (BufferedReader in = new BufferedReader(GitRepository.newLogReader(input))) {
             process(in);
         }
     }
