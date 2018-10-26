@@ -202,7 +202,7 @@ public class BazaarHistoryParserTest {
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals(revId1, e1.getRevision());
         assertEquals(author1, e1.getAuthor());
-        assertEquals(new HashSet(Arrays.asList(files)), e1.getFiles());
+        assertEquals(new HashSet<>(Arrays.asList(files)), e1.getFiles());
     }
     
 }
