@@ -35,7 +35,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
 import org.apache.lucene.search.Weight;
-import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.store.Directory;
 import org.junit.Test;
 import org.opengrok.suggest.query.PhraseScorer;
 import org.opengrok.suggest.query.data.BitIntsHolder;
@@ -47,16 +47,17 @@ import java.util.Set;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 
+@SuppressWarnings("deprecation") // for RAMDirectory
 public class CustomSloppyPhraseScorerTest {
 
-    @SuppressWarnings({"deprecation", "unchecked"}) // for RAMDirectory, contains()
+    @SuppressWarnings("unchecked") // for contains()
     public static void test(
             final int slop,
             final int offset,
             final String[] terms,
             final Integer[] expectedPositions
     ) throws IOException {
-        RAMDirectory dir = new RAMDirectory();
+        Directory dir = new org.apache.lucene.store.RAMDirectory();
 
         try (IndexWriter iw = new IndexWriter(dir, new IndexWriterConfig())) {
             Document doc = new Document();
