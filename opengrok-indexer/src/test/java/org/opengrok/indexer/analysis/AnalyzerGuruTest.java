@@ -220,6 +220,7 @@ public class AnalyzerGuruTest {
      * Test that matching of full names works. Bug #859.
      */
     @Test
+    @SuppressWarnings("rawtypes")
     public void matchesFullName() {
         String s = File.separator;  // so test works on Unix and Windows
         String path = s+"path"+s+"to"+s+"Makefile";
@@ -240,6 +241,7 @@ public class AnalyzerGuruTest {
      *  language + "AnalyzerFactory"
      */
     @Test
+    @SuppressWarnings("rawtypes")
     public void getAnalyzerFactoryClass() {
         Class fc_forSh = AnalyzerGuru.getFactoryClass("Sh");
         Class fc_forShAnalyzer = AnalyzerGuru.getFactoryClass("ShAnalyzer");
