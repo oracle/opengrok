@@ -19,12 +19,23 @@ def my_test_suite():
     return test_suite
 
 
+def get_version(version):
+    """
+    Detect the mvn build versus the local python setup.py install run.
+    :param version: the new version string to be applied
+    :return: the mvn version, or local version number
+    """
+    if 'project.python.package.version' in version:
+        return '0.0.1local'
+    return version
+
+
 setup(
     name='opengrok-tools',
     # The package version is taken from maven.
     # this "variable" is replaced by maven on the fly so don't change it here
     # see pom.xml for this module
-    version='${project.python.package.version}',
+    version=get_version('${project.python.package.version}'),
     packages=[
         'opengrok_tools',
         'opengrok_tools.utils',
