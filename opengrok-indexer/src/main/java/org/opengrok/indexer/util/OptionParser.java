@@ -76,8 +76,10 @@ import java.util.regex.Pattern;
 public class OptionParser {
 
     // Used to hold data type converters
+    @SuppressWarnings("rawtypes")
     static private HashMap<Class,DataParser> converters = new HashMap<>();
-    
+
+    @SuppressWarnings("rawtypes")
     static class DataParser {
         Class dataType;
         Function<String,Object> converter;
@@ -262,6 +264,7 @@ public class OptionParser {
      * @param parser is the conversion code that will take the given
      * option value string and produce the named data type.
      */
+    @SuppressWarnings("rawtypes")
     public static void accept(Class type, Function<String,Object> parser) {
         converters.put(type, new DataParser(type, parser));
     }
