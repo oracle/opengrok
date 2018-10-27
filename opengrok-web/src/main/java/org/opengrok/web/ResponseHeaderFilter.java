@@ -31,8 +31,8 @@ public class ResponseHeaderFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
 
         // set the provided HTTP response parameters
-        for (Enumeration e = fc.getInitParameterNames(); e.hasMoreElements();) {
-            String headerName = (String)e.nextElement();
+        for (Enumeration<String> e = fc.getInitParameterNames(); e.hasMoreElements();) {
+            String headerName = e.nextElement();
             if (!response.containsHeader(headerName)) {
                 response.addHeader(headerName, fc.getInitParameter(headerName));
             }
