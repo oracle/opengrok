@@ -91,7 +91,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-resources-setup.py</id>
+                        <id>copy package resources</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -104,6 +104,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                     <includes>
                                         <include>MANIFEST.in</include>
                                         <include>README.md</include>
+                                        <include>logging.properties.template</include>
                                     </includes>
                                 </resource>
                                 <!-- replace ${project.python.package.version} in setup.py -->
@@ -113,6 +114,24 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                         <include>setup.py</include>
                                     </includes>
                                     <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy logging.properties.template to dist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}</directory>
+                                    <includes>
+                                        <include>logging.properties.template</include>
+                                    </includes>
                                 </resource>
                             </resources>
                         </configuration>

@@ -22,7 +22,12 @@
       <file>
         <source>${project.basedir}/../opengrok-tools/${project.build.directory}/dist/opengrok-tools-${project.python.package.version}.tar.gz</source>
         <outputDirectory>tools</outputDirectory>
-        <destName>opengrok-tools-${project.python.package.version}.tar.gz</destName>
+        <destName>opengrok-tools.tar.gz</destName>
+      </file>
+      <file>
+        <source>${project.basedir}/../opengrok-tools/${project.build.directory}/dist/logging.properties.template</source>
+        <outputDirectory>doc</outputDirectory>
+        <destName>logging.properties.template</destName>
       </file>
     </files>
     <fileSets>
