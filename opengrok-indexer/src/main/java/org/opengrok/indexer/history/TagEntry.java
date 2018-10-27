@@ -88,7 +88,7 @@ public abstract class TagEntry implements Comparable<TagEntry> {
     /**
      * Necessary Comparable method, used for sorting of TagEntries.
      *
-     * @param aThat Compare to.
+     * @param that Compare to.
      * @return 1 for greater, 0 for equal and -1 for smaller objects.
      */
     @Override
