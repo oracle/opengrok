@@ -43,6 +43,7 @@ import org.opengrok.indexer.logger.LoggerFactory;
  */
 public class AuthorizationPluginClassLoader extends ClassLoader {
 
+    @SuppressWarnings("rawtypes")
     private final Map<String, Class> cache = new HashMap<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationPluginClassLoader.class);
@@ -72,6 +73,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
         this.directory = directory;
     }
 
+    @SuppressWarnings("rawtypes")
     private Class loadClassFromJar(String classname) throws ClassNotFoundException {
         File[] jars = directory.listFiles(new FilenameFilter() {
             @Override
@@ -112,6 +114,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
         throw new ClassNotFoundException("Class \"" + classname + "\" could not be found");
     }
 
+    @SuppressWarnings("rawtypes")
     private Class loadClassFromFile(String classname) throws ClassNotFoundException {
         try {
             String filename = classname.replace('.', File.separatorChar) + ".class";
@@ -218,6 +221,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * @throws SecurityException if the loader cannot access the class
      */
     @Override
+    @SuppressWarnings("rawtypes")
     public Class loadClass(String name, boolean resolveIt) throws ClassNotFoundException, SecurityException {
         Class c;
 
