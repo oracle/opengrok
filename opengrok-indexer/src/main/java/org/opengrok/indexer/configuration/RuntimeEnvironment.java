@@ -23,32 +23,10 @@
   */
 package org.opengrok.indexer.configuration;
 
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.MultiReader;
-import org.apache.lucene.search.SearcherManager;
-import org.apache.lucene.store.AlreadyClosedException;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.opengrok.indexer.authorization.AuthorizationFramework;
-import org.opengrok.indexer.authorization.AuthorizationStack;
-import org.opengrok.indexer.history.HistoryGuru;
-import org.opengrok.indexer.history.RepositoryInfo;
-import org.opengrok.indexer.index.Filter;
-import org.opengrok.indexer.index.IgnoredNames;
-import org.opengrok.indexer.index.IndexDatabase;
-import org.opengrok.indexer.logger.LoggerFactory;
-import org.opengrok.indexer.util.CtagsUtil;
-import org.opengrok.indexer.util.ForbiddenSymlinkException;
-import org.opengrok.indexer.util.PathUtils;
-import org.opengrok.indexer.web.Prefix;
-import org.opengrok.indexer.web.Statistics;
-import org.opengrok.indexer.web.messages.Message;
-import org.opengrok.indexer.web.messages.MessagesContainer;
-import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
+import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
+import static org.opengrok.indexer.util.ClassUtil.getFieldValue;
+import static org.opengrok.indexer.util.ClassUtil.setFieldValue;
 
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -71,10 +49,31 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static org.opengrok.indexer.configuration.Configuration.makeXMLStringAsConfiguration;
-import static org.opengrok.indexer.util.ClassUtil.getFieldValue;
-import static org.opengrok.indexer.util.ClassUtil.setFieldValue;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.opengrok.indexer.authorization.AuthorizationFramework;
+import org.opengrok.indexer.authorization.AuthorizationStack;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.index.Filter;
+import org.opengrok.indexer.index.IgnoredNames;
+import org.opengrok.indexer.index.IndexDatabase;
+import org.opengrok.indexer.logger.LoggerFactory;
+import org.opengrok.indexer.util.CtagsUtil;
+import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.util.PathUtils;
+import org.opengrok.indexer.web.Prefix;
+import org.opengrok.indexer.web.Statistics;
+import org.opengrok.indexer.web.messages.Message;
+import org.opengrok.indexer.web.messages.MessagesContainer;
+import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -1432,21 +1431,25 @@ public final class RuntimeEnvironment {
      * otherwise it is just a simple project.
      */
     private void generateProjectRepositoriesMap() throws IOException {
-        repository_map.clear();
-        for (RepositoryInfo r : getRepositories()) {
-            Project proj;
-            String repoPath;
-            try {
-                repoPath = PathUtils.getPathRelativeToSourceRoot(
-                    new File(r.getDirectoryName()), 0);
-            } catch (ForbiddenSymlinkException e) {
-                LOGGER.log(Level.FINER, e.getMessage());
-                continue;
-            }
+        synchronized (repository_map) {
+            repository_map.clear();
+            for (RepositoryInfo r : getRepositories()) {
+                Project proj;
+                String repoPath;
+                try {
+                    repoPath = PathUtils.getPathRelativeToSourceRoot(
+                            new File(r.getDirectoryName()), 0);
+                } catch (ForbiddenSymlinkException e) {
+                    LOGGER.log(Level.FINER, e.getMessage());
+                    continue;
+                }
 
-            if ((proj = Project.getProject(repoPath)) != null) {
-                List<RepositoryInfo> values = repository_map.computeIfAbsent(proj, k -> new ArrayList<>());
-                values.add(r);
+                if ((proj = Project.getProject(repoPath)) != null) {
+                    List<RepositoryInfo> values = repository_map.computeIfAbsent(proj, k -> new ArrayList<>());
+                    // the map is held under the lock because the next call to
+                    // values.add(r) which should not be called from multiple threads at the same time
+                    values.add(r);
+                }
             }
         }
     }
