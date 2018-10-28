@@ -791,7 +791,7 @@ class FileHistoryCache implements HistoryCache {
             try {
                 IOUtils.removeRecursive(Paths.get(histDir));
             } catch (NoSuchFileException ex) {
-                LOGGER.log(Level.WARNING, "directory {} does not exist", histDir);
+                LOGGER.log(Level.WARNING, String.format("directory %s does not exist", histDir));
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "tried removeRecursive()", ex);
             }
