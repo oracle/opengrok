@@ -22,6 +22,22 @@
  */
 package org.opengrok.web.api.v1.controller;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.CountDownLatch;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.Response;
+import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -30,24 +46,14 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.opengrok.indexer.configuration.Configuration;
+import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
+import org.opengrok.indexer.history.HistoryGuru;
+import org.opengrok.indexer.history.RepositoryInfo;
+import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.indexer.web.DummyHttpServletRequest;
 import org.opengrok.indexer.web.PageConfig;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Response;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
 
 public class ConfigurationControllerTest extends JerseyTest {
 
@@ -290,5 +296,71 @@ public class ConfigurationControllerTest extends JerseyTest {
 
         // Revert the value back to the default.
         env.setHitsPerPage(origValue);
+    }
+
+    @Test
+    public void test() throws InterruptedException, IOException {
+        final int nThreads = 40;
+
+        // prepare test repository
+        TestRepository repository = new TestRepository();
+        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
+
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+
+        final CountDownLatch latch = new CountDownLatch(nThreads);
+
+        List<RepositoryInfo> repositoryInfos = new ArrayList<>();
+        Map<String, Project> projects = new TreeMap<>();
+
+        /*
+         * Prepare 10 git repositories, named project-{i}
+         * in the test repositories directory.
+         */
+        for (int i = 0; i < 10; i++) {
+            Project project = new Project();
+            project.setName("project-" + i);
+            project.setPath("/project-" + i);
+            RepositoryInfo repo = new RepositoryInfo();
+            repo.setDirectoryNameRelative("/project-" + i);
+
+            projects.put("project-" + i, project);
+            repositoryInfos.add(repo);
+
+            // create the repository
+            FileUtils.copyDirectory(
+                    Paths.get(repository.getSourceRoot(), "git").toFile(),
+                    Paths.get(repository.getSourceRoot(), "project-" + i).toFile()
+            );
+        }
+
+        env.setRepositories(repositoryInfos);
+        env.setProjects(projects);
+
+        /*
+         * Now run setting a value in parallel, which triggers
+         * configuration reload.
+         */
+        for (int i = 0; i < nThreads; i++) {
+            new Thread(() -> {
+                Response put = target("configuration")
+                        .path("projectsEnabled")
+                        .request()
+                        .put(Entity.text("true"));
+                Assert.assertEquals(204, put.getStatus());
+                latch.countDown();
+            }).start();
+        }
+
+        latch.await();
+
+        Assert.assertEquals(10, env.getProjects().size());
+        Assert.assertEquals(10, env.getProjectRepositoriesMap().size());
+        env.getProjectRepositoriesMap().forEach((project, repositories) -> {
+            Assert.assertEquals(1, repositories.size());
+        });
+
+        repository.destroy();
     }
 }
