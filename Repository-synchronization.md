@@ -134,6 +134,8 @@ logging template. This pattern must differ from the `%PROJECT%` pattern, otherwi
 script would substitute it in the command arguments and the substitution in the template file
 would not happen.
 
+You can find a `logging.properties.template` file in the final release tarball, under `doc` directory.
+
 # opengrok-mirror
 
 The script synchronized the repositories of projects by running appropriate commands (e.g. `git pull` for Git). While it can run perfectly fine standalone, it is meant to be run from within `opengrok-sync` (see above).
