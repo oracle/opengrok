@@ -26,6 +26,7 @@ package org.opengrok.indexer.index;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -360,7 +361,7 @@ class PendingFileCompleter {
             deleteFileOrDirectory(sourcePath);
 
             File sourceParentFile = sourcePath.getParent().toFile();
-            /**
+            /*
              * The double check-exists in the following conditional is necessary
              * because during a race when two threads are simultaneously linking
              * for a not-yet-existent `sourceParentFile`, the first check-exists
@@ -372,11 +373,16 @@ class PendingFileCompleter {
                     sourceParentFile.exists()) {
                 Files.createSymbolicLink(sourcePath, Paths.get(lnk.targetRel));
             }
+        } catch (FileAlreadyExistsException e) {
+            // Another case of racing threads. Given that each of them works with the same path,
+            // there is no need to worry.
+            return;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to link: {0} -> {1}",
                     new Object[]{lnk.source, lnk.targetRel});
             throw e;
         }
+
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "Linked pending: {0} -> {1}",
                     new Object[]{lnk.source, lnk.targetRel});
