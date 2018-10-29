@@ -42,9 +42,13 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.opengrok.indexer.condition.ConditionalRun;
+import org.opengrok.indexer.condition.ConditionalRunRule;
+import org.opengrok.indexer.condition.RepositoryInstalled;
 import org.opengrok.indexer.configuration.Configuration;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -298,8 +302,12 @@ public class ConfigurationControllerTest extends JerseyTest {
         env.setHitsPerPage(origValue);
     }
 
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
+
     @Test
-    public void test() throws InterruptedException, IOException {
+    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
+    public void testConcurrentConfigurationReloads() throws InterruptedException, IOException {
         final int nThreads = 40;
 
         // prepare test repository
