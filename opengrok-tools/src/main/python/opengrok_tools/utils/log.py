@@ -59,16 +59,14 @@ def get_console_logger(name, level=logging.INFO):
     """
     formatter = logging.Formatter('%(message)s')
 
-    err_handler = logging.StreamHandler(stream=sys.stderr)
-    err_handler.setFormatter(formatter)
-    err_handler.setLevel(logging.ERROR)
+    stderr_handler = logging.StreamHandler(stream=sys.stderr)
+    stderr_handler.setFormatter(formatter)
 
     stdout_handler = logging.StreamHandler(stream=sys.stdout)
     stdout_handler.setFormatter(formatter)
-    stdout_handler.setLevel(logging.INFO)
 
     min_filter = MinLogLevelFilter(logging.ERROR)
-    err_handler.addFilter(min_filter)
+    stderr_handler.addFilter(min_filter)
 
     max_filter = MaxLogLevelFilter(logging.INFO)
     stdout_handler.addFilter(max_filter)
@@ -76,6 +74,6 @@ def get_console_logger(name, level=logging.INFO):
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.addHandler(stdout_handler)
-    logger.addHandler(err_handler)
+    logger.addHandler(stderr_handler)
 
     return logger
