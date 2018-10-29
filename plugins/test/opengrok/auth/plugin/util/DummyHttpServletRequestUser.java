@@ -362,7 +362,7 @@ public class DummyHttpServletRequestUser implements HttpServletRequest {
     }
 
     @Override
-    public Map<String,String[]> getParameterMap() {
+    public Map<String, String[]> getParameterMap() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
