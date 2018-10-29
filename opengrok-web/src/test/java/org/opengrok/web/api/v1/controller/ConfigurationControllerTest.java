@@ -308,7 +308,7 @@ public class ConfigurationControllerTest extends JerseyTest {
     @Test
     @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testConcurrentConfigurationReloads() throws InterruptedException, IOException {
-        final int nThreads = 40;
+        final int nThreads = Math.max(40, Runtime.getRuntime().availableProcessors() * 2);
         final int nProjects = 20;
 
         // prepare test repository
