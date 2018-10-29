@@ -244,12 +244,11 @@ def main():
     doit = not args.noop
     configmerge = None
 
-    logger = get_console_logger(os.path.basename(sys.argv[0]))
-
     #
     # Setup logger as a first thing after parsing arguments so that it can be
     # used through the rest of the program.
     #
+    logger = get_console_logger(os.path.basename(sys.argv[0]))
     if args.debug:
         logger.setLevel(logging.DEBUG)
 
