@@ -7,7 +7,9 @@ handlers= java.util.logging.FileHandler
 # Default global logging level.
 .level= FINE
 
-java.util.logging.FileHandler.pattern = DIR_TO_BE/opengrok%g.%u.log
+# The '%PROJECT%' pattern will be expanded by the the opengrok-reindex-project script 
+# and therefore needs to match the argument to the -P option.
+java.util.logging.FileHandler.pattern = %PROJECT%/opengrok%g.%u.log
 
 ## Rotation settings
 # 50 MiB
