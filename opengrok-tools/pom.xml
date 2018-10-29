@@ -39,6 +39,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
     <name>OpenGrok tools</name>
 
     <properties>
+        <python.system.executable>python3</python.system.executable>
         <python.executable>env/bin/python</python.executable>
     </properties>
 
@@ -51,7 +52,8 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 </os>
             </activation>
             <properties>
-                <python.executable>env/Scripts/python</python.executable>
+                <python.system.executable>py -3</python.system.executable>
+                <python.executable>env/Scripts/py</python.executable>
             </properties>
         </profile>
     </profiles>
@@ -181,7 +183,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     <execution>
                         <id>generate python env</id>
                         <configuration>
-                            <executable>${python3Command}</executable>
+                            <executable>${python.system.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>-m</argument>
