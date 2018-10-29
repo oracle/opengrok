@@ -27,7 +27,7 @@ install:
         [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\uctags-bin.zip", "C:\uctags")
       }
 build_script:
-    - mvn -B -V -Dorg.opengrok.indexer.analysis.Ctags=c:\uctags\ctags.exe clean verify
+    - mvn -B -V -Dorg.opengrok.indexer.analysis.Ctags=c:\uctags\ctags.exe -DskipTests clean verify
 cache:
   - C:\maven\ -> appveyor.yml
   - C:\Users\appveyor\.m2\ -> pom.xml
