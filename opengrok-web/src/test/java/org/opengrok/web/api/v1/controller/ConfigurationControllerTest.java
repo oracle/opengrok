@@ -309,6 +309,7 @@ public class ConfigurationControllerTest extends JerseyTest {
     @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testConcurrentConfigurationReloads() throws InterruptedException, IOException {
         final int nThreads = 40;
+        final int nProjects = 20;
 
         // prepare test repository
         TestRepository repository = new TestRepository();
@@ -326,7 +327,7 @@ public class ConfigurationControllerTest extends JerseyTest {
          * Prepare 10 git repositories, named project-{i}
          * in the test repositories directory.
          */
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < nProjects; i++) {
             Project project = new Project();
             project.setName("project-" + i);
             project.setPath("/project-" + i);
@@ -363,8 +364,8 @@ public class ConfigurationControllerTest extends JerseyTest {
 
         latch.await();
 
-        Assert.assertEquals(10, env.getProjects().size());
-        Assert.assertEquals(10, env.getProjectRepositoriesMap().size());
+        Assert.assertEquals(nProjects, env.getProjects().size());
+        Assert.assertEquals(nProjects, env.getProjectRepositoriesMap().size());
         env.getProjectRepositoriesMap().forEach((project, repositories) -> {
             Assert.assertEquals(1, repositories.size());
         });
