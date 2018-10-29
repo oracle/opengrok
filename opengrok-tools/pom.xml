@@ -52,8 +52,8 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 </os>
             </activation>
             <properties>
-                <python.system.executable>py -3</python.system.executable>
-                <python.executable>env/Scripts/py</python.executable>
+                <python.system.executable>python</python.system.executable>
+                <python.executable>env/Scripts/python</python.executable>
             </properties>
         </profile>
     </profiles>
