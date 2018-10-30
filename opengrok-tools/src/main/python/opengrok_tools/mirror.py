@@ -300,6 +300,7 @@ def main():
         if not logdir:
             logger.error("The logdir property is required in batch mode")
             sys.exit(1)
+
         logfile = os.path.join(logdir, args.project + ".log")
         logger.debug("Switching logging to the {} file".
                      format(logfile))
