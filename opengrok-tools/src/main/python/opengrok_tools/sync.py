@@ -95,7 +95,7 @@ def main():
                         help='URI of the webapp with context path')
     args = parser.parse_args()
 
-    git if args.debug:
+    if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
         if args.logplain:
