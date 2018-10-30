@@ -304,7 +304,7 @@ def main():
         logger.debug("Switching logging to the {} file".
                      format(logfile))
 
-        logger = logging.getLogger(os.path.basename(sys.argv[0]))
+        logger = logger.getChild("rotating")
         logger.setLevel(logging.DEBUG if args.debug
                         else logging.INFO)
         logger.propagate = False
