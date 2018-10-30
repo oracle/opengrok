@@ -324,8 +324,7 @@ public class ConfigurationControllerTest extends JerseyTest {
         Map<String, Project> projects = new TreeMap<>();
 
         /*
-         * Prepare 10 git repositories, named project-{i}
-         * in the test repositories directory.
+         * Prepare nProjects git repositories, named project-{i} in the test repositories directory.
          */
         for (int i = 0; i < nProjects; i++) {
             Project project = new Project();
@@ -348,8 +347,7 @@ public class ConfigurationControllerTest extends JerseyTest {
         env.setProjects(projects);
 
         /*
-         * Now run setting a value in parallel, which triggers
-         * configuration reload.
+         * Now run setting a value in parallel, which triggers configuration reload.
          */
         for (int i = 0; i < nThreads; i++) {
             new Thread(() -> {
