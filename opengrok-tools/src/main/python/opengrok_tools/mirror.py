@@ -314,12 +314,6 @@ def main():
                                       "%(message)s", '%m/%d/%Y %I:%M:%S %p')
         handler.setFormatter(formatter)
         handler.doRollover()
-        #
-        # Technically, adding a handler to the logger is not necessary
-        # since log rotation is done above using doRollover() however
-        # it is done anyway in case the handler changes to use implicit
-        # rotation in the future.
-        #
         logger.addHandler(handler)
 
     # We want this to be logged to the log file (if any).
