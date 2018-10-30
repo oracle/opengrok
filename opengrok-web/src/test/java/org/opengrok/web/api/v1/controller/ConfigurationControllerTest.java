@@ -308,6 +308,11 @@ public class ConfigurationControllerTest extends JerseyTest {
     @Test
     @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testConcurrentConfigurationReloads() throws InterruptedException, IOException {
+        final String origSourceRootPath = env.getSourceRootPath();
+        final String origDataRootPath = env.getDataRootPath();
+        final Map<String, Project> origProjects = env.getProjects();
+        final List<RepositoryInfo> origRepositories = env.getRepositories();
+
         final int nThreads = Math.max(40, Runtime.getRuntime().availableProcessors() * 2);
         final int nProjects = 20;
 
@@ -369,5 +374,10 @@ public class ConfigurationControllerTest extends JerseyTest {
         });
 
         repository.destroy();
+
+        env.setProjects(origProjects);
+        env.setRepositories(origRepositories);
+        env.setSourceRoot(origSourceRootPath);
+        env.setDataRoot(origDataRootPath);
     }
 }
