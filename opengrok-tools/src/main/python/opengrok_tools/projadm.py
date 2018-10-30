@@ -248,9 +248,10 @@ def main():
     # Setup logger as a first thing after parsing arguments so that it can be
     # used through the rest of the program.
     #
-    logger = get_console_logger(os.path.basename(sys.argv[0]))
+    loglevel = logging.INFO
     if args.debug:
-        logger.setLevel(logging.DEBUG)
+        loglevel = logging.DEBUG
+    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
 
     if args.nosourcedelete and not args.delete:
         logger.error("The no source delete option is only valid for delete")

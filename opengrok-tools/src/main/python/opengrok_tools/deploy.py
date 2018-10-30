@@ -110,9 +110,10 @@ def main():
 
     args = parser.parse_args()
 
-    logger = get_console_logger(os.path.basename(sys.argv[0]))
+    loglevel = logging.INFO
     if args.debug:
-        logger.setLevel(logging.DEBUG)
+        loglevel = logging.DEBUG
+    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
 
     deploy_war(logger, args.source_war[0], args.target_war[0], args.config)
 

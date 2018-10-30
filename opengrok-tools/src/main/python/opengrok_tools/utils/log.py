@@ -49,15 +49,20 @@ class MaxLogLevelFilter(logging.Filter):
         return False
 
 
-def get_console_logger(name, level=logging.INFO):
+def get_console_logger(name, level=logging.INFO, format='%(message)s'):
     """
     Get logger that logs logging.ERROR and higher to stderr, the rest
     to stdout.
-    :param level: base logging level
+
     :param name: name of the logger
+    :param level: base logging level
+    :param format: format string to use
     :return: logger
     """
-    formatter = logging.Formatter('%(message)s')
+    if level == logging.DEBUG:
+        format = '%(asctime)s %(levelname)8s %(name)s | %(message)s'
+
+    formatter = logging.Formatter(format)
 
     stderr_handler = logging.StreamHandler(stream=sys.stderr)
     stderr_handler.setFormatter(formatter)
@@ -73,6 +78,7 @@ def get_console_logger(name, level=logging.INFO):
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
+    logger.propagate = False
     logger.addHandler(stdout_handler)
     logger.addHandler(stderr_handler)
 

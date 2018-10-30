@@ -30,6 +30,7 @@ import tempfile
 
 from .utils.indexer import Indexer
 from .utils.java import get_javaparser
+from .utils.log import get_console_logger
 from .utils.opengrok import get_configuration
 
 """
@@ -86,12 +87,10 @@ def main():
 
     args = parser.parse_args()
 
+    loglevel = logging.INFO
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+        loglevel = logging.DEBUG
+    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
 
     # Make sure the log directory exists.
     if not os.path.isdir(args.directory):
