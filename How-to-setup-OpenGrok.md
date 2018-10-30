@@ -110,10 +110,10 @@ Sample configuration file for Solaris code base:
 Use the `-A` Indexer option, e.g. like this:
 
 ```
--A cs:org.opensolaris.opengrok.analysis.PlainAnalyzer
+-A .cs:org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory
 ```
 
-This will map extension `.cs` to `PlainAnalyzer`. You should even be able to override OpenGroks analyzers using this option.
+This will map extension `.cs` to the analyzer created by the `PlainAnalyzerFactory `. You should even be able to override OpenGroks analyzers using this option.
 
 ## Optional need to change web application properties or name
 
