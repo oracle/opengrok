@@ -86,7 +86,7 @@ class Java(Command):
             elif rel == '5.11':
                 java_home = "/usr/jdk/latest"
 
-            if os.isdir(java_home):
+            if os.path.isdir(java_home):
                 java = os.path.join(java_home, 'bin', 'java')
         elif system_name == 'Darwin':
             cmd = Command('/usr/libexec/java_home')
