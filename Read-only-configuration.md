@@ -67,7 +67,7 @@ At this point it might be quite difficult to guess the syntax of the XML file fo
 You can generate an empty configuration object with the `empty` subcommand:
 
 ```bash
-$ Groups empty
+$ opengrok-groups -- -e
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_121" class="java.beans.XMLDecoder">
  <object class="org.opengrok.indexer.configuration.Configuration"/>
@@ -76,8 +76,7 @@ $ Groups empty
 
 About how to add some options please refer to the main configuration `/var/opengrok/etc/configuration.xml` and try to simulate the same process. Mostly the following is applicable:
 
-```bash
-$ Groups empty
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_121" class="java.beans.XMLDecoder">
  <object class="org.opengrok.indexer.configuration.Configuration">
