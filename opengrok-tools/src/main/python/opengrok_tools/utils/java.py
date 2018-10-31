@@ -93,7 +93,7 @@ class Java(Command):
             cmd.execute()
             java = os.path.join(cmd.getoutputstr(), 'bin', 'java')
         elif system_name == 'Linux':
-            link_path = '/etc/alternati ves/java'
+            link_path = '/etc/alternatives/java'
             if os.path.exists(link_path):
                 # Resolve the symlink.
                 java = os.path.realpath(link_path)
