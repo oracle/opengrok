@@ -562,6 +562,7 @@ public final class HistoryGuru {
             LOGGER.log(Level.INFO,
                     "Skipping history cache creation of {0} repository in {1} and its subdirectories",
                     new Object[]{type, path});
+            return;
         }
         
         if (repository.isWorking()) {
