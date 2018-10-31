@@ -46,8 +46,8 @@ def get_console_logger(name, level=logging.INFO, format='%(message)s'):
     stdout_handler = logging.StreamHandler(stream=sys.stdout)
     stdout_handler.setFormatter(formatter)
 
-    stderr_handler.addFilter(lambda rec : rec.levelno >= logging.ERROR)
-    stdout_handler.addFilter(lambda rec : rec.levelno <= logging.INFO)
+    stderr_handler.addFilter(lambda rec: rec.levelno >= logging.ERROR)
+    stdout_handler.addFilter(lambda rec: rec.levelno <= logging.INFO)
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
