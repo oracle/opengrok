@@ -30,6 +30,7 @@ import sys
 
 from .utils.indexer import FindCtags, Indexer
 from .utils.java import get_javaparser
+from .utils.log import get_console_logger
 
 """
   opengrok.jar wrapper
@@ -46,12 +47,10 @@ def main():
 
     args = parser.parse_args()
 
+    loglevel = logging.INFO
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+        loglevel = logging.DEBUG
+    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
 
     #
     # Since it is not possible to tell what kind of action is performed,

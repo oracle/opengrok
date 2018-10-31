@@ -44,13 +44,14 @@ from .utils.filelock import Timeout, FileLock
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.readconfig import read_config
 from .utils.utils import is_web_uri
+from .utils.log import get_console_logger
 
 major_version = sys.version_info[0]
 if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.5"
+__version__ = "0.6"
 
 
 def worker(base):
@@ -80,13 +81,8 @@ def main():
                         help='List of projects to process')
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
-
-    group2 = parser.add_mutually_exclusive_group()
-    group2.add_argument('-D', '--debug', action='store_true',
+    parser.add_argument('-D', '--debug', action='store_true',
                         help='Enable debug prints')
-    group2.add_argument('-p', '--logplain', action='store_true',
-                        help='log plain messages')
-
     parser.add_argument('-i', '--ignore_errors', nargs='*',
                         help='ignore errors from these projects')
     parser.add_argument('-c', '--config', required=True,
@@ -95,15 +91,10 @@ def main():
                         help='URI of the webapp with context path')
     args = parser.parse_args()
 
+    loglevel = logging.INFO
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        if args.logplain:
-            logging.basicConfig(format="%(message)s")
-        else:
-            logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+        loglevel = logging.DEBUG
+    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
 
     uri = args.uri
     if not is_web_uri(uri):
@@ -112,7 +103,7 @@ def main():
     logger.debug("web application URI = {}".format(uri))
 
     # Changing working directory to root will avoid problems when running
-    # via sudo/su.
+    # programs via sudo/su.
     try:
         os.chdir("/")
     except OSError:

@@ -29,6 +29,7 @@ import sys
 import tempfile
 from zipfile import ZipFile
 from shutil import copyfile
+from .utils.log import get_console_logger
 
 """
  deploy war file
@@ -109,12 +110,10 @@ def main():
 
     args = parser.parse_args()
 
+    loglevel = logging.INFO
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+        loglevel = logging.DEBUG
+    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
 
     deploy_war(logger, args.source_war[0], args.target_war[0], args.config)
 

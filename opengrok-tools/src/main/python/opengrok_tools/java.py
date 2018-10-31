@@ -28,6 +28,7 @@ import os
 import sys
 
 from .utils.java import Java, get_javaparser
+from .utils.log import get_console_logger
 
 
 def main():
@@ -38,12 +39,10 @@ def main():
 
     args = parser.parse_args()
 
+    loglevel = logging.INFO
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+        loglevel = logging.DEBUG
+    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
 
     java = Java(args.options, logger=logger, java=args.java,
                 jar=args.jar, java_opts=args.java_opts,

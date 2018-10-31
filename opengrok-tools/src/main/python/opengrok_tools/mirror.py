@@ -39,6 +39,7 @@ from logging.handlers import RotatingFileHandler
 
 from .utils.filelock import Timeout, FileLock
 from .utils.hook import run_hook
+from .utils.log import get_console_logger
 from .utils.opengrok import get_repos, get_config_value, get_repo_type
 from .utils.readconfig import read_config
 from .utils.repofactory import get_repository
@@ -52,7 +53,7 @@ if major_version < 3:
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.4"
+__version__ = "0.5"
 
 # "constants"
 HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
@@ -134,12 +135,10 @@ def main():
                              'processing if not found.')
     args = parser.parse_args()
 
+    loglevel = logging.INFO
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+        loglevel = logging.DEBUG
+    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
 
     if args.config:
         config = read_config(logger, args.config)
@@ -301,31 +300,21 @@ def main():
         if not logdir:
             logger.error("The logdir property is required in batch mode")
             sys.exit(1)
+
         logfile = os.path.join(logdir, args.project + ".log")
         logger.debug("Switching logging to the {} file".
                      format(logfile))
-        logging.shutdown()
 
-        # Remove the existing handler so that logger can be reconfigured.
-        for handler in logging.root.handlers[:]:
-            logging.root.removeHandler(handler)
-
-        logging.basicConfig(filename=logfile, filemode='a',
-                            level=logging.DEBUG if args.debug
-                            else logging.INFO)
-        logger = logging.getLogger(os.path.basename(sys.argv[0]))
-        handler = RotatingFileHandler(logfile, maxBytes=0,
+        logger = logger.getChild("rotating")
+        logger.setLevel(logging.DEBUG if args.debug
+                        else logging.INFO)
+        logger.propagate = False
+        handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
                                       backupCount=args.backupcount)
         formatter = logging.Formatter("%(asctime)s - %(levelname)s: "
                                       "%(message)s", '%m/%d/%Y %I:%M:%S %p')
         handler.setFormatter(formatter)
         handler.doRollover()
-        #
-        # Technically, adding a handler to the logger is not necessary
-        # since log rotation is done above using doRollover() however
-        # it is done anyway in case the handler changes to use implicit
-        # rotation in the future.
-        #
         logger.addHandler(handler)
 
     # We want this to be logged to the log file (if any).
