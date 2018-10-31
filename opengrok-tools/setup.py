@@ -55,7 +55,7 @@ setup(
     install_requires=[
         'jsonschema==2.6.0',
         'pyyaml',
-        'requests~=2.20.0',
+        'requests>=2.20.0',
         'resource'
     ],
     entry_points={
