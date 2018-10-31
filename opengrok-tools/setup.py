@@ -25,7 +25,7 @@ def get_version(version):
     :return: the mvn version, or local version number
     """
     if 'project.python.package.version' in version:
-        return '0.0.1local'
+        return '0.0.1'
     return version
 
 
@@ -55,7 +55,7 @@ setup(
     install_requires=[
         'jsonschema==2.6.0',
         'pyyaml',
-        'requests',
+        'requests~=2.20.0',
         'resource'
     ],
     entry_points={
