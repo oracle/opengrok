@@ -28,7 +28,7 @@ import sys
 def get_console_logger(name, level=logging.INFO, format='%(message)s'):
     """
     Get logger that logs logging.ERROR and higher to stderr, the rest
-    to stdout.
+    to stdout. For logging.DEBUG level more verbose format is used.
 
     :param name: name of the logger
     :param level: base logging level
