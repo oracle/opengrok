@@ -75,17 +75,19 @@ class Java(Command):
 
     def FindJava(self, logger):
         """
-        Determine Java home directory based on platform.
+        Determine Java binary based on platform.
         """
         java = None
         system_name = platform.system()
         if system_name == 'SunOS':
             rel = platform.release()
             if rel == '5.10':
-                javaHome = "/usr/jdk/instances/jdk1.7.0"
+                java_home = "/usr/jdk/instances/jdk1.7.0"
             elif rel == '5.11':
-                javaHome = "/usr/jdk/latest"
-            java = os.path.join(javaHome, 'bin', 'java')
+                java_home = "/usr/jdk/latest"
+
+            if os.path.isdir(java_home):
+                java = os.path.join(java_home, 'bin', 'java')
         elif system_name == 'Darwin':
             cmd = Command('/usr/libexec/java_home')
             cmd.execute()
@@ -95,6 +97,14 @@ class Java(Command):
             if os.path.exists(link_path):
                 # Resolve the symlink.
                 java = os.path.realpath(link_path)
+
+        if not java:
+            java_home = os.environ.get('JAVA_HOME')
+            if java_home:
+                logger.debug("Could not detemine Java home using standard "
+                             "means, trying JAVA_HOME: {}".format(java_home))
+                if os.path.isdir(java_home):
+                    java = os.path.join(java_home, 'bin', 'java')
 
         return java
 
