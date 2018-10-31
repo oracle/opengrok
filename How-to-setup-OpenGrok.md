@@ -36,7 +36,7 @@ Source base should be available locally for OpenGrok to work efficiently. No cha
 ## <u>Step.1</u> - Install management tools (optional)
 
 This step is optional, the python package contains wrappers for OpenGrok's indexer and other commands.
-In the release tarball navigate to `tools` subdirectory and install the `opengrok-tools.tar.gz` as a python package. Then you can use [defined commands](https://github.com/oracle/opengrok/tree/master/opengrok-tools/src/main/python#content). You can of course run the plain java yourself, without these wrappers.
+In the release tarball navigate to `tools` subdirectory and install the `opengrok-tools.tar.gz` as a python package. Then you can use [defined commands](https://github.com/oracle/opengrok/tree/master/opengrok-tools#content). You can of course run the plain java yourself, without these wrappers.
 
 In bash, you can install the package simply by:
 ```bash
