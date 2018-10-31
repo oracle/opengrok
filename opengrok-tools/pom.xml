@@ -38,6 +38,34 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
     <name>OpenGrok tools</name>
 
+    <profiles>
+        <profile>
+            <id>not-windows</id>
+            <activation>
+                <os>
+                    <family>!windows</family>
+                </os>
+            </activation>
+            <properties>
+                <python3Command>python3</python3Command>
+                <pythonEnvBin>env/bin</pythonEnvBin>
+            </properties>
+        </profile>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <python3Command>python</python3Command>
+                <pythonEnvBin>env/Scripts</pythonEnvBin>
+                <!-- Tests do not run on Windows because the python code is Unix-specific -->
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
+    </profiles>
     <build>
         <sourceDirectory>src/main/python</sourceDirectory>
         <testSourceDirectory>src/test/python</testSourceDirectory>
@@ -163,7 +191,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     <execution>
                         <id>generate python env</id>
                         <configuration>
-                            <executable>python3</executable>
+                            <executable>${python3Command}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>-m</argument>
@@ -180,7 +208,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <!-- needed for 'pip install pylint' to work -->
                         <id>Upgrade pip</id>
                         <configuration>
-                            <executable>env/bin/pip3</executable>
+                            <executable>${pythonEnvBin}/pip3</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory> 
                             <arguments>
                                 <argument>install</argument>
@@ -200,11 +228,13 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>env/bin/python</executable>
+                            <executable>${pythonEnvBin}/python</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>
                                 <argument>sdist</argument>
+								<argument>--formats</argument>
+								<argument>gztar</argument>
                             </arguments>
                         </configuration>
                         <phase>package</phase>
@@ -212,7 +242,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     <execution>
                         <id>python-test-install</id>
                         <configuration>
-                            <executable>env/bin/python</executable>
+                            <executable>${pythonEnvBin}/python</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>
