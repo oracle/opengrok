@@ -280,7 +280,7 @@ def main():
             sys.exit(1)
 
         configmerge_file = get_command(logger, args.configmerge,
-                                       "config-merge.py")
+                                       "opengrok-config-merge")
         if configmerge_file is None:
             logger.error("Use the --configmerge option to specify the path to"
                          "the config merge script")
