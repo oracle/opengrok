@@ -25,30 +25,6 @@ import logging
 import sys
 
 
-class MinLogLevelFilter(logging.Filter):
-    def __init__(self, level):
-        super()
-        self.level = level
-
-    def filter(self, record):
-        if record.levelno >= self.level:
-            return True
-
-        return False
-
-
-class MaxLogLevelFilter(logging.Filter):
-    def __init__(self, level):
-        super()
-        self.level = level
-
-    def filter(self, record):
-        if record.levelno <= self.level:
-            return True
-
-        return False
-
-
 def get_console_logger(name, level=logging.INFO, format='%(message)s'):
     """
     Get logger that logs logging.ERROR and higher to stderr, the rest
@@ -70,11 +46,8 @@ def get_console_logger(name, level=logging.INFO, format='%(message)s'):
     stdout_handler = logging.StreamHandler(stream=sys.stdout)
     stdout_handler.setFormatter(formatter)
 
-    min_filter = MinLogLevelFilter(logging.ERROR)
-    stderr_handler.addFilter(min_filter)
-
-    max_filter = MaxLogLevelFilter(logging.INFO)
-    stdout_handler.addFilter(max_filter)
+    stderr_handler.addFilter(lambda rec : rec.levelno >= logging.ERROR)
+    stdout_handler.addFilter(lambda rec : rec.levelno <= logging.INFO)
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
