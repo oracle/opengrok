@@ -23,23 +23,15 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
 --%>
 <%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Iterator"%>
-<%@page import="org.opengrok.indexer.web.Scripts"%>
 <%@page import="org.json.simple.JSONArray"%>
-<%@page import="java.util.SortedSet"%>
 <%@page import="java.util.Set"%>
-<%@page import="java.text.ParseException"%>
-<%@page import="java.util.ArrayList"%>
-<%@page import="java.util.Date"%>
 <%@page import="org.opengrok.indexer.web.Prefix"%>
 <%@page import="org.opengrok.indexer.web.ProjectHelper"%>
 <%@page import="java.util.LinkedList"%>
 <%@page import="java.util.Collections"%>
 <%@page import="java.util.Comparator"%>
-<%@page import="java.util.Collection"%>
 <%@page import="java.io.File"%>
-<%@page import="org.opengrok.indexer.configuration.RuntimeEnvironment"%>
 <%@page import="org.opengrok.indexer.history.RepositoryInfo"%>
-<%@page import="org.opengrok.indexer.history.Repository"%>
 <%@page import="org.opengrok.indexer.web.Util"%>
 <%@page import="org.opengrok.indexer.configuration.Project"%>
 <%@page import="org.opengrok.indexer.configuration.Group"%>
