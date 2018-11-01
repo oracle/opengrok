@@ -36,6 +36,8 @@ The setting of per-project tunables is done in read-only configuration file (see
 </java>
 ```
 
+Warning: keep in mind that this way the read-only configuration can only be used for initial global indexing. After that comment per-project settings out in read-only configuration and use [RESTful API](https://github.com/oracle/opengrok/wiki/Web-services) to set per project properties. For more info see https://github.com/oracle/opengrok/issues/2147
+
 ## Tunables
 
 Tunable | Type | Since version | Meaning
