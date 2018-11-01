@@ -179,7 +179,14 @@ public class LineHighlight {
                 end = relide;
             }
         }
-        String str = line.substring(start, end);
+        final String str;
+        if (line == null || line.length() <= 0) {
+            str = "_";
+        } else if (line.length() <= end) {
+            str = line;
+        } else {
+            str = line.substring(start, end);
+        }
         if (lell && !didLelide) {
             dest.append(HtmlConsts.HELLIP);
             didLelide = true;
