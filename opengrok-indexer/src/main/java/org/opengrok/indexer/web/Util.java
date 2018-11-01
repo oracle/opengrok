@@ -97,7 +97,7 @@ public final class Util {
         "[^A-Za-z0-9_]");
 
     private Util() {
-        // singleton
+        // private to ensure static
     }
 
     /**
@@ -1570,7 +1570,7 @@ public final class Util {
     }
 
     /**
-     * Creates a html slider for pagination. This has the same effect as
+     * Creates a HTML slider for pagination. This has the same effect as
      * invoking <code>createSlider(offset, limit, size, null)</code>.
      *
      * @param offset start of the current page
@@ -1583,8 +1583,7 @@ public final class Util {
     }
 
     /**
-     * Creates a html slider for pagination.
-     *
+     * Creates a HTML slider for pagination.
      *
      * @param offset start of the current page
      * @param limit max number of items per page
@@ -1661,7 +1660,7 @@ public final class Util {
     }
 
     /**
-     * Check if the string is a http URL.
+     * Check if the string is a HTTP URL.
      *
      * @param string the string to check
      * @return true if it is http URL, false otherwise
@@ -1694,9 +1693,9 @@ public final class Util {
      * Build a html link to the given http URL. If the URL is not an http URL
      * then it is returned as it was received.
      *
-     * @param url the http URL
+     * @param url the HTTP URL
      * @param newTab if the link should open in a new tab
-     * @return html containing the link &lt;a&gt;...&lt;/a&gt;
+     * @return HTML code containing the link &lt;a&gt;...&lt;/a&gt;
      */
     public static String linkify(String url, boolean newTab) {
         if (isHttpUri(url)) {
@@ -1852,8 +1851,8 @@ public final class Util {
     }
 
     /**
-     * Parses the specified url and returns its query params.
-     * @param url url to retrieve the query params from
+     * Parses the specified URL and returns its query params.
+     * @param url URL to retrieve the query params from
      * @return query params of {@code url}
      */
     public static Map<String, List<String>> getQueryParams(final URL url) {
