@@ -171,7 +171,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                                 </td><%
-                            String parent = ri.getParent();
+                            String parent = Util.redactUrl(ri.getParent());
                             if (parent == null) {
                                 parent = "N/A";
                             }
@@ -301,7 +301,7 @@ Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                     </td><%
-                                String parent = ri.getParent();
+                                String parent = Util.redactUrl(ri.getParent());
                                 if (parent == null) {
                                     parent = "N/A";
                                 }
