@@ -1675,8 +1675,31 @@ public final class Util {
         return url.getProtocol().equals("http") || url.getProtocol().equals("https");
     }
 
+    protected final static String REDACTED_USER_INFO = "redacted_by_OpenGrok";
+
     /**
-     * Build a html link to the given http url. If the URL is not an http URL
+     * If given path is a URL, return the string representation with the user-info part filtered out.
+     * @param path path to object
+     * @return either the original string or string representation of URL with the user-info part removed
+     */
+    public static String redactUrl(String path) {
+        URL url;
+        try {
+            url = new URL(path);
+        } catch (MalformedURLException e) {
+            // not an URL
+            return path;
+        }
+        if (url.getUserInfo() != null) {
+            return url.toString().replace(url.getUserInfo(),
+                    REDACTED_USER_INFO);
+        } else {
+            return url.toString();
+        }
+    }
+
+    /**
+     * Build a HTML link to the given HTTP URL. If the URL is not an http URL
      * then it is returned as it was received. This has the same effect as
      * invoking <code>linkify(url, true)</code>.
      *

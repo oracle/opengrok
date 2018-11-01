@@ -351,6 +351,16 @@ public class UtilTest {
     }
 
     @Test
+    public void testRedactUrl() {
+        assertEquals("/foo/bar", Util.redactUrl("/foo/bar"));
+        assertEquals("http://foo/bar?r=xxx", Util.redactUrl("http://foo/bar?r=xxx"));
+        assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
+                Util.redactUrl("http://user@foo/bar?r=xxx"));
+        assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
+                Util.redactUrl("http://user:pass@foo/bar?r=xxx"));
+    }
+
+    @Test
     public void testLinkify() throws URISyntaxException, MalformedURLException {
         assertTrue(Util.linkify("http://www.example.com")
                 .matches("<a.*?href=\"http://www\\.example\\.com\".*?>.*?</a>"));
