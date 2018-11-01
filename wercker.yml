@@ -1,6 +1,4 @@
-# This references an OpenJDK container from the
-# Docker Hub https://hub.docker.com/_/openjdk/
-box: openjdk:8-jdk
+box: maven:3.5.3-jdk-8
 
 # This should switch to Oracle JDK however does not work:
 #box:
