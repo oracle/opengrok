@@ -39,7 +39,7 @@ import tempfile
 from multiprocessing import Pool
 from os import path
 
-from .utils.commands import Commands, CommandsBase
+from .utils.commandsequence import CommandSequence, CommandSequenceBase
 from .utils.filelock import Timeout, FileLock
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.readconfig import read_config
@@ -59,7 +59,7 @@ def worker(base):
     Process one project by calling set of commands.
     """
 
-    x = Commands(base)
+    x = CommandSequence(base)
     x.run()
     base.fill(x.retcodes, x.outputs, x.failed)
 
@@ -175,8 +175,8 @@ def main():
 
             cmds_base = []
             for d in dirs_to_process:
-                cmd_base = CommandsBase(d, commands,
-                                        config.get("cleanup"))
+                cmd_base = CommandSequenceBase(d, commands,
+                                               config.get("cleanup"))
                 cmds_base.append(cmd_base)
 
             # Map the commands into pool of workers so they can be processed.
@@ -189,7 +189,7 @@ def main():
                 for cmds_base in cmds_base_results:
                     logger.debug("Checking results of project {}".
                                  format(cmds_base))
-                    cmds = Commands(cmds_base)
+                    cmds = CommandSequence(cmds_base)
                     cmds.fill(cmds_base.retcodes, cmds_base.outputs,
                               cmds_base.failed)
                     cmds.check(ignore_errors)

@@ -1,4 +1,4 @@
-from . import commands
+from . import commandsequence
 from . import command
 from . import opengrok
 from . import utils
@@ -12,7 +12,7 @@ __all__ = [
     'opengrok',
     'utils',
     'command',
-    'commands',
+    'commandsequence',
     'filelock',
     'hook',
     'repofactory',
