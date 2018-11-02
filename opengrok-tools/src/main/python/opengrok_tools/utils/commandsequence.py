@@ -28,7 +28,7 @@ from .utils import is_web_uri
 import json
 
 
-class CommandsBase:
+class CommandSequenceBase:
     """
     Wrap the run of a set of Command instances.
 
@@ -61,7 +61,7 @@ class CommandsBase:
         self.failed = failed
 
 
-class Commands(CommandsBase):
+class CommandSequence(CommandSequenceBase):
     PROJECT_SUBST = '%PROJECT%'
 
     def __init__(self, base):
