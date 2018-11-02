@@ -25,7 +25,6 @@
 import argparse
 import logging
 import os
-import sys
 import tempfile
 from zipfile import ZipFile
 from shutil import copyfile
