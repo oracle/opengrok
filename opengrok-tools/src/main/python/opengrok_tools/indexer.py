@@ -25,7 +25,6 @@
 
 import argparse
 import logging
-import os
 import sys
 
 from .utils.indexer import FindCtags, Indexer
@@ -50,7 +49,7 @@ def main():
     loglevel = logging.INFO
     if args.debug:
         loglevel = logging.DEBUG
-    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
+    logger = get_console_logger(__name__, loglevel)
 
     #
     # Since it is not possible to tell what kind of action is performed,

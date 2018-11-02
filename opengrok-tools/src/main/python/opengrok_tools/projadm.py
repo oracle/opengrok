@@ -251,7 +251,7 @@ def main():
     loglevel = logging.INFO
     if args.debug:
         loglevel = logging.DEBUG
-    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
+    logger = get_console_logger(__name__, loglevel)
 
     if args.nosourcedelete and not args.delete:
         logger.error("The no source delete option is only valid for delete")
