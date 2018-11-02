@@ -1694,7 +1694,7 @@ public final class Util {
             return url.toString().replace(url.getUserInfo(),
                     REDACTED_USER_INFO);
         } else {
-            return url.toString();
+            return path;
         }
     }
 
