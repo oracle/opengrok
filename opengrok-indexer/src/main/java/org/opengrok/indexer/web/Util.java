@@ -1675,7 +1675,7 @@ public final class Util {
         return url.getProtocol().equals("http") || url.getProtocol().equals("https");
     }
 
-    protected final static String REDACTED_USER_INFO = "redacted_by_OpenGrok";
+    protected static final String REDACTED_USER_INFO = "redacted_by_OpenGrok";
 
     /**
      * If given path is a URL, return the string representation with the user-info part filtered out.
