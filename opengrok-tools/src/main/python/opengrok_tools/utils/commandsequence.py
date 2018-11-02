@@ -25,6 +25,7 @@ import logging
 from .command import Command
 from .webutil import put, post, delete
 from .utils import is_web_uri
+from .log import get_console_logger
 import json
 
 
@@ -36,13 +37,14 @@ class CommandSequenceBase:
     so that it can be passed through Pool.map().
     """
 
-    def __init__(self, name, commands, cleanup=None):
+    def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None):
         self.name = name
         self.commands = commands
         self.failed = False
         self.retcodes = {}
         self.outputs = {}
         self.cleanup = cleanup
+        self.loglevel = loglevel
 
     def __str__(self):
         return str(self.name)
@@ -65,10 +67,10 @@ class CommandSequence(CommandSequenceBase):
     PROJECT_SUBST = '%PROJECT%'
 
     def __init__(self, base):
-        super().__init__(base.name, base.commands, base.cleanup)
+        super().__init__(base.name, base.commands, loglevel=base.loglevel,
+                         cleanup=base.cleanup)
 
-        self.logger = logging.getLogger(__name__)
-        logging.basicConfig()
+        self.logger = get_console_logger(__name__, base.loglevel)
 
     def run_command(self, command):
         """
