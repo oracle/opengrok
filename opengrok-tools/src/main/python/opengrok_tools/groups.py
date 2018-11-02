@@ -23,10 +23,11 @@
 
 import argparse
 import logging
-import os
 import sys
 
 from .utils.java import Java, get_javaparser
+from .utils.log import get_console_logger
+
 
 """
  Script for manipulating project groups
@@ -40,12 +41,10 @@ def main():
 
     args = parser.parse_args()
 
+    loglevel = logging.INFO
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(__name__)
+        loglevel = logging.DEBUG
+    logger = get_console_logger(__name__, loglevel)
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts, redirect_stderr=False,

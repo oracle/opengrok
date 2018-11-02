@@ -27,6 +27,7 @@ import sys
 
 from .utils.java import Java, get_javaparser
 
+
 """
  Wrapper for Java program merging OpenGrok configuration.
 """
@@ -39,12 +40,13 @@ def main():
 
     args = parser.parse_args()
 
+    # Avoid using utils.log.get_console_level() since the stdout of the program
+    # is interpreted as data.
+    loglevel = logging.INFO
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
+        loglevel = logging.DEBUG
     logger = logging.getLogger(__name__)
+    logger.setLevel(loglevel)
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts, redirect_stderr=False,
