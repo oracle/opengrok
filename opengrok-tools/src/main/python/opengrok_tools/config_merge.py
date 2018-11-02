@@ -23,7 +23,6 @@
 
 import argparse
 import logging
-import os
 import sys
 
 from .utils.java import Java, get_javaparser
@@ -45,7 +44,7 @@ def main():
     else:
         logging.basicConfig()
 
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    logger = logging.getLogger(__name__)
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts, redirect_stderr=False,

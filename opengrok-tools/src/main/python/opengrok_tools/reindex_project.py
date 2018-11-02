@@ -90,7 +90,7 @@ def main():
     loglevel = logging.INFO
     if args.debug:
         loglevel = logging.DEBUG
-    logger = get_console_logger(os.path.basename(sys.argv[0]), loglevel)
+    logger = get_console_logger(__name__, loglevel)
 
     # Make sure the log directory exists.
     if not os.path.isdir(args.directory):
