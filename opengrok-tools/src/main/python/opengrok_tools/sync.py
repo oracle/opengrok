@@ -175,7 +175,7 @@ def main():
 
             cmds_base = []
             for d in dirs_to_process:
-                cmd_base = CommandSequenceBase(d, commands,
+                cmd_base = CommandSequenceBase(d, commands, loglevel,
                                                config.get("cleanup"))
                 cmds_base.append(cmd_base)
 
