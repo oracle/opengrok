@@ -139,12 +139,14 @@ class CommandSequence(CommandSequenceBase):
                 # If a command fails, terminate the sequence of commands.
                 if retcode != 0:
                     if retcode == 2:
-                        self.logger.info("command '{}' requested break".
-                                         format(command))
+                        self.logger.debug("command '{}' for project {} "
+                                          "requested break".
+                                          format(self.name, command))
                         self.run_cleanup()
                     else:
-                        self.logger.info("command '{}' failed with code {}, "
-                                         "breaking".format(command, retcode))
+                        self.logger.error("command '{}' for project {} failed "
+                                          "with code {}, breaking".
+                                          format(command, self.name, retcode))
                         self.failed = True
                         self.run_cleanup()
                     break
