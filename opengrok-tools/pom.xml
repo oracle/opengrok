@@ -38,34 +38,26 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 
     <name>OpenGrok tools</name>
 
+    <properties>
+        <python.system.executable>python3</python.system.executable>
+        <python.executable>env/bin/python</python.executable>
+    </properties>
+
     <profiles>
         <profile>
-            <id>not-windows</id>
+            <id>Windows python environment</id>
             <activation>
                 <os>
-                    <family>!windows</family>
+                    <family>Windows</family>
                 </os>
             </activation>
             <properties>
-                <python3Command>python3</python3Command>
-                <pythonEnvBin>env/bin</pythonEnvBin>
-            </properties>
-        </profile>
-        <profile>
-            <id>windows</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                </os>
-            </activation>
-            <properties>
-                <python3Command>python</python3Command>
-                <pythonEnvBin>env/Scripts</pythonEnvBin>
-                <!-- Tests do not run on Windows because the python code is Unix-specific -->
-                <skipTests>true</skipTests>
+                <python.system.executable>python</python.system.executable>
+                <python.executable>env/Scripts/python</python.executable>
             </properties>
         </profile>
     </profiles>
+
     <build>
         <sourceDirectory>src/main/python</sourceDirectory>
         <testSourceDirectory>src/test/python</testSourceDirectory>
@@ -172,26 +164,9 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <version>1.6.0</version>
                 <executions>
                     <execution>
-                        <id>Python flake8</id>
+                        <id>Generate python env</id>
                         <configuration>
-                            <executable>flake8</executable>
-                            <arguments>
-                                <argument>-v</argument>
-                                <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>
-                                <argument>${project.build.sourceDirectory}</argument>
-                                <argument>setup.py</argument>
-                            </arguments>
-                            <skip>${skipTests}</skip>
-                        </configuration>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>generate python env</id>
-                        <configuration>
-                            <executable>${python3Command}</executable>
+                            <executable>${python.system.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>-m</argument>
@@ -208,14 +183,15 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <!-- needed for 'pip install pylint' to work -->
                         <id>Upgrade pip</id>
                         <configuration>
-                            <executable>${pythonEnvBin}/pip3</executable>
-                            <workingDirectory>${project.build.directory}</workingDirectory> 
+                            <executable>${python.executable}</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
+                                <argument>-m</argument>
+                                <argument>pip</argument>
                                 <argument>install</argument>
                                 <argument>--upgrade</argument>
                                 <argument>pip</argument>
                             </arguments>
-                            <skip>${skipTests}</skip>
                         </configuration>
                         <phase>test</phase>
                         <goals>
@@ -223,26 +199,26 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <id>generate-package</id>
+                        <id>Generate python package</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${pythonEnvBin}/python</executable>
+                            <executable>${python.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>
                                 <argument>sdist</argument>
-								<argument>--formats</argument>
-								<argument>gztar</argument>
+                                <argument>--formats</argument>
+                                <argument>gztar</argument>
                             </arguments>
                         </configuration>
                         <phase>package</phase>
                     </execution>
                     <execution>
-                        <id>python-test-install</id>
+                        <id>Install python package for tests</id>
                         <configuration>
-                            <executable>${pythonEnvBin}/python</executable>
+                            <executable>${python.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>
@@ -256,14 +232,17 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <id>Install Python lint</id>
+                        <id>Install python lint and flake8</id>
                         <configuration>
-                            <executable>${project.build.directory}/env/bin/pip3</executable>
+                            <executable>${python.executable}</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
+                                <argument>-m</argument>
+                                <argument>pip</argument>
                                 <argument>install</argument>
                                 <argument>pylint</argument>
+                                <argument>flake8</argument>
                             </arguments>
-                            <skip>${skipTests}</skip>
                         </configuration>
                         <phase>verify</phase>
                         <goals>
@@ -273,14 +252,15 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                     <execution>
                         <id>Python lint</id>
                         <configuration>
-                            <executable>env/bin/pylint</executable>
+                            <executable>${python.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
+                                <argument>-m</argument>
+                                <argument>pylint</argument>
                                 <argument>-E</argument>
                                 <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
                                 <argument>${project.build.directory}/setup.py</argument>
                             </arguments>
-                            <skip>${skipTests}</skip>
                         </configuration>
                         <phase>verify</phase>
                         <goals>
@@ -288,9 +268,28 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <id>python-test</id>
+                        <id>Python flake8</id>
                         <configuration>
-                            <executable>env/bin/python</executable>
+                            <executable>${python.executable}</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>flake8</argument>
+                                <argument>-v</argument>
+                                <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>
+                                <argument>${project.build.sourceDirectory}</argument>
+                                <argument>setup.py</argument>
+                            </arguments>
+                        </configuration>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Test python package</id>
+                        <configuration>
+                            <executable>${python.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>setup.py</argument>

@@ -21,13 +21,12 @@
 # Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-import os
 import logging
+import os
+import signal
 import subprocess
 import threading
 import time
-import resource
-import signal
 
 
 class TimeoutException(Exception):
@@ -104,7 +103,10 @@ class Command:
                 # the process and is specific to Unix.
                 if os.name == 'posix':
                     timeout = self.timeout
+                    # disable E1101 - non existent attribute SIGKILL on windows
+                    # pylint: disable=E1101
                     term_signals = [signal.SIGINT, signal.SIGKILL]
+                    # pylint: enable=E1101
                     for sig in term_signals:
                         timeout = timeout / 2  # exponential back-off
                         self.logger.info("Sleeping for {} seconds".
@@ -338,15 +340,25 @@ class Command:
         self.cmd = newcmd
 
     def get_resource(self, name):
-        if name == "RLIMIT_NOFILE":
-            return resource.RLIMIT_NOFILE
+        try:
+            import resource
+            if name == "RLIMIT_NOFILE":
+                return resource.RLIMIT_NOFILE
+        except ImportError:
+            raise NotImplementedError("manipulating resources is not "
+                                      "available on your platform")
 
         raise NotImplementedError("unknown resource")
 
     def set_resource_limit(self, name, value):
-        self.logger.debug("Setting resource {} to {}"
-                          .format(name, value))
-        resource.setrlimit(self.get_resource(name), (value, value))
+        try:
+            import resource
+            self.logger.debug("Setting resource {} to {}"
+                              .format(name, value))
+            resource.setrlimit(self.get_resource(name), (value, value))
+        except ImportError:
+            raise NotImplementedError("manipulating resources is not "
+                                      "available on your platform")
 
     def set_resource_limits(self, limits):
         self.logger.debug("Setting resource limits")
