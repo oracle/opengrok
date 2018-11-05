@@ -21,13 +21,12 @@
 # Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-import os
 import logging
+import os
+import signal
 import subprocess
 import threading
 import time
-import resource
-import signal
 
 
 class TimeoutException(Exception):
@@ -338,15 +337,25 @@ class Command:
         self.cmd = newcmd
 
     def get_resource(self, name):
-        if name == "RLIMIT_NOFILE":
-            return resource.RLIMIT_NOFILE
+        try:
+            import resource
+            if name == "RLIMIT_NOFILE":
+                return resource.RLIMIT_NOFILE
+        except ImportError:
+            raise NotImplementedError("manipulating resources is not "
+                                      "available on your platform")
 
         raise NotImplementedError("unknown resource")
 
     def set_resource_limit(self, name, value):
-        self.logger.debug("Setting resource {} to {}"
-                          .format(name, value))
-        resource.setrlimit(self.get_resource(name), (value, value))
+        try:
+            import resource
+            self.logger.debug("Setting resource {} to {}"
+                              .format(name, value))
+            resource.setrlimit(self.get_resource(name), (value, value))
+        except ImportError:
+            raise NotImplementedError("manipulating resources is not "
+                                      "available on your platform")
 
     def set_resource_limits(self, limits):
         self.logger.debug("Setting resource limits")
