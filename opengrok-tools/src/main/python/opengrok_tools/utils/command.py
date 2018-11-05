@@ -103,7 +103,10 @@ class Command:
                 # the process and is specific to Unix.
                 if os.name == 'posix':
                     timeout = self.timeout
+                    # disable E1101 - non existent attribute SIGKILL on windows
+                    # pylint: disable=E1101
                     term_signals = [signal.SIGINT, signal.SIGKILL]
+                    # pylint: enable=E1101
                     for sig in term_signals:
                         timeout = timeout / 2  # exponential back-off
                         self.logger.info("Sleeping for {} seconds".
