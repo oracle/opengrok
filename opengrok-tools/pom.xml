@@ -164,23 +164,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <version>1.6.0</version>
                 <executions>
                     <execution>
-                        <id>Python flake8</id>
-                        <configuration>
-                            <executable>flake8</executable>
-                            <arguments>
-                                <argument>-v</argument>
-                                <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>
-                                <argument>${project.build.sourceDirectory}</argument>
-                                <argument>setup.py</argument>
-                            </arguments>
-                            <!--    <skip>${skipTests}</skip> -->
-                        </configuration>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                    <execution>
                         <id>Generate python env</id>
                         <configuration>
                             <executable>${python.system.executable}</executable>
@@ -227,8 +210,8 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                             <arguments>
                                 <argument>setup.py</argument>
                                 <argument>sdist</argument>
-								<argument>--formats</argument>
-								<argument>gztar</argument>
+                                <argument>--formats</argument>
+                                <argument>gztar</argument>
                             </arguments>
                         </configuration>
                         <phase>package</phase>
@@ -250,7 +233,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <id>Install Python lint</id>
+                        <id>Install Python lint and flake8</id>
                         <configuration>
                             <executable>${python.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
@@ -259,6 +242,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>pip</argument>
                                 <argument>install</argument>
                                 <argument>pylint</argument>
+                                <argument>flake8</argument>
                             </arguments>
                             <!--    <skip>${skipTests}</skip> -->
                         </configuration>
@@ -279,6 +263,26 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
                                 <argument>${project.build.directory}/setup.py</argument>
                             </arguments>
+                        </configuration>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Python flake8</id>
+                        <configuration>
+                            <executable>${python.executable}</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <arguments>
+                                <argument>-m</argument>
+                                <argument>flake8</argument>
+                                <argument>-v</argument>
+                                <argument>--exclude=filelock.py,test_command.py,test_commands.py</argument>
+                                <argument>${project.build.sourceDirectory}</argument>
+                                <argument>setup.py</argument>
+                            </arguments>
+                            <!--    <skip>${skipTests}</skip> -->
                         </configuration>
                         <phase>verify</phase>
                         <goals>
