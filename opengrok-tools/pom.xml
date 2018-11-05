@@ -181,7 +181,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <id>generate python env</id>
+                        <id>Generate python env</id>
                         <configuration>
                             <executable>${python.system.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
@@ -217,7 +217,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <id>generate-package</id>
+                        <id>Generate python package</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -234,7 +234,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <phase>package</phase>
                     </execution>
                     <execution>
-                        <id>python-test-install</id>
+                        <id>Install python package for tests</id>
                         <configuration>
                             <executable>${python.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
@@ -253,6 +253,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <id>Install Python lint</id>
                         <configuration>
                             <executable>${python.executable}</executable>
+                            <workingDirectory>${project.build.directory}</workingDirectory>
                             <arguments>
                                 <argument>-m</argument>
                                 <argument>pip</argument>
@@ -278,7 +279,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>${project.build.sourceDirectory}/opengrok_tools</argument>
                                 <argument>${project.build.directory}/setup.py</argument>
                             </arguments>
-                            <!--    <skip>${skipTests}</skip> -->
                         </configuration>
                         <phase>verify</phase>
                         <goals>
@@ -286,7 +286,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <id>python-test</id>
+                        <id>Test python package</id>
                         <configuration>
                             <executable>${python.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
