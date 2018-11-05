@@ -192,7 +192,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>--upgrade</argument>
                                 <argument>pip</argument>
                             </arguments>
-                            <!--    <skip>${skipTests}</skip> -->
                         </configuration>
                         <phase>test</phase>
                         <goals>
@@ -225,7 +224,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>setup.py</argument>
                                 <argument>install</argument>
                             </arguments>
-                            <!--    <skip>${skipTests}</skip> -->
+                            <skip>${skipTests}</skip>
                         </configuration>
                         <phase>test</phase>
                         <goals>
@@ -233,7 +232,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </goals>
                     </execution>
                     <execution>
-                        <id>Install Python lint and flake8</id>
+                        <id>Install python lint and flake8</id>
                         <configuration>
                             <executable>${python.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
@@ -244,7 +243,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>pylint</argument>
                                 <argument>flake8</argument>
                             </arguments>
-                            <!--    <skip>${skipTests}</skip> -->
                         </configuration>
                         <phase>verify</phase>
                         <goals>
@@ -282,7 +280,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>${project.build.sourceDirectory}</argument>
                                 <argument>setup.py</argument>
                             </arguments>
-                            <!--    <skip>${skipTests}</skip> -->
                         </configuration>
                         <phase>verify</phase>
                         <goals>
@@ -298,7 +295,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>setup.py</argument>
                                 <argument>test</argument>
                             </arguments>
-                            <!--    <skip>${skipTests}</skip> -->
+                            <skip>${skipTests}</skip>
                         </configuration>
                         <phase>test</phase>
                         <goals>
