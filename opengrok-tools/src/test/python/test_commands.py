@@ -28,10 +28,6 @@ import os
 import sys
 
 
-sys.path.insert(0, os.path.abspath(
-                os.path.join(os.path.dirname(__file__), '..', '..',
-                'main', 'python')))
-
 from opengrok_tools.utils.commandsequence import CommandSequence, CommandSequenceBase
 
 

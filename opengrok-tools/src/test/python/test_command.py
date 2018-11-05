@@ -29,10 +29,6 @@ import os
 import time
 
 
-sys.path.insert(0, os.path.abspath(
-                os.path.join(os.path.dirname(__file__), '..', '..',
-                'main', 'python')))
-
 from opengrok_tools.utils.command import Command
 import tempfile
 
