@@ -54,7 +54,7 @@ class LogLevelAction(argparse.Action):
         if val:
             setattr(namespace, self.dest, val)
         else:
-            raise ValueError("need valid log level")
+            raise ValueError("invalid log level '{}'".format(values))
 
 
 def get_log_level(level):
