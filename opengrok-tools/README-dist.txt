@@ -45,8 +45,8 @@ Uninstall
 ---------
 
 * from system level package or from venv:
-  (assuming the venv is activated or you are running pip3 from the venv binary
-  directory)
+  (assuming the venv is activated or you are running python3 from the venv
+  binary directory)
 
   python3 -m pip uninstall opengrok_tools
 
