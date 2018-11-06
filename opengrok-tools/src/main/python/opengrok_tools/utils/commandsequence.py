@@ -25,7 +25,6 @@ import logging
 from .command import Command
 from .webutil import put, post, delete
 from .utils import is_web_uri
-from .log import get_console_logger
 import json
 
 
@@ -70,7 +69,8 @@ class CommandSequence(CommandSequenceBase):
         super().__init__(base.name, base.commands, loglevel=base.loglevel,
                          cleanup=base.cleanup)
 
-        self.logger = get_console_logger(__name__, base.loglevel)
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(base.loglevel)
 
     def run_command(self, command):
         """
