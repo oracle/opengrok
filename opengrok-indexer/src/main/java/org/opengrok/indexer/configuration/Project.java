@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.util.ClassUtil;
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
+import org.opengrok.indexer.web.Util;
 
 /**
  * Placeholder for the information that builds up a project
@@ -112,7 +113,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
      */
     public Project(String name, String path) {
         this.name = name;
-        this.path = path;
+        this.path = Util.fixPathIfWindows(path);
         completeWithDefaults();
     }
 
@@ -332,7 +333,7 @@ public class Project implements Comparable<Project>, Nameable, Serializable {
         // Try to match each project path as prefix of the given path.
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            final String lpath = path.replace(File.separatorChar, '/');
+            final String lpath = Util.fixPathIfWindows(path);
             for (Project p : env.getProjectList()) {
                 String projectPath = p.getPath();
                 if (projectPath == null) {

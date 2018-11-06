@@ -156,6 +156,14 @@ public class UtilTest {
     }
 
     @Test
+    public void fixPathIfWindows() {
+        if (Util.isWindows()) {
+            assertEquals("/var/opengrok",
+                    Util.fixPathIfWindows("\\var\\opengrok"));
+        }
+    }
+
+    @Test
     public void uid2url() {
         assertEquals("/etc/passwd", Util.uid2url(
                 Util.path2uid("/etc/passwd", "date")));
