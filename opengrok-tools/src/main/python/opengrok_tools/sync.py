@@ -31,7 +31,6 @@
 """
 
 import argparse
-import logging
 import multiprocessing
 import os
 import sys
@@ -44,14 +43,16 @@ from .utils.commandsequence import CommandSequence, CommandSequenceBase
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.readconfig import read_config
 from .utils.utils import is_web_uri
-from .utils.log import get_console_logger, get_class_basename
+from .utils.log import get_console_logger, get_class_basename,\
+    add_log_level_argument, print_exc_exit
+
 
 major_version = sys.version_info[0]
 if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.6"
+__version__ = "0.7"
 
 
 def worker(base):
@@ -82,20 +83,19 @@ def main():
 
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
-    parser.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
+    add_log_level_argument(parser)
     parser.add_argument('-i', '--ignore_errors', nargs='*',
                         help='ignore errors from these projects')
     parser.add_argument('-c', '--config', required=True,
                         help='config file in JSON format')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    loglevel = logging.INFO
-    if args.debug:
-        loglevel = logging.DEBUG
-    logger = get_console_logger(get_class_basename(), loglevel)
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     uri = args.uri
     if not is_web_uri(uri):
@@ -176,7 +176,7 @@ def main():
 
             cmds_base = []
             for d in dirs_to_process:
-                cmd_base = CommandSequenceBase(d, commands, loglevel,
+                cmd_base = CommandSequenceBase(d, commands, args.loglevel,
                                                config.get("cleanup"))
                 cmds_base.append(cmd_base)
 

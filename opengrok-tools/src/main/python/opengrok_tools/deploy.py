@@ -23,12 +23,13 @@
 #
 
 import argparse
-import logging
 import os
 import tempfile
 from zipfile import ZipFile
 from shutil import copyfile
-from .utils.log import get_console_logger, get_class_basename
+from .utils.log import get_console_logger, get_class_basename, \
+    add_log_level_argument, print_exc_exit
+
 
 """
  deploy war file
@@ -98,8 +99,7 @@ def deploy_war(logger, sourceWar, targetWar, configFile=None):
 def main():
     parser = argparse.ArgumentParser(description='Deploy WAR file')
 
-    parser.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
+    add_log_level_argument(parser)
     parser.add_argument('-c', '--config',
                         help='Path to OpenGrok configuration file')
     parser.add_argument('source_war', nargs=1,
@@ -107,12 +107,12 @@ def main():
     parser.add_argument('target_war', nargs=1,
                         help='Path where to deploy source war file to')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    loglevel = logging.INFO
-    if args.debug:
-        loglevel = logging.DEBUG
-    logger = get_console_logger(get_class_basename(), loglevel)
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     deploy_war(logger, args.source_war[0], args.target_war[0], args.config)
 

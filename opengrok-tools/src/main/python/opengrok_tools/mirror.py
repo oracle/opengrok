@@ -39,7 +39,8 @@ from logging.handlers import RotatingFileHandler
 from filelock import Timeout, FileLock
 
 from .utils.hook import run_hook
-from .utils.log import get_console_logger, get_class_basename
+from .utils.log import get_console_logger, get_class_basename, \
+    add_log_level_argument, print_exc_exit
 from .utils.opengrok import get_repos, get_config_value, get_repo_type
 from .utils.readconfig import read_config
 from .utils.repofactory import get_repository
@@ -53,7 +54,7 @@ if major_version < 3:
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.5"
+__version__ = "0.6"
 
 # "constants"
 HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
@@ -120,8 +121,7 @@ def main():
     parser = argparse.ArgumentParser(description='project mirroring')
 
     parser.add_argument('project')
-    parser.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
+    add_log_level_argument(parser)
     parser.add_argument('-c', '--config',
                         help='config file in JSON/YAML format')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
@@ -133,12 +133,12 @@ def main():
     parser.add_argument('-I', '--incoming', action='store_true',
                         help='Check for incoming changes, terminate the '
                              'processing if not found.')
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    loglevel = logging.INFO
-    if args.debug:
-        loglevel = logging.DEBUG
-    logger = get_console_logger(get_class_basename(), loglevel)
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     if args.config:
         config = read_config(logger, args.config)

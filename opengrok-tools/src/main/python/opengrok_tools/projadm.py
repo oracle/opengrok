@@ -28,7 +28,6 @@
 
 import argparse
 import io
-import logging
 import os
 import shutil
 import sys
@@ -37,7 +36,8 @@ from os import path
 from filelock import Timeout, FileLock
 
 from .utils.command import Command
-from .utils.log import get_console_logger, get_class_basename
+from .utils.log import get_console_logger, get_class_basename, \
+    add_log_level_argument, print_exc_exit
 from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value
 from .utils.utils import get_command, is_web_uri
@@ -47,7 +47,7 @@ if (MAJOR_VERSION < 3):
     print("Need Python 3, you are running {}".format(MAJOR_VERSION))
     sys.exit(1)
 
-__version__ = "0.3"
+__version__ = "0.4"
 
 
 def exec_command(doit, logger, cmd, msg):
@@ -205,8 +205,8 @@ def main():
     parser = argparse.ArgumentParser(description='project management.',
                                      formatter_class=argparse.
                                      ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
+
+    add_log_level_argument(parser)
     parser.add_argument('-b', '--base', default="/var/opengrok",
                         help='OpenGrok instance base directory')
     parser.add_argument('-R', '--roconfig',
@@ -240,7 +240,11 @@ def main():
                             'with current '
                             'configuration.')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
+
     doit = not args.noop
     configmerge = None
 
@@ -248,10 +252,7 @@ def main():
     # Setup logger as a first thing after parsing arguments so that it can be
     # used through the rest of the program.
     #
-    loglevel = logging.INFO
-    if args.debug:
-        loglevel = logging.DEBUG
-    logger = get_console_logger(get_class_basename(), loglevel)
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     if args.nosourcedelete and not args.delete:
         logger.error("The no source delete option is only valid for delete")

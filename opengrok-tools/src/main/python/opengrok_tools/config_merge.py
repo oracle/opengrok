@@ -26,6 +26,7 @@ import logging
 import sys
 
 from .utils.java import Java, get_javaparser
+from .utils.log import print_exc_exit
 
 
 """
@@ -38,15 +39,15 @@ def main():
                                                  'configuration merging',
                                      parents=[get_javaparser()])
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
     # Avoid using utils.log.get_console_level() since the stdout of the program
     # is interpreted as data.
-    loglevel = logging.INFO
-    if args.debug:
-        loglevel = logging.DEBUG
     logger = logging.getLogger(__name__)
-    logger.setLevel(loglevel)
+    logger.setLevel(args.loglevel)
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts, redirect_stderr=False,
