@@ -25,7 +25,7 @@
         <destName>opengrok-tools.tar.gz</destName>
       </file>
       <file>
-         <source>${project.basedir}/../oapengrok-tools/README-dist.txt</source>
+         <source>${project.basedir}/../opengrok-tools/README-dist.txt</source>
          <outputDirectory>tools</outputDirectory>
          <destName>README.txt</destName>
       </file>
