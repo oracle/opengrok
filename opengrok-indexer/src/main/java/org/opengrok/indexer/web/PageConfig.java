@@ -75,6 +75,9 @@ import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
 
+import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
+import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR_STRING;
+
 /**
  * A simple container to lazy initialize common vars wrt. a single request. It
  * MUST NOT be shared between several requests and
@@ -203,7 +206,7 @@ public final class PageConfig {
      */
     public DiffData getDiffData() {
         DiffData data = new DiffData();
-        data.path = getPath().substring(0, path.lastIndexOf('/'));
+        data.path = getPath().substring(0, path.lastIndexOf(PATH_SEPARATOR));
         data.filename = Util.htmlize(getResourceFile().getName());
 
         String srcRoot = getSourceRootPath();
@@ -736,7 +739,7 @@ public final class PageConfig {
      * option.
      *
      * @return always an array of 3 fields, whereby field[0] contains the path
-     * value to use (starts and ends always with a '/'). Field[1] the contains
+     * value to use (starts and ends always with a {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}). Field[1] the contains
      * string to show in the UI. field[2] is set to {@code disabled=""} if the
      * current path is the "/" directory, otherwise set to an empty string.
      */
@@ -747,7 +750,7 @@ public final class PageConfig {
                     : new String[]{path, "this directory", ""};
         }
         String[] res = new String[3];
-        res[0] = path.substring(0, path.lastIndexOf('/') + 1);
+        res[0] = path.substring(0, path.lastIndexOf(PATH_SEPARATOR) + 1);
         res[1] = res[0];
         res[2] = "";
         return res;
@@ -971,7 +974,7 @@ public final class PageConfig {
      * @see RuntimeEnvironment#getWebappLAF()
      */
     public String getCssDir() {
-        return req.getContextPath() + '/' + getEnv().getWebappLAF();
+        return req.getContextPath() + PATH_SEPARATOR + getEnv().getWebappLAF();
     }
 
     /**
@@ -1002,7 +1005,7 @@ public final class PageConfig {
 
     /**
      * Get the canonical path to root of the source tree. File separators are
-     * replaced with a '/'.
+     * replaced with a {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}.
      *
      * @return The on disk source root directory.
      * @see RuntimeEnvironment#getSourceRootPath()
@@ -1011,7 +1014,7 @@ public final class PageConfig {
         if (sourceRootPath == null) {
             String srcpath = getEnv().getSourceRootPath();
             if (srcpath != null) {
-                sourceRootPath = srcpath.replace(File.separatorChar, '/');
+                sourceRootPath = srcpath.replace(File.separatorChar, PATH_SEPARATOR);
             }
         }
         return sourceRootPath;
@@ -1032,7 +1035,7 @@ public final class PageConfig {
 
     /**
      * Get the canonical path of the related resource relative to the source
-     * root directory (used file separators are all '/'). No check is made,
+     * root directory (used file separators are all {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}). No check is made,
      * whether the obtained path is really an accessible resource on disk.
      *
      * @see HttpServletRequest#getPathInfo()
@@ -1041,8 +1044,8 @@ public final class PageConfig {
      */
     public String getPath() {
         if (path == null) {
-            path = Util.getCanonicalPath(req.getPathInfo(), '/');
-            if ("/".equals(path)) {
+            path = Util.getCanonicalPath(req.getPathInfo(), PATH_SEPARATOR);
+            if (PATH_SEPARATOR_STRING.equals(path)) {
                 path = "";
             }
         }
@@ -1076,7 +1079,7 @@ public final class PageConfig {
      * NOTE: If a repository contains hard or symbolic links, the returned file
      * may finally point to a file outside of the source root directory.
      *
-     * @return {@code new File("/")} if the related file or directory is not
+     * @return {@code new File({@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING })} if the related file or directory is not
      * available (can not be find below the source root directory), the readable
      * file or directory otherwise.
      * @see #getSourceRootPath()
@@ -1086,7 +1089,7 @@ public final class PageConfig {
         if (resourceFile == null) {
             resourceFile = getResourceFile(getPath());
             if (resourceFile == null) {
-                resourceFile = new File("/");
+                resourceFile = new File(PATH_SEPARATOR_STRING);
             }
         }
         return resourceFile;
@@ -1094,15 +1097,15 @@ public final class PageConfig {
 
     /**
      * Get the canonical on disk path to the request related file or directory
-     * with all file separators replaced by a '/'.
+     * with all file separators replaced by a {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR}.
      *
-     * @return "/" if the evaluated path is invalid or outside the source root
+     * @return {@link org.opengrok.indexer.index.Indexer#PATH_SEPARATOR_STRING} if the evaluated path is invalid or outside the source root
      * directory), otherwise the path to the readable file or directory.
      * @see #getResourceFile()
      */
     public String getResourcePath() {
         if (resourcePath == null) {
-            resourcePath = getResourceFile().getPath().replace(File.separatorChar, '/');
+            resourcePath = Util.fixPathIfWindows(getResourceFile().getPath());
         }
         return resourcePath;
     }
@@ -1119,7 +1122,7 @@ public final class PageConfig {
      */
     public boolean resourceNotAvailable() {
         getIgnoredNames();
-        return getResourcePath().equals("/") || ignoredNames.ignore(getPath())
+        return getResourcePath().equals(PATH_SEPARATOR_STRING) || ignoredNames.ignore(getPath())
                 || ignoredNames.ignore(resourceFile.getParentFile())
                 || ignoredNames.ignore(resourceFile);
     }
@@ -1137,8 +1140,8 @@ public final class PageConfig {
     }
 
     private static String trailingSlash(String path) {
-        return path.length() == 0 || path.charAt(path.length() - 1) != '/'
-                ? "/"
+        return path.length() == 0 || path.charAt(path.length() - 1) != PATH_SEPARATOR
+                ? PATH_SEPARATOR_STRING
                 : "";
     }
 
@@ -1162,7 +1165,7 @@ public final class PageConfig {
     private File checkFileResolve(File dir, String name, boolean compressed) {
         File lresourceFile = new File(getSourceRootPath() + getPath(), name);
         if (!lresourceFile.canRead()) {
-            lresourceFile = new File("/");
+            lresourceFile = new File(PATH_SEPARATOR_STRING);
         }
         File f;
         if (compressed) {

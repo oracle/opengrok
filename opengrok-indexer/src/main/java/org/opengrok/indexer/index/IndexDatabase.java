@@ -464,6 +464,8 @@ public class IndexDatabase {
                     }
                 }
 
+                dir = Util.fixPathIfWindows(dir);
+
                 String startuid = Util.path2uid(dir, "");
                 reader = DirectoryReader.open(indexDirectory); // open existing index
                 settings = readAnalysisSettings();
@@ -1100,6 +1102,7 @@ public class IndexDatabase {
                     }
 
                     if (uidIter != null) {
+                        path = Util.fixPathIfWindows(path);
                         String uid = Util.path2uid(path,
                             DateTools.timeToString(file.lastModified(),
                             DateTools.Resolution.MILLISECOND)); // construct uid for doc

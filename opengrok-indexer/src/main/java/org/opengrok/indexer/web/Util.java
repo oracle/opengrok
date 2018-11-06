@@ -75,6 +75,8 @@ import org.opengrok.indexer.history.HistoryGuru;
 import org.opengrok.indexer.logger.LoggerFactory;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 
+import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
+
 /**
  * Class for useful functions.
  */
@@ -95,6 +97,13 @@ public final class Util {
      */
     private final static Pattern NON_ASCII_ALPHA_NUM = Pattern.compile(
         "[^A-Za-z0-9_]");
+
+    private static String OS = null;
+
+    private static final String anchorLinkStart = "<a href=\"";
+    private static final String anchorClassStart = "<a class=\"";
+    private static final String anchorEnd = "</a>";
+    private static final String closeQuotedTag = "\">";
 
     private Util() {
         // private to ensure static
@@ -377,7 +386,7 @@ public final class Util {
     }
 
     /**
-     * Convenience method for {@code breadcrumbPath(urlPrefix, path, '/')}.
+     * Convenience method for {@code breadcrumbPath(urlPrefix, path, PATH_SEPARATOR)}.
      *
      * @param urlPrefix prefix to add to each url
      * @param path path to crack
@@ -386,13 +395,8 @@ public final class Util {
      * @see #breadcrumbPath(String, String, char)
      */
     public static String breadcrumbPath(String urlPrefix, String path) {
-        return breadcrumbPath(urlPrefix, path, '/');
+        return breadcrumbPath(urlPrefix, path, PATH_SEPARATOR);
     }
-
-    private static final String anchorLinkStart = "<a href=\"";
-    private static final String anchorClassStart = "<a class=\"";
-    private static final String anchorEnd = "</a>";
-    private static final String closeQuotedTag = "\">";
 
     /**
      * Convenience method for
@@ -472,13 +476,13 @@ public final class Util {
                         * (17 + prefix.length() + postfix.length()));
         int k = path.indexOf(pnames[0]);
         if (path.lastIndexOf(sep, k) != -1) {
-            pwd.append('/');
+            pwd.append(PATH_SEPARATOR);
             markup.append(sep);
         }
         for (int i = 0; i < pnames.length; i++) {
             pwd.append(URIEncodePath(pnames[i]));
             if (isDir || i < pnames.length - 1) {
-                pwd.append('/');
+                pwd.append(PATH_SEPARATOR);
             }
             markup.append(anchorLinkStart).append(prefix).append(pwd)
                     .append(postfix).append(closeQuotedTag).append(pnames[i])
@@ -855,8 +859,29 @@ public final class Util {
      * @return the original path.
      */
     public static String uid2url(String uid) {
-        String url = uid.replace('\u0000', '/');
-        return url.substring(0, url.lastIndexOf('/')); // remove date from end
+        String url = uid.replace('\u0000', PATH_SEPARATOR);
+        return url.substring(0, url.lastIndexOf(PATH_SEPARATOR)); // remove date from end
+    }
+
+    public static String fixPathIfWindows(String path) {
+        if (Util.isWindows()) {
+            // Sanitize Windows path delimiters in order not to conflict with Lucene escape character
+            // and also so the path appears as correctly formed URI in the search results.
+            return path.replace(File.separatorChar, PATH_SEPARATOR);
+        }
+        return path;
+    }
+
+    public static String getOsName() {
+        if (OS == null) {
+            OS = System.getProperty("os.name");
+        }
+        return OS;
+    }
+
+    public static boolean isWindows() {
+        String osname = getOsName();
+        return osname != null ? osname.startsWith("Windows") : false;
     }
 
     /**

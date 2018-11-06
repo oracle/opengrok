@@ -71,6 +71,12 @@ import org.opengrok.indexer.util.Statistics;
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
  * stats etc., if specified in the options
+ *
+ * We shall use / as path delimiter in whole opengrok for uuids and paths
+ * from Windows systems, the path shall be converted when entering the index or web
+ * and converted back if needed* to access original file
+ *
+ * *Windows already supports opening /var/opengrok as C:\var\opengrok
  */
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 public final class Indexer {
@@ -82,6 +88,10 @@ public final class Indexer {
     private static final String OFF = "off";
     private static final String DIRBASED = "dirbased";
     private static final String UIONLY = "uionly";
+
+    //whole app uses this separator
+    public static final char PATH_SEPARATOR ='/';
+    public static String PATH_SEPARATOR_STRING =Character.toString(PATH_SEPARATOR);
 
     private static final Indexer index = new Indexer();
     private static Configuration cfg = null;
