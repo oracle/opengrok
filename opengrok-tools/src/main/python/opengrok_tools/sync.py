@@ -79,6 +79,7 @@ def main():
                         help='Directory to process')
     group1.add_argument('-P', '--projects', nargs='*',
                         help='List of projects to process')
+
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
     parser.add_argument('-D', '--debug', action='store_true',
