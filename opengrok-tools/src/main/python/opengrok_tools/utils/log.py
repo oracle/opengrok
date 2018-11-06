@@ -47,6 +47,7 @@ class LogLevelAction(argparse.Action):
         if nargs is not None:
             raise ValueError("nargs not allowed")
         super(LogLevelAction, self).__init__(option_strings, dest, **kwargs)
+
     def __call__(self, parser, namespace, values, option_string=None):
         # print('%r %r %r' % (namespace, values, option_string))
         val = get_log_level(values)
