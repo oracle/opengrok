@@ -34,9 +34,9 @@ import shutil
 import sys
 import tempfile
 from os import path
+from filelock import Timeout, FileLock
 
 from .utils.command import Command
-from .utils.filelock import Timeout, FileLock
 from .utils.log import get_console_logger
 from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value

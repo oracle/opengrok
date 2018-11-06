@@ -36,8 +36,8 @@ import re
 import sys
 import tempfile
 from logging.handlers import RotatingFileHandler
+from filelock import Timeout, FileLock
 
-from .utils.filelock import Timeout, FileLock
 from .utils.hook import run_hook
 from .utils.log import get_console_logger
 from .utils.opengrok import get_repos, get_config_value, get_repo_type
