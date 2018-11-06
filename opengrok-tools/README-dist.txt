@@ -44,11 +44,9 @@ This will install the package and all the dependencies under the
 Uninstall
 ---------
 
-* from system level package:
+* from system level package or from venv:
+  (assuming the venv is activated or you are running pip3 from the venv binary
+  directory)
 
   python3 -m pip uninstall opengrok_tools
 
-* from a venv (assuming the venv is activated or you are running pip3 from the
-  venv binary directory):
-
-  pip3 uninstall opengrok_tools
