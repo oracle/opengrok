@@ -44,7 +44,7 @@ from .utils.commandsequence import CommandSequence, CommandSequenceBase
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.readconfig import read_config
 from .utils.utils import is_web_uri
-from .utils.log import get_console_logger
+from .utils.log import get_console_logger, get_class_basename
 
 major_version = sys.version_info[0]
 if (major_version < 3):
@@ -95,7 +95,7 @@ def main():
     loglevel = logging.INFO
     if args.debug:
         loglevel = logging.DEBUG
-    logger = get_console_logger(__name__, loglevel)
+    logger = get_console_logger(get_class_basename(), loglevel)
 
     uri = args.uri
     if not is_web_uri(uri):

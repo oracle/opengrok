@@ -26,7 +26,7 @@ import logging
 import sys
 
 from .utils.java import Java, get_javaparser
-from .utils.log import get_console_logger
+from .utils.log import get_console_logger, get_class_basename
 
 
 """
@@ -44,7 +44,7 @@ def main():
     loglevel = logging.INFO
     if args.debug:
         loglevel = logging.DEBUG
-    logger = get_console_logger(__name__, loglevel)
+    logger = get_console_logger(get_class_basename(), loglevel)
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts, redirect_stderr=False,

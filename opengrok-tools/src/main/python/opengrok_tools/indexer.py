@@ -29,7 +29,7 @@ import sys
 
 from .utils.indexer import FindCtags, Indexer
 from .utils.java import get_javaparser
-from .utils.log import get_console_logger
+from .utils.log import get_console_logger, get_class_basename
 
 """
   opengrok.jar wrapper
@@ -49,7 +49,7 @@ def main():
     loglevel = logging.INFO
     if args.debug:
         loglevel = logging.DEBUG
-    logger = get_console_logger(__name__, loglevel)
+    logger = get_console_logger(get_class_basename(), loglevel)
 
     #
     # Since it is not possible to tell what kind of action is performed,

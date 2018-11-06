@@ -28,7 +28,7 @@ import os
 import tempfile
 from zipfile import ZipFile
 from shutil import copyfile
-from .utils.log import get_console_logger
+from .utils.log import get_console_logger, get_class_basename
 
 """
  deploy war file
@@ -112,7 +112,7 @@ def main():
     loglevel = logging.INFO
     if args.debug:
         loglevel = logging.DEBUG
-    logger = get_console_logger(__name__, loglevel)
+    logger = get_console_logger(get_class_basename(), loglevel)
 
     deploy_war(logger, args.source_war[0], args.target_war[0], args.config)
 
