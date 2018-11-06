@@ -38,9 +38,9 @@ import sys
 import tempfile
 from multiprocessing import Pool
 from os import path
+from filelock import Timeout, FileLock
 
 from .utils.commandsequence import CommandSequence, CommandSequenceBase
-from .utils.filelock import Timeout, FileLock
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.readconfig import read_config
 from .utils.utils import is_web_uri

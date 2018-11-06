@@ -56,7 +56,8 @@ setup(
         'jsonschema==2.6.0',
         'pyyaml',
         'requests>=2.20.0',
-        'resource'
+        'resource',
+        'filelock'
     ],
     entry_points={
         'console_scripts': [
