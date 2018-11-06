@@ -37,7 +37,7 @@ from os import path
 from filelock import Timeout, FileLock
 
 from .utils.command import Command
-from .utils.log import get_console_logger
+from .utils.log import get_console_logger, get_class_basename
 from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value
 from .utils.utils import get_command, is_web_uri
@@ -251,7 +251,7 @@ def main():
     loglevel = logging.INFO
     if args.debug:
         loglevel = logging.DEBUG
-    logger = get_console_logger(__name__, loglevel)
+    logger = get_console_logger(get_class_basename(), loglevel)
 
     if args.nosourcedelete and not args.delete:
         logger.error("The no source delete option is only valid for delete")

@@ -25,6 +25,10 @@ import logging
 import sys
 
 
+def get_class_basename():
+    return __name__.split('.')[0]
+
+
 def get_console_logger(name, level=logging.INFO, format='%(message)s'):
     """
     Get logger that logs logging.ERROR and higher to stderr, the rest

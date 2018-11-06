@@ -39,7 +39,7 @@ from logging.handlers import RotatingFileHandler
 from filelock import Timeout, FileLock
 
 from .utils.hook import run_hook
-from .utils.log import get_console_logger
+from .utils.log import get_console_logger, get_class_basename
 from .utils.opengrok import get_repos, get_config_value, get_repo_type
 from .utils.readconfig import read_config
 from .utils.repofactory import get_repository
@@ -138,7 +138,7 @@ def main():
     loglevel = logging.INFO
     if args.debug:
         loglevel = logging.DEBUG
-    logger = get_console_logger(__name__, loglevel)
+    logger = get_console_logger(get_class_basename(), loglevel)
 
     if args.config:
         config = read_config(logger, args.config)
