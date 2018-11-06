@@ -23,7 +23,7 @@ Use the distribution tarball and run pip:
   python3 -m pip install opengrok_tools.tar.gz
 
 This will download all dependencies and install the package to your local
-python3 modules. You can use console scripts to run the package binaries.
+python3 modules.
 
 * Installing to a specified directory:
 
