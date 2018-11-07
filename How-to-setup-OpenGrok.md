@@ -54,7 +54,7 @@ If you happen to be using the Python tools, you can use the `opengrok-deploy` sc
 
 ## <u>Step.3</u> - Indexing
 
-This steps basically performs these steps:
+This step consists of these operations:
   - create index
   - let the indexer generate the configuration file
   - notify the web application that new index is available
