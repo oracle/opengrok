@@ -43,6 +43,12 @@ def add_log_level_argument(parser):
 
 
 class LogLevelAction(argparse.Action):
+    """
+    This class is supposed to be used as action for argparse.
+    The action is handled by trying to find the option argument as attribute
+    in the logging module. On success, its numeric value is stored in the
+    namespace, otherwise ValueError exception is thrown.
+    """
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
         if nargs is not None:
             raise ValueError("nargs not allowed")
