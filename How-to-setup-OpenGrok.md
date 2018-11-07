@@ -101,6 +101,7 @@ In some setups, it might be desirable to run the indexing (and especially mirror
 
 # Optional info
 
+See https://github.com/oracle/opengrok/wiki/Indexer-configuration and https://github.com/oracle/opengrok/wiki/Webapp-configuration
 
 ## Optional need to change web application properties or name
 
