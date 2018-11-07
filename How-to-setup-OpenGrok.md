@@ -58,14 +58,21 @@ This steps basically performs these steps:
 
 The indexing can take a lot of time - for large code bases (meaning both amount of source code and history) it can take many hours. After this is done, indexer automatically attempts to upload newly generated configuration to the web application. Until this is done, the web application will display the old state.
 
-The indexer can be run either using `opengrok.jar` directly or using the `opengrok-indexer` wrapper like so:
-
+The indexer can be run either using `opengrok.jar` directly:
+```
+java -jar /opengrok/dist/lib/opengrok.jar \
+    -Djava.util.logging.config.file=/var/opengrok/logging.properties -- \
+    -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
+    -W /var/opengrok/etc/configuration.xml -U http://localhost:8080
+```
+or using the `opengrok-indexer` wrapper like so:
 ```
 opengrok-indexer -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
     -a /opengrok/dist/lib/opengrok.jar -- \
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
     -W /var/opengrok/etc/configuration.xml -U http://localhost:8080
 ```
+Notice how the indexer arguments are the same. The `opengrok-indexer` will merely find the Java executable and run it.
 
 The above will use `/var/opengrok/src` as source root, `/var/opengrok/data` as data root. The configuration will be written to `/var/opengrok/etc/configuration.xml` and sent to the web application (via the URL passed to the `-U` option) at the end of the indexing.
 
