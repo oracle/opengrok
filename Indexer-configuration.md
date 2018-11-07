@@ -8,7 +8,7 @@ This is a list of the most common configuration options with their defaults whic
  - `pluginConfiguration` - XXX
  - ...
 
-# Indexer configuration
+# Other Indexer configuration
 
 ## Custom ctags configuration
 
