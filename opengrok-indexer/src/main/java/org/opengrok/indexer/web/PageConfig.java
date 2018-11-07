@@ -1288,6 +1288,11 @@ public final class PageConfig {
         sb.append("?r=");
         sb.append(Util.URIEncode(revStr));
 
+        if (req.getQueryString() != null) {
+            sb.append("&");
+            sb.append(req.getQueryString());
+        }
+
         return sb.toString();
     }
 
