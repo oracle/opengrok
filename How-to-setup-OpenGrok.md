@@ -101,32 +101,6 @@ In some setups, it might be desirable to run the indexing (and especially mirror
 
 # Optional info
 
-## Custom ctags configuration
-
-To make ctags recognize additional symbols/definitions/etc. it is possible to
-specify configuration file with extra configuration options for ctags.
-
-This can be done by using the `-o` option for `opengrok.jar`.
-
-Sample configuration file for Solaris code base:
-
-```
---regex-asm=/^[ \t]*(ENTRY_NP|ENTRY|RTENTRY)+\(([a-zA-Z0-9_]+)\)/\2/f,function/
---regex-asm=/^[ \t]*ENTRY2\(([a-zA-Z0-9_]+),[ ]*([a-zA-Z0-9_]+)\)/\1/f,function/
---regex-asm=/^[ \t]*ENTRY2\(([a-zA-Z0-9_]+),[ ]*([a-zA-Z0-9_]+)\)/\2/f,function/
---regex-asm=/^[ \t]*ENTRY_NP2\(([a-zA-Z0-9_]+),[ ]*([a-zA-Z0-9_]+)\)/\1/f,function/
---regex-asm=/^[ \t]*ENTRY_NP2\(([a-zA-Z0-9_]+),[ ]*([a-zA-Z0-9_]+)\)/\2/f,function/
-```
-
-## Introduce own mapping for an extension to analyzer
-
-Use the `-A` Indexer option, e.g. like this:
-
-```
--A .cs:org.opengrok.indexer.analysis.plain.PlainAnalyzerFactory
-```
-
-This will map extension `.cs` to the analyzer created by the `PlainAnalyzerFactory `. You should even be able to override OpenGroks analyzers using this option.
 
 ## Optional need to change web application properties or name
 
