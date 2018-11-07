@@ -48,7 +48,7 @@ Of course, the Python package can be installed into Python virtual environment.
 
 Install web application container of your choice (e.g. [Tomcat](http://tomcat.apache.org/), [Glassfish](https://glassfish.dev.java.net/)).
 
-Use the `opengrok-deploy` script to copy the `.war` file to the location where the application container will detect it and deploy the web application.
+Copy the `.war` file to the location where the application container will detect it and deploy the web application. If you happen to be using the Python tools, you can use the `opengrok-deploy` script to perform the same. The script is also handy when the configuration file is stored in non-standard location (i.e. other than `/var/opengrok/etc/configuration.xml`)
 
 ## <u>Step.3</u> - Indexing
 
