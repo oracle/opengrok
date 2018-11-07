@@ -8,6 +8,7 @@
 - [Default projects](#default-projects)
 - [Path Descriptions](#path-descriptions)
 - [Configuration tunables](#configuration-tunables)
+- [Optional setup of security manager for Tomcat](#Optional-setup-of-security-manager-for-Tomcat)
 <!-- tocstop -->
 
 # Include files
@@ -190,3 +191,49 @@ These can be set in https://github.com/OpenGrok/OpenGrok/wiki/Read-only-configur
 Tunable | Type | Since version | Meaning
 --------|------|---------------|--------
 `navigateWindowEnabled` | boolean | 1.1 | display navigate window automatically when browsing xrefs, can be overridden on project level (see https://github.com/oracle/opengrok/wiki/Per-project-configuration)
+
+# Optional setup of security manager for Tomcat
+
+On some Linux distributions you need to setup permissions for source root and data root. Please check your Tomcat documentation on this, or simply disable (your risk!) <u>security manager</u> for Tomcat (e.g. in debian/ubuntu : in file <code>/etc/default/tomcat5.5</code> set <code>TOMCAT5_SECURITY=no</code>).
+A sample approach is to <u>edit</u> <code>/etc/tomcat5.5/04webapps.policy</code> (or <code>/var/apache/tomcat/conf/catalina.policy</code>) and set this (it will give OpenGrok all permissions) for your OpenGrok webapp instance:
+
+```
+grant codeBase "file:${catalina.home}/webapps/source/-" {     
+permission java.security.AllPermission;};
+grant codeBase "file:${catalina.home}/webapps/source/WEB-INF/lib/-" {     
+permission java.security.AllPermission;};
+```
+
+Alternatively you can be more restrictive (haven't tested below with a complex setup (e.g. some versioning system which needs local access as CVS), if it will not work, please report through [[Discussions]].
+
+```
+grant codeBase "file:${catalina.home}/webapps/source/-" {  
+permission java.util.PropertyPermission "subversion.native.library", "read";  
+permission java.lang.RuntimePermission "loadLibrary.svnjavahl-1?;  
+permission java.lang.RuntimePermission "loadLibrary.libsvnjavahl-1?;  
+permission java.lang.RuntimePermission "loadLibrary.svnjavahl";  
+permission java.util.PropertyPermission "disableLuceneLocks", "read";  
+permission java.util.PropertyPermission "catalina.home", "read";  
+permission java.util.PropertyPermission "java.io.tmpdir", "read";  
+permission java.util.PropertyPermission "org.apache.lucene.lockdir", "read";  
+permission java.util.PropertyPermission "org.apache.lucene.writeLockTimeout", "read";  
+permission java.util.PropertyPermission "org.apache.lucene.commitLockTimeout", "read";  
+permission java.util.PropertyPermission "org.apache.lucene.mergeFactor", "read";  
+permission java.util.PropertyPermission "org.apache.lucene.minMergeDocs", "read";  
+permission java.util.PropertyPermission "org.apache.lucene.*", "read";  
+permission java.io.FilePermission "/var/lib/tomcat5/temp", "read";  
+permission java.io.FilePermission "/var/lib/tomcat5/temp/*", "write";  
+permission java.io.FilePermission "/var/lib/tomcat5/temp/*", "delete";};
+grant codeBase "file:${catalina.home}/webapps/source/WEB-INF/lib/-" {  
+permission java.util.PropertyPermission "subversion.native.library", "read";  
+permission java.lang.RuntimePermission "loadLibrary.svnjavahl-1?;  
+permission java.util.PropertyPermission "disableLuceneLocks", "read";  
+permission java.util.PropertyPermission "catalina.home", "read";  
+permission java.util.PropertyPermission "java.io.tmpdir", "read";};
+grant codeBase "file:${catalina.home}/webapps/source/WEB-INF/classes/-" {  
+permission java.util.PropertyPermission "subversion.native.library", "read";  
+permission java.lang.RuntimePermission "loadLibrary.svnjavahl-1?;  
+permission java.util.PropertyPermission "disableLuceneLocks", "read";  
+permission java.util.PropertyPermission "catalina.home", "read";  
+permission java.util.PropertyPermission "java.io.tmpdir", "read";};
+```
