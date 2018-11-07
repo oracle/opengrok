@@ -101,25 +101,6 @@ In some setups, it might be desirable to run the indexing (and especially mirror
 
 # Optional info
 
-See https://github.com/oracle/opengrok/wiki/Indexer-configuration and https://github.com/oracle/opengrok/wiki/Webapp-configuration
-
-## Optional need to change web application properties or name
-
-You might need to modify the web application if you don't store the configuration file in the default location (<code>/var/opengrok/etc/configuration.xml</code>). This can be conveniently done using the `opengrok-deploy` script by supplying the path to the configuration.
-
-If you need to change name of the web application from `source` to something else, just deploy `source.war` as `new_name.war`.
-
-### Deploy the modified .war file in glassfish/Sun Java App Server
-
-* '''Option 1:''' Use browser and log into <code>glassfish web administration interface</code>
-
-: Common Tasks / Applications / Web Applications , button '''Deploy''' and point it to your source.war webarchive
-
-* '''Option 2:''' Copy the source.war file to `//GLASSFISH///domains///YOURDOMAIN///autodeploy` directory, glassfish will try to deploy it "automagically".
-* '''Option 3:''' Use CLI from `//GLASSFISH//` directory:
-
- `./bin/asadmin deploy /path/to/source.war`
-
-### Deploy the modified .war file in tomcat:
-
-* just copy the source.war file to `//TOMCAT_INSTALL///webapps` directory.
+See 
+  - https://github.com/oracle/opengrok/wiki/Indexer-configuration
+  - https://github.com/oracle/opengrok/wiki/Webapp-configuration
