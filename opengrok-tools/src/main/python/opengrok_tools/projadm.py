@@ -288,8 +288,9 @@ def main():
             sys.exit(1)
 
         configmerge = [configmerge_file]
-        if args.debug:
-            configmerge.append('-D')
+        if args.loglevel:
+            configmerge.append('-l')
+            configmerge.append(args.loglevel)
 
         if args.jar is None:
             logger.error('jar file needed for config merge tool, '
