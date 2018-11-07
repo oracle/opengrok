@@ -60,8 +60,8 @@ The indexing can take a lot of time - for large code bases (meaning both amount 
 
 The indexer can be run either using `opengrok.jar` directly:
 ```
-java -jar /opengrok/dist/lib/opengrok.jar \
-    -Djava.util.logging.config.file=/var/opengrok/logging.properties -- \
+java -Djava.util.logging.config.file=/var/opengrok/logging.properties \
+    -jar /opengrok/dist/lib/opengrok.jar \
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
     -W /var/opengrok/etc/configuration.xml -U http://localhost:8080
 ```
@@ -77,7 +77,10 @@ Notice how the indexer arguments are the same. The `opengrok-indexer` will merel
 The above will use `/var/opengrok/src` as source root, `/var/opengrok/data` as data root. The configuration will be written to `/var/opengrok/etc/configuration.xml` and sent to the web application (via the URL passed to the `-U` option) at the end of the indexing.
 
 Run the command with `-h` to get more information about the options, i.e.:
-
+```
+java -jar /opengrok/dist/lib/opengrok.jar -h
+```
+or when using the Python scripts:
 ```
 opengrok-indexer -a /opengrok/dist/lib/opengrok.jar -- -h
 ```
