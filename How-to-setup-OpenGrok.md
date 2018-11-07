@@ -52,6 +52,8 @@ Copy the `.war` file to the location where the application container will detect
 
 If you happen to be using the Python tools, you can use the `opengrok-deploy` script to perform the same. The script is also handy when the configuration file is stored in non-standard location (i.e. other than `/var/opengrok/etc/configuration.xml`)
 
+See https://github.com/oracle/opengrok/wiki/Webapp-configuration for more configuration options.
+
 ## <u>Step.3</u> - Indexing
 
 This step consists of these operations:
@@ -99,8 +101,4 @@ You should now be able to point your browser to http://YOUR_WEBAPP_SERVER:WEBAPP
 
 In some setups, it might be desirable to run the indexing (and especially mirroring) of each project in parallel in order to speed up the overall progress. See https://github.com/oracle/opengrok/wiki/Per-project-management on how this can be done.
 
-# Optional info
-
-See 
-  - https://github.com/oracle/opengrok/wiki/Indexer-configuration
-  - https://github.com/oracle/opengrok/wiki/Webapp-configuration
+See https://github.com/oracle/opengrok/wiki/Indexer-configuration for more indexer configuration options.
