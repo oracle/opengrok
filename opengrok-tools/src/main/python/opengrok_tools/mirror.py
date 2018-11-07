@@ -306,8 +306,7 @@ def main():
                      format(logfile))
 
         logger = logger.getChild("rotating")
-        logger.setLevel(logging.DEBUG if args.debug
-                        else logging.INFO)
+        logger.setLevel(args.loglevel)
         logger.propagate = False
         handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
                                       backupCount=args.backupcount)
