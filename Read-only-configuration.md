@@ -66,7 +66,7 @@ see
 
 At this point it might be quite difficult to guess the syntax of the XML file for the configuration. That is where the `Groups` tool is quite handy.
 
-You can generate an empty configuration object with the `empty` subcommand:
+You can generate an empty configuration object with the the `opengrok-groups` Python script:
 
 ```bash
 $ opengrok-groups -- -e
@@ -76,7 +76,7 @@ $ opengrok-groups -- -e
 </java>
 ```
 
-About how to add some options please refer to the main configuration `/var/opengrok/etc/configuration.xml` and try to simulate the same process. Mostly the following is applicable:
+Now, some knowledge about Java beans is necessary to add some tunables. This is very much hand process. You can get some inspiration from looking at the contents of `/var/opengrok/etc/configuration.xml` once the reindex is done. Here is an example of how to set a basic string and a boolean property:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
