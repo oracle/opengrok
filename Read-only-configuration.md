@@ -125,6 +125,8 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
 
 This is particularly handy when using [per-project management ](https://github.com/OpenGrok/OpenGrok/wiki/Per-project-management)
 
+Note that given that OpenGrok treats the majority of metadata as UTF-8 encoding, handling the `configuration.xml` like above pretty much requires that the locale settings are set accordingly.
+
 # Real time web application change
 
 ## Single property change
