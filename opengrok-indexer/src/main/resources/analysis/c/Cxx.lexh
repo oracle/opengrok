@@ -68,9 +68,9 @@ integer_literal = ({decimal_literal} | {octal_literal} | {hex_literal} |
     {binary_literal})
 decimal_literal =      [1-9]([0-9\']+[0-9] | [0-9]*) {integer_suffix}?
 octal_literal =   (0 | 0[0-7]([0-7\']+[0-7] | [0-7]*)) {integer_suffix}?
-hex_literal =          0[xX][0-9a-fA-F]([0-9a-fA-F\'][0-9a-fA-F] |
+hex_literal =          0[xX][0-9a-fA-F]([0-9a-fA-F\']+[0-9a-fA-F] |
     [0-9a-fA-F]*) {integer_suffix}?
-binary_literal =       0[bB][01]([01\'][01] | [01]*) {integer_suffix}?
+binary_literal =       0[bB][01]([01\']+[01] | [01]*) {integer_suffix}?
 
 integer_suffix = ({unsigned_suffix} | {long_suffix})+
 unsigned_suffix = [uU]
