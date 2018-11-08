@@ -46,7 +46,7 @@ The flow is as follows:
 
     This file is particularly important in case the server container is restarted or the server rebooted - the webapp can then read the configuration and start serving the requests (without having to run the indexer to actually generate the configuration).
 
-    Thus, the `configuration.xml` file serves as a persistent storage for both the indexer and the weapp.
+    Thus, the `/var/opengrok/etc/configuration.xml` file serves as a persistent storage for both the indexer and the weapp.
 
 This presents a problem of how to store any customizations since all of them get wiped out always when the reindex is finished and the configuration is overwritten.
 
