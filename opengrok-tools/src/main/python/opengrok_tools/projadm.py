@@ -290,7 +290,7 @@ def main():
         configmerge = [configmerge_file]
         if args.loglevel:
             configmerge.append('-l')
-            configmerge.append(args.loglevel)
+            configmerge.append(str(args.loglevel))
 
         if args.jar is None:
             logger.error('jar file needed for config merge tool, '

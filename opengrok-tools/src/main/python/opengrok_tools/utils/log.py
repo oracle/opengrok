@@ -65,9 +65,19 @@ class LogLevelAction(argparse.Action):
 
 def get_log_level(level):
     """
-    :param level: expressed in string (upper or lower case)
+    :param level: expressed in string (upper or lower case) or integer
     :return: integer representation of the log level or None
     """
+    if type(level) is int:
+        return level
+
+    # This could be a string storing a number.
+    try:
+        return int(level)
+    except ValueError:
+        pass
+
+    # Look up the name in the logging module.
     try:
         value = getattr(logging, level.upper())
         if type(value) is int:
