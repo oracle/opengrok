@@ -190,21 +190,33 @@ There is `opengrok-groups` Python script (in the `opengrok_tools` Python package
 
 ### Example
 
+- generate empty configuration:
 ```
 $ opengrok-groups -a opengrok.jar -- -e > readonly_configuration.xml
+```
+- add a group:
+```
 $ opengrok-groups -a opengrok.jar -- \
     -i readonly_configuration.xml -n admins \
     -r "test-project-1|test-project-2|test-project-3|test-project-4" -o newconf.xml
 $ mv newconf.xml readonly_configuration.xml
+```
+- add another group:
+```
 $ opengrok-groups -a opengrok.jar -- \
     -i readonly_configuration.xml -n users \
     -r "test-project-5|test-project-6|test-project-7|test-project-8" -o newconf.xml
 $ mv newconf.xml readonly_configuration.xml
+```
+- add a subgroup
+```
 $ opengrok-groups -a opengrok.jar -- \
     -i readonly_configuration.xml -n plugins \
     -r "test-project-9|test-project-10" -p users -o newconf.xml
 $ mv newconf.xml readonly_configuration.xml
 ```
+
+Now the `readonly_configuration.xml` is ready to be used as [Read-only configuration](https://github.com/oracle/opengrok/wiki/Read-only-configuration).
 
 The group names correspond to the roles defined in `tomcat-users.xml` earlier.
 The final group structure should look like this now:
