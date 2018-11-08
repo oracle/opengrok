@@ -137,6 +137,8 @@ $ curl -d "25" "${webapp_uri}/api/v1/configuration/hitsPerPage" # instead of 10
 
 This call only works for primitive java types and has only meaning for the options which actually changes some behaviour in the web application.
 
+If you need the resulting configuration to become persistent, you will need to get it via [Web Services](https://github.com/oracle/opengrok/wiki/Web-services) and store to `/var/opengrok/etc/configuration.xml`.
+
 ## Complete configuration change
   
 Via the [Web Services](https://github.com/oracle/opengrok/wiki/Web-services) interface you can send a brand new configuration to the web application.
