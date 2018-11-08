@@ -118,7 +118,9 @@ The following is assuming that OpenGrok base directory is `/opengrok`.
 ```
 - get current config from the webapp, merge it with read-only configuration and upload the new config to the webapp
 ```
-   opengrok-projadm -b /opengrok -R /opengrok/etc/readonly_configuration.xml -r -u
+   opengrok-projadm -b /opengrok \
+       -c /opengrok/dist/bin/venv/bin/opengrok-config-merge --jar opengrok.jar \
+       -R /opengrok/etc/readonly_configuration.xml -r -u
 ```
 
 This is particularly handy when using [per-project management ](https://github.com/OpenGrok/OpenGrok/wiki/Per-project-management)
