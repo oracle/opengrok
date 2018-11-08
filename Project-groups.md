@@ -186,21 +186,21 @@ so that the whole structure can be traversed.
 
 ## Tools
 
-There is `groups.py` script which is suitable for creating the group structure and for easy manipulation with the group tree. The script is a wrapper around the `Groups` Java program available in `opengrok.jar`.
+There is `opengrok-groups` Python script (in the `opengrok_tools` Python package shipped with OpenGrok) that which is suitable for creating the group structure and for easy manipulation with the group tree. The script is a wrapper around the `Groups` Java program available in `opengrok.jar`.
 
 ### Example
 
 ```
-$ groups.py -a opengrok.jar -- -e > readonly_configuration.xml
-$ groups.py -a opengrok.jar -- \
+$ opengrok-groups -a opengrok.jar -- -e > readonly_configuration.xml
+$ opengrok-groups -a opengrok.jar -- \
     -i readonly_configuration.xml -n admins \
     -r "test-project-1|test-project-2|test-project-3|test-project-4" -o newconf.xml
 $ mv newconf.xml readonly_configuration.xml
-$ groups.py -a opengrok.jar -- \
+$ opengrok-groups -a opengrok.jar -- \
     -i readonly_configuration.xml -n users \
     -r "test-project-5|test-project-6|test-project-7|test-project-8" -o newconf.xml
 $ mv newconf.xml readonly_configuration.xml
-$ groups.py -a opengrok.jar -- \
+$ opengrok-groups -a opengrok.jar -- \
     -i readonly_configuration.xml -n plugins \
     -r "test-project-9|test-project-10" -p users -o newconf.xml
 $ mv newconf.xml readonly_configuration.xml
@@ -209,7 +209,7 @@ $ mv newconf.xml readonly_configuration.xml
 The group names correspond to the roles defined in `tomcat-users.xml` earlier.
 The final group structure should look like this now:
 ```
-$ groups.py -a opengrok.jar -- -l -i readonly_configuration.xml
+$ opengrok-groups -a opengrok.jar -- -l -i readonly_configuration.xml
 admins ~ "test-project-1|test-project-2|test-project-3|test-project-4"
 users ~ "test-project-5|test-project-6|test-project-7|test-project-8"
     plugins ~ "test-project-9|test-project-10"
