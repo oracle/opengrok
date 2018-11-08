@@ -58,7 +58,9 @@ Therefore we substitute the persistent storage with another configuration file `
 
 ## List of most common configuration options
 
-see https://github.com/oracle/opengrok/wiki/Indexer-configuration and https://github.com/OpenGrok/OpenGrok/wiki/Webapp-configuration
+see
+  - https://github.com/oracle/opengrok/wiki/Indexer-configuration
+  - https://github.com/OpenGrok/OpenGrok/wiki/Webapp-configuration
 
 # Generating the read only configuration
 
