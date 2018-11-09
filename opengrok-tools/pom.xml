@@ -216,7 +216,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         <phase>package</phase>
                     </execution>
                     <execution>
-                        <id>Install python package for tests</id>
+                        <id>Install python package for tests/pylint</id>
                         <configuration>
                             <executable>${python.executable}</executable>
                             <workingDirectory>${project.build.directory}</workingDirectory>
@@ -224,7 +224,6 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>setup.py</argument>
                                 <argument>install</argument>
                             </arguments>
-                            <skip>${skipTests}</skip>
                         </configuration>
                         <phase>test</phase>
                         <goals>
