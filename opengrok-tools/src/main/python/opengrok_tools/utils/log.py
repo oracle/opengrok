@@ -23,6 +23,69 @@
 
 import logging
 import sys
+import argparse
+
+
+def print_exc_exit(e):
+    """
+    Print exception and exit
+    :param e: exception
+    :return: nothing
+    """
+    print(e, file=sys.stderr)
+    sys.exit(1)
+
+
+def add_log_level_argument(parser):
+    parser.add_argument('-l', '--loglevel', action=LogLevelAction,
+                        help='Set log level (e.g. \"ERROR\")',
+                        default=logging.INFO)
+
+
+class LogLevelAction(argparse.Action):
+    """
+    This class is supposed to be used as action for argparse.
+    The action is handled by trying to find the option argument as attribute
+    in the logging module. On success, its numeric value is stored in the
+    namespace, otherwise ValueError exception is thrown.
+    """
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        if nargs is not None:
+            raise ValueError("nargs not allowed")
+        super(LogLevelAction, self).__init__(option_strings, dest, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        # print('%r %r %r' % (namespace, values, option_string))
+        val = get_log_level(values)
+        if val:
+            setattr(namespace, self.dest, val)
+        else:
+            raise ValueError("invalid log level '{}'".format(values))
+
+
+def get_log_level(level):
+    """
+    :param level: expressed in string (upper or lower case) or integer
+    :return: integer representation of the log level or None
+    """
+    if type(level) is int:
+        return level
+
+    # This could be a string storing a number.
+    try:
+        return int(level)
+    except ValueError:
+        pass
+
+    # Look up the name in the logging module.
+    try:
+        value = getattr(logging, level.upper())
+        if type(value) is int:
+            return value
+        else:
+            return None
+    except AttributeError:
+        return None
 
 
 def get_class_basename():
@@ -39,6 +102,9 @@ def get_console_logger(name, level=logging.INFO, format='%(message)s'):
     :param format: format string to use
     :return: logger
     """
+    if level is None:
+        level = logging.INFO
+
     if level == logging.DEBUG:
         format = '%(asctime)s %(levelname)8s %(name)s | %(message)s'
 

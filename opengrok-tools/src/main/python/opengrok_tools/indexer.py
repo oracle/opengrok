@@ -24,12 +24,11 @@
 
 
 import argparse
-import logging
 import sys
 
 from .utils.indexer import FindCtags, Indexer
 from .utils.java import get_javaparser
-from .utils.log import get_console_logger, get_class_basename
+from .utils.log import get_console_logger, get_class_basename, print_exc_exit
 
 """
   opengrok.jar wrapper
@@ -44,12 +43,12 @@ def main():
     parser.add_argument('-C', '--no_ctags_check', action='store_true',
                         default=False, help='Suppress checking for ctags')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    loglevel = logging.INFO
-    if args.debug:
-        loglevel = logging.DEBUG
-    logger = get_console_logger(get_class_basename(), loglevel)
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     #
     # Since it is not possible to tell what kind of action is performed,

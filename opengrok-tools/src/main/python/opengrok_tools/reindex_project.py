@@ -23,14 +23,13 @@
 
 
 import argparse
-import logging
 import os
 import sys
 import tempfile
 
 from .utils.indexer import Indexer
 from .utils.java import get_javaparser
-from .utils.log import get_console_logger, get_class_basename
+from .utils.log import get_console_logger, get_class_basename, print_exc_exit
 from .utils.opengrok import get_configuration
 
 """
@@ -85,12 +84,12 @@ def main():
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    loglevel = logging.INFO
-    if args.debug:
-        loglevel = logging.DEBUG
-    logger = get_console_logger(get_class_basename(), loglevel)
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     # Make sure the log directory exists.
     if not os.path.isdir(args.directory):

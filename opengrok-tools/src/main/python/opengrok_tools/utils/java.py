@@ -25,6 +25,7 @@
 import platform
 from .command import Command
 from .utils import is_exe
+from .log import add_log_level_argument
 import os
 import argparse
 
@@ -111,8 +112,7 @@ class Java(Command):
 
 def get_javaparser():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
+    add_log_level_argument(parser)
     parser.add_argument('-j', '--java',
                         help='path to java binary')
     parser.add_argument('-J', '--java_opts',
