@@ -246,8 +246,8 @@ public class PageConfigTest {
     public void testGetLatestRevisionValid() {
         DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
             @Override
-                public String getPathInfo() {
-                    return "/git/main.c";
+            public String getPathInfo() {
+                return "/git/main.c";
             }
         };
 
@@ -255,6 +255,58 @@ public class PageConfigTest {
         String rev = cfg.getLatestRevision();
 
         assertEquals("aa35c258", rev);
+    }
+
+    @Test
+    public void testGetRevisionLocation() {
+        DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "/git/main.c";
+            }
+
+            @Override
+            public String getContextPath() {
+                return "source";
+            }
+
+            @Override
+            public String getQueryString() {
+                return "a=true";
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req1);
+
+        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
+        assertNotNull(location);
+        assertEquals("source/xref/git/main.c?r=aa35c258&a=true", location);
+    }
+
+    @Test
+    public void testGetRevisionLocationNullQuery() {
+        DummyHttpServletRequest req1 = new DummyHttpServletRequest() {
+            @Override
+            public String getPathInfo() {
+                return "/git/main.c";
+            }
+
+            @Override
+            public String getContextPath() {
+                return "source";
+            }
+
+            @Override
+            public String getQueryString() {
+                return null;
+            }
+        };
+
+        PageConfig cfg = PageConfig.get(req1);
+
+        String location = cfg.getRevisionLocation(cfg.getLatestRevision());
+        assertNotNull(location);
+        assertEquals("source/xref/git/main.c?r=aa35c258", location);
     }
 
     @Test
