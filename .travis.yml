@@ -29,14 +29,13 @@ jobs:
       jdk: oraclejdk8
       script: dev/main
       before_install: dev/before_install
-      install: true
       before_script: dev/before
     - stage: test
       os: osx
       osx_image: xcode8.3
       script: dev/main
       before_install: dev/before_install
-      install: true
+      before_script: dev/before
     - stage: deploy
       name: Github Release
       if: repo = "oracle/opengrok" AND tag IS present
