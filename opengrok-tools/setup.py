@@ -6,6 +6,28 @@ from setuptools import setup
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
+def extract_version_from_path(*file_paths):
+    """
+    Look for a version in a file
+    see https://packaging.python.org/guides/single-sourcing-package-version/
+    :param file_paths: path to the file
+    :return: the version
+    :raises: an RuntimeError when version is not available
+    """
+
+    def read(*parts):
+        with open(os.path.join(SCRIPT_DIR, *parts), 'r') as fp:
+            version = {}
+            exec(fp.read(), version, None)
+            return version['__version__']
+
+    version = read(*file_paths)
+
+    if version:
+        return version
+    raise RuntimeError("Unable to find version string.")
+
+
 def readme():
     with open(os.path.join(SCRIPT_DIR, 'README.md'), 'r') as readme:
         return readme.read()
@@ -18,23 +40,11 @@ def my_test_suite():
     return test_suite
 
 
-def get_version(version):
-    """
-    Detect the mvn build versus the local python setup.py install run.
-    :param version: the new version string to be applied
-    :return: the mvn version, or local version number
-    """
-    if 'project.python.package.version' in version:
-        return '0.0.1'
-    return version
-
-
 setup(
     name='opengrok-tools',
-    # The package version is taken from maven.
-    # this "variable" is replaced by maven on the fly so don't change it here
-    # see pom.xml for this module
-    version=get_version('${project.python.package.version}'),
+    version=extract_version_from_path('src', 'main',
+                                      'python', 'opengrok_tools',
+                                      'version.py'),
     packages=[
         'opengrok_tools',
         'opengrok_tools.utils',

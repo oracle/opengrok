@@ -96,7 +96,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                 <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <id>copy-resources-python</id>
+                        <id>copy package source files</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -111,7 +111,27 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy package resources</id>
+                        <id>copy version file</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <!-- replace ${project.python.package.version} in version.py -->
+                            <outputDirectory>${project.build.directory}/src/main/python/opengrok_tools</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/python/opengrok_tools</directory>
+                                    <includes>
+                                        <include>version.py</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy top level package resources</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -124,16 +144,8 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                     <includes>
                                         <include>MANIFEST.in</include>
                                         <include>README.md</include>
-                                        <include>logging.properties.template</include>
-                                    </includes>
-                                </resource>
-                                <!-- replace ${project.python.package.version} in setup.py -->
-                                <resource>
-                                    <directory>${basedir}</directory>
-                                    <includes>
                                         <include>setup.py</include>
                                     </includes>
-                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                         </configuration>
