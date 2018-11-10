@@ -28,7 +28,7 @@ import sys
 import tempfile
 
 from .utils.indexer import Indexer
-from .utils.java import get_javaparser
+from opengrok_tools.utils.parsers import get_javaparser
 from .utils.log import get_console_logger, get_class_basename, print_exc_exit
 from .utils.opengrok import get_configuration
 

@@ -27,7 +27,7 @@ import argparse
 import sys
 
 from .utils.indexer import FindCtags, Indexer
-from .utils.java import get_javaparser
+from opengrok_tools.utils.parsers import get_javaparser
 from .utils.log import get_console_logger, get_class_basename, print_exc_exit
 
 """

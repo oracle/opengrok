@@ -25,7 +25,8 @@ import argparse
 import logging
 import sys
 
-from .utils.java import Java, get_javaparser
+from .utils.java import Java
+from opengrok_tools.utils.parsers import get_javaparser
 from .utils.log import print_exc_exit
 
 
