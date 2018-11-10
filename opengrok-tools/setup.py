@@ -59,6 +59,9 @@ setup(
         'resource',
         'filelock'
     ],
+    tests_require=[
+        'parameterized'
+    ],
     entry_points={
         'console_scripts': [
             'opengrok-config-merge=opengrok_tools.config_merge:main',
