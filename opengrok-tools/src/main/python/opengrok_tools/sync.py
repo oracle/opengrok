@@ -41,8 +41,7 @@ from os import path
 from filelock import Timeout, FileLock
 
 from .utils.commandsequence import CommandSequence, CommandSequenceBase
-from .utils.log import get_console_logger, get_class_basename, \
-    add_log_level_argument, print_exc_exit
+from .utils.log import get_console_logger, get_class_basename, print_exc_exit
 from .utils.opengrok import list_indexed_projects, get_config_value
 from .utils.parsers import get_baseparser
 from .utils.readconfig import read_config
