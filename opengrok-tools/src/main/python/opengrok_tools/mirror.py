@@ -39,12 +39,12 @@ from logging.handlers import RotatingFileHandler
 
 from filelock import Timeout, FileLock
 
-from opengrok_tools.utils.parsers import get_baseparser
 from .scm.repository import RepositoryException
 from .utils.hook import run_hook
 from .utils.log import get_console_logger, get_class_basename, \
     print_exc_exit
 from .utils.opengrok import get_repos, get_config_value, get_repo_type
+from .utils.parsers import get_baseparser
 from .utils.readconfig import read_config
 from .utils.repofactory import get_repository
 from .utils.utils import is_exe, check_create_dir, get_int, diff_list, \

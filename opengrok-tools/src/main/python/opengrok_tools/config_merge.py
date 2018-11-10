@@ -26,9 +26,8 @@ import logging
 import sys
 
 from .utils.java import Java
-from opengrok_tools.utils.parsers import get_javaparser
 from .utils.log import print_exc_exit
-
+from .utils.parsers import get_javaparser
 
 """
  Wrapper for Java program merging OpenGrok configuration.
