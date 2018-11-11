@@ -1500,9 +1500,10 @@ public final class RuntimeEnvironment {
 
     /**
      * Sets the configuration and performs necessary actions.
+     *
      * @param configuration new configuration
-     * @param subFileList list of repositories
-     * @param interactive true if in interactive mode
+     * @param subFileList   list of repositories
+     * @param interactive   true if in interactive mode
      */
     public void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
         try {
@@ -1526,20 +1527,15 @@ public final class RuntimeEnvironment {
         // Set the working repositories in HistoryGuru.
         if (subFileList != null) {
             histGuru.invalidateRepositories(
-                    configuration.getRepositories(), subFileList, interactive);
+                    getRepositories(), subFileList, interactive);
         } else {
-            histGuru.invalidateRepositories(configuration.getRepositories(),
+            histGuru.invalidateRepositories(getRepositories(),
                     interactive);
         }
 
-        try {
-            configLock.writeLock().lock();
-            // The invalidation of repositories above might have excluded some
-            // repositories in HistoryGuru so the configuration needs to reflect that.
-            configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
-        } finally {
-            configLock.writeLock().unlock();
-        }
+        // The invalidation of repositories above might have excluded some
+        // repositories in HistoryGuru so the configuration needs to reflect that.
+        setRepositories(new ArrayList<>(histGuru.getRepositories()));
 
         includeFiles.reloadIncludeFiles();
     }
