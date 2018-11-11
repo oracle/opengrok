@@ -5,9 +5,6 @@ from setuptools import setup
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
-import pkg_resources
-print(pkg_resources.get_distribution("pip").version)
-print(pkg_resources.get_distribution("setuptools").version)
 
 def readme():
     with open(os.path.join(SCRIPT_DIR, 'README.md'), 'r') as readme:
