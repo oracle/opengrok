@@ -310,7 +310,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>setup.py</argument>
                                 <argument>test</argument>
                             </arguments>
-                            <skip>${skipTests}</skip>
+                            <skip>false</skip>
                         </configuration>
                         <phase>test</phase>
                         <goals>
