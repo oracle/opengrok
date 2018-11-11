@@ -88,7 +88,7 @@ def test_work_dir():
     assert os.getcwd() == orig_cwd
 
 
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@pytest.mark.skipif(not os.path.exists('/usr/bin/env'), reason="requires posix")
 def test_env():
     cmd = Command(['/usr/bin/env'],
                   env_vars={'FOO': 'BAR', 'A': 'B'})
@@ -120,6 +120,7 @@ def test_retcode(true_binary, false_binary):
     cmd.execute()
     assert cmd.getretcode() == 0
     assert cmd.getstate() == Command.FINISHED
+
 
 def test_command_to_str():
     cmd = Command(["foo", "bar"])
