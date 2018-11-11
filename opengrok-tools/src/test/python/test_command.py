@@ -97,7 +97,7 @@ def test_env():
 
 
 @pytest.mark.parametrize(
-    ('true', 'false'), [
+    ('true_binary', 'false_binary'), [
         pytest.param('/bin/true', '/bin/false',
                      marks=pytest.mark.skipif(
                          not os.path.exists('/bin/true') or
@@ -110,17 +110,16 @@ def test_env():
                          reason="requires /usr/bin binaries")),
     ]
 )
-def test_retcode(true, false):
-    cmd = Command([false])
+def test_retcode(true_binary, false_binary):
+    cmd = Command([false_binary])
     cmd.execute()
     assert cmd.getretcode() != 0
     assert cmd.getstate() == Command.FINISHED
 
-    cmd = Command([true])
+    cmd = Command([true_binary])
     cmd.execute()
     assert cmd.getretcode() == 0
     assert cmd.getstate() == Command.FINISHED
-
 
 def test_command_to_str():
     cmd = Command(["foo", "bar"])
