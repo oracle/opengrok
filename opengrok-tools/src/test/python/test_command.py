@@ -96,28 +96,27 @@ def test_env():
     assert "FOO=BAR\n" in cmd.getoutput()
 
 
-@pytest.mark.skipif(not os.path.exists('/bin/true') or not os.path.exists('/bin/false'), reason="requires Unix")
-def test_retcode():
-    cmd = Command(["/bin/false"])
+@pytest.mark.parametrize(
+    ('true', 'false'), [
+        pytest.param('/bin/true', '/bin/false',
+                     marks=pytest.mark.skipif(
+                         not os.path.exists('/bin/true') or
+                         not os.path.exists('/bin/false'),
+                         reason="requires /bin binaries")),
+        pytest.param('/usr/bin/true', '/usr/bin/false',
+                     marks=pytest.mark.skipif(
+                         not os.path.exists('/usr/bin/true') or
+                         not os.path.exists('/usr/bin/false'),
+                         reason="requires /usr/bin binaries")),
+    ]
+)
+def test_retcode(true, false):
+    cmd = Command([false])
     cmd.execute()
     assert cmd.getretcode() != 0
     assert cmd.getstate() == Command.FINISHED
 
-    cmd = Command(["/bin/true"])
-    cmd.execute()
-    assert cmd.getretcode() == 0
-    assert cmd.getstate() == Command.FINISHED
-
-
-@pytest.mark.skipif(not os.path.exists('/usr/bin/true') or not os.path.exists('/usr/bin/false'),
-                    reason="requires posix")
-def test_retcode_usr():
-    cmd = Command(["/usr/bin/false"])
-    cmd.execute()
-    assert cmd.getretcode() != 0
-    assert cmd.getstate() == Command.FINISHED
-
-    cmd = Command(["/usr/bin/true"])
+    cmd = Command([true])
     cmd.execute()
     assert cmd.getretcode() == 0
     assert cmd.getstate() == Command.FINISHED
