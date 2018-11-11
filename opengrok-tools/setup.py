@@ -12,6 +12,9 @@ def readme():
 
 
 def my_test_suite():
+    import pkg_resources
+    print(pkg_resources.get_distribution("pip").version)
+    print(pkg_resources.get_distribution("setuptools").version)
     test_loader = unittest.TestLoader()
     test_suite = test_loader.discover(
         os.path.join(SCRIPT_DIR, 'src', 'test', 'python'), pattern='test_*.py')
