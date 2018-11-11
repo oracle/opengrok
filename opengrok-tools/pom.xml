@@ -191,6 +191,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>install</argument>
                                 <argument>--upgrade</argument>
                                 <argument>pip</argument>
+                                <argument>setuptools</argument>
                             </arguments>
                         </configuration>
                         <phase>test</phase>
