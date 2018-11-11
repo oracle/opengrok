@@ -127,7 +127,8 @@ def test_command_to_str():
     assert str(cmd) == "foo bar"
 
 
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@pytest.mark.skipif(not os.path.exists('/bin/sleep'),
+                    reason="requires /bin/sleep")
 def test_command_timeout():
     timeout = 30
     cmd = Command(["/bin/sleep", str(timeout)], timeout=3)
@@ -143,7 +144,8 @@ def test_command_timeout():
     assert cmd.getretcode() == None
 
 
-@pytest.mark.skipif(not os.name.startswith("posix"), reason="requires posix")
+@pytest.mark.skipif(not os.path.exists('/bin/sleep'),
+                    reason="requires /bin/sleep")
 def test_command_notimeout():
     cmd_timeout = 30
     cmd = Command(["/bin/sleep", "3"], timeout=cmd_timeout)
