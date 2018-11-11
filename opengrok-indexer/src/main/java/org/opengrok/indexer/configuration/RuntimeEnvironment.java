@@ -1505,7 +1505,7 @@ public final class RuntimeEnvironment {
      * @param subFileList   list of repositories
      * @param interactive   true if in interactive mode
      */
-    public void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
+    public synchronized void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
         try {
             configLock.writeLock().lock();
             this.configuration = configuration;
@@ -1515,14 +1515,6 @@ public final class RuntimeEnvironment {
 
         // HistoryGuru constructor needs environment properties so no locking is done here.
         HistoryGuru histGuru = HistoryGuru.getInstance();
-
-        try {
-            generateProjectRepositoriesMap();
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
-        }
-
-        populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
 
         // Set the working repositories in HistoryGuru.
         if (subFileList != null) {
@@ -1536,6 +1528,16 @@ public final class RuntimeEnvironment {
         // The invalidation of repositories above might have excluded some
         // repositories in HistoryGuru so the configuration needs to reflect that.
         setRepositories(new ArrayList<>(histGuru.getRepositories()));
+
+        // generate repository map is dependent on getRepositories()
+        try {
+            generateProjectRepositoriesMap();
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
+        }
+
+        // populate groups is dependent on repositories map
+        populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
 
         includeFiles.reloadIncludeFiles();
     }
