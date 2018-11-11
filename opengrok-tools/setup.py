@@ -47,8 +47,12 @@ setup(
         'resource',
         'filelock'
     ],
+    setup_requires=[
+        'pytest-runner',
+        'setuptools>=36.7.2',
+    ],
     tests_require=[
-        'parameterized'
+        'pytest',
     ],
     entry_points={
         'console_scripts': [
