@@ -59,6 +59,10 @@ setup(
         'resource',
         'filelock'
     ],
+    setup_requires=[
+        # fixed #2502
+        'setuptools>=36.7.2',
+    ],
     tests_require=[
         'parameterized'
     ],
