@@ -5,6 +5,9 @@ from setuptools import setup
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
+import pkg_resources
+print(pkg_resources.get_distribution("pip").version)
+print(pkg_resources.get_distribution("setuptools").version)
 
 def readme():
     with open(os.path.join(SCRIPT_DIR, 'README.md'), 'r') as readme:
@@ -12,9 +15,6 @@ def readme():
 
 
 def my_test_suite():
-    import pkg_resources
-    print(pkg_resources.get_distribution("pip").version)
-    print(pkg_resources.get_distribution("setuptools").version)
     test_loader = unittest.TestLoader()
     test_suite = test_loader.discover(
         os.path.join(SCRIPT_DIR, 'src', 'test', 'python'), pattern='test_*.py')
@@ -61,17 +61,12 @@ setup(
         'requests>=2.20.0',
         'resource',
         'filelock',
-        # fixed #2502
-        'setuptools>=36.7.2',
     ],
     setup_requires=[
         # fixed #2502
         'setuptools>=36.7.2',
     ],
     tests_require=[
-        'parameterized',
-        # fixed #2502
-        'setuptools>=36.7.2',
     ],
     entry_points={
         'console_scripts': [
