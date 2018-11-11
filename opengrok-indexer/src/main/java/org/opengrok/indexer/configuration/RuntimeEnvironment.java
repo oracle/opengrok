@@ -1426,30 +1426,28 @@ public final class RuntimeEnvironment {
 
     /**
      * Generate a TreeMap of projects with corresponding repository information.
-     *
+     * <p>
      * Project with some repository information is considered as a repository
      * otherwise it is just a simple project.
      */
-    private void generateProjectRepositoriesMap() throws IOException {
-        synchronized (repository_map) {
-            repository_map.clear();
-            for (RepositoryInfo r : getRepositories()) {
-                Project proj;
-                String repoPath;
-                try {
-                    repoPath = PathUtils.getPathRelativeToSourceRoot(
-                            new File(r.getDirectoryName()), 0);
-                } catch (ForbiddenSymlinkException e) {
-                    LOGGER.log(Level.FINER, e.getMessage());
-                    continue;
-                }
+    public void generateProjectRepositoriesMap() throws IOException {
+        repository_map.clear();
+        for (RepositoryInfo r : getRepositories()) {
+            Project proj;
+            String repoPath;
+            try {
+                repoPath = PathUtils.getPathRelativeToSourceRoot(
+                        new File(r.getDirectoryName()), 0);
+            } catch (ForbiddenSymlinkException e) {
+                LOGGER.log(Level.FINER, e.getMessage());
+                continue;
+            }
 
-                if ((proj = Project.getProject(repoPath)) != null) {
-                    List<RepositoryInfo> values = repository_map.computeIfAbsent(proj, k -> new ArrayList<>());
-                    // the map is held under the lock because the next call to
-                    // values.add(r) which should not be called from multiple threads at the same time
-                    values.add(r);
-                }
+            if ((proj = Project.getProject(repoPath)) != null) {
+                List<RepositoryInfo> values = repository_map.computeIfAbsent(proj, k -> new ArrayList<>());
+                // the map is held under the lock because the next call to
+                // values.add(r) which should not be called from multiple threads at the same time
+                values.add(r);
             }
         }
     }
