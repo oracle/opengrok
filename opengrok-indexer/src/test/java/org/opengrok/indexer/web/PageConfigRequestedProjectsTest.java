@@ -23,7 +23,7 @@ public class PageConfigRequestedProjectsTest {
 
     private Map<String, Project> oldProjects;
     private Set<Group> oldGroups;
-    private AuthorizationStack oldPluginStack
+    private AuthorizationStack oldPluginStack;
 
     @Before
     public void setUp() {
