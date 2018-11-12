@@ -144,7 +144,7 @@ public class ConcurrentConfigurationControllerTest extends JerseyTest {
         }
 
         threadPool.shutdown();
-        threadPool.awaitTermination(100, TimeUnit.MINUTES);
+        threadPool.awaitTermination(1, TimeUnit.MINUTES);
 
         for (Future<?> future : futures) {
             future.get();
@@ -169,7 +169,7 @@ public class ConcurrentConfigurationControllerTest extends JerseyTest {
         }
 
         threadPool.shutdown();
-        threadPool.awaitTermination(100, TimeUnit.MINUTES);
+        threadPool.awaitTermination(1, TimeUnit.MINUTES);
 
         for (Future<?> future : futures) {
             future.get();
