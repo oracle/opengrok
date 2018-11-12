@@ -24,6 +24,9 @@
  */
 package org.opengrok.indexer.web;
 
+import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
+import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR_STRING;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -74,9 +77,6 @@ import org.opengrok.indexer.util.IOUtils;
 import org.opengrok.indexer.web.messages.MessagesContainer.AcceptedMessage;
 import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.DifferentiationFailedException;
-
-import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR;
-import static org.opengrok.indexer.index.Indexer.PATH_SEPARATOR_STRING;
 
 /**
  * A simple container to lazy initialize common vars wrt. a single request. It
@@ -794,24 +794,28 @@ public final class PageConfig {
      * <p>
      * NOTE: This method assumes, that project names do <b>not</b> contain a
      * comma (','), since this character is used as name separator!
+     * <p>
+     * It is determined as follows:
+     * <ol>
+     * <li>If there is no project in the configuration an empty set is returned. Otherwise:</li>
+     * <li>If there is only one project in the configuration,
+     * this one gets returned (no matter, what the request actually says). Otherwise</li>
+     * <li>If the request parameter {@code project} contains any available project,
+     * the set with invalid projects removed gets returned. Otherwise:</li>
+     * <li>If the request has a cookie with the name {@code OpenGrokProject}
+     * and it contains any available project,
+     * the set with invalid projects removed gets returned. Otherwise:</li>
+     * <li>If a default project is set in the configuration,
+     * this project gets returned. Otherwise:</li>
+     * <li>an empty set</li>
+     * </ol>
      *
-     * @return a possible empty set of project names but never
-     * {@code null}. It is determined as follows: <ol> <li>If there is no
-     * project in the runtime environment (RTE) an empty set is returned.
-     * Otherwise:</li> <li>If there is only one project in the RTE, this one
-     * gets returned (no matter, what the request actually says). Otherwise</li>
-     * <li>If the request parameter {@code project} contains any available
-     * project, the set with invalid projects removed gets returned.
-     * Otherwise:</li> <li>If the request has a cookie with the name
-     * {@code OpenGrokProject} and it contains any available project, the set
-     * with invalid projects removed gets returned. Otherwise:</li> <li>If a
-     * default project is set in the RTE, this project gets returned.
-     * Otherwise:</li> <li>an empty set</li> </ol>
+     * @return a possible empty set of project names but never {@code null}.
      */
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects
-                    = getRequestedProjects("project", OPEN_GROK_PROJECT);
+                    = getRequestedProjects("project", "group", OPEN_GROK_PROJECT);
         }
         return requestedProjects;
     }
@@ -875,71 +879,90 @@ public final class PageConfig {
 
     /**
      * Same as {@link #getRequestedProjects()}, but with a variable cookieName
-     * and parameter name. This way it is trivial to implement a project filter
-     * ...
+     * and parameter name.
      *
-     * @param paramName the name of the request parameter, which possibly
-     * contains the project list in question.
-     * @param cookieName name of the cookie which possible contains project
-     * lists used as fallback
+     * @param projectParamName the name of the request parameter corresponding to a project name.
+     * @param groupParamName   the name of the request parameter corresponding to a group name
+     * @param cookieName       name of the cookie which possible contains project
+     *                         names used as fallback
      * @return set of project names. Possibly empty set but never {@code null}.
      */
-    protected SortedSet<String> getRequestedProjects(String paramName,
-            String cookieName) {
+    protected SortedSet<String> getRequestedProjects(
+            String projectParamName,
+            String groupParamName,
+            String cookieName
+    ) {
 
-        TreeSet<String> set = new TreeSet<>();
+        TreeSet<String> projectNames = new TreeSet<>();
         List<Project> projects = getEnv().getProjectList();
 
         if (projects == null) {
-            return set;
+            return projectNames;
         }
 
         /**
-         * If the project was determined from the URL, use this project.
+         * Use a project determined directly from the URL
          */
         if (getProject() != null) {
-            set.add(getProject().getName());
-            return set;
+            projectNames.add(getProject().getName());
+            return projectNames;
         }
 
+        /**
+         * Use a project if the application has only single project.
+         */
         if (projects.size() == 1) {
             Project p = projects.get(0);
             if (authFramework.isAllowed(req, p)) {
-                set.add(p.getName());
+                projectNames.add(p.getName());
             }
-            return set;
+            return projectNames;
         }
 
-        List<String> vals = getParamVals(paramName);
-        for (String s : vals) {
-            Project x = Project.getByName(s);
-            if (x != null && authFramework.isAllowed(req, x)) {
-                set.add(s);
+        /**
+         * Add all projects which match the project parameter name values
+         */
+        List<String> names = getParamVals(projectParamName);
+        for (String projectName : names) {
+            Project project = Project.getByName(projectName);
+            if (project != null && authFramework.isAllowed(req, project)) {
+                projectNames.add(projectName);
             }
         }
 
-        if (set.isEmpty()) {
+        /**
+         * Add all projects which are part of a group which match the group parameter name
+         */
+        names = getParamVals(groupParamName);
+        for (String groupName : names) {
+            Group group = Group.getByName(groupName);
+            if (group != null) {
+                projectNames.addAll(getProjectHelper().getAllGrouped(group).stream().map(Project::getName).collect(Collectors.toSet()));
+            }
+        }
+
+        if (projectNames.isEmpty()) {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
                 Project x = Project.getByName(s);
                 if (x != null && authFramework.isAllowed(req, x)) {
-                    set.add(s);
+                    projectNames.add(s);
                 }
             }
         }
 
-        if (set.isEmpty()) {
+        if (projectNames.isEmpty()) {
             Set<Project> defaultProjects = env.getDefaultProjects();
             if (defaultProjects != null) {
                 for (Project project : defaultProjects) {
                     if (authFramework.isAllowed(req, project)) {
-                        set.add(project.getName());
+                        projectNames.add(project.getName());
                     }
                 }
             }
         }
 
-        return set;
+        return projectNames;
     }
     
     public ProjectHelper getProjectHelper() {
