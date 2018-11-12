@@ -45,7 +45,8 @@ setup(
         'pyyaml',
         'requests>=2.20.0',
         'resource',
-        'filelock'
+        'filelock',
+        'setuptools>=36.7.2',
     ],
     setup_requires=[
         'pytest-runner',
