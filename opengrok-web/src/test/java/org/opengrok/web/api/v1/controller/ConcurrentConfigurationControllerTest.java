@@ -147,6 +147,7 @@ public class ConcurrentConfigurationControllerTest extends JerseyTest {
         threadPool.awaitTermination(1, TimeUnit.MINUTES);
 
         for (Future<?> future : futures) {
+            // calling get on a future will rethrow the exceptions in its thread (i. e. assertions in this case)
             future.get();
         }
     }
@@ -172,6 +173,7 @@ public class ConcurrentConfigurationControllerTest extends JerseyTest {
         threadPool.awaitTermination(1, TimeUnit.MINUTES);
 
         for (Future<?> future : futures) {
+            // calling get on a future will rethrow the exceptions in its thread (i. e. assertions in this case)
             future.get();
         }
     }
