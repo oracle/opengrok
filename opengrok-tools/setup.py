@@ -58,12 +58,15 @@ setup(
         'requests>=2.20.0',
         'resource',
         'filelock',
+        # fixed #2502
+        'setuptools>=36.7.2',
     ],
     setup_requires=[
         # fixed #2502
         'setuptools>=36.7.2',
     ],
     tests_require=[
+        'parameterized'
     ],
     entry_points={
         'console_scripts': [
