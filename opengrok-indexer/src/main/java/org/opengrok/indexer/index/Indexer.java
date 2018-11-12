@@ -47,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
@@ -347,6 +346,7 @@ public final class Indexer {
             System.exit(1);
         } catch (IndexerException ex) {
             LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
+            System.err.println("Exception: " + ex.getLocalizedMessage());
             System.err.println(optParser.getUsage());
             System.exit(1);
         } catch (Throwable e) {
