@@ -54,7 +54,7 @@ class TestApp(unittest.TestCase):
         cmd.execute()
         self.assertEqual(0, cmd.getretcode())
         self.assertEqual(Command.FINISHED, cmd.getstate())
-        self.assertEqual(version + "\n", cmd.getoutputstr())
+        self.assertEqual(version, cmd.getoutputstr())
 
 
 if __name__ == '__main__':

@@ -3,29 +3,9 @@ import unittest
 
 from setuptools import setup
 
+from src.main.python.opengrok_tools.version import __version__ as version
+
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-
-
-def extract_version_from_path(*file_paths):
-    """
-    Look for a version in a file
-    see https://packaging.python.org/guides/single-sourcing-package-version/
-    :param file_paths: path to the file
-    :return: the version
-    :raises: an RuntimeError when version is not available
-    """
-
-    def read(*parts):
-        with open(os.path.join(SCRIPT_DIR, *parts), 'r') as fp:
-            version = {}
-            exec(fp.read(), version, None)
-            return version['__version__']
-
-    version = read(*file_paths)
-
-    if version:
-        return version
-    raise RuntimeError("Unable to find version string.")
 
 
 def readme():
@@ -42,9 +22,7 @@ def my_test_suite():
 
 setup(
     name='opengrok-tools',
-    version=extract_version_from_path('src', 'main',
-                                      'python', 'opengrok_tools',
-                                      'version.py'),
+    version=version,
     packages=[
         'opengrok_tools',
         'opengrok_tools.utils',
