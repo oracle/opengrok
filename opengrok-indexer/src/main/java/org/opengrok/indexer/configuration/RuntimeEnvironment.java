@@ -1430,7 +1430,7 @@ public final class RuntimeEnvironment {
      * Project with some repository information is considered as a repository
      * otherwise it is just a simple project.
      */
-    public void generateProjectRepositoriesMap() throws IOException {
+    private void generateProjectRepositoriesMap() throws IOException {
         repository_map.clear();
         for (RepositoryInfo r : getRepositories()) {
             Project proj;

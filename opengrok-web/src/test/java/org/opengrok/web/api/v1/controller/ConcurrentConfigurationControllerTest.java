@@ -164,7 +164,6 @@ public class ConcurrentConfigurationControllerTest extends JerseyTest {
         for (int i = 0; i < TASK_COUNT; i++) {
             futures.add(threadPool.submit(() -> {
                 env.applyConfig(false, false);
-
                 assertTestedProjects();
             }));
         }
