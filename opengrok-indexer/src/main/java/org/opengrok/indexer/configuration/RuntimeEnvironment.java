@@ -1426,30 +1426,28 @@ public final class RuntimeEnvironment {
 
     /**
      * Generate a TreeMap of projects with corresponding repository information.
-     *
+     * <p>
      * Project with some repository information is considered as a repository
      * otherwise it is just a simple project.
      */
     private void generateProjectRepositoriesMap() throws IOException {
-        synchronized (repository_map) {
-            repository_map.clear();
-            for (RepositoryInfo r : getRepositories()) {
-                Project proj;
-                String repoPath;
-                try {
-                    repoPath = PathUtils.getPathRelativeToSourceRoot(
-                            new File(r.getDirectoryName()), 0);
-                } catch (ForbiddenSymlinkException e) {
-                    LOGGER.log(Level.FINER, e.getMessage());
-                    continue;
-                }
+        repository_map.clear();
+        for (RepositoryInfo r : getRepositories()) {
+            Project proj;
+            String repoPath;
+            try {
+                repoPath = PathUtils.getPathRelativeToSourceRoot(
+                        new File(r.getDirectoryName()), 0);
+            } catch (ForbiddenSymlinkException e) {
+                LOGGER.log(Level.FINER, e.getMessage());
+                continue;
+            }
 
-                if ((proj = Project.getProject(repoPath)) != null) {
-                    List<RepositoryInfo> values = repository_map.computeIfAbsent(proj, k -> new ArrayList<>());
-                    // the map is held under the lock because the next call to
-                    // values.add(r) which should not be called from multiple threads at the same time
-                    values.add(r);
-                }
+            if ((proj = Project.getProject(repoPath)) != null) {
+                List<RepositoryInfo> values = repository_map.computeIfAbsent(proj, k -> new ArrayList<>());
+                // the map is held under the lock because the next call to
+                // values.add(r) which should not be called from multiple threads at the same time
+                values.add(r);
             }
         }
     }
@@ -1502,11 +1500,12 @@ public final class RuntimeEnvironment {
 
     /**
      * Sets the configuration and performs necessary actions.
+     *
      * @param configuration new configuration
-     * @param subFileList list of repositories
-     * @param interactive true if in interactive mode
+     * @param subFileList   list of repositories
+     * @param interactive   true if in interactive mode
      */
-    public void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
+    public synchronized void setConfiguration(Configuration configuration, List<String> subFileList, boolean interactive) {
         try {
             configLock.writeLock().lock();
             this.configuration = configuration;
@@ -1517,31 +1516,28 @@ public final class RuntimeEnvironment {
         // HistoryGuru constructor needs environment properties so no locking is done here.
         HistoryGuru histGuru = HistoryGuru.getInstance();
 
+        // Set the working repositories in HistoryGuru.
+        if (subFileList != null) {
+            histGuru.invalidateRepositories(
+                    getRepositories(), subFileList, interactive);
+        } else {
+            histGuru.invalidateRepositories(getRepositories(),
+                    interactive);
+        }
+
+        // The invalidation of repositories above might have excluded some
+        // repositories in HistoryGuru so the configuration needs to reflect that.
+        setRepositories(new ArrayList<>(histGuru.getRepositories()));
+
+        // generate repository map is dependent on getRepositories()
         try {
             generateProjectRepositoriesMap();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
 
+        // populate groups is dependent on repositories map
         populateGroups(getGroups(), new TreeSet<>(getProjects().values()));
-
-        // Set the working repositories in HistoryGuru.
-        if (subFileList != null) {
-            histGuru.invalidateRepositories(
-                    configuration.getRepositories(), subFileList, interactive);
-        } else {
-            histGuru.invalidateRepositories(configuration.getRepositories(),
-                    interactive);
-        }
-
-        try {
-            configLock.writeLock().lock();
-            // The invalidation of repositories above might have excluded some
-            // repositories in HistoryGuru so the configuration needs to reflect that.
-            configuration.setRepositories(new ArrayList<>(histGuru.getRepositories()));
-        } finally {
-            configLock.writeLock().unlock();
-        }
 
         includeFiles.reloadIncludeFiles();
     }
