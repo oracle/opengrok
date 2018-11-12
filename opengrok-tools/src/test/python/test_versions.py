@@ -28,6 +28,7 @@ import unittest
 from parameterized import parameterized
 
 from opengrok_tools.utils.command import Command
+from opengrok_tools.version import __version__ as version
 
 
 class TestApp(unittest.TestCase):
@@ -49,12 +50,11 @@ class TestApp(unittest.TestCase):
         :param command: the command name
         :return:
         """
-        pass
         cmd = Command([command, '--version'])
         cmd.execute()
         self.assertEqual(0, cmd.getretcode())
         self.assertEqual(Command.FINISHED, cmd.getstate())
-        self.assertTrue(len(cmd.getoutputstr()) > 1)
+        self.assertEqual(version + "\n", cmd.getoutputstr())
 
 
 if __name__ == '__main__':
