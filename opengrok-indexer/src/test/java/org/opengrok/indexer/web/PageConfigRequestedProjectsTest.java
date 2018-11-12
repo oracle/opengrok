@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.opengrok.indexer.authorization.AuthorizationStack;
 import org.opengrok.indexer.configuration.Group;
 import org.opengrok.indexer.configuration.Project;
 import org.opengrok.indexer.configuration.RuntimeEnvironment;
@@ -21,10 +22,15 @@ public class PageConfigRequestedProjectsTest {
     final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     private Map<String, Project> oldProjects;
+    private Set<Group> oldGroups;
+    private AuthorizationStack oldPluginStack
 
     @Before
     public void setUp() {
         oldProjects = env.getProjects();
+        oldGroups = env.getGroups();
+        oldPluginStack = env.getPluginStack();
+
         Set<Group> groups = new TreeSet<>();
         Map<String, Project> projects = new TreeMap<>();
 
@@ -59,6 +65,8 @@ public class PageConfigRequestedProjectsTest {
     @After
     public void tearDown() {
         env.setProjects(oldProjects);
+        env.setGroups(oldGroups);
+        env.setPluginStack(oldPluginStack);
     }
 
     @Test
