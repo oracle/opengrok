@@ -1,9 +1,13 @@
 import os
 import unittest
 
+import pkg_resources
 from setuptools import setup
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+print(pkg_resources.get_distribution("pip").version)
+print(pkg_resources.get_distribution("setuptools").version)
 
 
 def readme():
@@ -12,6 +16,8 @@ def readme():
 
 
 def my_test_suite():
+    print(pkg_resources.get_distribution("pip").version)
+    print(pkg_resources.get_distribution("setuptools").version)
     test_loader = unittest.TestLoader()
     test_suite = test_loader.discover(
         os.path.join(SCRIPT_DIR, 'src', 'test', 'python'), pattern='test_*.py')
