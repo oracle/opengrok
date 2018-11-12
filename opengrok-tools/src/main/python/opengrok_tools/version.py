@@ -2,6 +2,7 @@
 # this "variable" is replaced by maven on the fly so don't change it here
 # see pom.xml for this module
 
+
 def get_version(version):
     """
     Detect the mvn build versus the local python setup.py install run.
