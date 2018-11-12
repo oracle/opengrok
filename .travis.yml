@@ -27,12 +27,14 @@ jobs:
       dist: trusty
       sudo: required
       jdk: oraclejdk8
+      install: true
       script: dev/main
       before_install: dev/before_install
       before_script: dev/before
     - stage: test
       os: osx
       osx_image: xcode8.3
+      install: true
       script: dev/main
       before_install: dev/before_install
       before_script: dev/before
@@ -40,6 +42,7 @@ jobs:
       name: Github Release
       if: repo = "oracle/opengrok" AND tag IS present
       before_install: dev/before_install
+      install: true
       script: mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V package
       deploy:
         # Pre-release
