@@ -15,7 +15,7 @@ Both scripts take configuration either in JSON or YAML.
 Use e.g. like this:
 
 ```bash
-  $ opengrok-sync -c /scripts/sync.conf -d /ws-local/ -p
+  $ opengrok-sync -c /scripts/sync.conf -d /ws-local/
 ```
 
 where the `sync.conf` file contents might look like this:
