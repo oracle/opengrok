@@ -67,6 +67,7 @@ The indexer can be run either using `opengrok.jar` directly:
 ```
 java -Djava.util.logging.config.file=/var/opengrok/logging.properties \
     -jar /opengrok/dist/lib/opengrok.jar \
+    -c /path/to/universal/ctags \
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
     -W /var/opengrok/etc/configuration.xml -U http://localhost:8080
 ```
@@ -74,6 +75,7 @@ or using the `opengrok-indexer` wrapper like so:
 ```
 opengrok-indexer -J=-Djava.util.logging.config.file=/var/opengrok/logging.properties \
     -a /opengrok/dist/lib/opengrok.jar -- \
+    -c /path/to/universal/ctags \
     -s /var/opengrok/src -d /var/opengrok/data -H -P -S -G \
     -W /var/opengrok/etc/configuration.xml -U http://localhost:8080
 ```
