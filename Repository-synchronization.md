@@ -33,7 +33,7 @@ commands:
 - command: [sudo, -u, webservd, /opengrok/dist/bin/opengrok-reindex-project, -D, -J=-d64,
     '-J=-XX:-UseGCOverheadLimit', -J=-Xmx16g, -J=-server, --jar, /opengrok/dist/lib/opengrok.jar,
     -t, /opengrok/etc/logging.properties.template, -p, '%PROJ%', -d, /opengrok/log/%PROJECT%,
-    -P, '%PROJECT%', --, --renamedHistory, 'on', -r, dirbased, -G, -m, '256', -c,
+    -P, '%PROJECT%', -U, 'http://localhost:8080/source', --, --renamedHistory, 'on', -r, dirbased, -G, -m, '256', -c,
     /usr/local/bin/ctags, -U, 'http://localhost:8080/source', -o, /opengrok/etc/ctags.config,
     -H, '%PROJECT%']
   env: {LC_ALL: en_US.UTF-8}
@@ -44,6 +44,8 @@ commands:
 cleanup:
   command: ['http://localhost:8080/source/api/v1/messages?tag=%PROJECT%', DELETE, '']
 ```
+
+**Note: the above `-U 'http://localhost:8080/source` twice in `reindex-project` is not a typo. It must be specified twice - for the python and for the indexer.**
 
 The above `opengrok-sync` command will basically take all directories under `/ws-local` and for each it will run the sequence of commands specified in the `sync.conf` file. This will be done in parallel - on project level. The level of parallelism can be specified using the the `--workers` option (by default it will use as many workers as there are CPUs in the system).
 
