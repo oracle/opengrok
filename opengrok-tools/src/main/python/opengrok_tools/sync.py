@@ -37,15 +37,15 @@ import sys
 import tempfile
 from multiprocessing import Pool
 from os import path
+
 from filelock import Timeout, FileLock
 
 from .utils.commandsequence import CommandSequence, CommandSequenceBase
+from .utils.log import get_console_logger, get_class_basename, print_exc_exit
 from .utils.opengrok import list_indexed_projects, get_config_value
+from .utils.parsers import get_baseparser
 from .utils.readconfig import read_config
 from .utils.utils import is_web_uri
-from .utils.log import get_console_logger, get_class_basename,\
-    add_log_level_argument, print_exc_exit
-
 
 major_version = sys.version_info[0]
 if (major_version < 3):
@@ -70,7 +70,8 @@ def worker(base):
 def main():
     dirs_to_process = []
 
-    parser = argparse.ArgumentParser(description='Manage parallel workers.')
+    parser = argparse.ArgumentParser(description='Manage parallel workers.',
+                                     parents=[get_baseparser()])
     parser.add_argument('-w', '--workers', default=multiprocessing.cpu_count(),
                         help='Number of worker processes')
 
@@ -83,7 +84,6 @@ def main():
 
     parser.add_argument('-I', '--indexed', action='store_true',
                         help='Sync indexed projects only')
-    add_log_level_argument(parser)
     parser.add_argument('-i', '--ignore_errors', nargs='*',
                         help='ignore errors from these projects')
     parser.add_argument('-c', '--config', required=True,

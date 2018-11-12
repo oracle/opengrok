@@ -25,8 +25,9 @@
 import argparse
 import sys
 
-from .utils.java import Java, get_javaparser
+from .utils.java import Java
 from .utils.log import get_console_logger, get_class_basename, print_exc_exit
+from .utils.parsers import get_javaparser
 
 
 def main():

@@ -28,9 +28,9 @@ import sys
 import tempfile
 
 from .utils.indexer import Indexer
-from .utils.java import get_javaparser
 from .utils.log import get_console_logger, get_class_basename, print_exc_exit
 from .utils.opengrok import get_configuration
+from .utils.parsers import get_javaparser
 
 """
  OpenGrok reindexing script for single project. Makes sure it uses

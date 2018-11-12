@@ -25,11 +25,12 @@
 import argparse
 import os
 import tempfile
-from zipfile import ZipFile
 from shutil import copyfile
-from .utils.log import get_console_logger, get_class_basename, \
-    add_log_level_argument, print_exc_exit
+from zipfile import ZipFile
 
+from .utils.log import get_console_logger, get_class_basename, \
+    print_exc_exit
+from .utils.parsers import get_baseparser
 
 """
  deploy war file
@@ -97,9 +98,9 @@ def deploy_war(logger, sourceWar, targetWar, configFile=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Deploy WAR file')
+    parser = argparse.ArgumentParser(description='Deploy WAR file',
+                                     parents=[get_baseparser()])
 
-    add_log_level_argument(parser)
     parser.add_argument('-c', '--config',
                         help='Path to OpenGrok configuration file')
     parser.add_argument('source_war', nargs=1,

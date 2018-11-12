@@ -33,13 +33,15 @@ import shutil
 import sys
 import tempfile
 from os import path
+
 from filelock import Timeout, FileLock
 
 from .utils.command import Command
 from .utils.log import get_console_logger, get_class_basename, \
-    add_log_level_argument, print_exc_exit
+    print_exc_exit
 from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value
+from .utils.parsers import get_baseparser
 from .utils.utils import get_command, is_web_uri
 
 MAJOR_VERSION = sys.version_info[0]
@@ -204,9 +206,9 @@ def project_delete(logger, project, uri, doit=True, deletesource=False):
 def main():
     parser = argparse.ArgumentParser(description='project management.',
                                      formatter_class=argparse.
-                                     ArgumentDefaultsHelpFormatter)
+                                     ArgumentDefaultsHelpFormatter,
+                                     parents=[get_baseparser()])
 
-    add_log_level_argument(parser)
     parser.add_argument('-b', '--base', default="/var/opengrok",
                         help='OpenGrok instance base directory')
     parser.add_argument('-R', '--roconfig',
