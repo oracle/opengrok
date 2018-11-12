@@ -35,6 +35,7 @@ import org.opengrok.indexer.history.RepositoryInfo;
 import org.opengrok.indexer.util.TestRepository;
 import org.opengrok.web.api.v1.suggester.provider.service.SuggesterService;
 
+@ConditionalRun(RepositoryInstalled.GitInstalled.class)
 public class ConcurrentConfigurationControllerTest extends JerseyTest {
 
     private static final int PROJECTS_COUNT = 20;
@@ -122,7 +123,6 @@ public class ConcurrentConfigurationControllerTest extends JerseyTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testConcurrentConfigurationReloads() throws InterruptedException, ExecutionException {
         final ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_COUNT);
         List<Future<?>> futures = new LinkedList<>();
@@ -152,7 +152,6 @@ public class ConcurrentConfigurationControllerTest extends JerseyTest {
     }
 
     @Test
-    @ConditionalRun(RepositoryInstalled.GitInstalled.class)
     public void testConcurrentCInvalidateRepositories() throws InterruptedException, ExecutionException {
         final ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_COUNT);
         final List<RepositoryInfo> repositoryInfos = env.getRepositories();
