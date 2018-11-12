@@ -111,7 +111,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy version file</id>
+                        <id>copy version file and replace the opengrok version in it</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>copy-resources</goal>
