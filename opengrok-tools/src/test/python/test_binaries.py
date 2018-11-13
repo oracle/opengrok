@@ -23,39 +23,31 @@
 # Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-import unittest
-
-from parameterized import parameterized
+import pytest
 
 from opengrok_tools.utils.command import Command
 
 
-class TestApp(unittest.TestCase):
-    @parameterized.expand((
-            ('opengrok'),
-            ('opengrok-indexer'),
-            ('opengrok-groups'),
-            ('opengrok-config-merge'),
-            ('opengrok-deploy'),
-            ('opengrok-java'),
-            ('opengrok-mirror'),
-            ('opengrok-projadm'),
-            ('opengrok-reindex-project'),
-            ('opengrok-sync'),
-    ))
-    def test_opengrok_binary(self, command):
-        """
-        Test that installed command is able to run
-        :param command: the command name
-        :return:
-        """
-        pass
-        cmd = Command([command, '--help'])
-        cmd.execute()
-        self.assertEqual(0, cmd.getretcode())
-        self.assertEqual(Command.FINISHED, cmd.getstate())
-        self.assertTrue(len(cmd.getoutputstr()) > 1)
-
-
-if __name__ == '__main__':
-    unittest.main()
+@pytest.mark.parametrize('command', (
+        ('opengrok'),
+        ('opengrok-indexer'),
+        ('opengrok-groups'),
+        ('opengrok-config-merge'),
+        ('opengrok-deploy'),
+        ('opengrok-java'),
+        ('opengrok-mirror'),
+        ('opengrok-projadm'),
+        ('opengrok-reindex-project'),
+        ('opengrok-sync'),
+))
+def test_opengrok_binary(command):
+    """
+    Test that installed command is able to run
+    :param command: the command name
+    :return:
+    """
+    cmd = Command([command, '--help'])
+    cmd.execute()
+    assert cmd.getretcode() == 0
+    assert cmd.getstate() == Command.FINISHED
+    assert len(cmd.getoutputstr()) > 1

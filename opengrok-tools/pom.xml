@@ -145,6 +145,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                         <include>MANIFEST.in</include>
                                         <include>README.md</include>
                                         <include>setup.py</include>
+                                        <include>setup.cfg</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -203,6 +204,7 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
                                 <argument>install</argument>
                                 <argument>--upgrade</argument>
                                 <argument>pip</argument>
+                                <argument>setuptools</argument>
                             </arguments>
                         </configuration>
                         <phase>test</phase>

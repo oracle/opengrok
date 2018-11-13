@@ -22,17 +22,15 @@
 #
 # Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
-
-import unittest
-
-from parameterized import parameterized
+import pytest
 
 from opengrok_tools.utils.command import Command
 from opengrok_tools.version import __version__ as version
 
 
-class TestApp(unittest.TestCase):
-    @parameterized.expand((
+@pytest.mark.parametrize(
+    ('command'),
+    (
             ('opengrok'),
             ('opengrok-indexer'),
             ('opengrok-groups'),
@@ -43,19 +41,16 @@ class TestApp(unittest.TestCase):
             ('opengrok-projadm'),
             ('opengrok-reindex-project'),
             ('opengrok-sync'),
-    ))
-    def test_opengrok_version(self, command):
-        """
-        Test that installed command has the version option
-        :param command: the command name
-        :return:
-        """
-        cmd = Command([command, '--version'])
-        cmd.execute()
-        self.assertEqual(0, cmd.getretcode())
-        self.assertEqual(Command.FINISHED, cmd.getstate())
-        self.assertEqual(version, cmd.getoutputstr())
-
-
-if __name__ == '__main__':
-    unittest.main()
+    )
+)
+def test_opengrok_version(command):
+    """
+    Test that installed command has the version option
+    :param command: the command name
+    :return:
+    """
+    cmd = Command([command, '--version'])
+    cmd.execute()
+    assert cmd.getretcode() == 0
+    assert cmd.getstate() == Command.FINISHED
+    assert cmd.getoutputstr() == version
