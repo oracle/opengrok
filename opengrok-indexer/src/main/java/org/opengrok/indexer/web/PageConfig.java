@@ -102,7 +102,9 @@ public final class PageConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
 
     public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
-    
+    public static final String PROJECT_PARAM_NAME = "project";
+    public static final String GROUP_PARAM_NAME = "group";
+
     // TODO if still used, get it from the app context
 
     private final AuthorizationFramework authFramework;
@@ -800,9 +802,11 @@ public final class PageConfig {
      * <li>If there is no project in the configuration an empty set is returned. Otherwise:</li>
      * <li>If there is only one project in the configuration,
      * this one gets returned (no matter, what the request actually says). Otherwise</li>
-     * <li>If the request parameter {@code project} contains any available project,
+     * <li>If the request parameter {@code PROJECT_PARAM_NAME} contains any available project,
      * the set with invalid projects removed gets returned. Otherwise:</li>
-     * <li>If the request has a cookie with the name {@code OpenGrokProject}
+     * <li>If the request parameter {@code GROUP_PARAM_NAME} contains any available group,
+     * then all projects from that group will be added to the result set. Otherwise:</li>
+     * <li>If the request has a cookie with the name {@code OPEN_GROK_PROJECT}
      * and it contains any available project,
      * the set with invalid projects removed gets returned. Otherwise:</li>
      * <li>If a default project is set in the configuration,
@@ -811,11 +815,14 @@ public final class PageConfig {
      * </ol>
      *
      * @return a possible empty set of project names but never {@code null}.
+     * @see #PROJECT_PARAM_NAME
+     * @see #GROUP_PARAM_NAME
+     * @see #OPEN_GROK_PROJECT
      */
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects
-                    = getRequestedProjects("project", "group", OPEN_GROK_PROJECT);
+                    = getRequestedProjects(PROJECT_PARAM_NAME, GROUP_PARAM_NAME, OPEN_GROK_PROJECT);
         }
         return requestedProjects;
     }
