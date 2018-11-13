@@ -931,7 +931,7 @@ public final class PageConfig {
         }
 
         /**
-         * Add all projects which are part of a group which match the group parameter name
+         * Add all projects which are part of a group that matches the group parameter name
          */
         names = getParamVals(groupParamName);
         for (String groupName : names) {
