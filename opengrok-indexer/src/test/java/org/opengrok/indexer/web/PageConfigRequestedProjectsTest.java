@@ -173,8 +173,8 @@ public class PageConfigRequestedProjectsTest {
             final String[] projects,
             final String[] groups) {
         final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getParameterValues("project")).thenReturn(projects);
-        Mockito.when(request.getParameterValues("group")).thenReturn(groups);
+        Mockito.when(request.getParameterValues(PageConfig.PROJECT_PARAM_NAME)).thenReturn(projects);
+        Mockito.when(request.getParameterValues(PageConfig.GROUP_PARAM_NAME)).thenReturn(groups);
         return request;
     }
 }

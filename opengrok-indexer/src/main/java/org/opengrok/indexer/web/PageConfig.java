@@ -101,9 +101,9 @@ public final class PageConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
 
-    public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
-    public static final String PROJECT_PARAM_NAME = "project";
-    public static final String GROUP_PARAM_NAME = "group";
+    protected static final String OPEN_GROK_PROJECT = "OpenGrokProject";
+    protected static final String PROJECT_PARAM_NAME = "project";
+    protected static final String GROUP_PARAM_NAME = "group";
 
     // TODO if still used, get it from the app context
 
