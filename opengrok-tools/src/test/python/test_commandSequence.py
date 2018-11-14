@@ -77,6 +77,20 @@ def test_exit_2_handling():
     assert not cmds.failed
 
 
+@pytest.mark.skipif(not os.path.exists('/bin/sh') or not os.path.exists('/bin/echo'), reason="requires Unix")
+def test_driveon_flag():
+    cmds = CommandSequence(CommandSequenceBase("opengrok-master",
+                                               [{"command": ["/bin/sh", "-c",
+                                                             "echo " + CommandSequence.PROJECT_SUBST + "; exit 2"]},
+                                                {"command": ["/bin/echo"]}], driveon=True))
+    cmds.run()
+    assert cmds.retcodes == {
+        '/bin/sh -c echo opengrok-master; exit 2': 2,
+        '/bin/echo opengrok-master': 0
+    }
+    assert not cmds.failed
+
+
 @pytest.mark.skipif(not os.path.exists('/bin/echo'), reason="requires Unix")
 def test_project_subst():
     cmds = CommandSequence(CommandSequenceBase("test-subst",

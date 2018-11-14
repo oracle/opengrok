@@ -36,7 +36,8 @@ class CommandSequenceBase:
     so that it can be passed through Pool.map().
     """
 
-    def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None):
+    def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None,
+                 driveon=False):
         self.name = name
         self.commands = commands
         self.failed = False
@@ -44,6 +45,7 @@ class CommandSequenceBase:
         self.outputs = {}
         self.cleanup = cleanup
         self.loglevel = loglevel
+        self.driveon = driveon
 
     def __str__(self):
         return str(self.name)
@@ -67,7 +69,7 @@ class CommandSequence(CommandSequenceBase):
 
     def __init__(self, base):
         super().__init__(base.name, base.commands, loglevel=base.loglevel,
-                         cleanup=base.cleanup)
+                         cleanup=base.cleanup, driveon=base.driveon)
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(base.loglevel)
@@ -136,20 +138,24 @@ class CommandSequence(CommandSequenceBase):
             else:
                 retcode = self.run_command(command)
 
-                # If a command fails, terminate the sequence of commands.
+                # If a command exits with non-zero return code,
+                # terminate the sequence of commands.
                 if retcode != 0:
                     if retcode == 2:
-                        self.logger.debug("command '{}' for project {} "
-                                          "requested break".
-                                          format(self.name, command))
-                        self.run_cleanup()
+                        if not self.driveon:
+                            self.logger.debug("command '{}' for project {} "
+                                              "requested break".
+                                              format(self.name, command))
+                            self.run_cleanup()
                     else:
                         self.logger.error("command '{}' for project {} failed "
                                           "with code {}, breaking".
                                           format(command, self.name, retcode))
                         self.failed = True
                         self.run_cleanup()
-                    break
+
+                    if not self.driveon:
+                        break
 
     def run_cleanup(self):
         """
