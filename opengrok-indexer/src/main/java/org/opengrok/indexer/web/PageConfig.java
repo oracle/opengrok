@@ -101,7 +101,8 @@ public final class PageConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
 
-    protected static final String OPEN_GROK_PROJECT = "OpenGrokProject";
+    public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
+
     protected static final String PROJECT_PARAM_NAME = "project";
     protected static final String GROUP_PARAM_NAME = "group";
 
