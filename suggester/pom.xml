@@ -108,7 +108,7 @@
         <profile>
             <id>java9plus</id>
             <activation>
-                <jdk>[9,10]</jdk>
+                <jdk>[9,11]</jdk>
             </activation>
             <build>
                 <plugins>
