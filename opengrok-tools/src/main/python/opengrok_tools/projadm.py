@@ -28,25 +28,28 @@
 
 import argparse
 import io
-import logging
 import os
 import shutil
 import sys
 import tempfile
 from os import path
 
-from .all.utils.command import Command
-from .all.utils.filelock import Timeout, FileLock
-from .all.utils.opengrok import get_configuration, set_configuration, \
+from filelock import Timeout, FileLock
+
+from .utils.command import Command
+from .utils.log import get_console_logger, get_class_basename, \
+    print_exc_exit
+from .utils.opengrok import get_configuration, set_configuration, \
     add_project, delete_project, get_config_value
-from .all.utils.utils import get_command
+from .utils.parsers import get_baseparser
+from .utils.utils import get_command, is_web_uri
 
 MAJOR_VERSION = sys.version_info[0]
 if (MAJOR_VERSION < 3):
     print("Need Python 3, you are running {}".format(MAJOR_VERSION))
     sys.exit(1)
 
-__version__ = "0.3"
+__version__ = "0.4"
 
 
 def exec_command(doit, logger, cmd, msg):
@@ -203,9 +206,9 @@ def project_delete(logger, project, uri, doit=True, deletesource=False):
 def main():
     parser = argparse.ArgumentParser(description='project management.',
                                      formatter_class=argparse.
-                                     ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
+                                     ArgumentDefaultsHelpFormatter,
+                                     parents=[get_baseparser()])
+
     parser.add_argument('-b', '--base', default="/var/opengrok",
                         help='OpenGrok instance base directory')
     parser.add_argument('-R', '--roconfig',
@@ -239,7 +242,11 @@ def main():
                             'with current '
                             'configuration.')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
+
     doit = not args.noop
     configmerge = None
 
@@ -247,12 +254,7 @@ def main():
     # Setup logger as a first thing after parsing arguments so that it can be
     # used through the rest of the program.
     #
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(format="%(message)s", level=logging.INFO)
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     if args.nosourcedelete and not args.delete:
         logger.error("The no source delete option is only valid for delete")
@@ -281,15 +283,16 @@ def main():
             sys.exit(1)
 
         configmerge_file = get_command(logger, args.configmerge,
-                                       "config-merge.py")
+                                       "opengrok-config-merge")
         if configmerge_file is None:
             logger.error("Use the --configmerge option to specify the path to"
                          "the config merge script")
             sys.exit(1)
 
         configmerge = [configmerge_file]
-        if args.debug:
-            configmerge.append('-D')
+        if args.loglevel:
+            configmerge.append('-l')
+            configmerge.append(str(args.loglevel))
 
         if args.jar is None:
             logger.error('jar file needed for config merge tool, '
@@ -297,9 +300,10 @@ def main():
             sys.exit(1)
 
     uri = args.uri
-    if not uri:
-        logger.error("URI of the webapp not specified")
+    if not is_web_uri(uri):
+        logger.error("Not a URI: {}".format(uri))
         sys.exit(1)
+    logger.debug("web application URI = {}".format(uri))
 
     lock = FileLock(os.path.join(tempfile.gettempdir(),
                                  os.path.basename(sys.argv[0]) + ".lock"))

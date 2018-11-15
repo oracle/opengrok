@@ -19,10 +19,12 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
 
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -565,7 +567,9 @@ public abstract class AuthorizationEntity implements Nameable, Serializable, Clo
      */
     protected String infoToString(String prefix) {
         StringBuilder builder = new StringBuilder(40);
-        builder.append(" ").append(getFlag().toString().toUpperCase()).append(" '").append(getName()).append("'");
+        String flup = getFlag().toString().toUpperCase(Locale.ROOT);
+        String nm = getName();
+        builder.append(" ").append(flup).append(" '").append(nm).append("'");
         return builder.toString();
     }
 

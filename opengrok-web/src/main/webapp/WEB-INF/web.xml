@@ -54,9 +54,14 @@
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
     <filter-mapping>
-        <!-- Place this mapping last, so /* wildcard is only a fallback -->
         <filter-name>ExpiresHalfHourFilter</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/history/*</url-pattern>
+        <url-pattern>/raw/*</url-pattern>
+        <url-pattern>/download/*</url-pattern>
+        <url-pattern>/rss/*</url-pattern>
+        <url-pattern>/error</url-pattern>
+        <url-pattern>/enoent</url-pattern>
+        <url-pattern>/eforbidden</url-pattern>
         <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
     <servlet>

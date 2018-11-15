@@ -37,7 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.regex.PatternSyntaxException;
+
 import org.apache.tools.ant.filters.StringInputStream;
 import org.json.simple.parser.ParseException;
 import org.junit.AfterClass;
@@ -59,6 +59,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.opengrok.indexer.util.StatisticsUtils.loadStatistics;
+import static org.opengrok.indexer.util.StatisticsUtils.saveStatistics;
+
 import org.opengrok.indexer.util.ForbiddenSymlinkException;
 import org.opengrok.indexer.util.IOUtils;
 
@@ -85,7 +88,6 @@ public class RuntimeEnvironmentTest {
     public static void tearDownClass() throws Exception {
         // restore the configuration
         RuntimeEnvironment.getInstance().readConfiguration(originalConfig);
-        RuntimeEnvironment.getInstance().register();
         originalConfig.delete();
     }
 
@@ -130,7 +132,7 @@ public class RuntimeEnvironmentTest {
         // set include root
         f = File.createTempFile("includeroot", null);
         path = f.getCanonicalPath();
-        instance.getConfiguration().setIncludeRoot(path);
+        instance.setIncludeRoot(path);
         assertEquals(path, instance.getIncludeRootPath());
     }
     
@@ -187,18 +189,18 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testRegister() throws InterruptedException {
+    public void testPerThreadConsistency() throws InterruptedException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String path = "/tmp/dataroot";
+        String path = "/tmp/dataroot1";
         instance.setDataRoot(path);
-        instance.register();
         Thread t = new Thread(() -> {
             Configuration c = new Configuration();
+            c.setDataRoot("/tmp/dataroot2");
             RuntimeEnvironment.getInstance().setConfiguration(c);
         });
         t.start();
         t.join();
-        assertEquals(new File(path), new File(instance.getDataRootPath()));
+        assertEquals("/tmp/dataroot2", instance.getDataRootPath());
     }
 
     @Test
@@ -340,7 +342,7 @@ public class RuntimeEnvironmentTest {
             try {
                 instance.setBugPattern(test);
                 assertEquals(test, instance.getBugPattern());
-            } catch (PatternSyntaxException ex) {
+            } catch (IOException ex) {
                 fail("The pattern '" + test + "' should not throw an exception");
 
             }
@@ -362,7 +364,7 @@ public class RuntimeEnvironmentTest {
             try {
                 instance.setBugPattern(test);
                 fail("The pattern '" + test + "' should throw an exception");
-            } catch (PatternSyntaxException ex) {
+            } catch (IOException ex) {
             }
         }
     }
@@ -387,9 +389,9 @@ public class RuntimeEnvironmentTest {
         };
         for (String test : tests) {
             try {
-                instance.setBugPattern(test);
-                assertEquals(test, instance.getBugPattern());
-            } catch (PatternSyntaxException ex) {
+                instance.setReviewPattern(test);
+                assertEquals(test, instance.getReviewPattern());
+            } catch (IOException ex) {
                 fail("The pattern '" + test + "' should not throw an exception");
 
             }
@@ -409,9 +411,9 @@ public class RuntimeEnvironmentTest {
         };
         for (String test : tests) {
             try {
-                instance.setBugPattern(test);
+                instance.setReviewPattern(test);
                 fail("The pattern '" + test + "' should throw an exception");
-            } catch (PatternSyntaxException ex) {
+            } catch (IOException ex) {
             }
         }
     }
@@ -879,7 +881,7 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{}";
         try (InputStream in = new StringInputStream(json)) {
-            env.loadStatistics(in);
+            loadStatistics(in);
         }
         Assert.assertEquals(new Statistics().toJson(), env.getStatistics().toJson());
     }
@@ -923,7 +925,7 @@ public class RuntimeEnvironmentTest {
             + "}"
         + "}";
         try (InputStream in = new StringInputStream(json)) {
-            env.loadStatistics(in);
+            loadStatistics(in);
         }
         Statistics stats = env.getStatistics();
         Assert.assertNotNull(stats);
@@ -954,7 +956,7 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String json = "{ malformed json with missing bracket";
         try (InputStream in = new StringInputStream(json)) {
-            env.loadStatistics(in);
+            loadStatistics(in);
         }
     }
 
@@ -963,7 +965,7 @@ public class RuntimeEnvironmentTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setStatistics(new Statistics());
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            env.saveStatistics(out);
+            saveStatistics(out);
             Assert.assertEquals("{}", out.toString());
         }
     }
@@ -977,7 +979,7 @@ public class RuntimeEnvironmentTest {
         env.getStatistics().addRequestTime("root", 10L);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            env.saveStatistics(out);
+            saveStatistics(out);
             Assert.assertNotEquals("{}", out.toString());
             Assert.assertEquals(env.getStatistics().toJson().toJSONString(), out.toString());
         }
@@ -985,24 +987,24 @@ public class RuntimeEnvironmentTest {
 
     @Test(expected = IOException.class)
     public void testSaveNullStatistics() throws IOException {
-        RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
-        RuntimeEnvironment.getInstance().saveStatistics();
+        RuntimeEnvironment.getInstance().setStatisticsFilePath(null);
+        saveStatistics();
     }
 
     @Test(expected = IOException.class)
     public void testSaveNullStatisticsFile() throws IOException {
-        RuntimeEnvironment.getInstance().saveStatistics((File) null);
+        saveStatistics((File) null);
     }
 
     @Test(expected = IOException.class)
     public void testLoadNullStatistics() throws IOException, ParseException {
-        RuntimeEnvironment.getInstance().getConfiguration().setStatisticsFilePath(null);
-        RuntimeEnvironment.getInstance().loadStatistics();
+        RuntimeEnvironment.getInstance().setStatisticsFilePath(null);
+        loadStatistics();
     }
 
     @Test(expected = IOException.class)
     public void testLoadNullStatisticsFile() throws IOException, ParseException {
-        RuntimeEnvironment.getInstance().loadStatistics((File) null);
+        loadStatistics((File) null);
     }
 
     /**

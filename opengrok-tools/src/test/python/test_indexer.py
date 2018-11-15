@@ -23,24 +23,10 @@
 # Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-import unittest
-import sys
-import os
+from opengrok_tools.utils.indexer import merge_properties
 
 
-sys.path.insert(0, os.path.abspath(
-                os.path.join(os.path.dirname(__file__), '..', '..',
-                'main', 'python', 'opengrok_tools')))
-
-from all.utils.indexer import merge_properties
-
-
-class TestApp(unittest.TestCase):
-    def test_merge_properties(self):
-        merged = merge_properties(['foo', '-Dfoo=1'],
-                                  ['-Dfoo=2', '-Dbar=bar'])
-        self.assertEqual(['-Dbar=bar', '-Dfoo=1', 'foo'], sorted(merged))
-
-
-if __name__ == '__main__':
-    unittest.main()
+def test_merge_properties():
+    merged = merge_properties(['foo', '-Dfoo=1'],
+                              ['-Dfoo=2', '-Dbar=bar'])
+    assert sorted(merged) == ['-Dbar=bar', '-Dfoo=1', 'foo']

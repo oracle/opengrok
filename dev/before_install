@@ -6,22 +6,44 @@ if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 		echo "cannot update"
 		exit 1
 	fi
-	sudo apt-get install -qq cvs git mercurial cssc bzr subversion monotone rcs rcs-blame python3 python3.4-venv python3-pip pep8 nodejs
+
+	sudo apt-get install -qq cvs git mercurial cssc bzr subversion monotone rcs rcs-blame python3 python3.4-venv python3-pip nodejs
 	if [[ $? != 0 ]]; then
 		echo "cannot install extra packages"
 		exit 1
 	fi
+
+	# Bitkeeper install failure is not critical, so exit code is not checked.
 	sudo ./dev/install-bitkeeper.sh
-	sudo pip3 install --upgrade pip
-	sudo pip3 install flake8
+
+	sudo ./dev/install-python-packages.sh
+	if [[ $? != 0 ]]; then
+		echo "cannot install Python packages"
+		exit 1
+	fi
 elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
 	brew update
-	brew install ctags cvs node
+
+	brew install cvs
+	if [[ $? != 0 ]]; then
+		echo "cannot install extra packages"
+		exit 1
+	fi
+
 	brew upgrade python
-	pip3 install pep8 flake8 virtualenv
+
+	./dev/install-python-packages.sh
+	if [[ $? != 0 ]]; then
+		echo "cannot install Python packages"
+		exit 1
+	fi
 fi
 
 sudo ./dev/install-universal_ctags.sh
+if [[ $? != 0 ]]; then
+	echo "cannot install Universal ctags"
+	exit 1
+fi
 
 # for API blueprint verification
 npm install drafter

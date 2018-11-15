@@ -19,6 +19,7 @@
 
  /*
  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.configuration;
 
@@ -243,14 +244,15 @@ public class Group implements Comparable<Group>, Nameable {
 
     @Override
     public int compareTo(Group o) {
-        return getName().toUpperCase(Locale.getDefault())
-                .compareTo(o.getName().toUpperCase(Locale.getDefault()));
+        return getName().toUpperCase(Locale.ROOT).compareTo(
+                o.getName().toUpperCase(Locale.ROOT));
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 41 * hash + (this.name == null ? 0 : this.name.toUpperCase(Locale.getDefault()).hashCode());
+        hash = 41 * hash + (this.name == null ? 0 :
+                this.name.toUpperCase(Locale.ROOT).hashCode());
         return hash;
     }
 
@@ -266,9 +268,17 @@ public class Group implements Comparable<Group>, Nameable {
             return false;
         }
         final Group other = (Group) obj;
-        return !(this.name != other.name
-                && (this.name == null
-                || !this.name.toUpperCase(Locale.getDefault()).equals(other.name.toUpperCase(Locale.getDefault()))));
+
+        int numNull = (name == null ? 1 : 0) + (other.name == null ? 1 : 0);
+        switch (numNull) {
+            case 0:
+                return name.toUpperCase(Locale.ROOT).equals(
+                        other.name.toUpperCase(Locale.ROOT));
+            case 1:
+                return false;
+            default:
+                return true;
+        }
     }
 
     /**

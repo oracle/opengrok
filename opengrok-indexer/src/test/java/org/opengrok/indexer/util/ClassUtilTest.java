@@ -92,14 +92,14 @@ public class ClassUtilTest {
 
     @Test
     public void setStrFieldTest() throws IOException {
-        ClassUtil.invokeSetter(testObject, "strField", "value");
+        ClassUtil.setFieldValue(testObject, "strField", "value");
 
         assertEquals("value", testObject.strField);
     }
 
     @Test
     public void setIntFieldTest() throws IOException {
-        ClassUtil.invokeSetter(testObject, "intField", "124");
+        ClassUtil.setFieldValue(testObject, "intField", "124");
 
         assertEquals(124, testObject.intField);
     }
@@ -111,7 +111,7 @@ public class ClassUtilTest {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        ClassUtil.invokeSetter(testObject, "objField", mapper.writeValueAsString(t));
+        ClassUtil.setFieldValue(testObject, "objField", mapper.writeValueAsString(t));
 
         assertEquals(t, testObject.objField);
     }
@@ -120,14 +120,14 @@ public class ClassUtilTest {
     public void getStrFieldTest() throws IOException {
         testObject.strField = "value2";
 
-        assertEquals("value2", ClassUtil.invokeGetter(testObject, "strField"));
+        assertEquals("value2", ClassUtil.getFieldValue(testObject, "strField"));
     }
 
     @Test
     public void getIntFieldTest() throws IOException {
         testObject.intField = 1;
 
-        assertEquals(1, ClassUtil.invokeGetter(testObject, "intField"));
+        assertEquals(1, ClassUtil.getFieldValue(testObject, "intField"));
     }
 
     @Test
@@ -137,7 +137,7 @@ public class ClassUtilTest {
 
         testObject.objField = t;
 
-        assertEquals(t, ClassUtil.invokeGetter(testObject, "objField"));
+        assertEquals(t, ClassUtil.getFieldValue(testObject, "objField"));
     }
 
 }

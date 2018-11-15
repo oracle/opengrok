@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.opengrok</groupId>
     <artifactId>opengrok-top</artifactId>
-    <version>1.1-rc63</version>
+    <version>1.1-rc74</version>
   </parent>
 
   <artifactId>opengrok-dist</artifactId>
@@ -24,20 +24,20 @@
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok</artifactId>
-      <version>1.1-rc63</version>
+      <version>1.1-rc74</version>
     </dependency>
 
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok-web</artifactId>
-      <version>1.1-rc63</version>
+      <version>1.1-rc74</version>
       <type>war</type>
     </dependency>
 
     <dependency>
       <groupId>org.opengrok</groupId>
       <artifactId>opengrok-tools</artifactId>
-      <version>1.1-rc63</version>
+      <version>1.1-rc74</version>
       <type>pom</type>
     </dependency>
   </dependencies>
@@ -67,13 +67,25 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
-            <version>3.0.0</version>
+            <version>1.8</version>
             <executions>
               <execution>
-                <id>parse-version</id>
+                <id>generate-python-package-version</id>
                 <goals>
-                  <goal>parse-version</goal>
+                  <goal>regex-property</goal>
                 </goals>
+                <phase>package</phase>
+                <configuration>
+                  <!--
+                      Use property ${project.version} but delete the "-" (dash) from it
+                      and place it into the property ${project.python.package.version}
+                  -->
+                  <name>project.python.package.version</name>
+                  <regex>-rc</regex>
+                  <value>${project.version}</value>
+                  <replacement>rc</replacement>
+                  <failIfNoMatch>false</failIfNoMatch>
+                </configuration>
               </execution>
             </executions>
           </plugin>

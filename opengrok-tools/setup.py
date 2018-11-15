@@ -1,13 +1,15 @@
 import os
 import unittest
+
 from setuptools import setup
+
+from src.main.python.opengrok_tools.version import __version__ as version
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def readme():
-    with open(os.path.join(SCRIPT_DIR, 'src', 'main', 'python', 'README.md'),
-              'r') as readme:
+    with open(os.path.join(SCRIPT_DIR, 'README.md'), 'r') as readme:
         return readme.read()
 
 
@@ -20,18 +22,16 @@ def my_test_suite():
 
 setup(
     name='opengrok-tools',
-    version='1.1rc63',
+    version=version,
     packages=[
         'opengrok_tools',
-        'opengrok_tools.all',
-        'opengrok_tools.all.utils',
-        'opengrok_tools.all.scm',
+        'opengrok_tools.utils',
+        'opengrok_tools.scm',
     ],
     package_dir={
         'opengrok_tools': 'src/main/python/opengrok_tools',
-        'opengrok_tools.all': 'src/main/python/opengrok_tools/all',
-        'opengrok_tools.all.scm': 'src/main/python/opengrok_tools/all/scm',
-        'opengrok_tools.all.utils': 'src/main/python/opengrok_tools/all/utils',
+        'opengrok_tools.scm': 'src/main/python/opengrok_tools/scm',
+        'opengrok_tools.utils': 'src/main/python/opengrok_tools/utils',
     },
     url='https://github.com/OpenGrok/OpenGrok',
     license='CDDL',
@@ -43,8 +43,17 @@ setup(
     install_requires=[
         'jsonschema==2.6.0',
         'pyyaml',
-        'requests',
-        'resource'
+        'requests>=2.20.0',
+        'resource',
+        'filelock',
+        'setuptools>=36.7.2',
+    ],
+    setup_requires=[
+        'pytest-runner',
+        'setuptools>=36.7.2',
+    ],
+    tests_require=[
+        'pytest',
     ],
     entry_points={
         'console_scripts': [

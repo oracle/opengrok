@@ -23,10 +23,11 @@
 
 import argparse
 import logging
-import os
 import sys
 
-from .all.utils.java import Java, get_javaparser
+from .utils.java import Java
+from .utils.log import print_exc_exit
+from .utils.parsers import get_javaparser
 
 """
  Wrapper for Java program merging OpenGrok configuration.
@@ -38,14 +39,15 @@ def main():
                                                  'configuration merging',
                                      parents=[get_javaparser()])
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    # Avoid using utils.log.get_console_level() since the stdout of the program
+    # is interpreted as data.
+    logger = logging.getLogger(__name__)
+    logger.setLevel(args.loglevel)
 
     cmd = Java(args.options, classpath=args.jar, java=args.java,
                java_opts=args.java_opts, redirect_stderr=False,

@@ -48,7 +48,7 @@ public class IncludeFilesTest {
     @BeforeClass
     public static void setUpClass() throws IOException {
         includeRoot = Files.createTempDirectory("include_root");
-        env.getConfiguration().setIncludeRoot(includeRoot.toString());
+        env.setIncludeRoot(includeRoot.toString());
     }
     
     private void writeStringToFile(File file, String str) throws IOException {
@@ -62,10 +62,10 @@ public class IncludeFilesTest {
         File file = new File(includeRoot.toFile(), Configuration.HEADER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
         assertEquals(CONTENT_1 + LINE_SEP,
-                env.getConfiguration().getHeaderIncludeFileContent(false));
+                env.includeFiles.getHeaderIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
         assertEquals(CONTENT_2 + LINE_SEP,
-                env.getConfiguration().getHeaderIncludeFileContent(true));
+                env.includeFiles.getHeaderIncludeFileContent(true));
     }
     
     @Test
@@ -73,10 +73,10 @@ public class IncludeFilesTest {
         File file = new File(includeRoot.toFile(), Configuration.BODY_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
         assertEquals(CONTENT_1 + LINE_SEP,
-                env.getConfiguration().getBodyIncludeFileContent(false));
+                env.includeFiles.getBodyIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
         assertEquals(CONTENT_2 + LINE_SEP,
-                env.getConfiguration().getBodyIncludeFileContent(true));
+                env.includeFiles.getBodyIncludeFileContent(true));
     }
     
     @Test
@@ -84,10 +84,10 @@ public class IncludeFilesTest {
         File file = new File(includeRoot.toFile(), Configuration.FOOTER_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
         assertEquals(CONTENT_1 + LINE_SEP,
-                env.getConfiguration().getFooterIncludeFileContent(false));
+                env.includeFiles.getFooterIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
         assertEquals(CONTENT_2 + LINE_SEP,
-                env.getConfiguration().getFooterIncludeFileContent(true));
+                env.includeFiles.getFooterIncludeFileContent(true));
     }
     
     @Test
@@ -95,9 +95,9 @@ public class IncludeFilesTest {
         File file = new File(includeRoot.toFile(), Configuration.E_FORBIDDEN_INCLUDE_FILE);
         writeStringToFile(file, CONTENT_1);
         assertEquals(CONTENT_1 + LINE_SEP,
-                env.getConfiguration().getForbiddenIncludeFileContent(false));
+                env.includeFiles.getForbiddenIncludeFileContent(false));
         writeStringToFile(file, CONTENT_2);
         assertEquals(CONTENT_2 + LINE_SEP,
-                env.getConfiguration().getForbiddenIncludeFileContent(true));
+                env.includeFiles.getForbiddenIncludeFileContent(true));
     }
 }

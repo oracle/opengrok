@@ -117,7 +117,7 @@ public class SuggesterControllerTest extends JerseyTest {
                 false, false, null, null, new ArrayList<>(), false);
         Indexer.getInstance().doIndexerExecution(true, null, null);
 
-        env.getConfiguration().getSuggesterConfig().setRebuildCronConfig(null);
+        env.getSuggesterConfig().setRebuildCronConfig(null);
     }
 
     @AfterClass
@@ -130,7 +130,7 @@ public class SuggesterControllerTest extends JerseyTest {
         await().atMost(15, TimeUnit.SECONDS).until(() ->
                 getSuggesterProjectDataSize() == env.getProjectList().size());
 
-        env.getConfiguration().setSuggesterConfig(new SuggesterConfig());
+        env.setSuggesterConfig(new SuggesterConfig());
     }
 
     private static int getSuggesterProjectDataSize() throws Exception {
@@ -151,7 +151,7 @@ public class SuggesterControllerTest extends JerseyTest {
                 .request()
                 .get(SuggesterConfig.class);
 
-        assertEquals(env.getConfiguration().getSuggesterConfig(), config);
+        assertEquals(env.getSuggesterConfig(), config);
     }
 
     @Test
@@ -495,7 +495,7 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @Test
     public void testDisabledSuggestions() {
-        env.getConfiguration().getSuggesterConfig().setEnabled(false);
+        env.getSuggesterConfig().setEnabled(false);
 
         Response r = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
@@ -509,7 +509,7 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @Test
     public void testMinChars() {
-        env.getConfiguration().getSuggesterConfig().setMinChars(2);
+        env.getSuggesterConfig().setMinChars(2);
 
         Response r = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java")
@@ -523,7 +523,7 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @Test
     public void testAllowedProjects() {
-        env.getConfiguration().getSuggesterConfig().setAllowedProjects(Collections.singleton("kotlin"));
+        env.getSuggesterConfig().setAllowedProjects(Collections.singleton("kotlin"));
 
         Result res = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
@@ -539,7 +539,7 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @Test
     public void testMaxProjects() {
-        env.getConfiguration().getSuggesterConfig().setMaxProjects(1);
+        env.getSuggesterConfig().setMaxProjects(1);
 
         Response r = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
@@ -553,7 +553,7 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @Test
     public void testAllowedFields() {
-        env.getConfiguration().getSuggesterConfig().setAllowedFields(Collections.singleton(QueryBuilder.DEFS));
+        env.getSuggesterConfig().setAllowedFields(Collections.singleton(QueryBuilder.DEFS));
 
         Response r = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
@@ -567,7 +567,7 @@ public class SuggesterControllerTest extends JerseyTest {
 
     @Test
     public void testAllowComplexQueries() {
-        env.getConfiguration().getSuggesterConfig().setAllowComplexQueries(false);
+        env.getSuggesterConfig().setAllowComplexQueries(false);
 
         Response r = target(SuggesterController.PATH)
                 .queryParam(AuthorizationFilter.PROJECTS_PARAM, "java", "kotlin")
@@ -639,5 +639,4 @@ public class SuggesterControllerTest extends JerseyTest {
         assertThat(res.suggestions.stream().map(r -> r.phrase).collect(Collectors.toList()),
                 containsInAnyOrder("print", "printf"));
     }
-
 }

@@ -20,11 +20,12 @@
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
- * Portions Copyright (c) 2017, Chris Fraire <cfraire@me.com>.
+ * Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
  */
 
 package org.opengrok.indexer.analysis.uue;
 
+import java.util.Locale;
 import org.opengrok.indexer.analysis.JFlexSymbolMatcher;
 %%
 %public
@@ -72,12 +73,12 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     nameFound = false;
     yybegin(BEGIN);
     yypushback(1);
-    onSymbolMatched(yytext().toLowerCase(), yychar);
+    onSymbolMatched(yytext().toLowerCase(Locale.ROOT), yychar);
     return yystate();
   }
 
   {Identifier}|{Number}|{Printable} {
-    onSymbolMatched(yytext().toLowerCase(), yychar);
+    onSymbolMatched(yytext().toLowerCase(Locale.ROOT), yychar);
     return yystate();
   }
 
@@ -104,7 +105,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     else
       yybegin(YYINITIAL);
     yypushback(1);
-    onSymbolMatched(yytext().toLowerCase(), yychar);
+    onSymbolMatched(yytext().toLowerCase(Locale.ROOT), yychar);
     return yystate();
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
@@ -114,7 +115,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
   " " { if (modeFound) yybegin(NAME); }
   {Identifier}|{Number}|{Printable} {
     modeFound = true;
-    onSymbolMatched(yytext().toLowerCase(), yychar);
+    onSymbolMatched(yytext().toLowerCase(Locale.ROOT), yychar);
     return yystate();
   }
   [^] { yybegin(YYINITIAL); yypushback(1); }
@@ -129,7 +130,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
   }
   {Identifier}|{Number}|{Printable} {
     nameFound = true;
-    onSymbolMatched(yytext().toLowerCase(), yychar);
+    onSymbolMatched(yytext().toLowerCase(Locale.ROOT), yychar);
     return yystate();
   }
   [^\n] { yybegin(YYINITIAL); yypushback(1); }
@@ -141,7 +142,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     String t = yytext();
     if (t.equals("end") && !b64) {
       yybegin(YYINITIAL);
-      onSymbolMatched(yytext().toLowerCase(), yychar);
+      onSymbolMatched(yytext().toLowerCase(Locale.ROOT), yychar);
       return yystate();
     } else if (t.equals("====") && b64)
       yybegin(YYINITIAL);

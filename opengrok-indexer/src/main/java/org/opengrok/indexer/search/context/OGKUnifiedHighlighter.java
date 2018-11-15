@@ -297,6 +297,7 @@ public class OGKUnifiedHighlighter extends UnifiedHighlighter {
             return null;
         }
 
+        repoRelPath = Util.fixPathIfWindows(repoRelPath);
         // Verify that timestamp (U) is unchanged by comparing UID.
         String uid = Util.path2uid(repoRelPath,
             DateTools.timeToString(repoAbsFile.lastModified(),

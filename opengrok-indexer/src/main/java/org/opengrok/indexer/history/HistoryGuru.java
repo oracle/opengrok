@@ -562,6 +562,7 @@ public final class HistoryGuru {
             LOGGER.log(Level.INFO,
                     "Skipping history cache creation of {0} repository in {1} and its subdirectories",
                     new Object[]{type, path});
+            return;
         }
         
         if (repository.isWorking()) {
@@ -976,7 +977,7 @@ public final class HistoryGuru {
         repositories.clear();
         newrepos.forEach((_key, repo) -> { putRepository(repo); });
 
-        elapsed.report(LOGGER, "done invalidating repositories");
+        elapsed.report(LOGGER, String.format("done invalidating %d repositories", newrepos.size()));
     }
 
     /**

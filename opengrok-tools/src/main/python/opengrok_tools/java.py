@@ -23,11 +23,11 @@
 #
 
 import argparse
-import logging
-import os
 import sys
 
-from .all.utils.java import Java, get_javaparser
+from .utils.java import Java
+from .utils.log import get_console_logger, get_class_basename, print_exc_exit
+from .utils.parsers import get_javaparser
 
 
 def main():
@@ -36,14 +36,12 @@ def main():
     parser.add_argument('-m', '--mainclass', required=True,
                         help='Main class')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     java = Java(args.options, logger=logger, java=args.java,
                 jar=args.jar, java_opts=args.java_opts,

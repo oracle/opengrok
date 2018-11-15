@@ -31,7 +31,6 @@
 """
 
 import argparse
-import logging
 import multiprocessing
 import os
 import sys
@@ -39,17 +38,21 @@ import tempfile
 from multiprocessing import Pool
 from os import path
 
-from .all.utils.commands import Commands, CommandsBase
-from .all.utils.filelock import Timeout, FileLock
-from .all.utils.opengrok import list_indexed_projects
-from .all.utils.readconfig import read_config
+from filelock import Timeout, FileLock
+
+from .utils.commandsequence import CommandSequence, CommandSequenceBase
+from .utils.log import get_console_logger, get_class_basename, print_exc_exit
+from .utils.opengrok import list_indexed_projects, get_config_value
+from .utils.parsers import get_baseparser
+from .utils.readconfig import read_config
+from .utils.utils import is_web_uri
 
 major_version = sys.version_info[0]
 if (major_version < 3):
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.4"
+__version__ = "0.7"
 
 
 def worker(base):
@@ -57,7 +60,7 @@ def worker(base):
     Process one project by calling set of commands.
     """
 
-    x = Commands(base)
+    x = CommandSequence(base)
     x.run()
     base.fill(x.retcodes, x.outputs, x.failed)
 
@@ -67,50 +70,49 @@ def worker(base):
 def main():
     dirs_to_process = []
 
-    parser = argparse.ArgumentParser(description='Manage parallel workers.')
+    parser = argparse.ArgumentParser(description='Manage parallel workers.',
+                                     parents=[get_baseparser()])
     parser.add_argument('-w', '--workers', default=multiprocessing.cpu_count(),
                         help='Number of worker processes')
 
     # There can be only one way how to supply list of projects to process.
     group1 = parser.add_mutually_exclusive_group()
-    group1.add_argument('-d', '--directory', default="/var/opengrok/src",
+    group1.add_argument('-d', '--directory',
                         help='Directory to process')
     group1.add_argument('-P', '--projects', nargs='*',
                         help='List of projects to process')
 
-    group2 = parser.add_mutually_exclusive_group()
-    group2.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
-    group2.add_argument('-p', '--logplain', action='store_true',
-                        help='log plain messages')
-
+    parser.add_argument('-I', '--indexed', action='store_true',
+                        help='Sync indexed projects only')
     parser.add_argument('-i', '--ignore_errors', nargs='*',
                         help='ignore errors from these projects')
     parser.add_argument('-c', '--config', required=True,
                         help='config file in JSON format')
-    parser.add_argument('-I', '--indexed', action='store_true',
-                        help='Sync indexed projects only')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        if args.logplain:
-            logging.basicConfig(format="%(message)s")
-        else:
-            logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     uri = args.uri
-    if not uri:
-        logger.error("uri of the webapp not specified")
+    if not is_web_uri(uri):
+        logger.error("Not a URI: {}".format(uri))
+        sys.exit(1)
+    logger.debug("web application URI = {}".format(uri))
+
+    # Changing working directory to root will avoid problems when running
+    # programs via sudo/su.
+    try:
+        os.chdir("/")
+    except OSError:
+        logger.error("cannot change working directory to /",
+                     exc_info=True)
         sys.exit(1)
 
-    logger.debug("Uri = {}".format(uri))
-
+    # First read and validate configuration file as it is mandatory argument.
     config = read_config(logger, args.config)
     if config is None:
         logger.error("Cannot read config file from {}".format(args.config))
@@ -122,6 +124,17 @@ def main():
         logger.error("The config file has to contain key \"commands\"")
         sys.exit(1)
 
+    directory = args.directory
+    if not args.directory and not args.projects and not args.indexed:
+        # Assume directory, get the source root value from the webapp.
+        directory = get_config_value(logger, 'sourceRoot', uri)
+        if not directory:
+            logger.error("Neither -d or -P or -I specified and cannot get "
+                         "source root from the webapp")
+            sys.exit(1)
+        else:
+            logger.info("Assuming directory: {}".format(directory))
+
     ignore_errors = []
     if args.ignore_errors:
         ignore_errors = args.ignore_errors
@@ -132,13 +145,6 @@ def main():
             pass
     logger.debug("Ignored projects: {}".format(ignore_errors))
 
-    try:
-        os.chdir("/")
-    except OSError as e:
-        logger.error("cannot change working directory to /",
-                     exc_info=True)
-        sys.exit(1)
-
     lock = FileLock(os.path.join(tempfile.gettempdir(),
                                  "opengrok-sync.lock"))
     try:
@@ -147,8 +153,12 @@ def main():
 
             if args.projects:
                 dirs_to_process = args.projects
+                logger.debug("Processing directories: {}".
+                             format(dirs_to_process))
             elif args.indexed:
                 indexed_projects = list_indexed_projects(logger, uri)
+                logger.debug("Processing indexed projects: {}".
+                             format(indexed_projects))
 
                 if indexed_projects:
                     for line in indexed_projects:
@@ -157,7 +167,7 @@ def main():
                     logger.error("cannot get list of projects")
                     sys.exit(1)
             else:
-                directory = args.directory
+                logger.debug("Processing directory {}".format(directory))
                 for entry in os.listdir(directory):
                     if path.isdir(path.join(directory, entry)):
                         dirs_to_process.append(entry)
@@ -166,8 +176,8 @@ def main():
 
             cmds_base = []
             for d in dirs_to_process:
-                cmd_base = CommandsBase(d, commands,
-                                        config.get("cleanup"))
+                cmd_base = CommandSequenceBase(d, commands, args.loglevel,
+                                               config.get("cleanup"))
                 cmds_base.append(cmd_base)
 
             # Map the commands into pool of workers so they can be processed.
@@ -180,7 +190,7 @@ def main():
                 for cmds_base in cmds_base_results:
                     logger.debug("Checking results of project {}".
                                  format(cmds_base))
-                    cmds = Commands(cmds_base)
+                    cmds = CommandSequence(cmds_base)
                     cmds.fill(cmds_base.retcodes, cmds_base.outputs,
                               cmds_base.failed)
                     cmds.check(ignore_errors)

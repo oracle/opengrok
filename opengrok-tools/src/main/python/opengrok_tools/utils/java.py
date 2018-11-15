@@ -26,7 +26,6 @@ import platform
 from .command import Command
 from .utils import is_exe
 import os
-import argparse
 
 
 class Java(Command):
@@ -75,17 +74,19 @@ class Java(Command):
 
     def FindJava(self, logger):
         """
-        Determine Java home directory based on platform.
+        Determine Java binary based on platform.
         """
         java = None
         system_name = platform.system()
         if system_name == 'SunOS':
             rel = platform.release()
             if rel == '5.10':
-                javaHome = "/usr/jdk/instances/jdk1.7.0"
+                java_home = "/usr/jdk/instances/jdk1.7.0"
             elif rel == '5.11':
-                javaHome = "/usr/jdk/latest"
-            java = os.path.join(javaHome, 'bin', 'java')
+                java_home = "/usr/jdk/latest"
+
+            if os.path.isdir(java_home):
+                java = os.path.join(java_home, 'bin', 'java')
         elif system_name == 'Darwin':
             cmd = Command('/usr/libexec/java_home')
             cmd.execute()
@@ -96,26 +97,12 @@ class Java(Command):
                 # Resolve the symlink.
                 java = os.path.realpath(link_path)
 
+        if not java:
+            java_home = os.environ.get('JAVA_HOME')
+            if java_home:
+                logger.debug("Could not detemine Java home using standard "
+                             "means, trying JAVA_HOME: {}".format(java_home))
+                if os.path.isdir(java_home):
+                    java = os.path.join(java_home, 'bin', 'java')
+
         return java
-
-
-def get_javaparser():
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
-    parser.add_argument('-j', '--java',
-                        help='path to java binary')
-    parser.add_argument('-J', '--java_opts',
-                        help='java options', action='append')
-    parser.add_argument('-e', '--environment', action='append',
-                        help='Environment variables in the form of name=value')
-
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-a', '--jar',
-                       help='Path to jar archive to run')
-    group.add_argument('-c', '--classpath',
-                       help='Class path')
-
-    parser.add_argument('options', nargs='+', help='options')
-
-    return parser

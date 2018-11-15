@@ -76,7 +76,96 @@ public class ClassUtil {
             LOGGER.log(Level.WARNING, "An exception ocurred during remarking transient fields:", ex);
         }
     }
-    
+
+    private static Object stringToObject(String fieldName, Class c, String value) throws IOException {
+        Object v;
+        String paramClass = c.getName();
+
+        try {
+            /*
+             * Java primitive types as per
+             * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">java
+             * datatypes</a>.
+             */
+            if (paramClass.equals("boolean") || paramClass.equals(Boolean.class.getName())) {
+                if (!BooleanUtil.isBoolean(value)) {
+                    throw new IOException(String.format("Unsupported type conversion from String to a boolean for name \"%s\" -"
+                                    + " got \"%s\" - allowed values are [false, off, 0, true, on, 1].",
+                            paramClass, value));
+                }
+                Boolean boolValue = Boolean.valueOf(value);
+                if (!boolValue) {
+                    /*
+                     * The Boolean.valueOf() returns true only for "true" case
+                     * insensitive so now we have either the false values or
+                     * "on" or "1". These are convenient shortcuts for "on", "1"
+                     * to be interpreted as booleans.
+                     */
+                    boolValue = boolValue || value.equalsIgnoreCase("on");
+                    boolValue = boolValue || value.equals("1");
+                }
+                v = boolValue;
+            } else if (paramClass.equals("short") || paramClass.equals(Short.class.getName())) {
+                v = Short.valueOf(value);
+            } else if (paramClass.equals("int") || paramClass.equals(Integer.class.getName())) {
+                v = Integer.valueOf(value);
+            } else if (paramClass.equals("long") || paramClass.equals(Long.class.getName())) {
+                v = Long.valueOf(value);
+            } else if (paramClass.equals("float") || paramClass.equals(Float.class.getName())) {
+                v = Float.valueOf(value);
+            } else if (paramClass.equals("double") || paramClass.equals(Double.class.getName())) {
+                v = Double.valueOf(value);
+            } else if (paramClass.equals("byte") || paramClass.equals(Byte.class.getName())) {
+                v = Byte.valueOf(value);
+            } else if (paramClass.equals("char") || paramClass.equals(Character.class.getName())) {
+                v = value.charAt(0);
+            } else if (paramClass.equals(String.class.getName())) {
+                v = value;
+            } else {
+                ObjectMapper mapper = new ObjectMapper();
+                v = mapper.readValue(value, c);
+            }
+        }  catch (NumberFormatException ex) {
+            throw new IOException(
+                    String.format("Unsupported type conversion from String to a number for name \"%s\" - %s.",
+                            fieldName, ex.getLocalizedMessage()), ex);
+        } catch (IndexOutOfBoundsException ex) {
+            throw new IOException(
+                    String.format("The string is not long enough to extract 1 character for name \"%s\" - %s.",
+                            fieldName, ex.getLocalizedMessage()), ex);
+        }
+
+        return v;
+    }
+
+    private static Method getSetter(Object obj, String fieldName) throws IOException {
+        PropertyDescriptor desc;
+        try {
+            desc = new PropertyDescriptor(fieldName, obj.getClass());
+        } catch (IntrospectionException e) {
+            throw new IOException(e);
+        }
+        Method setter = desc.getWriteMethod();
+
+        if (setter == null) {
+            throw new IOException(
+                    String.format("No setter for the name \"%s\".", fieldName));
+        }
+
+        if (setter.getParameterCount() != 1) {
+            // not a setter
+            /*
+             * Actually should not happen as it is not considered as a
+             * writer method so an exception would be thrown earlier.
+             */
+            throw new IOException(
+                    String.format("The setter \"%s\" for the name \"%s\" does not take exactly 1 parameter.",
+                            setter.getName(), fieldName));
+        }
+
+        return setter;
+    }
+
     /**
      * Invokes a setter on an object and passes a value to that setter.
      *
@@ -96,96 +185,40 @@ public class ClassUtil {
      * <li>Character or char</li>
      * <li>String</li>
      * </ul>
-     * Any other parameter type will cause an exception.
+     * Any other parameter type will cause an exception. The size/value itself is checked elsewhere.
      *
      * @param obj the object
-     * @param field name of the field which will be changed
-     * @param value desired value
+     * @param fieldName name of the field which will be changed
+     * @param value desired value represented as string
      *
-     * @throws IOException if any error occurs (no suitable method, bad
-     * conversion, ...)
+     * @throws IOException if any error occurs (no suitable method, bad conversion, ...)
      */
-    public static void invokeSetter(Object obj, String field, String value) throws IOException {
+    public static void setFieldValue(Object obj, String fieldName, String value) throws IOException {
+        Method setter = getSetter(obj, fieldName);
+        Class<?> c = setter.getParameterTypes()[0];
+        Object objValue = stringToObject(fieldName, c, value);
+        invokeSetter(setter, obj, fieldName, objValue);
+    }
+
+    /**
+     * Invokes a setter on an object and passes a value to that setter.
+     *
+     * @param obj the object
+     * @param fieldName name of the field which will be changed
+     * @param value desired value
+     * @throws IOException all exceptions from the reflection
+     */
+    public static void setFieldValue(Object obj, String fieldName, Object value) throws IOException {
+        Method setter = getSetter(obj, fieldName);
+        invokeSetter(setter, obj, fieldName, value);
+    }
+
+    private static void invokeSetter(Method setter, Object obj, String fieldName, Object value) throws IOException {
         try {
-            PropertyDescriptor desc = new PropertyDescriptor(field, obj.getClass());
-            Method setter = desc.getWriteMethod();
-
-            if (setter == null) {
-                throw new IOException(
-                        String.format("No setter for the name \"%s\".",
-                                field));
-            }
-
-            if (setter.getParameterCount() != 1) {
-                // not a setter
-                /**
-                 * Actually should not happen as it is not considered as a
-                 * writer method so an exception would be thrown earlier.
-                 */
-                throw new IOException(
-                        String.format("The setter \"%s\" for the name \"%s\" does not take exactly 1 parameter.",
-                                setter.getName(), field));
-            }
-
-            Class<?> c = setter.getParameterTypes()[0];
-            String paramClass = c.getName();
-
-            /**
-             * Java primitive types as per
-             * <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html">java
-             * datatypes</a>.
-             */
-            if (paramClass.equals("boolean") || paramClass.equals(Boolean.class.getName())) {
-                if (!BooleanUtil.isBoolean(value)) {
-                    throw new IOException(String.format("Unsupported type conversion from String to a boolean for name \"%s\" -"
-                            + " got \"%s\" - allowed values are [false, off, 0, true, on, 1].",
-                            field, value));
-                }
-                Boolean v = Boolean.valueOf(value);
-                if (!v) {
-                    /**
-                     * The Boolean.valueOf() returns true only for "true" case
-                     * insensitive so now we have either the false values or
-                     * "on" or "1". These are convenient shortcuts for "on", "1"
-                     * to be interpreted as booleans.
-                     */
-                    v = v || value.equalsIgnoreCase("on");
-                    v = v || value.equals("1");
-                }
-                setter.invoke(obj, v);
-            } else if (paramClass.equals("short") || paramClass.equals(Short.class.getName())) {
-                setter.invoke(obj, Short.valueOf(value));
-            } else if (paramClass.equals("int") || paramClass.equals(Integer.class.getName())) {
-                setter.invoke(obj, Integer.valueOf(value));
-            } else if (paramClass.equals("long") || paramClass.equals(Long.class.getName())) {
-                setter.invoke(obj, Long.valueOf(value));
-            } else if (paramClass.equals("float") || paramClass.equals(Float.class.getName())) {
-                setter.invoke(obj, Float.valueOf(value));
-            } else if (paramClass.equals("double") || paramClass.equals(Double.class.getName())) {
-                setter.invoke(obj, Double.valueOf(value));
-            } else if (paramClass.equals("byte") || paramClass.equals(Byte.class.getName())) {
-                setter.invoke(obj, Byte.valueOf(value));
-            } else if (paramClass.equals("char") || paramClass.equals(Character.class.getName())) {
-                setter.invoke(obj, value.charAt(0));
-            } else if (paramClass.equals(String.class.getName())) {
-                setter.invoke(obj, value);
-            } else {
-                ObjectMapper mapper = new ObjectMapper();
-                Object objValue = mapper.readValue(value, c);
-                setter.invoke(obj, objValue);
-            }
-        } catch (NumberFormatException ex) {
-            throw new IOException(
-                    String.format("Unsupported type conversion from String to a number for name \"%s\" - %s.",
-                            field, ex.getLocalizedMessage()), ex);
-        } catch (IndexOutOfBoundsException ex) {
-            throw new IOException(
-                    String.format("The string is not long enough to extract 1 character for name \"%s\" - %s.",
-                            field, ex.getLocalizedMessage()), ex);
-        } catch (IntrospectionException
-                | IllegalAccessException
+            setter.invoke(obj, value);
+        } catch (IllegalAccessException
                 | IllegalArgumentException
-                /**
+                /*
                  * This the case when the invocation failed because the invoked
                  * method failed with an exception. All exceptions are
                  * propagated through this exception.
@@ -194,11 +227,10 @@ public class ClassUtil {
             throw new IOException(
                     String.format("Unsupported operation with object of class %s for name \"%s\" - %s.",
                             obj.getClass().toString(),
-                            field,
+                            fieldName,
                             ex.getCause() == null
-                            ? ex.getLocalizedMessage()
-                            : ex.getCause().getLocalizedMessage()),
-                    ex);
+                                    ? ex.getLocalizedMessage()
+                                    : ex.getCause().getLocalizedMessage()), ex);
         }
     }
 
@@ -210,7 +242,7 @@ public class ClassUtil {
      * @return string representation of the field value
      * @throws java.io.IOException exception
      */
-    public static Object invokeGetter(Object obj, String field) throws IOException {
+    public static Object getFieldValue(Object obj, String field) throws IOException {
 
         try {
             PropertyDescriptor desc = new PropertyDescriptor(field, obj.getClass());
@@ -222,7 +254,7 @@ public class ClassUtil {
             }
 
             if (getter.getParameterCount() != 0) {
-                /**
+                /*
                  * Actually should not happen as it is not considered as a
                  * read method so an exception would be thrown earlier.
                  */

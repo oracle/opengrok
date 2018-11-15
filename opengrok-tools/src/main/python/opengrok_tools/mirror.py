@@ -37,21 +37,25 @@ import sys
 import tempfile
 from logging.handlers import RotatingFileHandler
 
-from .all.utils.filelock import Timeout, FileLock
-from .all.utils.hook import run_hook
-from .all.utils.opengrok import get_repos, get_config_value, get_repo_type
-from .all.utils.readconfig import read_config
-from .all.utils.repofactory import get_repository
-from .all.utils.utils import is_exe, check_create_dir, get_int, diff_list
-from .all.scm.repository import RepositoryException
+from filelock import Timeout, FileLock
 
+from .utils.hook import run_hook
+from .utils.log import get_console_logger, get_class_basename, \
+    print_exc_exit
+from .utils.opengrok import get_repos, get_config_value, get_repo_type
+from .utils.parsers import get_baseparser
+from .utils.readconfig import read_config
+from .utils.repofactory import get_repository
+from .utils.utils import is_exe, check_create_dir, get_int, diff_list, \
+    is_web_uri
+from .scm.repository import RepositoryException
 
 major_version = sys.version_info[0]
 if major_version < 3:
     print("Need Python 3, you are running {}".format(major_version))
     sys.exit(1)
 
-__version__ = "0.3"
+__version__ = "0.6"
 
 # "constants"
 HOOK_TIMEOUT_PROPERTY = 'hook_timeout'
@@ -115,11 +119,10 @@ def get_repos_for_project(logger, project, ignored_repos, **kwargs):
 def main():
     ret = 0
 
-    parser = argparse.ArgumentParser(description='project mirroring')
+    parser = argparse.ArgumentParser(description='project mirroring',
+                                     parents=[get_baseparser()])
 
     parser.add_argument('project')
-    parser.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
     parser.add_argument('-c', '--config',
                         help='config file in JSON/YAML format')
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
@@ -131,14 +134,12 @@ def main():
     parser.add_argument('-I', '--incoming', action='store_true',
                         help='Check for incoming changes, terminate the '
                              'processing if not found.')
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     if args.config:
         config = read_config(logger, args.config)
@@ -163,11 +164,10 @@ def main():
         check_create_dir(logger, logdir)
 
     uri = args.uri
-    if not uri:
-        logger.error("URI of the web application not specified")
+    if not is_web_uri(uri):
+        logger.error("Not a URI: {}".format(uri))
         sys.exit(1)
-
-    logger.debug("URI = {}".format(uri))
+    logger.debug("web application URI = {}".format(uri))
 
     source_root = get_config_value(logger, 'sourceRoot', uri)
     if not source_root:
@@ -301,31 +301,20 @@ def main():
         if not logdir:
             logger.error("The logdir property is required in batch mode")
             sys.exit(1)
+
         logfile = os.path.join(logdir, args.project + ".log")
         logger.debug("Switching logging to the {} file".
                      format(logfile))
-        logging.shutdown()
 
-        # Remove the existing handler so that logger can be reconfigured.
-        for handler in logging.root.handlers[:]:
-            logging.root.removeHandler(handler)
-
-        logging.basicConfig(filename=logfile, filemode='a',
-                            level=logging.DEBUG if args.debug
-                            else logging.INFO)
-        logger = logging.getLogger(os.path.basename(sys.argv[0]))
-        handler = RotatingFileHandler(logfile, maxBytes=0,
+        logger = logger.getChild("rotating")
+        logger.setLevel(args.loglevel)
+        logger.propagate = False
+        handler = RotatingFileHandler(logfile, maxBytes=0, mode='a',
                                       backupCount=args.backupcount)
         formatter = logging.Formatter("%(asctime)s - %(levelname)s: "
                                       "%(message)s", '%m/%d/%Y %I:%M:%S %p')
         handler.setFormatter(formatter)
         handler.doRollover()
-        #
-        # Technically, adding a handler to the logger is not necessary
-        # since log rotation is done above using doRollover() however
-        # it is done anyway in case the handler changes to use implicit
-        # rotation in the future.
-        #
         logger.addHandler(handler)
 
     # We want this to be logged to the log file (if any).

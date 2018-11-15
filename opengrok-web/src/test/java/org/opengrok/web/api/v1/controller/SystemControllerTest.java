@@ -56,7 +56,7 @@ public class SystemControllerTest extends JerseyTest {
         }
 
         // Sanity check that getFooterIncludeFileContent() works since the test depends on it.
-        String before = env.getConfiguration().getFooterIncludeFileContent(false);
+        String before = env.getIncludeFiles().getFooterIncludeFileContent(false);
         assertEquals(content, before.trim());
 
         // Modify the contents of the file.
@@ -72,7 +72,7 @@ public class SystemControllerTest extends JerseyTest {
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
 
         // Check that the content was reloaded.
-        String after = env.getConfiguration().getFooterIncludeFileContent(false);
+        String after = env.getIncludeFiles().getFooterIncludeFileContent(false);
         assertNotEquals(before, after);
         assertEquals(content, after.trim());
 
@@ -109,7 +109,7 @@ public class SystemControllerTest extends JerseyTest {
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), r.getStatus());
 
         // Check
-        Path eftarPath = env.getConfiguration().getDtagsEftarPath();
+        Path eftarPath = env.getDtagsEftarPath();
         assertTrue(eftarPath.toFile().exists());
         EftarFileReader er = new EftarFileReader(eftarPath.toString());
         for (int i = 0; i < descriptions.length; i++) {

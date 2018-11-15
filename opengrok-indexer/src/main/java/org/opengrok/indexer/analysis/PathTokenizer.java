@@ -19,11 +19,13 @@
 
 /*
  * Copyright (c) 2005, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.analysis;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Locale;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
@@ -90,14 +92,24 @@ public class PathTokenizer extends Tokenizer {
             if (i >= buf.length) {
                 buf = Arrays.copyOf(buf, buf.length * 2);
             }
-            buf[i++] = Character.toLowerCase((char) c);
+            /**
+             * "In general, String.toLowerCase(Locale) should be used to map
+             * characters to lowercase. String case mapping methods have several
+             * benefits over Character case mapping methods. String case mapping
+             * methods can perform locale-sensitive mappings, context-sensitive
+             * mappings, and 1:M character mappings, whereas the Character case
+             * mapping methods cannot." See below.
+             */
+            buf[i++] = (char)c;
             c = input.read();
             charsRead++;
         } while (c != delimiter && c != cdot && !Character.isWhitespace(c) && c != -1);
         if (c == cdot) {
             dot = true;
         }
-        termAtt.copyBuffer(buf, 0, i);
+        String bufLcase = String.valueOf(buf, 0, i).toLowerCase(Locale.ROOT);
+        i = bufLcase.length();
+        termAtt.append(bufLcase);
         termAtt.setLength(i);
         offsetAtt.setOffset(correctOffset(startPosition), correctOffset(startPosition + i));
         startPosition = startPosition + i + 1;

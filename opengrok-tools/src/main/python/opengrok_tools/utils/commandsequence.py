@@ -28,7 +28,7 @@ from .utils import is_web_uri
 import json
 
 
-class CommandsBase:
+class CommandSequenceBase:
     """
     Wrap the run of a set of Command instances.
 
@@ -36,13 +36,14 @@ class CommandsBase:
     so that it can be passed through Pool.map().
     """
 
-    def __init__(self, name, commands, cleanup=None):
+    def __init__(self, name, commands, loglevel=logging.INFO, cleanup=None):
         self.name = name
         self.commands = commands
         self.failed = False
         self.retcodes = {}
         self.outputs = {}
         self.cleanup = cleanup
+        self.loglevel = loglevel
 
     def __str__(self):
         return str(self.name)
@@ -61,14 +62,15 @@ class CommandsBase:
         self.failed = failed
 
 
-class Commands(CommandsBase):
+class CommandSequence(CommandSequenceBase):
     PROJECT_SUBST = '%PROJECT%'
 
     def __init__(self, base):
-        super().__init__(base.name, base.commands, base.cleanup)
+        super().__init__(base.name, base.commands, loglevel=base.loglevel,
+                         cleanup=base.cleanup)
 
         self.logger = logging.getLogger(__name__)
-        logging.basicConfig()
+        self.logger.setLevel(base.loglevel)
 
     def run_command(self, command):
         """
@@ -88,7 +90,8 @@ class Commands(CommandsBase):
 
     def call_rest_api(self, command):
         """
-        Make RESTful API call.
+        Make RESTful API call. Occurrence of PROJECT_SUBST in the URI will be
+        replaced by project name.
         """
         command = command.get("command")
         uri = command[0].replace(self.PROJECT_SUBST, self.name)
@@ -97,7 +100,7 @@ class Commands(CommandsBase):
 
         headers = None
         json_data = None
-        if len(data) > 0:
+        if data:
             headers = {'Content-Type': 'application/json'}
             json_data = json.dumps(data).replace(self.PROJECT_SUBST, self.name)
             self.logger.debug("JSON data: {}".format(json_data))
@@ -109,7 +112,7 @@ class Commands(CommandsBase):
         elif verb == 'DELETE':
             delete(self.logger, uri, data)
         else:
-            self.logger.error('Unknown verb in command {}'.
+            self.logger.error('Unknown HTTP verb in command {}'.
                               format(command))
 
     def run(self):
@@ -118,6 +121,10 @@ class Commands(CommandsBase):
         First command that returns code other than 0 terminates the sequence.
         If the command has return code 2, the sequence will be terminated
         however it will not be treated as error.
+
+        If a command contains PROJECT_SUBST pattern, it will be replaced
+        by project name, otherwise project name will be appended to the
+        argument list of the command.
 
         Any command entry that is a URI, will be used to submit RESTful API
         request. Return codes for these requests are not checked.
@@ -132,12 +139,14 @@ class Commands(CommandsBase):
                 # If a command fails, terminate the sequence of commands.
                 if retcode != 0:
                     if retcode == 2:
-                        self.logger.info("command '{}' requested break".
-                                         format(command))
+                        self.logger.debug("command '{}' for project {} "
+                                          "requested break".
+                                          format(self.name, command))
                         self.run_cleanup()
                     else:
-                        self.logger.info("command '{}' failed with code {}, "
-                                         "breaking".format(command, retcode))
+                        self.logger.error("command '{}' for project {} failed "
+                                          "with code {}, breaking".
+                                          format(command, self.name, retcode))
                         self.failed = True
                         self.run_cleanup()
                     break

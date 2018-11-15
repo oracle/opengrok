@@ -23,14 +23,14 @@
 #
 
 import argparse
-import logging
 import os
-import sys
 import tempfile
 from shutil import copyfile
+from zipfile import ZipFile
 
-from .all.utils.command import Command
-from .all.utils.utils import get_command
+from .utils.log import get_console_logger, get_class_basename, \
+    print_exc_exit
+from .utils.parsers import get_baseparser
 
 """
  deploy war file
@@ -44,70 +44,18 @@ def repack_war(logger, sourceWar, targetWar, configFile, defaultConfigFile):
     in the process.
     """
 
-    jar_cmd = get_command(logger, None, 'jar')
-    if jar_cmd:
-        extract_cmd = [jar_cmd, '-xf']
-        compress_cmd = [jar_cmd, '-uf']
-    else:
-        zip_cmd = get_command(logger, None, 'zip')
-        unzip_cmd = get_command(logger, None, 'unzip')
-        if not zip_cmd:
-            raise Exception("zip not found")
-        if not unzip_cmd:
-            raise Exception("unzip not found")
+    WEB_XML = 'WEB-INF/web.xml'
 
-        extract_cmd = [unzip_cmd]
-        compress_cmd = [zip_cmd, '-rf']
-
-    # Resolve the full path. This is needed if sourceWar is specified as
-    # relative path because the process will switch working directory below.
-    sourceWar = os.path.realpath(sourceWar)
-    logger.debug('source war path = {}'.format(sourceWar))
-
-    # Create temporary directory and switch to it.
-    with tempfile.TemporaryDirectory(prefix='OpenGrokWarRepack') as tmpDirName:
-        logger.debug('Changing working directory to {}'.format(tmpDirName))
-        origWorkingDir = os.getcwd()
-        os.chdir(tmpDirName)
-
-        # Extract the web.xml file from the source archive.
-        WEB_INF = 'WEB-INF'
-        WEB_XML = os.path.join(WEB_INF, 'web.xml')
-        logger.debug('Decompressing {} from {} into {}'.
-                     format(WEB_XML, sourceWar, tmpDirName))
-        extract_cmd.append(sourceWar)
-        extract_cmd.append(WEB_XML)
-        cmd = Command(extract_cmd, logger=logger)
-        cmd.execute()
-        ret = cmd.getretcode()
-        if ret is None or ret != 0:
-            raise Exception("Cannot decompress war file {}, command '{}' "
-                            "ended with {}".format(sourceWar, cmd, ret))
-
-        # Substitute the configuration path in the web.xml file.
-        logger.debug("Performing substitution of '{}' with '{}'".
-                     format(defaultConfigFile, configFile))
-        with open(WEB_XML, 'r') as f:
-            data = f.read().replace(defaultConfigFile, configFile)
-        with open(WEB_XML, 'w') as f:
-            f.write(data)
-
-        # Refresh the target archive with the modified file.
-        logger.debug('Copying {} to {}'.format(sourceWar, targetWar))
-        copyfile(sourceWar, targetWar)
-        logger.debug('Refreshing target archive {}'.format(targetWar))
-        compress_cmd.append(targetWar)
-        compress_cmd.append(WEB_XML)
-        cmd = Command(compress_cmd, logger=logger)
-        cmd.execute()
-        ret = cmd.getretcode()
-        if ret is None or ret != 0:
-            raise Exception("Cannot re-compress war file {}, command '{}' "
-                            "ended with {}".format(targetWar, cmd, ret))
-
-        # Need to switch back to original working directory, so that the
-        # temporary directory can be deleted.
-        os.chdir(origWorkingDir)
+    with ZipFile(sourceWar, 'r') as infile, ZipFile(targetWar, 'w') as outfile:
+        for item in infile.infolist():
+            data = infile.read(item.filename)
+            if item.filename == WEB_XML:
+                logger.debug("Performing substitution of '{}' with '{}'".
+                             format(defaultConfigFile, configFile))
+                defaultConfigFile = defaultConfigFile.encode()
+                configFile = configFile.encode()
+                data = data.replace(defaultConfigFile, configFile)
+            outfile.writestr(item, data)
 
 
 def deploy_war(logger, sourceWar, targetWar, configFile=None):
@@ -150,10 +98,9 @@ def deploy_war(logger, sourceWar, targetWar, configFile=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Manage parallel workers.')
+    parser = argparse.ArgumentParser(description='Deploy WAR file',
+                                     parents=[get_baseparser()])
 
-    parser.add_argument('-D', '--debug', action='store_true',
-                        help='Enable debug prints')
     parser.add_argument('-c', '--config',
                         help='Path to OpenGrok configuration file')
     parser.add_argument('source_war', nargs=1,
@@ -161,14 +108,12 @@ def main():
     parser.add_argument('target_war', nargs=1,
                         help='Path where to deploy source war file to')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     deploy_war(logger, args.source_war[0], args.target_war[0], args.config)
 

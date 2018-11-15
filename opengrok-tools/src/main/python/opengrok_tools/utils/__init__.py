@@ -1,21 +1,21 @@
-from . import commands
 from . import command
-from . import opengrok
-from . import utils
-from . import filelock
+from . import commandsequence
 from . import hook
-from . import repofactory
-from . import webutil
+from . import opengrok
+from . import parsers
 from . import readconfig
+from . import repofactory
+from . import utils
+from . import webutil
 
 __all__ = [
     'opengrok',
     'utils',
     'command',
-    'commands',
-    'filelock',
+    'commandsequence',
     'hook',
     'repofactory',
     'webutil',
-    'readconfig'
+    'readconfig',
+    'parsers',
 ]

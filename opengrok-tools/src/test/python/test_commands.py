@@ -23,71 +23,63 @@
 # Copyright (c) 2017, 2018, Oracle and/or its affiliates. All rights reserved.
 #
 
-import unittest
 import os
-import sys
+
+import pytest
+
+from opengrok_tools.utils.commandsequence import CommandSequence, CommandSequenceBase
 
 
-sys.path.insert(0, os.path.abspath(
-                os.path.join(os.path.dirname(__file__), '..', '..',
-                'main', 'python', 'opengrok_tools')))
+def test_str():
+    cmds = CommandSequence(CommandSequenceBase("opengrok-master",
+                                               [{"command": ['foo']}, {"command": ["bar"]}]))
+    assert str(cmds) == "opengrok-master"
 
-from all.utils.commands import Commands, CommandsBase
+
+@pytest.mark.skipif(not os.path.exists('/bin/sh') or not os.path.exists('/bin/echo'), reason="requires Unix")
+def test_run_retcodes():
+    cmds = CommandSequence(CommandSequenceBase("opengrok-master",
+                                               [{"command": ["/bin/echo"]},
+                                                {"command": ["/bin/sh", "-c",
+                                                             "echo " + CommandSequence.PROJECT_SUBST + "; exit 0"]},
+                                                {"command": ["/bin/sh", "-c",
+                                                             "echo " + CommandSequence.PROJECT_SUBST + "; exit 1"]}]))
+    cmds.run()
+    assert cmds.retcodes == {
+        '/bin/echo opengrok-master': 0,
+        '/bin/sh -c echo opengrok-master; exit 0': 0,
+        '/bin/sh -c echo opengrok-master; exit 1': 1
+    }
 
 
-class TestApp(unittest.TestCase):
-    def test_str(self):
-        cmds = Commands(CommandsBase("opengrok-master",
-                        [{"command": ['foo']}, {"command": ["bar"]}]))
-        self.assertEqual("opengrok-master", str(cmds))
+@pytest.mark.skipif(not os.path.exists('/bin/sh') or not os.path.exists('/bin/echo'), reason="requires Unix")
+def test_terminate_after_non_zero_code():
+    cmds = CommandSequence(CommandSequenceBase("opengrok-master",
+                                               [{"command": ["/bin/sh", "-c",
+                                                             "echo " + CommandSequence.PROJECT_SUBST + "; exit 255"]},
+                                                {"command": ["/bin/echo"]}]))
+    cmds.run()
+    assert cmds.retcodes == {
+        '/bin/sh -c echo opengrok-master; exit 255': 255
+    }
 
-    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/false'), "requires Unix")
-    def test_run_retcodes(self):
-        cmds = Commands(CommandsBase("opengrok-master",
-                        [{"command": ["/bin/echo"]},
-                         {"command": ["/bin/true"]},
-                         {"command": ["/bin/false"]}]))
-        cmds.run()
-        # print(p.retcodes)
-        self.assertEqual({'/bin/echo opengrok-master': 0,
-                          '/bin/true opengrok-master': 0,
-                          '/bin/false opengrok-master': 1}, cmds.retcodes)
 
-    @unittest.skipUnless(os.path.exists('/usr/bin/true') and os.path.exists('/usr/bin/false'), "requires Unix")
-    def test_run_retcodes_usr(self):
-        cmds = Commands(CommandsBase("opengrok-master",
-                        [{"command": ["/bin/echo"]},
-                         {"command": ["/usr/bin/true"]},
-                         {"command": ["/usr/bin/false"]}]))
-        cmds.run()
-        # print(p.retcodes)
-        self.assertEqual({'/bin/echo opengrok-master': 0,
-                          '/usr/bin/true opengrok-master': 0,
-                          '/usr/bin/false opengrok-master': 1}, cmds.retcodes)
+@pytest.mark.skipif(not os.path.exists('/bin/sh') or not os.path.exists('/bin/echo'), reason="requires Unix")
+def test_exit_2_handling():
+    cmds = CommandSequence(CommandSequenceBase("opengrok-master",
+                                               [{"command": ["/bin/sh", "-c",
+                                                             "echo " + CommandSequence.PROJECT_SUBST + "; exit 2"]},
+                                                {"command": ["/bin/echo"]}]))
+    cmds.run()
+    assert cmds.retcodes == {
+        '/bin/sh -c echo opengrok-master; exit 2': 2
+    }
+    assert not cmds.failed
 
-    @unittest.skipUnless(os.path.exists('/bin/true') and os.path.exists('/bin/false'), "requires Unix")
-    def test_terminate_after_non_zero_code(self):
-        cmds = Commands(CommandsBase("opengrok-master",
-                                     [{"command": ["/bin/false"]},
-                                      {"command": ["/bin/true"]}]))
-        cmds.run()
-        self.assertEqual({'/bin/false opengrok-master': 1}, cmds.retcodes)
 
-    @unittest.skipUnless(os.path.exists('/usr/bin/true') and os.path.exists('/usr/bin/false'), "requires Unix")
-    def test_terminate_after_non_zero_code_usr(self):
-        cmds = Commands(CommandsBase("opengrok-master",
-                                     [{"command": ["/usr/bin/false"]},
-                                      {"command": ["/usr/bin/true"]}]))
-        cmds.run()
-        self.assertEqual({'/usr/bin/false opengrok-master': 1}, cmds.retcodes)
-
-    @unittest.skipUnless(os.name.startswith("posix"), "requires Unix")
-    def test_project_subst(self):
-        cmds = Commands(CommandsBase("test-subst",
-                        [{"command": ["/bin/echo", '%PROJECT%']}]))
-        cmds.run()
-        self.assertEqual(['test-subst\n'],
-                         cmds.outputs['/bin/echo test-subst'])
-
-if __name__ == '__main__':
-    unittest.main()
+@pytest.mark.skipif(not os.path.exists('/bin/echo'), reason="requires Unix")
+def test_project_subst():
+    cmds = CommandSequence(CommandSequenceBase("test-subst",
+                                               [{"command": ["/bin/echo", CommandSequence.PROJECT_SUBST]}]))
+    cmds.run()
+    assert cmds.outputs['/bin/echo test-subst'] == ['test-subst\n']

@@ -19,10 +19,12 @@
 
 /*
  * Copyright (c) 2017, 2018 Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright (c) 2018, Chris Fraire <cfraire@me.com>.
  */
 package org.opengrok.indexer.authorization;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -87,7 +89,7 @@ public enum AuthControlFlag {
      */
     public static AuthControlFlag get(String flag) throws IllegalArgumentException {
         try {
-            return AuthControlFlag.valueOf(flag.toUpperCase());
+            return AuthControlFlag.valueOf(flag.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException ex) {
             // flag does not exist -> add some more info about which flags do exist
             throw new IllegalArgumentException(

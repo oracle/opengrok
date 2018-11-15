@@ -156,6 +156,14 @@ public class UtilTest {
     }
 
     @Test
+    public void fixPathIfWindows() {
+        if (Util.isWindows()) {
+            assertEquals("/var/opengrok",
+                    Util.fixPathIfWindows("\\var\\opengrok"));
+        }
+    }
+
+    @Test
     public void uid2url() {
         assertEquals("/etc/passwd", Util.uid2url(
                 Util.path2uid("/etc/passwd", "date")));
@@ -348,6 +356,16 @@ public class UtilTest {
         assertFalse(Util.isHttpUri("ssh://git@github.com:OpenGrok/OpenGrok"));
         assertFalse(Util.isHttpUri("ldap://example.com/OpenGrok/OpenGrok"));
         assertFalse(Util.isHttpUri("smtp://example.com/OpenGrok/OpenGrok"));
+    }
+
+    @Test
+    public void testRedactUrl() {
+        assertEquals("/foo/bar", Util.redactUrl("/foo/bar"));
+        assertEquals("http://foo/bar?r=xxx", Util.redactUrl("http://foo/bar?r=xxx"));
+        assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
+                Util.redactUrl("http://user@foo/bar?r=xxx"));
+        assertEquals("http://" + Util.REDACTED_USER_INFO + "@foo/bar?r=xxx",
+                Util.redactUrl("http://user:pass@foo/bar?r=xxx"));
     }
 
     @Test

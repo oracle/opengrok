@@ -47,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import org.opengrok.indexer.Info;
 import org.opengrok.indexer.analysis.AnalyzerGuru;
 import org.opengrok.indexer.analysis.AnalyzerGuruHelp;
@@ -71,6 +70,12 @@ import org.opengrok.indexer.util.Statistics;
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
  * stats etc., if specified in the options
+ *
+ * We shall use / as path delimiter in whole opengrok for uuids and paths
+ * from Windows systems, the path shall be converted when entering the index or web
+ * and converted back if needed* to access original file
+ *
+ * *Windows already supports opening /var/opengrok as C:\var\opengrok
  */
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 public final class Indexer {
@@ -83,9 +88,13 @@ public final class Indexer {
     private static final String DIRBASED = "dirbased";
     private static final String UIONLY = "uionly";
 
+    //whole app uses this separator
+    public static final char PATH_SEPARATOR ='/';
+    public static String PATH_SEPARATOR_STRING =Character.toString(PATH_SEPARATOR);
+
     private static final Indexer index = new Indexer();
     private static Configuration cfg = null;
-    private static Configuration checkIndexVersionCfg;
+    private static boolean checkIndexVersion = false;
     private static boolean listRepos = false;
     private static boolean runIndex = true;
     private static boolean optimizedChanged = false;
@@ -203,22 +212,6 @@ public final class Indexer {
                 subFilesList.add(path);
             }
 
-            // Check version of index(es) versus current Lucene version and exit
-            // with return code upon failure.
-            if (checkIndexVersionCfg != null) {
-                try {
-                    IndexVersion.check(checkIndexVersionCfg, subFilesList);
-                } catch (IndexVersionException e) {
-                    System.err.printf("Index version check failed: %s\n", e);
-                    System.err.printf("You might want to remove " +
-                            (subFilesList.size() > 0 ?
-                            "data for projects " + String.join(",", subFilesList) : "all data") +
-                            " under the DATA_ROOT and to reindex\n");
-                    status = 1;
-                    System.exit(status);
-                }
-            }
-
             // If an user used customizations for projects he perhaps just
             // used the key value for project without a name but the code
             // expects a name for the project. Therefore we fill the name
@@ -231,6 +224,27 @@ public final class Indexer {
 
             // Set updated configuration in RuntimeEnvironment.
             env.setConfiguration(cfg, subFilesList, false);
+
+            // Check version of index(es) versus current Lucene version and exit
+            // with return code upon failure.
+            if (checkIndexVersion) {
+                if (cfg == null) {
+                    System.err.println("Need configuration to check index version (use -R)");
+                    System.exit(1);
+                }
+
+                try {
+                    IndexVersion.check(subFilesList);
+                } catch (IndexVersionException e) {
+                    System.err.printf("Index version check failed: %s\n", e);
+                    System.err.printf("You might want to remove " +
+                            (subFilesList.size() > 0 ?
+                                    "data for projects " + String.join(",", subFilesList) : "all data") +
+                            " under the DATA_ROOT and to reindex\n");
+                    status = 1;
+                    System.exit(status);
+                }
+            }
 
             // Let repository types to add items to ignoredNames.
             // This changes env so is called after the setConfiguration()
@@ -332,6 +346,7 @@ public final class Indexer {
             System.exit(1);
         } catch (IndexerException ex) {
             LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
+            System.err.println("Exception: " + ex.getLocalizedMessage());
             System.err.println(optParser.getUsage());
             System.exit(1);
         } catch (Throwable e) {
@@ -458,14 +473,9 @@ public final class Indexer {
                 }
             );
 
-            parser.on("--checkIndexVersion", "=/path/to/conf",
+            parser.on("--checkIndexVersion",
                     "Check if current Lucene version matches index version").Do(v -> {
-                try {
-                    File cfgFile = new File((String)v);
-                    checkIndexVersionCfg = Configuration.read(cfgFile);
-                } catch(IOException|NullPointerException e) {
-                    die(e.getMessage());
-                }
+                checkIndexVersion = true;
             });
 
             parser.on("-d", "--dataRoot", "=/path/to/data/root",
@@ -833,7 +843,7 @@ public final class Indexer {
         } else {
             fileSpec = fileSpec.substring(1);
         }
-        fileSpec = fileSpec.toUpperCase();
+        fileSpec = fileSpec.toUpperCase(Locale.ROOT);
 
         // Disable analyzer?
         if (analyzer.equals("-")) {
@@ -938,12 +948,12 @@ public final class Indexer {
                     Project p = oldProjects.get(name);
                     p.setPath(path);
                     p.setName(name);
-                    p.completeWithDefaults(env.getConfiguration());
+                    p.completeWithDefaults();
                     projects.put(name, p);
                 } else if (!name.startsWith(".") && file.isDirectory()) {
                     // Found a new directory with no matching project, so
                     // create a new project with default properties.
-                    projects.put(name, new Project(name, path, env.getConfiguration()));
+                    projects.put(name, new Project(name, path));
                 }
             }
         }
@@ -1057,7 +1067,7 @@ public final class Indexer {
         IndexChangedListener progress)
             throws IOException {
         Statistics elapsed = new Statistics();
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         LOGGER.info("Starting indexing");
 
         IndexerParallelizer parallelizer = new IndexerParallelizer(env);

@@ -58,7 +58,7 @@ include file="menu.jspf"
             %></div>
         </div>
         <div id="results">
-            <%= PageConfig.get(request).getEnv().getConfiguration().getBodyIncludeFileContent(false) %>
+            <%= PageConfig.get(request).getEnv().getIncludeFiles().getBodyIncludeFileContent(false) %>
             <% if (PageConfig.get(request).getEnv().getDisplayRepositories()) { %><%@
 
 include file="repos.jspf"

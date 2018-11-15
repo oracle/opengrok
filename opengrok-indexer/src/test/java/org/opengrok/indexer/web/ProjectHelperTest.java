@@ -105,7 +105,6 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         env.getProjects().put("foo", p);
         env.getProjects().put("bar", repo);
         env.getGroups().add(g);
-        env.register();
 
         Assert.assertEquals(42, env.getProjects().size());
         Assert.assertEquals(21, env.getRepositories().size());
@@ -125,7 +124,6 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         env.setProjects(oldProjects);
         env.setRepositories(oldRepositories);
         env.setGroups(oldGroups);
-        env.register();
     }
 
     /**

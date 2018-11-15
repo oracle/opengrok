@@ -25,23 +25,15 @@ Portions Copyright (c) 2017-2018, Chris Fraire <cfraire@me.com>.
 --%>
 <%@page errorPage="error.jsp" import="
 java.io.BufferedInputStream,
-java.io.BufferedReader,
 java.io.FileInputStream,
-java.io.FileReader,
-java.io.FileWriter,
 java.io.InputStream,
 java.io.InputStreamReader,
 java.io.Reader,
 java.net.URLEncoder,
 java.nio.charset.StandardCharsets,
-java.util.ArrayList,
-java.util.Arrays,
 java.util.List,
+java.util.Locale,
 java.util.Set,
-java.util.logging.Level,
-java.util.zip.GZIPInputStream,
-javax.servlet.http.HttpServletResponse,
-
 org.opengrok.indexer.analysis.AnalyzerGuru,
 org.opengrok.indexer.analysis.Definitions,
 org.opengrok.indexer.analysis.FileAnalyzer.Genre,
@@ -150,7 +142,7 @@ document.pageReady.push(function() { pageReadyList();});
                 }
 %>
 <%
-    String lcName = readMes.get(i).toLowerCase();
+    String lcName = readMes.get(i).toLowerCase(Locale.ROOT);
     if (lcName.endsWith(".md") || lcName.endsWith(".markdown")) {
     %><div id="src<%=i%>" data-markdown>
         <div class="markdown-heading">

@@ -100,7 +100,7 @@ public class StatsControllerTest extends JerseyTest {
 
     @Test
     public void testInvalidReload() {
-        env.getConfiguration().setStatisticsFilePath("/file/that/doesnot/exists");
+        env.setStatisticsFilePath("/file/that/doesnot/exists");
 
         Response response = target("stats")
                 .path("reload")
@@ -109,5 +109,4 @@ public class StatsControllerTest extends JerseyTest {
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
     }
-
 }

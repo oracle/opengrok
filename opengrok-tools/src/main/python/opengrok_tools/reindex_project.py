@@ -23,14 +23,14 @@
 
 
 import argparse
-import logging
 import os
 import sys
 import tempfile
 
-from .all.utils.indexer import Indexer
-from .all.utils.java import get_javaparser
-from .all.utils.opengrok import get_configuration
+from .utils.indexer import Indexer
+from .utils.log import get_console_logger, get_class_basename, print_exc_exit
+from .utils.opengrok import get_configuration
+from .utils.parsers import get_javaparser
 
 """
  OpenGrok reindexing script for single project. Makes sure it uses
@@ -84,14 +84,12 @@ def main():
     parser.add_argument('-U', '--uri', default='http://localhost:8080/source',
                         help='URI of the webapp with context path')
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
+    except ValueError as e:
+        print_exc_exit(e)
 
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig()
-
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    logger = get_console_logger(get_class_basename(), args.loglevel)
 
     # Make sure the log directory exists.
     if not os.path.isdir(args.directory):
