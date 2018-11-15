@@ -33,7 +33,7 @@ jobs:
       before_script: dev/before
     - stage: test
       os: osx
-      osx_image: xcode9.4
+      osx_image: xcode8.3
       install: true
       script: dev/main
       before_install: dev/before_install
