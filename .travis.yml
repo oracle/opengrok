@@ -43,16 +43,6 @@ jobs:
       before_install: dev/before_install
       before_script: dev/before
     - stage: test
-      name: Linux + Oracle JDK 11
-      os: linux
-      dist: trusty
-      sudo: required
-      jdk: oraclejdk11
-      install: true
-      script: dev/main
-      before_install: dev/before_install
-      before_script: dev/before
-    - stage: test
       name: macOS + Oracle JDK 8
       os: osx
       osx_image: xcode8.3
