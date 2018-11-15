@@ -104,3 +104,11 @@ You should now be able to point your browser to http://YOUR_WEBAPP_SERVER:WEBAPP
 In some setups, it might be desirable to run the indexing (and especially mirroring) of each project in parallel in order to speed up the overall progress. See https://github.com/oracle/opengrok/wiki/Per-project-management on how this can be done.
 
 See https://github.com/oracle/opengrok/wiki/Indexer-configuration for more indexer configuration options.
+
+## <u>Step.4</u> - setting up periodic reindex
+
+The index needs to be kept consistent with the data being indexed. Also, the data needs to be kept in sync with their origin. Therefore, there has to be periodic process that syncs the data and runs reindex. On Unix this is normally done by setting up a `crontab` entry.
+
+Ideally, the time window between the data being changed on disk and reindex done should be kept to minimum otherwise strange artifacts may appear when searching/browsing.
+
+For syncing repository data see https://github.com/oracle/opengrok/wiki/Repository-synchronization
